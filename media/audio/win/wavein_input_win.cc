@@ -152,6 +152,7 @@ void PCMWaveInAudioInputStream::Stop() {
     HandleError(::GetLastError());
     return;
   }
+
   // Stop is always called before Close. In case of error, this will be
   // also called when closing the input controller.
   manager_->DecreaseActiveInputStreamCount();
@@ -163,6 +164,13 @@ void PCMWaveInAudioInputStream::Stop() {
     HandleError(res);
     return;
   }
+
+  // Wait for lock to ensure all outstanding callbacks have completed.
+  base::AutoLock auto_lock(lock_);
+
+  // Don't use callback after Stop().
+  callback_ = NULL;
+
   state_ = kStateReady;
 }
 
@@ -265,6 +273,9 @@ void PCMWaveInAudioInputStream::WaveCallback(HWAVEIN hwi, UINT msg,
   PCMWaveInAudioInputStream* obj =
       reinterpret_cast<PCMWaveInAudioInputStream*>(instance);
 
+  // The lock ensures that Stop() can't be called during a callback.
+  base::AutoLock auto_lock(obj->lock_);
+
   if (msg == WIM_DATA) {
     // WIM_DONE indicates that the driver is done with our buffer. We pass it
     // to the callback and check if we need to stop playing.
@@ -273,10 +284,13 @@ void PCMWaveInAudioInputStream::WaveCallback(HWAVEIN hwi, UINT msg,
     // TODO(henrika): the |volume| parameter is always set to zero since there
     // is currently no support for controlling the microphone volume level.
     WAVEHDR* buffer = reinterpret_cast<WAVEHDR*>(param1);
-    obj->callback_->OnData(obj, reinterpret_cast<const uint8*>(buffer->lpData),
-                           buffer->dwBytesRecorded,
-                           buffer->dwBytesRecorded,
-                           0.0);
+    if (obj->callback_) {
+      obj->callback_->OnData(obj,
+                             reinterpret_cast<const uint8*>(buffer->lpData),
+                             buffer->dwBytesRecorded,
+                             buffer->dwBytesRecorded,
+                             0.0);
+    }
 
     if (obj->state_ == kStateStopping) {
       // The main thread has called Stop() and is waiting to issue waveOutReset

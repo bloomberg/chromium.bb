@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/synchronization/lock.h"
 #include "base/win/scoped_handle.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
@@ -115,6 +116,9 @@ class PCMWaveInAudioInputStream : public AudioInputStream {
 
   // An event that is signaled when the callback thread is ready to stop.
   base::win::ScopedHandle stopped_event_;
+
+  // Lock used to avoid conflicts when Stop() is called during a callback.
+  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(PCMWaveInAudioInputStream);
 };
