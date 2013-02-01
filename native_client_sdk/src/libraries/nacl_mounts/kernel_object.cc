@@ -20,21 +20,28 @@
 #include "utils/auto_lock.h"
 
 KernelObject::KernelObject() {
-  pthread_mutex_init(&lock_, NULL);
+  pthread_mutex_init(&kernel_lock_, NULL);
+  pthread_mutex_init(&process_lock_, NULL);
 }
 
 KernelObject::~KernelObject() {
-  pthread_mutex_destroy(&lock_);
+  pthread_mutex_destroy(&process_lock_);
+  pthread_mutex_destroy(&kernel_lock_);
 }
 
 // Uses longest prefix to find the mount for the give path, then
 // acquires the mount and returns it with a relative path.
 Mount* KernelObject::AcquireMountAndPath(const std::string& relpath,
                                          Path* out_path) {
-  AutoLock lock(&lock_);
+  Path abs_path;
+  {
+    AutoLock lock(&process_lock_);
+    abs_path = GetAbsPathLocked(relpath);
+  }
+
+  AutoLock lock(&kernel_lock_);
   Mount* mount = NULL;
 
-  Path abs_path = GetAbsPathLocked(relpath);
 
   // Find longest prefix
   size_t max = abs_path.Size();
@@ -59,12 +66,12 @@ Mount* KernelObject::AcquireMountAndPath(const std::string& relpath,
 }
 
 void KernelObject::ReleaseMount(Mount* mnt) {
-  AutoLock lock(&lock_);
+  AutoLock lock(&kernel_lock_);
   mnt->Release();
 }
 
 KernelHandle* KernelObject::AcquireHandle(int fd) {
-  AutoLock lock(&lock_);
+  AutoLock lock(&process_lock_);
   if (fd < 0 || fd >= static_cast<int>(handle_map_.size())) {
     errno = EBADF;
     return NULL;
@@ -90,7 +97,7 @@ void KernelObject::ReleaseHandle(KernelHandle* handle) {
   // kernel lock.
   if (handle->node_) handle->mount_->ReleaseNode(handle->node_);
 
-  AutoLock lock(&lock_);
+  AutoLock lock(&process_lock_);
   handle->Release();
 }
 
@@ -101,7 +108,7 @@ static bool FdOrder(int i, int j) {
 }
 
 int KernelObject::AllocateFD(KernelHandle* handle) {
-  AutoLock lock(&lock_);
+  AutoLock lock(&process_lock_);
   int id;
 
   // Acquire the handle and its mount since we are about to track it with
@@ -123,7 +130,7 @@ int KernelObject::AllocateFD(KernelHandle* handle) {
 }
 
 void KernelObject::AssignFD(int fd, KernelHandle* handle) {
-  AutoLock lock(&lock_);
+  AutoLock lock(&process_lock_);
 
   // Acquire the handle and its mount since we are about to track it with
   // this FD.
@@ -138,7 +145,7 @@ void KernelObject::AssignFD(int fd, KernelHandle* handle) {
 }
 
 void KernelObject::FreeFD(int fd) {
-  AutoLock lock(&lock_);
+  AutoLock lock(&process_lock_);
 
   // Release the mount and handle since we no longer
   // track them with this FD.

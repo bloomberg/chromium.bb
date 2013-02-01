@@ -64,7 +64,7 @@ TARGET=nacl_mounts_test
 #
 SOURCES:=kernel_object_test.cc kernel_proxy_mock.cc kernel_proxy_test.cc
 SOURCES+=kernel_wrap_test.cc module.cc mount_node_test.cc
-SOURCES+=mount_html5fs_test.cc mount_test.cc path_test.cc
+SOURCES+=mount_html5fs_test.cc mount_http_test.cc mount_test.cc path_test.cc
 SOURCES+=pepper_interface_mock.cc
 
 #

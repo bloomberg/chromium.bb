@@ -132,7 +132,7 @@ int KernelProxy::dup2(int oldfd, int newfd) {
 
 
 char* KernelProxy::getcwd(char* buf, size_t size) {
-  AutoLock lock(&lock_);
+  AutoLock lock(&process_lock_);
   if (size <= 0) {
     errno = EINVAL;
     return NULL;
@@ -210,7 +210,7 @@ int KernelProxy::chdir(const char* path) {
 
   bool is_dir = (statbuf.st_mode & S_IFDIR) != 0;
   if (is_dir) {
-    AutoLock lock(&lock_);
+    AutoLock lock(&process_lock_);
     cwd_ = GetAbsPathLocked(path).Join();
     return 0;
   }
@@ -223,9 +223,15 @@ int KernelProxy::mount(const char *source, const char *target,
                        const char *filesystemtype, unsigned long mountflags,
                        const void *data) {
   // See if it's already mounted
-  AutoLock lock(&lock_);
+  std::string abs_targ;
 
-  std::string abs_targ = GetAbsPathLocked(target).Join();
+  // Scope this lock to prevent holding both process and kernel locks
+  {
+    AutoLock lock(&process_lock_);
+    abs_targ = GetAbsPathLocked(target).Join();
+  }
+
+  AutoLock lock(&kernel_lock_);
   if (mounts_.find(abs_targ) != mounts_.end()) {
     errno = EBUSY;
     return -1;
@@ -269,9 +275,15 @@ int KernelProxy::mount(const char *source, const char *target,
 }
 
 int KernelProxy::umount(const char *path) {
-  AutoLock lock(&lock_);
+  Path abs_path;
 
-  Path abs_path = GetAbsPathLocked(path);
+  // Scope this lock to prevent holding both process and kernel locks
+  {
+    AutoLock lock(&process_lock_);
+    abs_path = GetAbsPathLocked(path);
+  }
+
+  AutoLock lock(&kernel_lock_);
   MountMap_t::iterator it = mounts_.find(abs_path.Join());
 
   if (mounts_.end() == it) {

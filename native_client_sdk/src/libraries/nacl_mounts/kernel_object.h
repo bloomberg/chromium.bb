@@ -49,7 +49,12 @@ class KernelObject {
 
   HandleMap_t handle_map_;
   MountMap_t mounts_;
-  pthread_mutex_t lock_;
+
+  // Kernel lock protects kernel wide resources such as the mount table...
+  pthread_mutex_t kernel_lock_;
+
+  // Process lock proctects process wide resources such as CWD, file handles...
+  pthread_mutex_t process_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(KernelObject);
 };

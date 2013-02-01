@@ -11,9 +11,14 @@
 #include "nacl_mounts/pepper_interface.h"
 
 class MountNode;
+class MountNodeDir;
+class MountNodeHttp;
+class MountHttpMock;
 
 class MountHttp : public Mount {
  public:
+  typedef std::map<std::string, MountNode*> NodeMap_t;
+
   virtual MountNode *Open(const Path& path, int mode);
   virtual int Unlink(const Path& path);
   virtual int Mkdir(const Path& path, int permissions);
@@ -29,14 +34,21 @@ class MountHttp : public Mount {
 
   virtual bool Init(int dev, StringMap_t& args, PepperInterface* ppapi);
   virtual void Destroy();
+  MountNodeDir* FindOrCreateDir(const Path& path);
+  char *LoadManifest(const std::string& path);
+  bool ParseManifest(char *text);
 
  private:
   std::string url_root_;
   StringMap_t headers_;
+  NodeMap_t node_cache_;
   bool allow_cors_;
   bool allow_credentials_;
+  bool allow_stat_cache_;
 
   friend class Mount;
+  friend class MountNodeHttp;
+  friend class MountHttpMock;
 };
 
 #endif  // LIBRARIES_NACL_MOUNTS_MOUNT_HTTP_H_

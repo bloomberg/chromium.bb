@@ -7,10 +7,14 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <ppapi/c/pp_errors.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <vector>
+#include "nacl_mounts/mount_node_dir.h"
 #include "nacl_mounts/osinttypes.h"
 #include "utils/auto_lock.h"
 
@@ -18,8 +22,23 @@
 #define snprintf _snprintf
 #endif
 
+static const int USR_ID = 1001;
+static const int GRP_ID = 1002;
 
-namespace {
+
+typedef std::vector<char *> StringList_t;
+static size_t SplitString(char *str, const char *delim, StringList_t* list) {
+  char *item = strtok(str, delim);
+
+  list->clear();
+  while (item) {
+    list->push_back(item);
+    item = strtok(NULL, delim);
+  }
+
+  return list->size();
+}
+
 
 // If we're attempting to read a partial request, but the server returns a full
 // request, we need to read all of the data up to the start of our partial
@@ -145,7 +164,6 @@ class MountNodeHttp : public MountNode {
 
  protected:
   MountNodeHttp(Mount* mount, int ino, int dev, const std::string& url);
-  virtual bool Init(int mode, short uid, short gid);
   virtual int Close();
 
  private:
@@ -159,7 +177,6 @@ class MountNodeHttp : public MountNode {
 
   std::string url_;
   std::vector<char> buffer_;
-
   friend class ::MountHttp;
 };
 
@@ -176,35 +193,42 @@ int MountNodeHttp::GetDents(size_t offs, struct dirent* pdir, size_t count) {
 int MountNodeHttp::GetStat(struct stat* stat) {
   AutoLock lock(&lock_);
 
-  StringMap_t headers;
-  PP_Resource loader;
-  PP_Resource request;
-  PP_Resource response;
-  int32_t statuscode;
-  StringMap_t response_headers;
-  if (!OpenUrl("HEAD", &headers, &loader, &request, &response, &statuscode,
-               &response_headers)) {
-    // errno is already set by OpenUrl.
-    return -1;
+  // Assume we need to 'HEAD' if we do not know the size, otherwise, assume
+  // that the information is constant.  We can add a timeout if needed.
+  MountHttp* mount = static_cast<MountHttp*>(mount_);
+  if (stat_.st_size == 0 || !mount->allow_stat_cache_) {
+    StringMap_t headers;
+    PP_Resource loader;
+    PP_Resource request;
+    PP_Resource response;
+    int32_t statuscode;
+    StringMap_t response_headers;
+    if (!OpenUrl("HEAD", &headers, &loader, &request, &response, &statuscode,
+                &response_headers)) {
+      // errno is already set by OpenUrl.
+      return -1;
+    }
+
+    ScopedResource scoped_loader(mount_->ppapi(), loader);
+    ScopedResource scoped_request(mount_->ppapi(), request);
+    ScopedResource scoped_response(mount_->ppapi(), response);
+
+
+    size_t entity_length;
+    if (ParseContentLength(response_headers, &entity_length))
+      stat_.st_size = static_cast<off_t>(entity_length);
+    else
+      stat_.st_size = 0;
+
+    stat_.st_atime = 0; // TODO(binji): Use "Last-Modified".
+    stat_.st_mtime = 0;
+    stat_.st_ctime = 0;
   }
 
-  ScopedResource scoped_loader(mount_->ppapi(), loader);
-  ScopedResource scoped_request(mount_->ppapi(), request);
-  ScopedResource scoped_response(mount_->ppapi(), response);
-
-  // Fill in known info here.
-  memcpy(stat, &stat_, sizeof(stat_));
-
-  size_t entity_length;
-  if (ParseContentLength(response_headers, &entity_length))
-    stat->st_size = static_cast<off_t>(entity_length);
-  else
-    stat->st_size = 0;
-
-  stat->st_atime = 0; // TODO(binji): Use "Last-Modified".
-  stat->st_mtime = 0;
-  stat->st_ctime = 0;
-
+  // Fill the stat structure if provided
+  if (stat) {
+    memcpy(stat, &stat_, sizeof(stat_));
+  }
   return 0;
 }
 
@@ -345,20 +369,6 @@ MountNodeHttp::MountNodeHttp(Mount* mount, int ino, int dev,
       url_(url) {
 }
 
-bool MountNodeHttp::Init(int mode, short uid, short gid) {
-  if (!MountNode::Init(mode, uid, gid)) {
-    return false;
-  }
-
-  struct stat stat;
-  if (GetStat(&stat) == -1) {
-    return false;
-  }
-
-  memcpy(&stat_, &stat, sizeof(stat_));
-
-  return true;
-}
 
 int MountNodeHttp::Close() {
   return 0;
@@ -448,25 +458,28 @@ bool MountNodeHttp::OpenUrl(const char* method,
   return true;
 }
 
-
-}  // namespace
-
 MountNode *MountHttp::Open(const Path& path, int mode) {
   assert(url_root_.empty() || url_root_[url_root_.length() - 1] == '/');
 
+  NodeMap_t::iterator iter = node_cache_.find(path.Join());
+  if (iter != node_cache_.end()) {
+    return iter->second;
+  }
+
+  // If we can't find the node in the cache, create it
   std::string url = url_root_ + (path.IsAbsolute() ?
       path.Range(1, path.Size()) :
       path.Join());
 
-  const int ino = 1;
-  const int USR_ID = 1001;
-  const int GRP_ID = 1002;
-  MountNodeHttp* node = new MountNodeHttp(this, ino, dev_, url);
-  if (!node->Init(mode, USR_ID, GRP_ID)) {
+  MountNodeHttp* node = new MountNodeHttp(this, num_nodes_++, dev_, url);
+  if (!node->Init(mode, USR_ID, GRP_ID) || (0 != node->GetStat(NULL))) {
     node->Release();
     return NULL;
   }
 
+  MountNodeDir* parent = FindOrCreateDir(path.Parent());
+  node_cache_[path.Join()] = node;
+  parent->AddChild(path.Basename(), node);
   return node;
 }
 
@@ -538,7 +551,8 @@ PP_Resource MountHttp::MakeUrlRequestInfo(
 
 MountHttp::MountHttp()
     : allow_cors_(false),
-      allow_credentials_(false) {
+      allow_credentials_(false),
+      allow_stat_cache_(true) {
 }
 
 bool MountHttp::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
@@ -554,10 +568,18 @@ bool MountHttp::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
       if (!url_root_.empty() && url_root_[url_root_.length() - 1] != '/') {
         url_root_ += '/';
       }
+    } else if (iter->first == "manifest") {
+      char *text = LoadManifest(iter->second);
+      if (text != NULL) {
+        ParseManifest(text);
+        delete[] text;
+      }
     } else if (iter->first == "allow_cross_origin_requests") {
       allow_cors_ = iter->second == "true";
     } else if (iter->first == "allow_credentials") {
       allow_credentials_ = iter->second == "true";
+    } else if (iter->first == "allow_stat_cache") {
+      allow_stat_cache_ = iter->second == "true";
     } else {
       // Assume it is a header to pass to an HTTP request.
       headers_[NormalizeHeaderKey(iter->first)] = iter->second;
@@ -568,4 +590,106 @@ bool MountHttp::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
 }
 
 void MountHttp::Destroy() {
+}
+
+MountNodeDir* MountHttp::FindOrCreateDir(const Path& path) {
+  std::string strpath = path.Join();
+  NodeMap_t::iterator iter = node_cache_.find(strpath);
+  if (iter != node_cache_.end()) {
+    return static_cast<MountNodeDir*>(iter->second);
+  }
+
+  // If the node does not exist, create it, and add it to the node cache
+  MountNodeDir* node = new MountNodeDir(this, num_nodes_, dev_);
+  node->Init(S_IREAD, USR_ID, GRP_ID);
+  node_cache_[strpath] = node;
+
+  // If not the root node, find the parent node and add it to the parent
+  if (!path.Top()) {
+    MountNodeDir* parent = FindOrCreateDir(path.Parent());
+    parent->AddChild(path.Basename(), node);
+  }
+
+  return node;
+}
+
+bool MountHttp::ParseManifest(char *text) {
+  StringList_t lines;
+  SplitString(text, "\n", &lines);
+
+  for (size_t i = 0; i < lines.size(); i++) {
+    StringList_t words;
+    SplitString(lines[i], " ", &words);
+
+    if (words.size() == 3) {
+      char* modestr = words[0];
+      char* lenstr = words[1];
+      char* name = words[2];
+
+      assert(modestr && strlen(modestr) == 4);
+      assert(name && name[0] == '/');
+      assert(lenstr);
+
+      // Only support regular and streams for now
+      // Ignore EXEC bit
+      int mode = S_IFREG;
+      switch (modestr[0]) {
+        case '-': mode = S_IFREG; break;
+        case 'c': mode = S_IFCHR; break;
+        default:
+          fprintf(stderr, "Unable to parse type %s for %s.\n", modestr, name);
+          return false;
+      }
+
+      switch (modestr[1]) {
+        case '-': break;
+        case 'r': mode |= S_IREAD; break;
+        default:
+          fprintf(stderr, "Unable to parse read %s for %s.\n", modestr, name);
+          return false;
+      }
+
+      switch (modestr[2]) {
+        case '-': break;
+        case 'w': mode |= S_IWRITE; break;
+        default:
+          fprintf(stderr, "Unable to parse write %s for %s.\n", modestr, name);
+          return false;
+      }
+
+      Path path(name);
+      std::string url = url_root_ + (path.IsAbsolute() ?
+          path.Range(1, path.Size()) :
+          path.Join());
+
+      MountNode* node = new MountNodeHttp(this, num_nodes_, dev_, url);
+      node->Init(mode, USR_ID, GRP_ID);
+      node->stat_.st_size = atoi(lenstr);
+
+      MountNodeDir* dir_node = FindOrCreateDir(path.Parent());
+      dir_node->AddChild(path.Basename(), node);
+
+      std::string pname = path.Join();
+      node_cache_[pname] = node;
+    }
+  }
+
+  return true;
+}
+
+char *MountHttp::LoadManifest(const std::string& manifestName) {
+  Path manifestPath(manifestName);
+  MountNode* manifiestNode = Open(manifestPath, O_RDONLY);
+
+  if (manifiestNode) {
+    char *text = new char[manifiestNode->GetSize() + 1];
+    off_t len = manifiestNode->Read(0, text, manifiestNode->GetSize());
+    manifiestNode->Release();
+
+    text[len] = 0;
+    return text;
+  }
+
+  fprintf(stderr, "Could not open manifest: %s\n", manifestName.c_str());
+  return NULL;
 }

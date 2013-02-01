@@ -12,6 +12,11 @@
 
 struct dirent;
 
+class MountDev;
+class MountHtml5Fs;
+class MountHttp;
+class MountMem;
+
 class MountNodeDir : public MountNode {
  protected:
   MountNodeDir(Mount *mount, int ino, int dev);
@@ -43,6 +48,8 @@ private:
 
   friend class MountDev;
   friend class MountMem;
+  friend class MountHttp;
+  friend class MountHtml5Fs;
 };
 
 #endif  // LIBRARIES_NACL_MOUNTS_MOUNT_NODE_DIR_H_

@@ -17,6 +17,7 @@
         'module.cc',
         'mount_node_test.cc',
         'mount_html5fs_test.cc',
+        'mount_http_test.cc',
         'mount_test.cc',
         'path_test.cc',
         'pepper_interface_mock.cc',

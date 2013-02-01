@@ -30,8 +30,11 @@ class Path {
   // Return a part of the path
   const std::string& Part(size_t index) const;
 
-  // Return the number of path parts/
+  // Return the number of path parts
   size_t Size() const;
+
+  // Return true of this is the top of the path
+  bool Top() const;
 
   // Update the path.
   Path& Append(const std::string& path);

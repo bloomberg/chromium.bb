@@ -32,6 +32,10 @@ size_t Path::Size() const {
   return paths_.size();
 }
 
+bool Path::Top() const {
+  return (paths_.size() == 0) || (paths_.size() == 1 && paths_[0] == "/");
+}
+
 Path& Path::Append(const std::string& path) {
   StringArray_t paths = Split(path);
 
