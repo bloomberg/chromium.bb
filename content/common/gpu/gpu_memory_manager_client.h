@@ -83,6 +83,7 @@ class CONTENT_EXPORT GpuMemoryManagerClientState {
 
   // Statistics about memory usage.
   GpuManagedMemoryStats managed_memory_stats_;
+  bool managed_memory_stats_received_;
 
   // When managed_memory_stats_.bytes_nicetohave leaves the range
   // [low_, high_], then re-adjust memory limits.

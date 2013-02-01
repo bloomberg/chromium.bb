@@ -22,6 +22,7 @@ GpuMemoryManagerClientState::GpuMemoryManagerClientState(
       has_surface_(has_surface),
       visible_(visible),
       list_iterator_valid_(false),
+      managed_memory_stats_received_(false),
       bytes_nicetohave_limit_low_(0),
       bytes_nicetohave_limit_high_(0),
       bytes_allocation_when_visible_(0),

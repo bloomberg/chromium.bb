@@ -56,7 +56,7 @@ GpuMemoryManager::GpuMemoryManager(
       bytes_available_gpu_memory_(0),
       bytes_available_gpu_memory_overridden_(false),
       bytes_minimum_per_client_(0),
-      bytes_minimum_per_client_overridden_(false),
+      bytes_default_per_client_(0),
       bytes_nonvisible_available_gpu_memory_(0),
       bytes_allocated_managed_current_(0),
       bytes_allocated_managed_visible_(0),
@@ -71,6 +71,15 @@ GpuMemoryManager::GpuMemoryManager(
       disable_schedule_manage_(false)
 {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
+
+#if defined(OS_ANDROID)
+  bytes_default_per_client_ = 32 * 1024 * 1024;
+  bytes_minimum_per_client_ = 32 * 1024 * 1024;
+#else
+  bytes_default_per_client_ = 64 * 1024 * 1024;
+  bytes_minimum_per_client_ = 64 * 1024 * 1024;
+#endif
+
   if (command_line->HasSwitch(switches::kForceGpuMemAvailableMb)) {
     base::StringToUint64(
         command_line->GetSwitchValueASCII(switches::kForceGpuMemAvailableMb),
@@ -135,18 +144,6 @@ uint64 GpuMemoryManager::GetMaximumClientAllocation() const {
   // (the current total limit). Long-scroll pages will hit this limit,
   // resulting in instability on some platforms (e.g, issue 141377).
   return bytes_available_gpu_memory_ / 2;
-#endif
-}
-
-uint64 GpuMemoryManager::GetMinimumClientAllocation() const {
-  if (bytes_minimum_per_client_overridden_)
-    return bytes_minimum_per_client_;
-#if defined(OS_ANDROID)
-  return 32 * 1024 * 1024;
-#elif defined(OS_CHROMEOS)
-  return 64 * 1024 * 1024;
-#else
-  return 64 * 1024 * 1024;
 #endif
 }
 
@@ -389,6 +386,14 @@ void GpuMemoryManager::SetClientStateManagedMemoryStats(
                         &bytes_allocated_managed_nonvisible_);
   client_state->managed_memory_stats_ = stats;
 
+  // If this is the first time that stats have been received for this
+  // client, use them immediately.
+  if (!client_state->managed_memory_stats_received_) {
+    client_state->managed_memory_stats_received_ = true;
+    ScheduleManage(kScheduleManageNow);
+    return;
+  }
+
   if (use_nonuniform_memory_policy_) {
     // If these statistics sit outside of the range that we used in our
     // computation of memory allocations then recompute the allocations.
@@ -561,6 +566,9 @@ uint64 GpuMemoryManager::ComputeClientAllocationWhenVisible(
     uint64 bytes_overall_cap) {
   GpuManagedMemoryStats* stats = &client_state->managed_memory_stats_;
 
+  if (!client_state->managed_memory_stats_received_)
+    return GetDefaultClientAllocation();
+
   uint64 bytes_required = 9 * stats->bytes_required / 8;
   bytes_required = std::min(bytes_required, GetMaximumClientAllocation());
   bytes_required = std::max(bytes_required, GetMinimumClientAllocation());
@@ -582,6 +590,10 @@ uint64 GpuMemoryManager::ComputeClientAllocationWhenVisible(
 
 uint64 GpuMemoryManager::ComputeClientAllocationWhenNonvisible(
     GpuMemoryManagerClientState* client_state) {
+
+  if (!client_state->managed_memory_stats_received_)
+    return 0;
+
   return 9 * client_state->managed_memory_stats_.bytes_required / 8;
 }
 
@@ -755,6 +767,11 @@ void GpuMemoryManager::ComputeNonvisibleSurfacesAllocationsNonuniform() {
        ++it) {
     GpuMemoryManagerClientState* client_state = *it;
 
+    // If this client is nonvisible and has already had its contents discarded,
+    // don't re-generate the contents until the client becomes visible again.
+    if (!client_state->bytes_allocation_when_nonvisible_)
+      continue;
+
     client_state->bytes_allocation_when_nonvisible_ =
         ComputeClientAllocationWhenNonvisible(client_state);
 
@@ -762,7 +779,7 @@ void GpuMemoryManager::ComputeNonvisibleSurfacesAllocationsNonuniform() {
     // this client still fits, all it to keep its contents.
     if (bytes_allocated_nonvisible +
         client_state->bytes_allocation_when_nonvisible_ >
-        bytes_allocated_nonvisible) {
+        bytes_available_nonvisible) {
       client_state->bytes_allocation_when_nonvisible_ = 0;
     }
     bytes_allocated_nonvisible +=

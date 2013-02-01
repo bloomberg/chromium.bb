@@ -95,6 +95,15 @@ class CONTENT_EXPORT GpuMemoryManager :
   FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
                            TestUnmanagedTracking);
 
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTestNonuniform,
+                           BackgroundMru);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTestNonuniform,
+                           BackgroundDiscardPersistent);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTestNonuniform,
+                           UnmanagedTracking);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTestNonuniform,
+                           DefaultAllocation);
+
   typedef std::map<gpu::gles2::MemoryTracker*, GpuMemoryTrackingGroup*>
       TrackingGroupMap;
 
@@ -144,9 +153,16 @@ class CONTENT_EXPORT GpuMemoryManager :
   // Maximum cap on total GPU memory, no matter how much the GPU reports.
   uint64 GetMaximumTotalGpuMemory() const;
 
-  // The maximum and minimum amount of memory that a tab may be assigned.
+  // The maximum and minimum amount of memory that a client may be assigned.
   uint64 GetMaximumClientAllocation() const;
-  uint64 GetMinimumClientAllocation() const;
+  uint64 GetMinimumClientAllocation() const {
+    return bytes_minimum_per_client_;
+  }
+  // The default amount of memory that a client is assigned, if it has not
+  // reported any memory usage stats yet.
+  uint64 GetDefaultClientAllocation() const {
+    return bytes_default_per_client_;
+  }
 
   // Get a reasonable memory limit from a viewport's surface area.
   static uint64 CalcAvailableFromViewportArea(int viewport_area);
@@ -185,6 +201,9 @@ class CONTENT_EXPORT GpuMemoryManager :
   ClientStateList* GetClientList(GpuMemoryManagerClientState* client_state);
 
   // Interfaces for testing
+  void TestingSetUseNonuniformMemoryPolicy(bool use_nonuniform_memory_policy) {
+    use_nonuniform_memory_policy_ = use_nonuniform_memory_policy;
+  }
   void TestingDisableScheduleManage() { disable_schedule_manage_ = true; }
   void TestingSetAvailableGpuMemory(uint64 bytes) {
     bytes_available_gpu_memory_ = bytes;
@@ -193,7 +212,10 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   void TestingSetMinimumClientAllocation(uint64 bytes) {
     bytes_minimum_per_client_ = bytes;
-    bytes_minimum_per_client_overridden_ = true;
+  }
+
+  void TestingSetDefaultClientAllocation(uint64 bytes) {
+    bytes_default_per_client_ = bytes;
   }
 
   void TestingSetUnmanagedLimitStep(uint64 bytes) {
@@ -230,9 +252,9 @@ class CONTENT_EXPORT GpuMemoryManager :
   uint64 bytes_available_gpu_memory_;
   bool bytes_available_gpu_memory_overridden_;
 
-  // The minimum allocation that may be given to a single renderer.
+  // The minimum and default allocations for a single client.
   uint64 bytes_minimum_per_client_;
-  bool bytes_minimum_per_client_overridden_;
+  uint64 bytes_default_per_client_;
 
   // The maximum amount of memory that can be allocated for GPU resources
   // in nonvisible renderers.
