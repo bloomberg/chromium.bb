@@ -562,6 +562,12 @@
             '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
           ]
         }],
+        ['enable_web_intents==0', {
+          'sources!': [
+            'browser/intents/intent_injector_unittest.cc',
+            'browser/intents/internal_web_intents_dispatcher_unittest.cc',
+          ],
+        }],
         # TODO(jrg): remove the OS=="android" section?
         # http://crbug.com/113172
         # Understand better how media_stream_ is tied into Chromium.
@@ -856,6 +862,11 @@
             ['enable_webrtc==1', {
               'sources': [
                 'browser/media/webrtc_browsertest.cc',
+              ],
+            }],
+            ['enable_web_intents==0', {
+              'sources!': [
+                'renderer/web_intents_host_browsertest.cc',
               ],
             }],
             ['enable_plugins==0', {

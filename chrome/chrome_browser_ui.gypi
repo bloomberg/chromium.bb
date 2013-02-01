@@ -2489,6 +2489,16 @@
           'sources/': [
             ['exclude', '^browser/ui/intents/'],
           ],
+          'sources!': [
+            'browser/ui/cocoa/intents/web_intent_picker_cocoa.mm',
+            'browser/ui/cocoa/location_bar/web_intents_button_decoration.h',
+            'browser/ui/cocoa/location_bar/web_intents_button_decoration.mm',
+            'browser/ui/gtk/web_intent_picker_gtk.cc',
+            'browser/ui/gtk/web_intent_picker_gtk.h',
+            'browser/ui/views/location_bar/web_intents_button_view.cc',
+            'browser/ui/views/location_bar/web_intents_button_view.h',
+            'browser/ui/views/web_intent_picker_views.cc',
+          ],
         }],
         ['enable_themes==0', {
           'sources!': [

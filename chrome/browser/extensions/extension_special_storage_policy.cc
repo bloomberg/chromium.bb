@@ -28,6 +28,7 @@ namespace {
 bool ExtensionSupportsIntentAction(
     const extensions::Extension* extension,
     const std::string& action) {
+#if defined(ENABLE_WEB_INTENTS)
   for (std::vector<webkit_glue::WebIntentServiceData>::const_iterator i =
           extensions::WebIntentsInfo::GetIntentsServices(extension).begin();
        i != extensions::WebIntentsInfo::GetIntentsServices(extension).end();
@@ -35,6 +36,7 @@ bool ExtensionSupportsIntentAction(
     if (UTF16ToUTF8(i->action) == action)
       return true;
   }
+#endif
   return false;
 }
 

@@ -503,6 +503,12 @@
             ['exclude', '^common/automation_']
 	  ]
         }],
+        ['enable_web_intents==0', {
+          'sources!': [
+            'common/extensions/web_intents_handler.cc',
+            'common/extensions/web_intents_handler.h',
+          ],
+        }],
         ['use_system_nspr==1', {
           'dependencies': [
             '<(DEPTH)/base/third_party/nspr/nspr.gyp:nspr',

@@ -30,11 +30,13 @@
 
 namespace {
 
+#if defined(ENABLE_WEB_INTENTS)
 // This indicates we need to send UMA data about the number of
 // "Share with X" commands shown in the menu after user tried to
 // find share extensions from web store or the first use of action
 // box after browser starts.
 static bool send_uma_share_command_count = true;
+#endif
 
 // Share intents get command IDs that are beyond the maximal valid command ID
 // (0xDFFF) so that they are not confused with actual commands that appear in
@@ -75,11 +77,13 @@ void ActionBoxButtonController::OnButtonClicked() {
   scoped_ptr<ActionBoxMenuModel> menu_model(
       new ActionBoxMenuModel(browser_, this));
 
-  // Add share intent triggers and a link to the web store.
-  // Web Intents are not currently supported in Incognito mode.
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(browser_->profile())->
           extension_service();
+
+#if defined(ENABLE_WEB_INTENTS)
+  // Add share intent triggers and a link to the web store.
+  // Web Intents are not currently supported in Incognito mode.
   if (!browser_->profile()->IsOffTheRecord()) {
     int next_share_intent_command_id = SHARE_COMMAND_FIRST;
     share_intent_service_ids_.clear();
@@ -119,6 +123,7 @@ void ActionBoxButtonController::OnButtonClicked() {
       send_uma_share_command_count = false;
     }
   }
+#endif
 
   // Add Extensions.
   next_extension_command_id_ = EXTENSION_COMMAND_FIRST;
@@ -155,11 +160,13 @@ void ActionBoxButtonController::ExecuteCommand(int command_id) {
     return;
   }
 
+#if defined(ENABLE_WEB_INTENTS)
   // Handle link to the CWS web store.
   if (command_id == CWS_FIND_SHARE_INTENTS_COMMAND) {
     NavigateToWebStoreShareIntentsList();
     return;
   }
+#endif
 
   // Handle commands associated with extensions.
   // Note that the extension might have been uninstalled or disabled while the
@@ -225,6 +232,7 @@ void ActionBoxButtonController::Observe(
 
 void ActionBoxButtonController::TriggerExplicitShareIntent(
     const GURL& share_service_url) {
+#if defined(ENABLE_WEB_INTENTS)
   const GURL& current_url =
       browser_->tab_strip_model()->GetActiveWebContents()->GetURL();
   webkit_glue::WebIntentData intent_data(
@@ -234,9 +242,11 @@ void ActionBoxButtonController::TriggerExplicitShareIntent(
   intent_data.service = share_service_url;
   static_cast<content::WebContentsDelegate*>(browser_)->WebIntentDispatch(
       NULL, content::WebIntentsDispatcher::Create(intent_data));
+#endif
 }
 
 void ActionBoxButtonController::NavigateToWebStoreShareIntentsList() {
+#if defined(ENABLE_WEB_INTENTS)
   const GURL& query_url = extension_urls::GetWebstoreIntentQueryURL(
       kShareIntentAction,
       kShareIntentMimeType);
@@ -247,4 +257,5 @@ void ActionBoxButtonController::NavigateToWebStoreShareIntentsList() {
 
   content::RecordAction(UserMetricsAction("ActionBox.FindShareHandlers"));
   send_uma_share_command_count = true;
+#endif
 }

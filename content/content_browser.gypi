@@ -1020,6 +1020,11 @@
         'browser/renderer_host/p2p/socket_dispatcher_host.h',
       ],
     }],
+    ['enable_web_intents==0', {
+      'sources/': [
+        ['exclude', '^browser/intents/' ],
+      ],
+    }],
     ['OS=="win"', {
       'dependencies': [
         # For accessibility

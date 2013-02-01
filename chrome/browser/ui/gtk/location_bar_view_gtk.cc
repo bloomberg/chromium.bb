@@ -740,7 +740,9 @@ void LocationBarViewGtk::Update(const WebContents* contents) {
   UpdateSiteTypeArea();
   UpdateContentSettingsIcons();
   UpdatePageActions();
+#if defined(ENABLE_WEB_INTENTS)
   UpdateWebIntentsButton();
+#endif
   location_entry_->Update(contents);
   // The security level (background color) could have changed, etc.
   if (theme_service_->UsingNativeTheme()) {
@@ -1032,11 +1034,13 @@ void LocationBarViewGtk::InvalidatePageActions() {
   }
 }
 
+#if defined(ENABLE_WEB_INTENTS)
 void LocationBarViewGtk::UpdateWebIntentsButton() {
   web_intents_button_view_->Update(GetWebContents());
   gtk_widget_set_visible(web_intents_hbox_.get(),
                          web_intents_button_view_->IsVisible());
 }
+#endif
 
 void LocationBarViewGtk::UpdateOpenPDFInReaderPrompt() {
   // Not implemented on Gtk.
@@ -1179,7 +1183,9 @@ void LocationBarViewGtk::Observe(int type,
       UpdateStarIcon();
       UpdateSiteTypeArea();
       UpdateContentSettingsIcons();
+#if defined(ENABLE_WEB_INTENTS)
       UpdateWebIntentsButton();
+#endif
       break;
     }
 

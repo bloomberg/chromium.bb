@@ -66,8 +66,10 @@ class LocationBar {
   // extension is unloaded or crashes.
   virtual void InvalidatePageActions() = 0;
 
+#if defined(ENABLE_WEB_INTENTS)
   // Updates the state of the web intents use-another-service button.
   virtual void UpdateWebIntentsButton() = 0;
+#endif
 
   // Updates the state of the button to open a PDF in Adobe Reader.
   virtual void UpdateOpenPDFInReaderPrompt() = 0;

@@ -130,7 +130,9 @@ void ShellWindow::Init(const GURL& url,
       profile(), SiteInstance::CreateForURL(profile(), url))));
   WebContentsModalDialogManager::CreateForWebContents(web_contents_.get());
   FaviconTabHelper::CreateForWebContents(web_contents_.get());
+#if defined(ENABLE_WEB_INTENTS)
   WebIntentPickerController::CreateForWebContents(web_contents_.get());
+#endif
 
   content::WebContentsObserver::Observe(web_contents_.get());
   web_contents_->SetDelegate(this);
@@ -500,6 +502,7 @@ bool ShellWindow::ShouldSuppressDialogs() {
 void ShellWindow::WebIntentDispatch(
     content::WebContents* web_contents,
     content::WebIntentsDispatcher* intents_dispatcher) {
+#if defined(ENABLE_WEB_INTENTS)
   if (!web_intents::IsWebIntentsEnabledForProfile(profile_))
     return;
 
@@ -509,6 +512,7 @@ void ShellWindow::WebIntentDispatch(
   web_intent_picker_controller->ShowDialog(
       intents_dispatcher->GetIntent().action,
       intents_dispatcher->GetIntent().type);
+#endif
 }
 
 void ShellWindow::RunFileChooser(WebContents* tab,

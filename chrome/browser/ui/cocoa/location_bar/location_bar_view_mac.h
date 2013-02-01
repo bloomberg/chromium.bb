@@ -70,7 +70,9 @@ class LocationBarViewMac : public LocationBar,
   virtual void UpdateContentSettingsIcons() OVERRIDE;
   virtual void UpdatePageActions() OVERRIDE;
   virtual void InvalidatePageActions() OVERRIDE;
+#if defined(ENABLE_WEB_INTENTS)
   virtual void UpdateWebIntentsButton() OVERRIDE;
+#endif
   virtual void UpdateOpenPDFInReaderPrompt() OVERRIDE;
   virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE;
   virtual void Revert() OVERRIDE;
@@ -278,9 +280,11 @@ class LocationBarViewMac : public LocationBar,
   // Keyword hint decoration displayed on the right-hand side.
   scoped_ptr<KeywordHintDecoration> keyword_hint_decoration_;
 
+#if defined(ENABLE_WEB_INTENTS)
   // A decoration that shows the web intents "use another service" button
   // on the right.
   scoped_ptr<WebIntentsButtonDecoration> web_intents_button_decoration_;
+#endif
 
   Profile* profile_;
 

@@ -2203,8 +2203,12 @@
             ['exclude', '^browser/ui/intents/'],
           ],
           'sources!': [
+            'browser/ui/cocoa/location_bar/web_intents_button_decoration_unittest.mm',
             'browser/webdata/web_data_service_unittest.cc',
             'browser/webdata/web_intents_table_unittest.cc',
+            'common/extensions/manifest_tests/extension_manifests_web_intents_unittest.cc',
+            '../webkit/glue/web_intent_reply_data_unittest.cc',
+            '../webkit/glue/web_intent_service_data_unittest.cc',
           ],
         }],
         ['enable_themes==0', {

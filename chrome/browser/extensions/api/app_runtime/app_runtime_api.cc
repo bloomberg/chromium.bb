@@ -94,6 +94,7 @@ void AppEventRouter::DispatchOnLaunchedEventWithWebIntent(
     Profile* profile, const Extension* extension,
     content::WebIntentsDispatcher* intents_dispatcher,
     content::WebContents* source) {
+#if defined(ENABLE_WEB_INTENTS)
   webkit_glue::WebIntentData web_intent_data = intents_dispatcher->GetIntent();
   scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* launch_data = new DictionaryValue();
@@ -143,9 +144,11 @@ void AppEventRouter::DispatchOnLaunchedEventWithWebIntent(
       callbacks->RegisterCallback(extension, intents_dispatcher, source);
   args->Append(base::Value::CreateIntegerValue(intent_id));
   DispatchOnLaunchedEventImpl(extension->id(), args.Pass(), profile);
+#endif
 }
 
 bool AppRuntimePostIntentResponseFunction::RunImpl() {
+#if defined(ENABLE_WEB_INTENTS)
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
 
@@ -174,6 +177,9 @@ bool AppRuntimePostIntentResponseFunction::RunImpl() {
       reply_type, UTF8ToUTF16(data)));
 
   return true;
+#else
+  return false;
+#endif
 }
 
 }  // namespace extensions

@@ -27,8 +27,10 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
  public:
   virtual void SetUp() {
     policy_ = new ExtensionSpecialStoragePolicy(NULL);
+#if defined(ENABLE_WEB_INTENTS)
     extensions::ManifestHandler::Register(keys::kIntents,
                                           new extensions::WebIntentsHandler);
+#endif
   }
 
  protected:
@@ -131,6 +133,7 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     return handler_app;
   }
 
+#if defined(ENABLE_WEB_INTENTS)
   scoped_refptr<Extension> CreateWebIntentViewApp() {
 #if defined(OS_WIN)
     FilePath path(FILE_PATH_LITERAL("c:\\bar"));
@@ -164,6 +167,7 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     EXPECT_TRUE(intent_app.get()) << error;
     return intent_app;
   }
+#endif
 
   // Verifies that the set of extensions protecting |url| is *exactly* equal to
   // |expected_extensions|. Pass in an empty set to verify that an origin is not
@@ -287,6 +291,7 @@ TEST_F(ExtensionSpecialStoragePolicyTest, OverlappingApps) {
 }
 
 TEST_F(ExtensionSpecialStoragePolicyTest, WebIntentViewApp) {
+#if defined(ENABLE_WEB_INTENTS)
   scoped_refptr<Extension> intent_app(CreateWebIntentViewApp());
 
   policy_->GrantRightsForExtension(intent_app);
@@ -294,6 +299,7 @@ TEST_F(ExtensionSpecialStoragePolicyTest, WebIntentViewApp) {
 
   policy_->RevokeRightsForExtension(intent_app);
   EXPECT_FALSE(policy_->IsFileHandler(intent_app->id()));
+#endif
 }
 
 TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {

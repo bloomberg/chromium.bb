@@ -20,6 +20,8 @@ IPC_ENUM_TRAITS(webkit_glue::WebIntentReplyType)
 IPC_ENUM_TRAITS(webkit_glue::WebIntentData::DataType)
 IPC_ENUM_TRAITS(webkit_glue::WebIntentServiceData::Disposition)
 
+#if defined(ENABLE_WEB_INTENTS)
+
 IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebIntentData)
   IPC_STRUCT_TRAITS_MEMBER(action)
   IPC_STRUCT_TRAITS_MEMBER(type)
@@ -75,3 +77,5 @@ IPC_MESSAGE_ROUTED2(IntentsHostMsg_WebIntentDispatch,
 IPC_MESSAGE_ROUTED2(IntentsHostMsg_RegisterIntentService,
                     webkit_glue::WebIntentServiceData,
                     bool /* user_gesture */)
+
+#endif

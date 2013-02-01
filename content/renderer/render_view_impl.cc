@@ -739,7 +739,11 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
   // along with the RenderView automatically.
   devtools_agent_ = new DevToolsAgent(this);
   mouse_lock_dispatcher_ = new RenderViewMouseLockDispatcher(this);
+#if defined(ENABLE_WEB_INTENTS)
   intents_host_ = new WebIntentsHost(this);
+#else
+  intents_host_ = NULL;
+#endif
   favicon_helper_ = new FaviconHelper(this);
 
   // Create renderer_accessibility_ if needed.
@@ -3924,8 +3928,10 @@ void RenderViewImpl::didCreateScriptContext(WebFrame* frame,
   GetContentClient()->renderer()->DidCreateScriptContext(
       frame, context, extension_group, world_id);
 
+#if defined(ENABLE_WEB_INTENTS)
   intents_host_->DidCreateScriptContext(
       frame, context, extension_group, world_id);
+#endif
 }
 
 void RenderViewImpl::willReleaseScriptContext(WebFrame* frame,
@@ -4297,6 +4303,7 @@ void RenderViewImpl::requestStorageQuota(
 
 void RenderViewImpl::registerIntentService(
     WebFrame* frame, const WebIntentServiceInfo& service) {
+#if defined(ENABLE_WEB_INTENTS)
   webkit_glue::WebIntentServiceData data(service);
   if (data.title.empty())
     data.title = webview()->mainFrame()->document().title();
@@ -4304,10 +4311,12 @@ void RenderViewImpl::registerIntentService(
   Send(new IntentsHostMsg_RegisterIntentService(routing_id_,
                                                 data,
                                                 user_gesture));
+#endif
 }
 
 void RenderViewImpl::dispatchIntent(
     WebFrame* frame, const WebIntentRequest& intentRequest) {
+#if defined(ENABLE_WEB_INTENTS)
   webkit_glue::WebIntentData intent_data(intentRequest.intent());
 
   // See WebMessagePortChannelImpl::postMessage() and ::OnMessagedQueued()
@@ -4326,6 +4335,7 @@ void RenderViewImpl::dispatchIntent(
   int id = intents_host_->RegisterWebIntent(intentRequest);
   Send(new IntentsHostMsg_WebIntentDispatch(
       routing_id_, intent_data, id));
+#endif
 }
 
 bool RenderViewImpl::willCheckAndDispatchMessageEvent(

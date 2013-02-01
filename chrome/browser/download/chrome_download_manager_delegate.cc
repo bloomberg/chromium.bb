@@ -375,15 +375,18 @@ bool ChromeDownloadManagerDelegate::ShouldOpenDownload(
     return false;
   }
 
+#if defined(ENABLE_WEB_INTENTS)
   if (ShouldOpenWithWebIntents(item)) {
     OpenWithWebIntent(item);
     callback.Run(true);
     return false;
   }
+#endif
 
   return true;
 }
 
+#if defined(ENABLE_WEB_INTENTS)
 bool ChromeDownloadManagerDelegate::ShouldOpenWithWebIntents(
     const DownloadItem* item) {
   if (!web_intents::IsWebIntentsEnabledForProfile(profile_))
@@ -471,6 +474,7 @@ void ChromeDownloadManagerDelegate::OpenWithWebIntent(
   DCHECK(delegate);
   delegate->WebIntentDispatch(NULL, dispatcher);
 }
+#endif
 
 bool ChromeDownloadManagerDelegate::GenerateFileHash() {
 #if defined(FULL_SAFE_BROWSING)
@@ -753,6 +757,7 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     suggested_path = download->GetForcedFilePath();
   }
 
+#if defined(ENABLE_WEB_INTENTS)
   // If we will open the file with a web intents dispatch,
   // give it a name that will not allow the OS to open it using usual
   // associated apps.
@@ -760,6 +765,7 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     download->SetDisplayName(suggested_path.BaseName());
     suggested_path = suggested_path.AddExtension(kWebIntentsFileExtension);
   }
+#endif
 
   // If the download hasn't already been marked dangerous (could be
   // DANGEROUS_URL), check if it is a dangerous file.

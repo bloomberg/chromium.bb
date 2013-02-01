@@ -1590,6 +1590,7 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
       web_contents, protocol, url, title, user_gesture, window());
 }
 
+#if defined(ENABLE_WEB_INTENTS)
 void Browser::RegisterIntentHandler(
     WebContents* web_contents,
     const webkit_glue::WebIntentServiceData& data,
@@ -1653,6 +1654,7 @@ void Browser::WebIntentDispatch(
       intents_dispatcher->GetIntent().action,
       intents_dispatcher->GetIntent().type);
 }
+#endif
 
 void Browser::UpdatePreferredSize(WebContents* source,
                                   const gfx::Size& pref_size) {

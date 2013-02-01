@@ -300,7 +300,9 @@ class LocationBarView : public LocationBar,
   virtual void UpdateContentSettingsIcons() OVERRIDE;
   virtual void UpdatePageActions() OVERRIDE;
   virtual void InvalidatePageActions() OVERRIDE;
+#if defined(ENABLE_WEB_INTENTS)
   virtual void UpdateWebIntentsButton() OVERRIDE;
+#endif
   virtual void UpdateOpenPDFInReaderPrompt() OVERRIDE;
   virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE;
   virtual void Revert() OVERRIDE;
@@ -483,8 +485,10 @@ class LocationBarView : public LocationBar,
   // The star.
   StarView* star_view_;
 
+#if defined(ENABLE_WEB_INTENTS)
   // The web intents choose-another-service button
   WebIntentsButtonView* web_intents_button_view_;
+#endif
 
   // The action box button (plus).
   ActionBoxButtonView* action_box_button_view_;

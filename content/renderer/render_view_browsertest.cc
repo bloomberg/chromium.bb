@@ -1583,6 +1583,7 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   EXPECT_EQ(expected_page_id_2, view()->history_page_ids_[3]);
 }
 
+#if defined(ENABLE_WEB_INTENTS)
 TEST_F(RenderViewImplTest, FindTitleForIntentsPage) {
   view()->set_send_content_state_immediately(true);
   LoadHTML("<html><head><title>title</title>"
@@ -1606,6 +1607,7 @@ TEST_F(RenderViewImplTest, FindTitleForIntentsPage) {
   EXPECT_EQ(ASCIIToUTF16("title"), service_data.title);
   EXPECT_FALSE(user_gesture);
 }
+#endif
 
 TEST_F(RenderViewImplTest, ContextMenu) {
   LoadHTML("<div>Page A</div>");

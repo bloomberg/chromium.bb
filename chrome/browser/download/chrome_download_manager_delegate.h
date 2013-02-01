@@ -207,12 +207,14 @@ class ChromeDownloadManagerDelegate
       content::DownloadDangerType danger_type,
       const FilePath& target_path);
 
+#if defined(ENABLE_WEB_INTENTS)
   // Check policy of whether we should open this download with a web intents
   // dispatch.
   bool ShouldOpenWithWebIntents(const content::DownloadItem* item);
 
   // Open the given item with a web intent dispatch.
   void OpenWithWebIntent(const content::DownloadItem* item);
+#endif
 
   // Internal gateways for ShouldCompleteDownload().
   bool IsDownloadReadyForCompletion(

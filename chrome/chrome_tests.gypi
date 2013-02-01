@@ -1608,6 +1608,14 @@
             'browser/media/chrome_webrtc_browsertest.cc',
           ],
         }],
+        ['enable_web_intents==0', {
+          'sources!': [
+            'browser/intents/native_services_browsertest.cc',
+            'browser/ui/intents/web_intent_picker_controller_browsertest.cc',
+            'browser/ui/intents/web_intent_picker_delegate_mock.cc',
+            'browser/ui/intents/web_intent_picker_delegate_mock.h',
+          ],
+        }],
         ['OS=="win"', {
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',

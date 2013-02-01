@@ -174,6 +174,7 @@ class PlatformAppPathLauncher
     // TODO(benwells): remove this once we no longer support the "intents"
     // syntax in platform app manifests.
     if (!found_service) {
+#if defined(ENABLE_WEB_INTENTS)
       std::vector<webkit_glue::WebIntentServiceData> services =
           extensions::WebIntentsInfo::GetIntentsServices(extension_);
       for (size_t i = 0; i < services.size(); i++) {
@@ -184,6 +185,7 @@ class PlatformAppPathLauncher
           break;
         }
       }
+#endif
     }
 
     // If this app doesn't have an intent that supports the file, launch with

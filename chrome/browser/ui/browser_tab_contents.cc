@@ -153,7 +153,9 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   ThreeDAPIObserver::CreateForWebContents(web_contents);
   ThumbnailTabHelper::CreateForWebContents(web_contents);
   TranslateTabHelper::CreateForWebContents(web_contents);
+#if defined(ENABLE_WEB_INTENTS)
   WebIntentPickerController::CreateForWebContents(web_contents);
+#endif
   ZoomController::CreateForWebContents(web_contents);
 
 #if defined(ENABLE_AUTOMATION)

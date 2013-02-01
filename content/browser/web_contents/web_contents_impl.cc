@@ -715,10 +715,12 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
   bool handled = true;
   bool message_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(WebContentsImpl, message, message_is_ok)
+#if defined(ENABLE_WEB_INTENTS)
     IPC_MESSAGE_HANDLER(IntentsHostMsg_RegisterIntentService,
                         OnRegisterIntentService)
     IPC_MESSAGE_HANDLER(IntentsHostMsg_WebIntentDispatch,
                         OnWebIntentDispatch)
+#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidDisplayInsecureContent,
@@ -1991,6 +1993,7 @@ void WebContentsImpl::SetFocusToLocationBar(bool select_all) {
     delegate_->SetFocusToLocationBar(select_all);
 }
 
+#if defined(ENABLE_WEB_INTENTS)
 void WebContentsImpl::OnRegisterIntentService(
     const webkit_glue::WebIntentServiceData& data,
     bool user_gesture) {
@@ -2008,6 +2011,7 @@ void WebContentsImpl::OnWebIntentDispatch(
       new WebIntentsDispatcherImpl(this, intent, intent_id);
   delegate_->WebIntentDispatch(this, intents_dispatcher);
 }
+#endif
 
 void WebContentsImpl::DidStartProvisionalLoadForFrame(
     RenderViewHost* render_view_host,

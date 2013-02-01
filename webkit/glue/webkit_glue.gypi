@@ -430,6 +430,16 @@
             ['exclude', '^\\.\\./plugins/npapi/webplugin_delegate_impl_aura'],
           ],
         }],
+        ['enable_web_intents==0', {
+          'sources!': [
+            'web_intent_data.cc',
+            'web_intent_data.h',
+            'web_intent_reply_data.cc',
+            'web_intent_reply_data.h',
+            'web_intent_service_data.cc',
+            'web_intent_service_data.h',
+          ],
+        }],
         ['OS!="mac"', {
           'sources/': [['exclude', '_mac\\.(cc|mm)$']],
           'sources!': [

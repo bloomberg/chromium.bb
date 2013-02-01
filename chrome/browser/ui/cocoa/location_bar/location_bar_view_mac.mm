@@ -108,8 +108,10 @@ LocationBarViewMac::LocationBarViewMac(
       zoom_decoration_(new ZoomDecoration(toolbar_model)),
       keyword_hint_decoration_(
           new KeywordHintDecoration(OmniboxViewMac::GetFieldFont())),
+#if defined(ENABLE_WEB_INTENTS)
       web_intents_button_decoration_(
           new WebIntentsButtonDecoration(this, OmniboxViewMac::GetFieldFont())),
+#endif
       profile_(profile),
       browser_(browser),
       toolbar_model_(toolbar_model),
@@ -128,11 +130,13 @@ LocationBarViewMac::LocationBarViewMac(
         new ContentSettingDecoration(type, this, profile_));
   }
 
+#if defined(ENABLE_WEB_INTENTS)
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   web_intents_button_decoration_->SetButtonImages(
       rb.GetNativeImageNamed(IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_L).ToNSImage(),
       rb.GetNativeImageNamed(IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_C).ToNSImage(),
       rb.GetNativeImageNamed(IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_R).ToNSImage());
+#endif
 
   registrar_.Add(this,
       chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
@@ -242,9 +246,11 @@ void LocationBarViewMac::InvalidatePageActions() {
   }
 }
 
+#if defined(ENABLE_WEB_INTENTS)
 void LocationBarViewMac::UpdateWebIntentsButton() {
   RefreshWebIntentsButtonDecoration();
 }
+#endif
 
 void LocationBarViewMac::UpdateOpenPDFInReaderPrompt() {
   // Not implemented on Mac.
@@ -667,6 +673,7 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
 }
 
 void LocationBarViewMac::RefreshWebIntentsButtonDecoration() {
+#if defined(ENABLE_WEB_INTENTS)
   WebContents* web_contents = GetWebContents();
   if (!web_contents) {
     web_intents_button_decoration_->SetVisible(false);
@@ -674,6 +681,7 @@ void LocationBarViewMac::RefreshWebIntentsButtonDecoration() {
   }
 
   web_intents_button_decoration_->Update(web_contents);
+#endif
 }
 
 // TODO(shess): This function should over time grow to closely match
@@ -705,7 +713,10 @@ void LocationBarViewMac::Layout() {
 
   [cell addRightDecoration:keyword_hint_decoration_.get()];
 
+#if defined(ENABLE_WEB_INTENTS)
   [cell addRightDecoration:web_intents_button_decoration_.get()];
+#endif
+
   [cell addRightDecoration:separator_decoration_.get()];
   [cell addRightDecoration:search_token_decoration_.get()];
 

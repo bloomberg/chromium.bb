@@ -296,7 +296,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::TabsWindowsAPI::GetFactoryInstance();
   extensions::TtsAPI::GetFactoryInstance();
   extensions::WebAccessibleResourcesParser::GetFactoryInstance();
+#if defined(ENABLE_WEB_INTENTS)
   extensions::WebIntentsParser::GetFactoryInstance();
+#endif
   extensions::WebNavigationAPI::GetFactoryInstance();
 #endif
   FaviconServiceFactory::GetInstance();

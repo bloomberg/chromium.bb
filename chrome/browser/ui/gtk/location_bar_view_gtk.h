@@ -140,7 +140,9 @@ class LocationBarViewGtk : public OmniboxEditController,
   virtual void UpdateContentSettingsIcons() OVERRIDE;
   virtual void UpdatePageActions() OVERRIDE;
   virtual void InvalidatePageActions() OVERRIDE;
+#if defined(ENABLE_WEB_INTENTS)
   virtual void UpdateWebIntentsButton() OVERRIDE;
+#endif
   virtual void UpdateOpenPDFInReaderPrompt() OVERRIDE;
   virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE;
   virtual void Revert() OVERRIDE;

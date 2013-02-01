@@ -324,6 +324,12 @@
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
       ],
     }],
+    ['enable_web_intents==0', {
+      'sources!': [
+        'renderer/web_intents_host.cc',
+        'renderer/web_intents_host.h',
+      ],
+    }],
     # TODO(jrg): remove the OS=="android" section?
     # http://crbug.com/113172
     # Understand better how media_stream_ is tied into Chromium.
