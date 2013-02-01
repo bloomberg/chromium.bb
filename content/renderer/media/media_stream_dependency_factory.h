@@ -124,11 +124,17 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   virtual scoped_refptr<webrtc::LocalMediaStreamInterface>
       CreateLocalMediaStream(const std::string& label);
 
+  // Asks the PeerConnection factory to create a Local Audio Source.
+  virtual scoped_refptr<webrtc::AudioSourceInterface>
+      CreateLocalAudioSource(
+          const webrtc::MediaConstraintsInterface* constraints);
+
   // Asks the PeerConnection factory to create a Local Video Source.
   virtual scoped_refptr<webrtc::VideoSourceInterface>
-      CreateVideoSource(int video_session_id,
-                        bool is_screen_cast,
-                        const webrtc::MediaConstraintsInterface* constraints);
+      CreateLocalVideoSource(
+          int video_session_id,
+          bool is_screen_cast,
+          const webrtc::MediaConstraintsInterface* constraints);
 
   // Initializes the source using audio parameters for the selected
   // capture device and specifies which capture device to use as capture
@@ -141,15 +147,15 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // WebRtcAudioCapturer.
   virtual bool CreateWebAudioSource(WebKit::WebMediaStreamSource* source);
 
+  // Asks the PeerConnection factory to create a Local AudioTrack object.
+  virtual scoped_refptr<webrtc::LocalAudioTrackInterface>
+      CreateLocalAudioTrack(const std::string& label,
+                            webrtc::AudioSourceInterface* source);
+
   // Asks the PeerConnection factory to create a Local VideoTrack object.
   virtual scoped_refptr<webrtc::VideoTrackInterface>
       CreateLocalVideoTrack(const std::string& label,
                             webrtc::VideoSourceInterface* source);
-
-  // Asks the PeerConnection factory to create a Local AudioTrack object.
-  virtual scoped_refptr<webrtc::LocalAudioTrackInterface>
-      CreateLocalAudioTrack(const std::string& label,
-                            webrtc::AudioDeviceModule* audio_device);
 
   virtual bool EnsurePeerConnectionFactory();
   virtual bool PeerConnectionFactoryCreated();

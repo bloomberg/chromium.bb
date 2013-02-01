@@ -123,6 +123,43 @@ class MockLocalMediaStream : public webrtc::LocalMediaStreamInterface {
   VideoTrackVector video_track_vector_;
 };
 
+MockAudioSource::MockAudioSource(
+    const webrtc::MediaConstraintsInterface* constraints)
+    : observer_(NULL),
+      state_(MediaSourceInterface::kInitializing),
+      optional_constraints_(constraints->GetOptional()),
+      mandatory_constraints_(constraints->GetMandatory()) {
+}
+
+MockAudioSource::~MockAudioSource() {}
+
+void MockAudioSource::RegisterObserver(webrtc::ObserverInterface* observer) {
+  observer_ = observer;
+}
+
+void MockAudioSource::UnregisterObserver(webrtc::ObserverInterface* observer) {
+  DCHECK(observer_ == observer);
+  observer_ = NULL;
+}
+
+void MockAudioSource::SetLive() {
+  DCHECK_EQ(MediaSourceInterface::kInitializing, state_);
+  state_ = MediaSourceInterface::kLive;
+  if (observer_)
+    observer_->OnChanged();
+}
+
+void MockAudioSource::SetEnded() {
+  DCHECK_NE(MediaSourceInterface::kEnded, state_);
+  state_ = MediaSourceInterface::kEnded;
+  if (observer_)
+    observer_->OnChanged();
+}
+
+webrtc::MediaSourceInterface::SourceState MockAudioSource::state() const {
+  return state_;
+}
+
 MockVideoSource::MockVideoSource()
     : observer_(NULL),
       state_(MediaSourceInterface::kInitializing) {
@@ -376,8 +413,16 @@ MockMediaStreamDependencyFactory::CreatePeerConnection(
   return new talk_base::RefCountedObject<MockPeerConnectionImpl>(this);
 }
 
+scoped_refptr<webrtc::AudioSourceInterface>
+MockMediaStreamDependencyFactory::CreateLocalAudioSource(
+    const webrtc::MediaConstraintsInterface* constraints) {
+  last_audio_source_ =
+      new talk_base::RefCountedObject<MockAudioSource>(constraints);
+  return last_audio_source_;
+}
+
 scoped_refptr<webrtc::VideoSourceInterface>
-MockMediaStreamDependencyFactory::CreateVideoSource(
+MockMediaStreamDependencyFactory::CreateLocalVideoSource(
     int video_session_id,
     bool is_screencast,
     const webrtc::MediaConstraintsInterface* constraints) {
@@ -416,7 +461,7 @@ MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
 scoped_refptr<webrtc::LocalAudioTrackInterface>
 MockMediaStreamDependencyFactory::CreateLocalAudioTrack(
     const std::string& id,
-    webrtc::AudioDeviceModule* audio_device) {
+    webrtc::AudioSourceInterface* source) {
   DCHECK(mock_pc_factory_created_);
   scoped_refptr<webrtc::LocalAudioTrackInterface> track(
       new talk_base::RefCountedObject<MockLocalAudioTrack>(id));
