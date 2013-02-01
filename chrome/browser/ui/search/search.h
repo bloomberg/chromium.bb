@@ -27,6 +27,16 @@ namespace search {
 // InstantController sets the correct search terms to be displayed.
 extern const char kInstantExtendedSearchTermsKey[];
 
+enum InstantExtendedDefault {
+  INSTANT_FORCE_ON,      // Force the setting on if no other setting exists.
+  INSTANT_USE_EXISTING,  // Use same the value of the old instant.enabled pref.
+  INSTANT_FORCE_OFF,     // Force the setting off if no other setting exists.
+};
+
+// Returns an enum value indicating which mode to set the new
+// instant_extended.enabled pref to by default.
+InstantExtendedDefault GetInstantExtendedDefaultSetting();
+
 // Returns whether the Instant extended API is enabled for the given |profile|.
 // |profile| may not be NULL.
 bool IsInstantExtendedAPIEnabled(Profile* profile);
@@ -60,9 +70,13 @@ bool IsForcedInstantURL(const GURL& url);
 typedef std::vector<std::pair<std::string, std::string> > FieldTrialFlags;
 
 // Given a field trial group name, parses out the group number and configuration
-// flags.
+// flags. On success, |flags| will be filled with the field trial flags. |flags|
+// must not be NULL. If not NULL, |group_number| will receive the experiment
+// group number.
+// Returns true iff field trial info was successfully parsed out of
+// |group_name|.
 // Exposed for testing only.
-void GetFieldTrialInfo(const std::string& group_name,
+bool GetFieldTrialInfo(const std::string& group_name,
                        FieldTrialFlags* flags,
                        uint64* group_number);
 

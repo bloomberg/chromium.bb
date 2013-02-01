@@ -72,9 +72,26 @@ bool BrowserInstantController::IsInstantEnabled(Profile* profile) {
 void BrowserInstantController::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kInstantConfirmDialogShown, false,
                              PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kInstantExtendedEnabled, true,
-                             PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kInstantEnabled, false,
+                             PrefServiceSyncable::SYNCABLE_PREF);
+
+  search::InstantExtendedDefault instant_extended_default_setting =
+      search::GetInstantExtendedDefaultSetting();
+
+  bool instant_extended_value = true;
+  switch (instant_extended_default_setting) {
+    case search::INSTANT_FORCE_ON:
+      break;
+    case search::INSTANT_USE_EXISTING:
+      instant_extended_value = prefs->GetBoolean(prefs::kInstantEnabled);
+      break;
+    case search::INSTANT_FORCE_OFF:
+      instant_extended_value = false;
+      break;
+  }
+
+  prefs->RegisterBooleanPref(prefs::kInstantExtendedEnabled,
+                             instant_extended_value,
                              PrefServiceSyncable::SYNCABLE_PREF);
 }
 

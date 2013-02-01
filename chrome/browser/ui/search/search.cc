@@ -34,6 +34,10 @@ const bool kEnableOnThemesDefault = false;
 const char kEmbeddedPageVersionFlagName[] = "espv";
 const int kEmbeddedPageVersionDefault = 1;
 
+const char kInstantExtendedActivationName[] = "instant";
+const chrome::search::InstantExtendedDefault kInstantExtendedActivationDefault =
+    chrome::search::INSTANT_USE_EXISTING;
+
 // Constants for the field trial name and group prefix.
 const char kInstantExtendedFieldTrialName[] = "InstantExtended";
 const char kGroupNumberPrefix[] = "Group";
@@ -49,6 +53,32 @@ namespace search {
 
 // static
 const char kInstantExtendedSearchTermsKey[] = "search_terms";
+
+InstantExtendedDefault InstantExtendedDefaultFromInt64(int64 default_value) {
+  switch (default_value) {
+    case 0: return INSTANT_FORCE_ON;
+    case 1: return INSTANT_USE_EXISTING;
+    case 2: return INSTANT_FORCE_OFF;
+    default: return INSTANT_USE_EXISTING;
+  }
+}
+
+InstantExtendedDefault GetInstantExtendedDefaultSetting() {
+  InstantExtendedDefault default_setting = INSTANT_USE_EXISTING;
+
+  FieldTrialFlags flags;
+  if (GetFieldTrialInfo(
+          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
+          &flags, NULL)) {
+    uint64 trial_default = GetUInt64ValueForFlagWithDefault(
+        kInstantExtendedActivationName,
+        kInstantExtendedActivationDefault,
+        flags);
+    default_setting = InstantExtendedDefaultFromInt64(trial_default);
+  }
+
+  return default_setting;
+}
 
 // Check whether or not the Extended API should be used on the given profile.
 bool IsInstantExtendedAPIEnabled(Profile* profile) {
@@ -67,15 +97,9 @@ uint64 EmbeddedSearchPageVersion(Profile* profile) {
 
   // Check Finch field trials.
   FieldTrialFlags flags;
-  uint64 group_number = 0;
-  base::FieldTrial* trial =
-      base::FieldTrialList::Find(kInstantExtendedFieldTrialName);
-  if (trial) {
-    std::string group_name = trial->group_name();
-    GetFieldTrialInfo(group_name, &flags, &group_number);
-  }
-
-  if (group_number > 0) {
+  if (GetFieldTrialInfo(
+          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
+          &flags, NULL)) {
     uint64 espv = GetUInt64ValueForFlagWithDefault(
         kEmbeddedPageVersionFlagName,
         kEmbeddedPageVersionDefault,
@@ -162,29 +186,43 @@ bool IsForcedInstantURL(const GURL& url) {
          url.path() == instant_url.path();
 }
 
-// Given a field trial group name in the above format, parses out the group
-// number and configuration flags.  Will return a group number of 0 on error.
-void GetFieldTrialInfo(const std::string& group_name,
+bool GetFieldTrialInfo(const std::string& group_name,
                        FieldTrialFlags* flags,
                        uint64* group_number) {
-  if (!EndsWith(group_name, kDisablingSuffix, true) &&
-      StartsWithASCII(group_name, kGroupNumberPrefix, true)) {
-    // We have a valid trial that starts with "Group" and isn't disabled.
-    size_t first_space = group_name.find(" ");
-    std::string group_prefix = group_name;
-    if (first_space != std::string::npos) {
-      // There is a flags section of the group name.  Split that out and parse
-      // it.
-      group_prefix = group_name.substr(0, first_space);
-      base::SplitStringIntoKeyValuePairs(
-          group_name.substr(first_space), ':', ' ', flags);
-    }
-    if (!base::StringToUint64(group_prefix.substr(strlen(kGroupNumberPrefix)),
-                              group_number)) {
-      // Could not parse group number.
-      *group_number = 0;
+  if (EndsWith(group_name, kDisablingSuffix, true) ||
+      !StartsWithASCII(group_name, kGroupNumberPrefix, true)) {
+    return false;
+  }
+
+  // We have a valid trial that starts with "Group" and isn't disabled.
+  // First extract the flags.
+  std::string group_prefix(group_name);
+
+  size_t first_space = group_name.find(" ");
+  if (first_space != std::string::npos) {
+    // There is a flags section of the group name.  Split that out and parse
+    // it.
+    group_prefix = group_name.substr(0, first_space);
+    if (!base::SplitStringIntoKeyValuePairs(group_name.substr(first_space),
+                                            ':', ' ', flags)) {
+      // Failed to parse the flags section. Assume the whole group name is
+      // invalid.
+      return false;
     }
   }
+
+  // Now extract the group number, making sure we get a non-zero value.
+  uint64 temp_group_number = 0;
+  if (!base::StringToUint64(group_prefix.substr(strlen(kGroupNumberPrefix)),
+                            &temp_group_number) ||
+      temp_group_number == 0) {
+    return false;
+  }
+
+  if (group_number)
+    *group_number = temp_group_number;
+
+  return true;
 }
 
 // Given a FieldTrialFlags object, returns the string value of the provided
