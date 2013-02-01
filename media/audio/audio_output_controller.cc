@@ -282,7 +282,6 @@ int AudioOutputController::OnMoreIOData(AudioBus* source,
 }
 
 void AudioOutputController::WaitTillDataReady() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
   base::Time start = base::Time::Now();
   // Wait for up to 1.5 seconds for DataReady().  1.5 seconds was chosen because
   // it's larger than the playback time of the WaveOut buffer size using the
@@ -293,10 +292,6 @@ void AudioOutputController::WaitTillDataReady() {
          ((base::Time::Now() - start) < max_wait)) {
     base::PlatformThread::YieldCurrentThread();
   }
-#else
-  // WaitTillDataReady() is deprecated and should not be used.
-  CHECK(false);
-#endif
 }
 
 void AudioOutputController::OnError(AudioOutputStream* stream, int code) {

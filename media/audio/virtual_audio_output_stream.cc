@@ -74,7 +74,11 @@ double VirtualAudioOutputStream::ProvideInput(AudioBus* audio_bus,
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(callback_);
 
-  int frames = callback_->OnMoreData(audio_bus, AudioBuffersState());
+  // A VirtualAudioInputStream with a larger buffer size may be calling this
+  // multiple times without waiting, so we need to block and ensure the data is
+  // ready to prevent glitching.
+  callback_->WaitTillDataReady();
+  const int frames = callback_->OnMoreData(audio_bus, AudioBuffersState());
   if (frames < audio_bus->frames())
     audio_bus->ZeroFramesPartial(frames, audio_bus->frames() - frames);
 

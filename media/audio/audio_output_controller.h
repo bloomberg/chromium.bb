@@ -141,6 +141,8 @@ class MEDIA_EXPORT AudioOutputController
                            AudioBus* dest,
                            AudioBuffersState buffers_state) OVERRIDE;
   virtual void OnError(AudioOutputStream* stream, int code) OVERRIDE;
+  // Deprecated: Currently only used for starting audio playback and for audio
+  // mirroring.
   virtual void WaitTillDataReady() OVERRIDE;
 
   // AudioDeviceListener implementation.  When called AudioOutputController will
