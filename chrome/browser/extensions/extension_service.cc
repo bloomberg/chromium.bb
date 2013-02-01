@@ -732,14 +732,14 @@ void ExtensionService::ReloadExtensionWithEvents(
         orphaned_dev_tools_[extension_id] = devtools_cookie;
     }
 
-    on_load_events_[extension_id] = events;
-
     path = current_extension->path();
     DisableExtension(extension_id, Extension::DISABLE_RELOAD);
     disabled_extension_paths_[extension_id] = path;
   } else {
     path = unloaded_extension_paths_[extension_id];
   }
+
+  on_load_events_[extension_id] = events;
 
   if (delayed_updates_for_idle_.Contains(extension_id)) {
     FinishDelayedInstallation(extension_id);
