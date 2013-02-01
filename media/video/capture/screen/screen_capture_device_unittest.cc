@@ -118,7 +118,7 @@ TEST_F(ScreenCaptureDeviceTest, Capture) {
   EXPECT_GT(caps.height, 0);
   EXPECT_EQ(kFrameRate, caps.frame_rate);
   EXPECT_EQ(VideoCaptureCapability::kARGB, caps.color);
-  EXPECT_EQ(false, caps.interlaced);
+  EXPECT_FALSE(caps.interlaced);
 
   EXPECT_EQ(caps.width * caps.height * 4, frame_size);
 }
@@ -160,7 +160,7 @@ TEST_F(ScreenCaptureDeviceTest, ScreenResolutionChange) {
   EXPECT_EQ(kTestFrameHeight1, caps.height);
   EXPECT_EQ(kFrameRate, caps.frame_rate);
   EXPECT_EQ(VideoCaptureCapability::kARGB, caps.color);
-  EXPECT_EQ(false, caps.interlaced);
+  EXPECT_FALSE(caps.interlaced);
 
   EXPECT_EQ(caps.width * caps.height * 4, frame_size);
 }
