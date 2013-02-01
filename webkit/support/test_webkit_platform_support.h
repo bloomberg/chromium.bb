@@ -137,8 +137,6 @@ class TestWebKitPlatformSupport :
       const WebKit::WebFloatPoint& velocity,
       const WebKit::WebSize& cumulative_scroll);
 
-  void ResetIDBFactory();
-
  private:
   TestShellWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
@@ -156,7 +154,6 @@ class TestWebKitPlatformSupport :
   WebKit::WebGamepads gamepad_data_;
   WebKit::Platform* shadow_platform_delegate_;
   HyphenDict* hyphen_dictionary_;
-  scoped_ptr<WebKit::WebIDBFactory> idb_factory_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   WebKit::WebThemeEngine* active_theme_engine_;

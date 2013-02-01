@@ -405,9 +405,7 @@ class TestWebIDBFactory : public WebKit::WebIDBFactory {
 };
 
 WebKit::WebIDBFactory* TestWebKitPlatformSupport::idbFactory() {
-  if (!idb_factory_)
-    idb_factory_.reset(new TestWebIDBFactory());
-  return idb_factory_.get();
+  return new TestWebIDBFactory();
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -612,8 +610,4 @@ WebKit::WebGestureCurve* TestWebKitPlatformSupport::createFlingAnimationCurve(
     const WebKit::WebSize& cumulative_scroll) {
   // Caller will retain and release.
   return new WebGestureCurveMock(velocity, cumulative_scroll);
-}
-
-void TestWebKitPlatformSupport::ResetIDBFactory() {
-  idb_factory_.reset();
 }
