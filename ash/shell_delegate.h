@@ -229,6 +229,9 @@ class ASH_EXPORT ShellDelegate {
   // Creates a root window host factory. Shell takes ownership of the returned
   // value.
   virtual RootWindowHostFactory* CreateRootWindowHostFactory() = 0;
+
+  // Get the product name.
+  virtual string16 GetProductName() const = 0;
 };
 
 }  // namespace ash

@@ -68,6 +68,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual double GetSavedScreenMagnifierScale() OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(aura::RootWindow* root) OVERRIDE;
   virtual RootWindowHostFactory* CreateRootWindowHostFactory() OVERRIDE;
+  virtual string16 GetProductName() const OVERRIDE;
 
   int num_exit_requests() const { return num_exit_requests_; }
  private:

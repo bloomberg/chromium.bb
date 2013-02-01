@@ -223,5 +223,10 @@ void TestShellDelegate::SetCanLockScreen(bool can_lock_screen) {
   can_lock_screen_ = can_lock_screen;
 }
 
+string16 TestShellDelegate::GetProductName() const {
+  return string16();
+}
+
+
 }  // namespace test
 }  // namespace ash

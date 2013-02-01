@@ -218,5 +218,9 @@ RootWindowHostFactory* ShellDelegateImpl::CreateRootWindowHostFactory() {
   return RootWindowHostFactory::Create();
 }
 
+string16 ShellDelegateImpl::GetProductName() const {
+  return string16();
+}
+
 }  // namespace shell
 }  // namespace ash

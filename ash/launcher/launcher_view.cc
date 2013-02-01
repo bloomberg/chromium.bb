@@ -1166,7 +1166,7 @@ string16 LauncherView::GetAccessibleName(const views::View* view) {
           l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE);
 
     case TYPE_BROWSER_SHORTCUT:
-      return l10n_util::GetStringUTF16(IDS_AURA_NEW_TAB);
+      return Shell::GetInstance()->delegate()->GetProductName();
   }
   return string16();
 }
