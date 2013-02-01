@@ -288,7 +288,8 @@ AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
   if (!CoreAudioUtil::IsSupported()) {
     // Fall back to Windows Wave implementation on Windows XP or lower.
     DVLOG(1) << "Using WaveOut since WASAPI requires at least Vista.";
-    return new PCMWaveOutAudioOutputStream(this, params, 2, WAVE_MAPPER);
+    return new PCMWaveOutAudioOutputStream(
+        this, params, media::NumberOfWaveOutBuffers(), WAVE_MAPPER);
   }
 
   // TODO(henrika): remove once we properly handle input device selection.

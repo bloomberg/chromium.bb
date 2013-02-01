@@ -177,7 +177,7 @@ size_t GetAudioHardwareBufferSize() {
   return 128;
 #elif defined(OS_WIN)
   // Buffer size to use when a proper size can't be determined from the system.
-  static const int kFallbackBufferSize = 4096;
+  static const int kFallbackBufferSize = 2048;
 
   if (!CoreAudioUtil::IsSupported()) {
     // Fall back to Windows Wave implementation on Windows XP or lower
