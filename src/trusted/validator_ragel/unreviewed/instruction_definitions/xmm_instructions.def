@@ -5,7 +5,7 @@
 # This file describes instructions from AMD64 Architecture Programmer’s Manual
 #                               Volume 4: 128-Bit and 256-Bit Media Instructions
 ################################################################################
-# File format: see general_purpose_instructions.def
+# File format: see def_format.py
 ######## ADDPD/VADDPD ##########################################################
 addpd Wpd Vpd, 0x66 0x0f 0x58, CPUFeature_SSE2
 vaddpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x58, CPUFeature_AVX

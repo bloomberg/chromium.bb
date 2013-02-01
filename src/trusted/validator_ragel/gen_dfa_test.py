@@ -6,6 +6,7 @@
 import sys
 import unittest
 
+import def_format
 import gen_dfa
 
 
@@ -46,7 +47,9 @@ class TestLegacyPrefixes(unittest.TestCase):
 class TestOperand(unittest.TestCase):
 
   def test_default(self):
-    op = gen_dfa.Operand.Parse('r', default_rw=gen_dfa.Operand.READ)
+    op = gen_dfa.Operand.Parse(
+        'r',
+        default_rw=def_format.OperandReadWriteMode.READ)
 
     assert op.Readable() and not op.Writable()
     self.assertEquals(op.arg_type, 'r')

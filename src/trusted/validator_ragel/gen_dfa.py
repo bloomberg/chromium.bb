@@ -7,115 +7,11 @@ import itertools
 import re
 import StringIO
 
-
-# Technically, columns are separated with mere ',' followed by spaces for
-# readability, but there are quoted instruction names that include commas
-# not followed by spaces (see nops.def).
-# For simplicity I choose to rely on this coincidence and use split-based parser
-# instead of proper recursive descent one.
-# If by accident somebody put ', ' in quoted instruction name, it will fail
-# loudly, because closing quote then will fall into second or third column and
-# will cause parse error.
-# TODO(shcherbina): use for column separator something that is never encountered
-# in columns, like semicolon?
-COLUMN_SEPARATOR = ', '
-
-
-SUPPORTED_ATTRIBUTES = [
-    # Parsing attributes.
-    'branch_hint',
-    'condrep',
-    'lock',
-    'no_memory_access',
-    'norex',
-    'norexw',
-    'rep',
-
-    # CPUID attributes.
-    'CPUFeature_3DNOW',
-    'CPUFeature_3DPRFTCH',
-    'CPUFeature_AES',
-    'CPUFeature_AESAVX',
-    'CPUFeature_ALTMOVCR8',
-    'CPUFeature_AVX',
-    'CPUFeature_BMI1',
-    'CPUFeature_CLFLUSH',
-    'CPUFeature_CLMUL',
-    'CPUFeature_CLMULAVX',
-    'CPUFeature_CMOV',
-    'CPUFeature_CMOVx87',
-    'CPUFeature_CX16',
-    'CPUFeature_CX8',
-    'CPUFeature_E3DNOW',
-    'CPUFeature_EMMX',
-    'CPUFeature_EMMXSSE',
-    'CPUFeature_F16C',
-    'CPUFeature_FMA',
-    'CPUFeature_FMA4',
-    'CPUFeature_FXSR',
-    'CPUFeature_LAHF',
-    'CPUFeature_LWP',
-    'CPUFeature_LZCNT',
-    'CPUFeature_MMX',
-    'CPUFeature_MON',
-    'CPUFeature_MOVBE',
-    'CPUFeature_MSR',
-    'CPUFeature_POPCNT',
-    'CPUFeature_SEP',
-    'CPUFeature_SFENCE',
-    'CPUFeature_SKINIT',
-    'CPUFeature_SSE',
-    'CPUFeature_SSE2',
-    'CPUFeature_SSE3',
-    'CPUFeature_SSE41',
-    'CPUFeature_SSE42',
-    'CPUFeature_SSE4A',
-    'CPUFeature_SSSE3',
-    'CPUFeature_SVM',
-    'CPUFeature_SYSCALL',
-    'CPUFeature_TBM',
-    'CPUFeature_TSC',
-    'CPUFeature_TSCP',
-    'CPUFeature_TZCNT',
-    'CPUFeature_x87',
-    'CPUFeature_XOP',
-
-    # Attributes for enabling/disabling based on architecture and validity.
-    'ia32',
-    'amd64',
-    'nacl-ia32-forbidden',
-    'nacl-amd64-forbidden',
-    'nacl-forbidden',
-    'nacl-amd64-zero-extends',
-    'nacl-amd64-modifiable',
-
-    # AT&T Decoder attributes.
-    'att-show-memory-suffix-b',
-    'att-show-memory-suffix-l',
-    'att-show-memory-suffix-ll',
-    'att-show-memory-suffix-t',
-    'att-show-memory-suffix-s',
-    'att-show-memory-suffix-q',
-    'att-show-memory-suffix-x',
-    'att-show-memory-suffix-y',
-    'att-show-memory-suffix-w',
-    'att-show-name-suffix-b',
-    'att-show-name-suffix-l',
-    'att-show-name-suffix-ll',
-    'att-show-name-suffix-t',
-    'att-show-name-suffix-s',
-    'att-show-name-suffix-q',
-    'att-show-name-suffix-x',
-    'att-show-name-suffix-y',
-    'att-show-name-suffix-w',
-
-    # Spurious REX.W bits (instructions 'in', 'out', 'nop', etc).
-    'spurious-rex.w'
-]
+import def_format
 
 
 def Attribute(name):
-  assert name in SUPPORTED_ATTRIBUTES
+  assert name in def_format.SUPPORTED_ATTRIBUTES
   return name
 
 
@@ -128,13 +24,11 @@ class Operand(object):
       'implicit',
       'index']
 
-  # Operand read/write modes.
-  UNUSED = '\''
-  READ = '='
-  WRITE = '!'
-  READ_WRITE = '&'
-
-  read_write_attr_regex = r'[%s%s%s%s]?' % (UNUSED, READ, WRITE, READ_WRITE)
+  read_write_attr_regex = r'[%s%s%s%s]?' % (
+      def_format.OperandReadWriteMode.UNUSED,
+      def_format.OperandReadWriteMode.READ,
+      def_format.OperandReadWriteMode.WRITE,
+      def_format.OperandReadWriteMode.READ_WRITE)
   arg_type_regex = r'[acdbfgioprtxBCDEGHIJLMNOPQRSUVWXY]'
   size_regex = (
       r'|2|7|b|d|do|dq|fq|o|p|pb|pd|pdw|pdwx|pdx|ph|phx|pi|pj|pjx|pk|pkx|'
@@ -165,10 +59,12 @@ class Operand(object):
     self.implicit = implicit
 
   def Readable(self):
-    return self.read_write_attr in [self.READ, self.READ_WRITE]
+    return self.read_write_attr in [def_format.OperandReadWriteMode.READ,
+                                    def_format.OperandReadWriteMode.READ_WRITE]
 
   def Writable(self):
-    return self.read_write_attr in [self.WRITE, self.READ_WRITE]
+    return self.read_write_attr in [def_format.OperandReadWriteMode.WRITE,
+                                    def_format.OperandReadWriteMode.READ_WRITE]
 
   def ResidesInModRM(self):
     return self.arg_type in 'CDEGMNPQRSUVW'
@@ -255,9 +151,10 @@ class Instruction(object):
 
     Args:
       line: One line of def file (two or three columns separated by
-          COLUMN_SEPARATOR). First column defines instruction name and operands,
-          second one - opcodes and encoding details, third (optional)
-          one - instruction attributes.
+          def_format.COLUMN_SEPARATOR).
+          First column defines instruction name and operands,
+          second one - opcodes and encoding details,
+          third (optional) one - instruction attributes.
 
     Returns:
       Fully initialized Instruction object.
@@ -265,7 +162,7 @@ class Instruction(object):
 
     instruction = Instruction()
 
-    columns = line.split(COLUMN_SEPARATOR)
+    columns = line.split(def_format.COLUMN_SEPARATOR)
 
     # Third column is optional.
     assert 2 <= len(columns) <= 3, line
@@ -279,9 +176,7 @@ class Instruction(object):
     instruction.ParseNameAndOperands(name_and_operands_column)
     instruction.ParseOpcodes(opcodes_column)
 
-    for attribute in attributes:
-      assert attribute in SUPPORTED_ATTRIBUTES, attribute
-    instruction.attributes = attributes
+    instruction.attributes = map(Attribute, attributes)
 
     return instruction
 
@@ -302,10 +197,13 @@ class Instruction(object):
       # three or more operands are assumed to read all operands except last one
       # which is used to store the result of the execution.
       last = (i == len(operands) - 1)
-      if len(operands) <= 2:
-        default_rw = Operand.READ_WRITE if last else Operand.READ
+      if last:
+        if len(operands) <= 2:
+          default_rw = def_format.OperandReadWriteMode.READ_WRITE
+        else:
+          default_rw = def_format.OperandReadWriteMode.WRITE
       else:
-        default_rw = Operand.WRITE if last else Operand.READ
+        default_rw = def_format.OperandReadWriteMode.READ
       operand = Operand.Parse(op, default_rw=default_rw)
       operand.index = i
       self.operands.append(operand)
@@ -590,7 +488,7 @@ def ParseDefFile(filename):
     # Comma-terminated lines are expected to be continued.
     while line.endswith(',\n'):
       next_line = next(lines)
-      line = line[:-2] + COLUMN_SEPARATOR + next_line
+      line = line[:-2] + def_format.COLUMN_SEPARATOR + next_line
 
     assert '#' not in line
 
