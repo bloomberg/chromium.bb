@@ -118,6 +118,7 @@ string16 DownloadDangerPromptImpl::GetMessage() {
           download_->GetFileNameToReportUser().LossyDisplayName());
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: // Fall through
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
       return l10n_util::GetStringFUTF16(
           IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
           download_->GetFileNameToReportUser().LossyDisplayName());

@@ -366,7 +366,8 @@ Download.DangerType = {
   DANGEROUS_FILE: 'DANGEROUS_FILE',
   DANGEROUS_URL: 'DANGEROUS_URL',
   DANGEROUS_CONTENT: 'DANGEROUS_CONTENT',
-  UNCOMMON_CONTENT: 'UNCOMMON_CONTENT'
+  UNCOMMON_CONTENT: 'UNCOMMON_CONTENT',
+  DANGEROUS_HOST: 'DANGEROUS_HOST'
 };
 
 /**
@@ -415,7 +416,8 @@ Download.prototype.update = function(download) {
                                                              this.fileName_);
     } else if (this.dangerType_ == Download.DangerType.DANGEROUS_URL) {
       this.dangerDesc_.textContent = loadTimeData.getString('danger_url_desc');
-    } else if (this.dangerType_ == Download.DangerType.DANGEROUS_CONTENT) {
+    } else if (this.dangerType_ == Download.DangerType.DANGEROUS_CONTENT ||
+               this.dangerType_ == Download.DangerType.DANGEROUS_HOST) {
       this.dangerDesc_.textContent = loadTimeData.getStringF(
           'danger_content_desc', this.fileName_);
     } else if (this.dangerType_ == Download.DangerType.UNCOMMON_CONTENT) {

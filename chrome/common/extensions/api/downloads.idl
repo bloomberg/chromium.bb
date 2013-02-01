@@ -47,12 +47,15 @@ namespace downloads {
   //     <dt>uncommon</dt>
   //     <dd>The download's URL is not commonly downloaded and could be
   //     dangerous.</dd>
+  //     <dt>host</dt>
+  //     <dd>The download came from a host known to distribute malicious
+  //     binaries and is likely dangerous.</dd>
   //     <dt>safe</dt>
   //     <dd>The download presents no known danger to the user's computer.</dd>
   // </dl>
   // These string constants will never change, however the set of DangerTypes
   // may change.
-  enum DangerType {file, url, content, uncommon, safe};
+  enum DangerType {file, url, content, uncommon, host, safe};
 
   // <dl><dt>in_progress</dt>
   //     <dd>The download is currently receiving data from the server.</dd>

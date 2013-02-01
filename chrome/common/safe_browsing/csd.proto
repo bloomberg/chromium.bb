@@ -195,6 +195,8 @@ message ClientDownloadResponse {
     UNCOMMON = 2;
     // The download is potentially unwanted.
     POTENTIALLY_UNWANTED = 3;
+    // The download is from a dangerous host.
+    DANGEROUS_HOST = 4;
   }
   required Verdict verdict = 1;
 

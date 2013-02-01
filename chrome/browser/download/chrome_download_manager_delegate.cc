@@ -666,6 +666,10 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
         item->OnContentCheckCompleted(
             content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT);
         break;
+      case DownloadProtectionService::DANGEROUS_HOST:
+        item->OnContentCheckCompleted(
+            content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST);
+        break;
     }
   }
 

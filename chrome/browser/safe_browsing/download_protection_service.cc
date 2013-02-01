@@ -465,6 +465,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
       } else if (response.verdict() == ClientDownloadResponse::UNCOMMON) {
         reason = REASON_DOWNLOAD_UNCOMMON;
         result = UNCOMMON;
+      } else if (response.verdict() == ClientDownloadResponse::DANGEROUS_HOST) {
+        reason = REASON_DOWNLOAD_DANGEROUS_HOST;
+        result = DANGEROUS_HOST;
       } else {
         LOG(DFATAL) << "Unknown download response verdict: "
                     << response.verdict();

@@ -302,6 +302,7 @@ string16 DownloadItemModel::GetWarningText(const gfx::Font& font,
       }
 
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
       return l10n_util::GetStringFUTF16(
           IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
           ui::ElideFilename(download_->GetFileNameToReportUser(),
@@ -361,6 +362,7 @@ bool DownloadItemModel::IsMalicious() const {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
       return true;
 
     case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:

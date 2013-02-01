@@ -62,6 +62,7 @@ class DownloadProtectionService {
     SAFE,
     DANGEROUS,
     UNCOMMON,
+    DANGEROUS_HOST,
   };
 
   // Callback type which is invoked once the download request is done.
@@ -141,6 +142,7 @@ class DownloadProtectionService {
     REASON_DOWNLOAD_NOT_SUPPORTED,
     REASON_INVALID_RESPONSE_VERDICT,
     REASON_ARCHIVE_WITHOUT_BINARIES,
+    REASON_DOWNLOAD_DANGEROUS_HOST,
     REASON_MAX  // Always add new values before this one.
   };
 

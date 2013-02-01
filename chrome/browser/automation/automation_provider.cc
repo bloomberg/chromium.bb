@@ -348,6 +348,9 @@ DictionaryValue* AutomationProvider::GetDictionaryFromDownloadItem(
     case content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
       download_danger_type_string = "USER_VALIDATED";
       break;
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+      download_danger_type_string = "DANGEROUS_HOST";
+      break;
     case content::DOWNLOAD_DANGER_TYPE_MAX:
       NOTREACHED();
       download_danger_type_string = "UNKNOWN";
