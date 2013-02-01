@@ -76,7 +76,9 @@ class LauncherItemController {
   // windows associated with the item:
   // * One window: toggles the minimize state.
   // * Multiple windows: cycles the active window.
-  virtual void Clicked() = 0;
+  // The |event| is dispatched by a view, therefore the type of the
+  // event's target is |views::View|.
+  virtual void Clicked(const ui::Event& event) = 0;
 
   // Called when the controlled item is removed from the launcher.
   virtual void OnRemoved() = 0;

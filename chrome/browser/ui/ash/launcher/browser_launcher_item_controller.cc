@@ -146,7 +146,7 @@ void BrowserLauncherItemController::Close() {
     widget->Close();
 }
 
-void BrowserLauncherItemController::Clicked() {
+void BrowserLauncherItemController::Clicked(const ui::Event& event) {
   views::Widget* widget =
       views::Widget::GetWidgetForNativeView(window_);
   if (widget && widget->IsActive()) {

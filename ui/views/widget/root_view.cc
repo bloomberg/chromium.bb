@@ -498,6 +498,12 @@ void RootView::OnMouseReleased(const ui::MouseEvent& event) {
   if (mouse_pressed_handler_) {
     ui::MouseEvent mouse_released(event, static_cast<View*>(this),
                                   mouse_pressed_handler_);
+    // TODO(sadrul|oshima): This is tentative solution to pass target
+    // to LauncherDelegate::ItemClicked. Remove this once crbug.com/173235
+    // is implemented.
+    ui::Event::DispatcherApi api(&mouse_released);
+    api.set_target(this);
+
     // We allow the view to delete us from ProcessMouseReleased. As such,
     // configure state such that we're done first, then call View.
     View* mouse_pressed_handler = mouse_pressed_handler_;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_item_controller.h"
 
+#include "ash/launcher/launcher_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -115,11 +116,15 @@ void ShellWindowLauncherItemController::Close() {
 // * Multiple windows:
 // ** If the first window is not active, activate it.
 // ** Otherwise activate the next window.
-void ShellWindowLauncherItemController::Clicked() {
+void ShellWindowLauncherItemController::Clicked(const ui::Event& event) {
   if (shell_windows_.empty())
     return;
   ShellWindow* first_window = shell_windows_.front();
   if (shell_windows_.size() == 1) {
+    ash::launcher::MoveToEventRootIfPanel(first_window->GetNativeWindow(),
+                                          event);
+    // If the window moves, it becomes inactive first then
+    // gets activated in |RestoreOrShow| below.
     if (first_window->GetBaseWindow()->IsActive())
       first_window->GetBaseWindow()->Minimize();
     else

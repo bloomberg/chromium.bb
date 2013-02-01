@@ -76,7 +76,7 @@ class BrowserLauncherItemController : public LauncherItemController,
   virtual void Launch(int event_flags) OVERRIDE;
   virtual void Activate() OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual void Clicked() OVERRIDE;
+  virtual void Clicked(const ui::Event& event) OVERRIDE;
   virtual void OnRemoved() OVERRIDE;
   virtual void LauncherItemChanged(int index,
                                    const ash::LauncherItem& old_item) OVERRIDE;

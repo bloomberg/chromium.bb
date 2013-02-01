@@ -236,7 +236,7 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
   // ash::LauncherDelegate overrides:
   virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE;
   virtual void ItemClicked(const ash::LauncherItem& item,
-                           int event_flags) OVERRIDE;
+                           const ui::Event& event) OVERRIDE;
   virtual int GetBrowserShortcutResourceId() OVERRIDE;
   virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(

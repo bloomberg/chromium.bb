@@ -786,9 +786,9 @@ void ChromeLauncherControllerPerApp::OnBrowserShortcutClicked(
 }
 
 void ChromeLauncherControllerPerApp::ItemClicked(const ash::LauncherItem& item,
-                                                 int event_flags) {
+                                                 const ui::Event& event) {
   DCHECK(HasItemController(item.id));
-  id_to_item_controller_map_[item.id]->Clicked();
+  id_to_item_controller_map_[item.id]->Clicked(event);
 }
 
 int ChromeLauncherControllerPerApp::GetBrowserShortcutResourceId() {

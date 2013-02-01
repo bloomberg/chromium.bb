@@ -1241,7 +1241,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
       case TYPE_APP_PANEL:
       case TYPE_APP_SHORTCUT:
       case TYPE_PLATFORM_APP:
-        delegate_->ItemClicked(model_->items()[view_index], event.flags());
+        delegate_->ItemClicked(model_->items()[view_index], event);
         break;
       case TYPE_APP_LIST:
         Shell::GetInstance()->ToggleAppList(GetWidget()->GetNativeView());

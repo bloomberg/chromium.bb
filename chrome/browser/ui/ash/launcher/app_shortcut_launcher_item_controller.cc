@@ -94,7 +94,7 @@ void AppShortcutLauncherItemController::Close() {
   }
 }
 
-void AppShortcutLauncherItemController::Clicked() {
+void AppShortcutLauncherItemController::Clicked(const ui::Event& event) {
   Activate();
 }
 

@@ -4,6 +4,7 @@
 
 #include "ash/shell/launcher_delegate_impl.h"
 
+#include "ash/launcher/launcher_util.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/shell/window_watcher.h"
 #include "ash/wm/window_util.h"
@@ -29,8 +30,9 @@ void LauncherDelegateImpl::OnBrowserShortcutClicked(int event_flags) {
 }
 
 void LauncherDelegateImpl::ItemClicked(const ash::LauncherItem& item,
-                                       int event_flags) {
+                                       const ui::Event& event) {
   aura::Window* window = watcher_->GetWindowByID(item.id);
+  ash::launcher::MoveToEventRootIfPanel(window, event);
   window->Show();
   ash::wm::ActivateWindow(window);
 }

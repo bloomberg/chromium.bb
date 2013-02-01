@@ -102,7 +102,7 @@ class AppShortcutLauncherItemController : public LauncherItemController {
     // TODO: maybe should treat as unpin?
   }
 
-  virtual void Clicked() OVERRIDE {
+  virtual void Clicked(const ui::Event& event) OVERRIDE {
     Activate();
   }
 
@@ -811,9 +811,9 @@ void ChromeLauncherControllerPerBrowser::OnBrowserShortcutClicked(
 
 void ChromeLauncherControllerPerBrowser::ItemClicked(
     const ash::LauncherItem& item,
-    int event_flags) {
+    const ui::Event& event) {
   DCHECK(HasItemController(item.id));
-  id_to_item_controller_map_[item.id]->Clicked();
+  id_to_item_controller_map_[item.id]->Clicked(event);
 }
 
 int ChromeLauncherControllerPerBrowser::GetBrowserShortcutResourceId() {
