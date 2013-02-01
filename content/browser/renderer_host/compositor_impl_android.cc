@@ -174,7 +174,7 @@ void CompositorImpl::SetVisible(bool visible) {
     settings.refreshRate = 60.0;
     settings.implSidePainting = false;
     settings.calculateTopControlsPosition = false;
-    settings.topControlsHeightPx = 0;
+    settings.topControlsHeight = 0.f;
 
     // Do not clear the framebuffer when rendering into external GL contexts
     // like Android View System's.

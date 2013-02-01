@@ -34,10 +34,10 @@ class CC_EXPORT LayerTreeSettings {
   bool calculateTopControlsPosition;
   float minimumContentsScale;
   float lowResContentsScaleFactor;
+  float topControlsHeight;
   double refreshRate;
   size_t maxPartialTextureUpdates;
   size_t numRasterThreads;
-  int topControlsHeightPx;
   gfx::Size defaultTileSize;
   gfx::Size maxUntiledLayerSize;
   gfx::Size minimumOcclusionTrackingSize;

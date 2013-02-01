@@ -1912,9 +1912,12 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void updateOffsetsForFullscreen(float controlsOffsetY, float contentOffsetY) {
+    private void updateOffsetsForFullscreen(float controlsOffsetYDp, float contentOffsetYDp) {
         if (mContentViewClient == null) return;
-        mContentViewClient.onOffsetsForFullscreenChanged(controlsOffsetY, contentOffsetY);
+        float scale = getContext().getResources().getDisplayMetrics().density;
+        float controlsOffsetPx = controlsOffsetYDp * scale;
+        float contentOffsetYPx = contentOffsetYDp * scale;
+        mContentViewClient.onOffsetsForFullscreenChanged(controlsOffsetPx, contentOffsetYPx);
     }
 
     @SuppressWarnings("unused")

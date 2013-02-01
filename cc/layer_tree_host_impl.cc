@@ -162,7 +162,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     didVisibilityChange(this, m_visible);
 
     if (settings.calculateTopControlsPosition)
-        m_topControlsManager = TopControlsManager::Create(this, settings.topControlsHeightPx);
+        m_topControlsManager = TopControlsManager::Create(this, settings.topControlsHeight);
 
     // LTHI always has an active tree.
     m_activeTree = LayerTreeImpl::create(this);
