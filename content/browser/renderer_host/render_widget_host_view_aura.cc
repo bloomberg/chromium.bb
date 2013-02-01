@@ -136,11 +136,12 @@ bool CanRendererHandleEvent(const ui::MouseEvent* event) {
     return false;
 
 #if defined(OS_WIN)
-  // Renderer cannot handle WM_XBUTTON events.
+  // Renderer cannot handle WM_XBUTTON or NC events.
   switch (event->native_event().message) {
     case WM_XBUTTONDOWN:
     case WM_XBUTTONUP:
     case WM_XBUTTONDBLCLK:
+    case WM_NCMOUSEMOVE:
     case WM_NCXBUTTONDOWN:
     case WM_NCXBUTTONUP:
     case WM_NCXBUTTONDBLCLK:
