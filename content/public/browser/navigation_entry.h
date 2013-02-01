@@ -188,6 +188,14 @@ class NavigationEntry {
   // is currently only used in tests.
   virtual void SetFrameToNavigate(const std::string& frame_name) = 0;
   virtual const std::string& GetFrameToNavigate() const = 0;
+
+  // Set extra data on this NavigationEntry according to the specified |key|.
+  // This data is not persisted by default.
+  virtual void SetExtraData(const std::string& key, const string16& data) = 0;
+  // If present, fills the |data| present at the specified |key|.
+  virtual bool GetExtraData(const std::string& key, string16* data) const = 0;
+  // Removes the data at the specified |key|.
+  virtual void ClearExtraData(const std::string& key) = 0;
 };
 
 }  // namespace content

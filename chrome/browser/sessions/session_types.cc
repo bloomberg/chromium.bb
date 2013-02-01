@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sessions/session_command.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/search/search.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "sync/util/time.h"
@@ -51,6 +52,9 @@ TabNavigation TabNavigation::FromNavigationEntry(
   // If you want to navigate a named frame in Chrome, you will first need to
   // add support for persisting it. It is currently only used for layout tests.
   CHECK(entry.GetFrameToNavigate().empty());
+  navigation.search_terms_ =
+      chrome::search::GetSearchTermsFromNavigationEntry(&entry);
+
   return navigation;
 }
 
@@ -135,6 +139,7 @@ TabNavigation TabNavigation::FromSyncData(
       static_cast<content::PageTransition>(transition);
 
   navigation.timestamp_ = base::Time();
+  navigation.search_terms_ = UTF8ToUTF16(sync_data.search_terms());
 
   return navigation;
 }
@@ -204,6 +209,7 @@ enum TypeMask {
 // original_request_url_
 // is_overriding_user_agent_
 // timestamp_
+// search_terms_
 
 void TabNavigation::WriteToPickle(Pickle* pickle) const {
   pickle->WriteInt(index_);
@@ -248,6 +254,8 @@ void TabNavigation::WriteToPickle(Pickle* pickle) const {
       original_request_url_.spec() : std::string());
   pickle->WriteBool(is_overriding_user_agent_);
   pickle->WriteInt64(timestamp_.ToInternalValue());
+
+  WriteString16ToPickle(pickle, &bytes_written, max_state_size, search_terms_);
 }
 
 bool TabNavigation::ReadFromPickle(PickleIterator* iterator) {
@@ -301,6 +309,10 @@ bool TabNavigation::ReadFromPickle(PickleIterator* iterator) {
     } else {
       timestamp_ = base::Time();
     }
+
+    // If the search terms field can't be found, leave it empty.
+    if (!iterator->ReadString16(&search_terms_))
+      search_terms_.clear();
   }
 
   return true;
@@ -329,6 +341,8 @@ scoped_ptr<NavigationEntry> TabNavigation::ToNavigationEntry(
   entry->SetOriginalRequestURL(original_request_url_);
   entry->SetIsOverridingUserAgent(is_overriding_user_agent_);
   entry->SetTimestamp(timestamp_);
+  entry->SetExtraData(chrome::search::kInstantExtendedSearchTermsKey,
+                      search_terms_);
 
   return entry.Pass();
 }
@@ -420,6 +434,8 @@ sync_pb::TabNavigation TabNavigation::ToSyncData() const {
   sync_data.set_timestamp(syncer::TimeToProtoTime(timestamp_));
   // The full-resolution timestamp works as a global ID.
   sync_data.set_global_id(timestamp_.ToInternalValue());
+
+  sync_data.set_search_terms(UTF16ToUTF8(search_terms_));
 
   return sync_data;
 }

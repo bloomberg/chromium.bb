@@ -10,12 +10,22 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 
 class GURL;
 class Profile;
 
+namespace content {
+class NavigationEntry;
+}
+
 namespace chrome {
 namespace search {
+
+// The key used to store search terms data in the NavigationEntry to be later
+// displayed in the Omnibox. With the context of the user's exact query,
+// InstantController sets the correct search terms to be displayed.
+extern const char kInstantExtendedSearchTermsKey[];
 
 // Returns whether the Instant extended API is enabled for the given |profile|.
 // |profile| may not be NULL.
@@ -36,6 +46,11 @@ bool IsQueryExtractionEnabled(Profile* profile);
 
 // Force query extraction to be enabled for tests.
 void EnableQueryExtractionForTesting();
+
+// Return the search terms attached to a specific NavigationEntry, or empty
+// string otherwise.
+string16 GetSearchTermsFromNavigationEntry(
+    const content::NavigationEntry* entry);
 
 // Returns true if |url| has the same scheme, host, port and path as the
 // Instant URL set via --instant-url.

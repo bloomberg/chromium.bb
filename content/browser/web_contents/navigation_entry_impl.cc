@@ -279,6 +279,24 @@ const std::string& NavigationEntryImpl::GetFrameToNavigate() const {
   return frame_to_navigate_;
 }
 
+void NavigationEntryImpl::SetExtraData(const std::string& key,
+                                       const string16& data) {
+  extra_data_[key] = data;
+}
+
+bool NavigationEntryImpl::GetExtraData(const std::string& key,
+                                       string16* data) const {
+  std::map<std::string, string16>::const_iterator iter = extra_data_.find(key);
+  if (iter == extra_data_.end())
+    return false;
+  *data = iter->second;
+  return true;
+}
+
+void NavigationEntryImpl::ClearExtraData(const std::string& key) {
+  extra_data_.erase(key);
+}
+
 void NavigationEntryImpl::SetScreenshotPNGData(
     const std::vector<unsigned char>& png_data) {
   screenshot_ = png_data.empty() ? NULL : new base::RefCountedBytes(png_data);

@@ -75,6 +75,11 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual bool GetCanLoadLocalResources() const OVERRIDE;
   virtual void SetFrameToNavigate(const std::string& frame_name) OVERRIDE;
   virtual const std::string& GetFrameToNavigate() const OVERRIDE;
+  virtual void SetExtraData(const std::string& key,
+                            const string16& data) OVERRIDE;
+  virtual bool GetExtraData(const std::string& key,
+                            string16* data) const OVERRIDE;
+  virtual void ClearExtraData(const std::string& key) OVERRIDE;
 
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
@@ -264,6 +269,11 @@ class CONTENT_EXPORT NavigationEntryImpl
   // If not empty, the name of the frame to navigate. This field is not
   // persisted, because it is currently only used in tests.
   std::string frame_to_navigate_;
+
+  // Used to store extra data to support browser features. This member is not
+  // persisted, unless specific data is taken out/put back in at save/restore
+  // time (see TabNavigation for an example of this).
+  std::map<std::string, string16> extra_data_;
 
   // Copy and assignment is explicitly allowed for this class.
 };
