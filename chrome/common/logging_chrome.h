@@ -62,15 +62,6 @@ typedef std::vector<std::wstring> AssertionList;
 // the program writing the log has terminated.
 size_t GetFatalAssertions(AssertionList* assertions);
 
-// Handler to silently dump the current process without crashing.
-void DumpWithoutCrashing();
-
-#if defined(USE_LINUX_BREAKPAD) || defined(OS_MACOSX)
-// Sets a function that'll be invoked to dump the current process when
-// DumpWithoutCrashing() is called.
-void SetDumpWithoutCrashingFunction(void (*function)());
-#endif
-
 // Inserts timestamp before file extension in the format
 // "_yymmdd-hhmmss".
 FilePath GenerateTimestampedName(const FilePath& base_path,

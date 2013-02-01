@@ -47,6 +47,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/dump_without_crashing.h"
 #include "chrome/common/env_vars.h"
 #include "ipc/ipc_logging.h"
 
@@ -78,12 +79,6 @@ const GUID kChromeTraceProviderName = {
         { 0x80, 0xc1, 0x52, 0x7f, 0xea, 0x23, 0xe3, 0xa7 } };
 #endif
 
-#if defined(USE_LINUX_BREAKPAD) || defined(OS_MACOSX)
-// Pointer to the function that's called by DumpWithoutCrashing() to dump the
-// process's memory.
-void (*dump_without_crashing_function_)() = NULL;
-#endif
-
 // Assertion handler for logging errors that occur when dialogs are
 // silenced.  To record a new error, pass the log string associated
 // with that error in the str parameter.
@@ -97,13 +92,7 @@ void SilentRuntimeReportHandler(const std::string& str) {
 // Handler to silently dump the current process when there is an assert in
 // chrome.
 void DumpProcessAssertHandler(const std::string& str) {
-  // Get the breakpad pointer from chrome.exe
-  typedef void (__cdecl *DumpProcessFunction)();
-  DumpProcessFunction DumpProcess = reinterpret_cast<DumpProcessFunction>(
-      ::GetProcAddress(::GetModuleHandle(chrome::kBrowserProcessExecutableName),
-                       "DumpProcess"));
-  if (DumpProcess)
-    DumpProcess();
+  logging::DumpWithoutCrashing();
 }
 #endif  // OS_WIN
 MSVC_ENABLE_OPTIMIZE();
@@ -442,24 +431,6 @@ size_t GetFatalAssertions(AssertionList* assertions) {
 
   return assertion_count;
 }
-
-void DumpWithoutCrashing() {
-#if defined(OS_WIN)
-  std::string str;
-  DumpProcessAssertHandler(str);
-#elif defined(USE_LINUX_BREAKPAD) || defined(OS_MACOSX)
-  if (dump_without_crashing_function_)
-    (*dump_without_crashing_function_)();
-#else
-  NOTIMPLEMENTED();
-#endif
-}
-
-#if defined(USE_LINUX_BREAKPAD) || defined(OS_MACOSX)
-void SetDumpWithoutCrashingFunction(void (*function)()) {
-  dump_without_crashing_function_ = function;
-}
-#endif
 
 FilePath GenerateTimestampedName(const FilePath& base_path,
                                  base::Time timestamp) {

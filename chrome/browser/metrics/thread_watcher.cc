@@ -18,6 +18,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/dump_without_crashing.h"
 #include "chrome/common/logging_chrome.h"
 
 #if defined(OS_WIN)
