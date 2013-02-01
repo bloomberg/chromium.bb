@@ -13,21 +13,22 @@
 namespace cc {
 
 LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
-    : layer_tree_host_impl_(layer_tree_host_impl)
-    , source_frame_number_(-1)
-    , hud_layer_(0)
-    , root_scroll_layer_(0)
-    , currently_scrolling_layer_(0)
-    , background_color_(0)
-    , has_transparent_background_(false)
-    , page_scale_factor_(1)
-    , page_scale_delta_(1)
-    , sent_page_scale_delta_(1)
-    , min_page_scale_factor_(0)
-    , max_page_scale_factor_(0)
-    , scrolling_layer_id_from_previous_tree_(0)
-    , contents_textures_purged_(false)
-    , needs_update_draw_properties_(true) {
+    : layer_tree_host_impl_(layer_tree_host_impl),
+      source_frame_number_(-1),
+      hud_layer_(0),
+      root_scroll_layer_(0),
+      currently_scrolling_layer_(0),
+      background_color_(0),
+      has_transparent_background_(false),
+      page_scale_factor_(1),
+      page_scale_delta_(1),
+      sent_page_scale_delta_(1),
+      min_page_scale_factor_(0),
+      max_page_scale_factor_(0),
+      scrolling_layer_id_from_previous_tree_(0),
+      contents_textures_purged_(false),
+      needs_update_draw_properties_(true),
+      needs_full_tree_sync_(true) {
 }
 
 LayerTreeImpl::~LayerTreeImpl() {

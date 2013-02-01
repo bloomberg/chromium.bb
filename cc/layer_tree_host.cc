@@ -265,27 +265,23 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     // time to raster before being displayed.  If no pending tree is needed,
     // synchronization can happen directly to the active tree.
     LayerTreeImpl* syncTree;
-    bool needsFullTreeSync = false;
     if (m_settings.implSidePainting) {
         // Commits should not occur while there is already a pending tree.
         DCHECK(!hostImpl->pendingTree());
         hostImpl->createPendingTree();
         syncTree = hostImpl->pendingTree();
-        // TODO(enne): we could recycle old active trees and keep track for
-        // multiple main thread frames whether a sync is needed
-        needsFullTreeSync = true;
     } else {
         syncTree = hostImpl->activeTree();
-        needsFullTreeSync = m_needsFullTreeSync;
     }
 
-    if (needsFullTreeSync)
+    if (m_needsFullTreeSync)
         syncTree->SetRootLayer(TreeSynchronizer::synchronizeTrees(rootLayer(), syncTree->DetachLayerTree(), syncTree));
     {
         TRACE_EVENT0("cc", "LayerTreeHost::pushProperties");
         TreeSynchronizer::pushProperties(rootLayer(), syncTree->RootLayer());
     }
 
+    syncTree->set_needs_full_tree_sync(m_needsFullTreeSync);
     m_needsFullTreeSync = false;
 
     if (m_rootLayer && m_hudLayer)

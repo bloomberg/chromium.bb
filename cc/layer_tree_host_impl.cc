@@ -983,7 +983,8 @@ void LayerTreeHostImpl::activatePendingTree()
     TRACE_EVENT_ASYNC_END0("cc", "PendingTree", m_pendingTree.get());
 
     m_activeTree->PushPersistedState(m_pendingTree.get());
-    m_activeTree->SetRootLayer(TreeSynchronizer::synchronizeTrees(m_pendingTree->RootLayer(), m_activeTree->DetachLayerTree(), m_activeTree.get()));
+    if (m_pendingTree->needs_full_tree_sync())
+        m_activeTree->SetRootLayer(TreeSynchronizer::synchronizeTrees(m_pendingTree->RootLayer(), m_activeTree->DetachLayerTree(), m_activeTree.get()));
     TreeSynchronizer::pushProperties(m_pendingTree->RootLayer(), m_activeTree->RootLayer());
     DCHECK(!m_recycleTree);
 
