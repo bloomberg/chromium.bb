@@ -69,6 +69,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual string16 SaveLocallyText() const OVERRIDE;
   virtual string16 CancelSignInText() const OVERRIDE;
   virtual string16 ProgressBarText() const OVERRIDE;
+  virtual DialogSignedInState SignedInState() const OVERRIDE;
   virtual const DetailInputs& RequestedFieldsForSection(DialogSection section)
       const OVERRIDE;
   virtual ui::ComboboxModel* ComboboxModelForAutofillType(
@@ -150,6 +151,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // to the requesting site.
   bool TransmissionWillBeSecure() const;
 
+  // Convenience method to tell whether we need to address |action|.
+  bool HasRequiredAction(wallet::RequiredAction action) const;
+
   // Initializes |suggested_email_| et al.
   void GenerateSuggestionsModels();
 
@@ -196,10 +200,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Like RequestedFieldsForSection, but returns a pointer.
   DetailInputs* MutableRequestedFieldsForSection(DialogSection section);
-
-  // Turns a required action into a notification.
-  DialogNotification RequiredActionNotification(
-      const std::vector<wallet::RequiredAction>& required_actions) const;
 
   // Hides |popup_controller_|'s popup view, if it exists.
   void HidePopup();
