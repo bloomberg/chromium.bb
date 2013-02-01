@@ -659,22 +659,35 @@ void ProxyResolverV8Tracing::Job::DoDnsOperation(
   if (cancelled_.IsSet())
     return;
 
+  HostResolver::RequestHandle dns_request = NULL;
   int result = host_resolver()->Resolve(
       MakeDnsRequestInfo(host, op),
       &pending_dns_addresses_,
       base::Bind(&Job::OnDnsOperationComplete, this),
-      &pending_dns_,
+      &dns_request,
       bound_net_log_);
 
   bool completed_synchronously = result != ERR_IO_PENDING;
 
+  // Check if the request was cancelled as a side-effect of calling into the
+  // HostResolver. This isn't the ordinary execution flow, however it is
+  // exercised by unit-tests.
+  if (cancelled_.IsSet()) {
+    if (!completed_synchronously)
+      host_resolver()->CancelRequest(dns_request);
+    return;
+  }
+
+  if (!completed_synchronously) {
+    DCHECK(dns_request);
+    pending_dns_ = dns_request;
+  }
+
   if (!blocking_dns_) {
     // Check if the DNS result can be serviced directly from the cache.
     // (The worker thread is blocked waiting for this information).
-    if (completed_synchronously) {
+    if (completed_synchronously)
       SaveDnsToLocalCache(host, op, result, pending_dns_addresses_);
-      pending_dns_ = NULL;
-    }
 
     // Important: Do not read/write |out_cache_hit| after signalling, since
     // the memory may no longer be valid.
@@ -695,7 +708,6 @@ void ProxyResolverV8Tracing::Job::DoDnsOperation(
 void ProxyResolverV8Tracing::Job::OnDnsOperationComplete(int result) {
   CheckIsOnOriginThread();
 
-  DCHECK(pending_dns_);
   DCHECK(!cancelled_.IsSet());
 
   SaveDnsToLocalCache(pending_dns_host_, pending_dns_op_, result,

@@ -761,7 +761,6 @@ class BlockableHostResolver : public HostResolver {
                       const BoundNetLog& net_log) OVERRIDE {
     EXPECT_FALSE(callback.is_null());
     EXPECT_TRUE(out_req);
-    *out_req = reinterpret_cast<RequestHandle*>(1);  // Magic value.
 
     if (!action_.is_null())
       action_.Run();
@@ -769,6 +768,11 @@ class BlockableHostResolver : public HostResolver {
     // Indicate to the caller that a request was received.
     EXPECT_TRUE(waiting_for_resolve_);
     MessageLoop::current()->Quit();
+
+    // This line is intentionally after action_.Run(), since one of the
+    // tests does a cancellation inside of Resolve(), and it is more
+    // interesting if *out_req hasn't been written yet at that point.
+    *out_req = reinterpret_cast<RequestHandle*>(1);  // Magic value.
 
     // Return ERR_IO_PENDING as this request will NEVER be completed.
     // Expectation is for the caller to later cancel the request.
@@ -849,6 +853,16 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileOutstandingNonBlockingDns) {
   // should have been cancelled.
 }
 
+void CancelRequestAndPause(ProxyResolverV8Tracing* resolver,
+                           ProxyResolver::RequestHandle request) {
+  resolver->CancelRequest(request);
+
+  // Sleep for a little bit. This makes it more likely for the worker
+  // thread to have returned from its call, and serves as a regression
+  // test for http://crbug.com/173373.
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(30));
+}
+
 // In non-blocking mode, the worker thread actually does block for
 // a short time to see if the result is in the DNS cache. Test
 // cancellation while the worker thread is waiting on this event.
@@ -868,8 +882,8 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileBlockedInNonBlockingDns) {
 
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  host_resolver.SetAction(base::Bind(&ProxyResolverV8Tracing::CancelRequest,
-                                     base::Unretained(&resolver), request));
+  host_resolver.SetAction(
+      base::Bind(CancelRequestAndPause, &resolver, request));
 
   host_resolver.WaitUntilRequestIsReceived();
 
