@@ -172,9 +172,10 @@ class ContentViewGestureHandler implements LongPressDelegate {
     static final int GESTURE_LONG_TAP = 14;
 
     // These have to be kept in sync with content/port/common/input_event_ack_state.h
-    static final int INPUT_EVENT_ACK_STATE_CONSUMED = 0;
-    static final int INPUT_EVENT_ACK_STATE_NOT_CONSUMED = 1;
-    static final int INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS = 2;
+    static final int INPUT_EVENT_ACK_STATE_UNKNOWN = 0;
+    static final int INPUT_EVENT_ACK_STATE_CONSUMED = 1;
+    static final int INPUT_EVENT_ACK_STATE_NOT_CONSUMED = 2;
+    static final int INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS = 3;
 
     /**
      * This is an interface to handle MotionEvent related communication with the native side also
@@ -788,6 +789,10 @@ class ContentViewGestureHandler implements LongPressDelegate {
         MotionEvent ackedEvent = mPendingMotionEvents.removeFirst();
         MotionEvent nextEvent = mPendingMotionEvents.peekFirst();
         switch (ackResult) {
+            case INPUT_EVENT_ACK_STATE_UNKNOWN:
+                // This should never get sent.
+                assert(false);
+                break;
             case INPUT_EVENT_ACK_STATE_CONSUMED:
                 mJavaScriptIsConsumingGesture = true;
                 mZoomManager.passTouchEventThrough(ackedEvent);
