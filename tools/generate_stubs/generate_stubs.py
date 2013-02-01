@@ -76,7 +76,8 @@ SIGNATURE_REGEX = re.compile('(?P<return_type>.+?)'
 INVALID_C_IDENT_CHARS = re.compile('[^_a-zA-Z0-9]')
 
 # Constants defning the supported file types options.
-FILE_TYPE_WIN = 'windows_lib'
+FILE_TYPE_WIN_X86 = 'windows_lib'
+FILE_TYPE_WIN_X64 = 'windows_lib_x64'
 FILE_TYPE_POSIX_STUB = 'posix_stubs'
 FILE_TYPE_WIN_DEF = 'windows_def'
 
@@ -452,7 +453,8 @@ def QuietRun(args, filter=None, write_to=sys.stdout):
   return popen.returncode
 
 
-def CreateWindowsLib(module_name, signatures, intermediate_dir, outdir_path):
+def CreateWindowsLib(module_name, signatures, intermediate_dir, outdir_path,
+                     machine):
   """Creates a windows library file.
 
   Calling this function will create a lib file in the outdir_path that exports
@@ -465,6 +467,7 @@ def CreateWindowsLib(module_name, signatures, intermediate_dir, outdir_path):
                 to create stubs for.
     intermediate_dir: The directory where the generated .def files should go.
     outdir_path: The directory where generated .lib files should go.
+    machine: String holding the machine type, 'X86' or 'X64'.
 
   Raises:
     SubprocessError: If invoking the windows "lib" tool fails, this is raised
@@ -483,7 +486,8 @@ def CreateWindowsLib(module_name, signatures, intermediate_dir, outdir_path):
   # Invoke the "lib" program on Windows to create stub .lib files for the
   # generated definitions.  These .lib files can then be used during
   # delayloading of the dynamic libraries.
-  ret = QuietRun(['lib', '/nologo', '/machine:X86',
+  ret = QuietRun(['lib', '/nologo',
+                  '/machine:' + machine,
                   '/def:' + def_file_path,
                   '/out:' + lib_file_path],
                  filter='   Creating library')
@@ -882,9 +886,10 @@ def CreateOptionParser():
                     '--type',
                     dest='type',
                     default=None,
-                    help=('Type of file. Valid types are "%s" or "%s" or "%s"' %
-                          (FILE_TYPE_POSIX_STUB, FILE_TYPE_WIN,
-                           FILE_TYPE_WIN_DEF)))
+                    help=('Type of file. Valid types are "%s" or "%s" or "%s" '
+                          'or "%s"' %
+                          (FILE_TYPE_POSIX_STUB, FILE_TYPE_WIN_X86,
+                           FILE_TYPE_WIN_X64, FILE_TYPE_WIN_DEF)))
   parser.add_option('-s',
                     '--stubfile_name',
                     dest='stubfile_name',
@@ -901,14 +906,16 @@ def CreateOptionParser():
                           'header guard and namespace for our initializer '
                           'functions and does NOT affect the physical output '
                           'location of the file like -o does.  Ignored for '
-                          ' %s type.' % FILE_TYPE_WIN))
+                          '%s and %s types.' %
+                          (FILE_TYPE_WIN_X86, FILE_TYPE_WIN_X64)))
   parser.add_option('-e',
                     '--extra_stub_header',
                     dest='extra_stub_header',
                     default=None,
                     help=('File to insert after the system includes in the '
                           'generated stub implemenation file. Ignored for '
-                          '%s type.' % FILE_TYPE_WIN))
+                          '%s and %s types.' %
+                          (FILE_TYPE_WIN_X86, FILE_TYPE_WIN_X64)))
   parser.add_option('-m',
                     '--module_name',
                     dest='module_name',
@@ -936,7 +943,8 @@ def ParseOptions():
     parser.error('Output location not specified')
 
   if (options.type not in
-      [FILE_TYPE_WIN, FILE_TYPE_POSIX_STUB, FILE_TYPE_WIN_DEF]):
+      [FILE_TYPE_WIN_X86, FILE_TYPE_WIN_X64, FILE_TYPE_POSIX_STUB,
+       FILE_TYPE_WIN_DEF]):
     parser.error('Invalid output file type: %s' % options.type)
 
   if options.type == FILE_TYPE_POSIX_STUB:
@@ -988,7 +996,7 @@ def CreateOutputDirectories(options):
   return out_dir, intermediate_dir
 
 
-def CreateWindowsLibForSigFiles(sig_files, out_dir, intermediate_dir):
+def CreateWindowsLibForSigFiles(sig_files, out_dir, intermediate_dir, machine):
   """For each signature file, create a windows lib.
 
   Args:
@@ -996,13 +1004,15 @@ def CreateWindowsLibForSigFiles(sig_files, out_dir, intermediate_dir):
     out_dir: String holding path to directory where the generated libs go.
     intermediate_dir: String holding path to directory generated intermdiate
                       artifacts.
+    machine: String holding the machine type, 'X86' or 'X64'.
   """
   for input_path in sig_files:
     infile = open(input_path, 'r')
     try:
       signatures = ParseSignatures(infile)
       module_name = ExtractModuleName(os.path.basename(input_path))
-      CreateWindowsLib(module_name, signatures, intermediate_dir, out_dir)
+      CreateWindowsLib(module_name, signatures, intermediate_dir, out_dir,
+                       machine)
     finally:
       infile.close()
 
@@ -1105,8 +1115,10 @@ def main():
   options, args = ParseOptions()
   out_dir, intermediate_dir = CreateOutputDirectories(options)
 
-  if options.type == FILE_TYPE_WIN:
-    CreateWindowsLibForSigFiles(args, out_dir, intermediate_dir)
+  if options.type == FILE_TYPE_WIN_X86:
+    CreateWindowsLibForSigFiles(args, out_dir, intermediate_dir, 'X86')
+  elif options.type == FILE_TYPE_WIN_X64:
+    CreateWindowsLibForSigFiles(args, out_dir, intermediate_dir, 'X64')
   elif options.type == FILE_TYPE_POSIX_STUB:
     CreatePosixStubsForSigFiles(args, options.stubfile_name, out_dir,
                                 intermediate_dir, options.path_from_source,
