@@ -88,8 +88,6 @@
         '../third_party/skia/src/pdf/SkPDFUtils.h',
 
         '../third_party/skia/src/ports/FontHostConfiguration_android.cpp',
-        '../third_party/skia/src/ports/SkFontDescriptor.cpp',
-        '../third_party/skia/src/ports/SkFontDescriptor.h',
         #'../third_party/skia/src/ports/SkFontHost_FONTPATH.cpp',
         '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
         '../third_party/skia/src/ports/SkFontHost_FreeType_common.cpp',

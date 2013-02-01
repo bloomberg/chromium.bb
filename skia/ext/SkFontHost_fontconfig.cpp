@@ -32,7 +32,7 @@
 #include <unistd.h>
 
 #include "base/compiler_specific.h"
-#include "third_party/skia/src/ports/SkFontDescriptor.h"
+#include "third_party/skia/src/core/SkFontDescriptor.h"
 #include "SkFontHost.h"
 #include "SkStream.h"
 #include "SkFontHost_fontconfig_control.h"
