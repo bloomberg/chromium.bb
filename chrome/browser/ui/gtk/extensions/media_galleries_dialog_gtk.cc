@@ -101,13 +101,14 @@ void MediaGalleriesDialogGtk::UpdateGallery(
     widget = iter->second;
   } else {
     widget = gtk_check_button_new();
-    gtk_widget_set_tooltip_text(widget, UTF16ToUTF8(
-        MediaGalleriesDialogController::GetGalleryTooltip(*gallery)).c_str());
     g_signal_connect(widget, "toggled", G_CALLBACK(OnToggledThunk), this);
     gtk_box_pack_start(GTK_BOX(checkbox_container_), widget, FALSE, FALSE, 0);
     gtk_widget_show(widget);
     checkbox_map_[gallery] = widget;
   }
+
+  gtk_widget_set_tooltip_text(widget, UTF16ToUTF8(
+      MediaGalleriesDialogController::GetGalleryTooltip(*gallery)).c_str());
 
   base::AutoReset<bool> reset(&ignore_toggles_, true);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), permitted);
@@ -135,7 +136,7 @@ void MediaGalleriesDialogGtk::OnToggled(GtkWidget* widget) {
   if (ignore_toggles_)
     return;
 
-  for (CheckboxMap::iterator iter = checkbox_map_.begin();
+  for (CheckboxMap::const_iterator iter = checkbox_map_.begin();
        iter != checkbox_map_.end(); ++iter) {
     if (iter->second == widget) {
       controller_->DidToggleGallery(

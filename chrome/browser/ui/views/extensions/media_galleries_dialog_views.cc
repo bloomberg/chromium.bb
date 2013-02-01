@@ -108,18 +108,20 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
     bool permitted) {
   string16 label =
       MediaGalleriesDialogController::GetGalleryDisplayName(*gallery);
+  string16 tooltip_text =
+      MediaGalleriesDialogController::GetGalleryTooltip(*gallery);
   CheckboxMap::iterator iter = checkbox_map_.find(gallery);
   if (iter != checkbox_map_.end()) {
     views::Checkbox* checkbox = iter->second;
     checkbox->SetChecked(permitted);
     checkbox->SetText(label);
+    checkbox->SetTooltipText(tooltip_text);
     return false;
   }
 
   views::Checkbox* checkbox = new views::Checkbox(label);
   checkbox->set_listener(this);
-  checkbox->SetTooltipText(
-      MediaGalleriesDialogController::GetGalleryTooltip(*gallery));
+  checkbox->SetTooltipText(tooltip_text);
   checkbox_container_->AddChildView(checkbox);
   checkbox->SetChecked(permitted);
   checkbox_map_[gallery] = checkbox;
