@@ -12,6 +12,13 @@ NavigationTracker::NavigationTracker() {}
 
 NavigationTracker::~NavigationTracker() {}
 
+Status NavigationTracker::Init(DevToolsClient* client) {
+  // Enable page domain notifications to allow tracking navigation state.
+  base::DictionaryValue params;
+  DCHECK(client);
+  return client->SendCommand("Page.enable", params);
+}
+
 bool NavigationTracker::IsPendingNavigation(const std::string& frame_id) {
   return frame_state_[frame_id].IsPendingNavigation();
 }

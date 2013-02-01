@@ -10,11 +10,16 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/test/chromedriver/devtools_client.h"
 #include "chrome/test/chromedriver/devtools_event_listener.h"
+#include "chrome/test/chromedriver/status.h"
 
 namespace base {
 class DictionaryValue;
 }
+
+class DevToolsClient;
+class Status;
 
 // Tracks the navigation state of frames.
 class NavigationTracker : public DevToolsEventListener {
@@ -22,6 +27,7 @@ class NavigationTracker : public DevToolsEventListener {
   NavigationTracker();
   virtual ~NavigationTracker();
 
+  Status Init(DevToolsClient* client);
   bool IsPendingNavigation(const std::string& frame_id);
 
   // Overridden from DevToolsEventListener:

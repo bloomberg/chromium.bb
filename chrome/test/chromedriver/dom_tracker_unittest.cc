@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <list>
 #include <string>
 
 #include "base/json/json_reader.h"
@@ -10,8 +11,49 @@
 #include "chrome/test/chromedriver/status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+class FakeDevToolsClient : public DevToolsClient {
+ public:
+  FakeDevToolsClient() {}
+  virtual ~FakeDevToolsClient() {}
+
+  std::string PopSentCommand() {
+    std::string command;
+    if (!sent_command_queue_.empty()) {
+      command = sent_command_queue_.front();
+      sent_command_queue_.pop_front();
+    }
+    return command;
+  }
+
+  // Overridden from DevToolsClient:
+  virtual Status SendCommand(const std::string& method,
+                             const base::DictionaryValue& params) OVERRIDE {
+    sent_command_queue_.push_back(method);
+    return Status(kOk);
+  }
+  virtual Status SendCommandAndGetResult(
+      const std::string& method,
+      const base::DictionaryValue& params,
+      scoped_ptr<base::DictionaryValue>* result) OVERRIDE {
+    return SendCommand(method, params);
+  }
+  virtual void AddListener(DevToolsEventListener* listener) OVERRIDE {}
+  virtual Status HandleEventsUntil(
+      const ConditionalFunc& conditional_func) OVERRIDE {
+    return Status(kOk);
+  }
+
+ private:
+  std::list<std::string> sent_command_queue_;
+};
+
+}  // namespace
+
 TEST(DomTracker, GetFrameIdForNode) {
-  DomTracker tracker;
+  FakeDevToolsClient client;
+  DomTracker tracker(&client);
   std::string frame_id;
   ASSERT_TRUE(tracker.GetFrameIdForNode(101, &frame_id).IsError());
   ASSERT_TRUE(frame_id.empty());
@@ -31,4 +73,5 @@ TEST(DomTracker, GetFrameIdForNode) {
 
   tracker.OnEvent("DOM.documentUpdated", params);
   ASSERT_TRUE(tracker.GetFrameIdForNode(102, &frame_id).IsError());
+  ASSERT_STREQ("DOM.getDocument", client.PopSentCommand().c_str());
 }

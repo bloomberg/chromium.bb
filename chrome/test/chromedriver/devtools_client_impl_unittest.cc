@@ -320,8 +320,8 @@ bool ReturnEventThenResponse(
     *type = internal::kCommandResponseMessageType;
     command_response->id = expected_id;
     base::DictionaryValue params;
-    params.SetInteger("key", 2);
-    command_response->result.reset(params.DeepCopy());
+    command_response->result.reset(new base::DictionaryValue());
+    command_response->result->SetInteger("key", 2);
   }
   *first = false;
   return true;
@@ -337,6 +337,40 @@ bool ReturnEvent(
   event->method = "method";
   event->params.reset(new base::DictionaryValue());
   event->params->SetInteger("key", 1);
+  return true;
+}
+
+bool ReturnOutOfOrderResponses(
+    int* recurse_count,
+    DevToolsClient* client,
+    const std::string& message,
+    int expected_id,
+    internal::InspectorMessageType* type,
+    internal::InspectorEvent* event,
+    internal::InspectorCommandResponse* command_response) {
+  int key = 0;
+  base::DictionaryValue params;
+  params.SetInteger("param", 1);
+  switch ((*recurse_count)++) {
+    case 0:
+      client->SendCommand("method", params);
+      *type = internal::kEventMessageType;
+      event->method = "method";
+      event->params.reset(new base::DictionaryValue());
+      event->params->SetInteger("key", 1);
+      return true;
+    case 1:
+      command_response->id = expected_id - 1;
+      key = 2;
+      break;
+    case 2:
+      command_response->id = expected_id;
+      key = 3;
+      break;
+  }
+  *type = internal::kCommandResponseMessageType;
+  command_response->result.reset(new base::DictionaryValue());
+  command_response->result->SetInteger("key", key);
   return true;
 }
 
@@ -511,4 +545,21 @@ TEST(DevToolsClientImpl, WaitForNextEventError) {
       &ReturnError));
   Status status = client.HandleEventsUntil(base::Bind(&AlwaysTrue));
   ASSERT_EQ(kUnknownError, status.code());
+}
+
+TEST(DevToolsClientImpl, NestedCommandsWithOutOfOrderResults) {
+  SyncWebSocketFactory factory =
+      base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
+  int recurse_count = 0;
+  DevToolsClientImpl client(factory, "http://url");
+  client.SetParserFuncForTesting(
+      base::Bind(&ReturnOutOfOrderResponses, &recurse_count, &client));
+  base::DictionaryValue params;
+  params.SetInteger("param", 1);
+  scoped_ptr<base::DictionaryValue> result;
+  ASSERT_TRUE(client.SendCommandAndGetResult("method", params, &result).IsOk());
+  ASSERT_TRUE(result);
+  int key;
+  ASSERT_TRUE(result->GetInteger("key", &key));
+  ASSERT_EQ(2, key);
 }

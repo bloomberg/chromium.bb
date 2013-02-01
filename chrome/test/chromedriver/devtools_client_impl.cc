@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/devtools_event_listener.h"
 #include "chrome/test/chromedriver/net/sync_websocket.h"
@@ -44,7 +45,18 @@ DevToolsClientImpl::DevToolsClientImpl(
       connected_(false),
       next_id_(1) {}
 
-DevToolsClientImpl::~DevToolsClientImpl() {}
+DevToolsClientImpl::~DevToolsClientImpl() {
+  for (ResponseMap::iterator iter = cmd_response_map_.begin();
+       iter != cmd_response_map_.end(); ++iter) {
+    LOG(WARNING) << "Finished with no response for command " << iter->first;
+    delete iter->second;
+  }
+}
+
+void DevToolsClientImpl::SetParserFuncForTesting(
+    const ParserFunc& parser_func) {
+  parser_func_ = parser_func;
+}
 
 Status DevToolsClientImpl::SendCommand(
     const std::string& method,
@@ -80,11 +92,8 @@ Status DevToolsClientImpl::HandleEventsUntil(
 
   while (socket_->HasNextMessage() || !conditional_func.Run()) {
     Status status = ReceiveNextMessage(-1, &type, &event, &response);
-    if (status.IsError()) {
+    if (status.IsError())
       return status;
-    } else if (type == internal::kCommandResponseMessageType) {
-      return Status(kUnknownError, "unexpected command message");
-    }
   }
   return Status(kOk);
 }
@@ -110,7 +119,6 @@ Status DevToolsClientImpl::SendCommandInternal(
     connected_ = false;
     return Status(kDisconnected, "unable to send message to renderer");
   }
-
   return ReceiveCommandResponse(command_id, result);
 }
 
@@ -120,22 +128,15 @@ Status DevToolsClientImpl::ReceiveCommandResponse(
   internal::InspectorMessageType type;
   internal::InspectorEvent event;
   internal::InspectorCommandResponse response;
-  while (true) {
+  cmd_response_map_[command_id] = NULL;
+  while (cmd_response_map_[command_id] == NULL) {
     Status status = ReceiveNextMessage(command_id, &type, &event, &response);
-    if (status.IsError()) {
+    if (status.IsError())
       return status;
-    } else if (type == internal::kCommandResponseMessageType) {
-      if (response.id != command_id) {
-        return Status(kUnknownError,
-                      "received response for unknown command ID");
-      }
-      if (response.result) {
-        result->reset(response.result.release());
-        return Status(kOk);
-      }
-      return Status(kUnknownError, "inspector error: " + response.error);
-    }
   }
+  result->reset(cmd_response_map_[command_id]);
+  cmd_response_map_.erase(command_id);
+  return Status(kOk);
 }
 
 Status DevToolsClientImpl::ReceiveNextMessage(
@@ -153,6 +154,15 @@ Status DevToolsClientImpl::ReceiveNextMessage(
     return Status(kUnknownError, "bad inspector message: " + message);
   if (*type == internal::kEventMessageType)
     return NotifyEventListeners(event->method, *event->params);
+  if (*type == internal::kCommandResponseMessageType) {
+    if (cmd_response_map_.count(response->id) == 0) {
+      return Status(kUnknownError, "unexpected command message");
+    } else if (response->result) {
+      cmd_response_map_[response->id] = response->result.release();
+    } else {
+      return Status(kUnknownError, "inspector error: " + response->error);
+    }
+  }
   return Status(kOk);
 }
 

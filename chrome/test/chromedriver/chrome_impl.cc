@@ -110,7 +110,6 @@ ChromeImpl::ChromeImpl(base::ProcessHandle process,
       context_getter_(context_getter),
       port_(port),
       socket_factory_(socket_factory),
-      dom_tracker_(new DomTracker()),
       frame_tracker_(new FrameTracker()),
       navigation_tracker_(new NavigationTracker()) {
   if (user_data_dir->IsValid()) {
@@ -136,23 +135,20 @@ Status ChromeImpl::Init() {
     return Status(kUnknownError, "unable to discover open pages");
   client_.reset(new DevToolsClientImpl(
       socket_factory_, debugger_urls.front()));
+  dom_tracker_.reset(new DomTracker(client_.get()));
+  Status status = dom_tracker_->Init();
+  if (status.IsError())
+    return status;
+  status = frame_tracker_->Init(client_.get());
+  if (status.IsError())
+    return status;
+  status = navigation_tracker_->Init(client_.get());
+  if (status.IsError())
+    return status;
   client_->AddListener(dom_tracker_.get());
   client_->AddListener(frame_tracker_.get());
   client_->AddListener(navigation_tracker_.get());
-
-  // Perform necessary configuration of the DevTools client.
-  // Fetch the root document node so that Inspector will push DOM node
-  // information to the client.
-  base::DictionaryValue params;
-  Status status = client_->SendCommand("DOM.getDocument", params);
-  if (status.IsError())
-    return status;
-  // Enable page domain notifications to allow tracking navigation state.
-  status = client_->SendCommand("Page.enable", params);
-  if (status.IsError())
-    return status;
-  // Enable runtime events to allow tracking execution context creation.
-  return client_->SendCommand("Runtime.enable", params);
+  return Status(kOk);
 }
 
 Status ChromeImpl::Load(const std::string& url) {

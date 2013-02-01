@@ -9,11 +9,19 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/devtools_client.h"
 #include "chrome/test/chromedriver/status.h"
 
 FrameTracker::FrameTracker() {}
 
 FrameTracker::~FrameTracker() {}
+
+Status FrameTracker::Init(DevToolsClient* client) {
+  // Enable runtime events to allow tracking execution context creation.
+  base::DictionaryValue params;
+  DCHECK(client);
+  return client->SendCommand("Runtime.enable", params);
+}
 
 Status FrameTracker::GetFrameForContextId(
     int context_id, std::string* frame_id) {

@@ -11,9 +11,18 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/status.h"
 
-DomTracker::DomTracker() {}
+DomTracker::DomTracker(DevToolsClient* client) : client_(client) {
+  DCHECK(client_);
+}
 
 DomTracker::~DomTracker() {}
+
+Status DomTracker::Init() {
+  // Fetch the root document node so that Inspector will push DOM node
+  // information to the client.
+  base::DictionaryValue params;
+  return client_->SendCommand("DOM.getDocument", params);
+}
 
 Status DomTracker::GetFrameIdForNode(
     int node_id, std::string* frame_id) {
@@ -38,6 +47,8 @@ void DomTracker::OnEvent(const std::string& method,
     }
   } else if (method == "DOM.documentUpdated") {
     node_to_frame_map_.clear();
+    base::DictionaryValue params;
+    client_->SendCommand("DOM.getDocument", params);
   }
 }
 

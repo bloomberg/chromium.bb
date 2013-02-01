@@ -6,6 +6,7 @@
 #define CHROME_TEST_CHROMEDRIVER_DEVTOOLS_CLIENT_IMPL_H_
 
 #include <list>
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -50,7 +51,6 @@ class SyncWebSocket;
 
 class DevToolsClientImpl : public DevToolsClient {
  public:
-  // Listener may be NULL.
   DevToolsClientImpl(const SyncWebSocketFactory& factory,
                      const std::string& url);
 
@@ -65,6 +65,8 @@ class DevToolsClientImpl : public DevToolsClient {
                      const ParserFunc& parser_func);
 
   virtual ~DevToolsClientImpl();
+
+  void SetParserFuncForTesting(const ParserFunc& parser_func);
 
   // Overridden from DevToolsClient:
   virtual Status SendCommand(const std::string& method,
@@ -96,6 +98,8 @@ class DevToolsClientImpl : public DevToolsClient {
   GURL url_;
   ParserFunc parser_func_;
   std::list<DevToolsEventListener*> listeners_;
+  typedef std::map<int, base::DictionaryValue*> ResponseMap;
+  ResponseMap cmd_response_map_;
   bool connected_;
   int next_id_;
 

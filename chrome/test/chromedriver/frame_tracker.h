@@ -17,6 +17,7 @@ class DictionaryValue;
 class Value;
 }
 
+class DevToolsClient;
 class Status;
 
 // Tracks execution context creation.
@@ -25,6 +26,7 @@ class FrameTracker : public DevToolsEventListener {
   FrameTracker();
   virtual ~FrameTracker();
 
+  Status Init(DevToolsClient* client);
   Status GetFrameForContextId(int context_id, std::string* frame_id);
   Status GetContextIdForFrame(const std::string& frame_id, int* context_id);
 
