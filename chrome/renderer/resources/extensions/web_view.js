@@ -167,7 +167,7 @@ WebView.prototype.handleObjectMutation_ = function(mutation) {
 WebView.prototype.setupEvent_ = function(eventname, attribs) {
   var node = this.node_;
   this.objectNode_.addEventListener('-internal-' + eventname, function(e) {
-    var evt = new Event(eventname);
+    var evt = new Event(eventname, { bubbles: true });
     var detail = e.detail ? JSON.parse(e.detail) : {};
     attribs.forEach(function(attribName) {
       evt[attribName] = detail[attribName];
