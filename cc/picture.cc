@@ -108,6 +108,10 @@ void Picture::Raster(
   canvas->restore();
 }
 
+bool Picture::IsCheapInRect(const gfx::Rect& layer_rect) {
+  return false;
+}
+
 void Picture::GatherPixelRefs(const gfx::Rect& layer_rect,
                               std::list<skia::LazyPixelRef*>& pixel_ref_list) {
   DCHECK(picture_);

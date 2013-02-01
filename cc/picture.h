@@ -42,6 +42,8 @@ class CC_EXPORT Picture
   // Apply this contents scale and raster the content rect into the canvas.
   void Raster(SkCanvas* canvas, gfx::Rect content_rect, float contents_scale);
 
+  bool IsCheapInRect(const gfx::Rect& layer_rect);
+
   void GatherPixelRefs(
       const gfx::Rect& layer_rect,
       std::list<skia::LazyPixelRef*>& pixel_ref_list);
