@@ -13,9 +13,9 @@
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
-#include "chrome/common/extensions/draggable_region.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/draggable_region.h"
 #include "ui/gfx/rect.h"
 
 class ExtensionKeybindingRegistryCocoa;

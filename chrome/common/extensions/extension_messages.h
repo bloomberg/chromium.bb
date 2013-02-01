@@ -10,7 +10,6 @@
 
 #include "base/shared_memory.h"
 #include "base/values.h"
-#include "chrome/common/extensions/draggable_region.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/bluetooth_device_permission_data.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission_data.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/web_apps.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/socket_permission_request.h"
+#include "extensions/common/draggable_region.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "googleurl/src/gurl.h"

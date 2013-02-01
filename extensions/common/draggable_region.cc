@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/draggable_region.h"
+#include "extensions/common/draggable_region.h"
 
 namespace extensions {
 

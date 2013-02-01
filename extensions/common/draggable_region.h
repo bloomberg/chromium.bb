@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_DRAGGABLE_REGION_H_
-#define CHROME_COMMON_EXTENSIONS_DRAGGABLE_REGION_H_
+#ifndef EXTENSIONS_COMMON_DRAGGABLE_REGION_H_
+#define EXTENSIONS_COMMON_DRAGGABLE_REGION_H_
 
 #include "ui/gfx/rect.h"
 
@@ -18,4 +18,4 @@ struct DraggableRegion {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_DRAGGABLE_REGION_H_
+#endif  // EXTENSIONS_COMMON_DRAGGABLE_REGION_H_

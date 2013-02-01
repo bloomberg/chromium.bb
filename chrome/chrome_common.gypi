@@ -54,6 +54,8 @@
       'sources': [
         '../extensions/common/constants.cc',
         '../extensions/common/constants.h',
+        '../extensions/common/draggable_region.cc',
+        '../extensions/common/draggable_region.h',
         '../extensions/common/error_utils.cc',
         '../extensions/common/error_utils.h',
         '../extensions/common/install_warning.h',
@@ -154,8 +156,6 @@
         'common/extensions/command.h',
         'common/extensions/csp_validator.cc',
         'common/extensions/csp_validator.h',
-        'common/extensions/draggable_region.cc',
-        'common/extensions/draggable_region.h',
         'common/extensions/event_filter.cc',
         'common/extensions/event_filter.h',
         'common/extensions/event_filtering_info.cc',
