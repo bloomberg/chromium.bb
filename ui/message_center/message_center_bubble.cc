@@ -369,32 +369,6 @@ class MessageViewShadowBorder : public views::Border {
   }
 };
 
-// A layout manager which is similar to views::FillLayout but respects the
-// border.
-class FillWithBorderLayout : public views::LayoutManager {
- public:
-  FillWithBorderLayout() {}
-  virtual ~FillWithBorderLayout() {}
-
-  // views::LayoutManager overrides:
-  virtual void Layout(views::View* host) OVERRIDE {
-    if (!host->has_children())
-      return;
-    host->child_at(0)->SetBoundsRect(host->GetContentsBounds());
-  }
-
-  virtual gfx::Size GetPreferredSize(views::View* host) OVERRIDE {
-    DCHECK_EQ(1, host->child_count());
-    gfx::Size size = host->child_at(0)->GetPreferredSize();
-    gfx::Insets insets = host->GetInsets();
-    size.Enlarge(insets.width(), insets.height());
-    return size;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FillWithBorderLayout);
-};
-
 }  // namespace
 
 // Message Center contents.
@@ -440,15 +414,9 @@ class MessageCenterContentsView : public views::View {
           NotificationView::ViewForNotification(*iter, list_delegate_);
       view->set_scroller(scroller_);
       view->SetUpView();
-      if (UseNewDesign()) {
-        views::View* container = new views::View();
-        container->SetLayoutManager(new FillWithBorderLayout());
-        container->set_border(new MessageViewShadowBorder());
-        container->AddChildView(view);
-        scroll_content_->AddChildView(container);
-      } else {
-        scroll_content_->AddChildView(view);
-      }
+      if (UseNewDesign())
+        view->set_border(new MessageViewShadowBorder());
+      scroll_content_->AddChildView(view);
       if (++num_children >=
           NotificationList::kMaxVisibleMessageCenterNotifications) {
         break;

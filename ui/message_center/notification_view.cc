@@ -240,17 +240,25 @@ NotificationView::~NotificationView() {
 
 void NotificationView::Layout() {
   if (content_view_) {
-    content_view_->SetBoundsRect(GetLocalBounds());
+    gfx::Rect contents_bounds = GetContentsBounds();
+    content_view_->SetBoundsRect(contents_bounds);
     if (close_button()) {
       gfx::Size size(close_button()->GetPreferredSize());
-      close_button()->SetBounds(width() - size.width(), 0,
+      close_button()->SetBounds(contents_bounds.right() - size.width(), 0,
                                 size.width(), size.height());
     }
   }
 }
 
 gfx::Size NotificationView::GetPreferredSize() {
-  return content_view_ ? content_view_->GetPreferredSize() : gfx::Size();
+  if (!content_view_)
+    return gfx::Size();
+  gfx::Size size = content_view_->GetPreferredSize();
+  if (border()) {
+    gfx::Insets border_insets = border()->GetInsets();
+    size.Enlarge(border_insets.width(), border_insets.height());
+  }
+  return size;
 }
 
 void NotificationView::SetUpView() {
@@ -260,7 +268,6 @@ void NotificationView::SetUpView() {
   // expand button. This allows the close and expand buttons to overlap the
   // content as needed to provide a large enough click area
   // (<http://crbug.com/168822> and touch area <http://crbug.com/168856>).
-  set_background(views::Background::CreateSolidBackground(kBackgroundColor));
   AddChildView(MakeContentView());
   AddChildView(close_button());
 }
@@ -278,6 +285,8 @@ void NotificationView::ButtonPressed(views::Button* sender,
 
 views::View* NotificationView::MakeContentView() {
   content_view_ = new views::View();
+  content_view_->set_background(
+      views::Background::CreateSolidBackground(kBackgroundColor));
 
   // The top part of the content view is composed of an icon view on the left
   // and a certain number of text views on the right (title and message or list
