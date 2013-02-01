@@ -55,9 +55,7 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate {
   virtual void WillHideMenu(MenuItemView* menu) OVERRIDE;
 
  private:
-  // Implementation of BuildMenu().  index_offset is both input and output;
-  // on input it contains the offset from index to command id for the model,
-  // and on output it contains the offset for the next model.
+  // Implementation of BuildMenu().
   void BuildMenuImpl(MenuItemView* menu, ui::MenuModel* model);
 
   // Container of ui::MenuModel pointers as encountered by preorder

@@ -306,6 +306,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   void set_has_icons(bool has_icons) {
     has_icons_ = has_icons;
   }
+  bool has_icons() const { return has_icons_; }
 
   // Returns the descendant with the specified command.
   MenuItemView* GetMenuItemByID(int id);
@@ -443,6 +444,9 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Returns the max icon width; recurses over submenus.
   int GetMaxIconViewWidth() const;
+
+  // Returns true if the menu has items with a checkbox or a radio button.
+  bool HasChecksOrRadioButtons() const;
 
   // The delegate. This is only valid for the root menu item. You shouldn't
   // use this directly, instead use GetDelegate() which walks the tree as

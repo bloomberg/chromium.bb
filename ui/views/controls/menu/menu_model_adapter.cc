@@ -180,6 +180,7 @@ void MenuModelAdapter::WillHideMenu(MenuItemView* menu) {
 void MenuModelAdapter::BuildMenuImpl(MenuItemView* menu, ui::MenuModel* model) {
   DCHECK(menu);
   DCHECK(model);
+  bool has_icons = model->HasIcons();
   const int item_count = model->GetItemCount();
   for (int i = 0; i < item_count; ++i) {
     MenuItemView* item = menu->AppendMenuItemFromModel(
@@ -194,12 +195,13 @@ void MenuModelAdapter::BuildMenuImpl(MenuItemView* menu, ui::MenuModel* model) {
       ui::MenuModel* submodel = model->GetSubmenuModelAt(i);
       DCHECK(submodel);
       BuildMenuImpl(item, submodel);
+      has_icons = has_icons || item->has_icons();
 
       menu_map_[item] = submodel;
     }
   }
 
-  menu->set_has_icons(model->HasIcons());
+  menu->set_has_icons(has_icons);
 }
 
 }  // namespace views
