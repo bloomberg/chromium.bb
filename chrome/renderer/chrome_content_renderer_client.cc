@@ -47,6 +47,7 @@
 #include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/net/renderer_net_predictor.h"
+#include "chrome/renderer/one_click_signin_agent.h"
 #include "chrome/renderer/page_click_tracker.h"
 #include "chrome/renderer/page_load_histograms.h"
 #include "chrome/renderer/pepper/chrome_ppapi_interfaces.h"
@@ -328,6 +329,10 @@ void ChromeContentRendererClient::RenderViewCreated(
           switches::kDomAutomationController)) {
     new AutomationRendererHelper(render_view);
   }
+#endif
+
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  new OneClickSigninAgent(render_view);
 #endif
 }
 

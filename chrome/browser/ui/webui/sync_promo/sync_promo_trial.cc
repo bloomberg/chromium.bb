@@ -25,6 +25,8 @@ enum {
   UMA_EXTENSION_INSTALL_BUBBLE_SIGNED_IN,
   UMA_UNKNOWN_SHOWN,
   UMA_UNKNOWN_SIGNED_IN,
+  UMA_WEBSTORE_INSTALL_SHOWN,
+  UMA_WEBSTORE_INSTALL_SIGNED_IN,
   UMA_MAX,
 };
 
@@ -52,6 +54,9 @@ void RecordUserShownPromo(content::WebUI* web_ui) {
     case SyncPromoUI::SOURCE_EXTENSION_INSTALL_BUBBLE:
       uma = UMA_EXTENSION_INSTALL_BUBBLE_SHOWN;
       break;
+    case SyncPromoUI::SOURCE_WEBSTORE_INSTALL:
+      uma = UMA_WEBSTORE_INSTALL_SHOWN;
+      break;
     case SyncPromoUI::SOURCE_UNKNOWN:
       uma = UMA_UNKNOWN_SHOWN;
       break;
@@ -59,7 +64,7 @@ void RecordUserShownPromo(content::WebUI* web_ui) {
       // If this assert hits, then the SyncPromoUI::Source enum has changed and
       // the UMA enum above, this switch statement and histograms.xml all need
       // to be updated to reflect that.
-      COMPILE_ASSERT(SyncPromoUI::SOURCE_UNKNOWN == 5,
+      COMPILE_ASSERT(SyncPromoUI::SOURCE_UNKNOWN == 6,
                      kSourceEnumHasChangedButNotThisSwitchStatement);
       NOTREACHED();
       break;
@@ -90,9 +95,12 @@ void RecordUserSignedIn(content::WebUI* web_ui) {
     case SyncPromoUI::SOURCE_UNKNOWN:
       uma = UMA_UNKNOWN_SIGNED_IN;
       break;
+    case SyncPromoUI::SOURCE_WEBSTORE_INSTALL:
+      uma = UMA_WEBSTORE_INSTALL_SIGNED_IN;
+      break;
     default:
       // This switch statement needs to be updated when the enum Source changes.
-      COMPILE_ASSERT(SyncPromoUI::SOURCE_UNKNOWN == 5,
+      COMPILE_ASSERT(SyncPromoUI::SOURCE_UNKNOWN == 6,
                      kSourceEnumHasChangedButNotThisSwitchStatement);
       NOTREACHED();
       break;

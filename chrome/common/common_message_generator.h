@@ -8,6 +8,7 @@
 #include "chrome/common/benchmarking_messages.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/one_click_signin_messages.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/print_messages.h"
 #include "chrome/common/render_messages.h"

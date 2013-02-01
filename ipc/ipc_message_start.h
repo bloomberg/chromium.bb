@@ -74,6 +74,7 @@ enum IPCMessageStart {
   TracingMsgStart,
   PeerConnectionTrackerMsgStart,
   VisitedLinkMsgStart,
+  OneClickSigninMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

@@ -324,6 +324,7 @@
         'common/nacl_messages.h',
         'common/nacl_types.cc',
         'common/nacl_types.h',
+        'common/one_click_signin_messages.h',
         'common/password_form_fill_data.cc',
         'common/password_form_fill_data.h',
         'common/password_generation_util.cc',

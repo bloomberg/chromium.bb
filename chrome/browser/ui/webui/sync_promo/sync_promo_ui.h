@@ -20,6 +20,7 @@ class SyncPromoUI : public content::WebUIController {
     SOURCE_MENU,
     SOURCE_SETTINGS,
     SOURCE_EXTENSION_INSTALL_BUBBLE,
+    SOURCE_WEBSTORE_INSTALL,
     SOURCE_UNKNOWN, // This must be last.
   };
 

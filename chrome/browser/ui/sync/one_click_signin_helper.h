@@ -19,6 +19,7 @@ class ProfileIOData;
 
 namespace content {
 class WebContents;
+struct PasswordForm;
 }
 
 namespace net {
@@ -174,10 +175,11 @@ class OneClickSigninHelper
   // Clear all data member of the helper, except for the error.
   void CleanTransientState();
 
+  // Grab Gaia password if available.
+  bool OnFormSubmitted(const content::PasswordForm& form);
+
   // content::WebContentsObserver overrides.
-  virtual void DidNavigateAnyFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
 
