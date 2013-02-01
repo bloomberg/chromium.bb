@@ -21,16 +21,13 @@ namespace cc {
 class PictureLayerTiling;
 
 class PictureLayerTilingClient {
- public:
-  // Create a tile at the given content_rect (in the contents scale of the
-  // tiling) This might return null if the client cannot create such a tile.
-  virtual scoped_refptr<Tile> CreateTile(
-    PictureLayerTiling* tiling,
-    gfx::Rect content_rect) = 0;
-  virtual void UpdatePile(Tile* tile) = 0;
-  virtual gfx::Size CalculateTileSize(
-    gfx::Size current_tile_size,
-    gfx::Size content_bounds) = 0;
+  public:
+   // Create a tile at the given content_rect (in the contents scale of the
+   // tiling) This might return null if the client cannot create such a tile.
+   virtual scoped_refptr<Tile> CreateTile(
+     PictureLayerTiling* tiling,
+     gfx::Rect content_rect) = 0;
+   virtual void UpdatePile(Tile* tile) = 0;
 };
 
 class CC_EXPORT PictureLayerTiling {
@@ -38,7 +35,8 @@ class CC_EXPORT PictureLayerTiling {
   ~PictureLayerTiling();
 
   // Create a tiling with no tiles.  CreateTiles must be called to add some.
-  static scoped_ptr<PictureLayerTiling> Create(float contents_scale);
+  static scoped_ptr<PictureLayerTiling> Create(float contents_scale,
+                                               gfx::Size tile_size);
   scoped_ptr<PictureLayerTiling> Clone() const;
 
   gfx::Size layer_bounds() const { return layer_bounds_; }
@@ -137,7 +135,7 @@ class CC_EXPORT PictureLayerTiling {
   typedef std::pair<int, int> TileMapKey;
   typedef base::hash_map<TileMapKey, scoped_refptr<Tile> > TileMap;
 
-  PictureLayerTiling(float contents_scale);
+  PictureLayerTiling(float contents_scale, gfx::Size tileSize);
   Tile* TileAt(int, int) const;
   void CreateTilesFromContentRect(gfx::Rect layer_rect);
   void CreateTile(int i, int j);
