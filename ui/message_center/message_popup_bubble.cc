@@ -5,6 +5,7 @@
 #include "ui/message_center/message_popup_bubble.h"
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "ui/message_center/message_view.h"
 #include "ui/message_center/notification_view.h"
 #include "ui/notifications/notification_types.h"
@@ -19,61 +20,14 @@ namespace {
 const int kAutocloseHighPriorityDelaySeconds = 25;
 const int kAutocloseDefaultDelaySeconds = 8;
 
-std::vector<const NotificationList::Notification*> GetNewNotifications(
-    const NotificationList::Notifications& old_list,
-    const NotificationList::Notifications& new_list) {
-  std::set<std::string> existing_ids;
-  std::vector<const NotificationList::Notification*> result;
-  for (NotificationList::Notifications::const_iterator iter = old_list.begin();
-       iter != old_list.end(); ++iter) {
-    existing_ids.insert(iter->id);
-  }
-  for (NotificationList::Notifications::const_iterator iter = new_list.begin();
-       iter != new_list.end(); ++iter) {
-    if (existing_ids.find(iter->id) == existing_ids.end())
-      result.push_back(&(*iter));
-  }
-  return result;
-}
-
 }  // namespace
 
 // Popup notifications contents.
 class PopupBubbleContentsView : public views::View {
  public:
-  explicit PopupBubbleContentsView(NotificationList::Delegate* list_delegate)
-      : list_delegate_(list_delegate) {
-    SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
+  explicit PopupBubbleContentsView(NotificationList::Delegate* list_delegate);
 
-    content_ = new views::View;
-    content_->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
-    AddChildView(content_);
-
-    if (get_use_acceleration_when_possible()) {
-      content_->SetPaintToLayer(true);
-      content_->SetFillsBoundsOpaquely(false);
-      content_->layer()->SetMasksToBounds(true);
-    }
-  }
-
-  void Update(const NotificationList::Notifications& popup_notifications) {
-    content_->RemoveAllChildViews(true);
-    for (NotificationList::Notifications::const_iterator iter =
-             popup_notifications.begin();
-         iter != popup_notifications.end(); ++iter) {
-      MessageView* view =
-          NotificationView::ViewForNotification(*iter, list_delegate_);
-      view->SetUpView();
-      content_->AddChildView(view);
-    }
-    content_->SizeToPreferredSize();
-    content_->InvalidateLayout();
-    Layout();
-    if (GetWidget())
-      GetWidget()->GetRootView()->SchedulePaint();
-  }
+  void Update(const NotificationList::Notifications& popup_notifications);
 
   size_t NumMessageViews() const {
     return content_->child_count();
@@ -86,15 +40,95 @@ class PopupBubbleContentsView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(PopupBubbleContentsView);
 };
 
+PopupBubbleContentsView::PopupBubbleContentsView(
+    NotificationList::Delegate* list_delegate)
+    : list_delegate_(list_delegate) {
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
+
+  content_ = new views::View;
+  content_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
+  AddChildView(content_);
+
+  if (get_use_acceleration_when_possible()) {
+    content_->SetPaintToLayer(true);
+    content_->SetFillsBoundsOpaquely(false);
+    content_->layer()->SetMasksToBounds(true);
+  }
+}
+
+void PopupBubbleContentsView::Update(
+    const NotificationList::Notifications& popup_notifications) {
+  content_->RemoveAllChildViews(true);
+  for (NotificationList::Notifications::const_iterator iter =
+           popup_notifications.begin();
+       iter != popup_notifications.end(); ++iter) {
+    MessageView* view =
+        NotificationView::ViewForNotification(*iter, list_delegate_);
+    view->SetUpView();
+    content_->AddChildView(view);
+  }
+  content_->SizeToPreferredSize();
+  content_->InvalidateLayout();
+  Layout();
+  if (GetWidget())
+    GetWidget()->GetRootView()->SchedulePaint();
+}
+
+// The timer to call OnAutoClose for |notification|.
+class MessagePopupBubble::AutocloseTimer {
+ public:
+  AutocloseTimer(const NotificationList::Notification& notification,
+                 MessagePopupBubble* bubble);
+
+  void Start();
+
+  void Suspend();
+
+ private:
+  const std::string id_;
+  base::TimeDelta delay_;
+  base::Time start_time_;
+  MessagePopupBubble* bubble_;
+  base::OneShotTimer<MessagePopupBubble> timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutocloseTimer);
+};
+
+MessagePopupBubble::AutocloseTimer::AutocloseTimer(
+    const NotificationList::Notification& notification,
+    MessagePopupBubble* bubble)
+    : id_(notification.id),
+      bubble_(bubble) {
+  int seconds = kAutocloseDefaultDelaySeconds;
+  if (notification.priority > ui::notifications::DEFAULT_PRIORITY)
+    seconds = kAutocloseHighPriorityDelaySeconds;
+  delay_ = base::TimeDelta::FromSeconds(seconds);
+}
+
+void MessagePopupBubble::AutocloseTimer::Start() {
+  start_time_ = base::Time::Now();
+  timer_.Start(FROM_HERE,
+               delay_,
+               base::Bind(&MessagePopupBubble::OnAutoClose,
+                          base::Unretained(bubble_), id_));
+}
+
+void MessagePopupBubble::AutocloseTimer::Suspend() {
+  base::TimeDelta passed = base::Time::Now() - start_time_;
+  delay_ = std::max(base::TimeDelta(), delay_ - passed);
+  timer_.Reset();
+}
+
 // MessagePopupBubble
 MessagePopupBubble::MessagePopupBubble(NotificationList::Delegate* delegate)
     : MessageBubbleBase(delegate),
-      contents_view_(NULL),
-      should_run_default_timer_(false),
-      should_run_high_timer_(false) {
+      contents_view_(NULL) {
 }
 
 MessagePopupBubble::~MessagePopupBubble() {
+  STLDeleteContainerPairSecondPointers(autoclose_timers_.begin(),
+                                       autoclose_timers_.end());
 }
 
 views::TrayBubbleView::InitParams MessagePopupBubble::GetInitParams(
@@ -119,83 +153,70 @@ void MessagePopupBubble::OnBubbleViewDestroyed() {
 }
 
 void MessagePopupBubble::UpdateBubbleView() {
-  NotificationList::Notifications new_notifications;
-  list_delegate()->GetNotificationList()->GetPopupNotifications(
-      &new_notifications);
-  if (new_notifications.size() == 0) {
+  NotificationList::Notifications popups;
+  list_delegate()->GetNotificationList()->GetPopupNotifications(&popups);
+
+  if (popups.size() == 0) {
     if (bubble_view())
       bubble_view()->delegate()->HideBubble(bubble_view());  // deletes |this|
     return;
   }
-  // Only reset the timer when the number of visible notifications changes.
-  std::vector<const NotificationList::Notification*> added =
-      GetNewNotifications(popup_notifications_, new_notifications);
-  bool run_default = false;
-  bool run_high = false;
-  for (std::vector<const NotificationList::Notification*>::const_iterator iter =
-           added.begin(); iter != added.end(); ++iter) {
-    if ((*iter)->priority == ui::notifications::DEFAULT_PRIORITY)
-      run_default = true;
-    else if ((*iter)->priority >= ui::notifications::HIGH_PRIORITY)
-      run_high = true;
-  }
-  // Currently MAX priority is same as HIGH priority.
-  if (run_high)
-    StartAutoCloseTimer(ui::notifications::MAX_PRIORITY);
-  if (run_default)
-    StartAutoCloseTimer(ui::notifications::DEFAULT_PRIORITY);
-  should_run_high_timer_ = run_high;
-  should_run_default_timer_ = run_default;
-  contents_view_->Update(new_notifications);
-  popup_notifications_.swap(new_notifications);
+
+  contents_view_->Update(popups);
   bubble_view()->Show();
   bubble_view()->UpdateBubble();
+
+  std::set<std::string> old_popup_ids;
+  old_popup_ids.swap(popup_ids_);
+
+  // Start autoclose timers.
+  for (NotificationList::Notifications::const_iterator iter = popups.begin();
+       iter != popups.end(); ++iter) {
+    std::map<std::string, AutocloseTimer*>::const_iterator timer_iter =
+        autoclose_timers_.find(iter->id);
+    if (timer_iter == autoclose_timers_.end()) {
+      AutocloseTimer *timer = new AutocloseTimer(*iter, this);
+      autoclose_timers_[iter->id] = timer;
+      timer->Start();
+    }
+    popup_ids_.insert(iter->id);
+    old_popup_ids.erase(iter->id);
+  }
+
+  // Stops timers whose notifications are gone.
+  for (std::set<std::string>::const_iterator iter = old_popup_ids.begin();
+       iter != old_popup_ids.end(); ++iter) {
+    DeleteTimer(*iter);
+  }
 }
 
 void MessagePopupBubble::OnMouseEnteredView() {
-  StopAutoCloseTimer();
+  for (std::map<std::string, AutocloseTimer*>::iterator iter =
+           autoclose_timers_.begin(); iter != autoclose_timers_.end(); ++iter) {
+    iter->second->Suspend();
+  }
 }
 
 void MessagePopupBubble::OnMouseExitedView() {
-  if (should_run_high_timer_)
-    StartAutoCloseTimer(ui::notifications::HIGH_PRIORITY);
-  if (should_run_default_timer_)
-    StartAutoCloseTimer(ui::notifications::DEFAULT_PRIORITY);
-}
-
-void MessagePopupBubble::StartAutoCloseTimer(int priority) {
-  base::TimeDelta seconds;
-  base::OneShotTimer<MessagePopupBubble>* timer = NULL;
-  if (priority == ui::notifications::MAX_PRIORITY) {
-    seconds = base::TimeDelta::FromSeconds(kAutocloseHighPriorityDelaySeconds);
-    timer = &autoclose_high_;
-  } else {
-    seconds = base::TimeDelta::FromSeconds(kAutocloseDefaultDelaySeconds);
-    timer = &autoclose_default_;
+  for (std::map<std::string, AutocloseTimer*>::iterator iter =
+           autoclose_timers_.begin(); iter != autoclose_timers_.end(); ++iter) {
+    iter->second->Start();
   }
-
-  timer->Start(FROM_HERE,
-               seconds,
-               base::Bind(&MessagePopupBubble::OnAutoClose,
-                          base::Unretained(this), priority));
 }
 
-void MessagePopupBubble::StopAutoCloseTimer() {
-  autoclose_high_.Stop();
-  autoclose_default_.Stop();
-}
-
-void MessagePopupBubble::OnAutoClose(int priority) {
-  list_delegate()->GetNotificationList()->MarkPopupsAsShown(priority);
-  if (priority == ui::notifications::MAX_PRIORITY)
-    list_delegate()->GetNotificationList()->MarkPopupsAsShown(
-        ui::notifications::HIGH_PRIORITY);
-
-  if (priority >= ui::notifications::MAX_PRIORITY)
-    should_run_high_timer_ = false;
-  else
-    should_run_default_timer_ = false;
+void MessagePopupBubble::OnAutoClose(const std::string& id) {
+  DeleteTimer(id);
+  list_delegate()->GetNotificationList()->MarkSinglePopupAsShown(id, false);
   UpdateBubbleView();
+}
+
+void MessagePopupBubble::DeleteTimer(const std::string& id) {
+  std::map<std::string, AutocloseTimer*>::iterator iter =
+      autoclose_timers_.find(id);
+  if (iter != autoclose_timers_.end()) {
+    scoped_ptr<AutocloseTimer> release_timer(iter->second);
+    autoclose_timers_.erase(iter);
+  }
 }
 
 size_t MessagePopupBubble::NumMessageViewsForTest() const {

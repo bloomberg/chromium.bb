@@ -5,6 +5,10 @@
 #ifndef UI_MESSAGE_CENTER_MESSAGE_POPUP_BUBBLE_H_
 #define UI_MESSAGE_CENTER_MESSAGE_POPUP_BUBBLE_H_
 
+#include <map>
+#include <set>
+#include <string>
+
 #include "base/timer.h"
 #include "ui/message_center/message_bubble_base.h"
 #include "ui/message_center/message_center_export.h"
@@ -33,17 +37,15 @@ class MESSAGE_CENTER_EXPORT MessagePopupBubble : public MessageBubbleBase {
    size_t NumMessageViewsForTest() const;
 
  private:
-  void StartAutoCloseTimer(int priority);
-  void StopAutoCloseTimer();
+   class AutocloseTimer;
 
-  void OnAutoClose(int priority);
+  void OnAutoClose(const std::string& id);
 
-  base::OneShotTimer<MessagePopupBubble> autoclose_default_;
-  base::OneShotTimer<MessagePopupBubble> autoclose_high_;
+  void DeleteTimer(const std::string& id);
+
+  std::map<std::string, AutocloseTimer*> autoclose_timers_;
   PopupBubbleContentsView* contents_view_;
-  NotificationList::Notifications popup_notifications_;
-  bool should_run_default_timer_;
-  bool should_run_high_timer_;
+  std::set<std::string> popup_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePopupBubble);
 };
