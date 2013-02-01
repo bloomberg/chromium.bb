@@ -417,14 +417,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_Keygen, OnKeygen)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AsyncOpenFile, OnAsyncOpenFile)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetCPUUsage, OnGetCPUUsage)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareBufferSize,
-                        OnGetHardwareBufferSize)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareInputSampleRate,
-                        OnGetHardwareInputSampleRate)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareSampleRate,
-                        OnGetHardwareSampleRate)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareInputChannelLayout,
-                        OnGetHardwareInputChannelLayout)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetAudioHardwareConfig,
+                        OnGetAudioHardwareConfig)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetMonitorColorProfile,
                         OnGetMonitorColorProfile)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvent, OnMediaLogEvent)
@@ -778,24 +772,16 @@ void RenderMessageFilter::OnGetCPUUsage(int* cpu_usage) {
   *cpu_usage = cpu_usage_;
 }
 
-void RenderMessageFilter::OnGetHardwareBufferSize(uint32* buffer_size) {
-  *buffer_size = static_cast<uint32>(media::GetAudioHardwareBufferSize());
-}
+void RenderMessageFilter::OnGetAudioHardwareConfig(
+    int* output_buffer_size, int* output_sample_rate, int* input_sample_rate,
+    media::ChannelLayout* input_channel_layout) {
+  *output_buffer_size = media::GetAudioHardwareBufferSize();
+  *output_sample_rate = media::GetAudioHardwareSampleRate();
 
-void RenderMessageFilter::OnGetHardwareInputSampleRate(int* sample_rate) {
   // TODO(henrika): add support for all available input devices.
-  *sample_rate = media::GetAudioInputHardwareSampleRate(
+  *input_sample_rate = media::GetAudioInputHardwareSampleRate(
       media::AudioManagerBase::kDefaultDeviceId);
-}
-
-void RenderMessageFilter::OnGetHardwareSampleRate(int* sample_rate) {
-  *sample_rate = media::GetAudioHardwareSampleRate();
-}
-
-void RenderMessageFilter::OnGetHardwareInputChannelLayout(
-    media::ChannelLayout* layout) {
-  // TODO(henrika): add support for all available input devices.
-  *layout = media::GetAudioInputHardwareChannelLayout(
+  *input_channel_layout = media::GetAudioInputHardwareChannelLayout(
       media::AudioManagerBase::kDefaultDeviceId);
 }
 

@@ -8,11 +8,13 @@
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/renderer_audio_output_device.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
+#include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_util.h"
 #include "media/audio/sample_rates.h"
+#include "media/base/audio_hardware_config.h"
+
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "media/audio/win/core_audio_util_win.h"
@@ -24,10 +26,10 @@ namespace {
 
 // Supported hardware sample rates for output sides.
 #if defined(OS_WIN) || defined(OS_MACOSX)
-// media::GetAudioOutputHardwareSampleRate() asks the audio layer
-// for its current sample rate (set by the user) on Windows and Mac OS X.
-// The listed rates below adds restrictions and Initialize()
-// will fail if the user selects any rate outside these ranges.
+// AudioHardwareConfig::GetOutputSampleRate() asks the audio layer for its
+// current sample rate (set by the user) on Windows and Mac OS X.  The listed
+// rates below adds restrictions and Initialize() will fail if the user selects
+// any rate outside these ranges.
 int kValidOutputRates[] = {96000, 48000, 44100};
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
 int kValidOutputRates[] = {48000, 44100};
@@ -104,9 +106,10 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   sink_ = AudioDeviceFactory::NewOutputDevice();
   DCHECK(sink_);
 
-  // Ask the browser for the default audio output hardware sample-rate.
-  // This request is based on a synchronous IPC message.
-  int sample_rate = GetAudioOutputSampleRate();
+  // Ask the renderer for the default audio output hardware sample-rate.
+  media::AudioHardwareConfig* hardware_config =
+      RenderThreadImpl::current()->GetAudioHardwareConfig();
+  int sample_rate = hardware_config->GetOutputSampleRate();
   DVLOG(1) << "Audio output hardware sample rate: " << sample_rate;
   UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioOutputSampleRate",
                             sample_rate, media::kUnexpectedAudioSampleRate);

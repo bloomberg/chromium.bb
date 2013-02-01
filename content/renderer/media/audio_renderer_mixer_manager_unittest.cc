@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
+#include "media/base/audio_hardware_config.h"
 #include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/fake_audio_render_callback.h"
@@ -24,8 +26,9 @@ static const int kAnotherRenderViewId = 456;
 
 class AudioRendererMixerManagerTest : public testing::Test {
  public:
-  AudioRendererMixerManagerTest() {
-    manager_.reset(new AudioRendererMixerManager(kSampleRate, kBufferSize));
+  AudioRendererMixerManagerTest()
+      : fake_config_(kBufferSize, kSampleRate, 0, media::CHANNEL_LAYOUT_NONE) {
+    manager_.reset(new AudioRendererMixerManager(&fake_config_));
 
     // We don't want to deal with instantiating a real AudioOutputDevice since
     // it's not important to our testing, so we inject a mock.
@@ -49,6 +52,7 @@ class AudioRendererMixerManagerTest : public testing::Test {
   }
 
  protected:
+  media::AudioHardwareConfig fake_config_;
   scoped_ptr<AudioRendererMixerManager> manager_;
   scoped_refptr<media::MockAudioRendererSink> mock_sink_;
 

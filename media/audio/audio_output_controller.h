@@ -71,6 +71,8 @@ class MEDIA_EXPORT AudioOutputController
     virtual void OnPlaying(AudioOutputController* controller) = 0;
     virtual void OnPaused(AudioOutputController* controller) = 0;
     virtual void OnError(AudioOutputController* controller, int error_code) = 0;
+    virtual void OnDeviceChange(AudioOutputController* controller,
+                                int new_buffer_size, int new_sample_rate) = 0;
 
    protected:
     virtual ~EventHandler() {}

@@ -23,21 +23,22 @@ AudioMessageFilter* AudioMessageFilter::Get() {
 
 AudioMessageFilter::AudioMessageFilter()
     : next_stream_id_(1),
-      channel_(NULL) {
+      channel_(NULL),
+      audio_hardware_config_(NULL) {
   DVLOG(1) << "AudioMessageFilter::AudioMessageFilter()";
   DCHECK(!filter_);
   filter_ = this;
 }
 
 int AudioMessageFilter::AddDelegate(media::AudioOutputIPCDelegate* delegate) {
-  base::AutoLock guard(delegates_lock_);
+  base::AutoLock auto_lock(lock_);
   const int id = next_stream_id_++;
   delegates_.insert(std::make_pair(id, delegate));
   return id;
 }
 
 void AudioMessageFilter::RemoveDelegate(int id) {
-  base::AutoLock guard(delegates_lock_);
+  base::AutoLock auto_lock(lock_);
   delegates_.erase(id);
 }
 
@@ -96,6 +97,7 @@ bool AudioMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AudioMessageFilter, message)
     IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamCreated, OnStreamCreated)
     IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamStateChanged, OnStreamStateChanged)
+    IPC_MESSAGE_HANDLER(AudioMsg_NotifyDeviceChanged, OnOutputDeviceChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -115,7 +117,7 @@ void AudioMessageFilter::OnChannelClosing() {
 
   DelegateMap zombies;
   {
-    base::AutoLock guard(delegates_lock_);
+    base::AutoLock auto_lock(lock_);
     delegates_.swap(zombies);
   }
 
@@ -153,7 +155,7 @@ void AudioMessageFilter::OnStreamCreated(
 #endif
 
   {
-    base::AutoLock guard(delegates_lock_);
+    base::AutoLock auto_lock(lock_);
     DelegateMap::const_iterator it = delegates_.find(stream_id);
     if (it != delegates_.end()) {
       it->second->OnStreamCreated(handle, socket_handle, length);
@@ -169,12 +171,32 @@ void AudioMessageFilter::OnStreamCreated(
 
 void AudioMessageFilter::OnStreamStateChanged(
     int stream_id, media::AudioOutputIPCDelegate::State state) {
-  base::AutoLock guard(delegates_lock_);
+  base::AutoLock auto_lock(lock_);
   DelegateMap::const_iterator it = delegates_.find(stream_id);
   DLOG_IF(WARNING, it == delegates_.end())
       << "No delegate found for state change. " << state;
   if (it != delegates_.end())
     it->second->OnStateChanged(state);
+}
+
+void AudioMessageFilter::OnOutputDeviceChanged(int stream_id,
+                                               int new_buffer_size,
+                                               int new_sample_rate) {
+  base::AutoLock auto_lock(lock_);
+
+  // Ignore the message if an audio hardware config hasn't been created; this
+  // can occur if the renderer is using the high latency audio path.
+  // TODO(dalecurtis): After http://crbug.com/173435 is fixed, convert to CHECK.
+  if (!audio_hardware_config_)
+    return;
+
+  audio_hardware_config_->UpdateOutputConfig(new_buffer_size, new_sample_rate);
+}
+
+void AudioMessageFilter::SetAudioHardwareConfig(
+    media::AudioHardwareConfig* config) {
+  base::AutoLock auto_lock(lock_);
+  audio_hardware_config_ = config;
 }
 
 }  // namespace content

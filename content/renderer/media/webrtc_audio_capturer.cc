@@ -10,7 +10,6 @@
 #include "base/string_util.h"
 #include "content/common/child_process.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_renderer.h"
 #include "media/audio/audio_util.h"

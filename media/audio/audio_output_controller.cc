@@ -10,6 +10,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "build/build_config.h"
+#include "media/audio/audio_util.h"
 #include "media/audio/shared_memory_util.h"
 
 using base::Time;
@@ -322,6 +323,10 @@ void AudioOutputController::DoStopCloseAndClearStream() {
 
 void AudioOutputController::OnDeviceChange() {
   DCHECK(message_loop_->BelongsToCurrentThread());
+
+  // TODO(dalecurtis): Notify the renderer side that a device change has
+  // occurred.  Currently querying the hardware information here will lead to
+  // crashes on OSX.  See http://crbug.com/158170.
 
   // Recreate the stream (DoCreate() will first shut down an existing stream).
   // Exit if we ran into an error.

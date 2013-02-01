@@ -19,6 +19,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_output_ipc.h"
+#include "media/base/audio_hardware_config.h"
 
 namespace content {
 
@@ -37,8 +38,8 @@ class CONTENT_EXPORT AudioMessageFilter
   // media::AudioOutputIPC implementation.
   virtual int AddDelegate(media::AudioOutputIPCDelegate* delegate) OVERRIDE;
   virtual void RemoveDelegate(int id) OVERRIDE;
-  virtual void CreateStream(int stream_id,
-      const media::AudioParameters& params, int input_channels) OVERRIDE;
+  virtual void CreateStream(int stream_id, const media::AudioParameters& params,
+                            int input_channels) OVERRIDE;
   virtual void PlayStream(int stream_id) OVERRIDE;
   virtual void PauseStream(int stream_id) OVERRIDE;
   virtual void FlushStream(int stream_id) OVERRIDE;
@@ -50,6 +51,11 @@ class CONTENT_EXPORT AudioMessageFilter
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
+
+  // When set, AudioMessageFilter will update the AudioHardwareConfig with new
+  // configuration values as recieved by OnOutputDeviceChanged().  The provided
+  // |config| must outlive AudioMessageFilter.
+  void SetAudioHardwareConfig(media::AudioHardwareConfig* config);
 
  protected:
   virtual ~AudioMessageFilter();
@@ -75,21 +81,26 @@ class CONTENT_EXPORT AudioMessageFilter
   void OnStreamStateChanged(int stream_id,
                             media::AudioOutputIPCDelegate::State state);
 
+  // Received when the browser process detects an output device change.
+  void OnOutputDeviceChanged(int stream_id, int new_buffer_size,
+                             int new_sample_rate);
+
   // The singleton instance for this filter.
   static AudioMessageFilter* filter_;
 
-  // Guards delegates_ since AddDelegate() and RemoveDelegate() are called from
-  // threads other than the IO thread.
-  base::Lock delegates_lock_;
+  // Unique ID to use for next added delegate.
+  int next_stream_id_;
+  IPC::Channel* channel_;
+
+  // Guards all variables below which are accessed from multiple threads.
+  base::Lock lock_;
 
   // A map of stream ids to delegates.
   typedef base::hash_map<int, media::AudioOutputIPCDelegate*> DelegateMap;
   DelegateMap delegates_;
 
-  // Unique ID to use for next added delegate.
-  int next_stream_id_;
-
-  IPC::Channel* channel_;
+  // Audio hardware configuration to update when OnOutputDeviceChanged() fires.
+  media::AudioHardwareConfig* audio_hardware_config_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioMessageFilter);
 };

@@ -45,6 +45,10 @@ namespace IPC {
 class ForwardingMessageFilter;
 }
 
+namespace media {
+class AudioHardwareConfig;
+}
+
 namespace v8 {
 class Extension;
 }
@@ -246,6 +250,11 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // first call.
   AudioRendererMixerManager* GetAudioRendererMixerManager();
 
+  // AudioHardwareConfig contains audio hardware configuration for
+  // renderer side clients.  Creation requires a synchronous IPC call so it is
+  // lazily created on the first call.
+  media::AudioHardwareConfig* GetAudioHardwareConfig();
+
 #if defined(OS_WIN)
   void PreCacheFontCharacters(const LOGFONT& log_font, const string16& str);
 #endif
@@ -381,6 +390,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> gpu_vda_context3d_;
 
   scoped_ptr<AudioRendererMixerManager> audio_renderer_mixer_manager_;
+  scoped_ptr<media::AudioHardwareConfig> audio_hardware_config_;
 
   HistogramCustomizer histogram_customizer_;
 

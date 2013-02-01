@@ -27,7 +27,6 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/hyphenator/hyphenator.h"
-#include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -36,6 +35,7 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/audio/audio_output_device.h"
+#include "media/base/audio_hardware_config.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebBlobRegistry.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGamepads.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamCenter.h"
@@ -555,11 +555,13 @@ bool RendererWebKitPlatformSupportImpl::canAccelerate2dCanvas() {
 }
 
 double RendererWebKitPlatformSupportImpl::audioHardwareSampleRate() {
-  return GetAudioOutputSampleRate();
+  RenderThreadImpl* thread = RenderThreadImpl::current();
+  return thread->GetAudioHardwareConfig()->GetOutputSampleRate();
 }
 
 size_t RendererWebKitPlatformSupportImpl::audioHardwareBufferSize() {
-  return GetAudioOutputBufferSize();
+  RenderThreadImpl* thread = RenderThreadImpl::current();
+  return thread->GetAudioHardwareConfig()->GetOutputBufferSize();
 }
 
 // TODO(crogers): remove deprecated API as soon as WebKit calls new API.

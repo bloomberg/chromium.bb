@@ -720,20 +720,11 @@ IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GenerateRoutingID,
                             int /* routing_id */)
 
 // Asks the browser for the default audio hardware buffer-size.
-IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetHardwareBufferSize,
-                            uint32 /* buffer_size */)
-
-// Asks the browser for the default audio input hardware sample-rate.
-IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetHardwareInputSampleRate,
-                            int /* sample_rate */)
-
-// Asks the browser for the default audio hardware sample-rate.
-IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetHardwareSampleRate,
-                            int /* sample_rate */)
-
-// Asks the browser for the default channel layout.
-IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetHardwareInputChannelLayout,
-                            media::ChannelLayout /* channel layout */)
+IPC_SYNC_MESSAGE_CONTROL0_4(ViewHostMsg_GetAudioHardwareConfig,
+                            int /* output_buffer_size */,
+                            int /* output_sample_rate */,
+                            int /* input_sample_rate */,
+                            media::ChannelLayout /* input_channel_layout */)
 
 // Asks the browser for CPU usage of the renderer process in percents.
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetCPUUsage,

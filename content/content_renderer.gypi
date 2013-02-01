@@ -114,8 +114,6 @@
     'renderer/load_progress_tracker.h',
     'renderer/media/audio_device_factory.cc',
     'renderer/media/audio_device_factory.h',
-    'renderer/media/audio_hardware.cc',
-    'renderer/media/audio_hardware.h',
     'renderer/media/audio_input_message_filter.cc',
     'renderer/media/audio_input_message_filter.h',
     'renderer/media/audio_message_filter.cc',

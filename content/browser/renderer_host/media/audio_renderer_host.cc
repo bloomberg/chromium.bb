@@ -123,6 +123,17 @@ void AudioRendererHost::OnError(media::AudioOutputController* controller,
                  this, make_scoped_refptr(controller), error_code));
 }
 
+void AudioRendererHost::OnDeviceChange(media::AudioOutputController* controller,
+                                       int new_buffer_size,
+                                       int new_sample_rate) {
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&AudioRendererHost::DoSendDeviceChangeMessage,
+                 this, make_scoped_refptr(controller), new_buffer_size,
+                 new_sample_rate));
+}
+
 void AudioRendererHost::DoCompleteCreation(
     media::AudioOutputController* controller) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -194,6 +205,19 @@ void AudioRendererHost::DoSendPausedMessage(
 
   Send(new AudioMsg_NotifyStreamStateChanged(
       entry->stream_id, media::AudioOutputIPCDelegate::kPaused));
+}
+
+void AudioRendererHost::DoSendDeviceChangeMessage(
+    media::AudioOutputController* controller, int new_buffer_size,
+    int new_sample_rate) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  AudioEntry* entry = LookupByController(controller);
+  if (!entry)
+    return;
+
+  Send(new AudioMsg_NotifyDeviceChanged(
+      entry->stream_id, new_buffer_size, new_sample_rate));
 }
 
 void AudioRendererHost::DoHandleError(media::AudioOutputController* controller,

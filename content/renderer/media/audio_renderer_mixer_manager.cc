@@ -8,15 +8,15 @@
 #include "base/bind_helpers.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/renderer_audio_output_device.h"
+#include "media/base/audio_hardware_config.h"
 #include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_input.h"
 
 namespace content {
 
-AudioRendererMixerManager::AudioRendererMixerManager(int hardware_sample_rate,
-                                                     int hardware_buffer_size)
-    : hardware_sample_rate_(hardware_sample_rate),
-      hardware_buffer_size_(hardware_buffer_size),
+AudioRendererMixerManager::AudioRendererMixerManager(
+    media::AudioHardwareConfig* hardware_config)
+    : hardware_config_(hardware_config),
       sink_for_testing_(NULL) {
 }
 
@@ -57,7 +57,7 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
 #if defined(OS_LINUX)
   int sample_rate = params.sample_rate();
 #else
-  int sample_rate = hardware_sample_rate_;
+  int sample_rate = hardware_config_->GetOutputSampleRate();
 #endif
 
   // Create output parameters based on the audio hardware configuration for
@@ -65,7 +65,7 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
   // know that works well for WebAudio and WebRTC.
   media::AudioParameters output_params(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY, params.channel_layout(),
-      sample_rate, 16, hardware_buffer_size_);
+      sample_rate, 16, hardware_config_->GetOutputBufferSize());
 
   // If we've created invalid output parameters, simply pass on the input params
   // and let the browser side handle automatic fallback.

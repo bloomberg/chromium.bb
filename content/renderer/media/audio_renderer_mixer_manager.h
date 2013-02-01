@@ -13,6 +13,7 @@
 #include "media/audio/audio_parameters.h"
 
 namespace media {
+class AudioHardwareConfig;
 class AudioRendererMixer;
 class AudioRendererMixerInput;
 class AudioRendererSink;
@@ -35,8 +36,11 @@ namespace content {
 // via the shared memory.  See http://crbug.com/114700.
 class CONTENT_EXPORT AudioRendererMixerManager {
  public:
-  // Construct an instance using the given audio hardware configuration.
-  AudioRendererMixerManager(int hardware_sample_rate, int hardware_buffer_size);
+  // Construct an instance using the given audio hardware configuration.  The
+  // provided |hardware_config| is not owned by AudioRendererMixerManager and
+  // must outlive it.
+  explicit AudioRendererMixerManager(
+      media::AudioHardwareConfig* hardware_config);
   ~AudioRendererMixerManager();
 
   // Creates an AudioRendererMixerInput with the proper callbacks necessary to
@@ -82,8 +86,7 @@ class CONTENT_EXPORT AudioRendererMixerManager {
 
   // Audio hardware configuration.  Used to construct output AudioParameters for
   // each AudioRendererMixer instance.
-  int hardware_sample_rate_;
-  int hardware_buffer_size_;
+  media::AudioHardwareConfig* const hardware_config_;
 
   media::AudioRendererSink* sink_for_testing_;
 

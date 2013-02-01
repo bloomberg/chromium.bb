@@ -35,7 +35,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/renderer_restrict_dispatch_group.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
-#include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/pepper_platform_video_decoder_impl.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
@@ -57,6 +56,7 @@
 #include "content/renderer/webplugin_delegate_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
+#include "media/base/audio_hardware_config.h"
 #include "media/video/capture/video_capture_proxy.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -864,11 +864,13 @@ void PepperPluginDelegateImpl::SelectedFindResultChanged(int identifier,
 }
 
 uint32_t PepperPluginDelegateImpl::GetAudioHardwareOutputSampleRate() {
-  return static_cast<uint32_t>(GetAudioOutputSampleRate());
+  RenderThreadImpl* thread = RenderThreadImpl::current();
+  return thread->GetAudioHardwareConfig()->GetOutputSampleRate();
 }
 
 uint32_t PepperPluginDelegateImpl::GetAudioHardwareOutputBufferSize() {
-  return static_cast<uint32_t>(GetAudioOutputBufferSize());
+  RenderThreadImpl* thread = RenderThreadImpl::current();
+  return thread->GetAudioHardwareConfig()->GetOutputBufferSize();
 }
 
 webkit::ppapi::PluginDelegate::PlatformAudioOutput*

@@ -85,6 +85,9 @@ class CONTENT_EXPORT AudioRendererHost
   virtual void OnPaused(media::AudioOutputController* controller) OVERRIDE;
   virtual void OnError(media::AudioOutputController* controller,
                        int error_code) OVERRIDE;
+  virtual void OnDeviceChange(media::AudioOutputController* controller,
+                              int new_buffer_size,
+                              int new_sample_rate) OVERRIDE;
 
  private:
   friend class AudioRendererHostTest;
@@ -135,6 +138,8 @@ class CONTENT_EXPORT AudioRendererHost
   // Send a state change message to the renderer.
   void DoSendPlayingMessage(media::AudioOutputController* controller);
   void DoSendPausedMessage(media::AudioOutputController* controller);
+  void DoSendDeviceChangeMessage(media::AudioOutputController* controller,
+                                 int new_buffer_size, int new_sample_rate);
 
   // Handle error coming from audio stream.
   void DoHandleError(media::AudioOutputController* controller, int error_code);
