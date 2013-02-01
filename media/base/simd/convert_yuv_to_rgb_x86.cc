@@ -37,7 +37,7 @@ void ConvertYUVToRGB32_MMX(const uint8* yplane,
                              width);
   }
 
-  _mm_empty();
+  EmptyRegisterState();
 }
 
 void ConvertYUVToRGB32_SSE(const uint8* yplane,
@@ -64,7 +64,7 @@ void ConvertYUVToRGB32_SSE(const uint8* yplane,
                              width);
   }
 
-  _mm_empty();
+  EmptyRegisterState();
 }
 
 }  // namespace media

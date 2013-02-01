@@ -1041,6 +1041,7 @@
             'base/simd/convert_yuv_to_rgb_mmx.inc',
             'base/simd/convert_yuv_to_rgb_sse.asm',
             'base/simd/convert_yuv_to_rgb_x86.cc',
+            'base/simd/empty_register_state_mmx.asm',
             'base/simd/filter_yuv.h',
             'base/simd/filter_yuv_c.cc',
             'base/simd/filter_yuv_mmx.cc',

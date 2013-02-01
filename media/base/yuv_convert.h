@@ -121,7 +121,6 @@ void ConvertNV21ToYUV(const uint8* src,
                       int height);
 
 // Empty SIMD register state after calling optimized scaler functions.
-// This method is only used in unit test after calling SIMD functions.
 void EmptyRegisterState();
 
 }  // namespace media
