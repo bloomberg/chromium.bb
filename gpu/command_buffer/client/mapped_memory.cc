@@ -9,11 +9,6 @@
 #include "../client/cmd_buffer_helper.h"
 
 namespace gpu {
-namespace {
-void DeleteMemoryChunk(MemoryChunk* chunk) {
-  delete chunk;
-}
-}
 
 MemoryChunk::MemoryChunk(
     int32 shm_id, gpu::Buffer shm, CommandBufferHelper* helper)
@@ -28,10 +23,13 @@ MappedMemoryManager::MappedMemoryManager(CommandBufferHelper* helper)
 }
 
 MappedMemoryManager::~MappedMemoryManager() {
-  std::for_each(chunks_.begin(),
-                chunks_.end(),
-                std::pointer_to_unary_function<MemoryChunk*, void>(
-                    DeleteMemoryChunk));
+  CommandBuffer* cmd_buf = helper_->command_buffer();
+  for (MemoryChunkVector::iterator iter = chunks_.begin();
+       iter != chunks_.end(); ++iter) {
+    MemoryChunk* chunk = *iter;
+    cmd_buf->DestroyTransferBuffer(chunk->shm_id());
+    delete chunk;
+  }
 }
 
 void* MappedMemoryManager::Alloc(

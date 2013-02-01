@@ -21,6 +21,7 @@
 #endif
 
 using testing::_;
+using testing::AtLeast;
 using testing::AnyNumber;
 using testing::DoAll;
 using testing::InSequence;
@@ -485,8 +486,7 @@ void GLES2ImplementationTest::TearDown() {
   EXPECT_CALL(*command_buffer(), OnFlush()).Times(AnyNumber());
   // For command buffer.
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
-      .Times(1)
-      .RetiresOnSaturation();
+      .Times(AtLeast(1));
   gl_.reset();
 }
 
