@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_preview_context_menu_observer.h"
@@ -70,6 +71,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
@@ -1316,7 +1318,14 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
   if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
     unsigned action = id - IDC_CONTENT_CONTEXT_CUSTOM_FIRST;
-    rvh->ExecuteCustomContextMenuCommand(action, params_.custom_context);
+    const content::CustomContextMenuContext& context = params_.custom_context;
+#if defined(ENABLE_PLUGINS)
+    if (context.request_id && !context.is_pepper_menu) {
+      ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
+        rvh->GetProcess()->GetID());
+    }
+#endif
+    rvh->ExecuteCustomContextMenuCommand(action, context);
     return;
   }
 
