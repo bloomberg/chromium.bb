@@ -1169,7 +1169,6 @@ TEST_F(WindowTest, RootWindowHostExit) {
   EXPECT_TRUE(d1.exited());
 }
 
-#if !defined(OS_WIN)
 // Verifies that the WindowDelegate receives MouseExit and MouseEnter events for
 // mouse transitions from window to window, even if the entered window sets
 // and releases capture.
@@ -1203,7 +1202,6 @@ TEST_F(WindowTest, MouseEnterExitWithClick) {
   EXPECT_FALSE(d2.exited());
 }
 
-// Temporarily disabled for windows. See crbug.com/112222.
 // Verifies that enter / exits are sent if windows appear and are deleted
 // under the current mouse position..
 TEST_F(WindowTest, MouseEnterExitWithDelete) {
@@ -1265,7 +1263,6 @@ TEST_F(WindowTest, MouseEnterExitWithHide) {
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(d1.entered());
 }
-#endif
 
 // Creates a window with a delegate (w111) that can handle events at a lower
 // z-index than a window without a delegate (w12). w12 is sized to fill the
@@ -2017,9 +2014,6 @@ TEST_F(WindowTest, VisibilityClientIsVisible) {
   EXPECT_TRUE(window->layer()->visible());
 }
 
-#if !defined(OS_WIN)
-// Temporarily disabled for windows. See crbug.com/112222.
-
 // Tests mouse events on window change.
 TEST_F(WindowTest, MouseEventsOnWindowChange) {
   gfx::Size size = root_window()->GetHostSize();
@@ -2095,7 +2089,6 @@ TEST_F(WindowTest, MouseEventsOnWindowChange) {
   RunAllPendingInMessageLoop();
   EXPECT_EQ("1 1 0", d1.GetMouseMotionCountsAndReset());
 }
-#endif
 
 class StackingMadrigalLayoutManager : public LayoutManager {
  public:

@@ -1006,8 +1006,6 @@ void RootWindow::SynthesizeMouseMoveEvent() {
   if (!synthesize_mouse_move_)
     return;
   synthesize_mouse_move_ = false;
-#if !defined(OS_WIN)
-  // Temporarily disabled for windows. See crbug.com/112222.
   gfx::Point3F point(GetLastMouseLocationInRoot());
   float scale = ui::GetDeviceScaleFactor(layer());
   gfx::Transform transform;
@@ -1024,7 +1022,6 @@ void RootWindow::SynthesizeMouseMoveEvent() {
                        ui::EF_IS_SYNTHESIZED);
   event.set_system_location(Env::GetInstance()->last_mouse_location());
   OnHostMouseEvent(&event);
-#endif
 }
 
 }  // namespace aura
