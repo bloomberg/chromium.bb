@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/debug/trace_event.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "cc/append_quads_data.h"
 #include "cc/compositor_frame_metadata.h"
@@ -482,7 +483,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
                     RenderPass::Id contributingRenderPassId = it->firstContributingRenderPassId();
                     while (frame.renderPassesById.find(contributingRenderPassId) != frame.renderPassesById.end()) {
                         RenderPass* renderPass = frame.renderPassesById[contributingRenderPassId];
-  
+
                         AppendQuadsData appendQuadsData(renderPass->id);
                         appendQuadsForLayer(renderPass, *it, occlusionTracker, appendQuadsData);
 
@@ -1163,6 +1164,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::scrollBegin(gfx::Point viewp
         // The content layer can also block attempts to scroll outside the main thread.
         if (layerImpl->tryScroll(deviceViewportPoint, type) == ScrollOnMainThread) {
             m_numMainThreadScrolls++;
+            UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", true);
             return ScrollOnMainThread;
         }
 
@@ -1175,6 +1177,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::scrollBegin(gfx::Point viewp
         // If any layer wants to divert the scroll event to the main thread, abort.
         if (status == ScrollOnMainThread) {
             m_numMainThreadScrolls++;
+            UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", true);
             return ScrollOnMainThread;
         }
 
@@ -1191,6 +1194,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::scrollBegin(gfx::Point viewp
         m_scrollDeltaIsInViewportSpace = (type == Gesture);
         m_numImplThreadScrolls++;
         m_client->renewTreePriority();
+        UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", false);
         return ScrollStarted;
     }
     return ScrollIgnored;
