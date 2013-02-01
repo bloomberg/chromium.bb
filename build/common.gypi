@@ -154,6 +154,13 @@
           }, {
             'use_default_render_theme%': 0,
           }],
+
+          ['OS!="android" and OS!="ios"', {
+            # Enable Web Intents support in WebKit.
+            'enable_web_intents%': '1',
+          }, {
+            'enable_web_intents%': '0',
+          }],
         ],
       },
 
@@ -174,6 +181,7 @@
       'enable_app_list%': '<(enable_app_list)',
       'enable_message_center%': '<(enable_message_center)',
       'use_default_render_theme%': '<(use_default_render_theme)',
+      'enable_web_intents%': '<(enable_web_intents)',
       'buildtype%': '<(buildtype)',
 
       # We used to provide a variable for changing how libraries were built.
@@ -303,9 +311,6 @@
 
       # Whether one-click signin is enabled or not.
       'enable_one_click_signin%': 0,
-
-      # Enable Web Intents support in WebKit.
-      'enable_web_intents%': 1,
 
       # Enable Chrome browser extensions
       'enable_extensions%': 1,
@@ -714,7 +719,6 @@
     'order_profiling%': '<(order_profiling)',
     'order_text_section%': '<(order_text_section)',
     'enable_extensions%': '<(enable_extensions)',
-    'enable_web_intents%': '<(enable_web_intents)',
     'enable_web_intents_tag%': '<(enable_web_intents_tag)',
     'enable_plugin_installation%': '<(enable_plugin_installation)',
     'enable_plugins%': '<(enable_plugins)',
@@ -744,6 +748,7 @@
     'enable_app_list%': '<(enable_app_list)',
     'enable_message_center%': '<(enable_message_center)',
     'use_default_render_theme%': '<(use_default_render_theme)',
+    'enable_web_intents%': '<(enable_web_intents)',
     'enable_settings_app%': '<(enable_settings_app)',
     'use_official_google_api_keys%': '<(use_official_google_api_keys)',
     'google_api_key%': '<(google_api_key)',
@@ -1164,7 +1169,6 @@
         'safe_browsing%': 2,
         'configuration_policy%': 0,
         'input_speech%': 0,
-        'enable_web_intents%': 0,
         'enable_automation%': 0,
         'java_bridge%': 1,
         'build_ffmpegsumo%': 0,
