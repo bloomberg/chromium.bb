@@ -11,23 +11,15 @@
 #include "sync/protocol/proto_value_conversions.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/sync_session.h"
-#include "sync/util/time.h"
 
 namespace syncer {
 
-// Return current time.
-base::Time TrafficRecorder::GetTime() {
-  return base::Time::Now();
-}
-
 TrafficRecorder::TrafficRecord::TrafficRecord(const std::string& message,
                                               TrafficMessageType message_type,
-                                              bool truncated,
-                                              base::Time time) :
+                                              bool truncated) :
     message(message),
     message_type(message_type),
-    truncated(truncated),
-    timestamp(time) {
+    truncated(truncated) {
 }
 
 TrafficRecorder::TrafficRecord::TrafficRecord()
@@ -84,8 +76,6 @@ DictionaryValue* TrafficRecorder::TrafficRecord::ToValue() const {
     NOTREACHED();
   }
 
-  value->SetString("timestamp", GetTimeDebugString(timestamp));
-
   return value.release();
 }
 
@@ -125,7 +115,7 @@ void TrafficRecorder::StoreProtoInQueue(
     msg.SerializeToString(&message);
   }
 
-  TrafficRecord record(message, type, truncated, GetTime());
+  TrafficRecord record(message, type, truncated);
   AddTrafficToQueue(&record);
 }
 
