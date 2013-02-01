@@ -14,7 +14,7 @@
       'common',
       'browser',
       '../content/content.gyp:content_app',
-      '../sync/sync.gyp:sync_core',
+      '../sync/sync.gyp:sync',
     ],
     'allocator_target': '../base/allocator/allocator.gyp:allocator',
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
@@ -385,7 +385,7 @@
           'dependencies': [
             'test_support_common',
             '../skia/skia.gyp:skia',
-            '../sync/sync.gyp:sync_core',
+            '../sync/sync.gyp:sync',
           ],
           'include_dirs': [
              '..',

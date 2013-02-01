@@ -5,8 +5,7 @@
 #ifndef SYNC_SYNC_EXPORT_H_
 #define SYNC_SYNC_EXPORT_H_
 
-// TODO(akalin): Remove '0 && ' when sync becomes a component.
-#if 0 && defined(COMPONENT_BUILD)
+#if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
 #if defined(SYNC_IMPLEMENTATION)

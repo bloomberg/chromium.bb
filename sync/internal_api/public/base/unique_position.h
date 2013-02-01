@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "sync/base/sync_export.h"
 
 namespace sync_pb {
 class UniquePosition;
@@ -37,7 +38,7 @@ namespace syncer {
 //
 // This class currently has several bookmarks-related assumptions built in,
 // though it could be adapted to be more generally useful.
-class UniquePosition {
+class SYNC_EXPORT_PRIVATE UniquePosition {
  public:
   static const size_t kSuffixLength;
 

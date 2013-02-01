@@ -13,7 +13,7 @@ class ReadTransaction;
 namespace syncable {
 
 // Locks db in constructor, unlocks in destructor.
-class SYNC_EXPORT_PRIVATE ReadTransaction : public BaseTransaction {
+class SYNC_EXPORT ReadTransaction : public BaseTransaction {
  public:
   ReadTransaction(const tracked_objects::Location& from_here,
                   Directory* directory);

@@ -31,10 +31,10 @@ enum WriterTag {
 // Make sure to update this if you update WriterTag.
 std::string WriterTagToString(WriterTag writer_tag);
 
-class SYNC_EXPORT_PRIVATE BaseTransaction {
+class SYNC_EXPORT BaseTransaction {
  public:
-  inline Directory* directory() const { return directory_; }
-  inline Id root_id() const { return Id(); }
+  Directory* directory() const;
+  Id root_id() const;
 
   virtual ~BaseTransaction();
 

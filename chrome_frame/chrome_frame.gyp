@@ -417,7 +417,7 @@
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
-        '../sync/sync.gyp:sync_api',
+        '../sync/sync.gyp:sync',
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -800,7 +800,7 @@
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
             # Make the archive build happy.
-            '../sync/sync.gyp:sync_api',
+            '../sync/sync.gyp:sync',
             # Crash Reporting
             'crash_reporting/crash_reporting.gyp:crash_report',
           ],
@@ -923,7 +923,7 @@
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
             # Make the archive build happy.
-            '../sync/sync.gyp:sync_api',
+            '../sync/sync.gyp:sync',
             # Crash Reporting
             'crash_reporting/crash_reporting.gyp:crash_report',
           ],

@@ -14,7 +14,6 @@
       # have the same dependencies. Once browser_extensions is untangled from
       # browser, then we can clean up these dependencies.
       'dependencies': [
-        '../sync/protocol/sync_proto.gyp:sync_proto',
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
@@ -32,8 +31,9 @@
         '../device/device.gyp:device_bluetooth',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
-        '../sync/sync.gyp:sync_notifier',
+        '../sync/sync.gyp:sync',
         '../third_party/bzip2/bzip2.gyp:bzip2',
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',

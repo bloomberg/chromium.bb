@@ -10,6 +10,14 @@
 namespace syncer {
 namespace syncable {
 
+Directory* BaseTransaction::directory() const {
+  return directory_;
+}
+
+Id BaseTransaction::root_id() const {
+  return Id();
+}
+
 void BaseTransaction::Lock() {
   TRACE_EVENT2("sync_lock_contention", "AcquireLock",
                "src_file", from_here_.file_name(),

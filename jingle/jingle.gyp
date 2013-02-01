@@ -111,6 +111,7 @@
             '../net/net.gyp:net',
             '../third_party/expat/expat.gyp:expat',
             '../third_party/libjingle/libjingle.gyp:libjingle',
+            'jingle_glue',
           ],
           'export_dependent_settings': [
             '../third_party/libjingle/libjingle.gyp:libjingle',

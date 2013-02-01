@@ -35,12 +35,8 @@
         '../google_apis/google_apis.gyp:google_apis',
         '../media/media.gyp:media',
         '../skia/skia.gyp:skia',
-        '../sync/protocol/sync_proto.gyp:sync_proto',
-        # TODO(akalin): Depend only on sync_api from sync.
-        '../sync/sync.gyp:sync_api',
-        '../sync/sync.gyp:sync_internal_api',
-        '../sync/sync.gyp:sync_notifier',
-        '../ui/ui.gyp:shell_dialogs',
+        '../sql/sql.gyp:sql',
+        '../sync/sync.gyp:sync',
         '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
@@ -51,6 +47,7 @@
         '../third_party/zlib/zlib.gyp:minizip',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
+        '../ui/ui.gyp:shell_dialogs',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
         '../webkit/support/webkit_support.gyp:user_agent',
@@ -62,7 +59,8 @@
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'export_dependent_settings': [
-        '../sync/sync.gyp:sync_notifier',
+        '../sql/sql.gyp:sql',
+        '../sync/sync.gyp:sync',
       ],
       'sources': [
         # All .cc, .h, .m, and .mm files under browser except for:
