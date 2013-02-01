@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/file_util.h"
-#include "content/browser/trace_subscriber_stdio.h"
+#include "content/browser/tracing/trace_subscriber_stdio.h"
 
 namespace content {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/trace_subscriber_stdio.h"
+#include "content/browser/tracing/trace_subscriber_stdio.h"
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"

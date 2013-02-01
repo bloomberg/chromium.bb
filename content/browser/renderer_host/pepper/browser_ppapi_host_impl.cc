@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
-#include "content/browser/trace_message_filter.h"
+#include "content/browser/tracing/trace_message_filter.h"
 #include "content/common/pepper_renderer_instance_data.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/process_type.h"

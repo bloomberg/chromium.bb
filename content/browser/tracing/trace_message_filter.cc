@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/trace_message_filter.h"
+#include "content/browser/tracing/trace_message_filter.h"
 
 #include "components/tracing/tracing_messages.h"
-#include "content/browser/trace_controller_impl.h"
+#include "content/browser/tracing/trace_controller_impl.h"
 
 namespace content {
 
