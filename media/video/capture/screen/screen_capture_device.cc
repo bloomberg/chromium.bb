@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,7 @@ class ScreenCaptureDevice::Core
     screen_capturer_ = capturer.Pass();
   }
 
+  // Implementation of VideoCaptureDevice methods.
   void Allocate(int width, int height,
                 int frame_rate,
                 EventHandler* event_handler);

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,7 +123,7 @@ TEST_F(ScreenCaptureDeviceTest, Capture) {
   EXPECT_EQ(caps.width * caps.height * 4, frame_size);
 }
 
-// Test that screen capturer can handle resolution change.
+// Test that screen capturer can handle resolution change without crashing.
 TEST_F(ScreenCaptureDeviceTest, ScreenResolutionChange) {
   FakeScreenCapturer* mock_capturer = new FakeScreenCapturer();
 
