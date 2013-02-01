@@ -623,10 +623,11 @@ void AutofillDialogViews::UpdateNotificationArea() {
   const DialogNotification& notification = controller_->CurrentNotification();
   const string16& display_text = notification.display_text();
 
-  notification_label_->parent()->SetVisible(!display_text.empty());
   notification_label_->SetVisible(!display_text.empty());
-
+  notification_label_->SetEnabledColor(notification.GetTextColor());
   notification_label_->SetText(display_text);
+
+  notification_label_->parent()->SetVisible(!display_text.empty());
   notification_label_->parent()->background()->SetNativeControlColor(
       notification.GetBackgroundColor());
 

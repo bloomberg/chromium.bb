@@ -66,9 +66,10 @@ class DialogNotification {
   DialogNotification();
   DialogNotification(Type type, const string16& display_text);
 
-  // Returns the appropriate background color for the view's notification area
-  // based on |type_|.
+  // Returns the appropriate background or text color for the view's
+  // notification area based on |type_|.
   SkColor GetBackgroundColor() const;
+  SkColor GetTextColor() const;
 
   const string16& display_text() const { return display_text_; }
 
