@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/media/media_internals_proxy.h"
+#include "content/browser/media/media_internals_proxy.h"
 
 #include "base/bind.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/io_thread.h"
-#include "chrome/browser/media/media_internals.h"
-#include "chrome/browser/net/chrome_net_log.h"
-#include "chrome/browser/ui/webui/media/media_internals_handler.h"
+#include "base/message_loop.h"
+#include "content/browser/media/media_internals_handler.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_ui.h"
 
-using content::BrowserThread;
+namespace content {
 
 static const int kMediaInternalsProxyEventDelayMilliseconds = 100;
 
@@ -28,18 +26,16 @@ static const net::NetLog::EventType kNetEventTypeFilter[] = {
 };
 
 MediaInternalsProxy::MediaInternalsProxy() {
-  io_thread_ = g_browser_process->io_thread();
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 void MediaInternalsProxy::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
+                                  const NotificationSource& source,
+                                  const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(type, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
-  content::RenderProcessHost* process =
-      content::Source<content::RenderProcessHost>(source).ptr();
+  DCHECK_EQ(type, NOTIFICATION_RENDERER_PROCESS_TERMINATED);
+  RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
   CallJavaScriptFunctionOnUIThread("media.onRendererTerminated",
       base::Value::CreateIntegerValue(process->GetID()));
 }
@@ -121,15 +117,22 @@ Value* MediaInternalsProxy::GetConstants() {
 
 void MediaInternalsProxy::ObserveMediaInternalsOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  MediaInternals::GetInstance()->AddObserver(this);
-  io_thread_->net_log()->AddThreadSafeObserver(this,
-                                               net::NetLog::LOG_ALL_BUT_BYTES);
+  update_callback_ = base::Bind(&MediaInternalsProxy::OnUpdate,
+                                base::Unretained(this));
+  MediaInternals::GetInstance()->AddUpdateCallback(update_callback_);
+  if (GetContentClient()->browser()->GetNetLog()) {
+    net::NetLog* net_log = GetContentClient()->browser()->GetNetLog();
+    net_log->AddThreadSafeObserver(this, net::NetLog::LOG_ALL_BUT_BYTES);
+  }
 }
 
 void MediaInternalsProxy::StopObservingMediaInternalsOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  MediaInternals::GetInstance()->RemoveObserver(this);
-  io_thread_->net_log()->RemoveThreadSafeObserver(this);
+  MediaInternals::GetInstance()->RemoveUpdateCallback(update_callback_);
+  if (GetContentClient()->browser()->GetNetLog()) {
+    net::NetLog* net_log = GetContentClient()->browser()->GetNetLog();
+    net_log->RemoveThreadSafeObserver(this);
+  }
 }
 
 void MediaInternalsProxy::GetEverythingOnIOThread() {
@@ -173,6 +176,8 @@ void MediaInternalsProxy::CallJavaScriptFunctionOnUIThread(
   scoped_ptr<Value> args_value(args);
   std::vector<const Value*> args_vector;
   args_vector.push_back(args_value.get());
-  string16 update = content::WebUI::GetJavascriptCall(function, args_vector);
+  string16 update = WebUI::GetJavascriptCall(function, args_vector);
   UpdateUIOnUIThread(update);
 }
+
+}  // namespace content

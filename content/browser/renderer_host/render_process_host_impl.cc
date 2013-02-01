@@ -57,6 +57,7 @@
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "content/browser/loader/resource_message_filter.h"
+#include "content/browser/media/media_internals.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/profiler_message_filter.h"
@@ -481,8 +482,7 @@ bool RenderProcessHostImpl::Init() {
 
 void RenderProcessHostImpl::CreateMessageFilters() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MediaObserver* media_observer =
-      GetContentClient()->browser()->GetMediaObserver();
+  MediaInternals* media_internals = MediaInternals::GetInstance();;
   // Add BrowserPluginMessageFilter to ensure it gets the first stab at messages
   // from guests.
   if (IsGuest()) {
@@ -504,7 +504,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           GetBrowserContext(),
           GetBrowserContext()->GetRequestContextForRenderProcess(GetID()),
           widget_helper_,
-          media_observer,
+          media_internals,
           storage_partition_impl_->GetDOMStorageContext()));
   channel_->AddFilter(render_message_filter);
   BrowserContext* browser_context = GetBrowserContext();
@@ -525,7 +525,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
                                                  media_stream_manager));
   channel_->AddFilter(new AudioRendererHost(
       GetID(), audio_manager, BrowserMainLoop::GetAudioMirroringManager(),
-      media_observer));
+      media_internals));
   channel_->AddFilter(new VideoCaptureHost());
   channel_->AddFilter(new AppCacheDispatcherHost(
       storage_partition_impl_->GetAppCacheService(),

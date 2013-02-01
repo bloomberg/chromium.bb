@@ -156,8 +156,8 @@ class WebRTCAudioDeviceTest : public ::testing::Test, public IPC::Listener {
   void WaitForMessageLoopCompletion(base::MessageLoopProxy* loop);
 
   // Convenience getter for gmock.
-  MockMediaObserver& media_observer() const {
-    return *media_observer_.get();
+  MockMediaInternals& media_observer() const {
+    return *media_internals_.get();
   }
 
   std::string GetTestDataPath(const FilePath::StringType& file_name);
@@ -167,7 +167,7 @@ class WebRTCAudioDeviceTest : public ::testing::Test, public IPC::Listener {
   ContentRendererClient content_renderer_client_;
   RenderThreadImpl* render_thread_;  // Owned by mock_process_.
   scoped_ptr<WebRTCMockRenderProcess> mock_process_;
-  scoped_ptr<MockMediaObserver> media_observer_;
+  scoped_ptr<MockMediaInternals> media_internals_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
   scoped_ptr<media::AudioManager> audio_manager_;
   scoped_ptr<AudioMirroringManager> mirroring_manager_;

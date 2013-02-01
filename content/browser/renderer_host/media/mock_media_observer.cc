@@ -10,4 +10,8 @@ MockMediaObserver::MockMediaObserver() {}
 
 MockMediaObserver::~MockMediaObserver() {}
 
+MockMediaInternals::MockMediaInternals() {}
+
+MockMediaInternals::~MockMediaInternals() {}
+
 }  // namespace content

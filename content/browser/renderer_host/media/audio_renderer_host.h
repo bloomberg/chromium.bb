@@ -60,7 +60,7 @@ class AudioParameters;
 namespace content {
 
 class AudioMirroringManager;
-class MediaObserver;
+class MediaInternals;
 class ResourceContext;
 
 class CONTENT_EXPORT AudioRendererHost
@@ -71,7 +71,7 @@ class CONTENT_EXPORT AudioRendererHost
   AudioRendererHost(int render_process_id,
                     media::AudioManager* audio_manager,
                     AudioMirroringManager* mirroring_manager,
-                    MediaObserver* media_observer);
+                    MediaInternals* media_internals);
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -172,7 +172,7 @@ class CONTENT_EXPORT AudioRendererHost
 
   media::AudioManager* const audio_manager_;
   AudioMirroringManager* const mirroring_manager_;
-  MediaObserver* const media_observer_;
+  MediaInternals* const media_internals_;
 
   // A map of stream IDs to audio sources.
   AudioEntryMap audio_entries_;

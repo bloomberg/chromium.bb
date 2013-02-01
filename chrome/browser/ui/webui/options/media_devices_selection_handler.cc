@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/options/media_devices_selection_handler.h"
 
 #include "base/bind.h"
-#include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -22,10 +21,7 @@ namespace options {
 MediaDevicesSelectionHandler::MediaDevicesSelectionHandler() {}
 
 MediaDevicesSelectionHandler::~MediaDevicesSelectionHandler() {
-  // Register to the device observer list to get up-to-date device lists.
-  MediaCaptureDevicesDispatcher* dispatcher =
-      MediaInternals::GetInstance()->GetMediaCaptureDevicesDispatcher();
-  dispatcher->RemoveObserver(this);
+  MediaCaptureDevicesDispatcher::GetInstance()->RemoveObserver(this);
 }
 
 void MediaDevicesSelectionHandler::GetLocalizedValues(DictionaryValue* values) {
@@ -41,9 +37,7 @@ void MediaDevicesSelectionHandler::GetLocalizedValues(DictionaryValue* values) {
 
 void MediaDevicesSelectionHandler::InitializePage() {
   // Register to the device observer list to get up-to-date device lists.
-  MediaCaptureDevicesDispatcher* dispatcher =
-      MediaInternals::GetInstance()->GetMediaCaptureDevicesDispatcher();
-  dispatcher->AddObserver(this);
+  MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
 
   // Update the device selection menus.
   UpdateDevicesMenuForType(AUDIO);
@@ -132,15 +126,15 @@ void MediaDevicesSelectionHandler::UpdateDevicesMenu(
 }
 
 void MediaDevicesSelectionHandler::UpdateDevicesMenuForType(DeviceType type) {
-  scoped_refptr<MediaCaptureDevicesDispatcher> dispatcher =
-      MediaInternals::GetInstance()->GetMediaCaptureDevicesDispatcher();
   content::MediaStreamDevices devices;
   switch (type) {
     case AUDIO:
-      devices = dispatcher->GetAudioCaptureDevices();
+      devices = MediaCaptureDevicesDispatcher::GetInstance()->
+          GetAudioCaptureDevices();
       break;
     case VIDEO:
-      devices = dispatcher->GetVideoCaptureDevices();
+      devices = MediaCaptureDevicesDispatcher::GetInstance()->
+          GetVideoCaptureDevices();
       break;
   }
 

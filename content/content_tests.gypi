@@ -298,6 +298,7 @@
         'browser/loader/resource_buffer_unittest.cc',
         'browser/loader/resource_dispatcher_host_unittest.cc',
         'browser/mach_broker_mac_unittest.cc',
+        'browser/media/media_internals_unittest.cc',
         'browser/media/webrtc_internals_unittest.cc',
         'browser/notification_service_impl_unittest.cc',
         'browser/plugin_loader_posix_unittest.cc',

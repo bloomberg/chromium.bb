@@ -1025,8 +1025,6 @@
         'browser/managed_mode/managed_user_service_factory.h',
         'browser/media/media_capture_devices_dispatcher.cc',
         'browser/media/media_capture_devices_dispatcher.h',
-        'browser/media/media_internals.cc',
-        'browser/media/media_internals.h',
         'browser/media/media_stream_capture_indicator.cc',
         'browser/media/media_stream_capture_indicator.h',
         'browser/media/media_stream_devices_controller.cc',

@@ -2,23 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/media_internals.h"
+#include "content/browser/media/media_internals.h"
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/browser/media/media_internals_observer.h"
+#include "content/browser/media/media_internals.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class MockMediaInternalsObserver : public MediaInternalsObserver {
+namespace content {
+namespace {
+
+class MockObserverBaseClass {
  public:
+  ~MockObserverBaseClass() {}
+  virtual void OnUpdate(const string16& javascript) = 0;
+};
+
+class MockMediaInternalsObserver : public MockObserverBaseClass {
+ public:
+  virtual ~MockMediaInternalsObserver() {}
   MOCK_METHOD1(OnUpdate, void(const string16& javascript));
 };
 
+}  // namespace
+
 class MediaInternalsTest : public testing::Test {
  public:
-  MediaInternalsTest() : io_thread_(content::BrowserThread::IO, &loop_) {}
+  MediaInternalsTest() : io_thread_(BrowserThread::IO, &loop_) {}
   DictionaryValue* data() {
     return &internals_->data_;
   }
@@ -42,7 +55,7 @@ class MediaInternalsTest : public testing::Test {
   }
 
   MessageLoop loop_;
-  content::TestBrowserThread io_thread_;
+  TestBrowserThread io_thread_;
   scoped_ptr<MediaInternals> internals_;
 };
 
@@ -82,7 +95,10 @@ TEST_F(MediaInternalsTest, ObserversReceiveNotifications) {
 
   EXPECT_CALL(*observer.get(), OnUpdate(testing::_)).Times(1);
 
-  internals_->AddObserver(observer.get());
+  MediaInternals::UpdateCallback callback = base::Bind(
+      &MockMediaInternalsObserver::OnUpdate, base::Unretained(observer.get()));
+
+  internals_->AddUpdateCallback(callback);
   SendUpdate("fn", data());
 }
 
@@ -92,8 +108,11 @@ TEST_F(MediaInternalsTest, RemovedObserversReceiveNoNotifications) {
 
   EXPECT_CALL(*observer.get(), OnUpdate(testing::_)).Times(0);
 
-  internals_->AddObserver(observer.get());
-  internals_->RemoveObserver(observer.get());
+  MediaInternals::UpdateCallback callback = base::Bind(
+      &MockMediaInternalsObserver::OnUpdate, base::Unretained(observer.get()));
+
+  internals_->AddUpdateCallback(callback);
+  internals_->RemoveUpdateCallback(callback);
   SendUpdate("fn", data());
 }
 
@@ -112,3 +131,5 @@ TEST_F(MediaInternalsTest, DeleteRemovesItem) {
   EXPECT_FALSE(data()->Get("some.item", &out));
   EXPECT_FALSE(data()->Get("some", &out));
 }
+
+}  // namespace content

@@ -206,7 +206,7 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
   MockRTCResourceContext* resource_context =
       static_cast<MockRTCResourceContext*>(resource_context_.get());
   resource_context->set_request_context(test_request_context_.get());
-  media_observer_.reset(new MockMediaObserver());
+  media_internals_.reset(new MockMediaInternals());
 
   // Create our own AudioManager, AudioMirroringManager and MediaStreamManager.
   audio_manager_.reset(media::AudioManager::Create());
@@ -236,7 +236,7 @@ void WebRTCAudioDeviceTest::CreateChannel(const char* name) {
   static const int kRenderProcessId = 1;
   audio_render_host_ = new AudioRendererHost(
       kRenderProcessId, audio_manager_.get(), mirroring_manager_.get(),
-      media_observer_.get());
+      media_internals_.get());
   audio_render_host_->OnChannelConnected(base::GetCurrentProcId());
 
   audio_input_renderer_host_ = new AudioInputRendererHost(

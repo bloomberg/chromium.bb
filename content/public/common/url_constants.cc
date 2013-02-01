@@ -39,6 +39,7 @@ const char kChromeUIBrowserCrashHost[] = "inducebrowsercrashforrealz";
 const char kChromeUIDevToolsHost[] = "devtools";
 const char kChromeUIGpuHost[] = "gpu";
 const char kChromeUIHistogramHost[] = "histograms";
+const char kChromeUIMediaInternalsHost[] = "media-internals";
 const char kChromeUINetworkViewCacheHost[] = "view-http-cache";
 const char kChromeUIResourcesHost[] = "resources";
 const char kChromeUITcmallocHost[] = "tcmalloc";

@@ -31,7 +31,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
-#include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -1840,13 +1839,11 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                base::Value::CreateBooleanValue(policy_value_));
   UpdateProviderPolicy(policies);
 
-  MediaCaptureDevicesDispatcher* dispatcher =
-      MediaInternals::GetInstance()->GetMediaCaptureDevicesDispatcher();
-
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaCaptureDevicesDispatcher::AudioCaptureDevicesChanged,
-                 dispatcher, audio_devices),
+      base::Bind(&MediaCaptureDevicesDispatcher::OnAudioCaptureDevicesChanged,
+                 base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
+                 audio_devices),
       base::Bind(&MediaStreamDevicesControllerBrowserTest::FinishAudioTest,
                  this));
 
@@ -1866,13 +1863,11 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                base::Value::CreateBooleanValue(policy_value_));
   UpdateProviderPolicy(policies);
 
-  MediaCaptureDevicesDispatcher* dispatcher =
-      MediaInternals::GetInstance()->GetMediaCaptureDevicesDispatcher();
-
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaCaptureDevicesDispatcher::VideoCaptureDevicesChanged,
-                 dispatcher, video_devices),
+      base::Bind(&MediaCaptureDevicesDispatcher::OnVideoCaptureDevicesChanged,
+                 base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
+                 video_devices),
       base::Bind(&MediaStreamDevicesControllerBrowserTest::FinishVideoTest,
                  this));
 

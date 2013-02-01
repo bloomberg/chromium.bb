@@ -22,6 +22,7 @@
 #include "content/browser/download/download_stats.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/media/media_internals.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/ppapi_plugin_process_host.h"
@@ -37,7 +38,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_save_info.h"
-#include "content/public/browser/media_observer.h"
 #include "content/public/browser/plugin_service_filter.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/user_metrics.h"
@@ -307,7 +307,7 @@ RenderMessageFilter::RenderMessageFilter(
     BrowserContext* browser_context,
     net::URLRequestContextGetter* request_context,
     RenderWidgetHelper* render_widget_helper,
-    MediaObserver* media_observer,
+    MediaInternals* media_internals,
     DOMStorageContextImpl* dom_storage_context)
     : resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
       plugin_service_(plugin_service),
@@ -319,7 +319,7 @@ RenderMessageFilter::RenderMessageFilter(
       dom_storage_context_(dom_storage_context),
       render_process_id_(render_process_id),
       cpu_usage_(0),
-      media_observer_(media_observer) {
+      media_internals_(media_internals) {
   DCHECK(request_context_);
 
   render_widget_helper_->Init(render_process_id_, resource_dispatcher_host_);
@@ -1002,8 +1002,8 @@ void RenderMessageFilter::AsyncOpenFileOnFileThread(const FilePath& path,
 }
 
 void RenderMessageFilter::OnMediaLogEvent(const media::MediaLogEvent& event) {
-  if (media_observer_)
-    media_observer_->OnMediaEvent(render_process_id_, event);
+  if (media_internals_)
+    media_internals_->OnMediaEvent(render_process_id_, event);
 }
 
 void RenderMessageFilter::CheckPolicyForCookies(

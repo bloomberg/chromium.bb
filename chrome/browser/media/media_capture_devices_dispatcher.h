@@ -5,17 +5,20 @@
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_CAPTURE_DEVICES_DISPATCHER_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_CAPTURE_DEVICES_DISPATCHER_H_
 
-#include "base/memory/ref_counted.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/observer_list.h"
+#include "content/public/browser/media_observer.h"
 #include "content/public/common/media_stream_request.h"
 
+class MediaStreamCaptureIndicator;
 class PrefServiceSyncable;
+class Profile;
 
-// This observer is owned by MediaInternals and deleted when MediaInternals
-// is deleted.
-class MediaCaptureDevicesDispatcher
-    : public base::RefCountedThreadSafe<MediaCaptureDevicesDispatcher> {
+// This singleton is used to receive updates about media events from the content
+// layer.
+class MediaCaptureDevicesDispatcher : public content::MediaObserver {
  public:
   class Observer {
    public:
@@ -29,19 +32,20 @@ class MediaCaptureDevicesDispatcher
     virtual void OnUpdateVideoDevices(
         const content::MediaStreamDevices& devices) {}
 
+    // Handle an information update related to a media stream request.
+    virtual void OnRequestUpdate(
+        int render_process_id,
+        int render_view_id,
+        const content::MediaStreamDevice& device,
+        const content::MediaRequestState state) {}
+
     virtual ~Observer() {}
   };
 
-  MediaCaptureDevicesDispatcher();
+  static MediaCaptureDevicesDispatcher* GetInstance();
 
   // Registers the preferences related to Media Stream default devices.
   static void RegisterUserPrefs(PrefServiceSyncable* user_prefs);
-
-  // Called on IO thread when one audio device is plugged in or unplugged.
-  void AudioCaptureDevicesChanged(const content::MediaStreamDevices& devices);
-
-  // Called on IO thread when one video device is plugged in or unplugged.
-  void VideoCaptureDevicesChanged(const content::MediaStreamDevices& devices);
 
   // Methods for observers. Called on UI thread.
   // Observers should add themselves on construction and remove themselves
@@ -51,14 +55,59 @@ class MediaCaptureDevicesDispatcher
   const content::MediaStreamDevices& GetAudioCaptureDevices();
   const content::MediaStreamDevices& GetVideoCaptureDevices();
 
+  // Helper to get the default devices which can be used by the media request,
+  // if the return list is empty, it means there is no available device on the
+  // OS.
+  // Called on the UI thread.
+  void GetDefaultDevicesForProfile(Profile* profile,
+                                   bool audio,
+                                   bool video,
+                                   content::MediaStreamDevices* devices);
+
+  // Helper for picking the device that was requested for an OpenDevice request.
+  // If the device requested is not available it will revert to using the first
+  // available one instead or will return an empty list if no devices of the
+  // requested kind are present.
+  void GetRequestedDevice(const std::string& requested_device_id,
+                          bool audio,
+                          bool video,
+                          content::MediaStreamDevices* devices);
+
+  // Overridden from content::MediaObserver:
+  virtual void OnCaptureDevicesOpened(
+      int render_process_id,
+      int render_view_id,
+      const content::MediaStreamDevices& devices) OVERRIDE;
+  virtual void OnCaptureDevicesClosed(
+      int render_process_id,
+      int render_view_id,
+      const content::MediaStreamDevices& devices) OVERRIDE;
+  virtual void OnAudioCaptureDevicesChanged(
+      const content::MediaStreamDevices& devices) OVERRIDE;
+  virtual void OnVideoCaptureDevicesChanged(
+      const content::MediaStreamDevices& devices) OVERRIDE;
+  virtual void OnMediaRequestStateChanged(
+      int render_process_id,
+      int render_view_id,
+      const content::MediaStreamDevice& device,
+      content::MediaRequestState state) OVERRIDE;
+
+  scoped_refptr<MediaStreamCaptureIndicator> GetMediaStreamCaptureIndicator();
+
  private:
-  friend class base::RefCountedThreadSafe<MediaCaptureDevicesDispatcher>;
+  friend struct DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
+
+  MediaCaptureDevicesDispatcher();
   virtual ~MediaCaptureDevicesDispatcher();
 
-  // Called by the public Audio/VideoCaptureDevicesChanged() functions,
-  // executed on UI thread.
+  // Called by the MediaObserver() functions, executed on UI thread.
   void UpdateAudioDevicesOnUIThread(const content::MediaStreamDevices& devices);
   void UpdateVideoDevicesOnUIThread(const content::MediaStreamDevices& devices);
+  void UpdateMediaRequestStateOnUIThread(
+      int render_process_id,
+      int render_view_id,
+      const content::MediaStreamDevice& device,
+      content::MediaRequestState state);
 
   // A list of cached audio capture devices.
   content::MediaStreamDevices audio_devices_;
@@ -72,6 +121,8 @@ class MediaCaptureDevicesDispatcher
   // Flag to indicate if device enumeration has been done/doing.
   // Only accessed on UI thread.
   bool devices_enumerated_;
+
+  scoped_refptr<MediaStreamCaptureIndicator> media_stream_capture_indicator_;
 };
 
 #endif  // CHROME_BROWSER_MEDIA_MEDIA_CAPTURE_DEVICES_DISPATCHER_H_

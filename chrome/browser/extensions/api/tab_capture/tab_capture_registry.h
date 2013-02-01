@@ -10,8 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "chrome/browser/media/media_internals.h"
-#include "chrome/browser/media/media_internals_observer.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/extensions/api/tab_capture.h"
 #include "content/public/browser/media_request_state.h"
@@ -26,7 +25,8 @@ namespace extensions {
 namespace tab_capture = extensions::api::tab_capture;
 
 class TabCaptureRegistry : public ProfileKeyedService,
-                           public content::NotificationObserver {
+                           public content::NotificationObserver,
+                           public MediaCaptureDevicesDispatcher::Observer {
  public:
   struct TabCaptureRequest {
     TabCaptureRequest(std::string extension_id,
@@ -52,49 +52,20 @@ class TabCaptureRegistry : public ProfileKeyedService,
   typedef std::map<const std::pair<int, int>, TabCaptureRequest>
       DeviceCaptureRequestMap;
 
-  class MediaObserverProxy : public MediaInternalsObserver,
-                             public base::RefCountedThreadSafe<
-                                 MediaObserverProxy> {
-   public:
-    MediaObserverProxy() : handler_(NULL) {}
-    void Attach(TabCaptureRegistry* handler);
-    void Detach();
-
-   private:
-    friend class base::RefCountedThreadSafe<MediaObserverProxy>;
-    virtual ~MediaObserverProxy() {}
-
-    // MediaInternalsObserver.
-    virtual void OnRequestUpdate(
-        int render_process_id,
-        int render_view_id,
-        const content::MediaStreamDevice& device,
-        const content::MediaRequestState state) OVERRIDE;
-
-    void RegisterAsMediaObserverOnIOThread(bool unregister);
-    void UpdateOnUIThread(
-        int render_process_id,
-        int render_view_id,
-        const content::MediaStreamDevice& device,
-        const content::MediaRequestState new_state);
-
-    TabCaptureRegistry* handler_;
-  };
-
   virtual ~TabCaptureRegistry();
-
-  void HandleRequestUpdateOnUIThread(
-      int render_process_id,
-      int render_view_id,
-      const content::MediaStreamDevice& device,
-      const content::MediaRequestState state);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  scoped_refptr<MediaObserverProxy> proxy_;
+  // MediaCaptureDevicesDispatcher::Observer implementation.
+  virtual void OnRequestUpdate(
+      int render_process_id,
+      int render_view_id,
+      const content::MediaStreamDevice& device,
+      const content::MediaRequestState state) OVERRIDE;
+
   content::NotificationRegistrar registrar_;
   Profile* const profile_;
   DeviceCaptureRequestMap requests_;

@@ -17,7 +17,7 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/media/media_internals.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
@@ -253,7 +253,7 @@ void ShellWindow::RequestMediaAccessPermission(
     const content::MediaResponseCallback& callback) {
   // Get the preferred default devices for the request.
   content::MediaStreamDevices devices;
-  media::GetDefaultDevicesForProfile(
+  MediaCaptureDevicesDispatcher::GetInstance()->GetDefaultDevicesForProfile(
       profile_,
       content::IsAudioMediaType(request.audio_type),
       content::IsVideoMediaType(request.video_type),

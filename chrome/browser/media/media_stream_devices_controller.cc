@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
-#include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -25,12 +24,10 @@ using content::BrowserThread;
 namespace {
 
 bool HasAnyAvailableDevice() {
-  MediaCaptureDevicesDispatcher* dispatcher =
-      MediaInternals::GetInstance()->GetMediaCaptureDevicesDispatcher();
   const content::MediaStreamDevices& audio_devices =
-      dispatcher->GetAudioCaptureDevices();
+      MediaCaptureDevicesDispatcher::GetInstance()->GetAudioCaptureDevices();
   const content::MediaStreamDevices& video_devices =
-      dispatcher->GetVideoCaptureDevices();
+      MediaCaptureDevicesDispatcher::GetInstance()->GetVideoCaptureDevices();
 
   return !audio_devices.empty() || !video_devices.empty();
 };
@@ -129,19 +126,21 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
       case content::MEDIA_OPEN_DEVICE:
         // For open device request pick the desired device or fall back to the
         // first available of the given type.
-        media::GetRequestedDevice(request_.requested_device_id,
-                                  has_audio_,
-                                  has_video_,
-                                  &devices);
+        MediaCaptureDevicesDispatcher::GetInstance()->GetRequestedDevice(
+            request_.requested_device_id,
+            has_audio_,
+            has_video_,
+            &devices);
         break;
       case content::MEDIA_DEVICE_ACCESS:
       case content::MEDIA_GENERATE_STREAM:
       case content::MEDIA_ENUMERATE_DEVICES:
         // Get the default devices for the request.
-        media::GetDefaultDevicesForProfile(profile_,
-                                           has_audio_,
-                                           has_video_,
-                                           &devices);
+        MediaCaptureDevicesDispatcher::GetInstance()->
+            GetDefaultDevicesForProfile(profile_,
+                                        has_audio_,
+                                        has_video_,
+                                        &devices);
         break;
     }
 

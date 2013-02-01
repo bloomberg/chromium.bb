@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_MEDIA_MEDIA_INTERNALS_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_MEDIA_MEDIA_INTERNALS_HANDLER_H_
+#ifndef CONTENT_BROWSER_MEDIA_MEDIA_INTERNALS_HANDLER_H_
+#define CONTENT_BROWSER_MEDIA_MEDIA_INTERNALS_HANDLER_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-class MediaInternalsProxy;
-
 namespace base {
 class ListValue;
 }
 
+namespace content {
+class MediaInternalsProxy;
+
 // This class handles messages to and from MediaInternalsUI.
 // It does all its work on the IO thread through the proxy below.
-class MediaInternalsMessageHandler : public content::WebUIMessageHandler {
+class MediaInternalsMessageHandler : public WebUIMessageHandler {
  public:
   MediaInternalsMessageHandler();
   virtual ~MediaInternalsMessageHandler();
@@ -37,4 +38,6 @@ class MediaInternalsMessageHandler : public content::WebUIMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(MediaInternalsMessageHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_MEDIA_MEDIA_INTERNALS_HANDLER_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_MEDIA_MEDIA_INTERNALS_HANDLER_H_
