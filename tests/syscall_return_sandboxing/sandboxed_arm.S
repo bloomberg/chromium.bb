@@ -17,6 +17,7 @@ timebuf:
 
         .text
         .globl SyscallReturnIsSandboxed
+        .p2align 4
 SyscallReturnIsSandboxed:
         nop
         push {lr}
@@ -33,7 +34,7 @@ bad:    pop {lr}
         bic lr, lr, #0xf000000f
         bx lr
 
-
+        .p2align 4
         .word NACL_INSTR_ARM_LITERAL_POOL_HEAD
         /*
          * Put a disallowed instruction here to ensure that the bkpt
