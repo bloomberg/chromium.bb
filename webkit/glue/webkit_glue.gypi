@@ -463,7 +463,8 @@
           'sources!': [
             'plugins/plugin_stubs.cc',
           ],
-          'msvs_disabled_warnings': [ 4800 ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4800, 4267 ],
           'conditions': [
             ['inside_chromium_build==1 and component=="shared_library"', {
               'dependencies': [
