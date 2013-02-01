@@ -70,6 +70,10 @@
 #include "net/ocsp/nss_ocsp.h"
 #endif
 
+#if !defined(OS_IOS)
+#include "net/proxy/proxy_resolver_v8.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #endif  // defined(OS_CHROMEOS)
@@ -369,6 +373,9 @@ IOThread::IOThread(
       sdch_manager_(NULL),
       is_spdy_disabled_by_policy_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+#if !defined(OS_IOS)
+  net::ProxyResolverV8::RememberDefaultIsolate();
+#endif
   // We call RegisterPrefs() here (instead of inside browser_prefs.cc) to make
   // sure that everything is initialized in the right order.
   //

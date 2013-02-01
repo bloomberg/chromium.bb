@@ -16,6 +16,10 @@
 #include "net/android/net_jni_registrar.h"
 #endif
 
+#if !defined(OS_IOS)
+#include "net/proxy/proxy_resolver_v8.h"
+#endif
+
 using net::internal::ClientSocketPoolBaseHelper;
 using net::SpdySession;
 
@@ -42,6 +46,11 @@ int main(int argc, char** argv) {
   // Enable support for SSL server sockets, which must be done while
   // single-threaded.
   net::EnableSSLServerSockets();
+
+#if !defined(OS_IOS)
+  // This has to be done on the main thread.
+  net::ProxyResolverV8::RememberDefaultIsolate();
+#endif
 
   return test_suite.Run();
 }

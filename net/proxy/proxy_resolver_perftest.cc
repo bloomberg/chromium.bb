@@ -215,10 +215,12 @@ class MockJSBindings : public net::ProxyResolverV8::JSBindings {
 };
 
 TEST(ProxyResolverPerfTest, ProxyResolverV8) {
+  // This has to be done on the main thread.
+  net::ProxyResolverV8::RememberDefaultIsolate();
+
   MockJSBindings js_bindings;
   net::ProxyResolverV8 resolver;
   resolver.set_js_bindings(&js_bindings);
   PacPerfSuiteRunner runner(&resolver, "ProxyResolverV8");
   runner.RunAllTests();
 }
-
