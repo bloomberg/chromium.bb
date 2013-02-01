@@ -237,6 +237,11 @@ FilePath ContentBrowserClient::GetHyphenDictionaryDirectory() {
   return FilePath();
 }
 
+ui::SelectFilePolicy* ContentBrowserClient::CreateSelectFilePolicy(
+    WebContents* web_contents) {
+  return NULL;
+}
+
 #if defined(OS_WIN)
 const wchar_t* ContentBrowserClient::GetResourceDllName() {
   return NULL;

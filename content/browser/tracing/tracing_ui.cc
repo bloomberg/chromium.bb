@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/tracing_ui.h"
+#include "content/browser/tracing/tracing_ui.h"
 
 #include <string>
 
@@ -16,11 +16,8 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/common/chrome_version_info.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/trace_controller.h"
 #include "content/public/browser/trace_subscriber.h"
@@ -29,10 +26,9 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "grit/browser_resources.h"
-#include "grit/generated_resources.h"
+#include "content/public/common/url_constants.h"
+#include "grit/content_resources.h"
 #include "ipc/ipc_channel.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(OS_CHROMEOS)
@@ -40,16 +36,12 @@
 #include "chromeos/dbus/debug_daemon_client.h"
 #endif
 
-using content::BrowserThread;
-using content::TraceController;
-using content::WebContents;
-using content::WebUIMessageHandler;
-
+namespace content {
 namespace {
 
-content::WebUIDataSource* CreateTracingHTMLSource() {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUITracingHost);
+WebUIDataSource* CreateTracingHTMLSource() {
+  WebUIDataSource* source =
+      WebUIDataSource::Create(chrome::kChromeUITracingHost);
 
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_TRACING_HTML);
@@ -65,7 +57,7 @@ class TracingMessageHandler
     : public WebUIMessageHandler,
       public ui::SelectFileDialog::Listener,
       public base::SupportsWeakPtr<TracingMessageHandler>,
-      public content::TraceSubscriber {
+      public TraceSubscriber {
  public:
   TracingMessageHandler();
   virtual ~TracingMessageHandler();
@@ -204,25 +196,10 @@ void TracingMessageHandler::OnTracingControllerInitialized(
   // Send the client info to the tracingController
   {
     scoped_ptr<DictionaryValue> dict(new DictionaryValue());
-    chrome::VersionInfo version_info;
+    dict->SetString("version", GetContentClient()->GetProduct());
 
-    if (!version_info.is_valid()) {
-      DLOG(ERROR) << "Unable to create chrome::VersionInfo";
-    } else {
-      // We have everything we need to send the right values.
-      dict->SetString("version", version_info.Version());
-      dict->SetString("cl", version_info.LastChange());
-      dict->SetString("version_mod",
-          chrome::VersionInfo::GetVersionStringModifier());
-      dict->SetString("official",
-          l10n_util::GetStringUTF16(
-              version_info.IsOfficialBuild() ?
-              IDS_ABOUT_VERSION_OFFICIAL :
-              IDS_ABOUT_VERSION_UNOFFICIAL));
-
-      dict->SetString("command_line",
-          CommandLine::ForCurrentProcess()->GetCommandLineString());
-    }
+    dict->SetString("command_line",
+        CommandLine::ForCurrentProcess()->GetCommandLineString());
 
     web_ui()->CallJavascriptFunction("tracingController.onClientInfoUpdate",
                                      *dict);
@@ -326,7 +303,9 @@ void TracingMessageHandler::OnLoadTraceFile(const ListValue* list) {
     return;
   select_trace_file_dialog_type_ = ui::SelectFileDialog::SELECT_OPEN_FILE;
   select_trace_file_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+      this,
+      GetContentClient()->browser()->CreateSelectFilePolicy(
+          web_ui()->GetWebContents()));
   select_trace_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_OPEN_FILE,
       string16(),
@@ -349,8 +328,7 @@ void TracingMessageHandler::LoadTraceFileComplete(string16* contents) {
   string16 prefix = UTF8ToUTF16("window.traceData += '");
   string16 suffix = UTF8ToUTF16("';");
 
-  content::RenderViewHost* rvh =
-      web_ui()->GetWebContents()->GetRenderViewHost();
+  RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
   for (size_t i = 0; i < contents->size(); i += kMaxSize) {
     string16 javascript = i == 0 ? first_prefix : prefix;
     javascript += contents->substr(i, kMaxSize) + suffix;
@@ -375,7 +353,9 @@ void TracingMessageHandler::OnSaveTraceFile(const ListValue* list) {
 
   select_trace_file_dialog_type_ = ui::SelectFileDialog::SELECT_SAVEAS_FILE;
   select_trace_file_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+      this,
+      GetContentClient()->browser()->CreateSelectFilePolicy(
+          web_ui()->GetWebContents()));
   select_trace_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE,
       string16(),
@@ -500,10 +480,13 @@ void TracingMessageHandler::OnTraceBufferPercentFullReply(float percent_full) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-TracingUI::TracingUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+TracingUI::TracingUI(WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new TracingMessageHandler());
 
   // Set up the chrome://tracing/ source.
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateTracingHTMLSource());
+  BrowserContext* browser_context =
+      web_ui->GetWebContents()->GetBrowserContext();
+  WebUIDataSource::Add(browser_context, CreateTracingHTMLSource());
 }
+
+}  // namespace content

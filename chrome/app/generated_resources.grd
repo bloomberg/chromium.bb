@@ -15437,11 +15437,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Remove desktop shortcut for this user
     </message>
 
-    <!-- Tracing about page strings -->
-    <message name="IDS_TRACING_TITLE" desc="Title for the about:tracing page.">
-      Tracing
-    </message>
-
     <!-- Aura strings -->
     <if expr="pp_ifdef('use_ash')">
       <message name="IDS_LAUNCHER_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of the launcher for apps configured to open in a tab">

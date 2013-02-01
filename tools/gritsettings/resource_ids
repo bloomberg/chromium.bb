@@ -184,6 +184,7 @@
   },
   "content/content_resources.grd": {
     "includes": [25000],
+    "messages": [25250],
   },
   "content/shell/shell_resources.grd": {
     "includes": [25500],
