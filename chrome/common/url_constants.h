@@ -393,9 +393,7 @@ extern const char kSideloadWipeoutHelpURL[];
 #if defined(OS_CHROMEOS)
 // The URL for the "Learn more" link for natural scrolling on ChromeOS.
 extern const char kNaturalScrollHelpURL[];
-#endif
 
-#if defined(OS_CHROMEOS)
 // The URL for the Learn More page about enterprise enrolled devices.
 extern const char kLearnMoreEnterpriseURL[];
 #endif
@@ -407,11 +405,12 @@ extern const int kNumberOfChromeDebugURLs;
 // Canonical schemes you can use as input to GURL.SchemeIs().
 extern const char kExtensionResourceScheme[];
 
-#if defined(OS_CHROMEOS)
-extern const char kDriveScheme[];
-#endif
+extern const char kChromeSearchScheme[];
 
 #if defined(OS_CHROMEOS)
+extern const char kCrosScheme[];
+extern const char kDriveScheme[];
+
 // "Learn more" URL for the Cloud Print section under Options.
 extern const char kCloudPrintLearnMoreURL[];
 #endif

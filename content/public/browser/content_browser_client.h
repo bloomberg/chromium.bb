@@ -119,9 +119,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // embedder's IPC filters have priority.
   virtual void RenderProcessHostCreated(RenderProcessHost* host) {}
 
-  // Notifies that a RenderProcessHost is about to be deleted.
-  virtual void RenderProcessHostDeleted(RenderProcessHost* host) {}
-
   // Notifies that a BrowserChildProcessHost has been created.
   virtual void BrowserChildProcessHostCreated(BrowserChildProcessHost* host) {}
 

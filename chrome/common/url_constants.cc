@@ -508,6 +508,8 @@ const int kNumberOfChromeDebugURLs =
 
 const char kExtensionResourceScheme[] = "chrome-extension-resource";
 
+const char kChromeSearchScheme[] = "chrome-search";
+
 // Google SafeSearch query parameters.
 const char kSafeSearchSafeParameter[] = "safe=active";
 const char kSafeSearchSsuiParameter[] = "ssui=on";

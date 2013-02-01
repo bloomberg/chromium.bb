@@ -10,9 +10,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 // Tracks render process host ids that are associated with Instant.
-class InstantService : public ProfileKeyedService {
+class InstantService : public ProfileKeyedService,
+                       public content::NotificationObserver {
  public:
   InstantService();
   virtual ~InstantService();
@@ -20,7 +23,6 @@ class InstantService : public ProfileKeyedService {
   // Add, remove, and query RenderProcessHost IDs that are associated with
   // Instant processes.
   void AddInstantProcess(int process_id);
-  void RemoveInstantProcess(int process_id);
   bool IsInstantProcess(int process_id) const;
 
   // For testing.
@@ -30,8 +32,14 @@ class InstantService : public ProfileKeyedService {
   // ProfileKeyedService:
   virtual void Shutdown() OVERRIDE;
 
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   // The process ids associated with Instant processes.
   std::set<int> process_ids_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantService);
 };

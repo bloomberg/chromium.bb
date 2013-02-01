@@ -381,6 +381,7 @@ void ChromeContentClient::AddAdditionalSchemes(
   savable_schemes->push_back(extensions::kExtensionScheme);
   standard_schemes->push_back(kExtensionResourceScheme);
   savable_schemes->push_back(kExtensionResourceScheme);
+  standard_schemes->push_back(chrome::kChromeSearchScheme);
 #if defined(OS_CHROMEOS)
   standard_schemes->push_back(kCrosScheme);
 #endif
