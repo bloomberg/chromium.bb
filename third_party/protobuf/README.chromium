@@ -23,8 +23,9 @@ This code has been patched to ensure that files in the target protobuf_lite
 do not include headers from protobuf_full. See r173228 for the patch.
 
 This code has been patched to make the target protobuf_lite a component so that
-targets that depend on it can be componentized. See http://crbug.com/172800.
-TODO(rsimha): Add revision number here after CL is committed.
+targets that depend on it can be componentized. See http://crbug.com/172800 for
+details, and r179806 for the patch.
+
 
 Revisions r427 and r430 were cherry-picked from upstream.
 
