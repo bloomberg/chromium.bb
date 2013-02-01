@@ -26,7 +26,7 @@ to access Google Cloud Messaging for Chrome from your application.
 We also offer Google API client libraries for a number
 of popular programming languages that can be used to access the API.
 For more information, see
-<a href="https://developers.google.com/api-client-library">https://developers.google.com/api-client-library</a>.
+<a href="https://developers.google.com/api-client-library">Google APIs Client Libraries</a>.
 </p>
 
 <h2 id="insert">Insert method</h2>
@@ -64,7 +64,7 @@ The required set of query string parameters are:
   <tr>
     <td><code>client_id</code></td>
     <td>Indicates the app or extension client that is making the request.
-    Obtained from the <a href="https://code.google.com/apis/console/">Google APIs console</a>;
+    Obtained from the <a href="https://code.google.com/apis/console/">Google APIs Console</a>;
     the parameter value must exactly match the client ID shown
     in the console.
     </td>
@@ -72,7 +72,7 @@ The required set of query string parameters are:
   <tr>
     <td><code>client_secret</code></td>
     <td>The client secret obtained during registration in
-    	<a href="https://code.google.com/apis/console/">Google APIs console</a>.</td>
+    	<a href="https://code.google.com/apis/console/">Google APIs Console</a>.</td>
   </tr>
   <tr>
     <td><code>refresh_token</code></td>
@@ -86,7 +86,9 @@ The required set of query string parameters are:
 
 <h3 id="response">Response</h3>
 
+<p>
 The authorization response includes:
+</p>
 
 <table>
   <tr>
@@ -111,11 +113,13 @@ The authorization response includes:
 
 <h3 id="http">HTTP request</h3>
 
-<p><code>Post https://www.googleapis.com/gcm_for_chrome/v1/messages</code></p>
+<p><code>POST https://www.googleapis.com/gcm_for_chrome/v1/messages</code></p>
 
 <h3 id="body">Request body</h3>
 
+<p>
 In the request body, supply:
+</p>
 
 <table>
   <tr>
