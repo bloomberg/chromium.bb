@@ -6566,21 +6566,32 @@
    fun:_ZN3gpu5gles2*GLES2ImplementationTest_*_Test8TestBodyEv
 }
 {
-bug_173597_a
-Memcheck:Leak
-fun:malloc
-fun:g_malloc
-fun:g_slice_alloc
-fun:pango_attr_list_get_iterator
-fun:_ZN3gfx35RenderTextTest_PangoAttributes_Test8TestBodyEv
+   bug_173597_a
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:pango_attr_list_get_iterator
+   fun:_ZN3gfx35RenderTextTest_PangoAttributes_Test8TestBodyEv
 }
 {
-bug_173597_b
-Memcheck:Leak
-fun:realloc
-fun:g_realloc
-fun:g_string_maybe_expand
-fun:g_string_insert_len
-fun:pango_font_description_to_string
-fun:_ZN3gfx35RenderTextTest_PangoAttributes_Test8TestBodyEv
+   bug_173597_b
+   Memcheck:Leak
+   fun:realloc
+   fun:g_realloc
+   fun:g_string_maybe_expand
+   fun:g_string_insert_len
+   fun:pango_font_description_to_string
+   fun:_ZN3gfx35RenderTextTest_PangoAttributes_Test8TestBodyEv
+}
+{
+   bug_173620
+   Memcheck:Uninitialized
+   fun:_ZNK3net21HttpStreamFactoryImpl30GetAlternateProtocolRequestForERK4GURLPS1_
+   fun:_ZN3net21HttpStreamFactoryImpl13RequestStreamERKNS_15HttpRequestInfoERKNS_9SSLConfigES6_PNS_17HttpStreamRequest8DelegateERKNS_11BoundNetLogE
+   fun:_ZN3net22HttpNetworkTransaction14DoCreateStreamEv
+   fun:_ZN3net22HttpNetworkTransaction6DoLoopEi
+   fun:_ZN3net22HttpNetworkTransaction5StartEPKNS_15HttpRequestInfoERKN4base8CallbackIFviEEERKNS_11BoundNetLogE
+   fun:_ZN3net12_GLOBAL__N_126GroupNameTransactionHelperERKSsRK13scoped_refptrINS_18HttpNetworkSessionEE
+   fun:_ZN3net66HttpNetworkTransactionSpdy*Test_GroupNameForDirectConnections_Test8TestBodyEv
 }
