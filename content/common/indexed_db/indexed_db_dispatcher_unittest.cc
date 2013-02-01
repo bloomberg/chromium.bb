@@ -10,17 +10,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
 
 using WebKit::WebVector;
 using WebKit::WebString;
 
 namespace content {
-
-class FakeWebIDBTransaction : public WebKit::WebIDBTransaction {
- public:
-  FakeWebIDBTransaction() {}
-};
 
 // TODO(alecflett): Reenable this test when IDB code in webkit
 // enforces size limits. See http://crbug.com/160577

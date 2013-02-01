@@ -22,7 +22,6 @@ using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabaseCallbacks;
 using WebKit::WebIDBMetadata;
 using WebKit::WebIDBKeyPath;
-using WebKit::WebIDBTransaction;
 using WebKit::WebString;
 using WebKit::WebVector;
 using webkit_glue::WorkerTaskRunner;
@@ -43,14 +42,6 @@ RendererWebIDBDatabaseImpl::~RendererWebIDBDatabaseImpl() {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->DatabaseDestroyed(ipc_database_id_);
-}
-
-WebIDBMetadata RendererWebIDBDatabaseImpl::metadata() const {
-  IndexedDBDatabaseMetadata idb_metadata;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_DatabaseMetadata(ipc_database_id_, &idb_metadata));
-
-  return IndexedDBDispatcher::ConvertMetadata(idb_metadata);
 }
 
 void RendererWebIDBDatabaseImpl::createObjectStore(

@@ -333,7 +333,6 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::DatabaseDispatcherHost,
                            message, *msg_is_ok)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseMetadata, OnMetadata)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateObjectStore,
                         OnCreateObjectStore)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteObjectStore,
@@ -368,16 +367,6 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::Send(
     IPC::Message* message) {
   parent_->Send(message);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMetadata(
-    int32 ipc_database_id, IndexedDBDatabaseMetadata* metadata) {
-  WebIDBDatabase* idb_database = parent_->GetOrTerminateProcess(
-      &map_, ipc_database_id);
-  if (!idb_database)
-    return;
-
-  *metadata = ConvertMetadata(idb_database->metadata());
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(

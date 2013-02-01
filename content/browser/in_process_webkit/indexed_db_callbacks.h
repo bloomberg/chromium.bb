@@ -14,7 +14,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseError.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
 
 namespace content {
 
@@ -59,14 +58,9 @@ class IndexedDBCallbacksDatabase : public IndexedDBCallbacksBase {
       int64 host_transaction_id,
       const GURL& origin_url);
 
-  virtual void onSuccess(WebKit::WebIDBDatabase* idb_object);
   virtual void onSuccess(
       WebKit::WebIDBDatabase* idb_object,
       const WebKit::WebIDBMetadata& metadata);
-  virtual void onUpgradeNeeded(
-      long long old_version,
-      WebKit::WebIDBTransaction* transaction,
-      WebKit::WebIDBDatabase* database);
   virtual void onUpgradeNeeded(
       long long old_version,
       WebKit::WebIDBDatabase* database,

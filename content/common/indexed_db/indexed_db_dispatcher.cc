@@ -133,8 +133,6 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnSuccessCursorContinue)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessCursorPrefetch,
                         OnSuccessCursorPrefetch)
-    IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessIDBDatabaseOld,
-                        OnSuccessIDBDatabaseOld)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessIDBDatabase,
                         OnSuccessIDBDatabase)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessIndexedDBKey,
@@ -151,8 +149,6 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnSuccessUndefined)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksError, OnError)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksIntBlocked, OnIntBlocked)
-    IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksUpgradeNeededOld,
-                        OnUpgradeNeededOld)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksUpgradeNeeded, OnUpgradeNeeded)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksForcedClose,
                         OnForcedClose)
@@ -507,21 +503,6 @@ void IndexedDBDispatcher::DatabaseDestroyed(int32 ipc_database_id) {
   databases_.erase(ipc_database_id);
 }
 
-void IndexedDBDispatcher::OnSuccessIDBDatabaseOld(int32 ipc_thread_id,
-                                                  int32 ipc_response_id,
-                                                  int32 ipc_object_id) {
-  DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
-  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_response_id);
-  if (!callbacks)
-    return;
-  // If an upgrade was performed, count will be non-zero.
-  if (!databases_.count(ipc_object_id))
-    databases_[ipc_object_id] = new RendererWebIDBDatabaseImpl(ipc_object_id);
-  DCHECK_EQ(databases_.count(ipc_object_id), 1u);
-  callbacks->onSuccess(databases_[ipc_object_id]);
-  pending_callbacks_.Remove(ipc_response_id);
-}
-
 void IndexedDBDispatcher::OnSuccessIDBDatabase(
     int32 ipc_thread_id,
     int32 ipc_response_id,
@@ -679,21 +660,6 @@ void IndexedDBDispatcher::OnIntBlocked(int32 ipc_thread_id,
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_response_id);
   DCHECK(callbacks);
   callbacks->onBlocked(existing_version);
-}
-
-void IndexedDBDispatcher::OnUpgradeNeededOld(int32 ipc_thread_id,
-                                             int32 ipc_response_id,
-                                             int32 ipc_database_id,
-                                             int64 old_version) {
-  DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
-  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_response_id);
-  DCHECK(callbacks);
-  DCHECK(!databases_.count(ipc_database_id));
-  databases_[ipc_database_id] = new RendererWebIDBDatabaseImpl(ipc_database_id);
-  callbacks->onUpgradeNeeded(
-      old_version,
-      0,
-      databases_[ipc_database_id]);
 }
 
 void IndexedDBDispatcher::OnUpgradeNeeded(

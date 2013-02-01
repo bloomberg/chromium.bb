@@ -302,10 +302,6 @@ IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorAdvance,
 IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorPrefetch,
                      IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
 
-IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessIDBDatabaseOld,
-                     int32 /* ipc_thread_id */,
-                     int32 /* ipc_response_id */,
-                     int32 /* ipc_database_id */)
 IPC_MESSAGE_CONTROL4(IndexedDBMsg_CallbacksSuccessIDBDatabase,
                      int32 /* ipc_thread_id */,
                      int32 /* ipc_response_id */,
@@ -348,11 +344,6 @@ IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksIntBlocked,
                      int32 /* ipc_thread_id */,
                      int32 /* ipc_response_id */,
                      int64 /* existing_version */)
-IPC_MESSAGE_CONTROL4(IndexedDBMsg_CallbacksUpgradeNeededOld,
-                     int32, /* ipc_thread_id */
-                     int32, /* ipc_response_id */
-                     int32, /* ipc_database_id */
-                     int64) /* old_version */
 IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksUpgradeNeeded,
                      int32, /* ipc_thread_id */
                      int32, /* ipc_response_id */
@@ -374,7 +365,6 @@ IPC_MESSAGE_CONTROL4(IndexedDBMsg_DatabaseCallbacksIntVersionChange,
                      int32, /* ipc_database_id */
                      int64, /* old_version */
                      int64) /* new_version */
-// IDBTransactionCallback message handlers.
 IPC_MESSAGE_CONTROL5(IndexedDBMsg_DatabaseCallbacksAbort,
                      int32, /* ipc_thread_id */
                      int32, /* ipc_database_id */
@@ -433,11 +423,6 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryOpen,
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryDeleteDatabase,
                      IndexedDBHostMsg_FactoryDeleteDatabase_Params)
 
-// WebIDBDatabase::metadata() message.
-IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_DatabaseMetadata,
-                            int32, /* ipc_database_id */
-                            IndexedDBDatabaseMetadata /* metadata */)
-
 // WebIDBDatabase::createObjectStore() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseCreateObjectStore,
                      IndexedDBHostMsg_DatabaseCreateObjectStore_Params)
@@ -449,16 +434,6 @@ IPC_MESSAGE_CONTROL3(IndexedDBHostMsg_DatabaseDeleteObjectStore,
                      int64) /* object_store_id */
 
 // WebIDBDatabase::createTransaction() message.
-// TODO: make this message async.
-IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_DatabaseCreateTransactionOld,
-                            int32, /* ipc_thread_id */
-                            int32, /* ipc_database_id */
-                            int64, /* transaction_id */
-                            std::vector<int64>, /* object_stores */
-                            int32, /* mode */
-                            int32) /* ipc_transaction_id */
-
-
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseCreateTransaction,
                      IndexedDBHostMsg_DatabaseCreateTransaction_Params)
 

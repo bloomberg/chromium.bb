@@ -12,7 +12,6 @@ namespace WebKit {
 class WebIDBCallbacks;
 class WebIDBDatabaseCallbacks;
 class WebString;
-class WebIDBTransaction;
 }
 
 namespace content {
@@ -23,7 +22,6 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
   virtual ~RendererWebIDBDatabaseImpl();
 
   // WebKit::WebIDBDatabase
-  virtual WebKit::WebIDBMetadata metadata() const;
   virtual void createObjectStore(
       long long transaction_id,
       long long objectstore_id,

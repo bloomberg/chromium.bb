@@ -123,8 +123,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
     void Send(IPC::Message* message);
 
-    void OnMetadata(int32 ipc_database_id,
-                    IndexedDBDatabaseMetadata* metadata);
     void OnCreateObjectStore(
         const IndexedDBHostMsg_DatabaseCreateObjectStore_Params& params);
     void OnDeleteObjectStore(int32 ipc_database_id,
