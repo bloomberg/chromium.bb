@@ -350,7 +350,9 @@ IOThread::Globals::Globals()
       ignore_certificate_errors(false),
       http_pipelining_enabled(false),
       testing_fixed_http_port(0),
-      testing_fixed_https_port(0) {}
+      testing_fixed_https_port(0),
+      enable_user_alternate_protocol_ports(false) {
+}
 
 IOThread::Globals::~Globals() {}
 
@@ -526,7 +528,10 @@ void IOThread::Init() {
   if (command_line.HasSwitch(switches::kUseSpdyOverQuic)) {
     globals_->use_spdy_over_quic.set(true);
   }
-
+  if (command_line.HasSwitch(
+          switches::kEnableUserAlternateProtocolPorts)) {
+    globals_->enable_user_alternate_protocol_ports = true;
+  }
   InitializeNetworkOptions(command_line);
 
   net::HttpNetworkSession::Params session_params;
@@ -834,6 +839,8 @@ void IOThread::InitializeNetworkSessionParams(
   globals_->origin_port_to_force_quic_on.CopyToIfSet(
       &params->origin_port_to_force_quic_on);
   globals_->use_spdy_over_quic.CopyToIfSet(&params->use_spdy_over_quic);
+  params->enable_user_alternate_protocol_ports =
+      globals_->enable_user_alternate_protocol_ports;
 }
 
 net::SSLConfigService* IOThread::GetSSLConfigService() {

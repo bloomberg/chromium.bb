@@ -171,7 +171,9 @@ bool HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
   // These systems also enforce ports <1024 as restricted ports.  So don't
   // allow protocol upgrades to user-controllable ports.
   const int kUnrestrictedPort = 1024;
-  if (alternate.port >= kUnrestrictedPort && origin.port() < kUnrestrictedPort)
+  if (!session_->params().enable_user_alternate_protocol_ports &&
+      (alternate.port >= kUnrestrictedPort &&
+       origin.port() < kUnrestrictedPort))
     return false;
 
   origin.set_port(alternate.port);

@@ -83,6 +83,7 @@ class NET_EXPORT HttpNetworkSession
     bool enable_quic;
     uint16 origin_port_to_force_quic_on;
     bool use_spdy_over_quic;
+    bool enable_user_alternate_protocol_ports;
   };
 
   enum SocketPoolType {

@@ -256,6 +256,8 @@ class HttpNetworkTransactionSpdy2Test : public PlatformTest {
     PlatformTest::TearDown();
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     MessageLoop::current()->RunUntilIdle();
+    HttpStreamFactory::set_use_alternate_protocols(false);
+    HttpStreamFactory::SetNextProtos(std::vector<std::string>());
   }
 
   // Either |write_failure| specifies a write failure or |read_failure|
@@ -6590,7 +6592,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test, GroupNameForDirectConnections) {
                 transport_conn_pool->last_group_name_received());
   }
 
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test, GroupNameForHTTPProxyConnections) {
@@ -6656,8 +6657,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test, GroupNameForHTTPProxyConnections) {
       EXPECT_EQ(tests[i].expected_group_name,
                 http_proxy_pool->last_group_name_received());
   }
-
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test, GroupNameForSOCKSConnections) {
@@ -6730,8 +6729,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test, GroupNameForSOCKSConnections) {
       EXPECT_EQ(tests[i].expected_group_name,
                 socks_conn_pool->last_group_name_received());
   }
-
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test, ReconsiderProxyAfterFailedConnection) {
@@ -7459,7 +7456,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test, HonorAlternateProtocolHeader) {
   expected_alternate.protocol = NPN_SPDY_2;
   EXPECT_TRUE(expected_alternate.Equals(alternate));
 
-  HttpStreamFactory::set_use_alternate_protocols(false);
   HttpStreamFactory::SetNextProtos(std::vector<std::string>());
 }
 
@@ -7520,7 +7516,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
       http_server_properties->GetAlternateProtocol(
           HostPortPair::FromURL(request.url));
   EXPECT_EQ(ALTERNATE_PROTOCOL_BROKEN, alternate.protocol);
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test,
@@ -7569,8 +7564,55 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
   EXPECT_EQ(ERR_IO_PENDING, rv);
   // Invalid change to unrestricted port should fail.
   EXPECT_EQ(ERR_CONNECTION_REFUSED, callback.WaitForResult());
+}
 
-  HttpStreamFactory::set_use_alternate_protocols(false);
+TEST_F(HttpNetworkTransactionSpdy2Test,
+       AlternateProtocolPortRestrictedPermitted) {
+  // Ensure that we're allowed to redirect traffic via an alternate
+  // protocol to an unrestricted (port >= 1024) when the original traffic was
+  // on a restricted port (port < 1024) if we set
+  // enable_user_alternate_protocol_ports.
+
+  HttpStreamFactory::set_use_alternate_protocols(true);
+  SpdySessionDependencies session_deps;
+  session_deps.enable_user_alternate_protocol_ports = true;
+
+  HttpRequestInfo restricted_port_request;
+  restricted_port_request.method = "GET";
+  restricted_port_request.url = GURL("http://www.google.com:1023/");
+  restricted_port_request.load_flags = 0;
+
+  MockConnect mock_connect(ASYNC, ERR_CONNECTION_REFUSED);
+  StaticSocketDataProvider first_data;
+  first_data.set_connect_data(mock_connect);
+  session_deps.socket_factory->AddSocketDataProvider(&first_data);
+
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.1 200 OK\r\n\r\n"),
+    MockRead("hello world"),
+    MockRead(ASYNC, OK),
+  };
+  StaticSocketDataProvider second_data(
+      data_reads, arraysize(data_reads), NULL, 0);
+  session_deps.socket_factory->AddSocketDataProvider(&second_data);
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps));
+
+  HttpServerProperties* http_server_properties =
+      session->http_server_properties();
+  const int kUnrestrictedAlternatePort = 1024;
+  http_server_properties->SetAlternateProtocol(
+      HostPortPair::FromURL(restricted_port_request.url),
+      kUnrestrictedAlternatePort,
+      NPN_SPDY_3);
+
+  scoped_ptr<HttpTransaction> trans(new HttpNetworkTransaction(session));
+  TestCompletionCallback callback;
+
+  EXPECT_EQ(ERR_IO_PENDING, trans->Start(
+      &restricted_port_request, callback.callback(), BoundNetLog()));
+  // Change to unrestricted port should succeed.
+  EXPECT_EQ(OK, callback.WaitForResult());
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test,
@@ -7619,8 +7661,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
   EXPECT_EQ(ERR_IO_PENDING, rv);
   // Valid change to restricted port should pass.
   EXPECT_EQ(OK, callback.WaitForResult());
-
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test,
@@ -7669,8 +7709,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
   EXPECT_EQ(ERR_IO_PENDING, rv);
   // Valid change to restricted port should pass.
   EXPECT_EQ(OK, callback.WaitForResult());
-
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test,
@@ -7719,8 +7757,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
   EXPECT_EQ(ERR_IO_PENDING, rv);
   // Valid change to an unrestricted port should pass.
   EXPECT_EQ(OK, callback.WaitForResult());
-
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test,
@@ -7862,9 +7898,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test, UseAlternateProtocolForNpnSpdy) {
 
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello!", response_data);
-
-  HttpStreamFactory::SetNextProtos(std::vector<std::string>());
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test, AlternateProtocolWithSpdyLateBinding) {
@@ -7978,9 +8011,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test, AlternateProtocolWithSpdyLateBinding) {
   EXPECT_TRUE(response->was_npn_negotiated);
   ASSERT_EQ(OK, ReadTransaction(&trans3, &response_data));
   EXPECT_EQ("hello!", response_data);
-
-  HttpStreamFactory::SetNextProtos(std::vector<std::string>());
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test, StallAlternateProtocolForNpnSpdy) {
@@ -8053,9 +8083,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test, StallAlternateProtocolForNpnSpdy) {
 
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello world", response_data);
-
-  HttpStreamFactory::SetNextProtos(std::vector<std::string>());
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 
 class CapturingProxyResolver : public ProxyResolver {
@@ -8216,9 +8243,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
   TestLoadTimingNotReusedWithPac(load_timing_info,
                                  CONNECT_TIMING_HAS_SSL_TIMES);
-
-  HttpStreamFactory::SetNextProtos(std::vector<std::string>());
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test,
@@ -8332,9 +8356,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
 
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello!", response_data);
-
-  HttpStreamFactory::SetNextProtos(std::vector<std::string>());
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 
 // GenerateAuthToken is a mighty big test.
@@ -9107,9 +9128,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test, NpnWithHttpOverSSL) {
 
   EXPECT_FALSE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
-
-  HttpStreamFactory::SetNextProtos(std::vector<std::string>());
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test, SpdyPostNPNServerHangup) {
@@ -9150,9 +9168,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test, SpdyPostNPNServerHangup) {
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(ERR_CONNECTION_CLOSED, callback.WaitForResult());
-
-  HttpStreamFactory::SetNextProtos(std::vector<std::string>());
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test, SpdyAlternateProtocolThroughProxy) {
@@ -9308,9 +9323,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test, SpdyAlternateProtocolThroughProxy) {
   EXPECT_TRUE(trans_2->GetLoadTimingInfo(&load_timing_info));
   TestLoadTimingNotReusedWithPac(load_timing_info,
                                  CONNECT_TIMING_HAS_SSL_TIMES);
-
-  HttpStreamFactory::SetNextProtos(std::vector<std::string>());
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 
 // Test that if we cancel the transaction as the connection is completing, that
@@ -10060,9 +10072,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test, MAYBE_UseIPConnectionPooling) {
   EXPECT_TRUE(response->was_npn_negotiated);
   ASSERT_EQ(OK, ReadTransaction(&trans2, &response_data));
   EXPECT_EQ("hello!", response_data);
-
-  HttpStreamFactory::SetNextProtos(std::vector<std::string>());
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 #undef MAYBE_UseIPConnectionPooling
 
@@ -10149,9 +10158,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test, UseIPConnectionPoolingAfterResolution) {
   EXPECT_TRUE(response->was_npn_negotiated);
   ASSERT_EQ(OK, ReadTransaction(&trans2, &response_data));
   EXPECT_EQ("hello!", response_data);
-
-  HttpStreamFactory::SetNextProtos(std::vector<std::string>());
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 
 class OneTimeCachingHostResolver : public net::HostResolver {
@@ -10296,9 +10302,6 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
   EXPECT_TRUE(response->was_npn_negotiated);
   ASSERT_EQ(OK, ReadTransaction(&trans2, &response_data));
   EXPECT_EQ("hello!", response_data);
-
-  HttpStreamFactory::SetNextProtos(std::vector<std::string>());
-  HttpStreamFactory::set_use_alternate_protocols(false);
 }
 #undef MAYBE_UseIPConnectionPoolingWithHostCacheExpiration
 

@@ -641,6 +641,10 @@ const char kEnableSyncDictionary[] = "enable-sync-dictionary";
 // Enables context menu for selecting groups of tabs.
 const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
 
+// Enables Alternate-Protocol when the port is user controlled (> 1024).
+const char kEnableUserAlternateProtocolPorts[] =
+    "enable-user-controlled-alternate-protocol-ports";
+
 // Spawns threads to watch for excessive delays in specified message loops.
 // User should set breakpoints on Alarm() to examine problematic thread.
 //

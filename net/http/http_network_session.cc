@@ -82,7 +82,8 @@ HttpNetworkSession::Params::Params()
       time_func(&base::TimeTicks::Now),
       enable_quic(false),
       origin_port_to_force_quic_on(0),
-      use_spdy_over_quic(false) {
+      use_spdy_over_quic(false),
+      enable_user_alternate_protocol_ports(false) {
 }
 
 // TODO(mbelshe): Move the socket factories into HttpStreamFactory.

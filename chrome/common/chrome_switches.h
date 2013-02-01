@@ -180,6 +180,7 @@ extern const char kEnableStackedTabStrip[];
 extern const char kEnableSuggestionsTabPage[];
 extern const char kEnableSyncDictionary[];
 extern const char kEnableTabGroupsContextMenu[];
+extern const char kEnableUserAlternateProtocolPorts[];
 extern const char kEnableWatchdog[];
 extern const char kEnableWebSocketOverSpdy[];
 extern const char kExtensionsInActionBox[];

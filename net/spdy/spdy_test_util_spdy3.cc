@@ -904,6 +904,7 @@ SpdySessionDependencies::SpdySessionDependencies()
       enable_ip_pooling(true),
       enable_compression(false),
       enable_ping(false),
+      enable_user_alternate_protocol_ports(false),
       initial_recv_window_size(kSpdyStreamInitialWindowSize),
       time_func(&base::TimeTicks::Now),
       net_log(NULL) {
@@ -970,6 +971,8 @@ net::HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.http_server_properties = &session_deps->http_server_properties;
   params.enable_spdy_compression = session_deps->enable_compression;
   params.enable_spdy_ping_based_connection_checking = session_deps->enable_ping;
+  params.enable_user_alternate_protocol_ports =
+      session_deps->enable_user_alternate_protocol_ports;
   params.spdy_default_protocol = kProtoSPDY3;
   params.spdy_initial_recv_window_size = session_deps->initial_recv_window_size;
   params.time_func = session_deps->time_func;
