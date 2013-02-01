@@ -719,6 +719,20 @@ void WallpaperManager::LoadWallpaper(const std::string& email,
       current_wallpaper_path_ = wallpaper_path;
     loaded_wallpapers_++;
     StartLoad(email, info, update_wallpaper, wallpaper_path);
+  } else if (info.type == User::DEFAULT) {
+    // Default wallpapers are migrated from M21 user profiles. A code refactor
+    // overlooked that case and caused these wallpapers not being loaded at all.
+    // On some slow devices, it caused login webui not visible after upgrade to
+    // M26 from M21. See crosbug.com/38429 for details.
+    FilePath user_data_dir;
+    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+    wallpaper_path = user_data_dir.Append(info.file);
+    StartLoad(email, info, update_wallpaper, wallpaper_path);
+  } else {
+    // In unexpected cases, revert to default wallpaper to fail safely. See
+    // crosbug.com/38429.
+    LOG(ERROR) << "Wallpaper reverts to default unexpected.";
+    SetDefaultWallpaper();
   }
 }
 
