@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
@@ -213,9 +214,14 @@ namespace internal {
 
 FirstRunState first_run_ = FIRST_RUN_UNKNOWN;
 
-installer::MasterPreferences* LoadMasterPrefs(FilePath* master_prefs_path)
-{
-  *master_prefs_path = FilePath(MasterPrefsPath());
+static base::LazyInstance<FilePath> master_prefs_path_for_testing
+    = LAZY_INSTANCE_INITIALIZER;
+
+installer::MasterPreferences* LoadMasterPrefs(FilePath* master_prefs_path) {
+  if (!master_prefs_path_for_testing.Get().empty())
+    *master_prefs_path = master_prefs_path_for_testing.Get();
+  else
+    *master_prefs_path = FilePath(MasterPrefsPath());
   if (master_prefs_path->empty())
     return NULL;
   installer::MasterPreferences* install_prefs =
@@ -546,6 +552,10 @@ void FirstRunBubbleLauncher::Observe(
   // Show the bubble now and destroy this bubble launcher.
   browser->ShowFirstRunBubble();
   delete this;
+}
+
+void SetMasterPrefsPathForTesting(const FilePath& master_prefs) {
+  internal::master_prefs_path_for_testing.Get() = master_prefs;
 }
 
 ProcessMasterPreferencesResult ProcessMasterPreferences(

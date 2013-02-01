@@ -135,6 +135,9 @@ int ImportNow(Profile* profile, const CommandLine& cmdline);
 // Returns the path for the master preferences file.
 FilePath MasterPrefsPath();
 
+// Set a master preferences file path that overrides platform defaults.
+void SetMasterPrefsPathForTesting(const FilePath& master_prefs);
+
 // The master preferences is a JSON file with the same entries as the
 // 'Default\Preferences' file. This function locates this file from a standard
 // location and processes it so it becomes the default preferences in the

@@ -95,8 +95,10 @@ bool ImportSettings(Profile* profile,
       importer_list->GetSourceProfileAt(0);
 
   // Ensure that importers aren't requested to import items that they do not
-  // support.
+  // support. If there is no overlap, skip.
   items_to_import &= source_profile.services_supported;
+  if (items_to_import == 0)
+    return true;
 
   scoped_ptr<ImportEndedObserver> observer(new ImportEndedObserver);
   importer_host->SetObserver(observer.get());
