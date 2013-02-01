@@ -117,7 +117,6 @@
         'browser/api/sync/profile_sync_service_observer.h',
         'browser/api/webdata/autofill_web_data.h',
         'browser/api/webdata/autofill_web_data_service.h',
-        'browser/api/webdata/web_data_results.cc',
         'browser/api/webdata/web_data_results.h',
         'browser/api/webdata/web_data_service_base.h',
         'browser/api/webdata/web_data_service_consumer.h',

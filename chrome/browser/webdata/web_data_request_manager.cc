@@ -7,8 +7,6 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
-#include "chrome/browser/autofill/autofill_profile.h"
-#include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/webdata/web_data_service.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -17,19 +15,24 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-WebDataRequest::WebDataRequest(WebDataService* service,
-                               WebDataServiceConsumer* consumer,
+WebDataRequest::WebDataRequest(WebDataServiceConsumer* consumer,
                                WebDataRequestManager* manager)
-    : service_(service),
+    : manager_(manager),
       cancelled_(false),
       consumer_(consumer),
       result_(NULL) {
-  handle_ = manager->GetNextRequestHandle();
+  handle_ = manager_->GetNextRequestHandle();
   message_loop_ = MessageLoop::current();
-  manager->RegisterRequest(this);
+  manager_->RegisterRequest(this);
 }
 
 WebDataRequest::~WebDataRequest() {
+  if (manager_) {
+    manager_->CancelRequest(handle_);
+  }
+  if (result_.get()) {
+    result_->Destroy();
+  }
 }
 
 WebDataService::Handle WebDataRequest::GetHandle() const {
@@ -38,6 +41,10 @@ WebDataService::Handle WebDataRequest::GetHandle() const {
 
 WebDataServiceConsumer* WebDataRequest::GetConsumer() const {
   return consumer_;
+}
+
+MessageLoop* WebDataRequest::GetMessageLoop() const {
+  return message_loop_;
 }
 
 bool WebDataRequest::IsCancelled() const {
@@ -49,19 +56,19 @@ void WebDataRequest::Cancel() {
   base::AutoLock l(cancel_lock_);
   cancelled_ = true;
   consumer_ = NULL;
+  manager_ = NULL;
+}
+
+void WebDataRequest::OnComplete() {
+  manager_= NULL;
 }
 
 void WebDataRequest::SetResult(scoped_ptr<WDTypedResult> r) {
   result_ = r.Pass();
 }
 
-const WDTypedResult* WebDataRequest::GetResult() const {
-  return result_.get();
-}
-
-void WebDataRequest::RequestComplete() {
-  message_loop_->PostTask(FROM_HERE, Bind(&WebDataService::RequestCompleted,
-                                          service_.get(), handle_));
+scoped_ptr<WDTypedResult> WebDataRequest::GetResult(){
+  return result_.Pass();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -75,6 +82,12 @@ WebDataRequestManager::WebDataRequestManager()
 }
 
 WebDataRequestManager::~WebDataRequestManager() {
+  base::AutoLock l(pending_lock_);
+  for (RequestMap::iterator i = pending_requests_.begin();
+       i != pending_requests_.end(); ++i) {
+    i->second->Cancel();
+  }
+  pending_requests_.clear();
 }
 
 void WebDataRequestManager::RegisterRequest(WebDataRequest* request) {
@@ -95,33 +108,42 @@ void WebDataRequestManager::CancelRequest(WebDataServiceBase::Handle h) {
     return;
   }
   i->second->Cancel();
+  pending_requests_.erase(i);
 }
 
-void WebDataRequestManager::RequestCompleted(WebDataServiceBase::Handle h) {
-  pending_lock_.Acquire();
-  RequestMap::iterator i = pending_requests_.find(h);
-  if (i == pending_requests_.end()) {
-    NOTREACHED() << "Request completed called for an unknown request";
-    pending_lock_.Release();
-    return;
-  }
+void WebDataRequestManager::RequestCompleted(
+    scoped_ptr<WebDataRequest> request) {
+  MessageLoop* loop = request->GetMessageLoop();
+  loop->PostTask(FROM_HERE, base::Bind(
+      &WebDataRequestManager::RequestCompletedOnThread,
+      this,
+      base::Passed(&request)));
+}
 
-  // Take ownership of the request object and remove it from the map.
-  scoped_ptr<WebDataRequest> request(i->second);
-  pending_requests_.erase(i);
-  pending_lock_.Release();
+void WebDataRequestManager::RequestCompletedOnThread(
+    scoped_ptr<WebDataRequest> request) {
+  if (request->IsCancelled())
+    return;
+  {
+    base::AutoLock l(pending_lock_);
+    RequestMap::iterator i = pending_requests_.find(request->GetHandle());
+    if (i == pending_requests_.end()) {
+      NOTREACHED() << "Request completed called for an unknown request";
+      return;
+    }
+
+    // Take ownership of the request object and remove it from the map.
+    pending_requests_.erase(i);
+  }
 
   // Notify the consumer if needed.
-  WebDataServiceConsumer* consumer = request->GetConsumer();
-  if (!request->IsCancelled() && consumer) {
-    consumer->OnWebDataServiceRequestDone(request->GetHandle(),
-                                          request->GetResult());
-  } else {
-    // Nobody is taken ownership of the result, either because it is cancelled
-    // or there is no consumer. Destroy results that require special handling.
-    WDTypedResult const *result = request->GetResult();
-    if (result) {
-      result->Destroy();
+  if (!request->IsCancelled()) {
+    WebDataServiceConsumer* consumer = request->GetConsumer();
+    request->OnComplete();
+    if (consumer) {
+      scoped_ptr<WDTypedResult> r = request->GetResult();
+      consumer->OnWebDataServiceRequestDone(request->GetHandle(), r.get());
     }
   }
+
 }
