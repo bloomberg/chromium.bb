@@ -83,7 +83,8 @@ class MaximizeBubbleBorder : public views::BubbleBorder {
 MaximizeBubbleBorder::MaximizeBubbleBorder(views::View* content_view,
                                            views::View* anchor)
     : views::BubbleBorder(views::BubbleBorder::TOP_RIGHT,
-                          views::BubbleBorder::NO_SHADOW),
+                          views::BubbleBorder::NO_SHADOW,
+                          kBubbleBackgroundColor),
       anchor_size_(anchor->size()),
       anchor_screen_origin_(0, 0),
       content_view_(content_view) {

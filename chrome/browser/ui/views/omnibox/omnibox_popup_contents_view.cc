@@ -92,13 +92,9 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
       font_(font.DeriveFont(kEditFontAdjust)),
       ignore_mouse_drag_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)) {
-  // The following little dance is required because set_border() requires a
-  // pointer to a non-const object.
-  views::BubbleBorder* bubble_border =
-      new views::BubbleBorder(views::BubbleBorder::NONE,
-                              views::BubbleBorder::NO_SHADOW);
-  bubble_border_ = bubble_border;
-  set_border(bubble_border);
+  bubble_border_ = new views::BubbleBorder(views::BubbleBorder::NONE,
+      views::BubbleBorder::NO_SHADOW, SK_ColorWHITE);
+  set_border(const_cast<views::BubbleBorder*>(bubble_border_));
   // The contents is owned by the LocationBarView.
   set_owned_by_client();
 }

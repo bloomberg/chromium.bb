@@ -15,12 +15,11 @@ namespace views {
 
 class BubbleBorder;
 
-// This is a NonClientFrameView used to render the BubbleBorder.
+// The non-client frame view of bubble-styled widgets.
 class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
  public:
-  // Sets the border to |border|, taking ownership. Important: do not call
-  // set_border() directly to change the border, use SetBubbleBorder() instead.
-  BubbleFrameView(const gfx::Insets& margins, BubbleBorder* border);
+
+  explicit BubbleFrameView(const gfx::Insets& content_margins);
   virtual ~BubbleFrameView();
 
   // NonClientFrameView overrides:
@@ -37,7 +36,9 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
   // View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
+  // Use bubble_border() and SetBubbleBorder(), not border() and set_border().
   BubbleBorder* bubble_border() const { return bubble_border_; }
+  void SetBubbleBorder(BubbleBorder* border);
 
   gfx::Insets content_margins() const { return content_margins_; }
 
@@ -47,8 +48,6 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
   gfx::Rect GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
                                    gfx::Size client_size,
                                    bool adjust_if_offscreen);
-
-  void SetBubbleBorder(BubbleBorder* border);
 
  protected:
   // Returns the bounds for the monitor showing the specified |rect|.

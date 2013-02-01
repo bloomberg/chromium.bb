@@ -39,12 +39,12 @@ namespace internal {
 
 // Custom border for TrayBubbleView. Contains special logic for GetBounds()
 // to stack bubbles with no arrows correctly. Also calculates the arrow offset.
-class TrayBubbleBorder : public views::BubbleBorder {
+class TrayBubbleBorder : public BubbleBorder {
  public:
-  TrayBubbleBorder(views::View* owner,
-                   views::View* anchor,
+  TrayBubbleBorder(View* owner,
+                   View* anchor,
                    TrayBubbleView::InitParams params)
-      : views::BubbleBorder(params.arrow_location, params.shadow),
+      : BubbleBorder(params.arrow_location, params.shadow, params.arrow_color),
         owner_(owner),
         anchor_(anchor),
         tray_arrow_offset_(params.arrow_offset) {
@@ -55,15 +55,12 @@ class TrayBubbleBorder : public views::BubbleBorder {
 
   virtual ~TrayBubbleBorder() {}
 
-  // Overridden from views::BubbleBorder.
-  // Override views::BubbleBorder to set the bubble on top of the anchor when
-  // it has no arrow.
+  // Overridden from BubbleBorder.
+  // Sets the bubble on top of the anchor when it has no arrow.
   virtual gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
                               const gfx::Size& contents_size) const OVERRIDE {
-    if (has_arrow(arrow_location())) {
-      return views::BubbleBorder::GetBounds(position_relative_to,
-                                            contents_size);
-    }
+    if (has_arrow(arrow_location()))
+      return BubbleBorder::GetBounds(position_relative_to, contents_size);
 
     gfx::Size border_size(contents_size);
     gfx::Insets insets = GetInsets();
@@ -79,8 +76,8 @@ class TrayBubbleBorder : public views::BubbleBorder {
 
   void UpdateArrowOffset() {
     int arrow_offset = 0;
-    if (arrow_location() == views::BubbleBorder::BOTTOM_RIGHT ||
-        arrow_location() == views::BubbleBorder::BOTTOM_LEFT) {
+    if (arrow_location() == BubbleBorder::BOTTOM_RIGHT ||
+        arrow_location() == BubbleBorder::BOTTOM_LEFT) {
       // Note: tray_arrow_offset_ is relative to the anchor widget.
       if (tray_arrow_offset_ ==
           TrayBubbleView::InitParams::kArrowDefaultOffset) {
@@ -88,12 +85,10 @@ class TrayBubbleBorder : public views::BubbleBorder {
       } else {
         const int width = owner_->GetWidget()->GetContentsView()->width();
         gfx::Point pt(tray_arrow_offset_, 0);
-        views::View::ConvertPointToScreen(
-            anchor_->GetWidget()->GetRootView(), &pt);
-        views::View::ConvertPointFromScreen(
-            owner_->GetWidget()->GetRootView(), &pt);
+        View::ConvertPointToScreen(anchor_->GetWidget()->GetRootView(), &pt);
+        View::ConvertPointFromScreen(owner_->GetWidget()->GetRootView(), &pt);
         arrow_offset = pt.x();
-        if (arrow_location() == views::BubbleBorder::BOTTOM_RIGHT)
+        if (arrow_location() == BubbleBorder::BOTTOM_RIGHT)
           arrow_offset = width - arrow_offset;
         arrow_offset = std::max(arrow_offset, kArrowMinOffset);
       }
@@ -103,10 +98,8 @@ class TrayBubbleBorder : public views::BubbleBorder {
         arrow_offset = kArrowMinOffset;
       } else {
         gfx::Point pt(0, tray_arrow_offset_);
-        views::View::ConvertPointToScreen(
-            anchor_->GetWidget()->GetRootView(), &pt);
-        views::View::ConvertPointFromScreen(
-            owner_->GetWidget()->GetRootView(), &pt);
+        View::ConvertPointToScreen(anchor_->GetWidget()->GetRootView(), &pt);
+        View::ConvertPointFromScreen(owner_->GetWidget()->GetRootView(), &pt);
         arrow_offset = pt.y();
         arrow_offset = std::max(arrow_offset, kArrowMinOffset);
       }
@@ -115,8 +108,8 @@ class TrayBubbleBorder : public views::BubbleBorder {
   }
 
  private:
-  views::View* owner_;
-  views::View* anchor_;
+  View* owner_;
+  View* anchor_;
   const int tray_arrow_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleBorder);
@@ -176,27 +169,27 @@ base::Closure TrayBubbleContentMask::PrepareForLayerBoundsChange() {
 
 // Custom layout for the bubble-view. Does the default box-layout if there is
 // enough height. Otherwise, makes sure the bottom rows are visible.
-class BottomAlignedBoxLayout : public views::BoxLayout {
+class BottomAlignedBoxLayout : public BoxLayout {
  public:
   explicit BottomAlignedBoxLayout(TrayBubbleView* bubble_view)
-      : views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0),
+      : BoxLayout(BoxLayout::kVertical, 0, 0, 0),
         bubble_view_(bubble_view) {
   }
 
   virtual ~BottomAlignedBoxLayout() {}
 
  private:
-  virtual void Layout(views::View* host) OVERRIDE {
+  virtual void Layout(View* host) OVERRIDE {
     if (host->height() >= host->GetPreferredSize().height() ||
         !bubble_view_->is_gesture_dragging()) {
-      views::BoxLayout::Layout(host);
+      BoxLayout::Layout(host);
       return;
     }
 
     int consumed_height = 0;
     for (int i = host->child_count() - 1;
         i >= 0 && consumed_height < host->height(); --i) {
-      views::View* child = host->child_at(i);
+      View* child = host->child_at(i);
       if (!child->visible())
         continue;
       gfx::Size size = child->GetPreferredSize();
@@ -232,16 +225,16 @@ TrayBubbleView::InitParams::InitParams(AnchorType anchor_type,
       can_activate(false),
       close_on_deactivate(true),
       arrow_color(SK_ColorBLACK),
-      arrow_location(views::BubbleBorder::NONE),
+      arrow_location(BubbleBorder::NONE),
       arrow_offset(kArrowDefaultOffset),
       hide_arrow(false),
-      shadow(views::BubbleBorder::BIG_SHADOW),
-      arrow_alignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE) {
+      shadow(BubbleBorder::BIG_SHADOW),
+      arrow_alignment(BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE) {
 }
 
 // static
 TrayBubbleView* TrayBubbleView::Create(gfx::NativeView parent_window,
-                                       views::View* anchor,
+                                       View* anchor,
                                        Delegate* delegate,
                                        InitParams* init_params) {
   // Set arrow_location here so that it can be passed correctly to the
@@ -249,26 +242,26 @@ TrayBubbleView* TrayBubbleView::Create(gfx::NativeView parent_window,
   if (init_params->anchor_type == ANCHOR_TYPE_TRAY) {
     if (init_params->anchor_alignment == ANCHOR_ALIGNMENT_BOTTOM) {
       init_params->arrow_location = base::i18n::IsRTL() ?
-          views::BubbleBorder::BOTTOM_LEFT : views::BubbleBorder::BOTTOM_RIGHT;
+          BubbleBorder::BOTTOM_LEFT : BubbleBorder::BOTTOM_RIGHT;
     } else if (init_params->anchor_alignment == ANCHOR_ALIGNMENT_TOP) {
-      init_params->arrow_location = views::BubbleBorder::TOP_LEFT;
+      init_params->arrow_location = BubbleBorder::TOP_LEFT;
     } else if (init_params->anchor_alignment == ANCHOR_ALIGNMENT_LEFT) {
-      init_params->arrow_location = views::BubbleBorder::LEFT_BOTTOM;
+      init_params->arrow_location = BubbleBorder::LEFT_BOTTOM;
     } else {
-      init_params->arrow_location = views::BubbleBorder::RIGHT_BOTTOM;
+      init_params->arrow_location = BubbleBorder::RIGHT_BOTTOM;
     }
   } else {
-    init_params->arrow_location = views::BubbleBorder::NONE;
+    init_params->arrow_location = BubbleBorder::NONE;
   }
 
   return new TrayBubbleView(parent_window, anchor, delegate, *init_params);
 }
 
 TrayBubbleView::TrayBubbleView(gfx::NativeView parent_window,
-                               views::View* anchor,
+                               View* anchor,
                                Delegate* delegate,
                                const InitParams& init_params)
-    : views::BubbleDelegateView(anchor, init_params.arrow_location),
+    : BubbleDelegateView(anchor, init_params.arrow_location),
       params_(init_params),
       delegate_(delegate),
       preferred_width_(init_params.min_width),
@@ -337,7 +330,7 @@ gfx::Insets TrayBubbleView::GetBorderInsets() const {
 }
 
 void TrayBubbleView::Init() {
-  views::BoxLayout* layout = new BottomAlignedBoxLayout(this);
+  BoxLayout* layout = new BottomAlignedBoxLayout(this);
   layout->set_spread_blank_space(true);
   SetLayoutManager(layout);
 }
@@ -354,12 +347,10 @@ bool TrayBubbleView::CanActivate() const {
   return params_.can_activate;
 }
 
-// Overridden to create BubbleFrameView and set a custom border.
-views::NonClientFrameView* TrayBubbleView::CreateNonClientFrameView(
-    views::Widget* widget) {
-  views::BubbleFrameView* bubble_frame_view =
-      new views::BubbleFrameView(margins(), bubble_border_);
-  return bubble_frame_view;
+NonClientFrameView* TrayBubbleView::CreateNonClientFrameView(Widget* widget) {
+  BubbleFrameView* frame = new BubbleFrameView(margins());
+  frame->SetBubbleBorder(bubble_border_);
+  return frame;
 }
 
 bool TrayBubbleView::WidgetHasHitTestMask() const {
@@ -372,7 +363,7 @@ void TrayBubbleView::GetWidgetHitTestMask(gfx::Path* mask) const {
 }
 
 gfx::Size TrayBubbleView::GetPreferredSize() {
-  gfx::Size size = views::BubbleDelegateView::GetPreferredSize();
+  gfx::Size size = BubbleDelegateView::GetPreferredSize();
   int height = size.height();
   if (params_.max_height != 0 && height > params_.max_height)
     height = params_.max_height;
@@ -407,8 +398,8 @@ void TrayBubbleView::ChildPreferredSizeChanged(View* child) {
 }
 
 void TrayBubbleView::ViewHierarchyChanged(bool is_add,
-                                          views::View* parent,
-                                          views::View* child) {
+                                          View* parent,
+                                          View* child) {
   if (get_use_acceleration_when_possible() && is_add && child == this) {
     parent->SetPaintToLayer(true);
     parent->SetFillsBoundsOpaquely(true);

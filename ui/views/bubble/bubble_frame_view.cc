@@ -39,11 +39,9 @@ int GetOffScreenLength(const gfx::Rect& monitor_bounds,
 
 namespace views {
 
-BubbleFrameView::BubbleFrameView(const gfx::Insets& margins,
-                                 BubbleBorder* border)
-    : bubble_border_(border),
-      content_margins_(margins) {
-  set_border(bubble_border_);
+BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
+    : bubble_border_(NULL),
+      content_margins_(content_margins) {
 }
 
 BubbleFrameView::~BubbleFrameView() {}
@@ -70,6 +68,14 @@ gfx::Size BubbleFrameView::GetPreferredSize() {
   return GetUpdatedWindowBounds(gfx::Rect(), client_size, false).size();
 }
 
+void BubbleFrameView::SetBubbleBorder(BubbleBorder* border) {
+  bubble_border_ = border;
+  set_border(bubble_border_);
+
+  // Update the background, which relies on the border.
+  set_background(new views::BubbleBackground(border));
+}
+
 gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
                                                   gfx::Size client_size,
                                                   bool adjust_if_offscreen) {
@@ -89,14 +95,6 @@ gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
 
   // Calculate the bounds with the arrow in its updated location and offset.
   return bubble_border_->GetBounds(anchor_rect, client_size);
-}
-
-void BubbleFrameView::SetBubbleBorder(BubbleBorder* border) {
-  bubble_border_ = border;
-  set_border(bubble_border_);
-
-  // Update the background, which relies on the border.
-  set_background(new views::BubbleBackground(border));
 }
 
 gfx::Rect BubbleFrameView::GetMonitorBounds(const gfx::Rect& rect) {

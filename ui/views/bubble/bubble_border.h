@@ -65,7 +65,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
     ALIGN_EDGE_TO_ANCHOR_EDGE
   };
 
-  BubbleBorder(ArrowLocation arrow_location, Shadow shadow);
+  BubbleBorder(ArrowLocation arrow, Shadow shadow, SkColor color);
 
   // Returns the radius of the corner of the border.
   // TODO(xiyuan): Get rid of this since it's part of BorderImages now?

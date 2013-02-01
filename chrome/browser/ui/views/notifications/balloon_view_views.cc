@@ -105,10 +105,8 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
   // We're owned by Balloon and don't want to be deleted by our parent View.
   set_owned_by_client();
 
-  views::BubbleBorder* bubble_border =
-      new views::BubbleBorder(views::BubbleBorder::FLOAT,
-                              views::BubbleBorder::NO_SHADOW);
-  set_border(bubble_border);
+  set_border(new views::BubbleBorder(views::BubbleBorder::FLOAT,
+      views::BubbleBorder::NO_SHADOW, SK_ColorWHITE));
 }
 
 BalloonViewImpl::~BalloonViewImpl() {

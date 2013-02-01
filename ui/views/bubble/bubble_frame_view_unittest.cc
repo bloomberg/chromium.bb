@@ -19,8 +19,8 @@ namespace {
 const BubbleBorder::ArrowLocation kArrow = BubbleBorder::TOP_LEFT;
 const int kBubbleWidth = 200;
 const int kBubbleHeight = 200;
-const SkColor kBackgroundColor = SK_ColorRED;
-const int kDefaultMargin = 6;
+const SkColor kColor = SK_ColorRED;
+const int kMargin = 6;
 
 class SizedBubbleDelegateView : public BubbleDelegateView {
  public:
@@ -59,13 +59,9 @@ class TestBubbleFrameView : public BubbleFrameView {
 };
 
 TestBubbleFrameView::TestBubbleFrameView()
-    : BubbleFrameView(gfx::Insets(kDefaultMargin,
-                                  kDefaultMargin,
-                                  kDefaultMargin,
-                                  kDefaultMargin),
-                      new BubbleBorder(kArrow, BubbleBorder::NO_SHADOW)),
+    : BubbleFrameView(gfx::Insets(kMargin, kMargin, kMargin, kMargin)),
       monitor_bounds_(gfx::Rect(0, 0, 1000, 1000)) {
-  bubble_border()->set_background_color(kBackgroundColor);
+  SetBubbleBorder(new BubbleBorder(kArrow, BubbleBorder::NO_SHADOW, kColor));
 }
 
 TestBubbleFrameView::~TestBubbleFrameView() {}
@@ -79,7 +75,7 @@ gfx::Rect TestBubbleFrameView::GetMonitorBounds(const gfx::Rect& rect) {
 TEST_F(BubbleFrameViewTest, GetBoundsForClientView) {
   TestBubbleFrameView frame;
   EXPECT_EQ(kArrow, frame.bubble_border()->arrow_location());
-  EXPECT_EQ(kBackgroundColor, frame.bubble_border()->background_color());
+  EXPECT_EQ(kColor, frame.bubble_border()->background_color());
 
   int margin_x = frame.content_margins().left();
   int margin_y = frame.content_margins().top();

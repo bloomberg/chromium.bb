@@ -37,9 +37,9 @@ DialogFrameView::DialogFrameView(const string16& title)
     : title_(NULL),
       close_(NULL) {
   BubbleBorder* border =
-      new BubbleBorder(BubbleBorder::FLOAT, BubbleBorder::SMALL_SHADOW);
-  border->set_background_color(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_DialogBackground));
+      new BubbleBorder(BubbleBorder::FLOAT, BubbleBorder::SMALL_SHADOW,
+                       GetNativeTheme()->GetSystemColor(
+                           ui::NativeTheme::kColorId_DialogBackground));
   set_border(border);
   // Update the background, which relies on the border.
   set_background(new BubbleBackground(border));

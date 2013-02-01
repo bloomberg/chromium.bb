@@ -184,14 +184,11 @@ View* BubbleDelegateView::GetContentsView() {
 
 NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView(
     Widget* widget) {
-  BubbleBorder::ArrowLocation arrow_loc = arrow_location();
-  if (base::i18n::IsRTL())
-    arrow_loc = BubbleBorder::horizontal_mirror(arrow_loc);
-  BubbleBorder* border = new BubbleBorder(arrow_loc, shadow_);
-  border->set_background_color(color());
-  BubbleFrameView* frame_view = new BubbleFrameView(margins(), border);
-  frame_view->set_background(new BubbleBackground(border));
-  return frame_view;
+  BubbleFrameView* frame = new BubbleFrameView(margins());
+  BubbleBorder::ArrowLocation arrow = base::i18n::IsRTL() ?
+      BubbleBorder::horizontal_mirror(arrow_location()) : arrow_location();
+  frame->SetBubbleBorder(new BubbleBorder(arrow, shadow(), color()));
+  return frame;
 }
 
 void BubbleDelegateView::OnWidgetClosing(Widget* widget) {

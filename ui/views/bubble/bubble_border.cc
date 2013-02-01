@@ -133,12 +133,12 @@ struct BubbleBorder::BorderImages {
 struct BubbleBorder::BorderImages*
     BubbleBorder::border_images_[SHADOW_COUNT] = { NULL };
 
-BubbleBorder::BubbleBorder(ArrowLocation arrow_location, Shadow shadow)
+BubbleBorder::BubbleBorder(ArrowLocation arrow, Shadow shadow, SkColor color)
     : override_arrow_offset_(0),
-      arrow_location_(arrow_location),
+      arrow_location_(arrow),
       paint_arrow_(true),
       alignment_(ALIGN_ARROW_TO_MID_ANCHOR),
-      background_color_(SK_ColorWHITE) {
+      background_color_(color) {
   DCHECK(shadow < SHADOW_COUNT);
   images_ = GetBorderImages(shadow);
 
