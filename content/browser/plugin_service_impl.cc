@@ -259,8 +259,12 @@ PpapiPluginProcessHost* PluginServiceImpl::FindPpapiBrokerProcess(
 }
 
 PluginProcessHost* PluginServiceImpl::FindOrStartNpapiPluginProcess(
+    int render_process_id,
     const FilePath& plugin_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (filter_ && !filter_->CanLoadPlugin(render_process_id, plugin_path))
+    return NULL;
 
   PluginProcessHost* plugin_host = FindNpapiPluginProcess(plugin_path);
   if (plugin_host)
@@ -281,10 +285,14 @@ PluginProcessHost* PluginServiceImpl::FindOrStartNpapiPluginProcess(
 }
 
 PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
+    int render_process_id,
     const FilePath& plugin_path,
     const FilePath& profile_data_directory,
     PpapiPluginProcessHost::PluginClient* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (filter_ && !filter_->CanLoadPlugin(render_process_id, plugin_path))
+    return NULL;
 
   PpapiPluginProcessHost* plugin_host =
       FindPpapiPluginProcess(plugin_path, profile_data_directory);
@@ -303,8 +311,12 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
 }
 
 PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiBrokerProcess(
+    int render_process_id,
     const FilePath& plugin_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (filter_ && !filter_->CanLoadPlugin(render_process_id, plugin_path))
+    return NULL;
 
   PpapiPluginProcessHost* plugin_host = FindPpapiBrokerProcess(plugin_path);
   if (plugin_host)
@@ -346,11 +358,12 @@ void PluginServiceImpl::OpenChannelToNpapiPlugin(
 }
 
 void PluginServiceImpl::OpenChannelToPpapiPlugin(
+    int render_process_id,
     const FilePath& plugin_path,
     const FilePath& profile_data_directory,
     PpapiPluginProcessHost::PluginClient* client) {
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiPluginProcess(
-      plugin_path, profile_data_directory, client);
+      render_process_id, plugin_path, profile_data_directory, client);
   if (plugin_host) {
     plugin_host->OpenChannelToPlugin(client);
   } else {
@@ -360,9 +373,11 @@ void PluginServiceImpl::OpenChannelToPpapiPlugin(
 }
 
 void PluginServiceImpl::OpenChannelToPpapiBroker(
+    int render_process_id,
     const FilePath& path,
     PpapiPluginProcessHost::BrokerClient* client) {
-  PpapiPluginProcessHost* plugin_host = FindOrStartPpapiBrokerProcess(path);
+  PpapiPluginProcessHost* plugin_host = FindOrStartPpapiBrokerProcess(
+      render_process_id, path);
   if (plugin_host) {
     plugin_host->OpenChannelToPlugin(client);
   } else {
@@ -411,10 +426,14 @@ void PluginServiceImpl::GetAllowedPluginForOpenChannelToPlugin(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&PluginServiceImpl::FinishOpenChannelToPlugin,
-                 base::Unretained(this), plugin_path, client));
+                 base::Unretained(this),
+                 render_process_id,
+                 plugin_path,
+                 client));
 }
 
 void PluginServiceImpl::FinishOpenChannelToPlugin(
+    int render_process_id,
     const FilePath& plugin_path,
     PluginProcessHost::Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -424,7 +443,8 @@ void PluginServiceImpl::FinishOpenChannelToPlugin(
     return;
   pending_plugin_clients_.erase(client);
 
-  PluginProcessHost* plugin_host = FindOrStartNpapiPluginProcess(plugin_path);
+  PluginProcessHost* plugin_host = FindOrStartNpapiPluginProcess(
+      render_process_id, plugin_path);
   if (plugin_host) {
     client->OnFoundPluginProcessHost(plugin_host);
     plugin_host->OpenChannelToPlugin(client);
@@ -463,7 +483,7 @@ bool PluginServiceImpl::GetPluginInfo(int render_process_id,
     *is_stale = stale;
 
   for (size_t i = 0; i < plugins.size(); ++i) {
-    if (!filter_ || filter_->ShouldUsePlugin(render_process_id,
+    if (!filter_ || filter_->IsPluginEnabled(render_process_id,
                                              render_view_id,
                                              context,
                                              url,

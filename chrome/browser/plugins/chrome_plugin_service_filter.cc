@@ -44,13 +44,13 @@ void ChromePluginServiceFilter::OverridePluginForTab(
     int render_view_id,
     const GURL& url,
     const webkit::WebPluginInfo& plugin) {
+  base::AutoLock auto_lock(lock_);
+  ProcessDetails* details = GetOrRegisterProcess(render_process_id);
   OverriddenPlugin overridden_plugin;
-  overridden_plugin.render_process_id = render_process_id;
   overridden_plugin.render_view_id = render_view_id;
   overridden_plugin.url = url;
   overridden_plugin.plugin = plugin;
-  base::AutoLock auto_lock(lock_);
-  overridden_plugins_.push_back(overridden_plugin);
+  details->overridden_plugins.push_back(overridden_plugin);
 }
 
 void ChromePluginServiceFilter::RestrictPluginToProfileAndOrigin(
@@ -69,7 +69,7 @@ void ChromePluginServiceFilter::UnrestrictPlugin(
   restricted_plugins_.erase(plugin_path);
 }
 
-bool ChromePluginServiceFilter::ShouldUsePlugin(
+bool ChromePluginServiceFilter::IsPluginEnabled(
     int render_process_id,
     int render_view_id,
     const void* context,
@@ -77,17 +77,21 @@ bool ChromePluginServiceFilter::ShouldUsePlugin(
     const GURL& policy_url,
     webkit::WebPluginInfo* plugin) {
   base::AutoLock auto_lock(lock_);
-  // Check whether the plugin is overridden.
-  for (size_t i = 0; i < overridden_plugins_.size(); ++i) {
-    if (overridden_plugins_[i].render_process_id == render_process_id &&
-        overridden_plugins_[i].render_view_id == render_view_id &&
-        (overridden_plugins_[i].url == url ||
-         overridden_plugins_[i].url.is_empty())) {
+  const ProcessDetails* details = GetProcess(render_process_id);
 
-      bool use = overridden_plugins_[i].plugin.path == plugin->path;
-      if (use)
-        *plugin = overridden_plugins_[i].plugin;
-      return use;
+  // Check whether the plugin is overridden.
+  if (details) {
+    for (size_t i = 0; i < details->overridden_plugins.size(); ++i) {
+      if (details->overridden_plugins[i].render_view_id == render_view_id &&
+          (details->overridden_plugins[i].url == url ||
+           details->overridden_plugins[i].url.is_empty())) {
+
+        bool use = details->overridden_plugins[i].plugin.path == plugin->path;
+        if (!use)
+          return false;
+        *plugin = details->overridden_plugins[i].plugin;
+        break;
+      }
     }
   }
 
@@ -119,6 +123,39 @@ bool ChromePluginServiceFilter::ShouldUsePlugin(
   return true;
 }
 
+bool ChromePluginServiceFilter::CanLoadPlugin(int render_process_id,
+                                              const FilePath& path) {
+  // The browser itself sometimes loads plug-ins to e.g. clear plug-in data.
+  // We always grant the browser permission.
+  if (!render_process_id)
+    return true;
+
+  base::AutoLock auto_lock(lock_);
+  const ProcessDetails* details = GetProcess(render_process_id);
+  if (!details)
+    return false;
+
+  if (details->authorized_plugins.find(path) ==
+          details->authorized_plugins.end() &&
+      details->authorized_plugins.find(FilePath()) ==
+          details->authorized_plugins.end()) {
+    return false;
+  }
+
+  return true;
+}
+
+void ChromePluginServiceFilter::AuthorizePlugin(int render_process_id,
+                                                const FilePath& plugin_path) {
+  base::AutoLock auto_lock(lock_);
+  ProcessDetails* details = GetOrRegisterProcess(render_process_id);
+  details->authorized_plugins.insert(plugin_path);
+}
+
+void ChromePluginServiceFilter::AuthorizeAllPlugins(int render_process_id) {
+  AuthorizePlugin(render_process_id, FilePath());
+}
+
 ChromePluginServiceFilter::ChromePluginServiceFilter() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
@@ -141,12 +178,7 @@ void ChromePluginServiceFilter::Observe(
           content::Source<content::RenderProcessHost>(source).ptr()->GetID();
 
       base::AutoLock auto_lock(lock_);
-      for (size_t i = 0; i < overridden_plugins_.size(); ++i) {
-        if (overridden_plugins_[i].render_process_id == render_process_id) {
-          overridden_plugins_.erase(overridden_plugins_.begin() + i);
-          break;
-        }
-      }
+      plugin_details_.erase(render_process_id);
       break;
     }
     case chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED: {
@@ -163,3 +195,33 @@ void ChromePluginServiceFilter::Observe(
     }
   }
 }
+
+ChromePluginServiceFilter::ProcessDetails*
+ChromePluginServiceFilter::GetOrRegisterProcess(
+    int render_process_id) {
+  return &plugin_details_[render_process_id];
+}
+
+const ChromePluginServiceFilter::ProcessDetails*
+ChromePluginServiceFilter::GetProcess(
+    int render_process_id) const {
+  std::map<int, ProcessDetails>::const_iterator it =
+      plugin_details_.find(render_process_id);
+  if (it == plugin_details_.end())
+    return NULL;
+  return &it->second;
+}
+
+ChromePluginServiceFilter::OverriddenPlugin::OverriddenPlugin()
+    : render_view_id(MSG_ROUTING_NONE) {
+}
+
+ChromePluginServiceFilter::OverriddenPlugin::~OverriddenPlugin() {
+}
+
+ChromePluginServiceFilter::ProcessDetails::ProcessDetails() {
+}
+
+ChromePluginServiceFilter::ProcessDetails::~ProcessDetails() {
+}
+

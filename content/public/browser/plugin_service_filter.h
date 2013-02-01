@@ -13,20 +13,25 @@ struct WebPluginInfo;
 
 namespace content {
 
-// Callback class to let the client filter the list of all installed plug-ins.
+// Callback class to let the client filter the list of all installed plug-ins
+// and block them from being loaded.
 // This class is called on the FILE thread.
 class PluginServiceFilter {
  public:
   virtual ~PluginServiceFilter() {}
 
-  // Whether to use |plugin|. The client can return false to disallow the
+  // Whether |plugin| is enabled. The client can return false to hide the
   // plugin, or return true and optionally change the passed in plugin.
-  virtual bool ShouldUsePlugin(int render_process_id,
+  virtual bool IsPluginEnabled(int render_process_id,
                                int render_view_id,
                                const void* context,
                                const GURL& url,
                                const GURL& policy_url,
                                webkit::WebPluginInfo* plugin) = 0;
+
+  // Whether the renderer has permission to load enabled |plugin|.
+  virtual bool CanLoadPlugin(int render_process_id,
+                             const FilePath& path) = 0;
 };
 
 }  // namespace content

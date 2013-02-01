@@ -12,6 +12,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
@@ -23,6 +24,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -426,6 +428,10 @@ void ContentSettingPluginBubbleModel::OnCustomLinkClicked() {
   content::RecordAction(UserMetricsAction("ClickToPlay_LoadAll_Bubble"));
   DCHECK(web_contents());
   content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+#if defined(ENABLE_PLUGINS)
+  ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
+      host->GetProcess()->GetID());
+#endif
   // TODO(bauerb): We should send the identifiers of blocked plug-ins here.
   host->Send(new ChromeViewMsg_LoadBlockedPlugins(host->GetRoutingID(),
                                                   std::string()));

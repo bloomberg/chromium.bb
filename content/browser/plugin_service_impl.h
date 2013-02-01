@@ -120,13 +120,14 @@ class CONTENT_EXPORT PluginServiceImpl
   // 'plugin_path' if needed. If the process fails to start, the return value
   // is NULL. Must be called on the IO thread.
   PluginProcessHost* FindOrStartNpapiPluginProcess(
-      const FilePath& plugin_path);
+      int render_process_id, const FilePath& plugin_path);
   PpapiPluginProcessHost* FindOrStartPpapiPluginProcess(
+      int render_process_id,
       const FilePath& plugin_path,
       const FilePath& profile_data_directory,
       PpapiPluginProcessHost::PluginClient* client);
   PpapiPluginProcessHost* FindOrStartPpapiBrokerProcess(
-      const FilePath& plugin_path);
+      int render_process_id, const FilePath& plugin_path);
 
   // Opens a channel to a plugin process for the given mime type, starting
   // a new plugin process if necessary.  This must be called on the IO thread
@@ -137,10 +138,12 @@ class CONTENT_EXPORT PluginServiceImpl
                                 const GURL& page_url,
                                 const std::string& mime_type,
                                 PluginProcessHost::Client* client);
-  void OpenChannelToPpapiPlugin(const FilePath& plugin_path,
+  void OpenChannelToPpapiPlugin(int render_process_id,
+                                const FilePath& plugin_path,
                                 const FilePath& profile_data_directory,
                                 PpapiPluginProcessHost::PluginClient* client);
-  void OpenChannelToPpapiBroker(const FilePath& path,
+  void OpenChannelToPpapiBroker(int render_process_id,
+                                const FilePath& path,
                                 PpapiPluginProcessHost::BrokerClient* client);
 
   // Cancels opening a channel to a NPAPI plugin.
@@ -196,7 +199,8 @@ class CONTENT_EXPORT PluginServiceImpl
 
   // Helper so we can finish opening the channel after looking up the
   // plugin.
-  void FinishOpenChannelToPlugin(const FilePath& plugin_path,
+  void FinishOpenChannelToPlugin(int render_process_id,
+                                 const FilePath& plugin_path,
                                  PluginProcessHost::Client* client);
 
 #if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)

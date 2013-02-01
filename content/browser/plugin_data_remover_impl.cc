@@ -109,7 +109,7 @@ class PluginDataRemoverImpl::Context
     if (pepper_info) {
       plugin_name_ = pepper_info->name;
       // Use the broker since we run this function outside the sandbox.
-      plugin_service->OpenChannelToPpapiBroker(plugin_path, this);
+      plugin_service->OpenChannelToPpapiBroker(0, plugin_path, this);
     } else {
       plugin_service->OpenChannelToNpapiPlugin(
           0, 0, GURL(), GURL(), mime_type, this);

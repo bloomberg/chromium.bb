@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PLUGINS_CHROME_PLUGIN_SERVICE_FILTER_H_
 
 #include <map>
+#include <set>
 #include <vector>
 
 #include "base/file_path.h"
@@ -50,8 +51,14 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   // Lifts a restriction on a plug-in.
   void UnrestrictPlugin(const FilePath& plugin_path);
 
+  // Authorizes a given plug-in for a given process.
+  void AuthorizePlugin(int render_process_id, const FilePath& plugin_path);
+
+  // Authorizes all plug-ins for a given process.
+  void AuthorizeAllPlugins(int render_process_id);
+
   // PluginServiceFilter implementation:
-  virtual bool ShouldUsePlugin(
+  virtual bool IsPluginEnabled(
       int render_process_id,
       int render_view_id,
       const void* context,
@@ -59,14 +66,30 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
       const GURL& policy_url,
       webkit::WebPluginInfo* plugin) OVERRIDE;
 
+  // CanLoadPlugin always grants permission to the browser
+  // (render_process_id == 0)
+  virtual bool CanLoadPlugin(
+      int render_process_id,
+      const FilePath& path) OVERRIDE;
+
  private:
   friend struct DefaultSingletonTraits<ChromePluginServiceFilter>;
 
   struct OverriddenPlugin {
-    int render_process_id;
+    OverriddenPlugin();
+    ~OverriddenPlugin();
+
     int render_view_id;
     GURL url;  // If empty, the override applies to all urls in render_view.
     webkit::WebPluginInfo plugin;
+  };
+
+  struct ProcessDetails {
+    ProcessDetails();
+    ~ProcessDetails();
+
+    std::vector<OverriddenPlugin> overridden_plugins;
+    std::set<FilePath> authorized_plugins;
   };
 
   ChromePluginServiceFilter();
@@ -76,6 +99,9 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  ProcessDetails* GetOrRegisterProcess(int render_process_id);
+  const ProcessDetails* GetProcess(int render_process_id) const;
 
   content::NotificationRegistrar registrar_;
 
@@ -87,7 +113,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   typedef std::map<const void*, scoped_refptr<PluginPrefs> > ResourceContextMap;
   ResourceContextMap resource_context_map_;
 
-  std::vector<OverriddenPlugin> overridden_plugins_;
+  std::map<int, ProcessDetails> plugin_details_;
 };
 
 #endif  // CHROME_BROWSER_PLUGINS_CHROME_PLUGIN_SERVICE_FILTER_H_
