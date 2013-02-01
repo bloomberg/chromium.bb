@@ -21,6 +21,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
+#include "ui/aura/test/window_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/events/event_handler.h"
@@ -253,8 +254,8 @@ TEST_F(ExtendedDesktopTest, TestCursor) {
 TEST_F(ExtendedDesktopTest, TestCursorLocation) {
   UpdateDisplay("0+0-1000x600,1001+0-600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  aura::Window::TestApi root_window0_test_api(root_windows[0]);
-  aura::Window::TestApi root_window1_test_api(root_windows[1]);
+  aura::test::WindowTestApi root_window0_test_api(root_windows[0]);
+  aura::test::WindowTestApi root_window1_test_api(root_windows[1]);
 
   root_windows[0]->MoveCursorTo(gfx::Point(10, 10));
   EXPECT_EQ("10,10", Shell::GetScreen()->GetCursorScreenPoint().ToString());

@@ -50,6 +50,10 @@ class WindowObserver;
 template<typename T>
 struct WindowProperty;
 
+namespace test {
+class WindowTestApi;
+}
+
 // Aura window implementation. Interesting events are sent to the
 // WindowDelegate.
 // TODO(beng): resolve ownership.
@@ -59,21 +63,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
                            public ui::GestureConsumer {
  public:
   typedef std::vector<Window*> Windows;
-
-  class AURA_EXPORT TestApi {
-   public:
-    explicit TestApi(Window* window);
-
-    bool OwnsLayer() const;
-    bool ContainsMouse();
-
-   private:
-    TestApi();
-
-    Window* window_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
-  };
 
   explicit Window(WindowDelegate* delegate);
   virtual ~Window();
@@ -359,6 +348,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 #endif
 
  private:
+  friend class test::WindowTestApi;
   friend class LayoutManager;
 
   // Used when stacking windows.

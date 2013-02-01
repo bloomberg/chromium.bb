@@ -33,16 +33,6 @@
 
 namespace aura {
 
-Window::TestApi::TestApi(Window* window) : window_(window) {}
-
-bool Window::TestApi::OwnsLayer() const {
-  return !!window_->layer_owner_.get();
-}
-
-bool Window::TestApi::ContainsMouse() {
-  return window_->ContainsMouse();
-}
-
 Window::Window(WindowDelegate* delegate)
     : type_(client::WINDOW_TYPE_UNKNOWN),
       owned_by_parent_(true),

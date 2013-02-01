@@ -160,6 +160,8 @@
         'test/test_windows.h',
         'test/test_window_delegate.cc',
         'test/test_window_delegate.h',
+        'test/window_test_api.cc',
+        'test/window_test_api.h',
       ],
     },
     {

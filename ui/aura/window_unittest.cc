@@ -23,6 +23,7 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
+#include "ui/aura/test/window_test_api.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_property.h"
@@ -374,7 +375,7 @@ TEST_F(WindowTest, ContainsMouse) {
       CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500),
                        root_window()));
   w->Show();
-  Window::TestApi w_test_api(w.get());
+  WindowTestApi w_test_api(w.get());
   RootWindow* root = root_window();
   root->MoveCursorTo(gfx::Point(10, 10));
   EXPECT_TRUE(w_test_api.ContainsMouse());
@@ -1865,8 +1866,8 @@ TEST_F(WindowTest, AcquireLayer) {
   ui::Layer* parent = window1->parent()->layer();
   EXPECT_EQ(2U, parent->children().size());
 
-  Window::TestApi window1_test_api(window1.get());
-  Window::TestApi window2_test_api(window2.get());
+  WindowTestApi window1_test_api(window1.get());
+  WindowTestApi window2_test_api(window2.get());
 
   EXPECT_TRUE(window1_test_api.OwnsLayer());
   EXPECT_TRUE(window2_test_api.OwnsLayer());
