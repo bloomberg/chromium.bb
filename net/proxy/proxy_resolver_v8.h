@@ -45,8 +45,6 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 : public ProxyResolver {
 
     JSBindings() {}
 
-    virtual ~JSBindings() {}
-
     // Handler for "dnsResolve()", "dnsResolveEx()", "myIpAddress()",
     // "myIpAddressEx()". Returns true on success and fills |*output| with the
     // result.
@@ -60,6 +58,9 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 : public ProxyResolver {
     // Handler for when an error is encountered. |line_number| may be -1
     // if a line number is not applicable to this error.
     virtual void OnError(int line_number, const string16& error) = 0;
+
+   protected:
+    virtual ~JSBindings() {}
   };
 
   // Constructs a ProxyResolverV8.
