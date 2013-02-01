@@ -297,4 +297,5 @@ html[dir='rtl'] .entry .title {
 
 #action-menu > :not(hr) {
   line-height: 29px;
+  outline: none;
 }

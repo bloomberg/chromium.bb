@@ -155,8 +155,6 @@ cr.define('cr.ui', function() {
       this.menu.hidden = false;
 
       this.setAttribute('menu-shown', '');
-      if (shouldSetFocus)
-        this.menu.focusSelectedItem();
 
       // When the menu is shown we steal all keyboard events.
       var doc = this.ownerDocument;
@@ -167,6 +165,9 @@ cr.define('cr.ui', function() {
       this.showingEvents_.add(win, 'resize', this);
       this.showingEvents_.add(this.menu, 'activate', this);
       this.positionMenu_();
+
+      if (shouldSetFocus)
+        this.menu.focusSelectedItem();
     },
 
     /**
