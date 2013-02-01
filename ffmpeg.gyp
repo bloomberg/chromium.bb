@@ -441,7 +441,13 @@
         ['OS == "win"', {
           'msvs_guid': 'D7A94F58-576A-45D9-A45F-EB87C63ABBB0',
           'variables': {
-            'outfile_type': 'windows_lib',
+            'conditions': [
+              ['target_arch == "x64"', {
+                'outfile_type': 'windows_lib_x64',
+              }, {  # else, generate x86 stub library
+                'outfile_type': 'windows_lib',
+              }],
+            ],
             'output_dir': '<(PRODUCT_DIR)/lib',
             'intermediate_dir': '<(INTERMEDIATE_DIR)',
           },
