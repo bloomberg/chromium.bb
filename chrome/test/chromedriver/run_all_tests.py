@@ -118,14 +118,11 @@ def Main():
   chromedriver2_tests = _FindChromedriverTests()
   if chromedriver2_tests is None:
     print 'chromedriver2_tests not found'
-    print '@@@STEP_FAILURE@@@'
   else:
     cmd = [chromedriver2_tests]
     code3 = util.RunCommand(cmd)
-    if code3 != 0:
-      print '@@@STEP_FAILURE@@@'
 
-  return code1 or code2 or code3
+  return code1 or code2
 
 
 if __name__ == '__main__':
