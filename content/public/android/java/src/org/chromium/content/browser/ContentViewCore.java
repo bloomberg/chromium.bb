@@ -217,19 +217,20 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private InsertionHandleController mInsertionHandleController;
 
     /**
-     * Handles conversion of a point from window to document space and vice versa.
+     * Handles conversion of a point from window (physical pixel) to document (absolute CSS) space
+     * and vice versa.
      */
     private class NormalizedPoint {
         final PointF document = new PointF();
         final PointF window = new PointF();
         void updateDocumentFromWindow() {
-            float x = (window.x + mNativeScrollX) / mNativePageScaleFactor;
-            float y = (window.y + mNativeScrollY) / mNativePageScaleFactor;
+            float x = window.x / mNativePageScaleFactor + mNativeScrollX;
+            float y = window.y / mNativePageScaleFactor + mNativeScrollY;
             document.set(x, y);
         }
         void updateWindowFromDocument() {
-            float x = document.x * mNativePageScaleFactor - mNativeScrollX;
-            float y = document.y * mNativePageScaleFactor - mNativeScrollY;
+            float x = (document.x - mNativeScrollX) * mNativePageScaleFactor;
+            float y = (document.y - mNativeScrollY) * mNativePageScaleFactor;
             window.set(x, y);
         }
         void setWindow(float x, float y) {
