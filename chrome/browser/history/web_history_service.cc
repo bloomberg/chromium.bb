@@ -116,6 +116,8 @@ class RequestImpl : public WebHistoryService::Request,
     fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                           net::LOAD_DO_NOT_SAVE_COOKIES);
     fetcher->AddExtraRequestHeader("Authorization: Bearer " + access_token);
+    fetcher->AddExtraRequestHeader("X-Developer-Key: " +
+        GaiaUrls::GetInstance()->oauth2_chrome_client_id());
     if (request_type == net::URLFetcher::POST)
       fetcher->SetUploadData(kPostDataMimeType, post_data_);
     return fetcher;
