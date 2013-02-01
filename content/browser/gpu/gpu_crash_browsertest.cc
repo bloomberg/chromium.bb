@@ -26,11 +26,6 @@ class GpuCrashTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(GpuCrashTest, MANUAL_Kill) {
-#if defined(OS_MACOSX)
-  // crbug.com/173456
-  return;
-#endif
-
   DOMMessageQueue message_queue;
 
   content::GpuDataManagerImpl::GetInstance()->
@@ -57,11 +52,6 @@ IN_PROC_BROWSER_TEST_F(GpuCrashTest, MANUAL_Kill) {
 }
 
 IN_PROC_BROWSER_TEST_F(GpuCrashTest, MANUAL_WebkitLoseContext) {
-#if defined(OS_MACOSX)
-  // crbug.com/173456
-  return;
-#endif
-
   DOMMessageQueue message_queue;
 
   NavigateToURL(
