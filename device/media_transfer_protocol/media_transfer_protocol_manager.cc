@@ -12,9 +12,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop_proxy.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
-#include "content/public/browser/browser_thread.h"
+#include "base/threading/thread_checker.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_daemon_client.h"
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"
 #include "device/media_transfer_protocol/mtp_storage_info.pb.h"
@@ -25,8 +26,6 @@
 #include "dbus/bus.h"
 #endif
 
-using content::BrowserThread;
-
 namespace device {
 
 namespace {
@@ -36,20 +35,23 @@ MediaTransferProtocolManager* g_media_transfer_protocol_manager = NULL;
 // The MediaTransferProtocolManager implementation.
 class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
  public:
-  MediaTransferProtocolManagerImpl() : weak_ptr_factory_(this) {
+  MediaTransferProtocolManagerImpl(
+      scoped_refptr<base::MessageLoopProxy> loop_proxy)
+      : weak_ptr_factory_(this) {
     dbus::Bus* bus = NULL;
 #if defined(OS_CHROMEOS)
+    DCHECK(!loop_proxy.get());
     chromeos::DBusThreadManager* dbus_thread_manager =
         chromeos::DBusThreadManager::Get();
     bus = dbus_thread_manager->GetSystemBus();
     if (!bus)
       return;
 #else
+    DCHECK(loop_proxy.get());
     dbus::Bus::Options options;
     options.bus_type = dbus::Bus::SYSTEM;
     options.connection_type = dbus::Bus::PRIVATE;
-    options.dbus_thread_message_loop_proxy =
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
+    options.dbus_thread_message_loop_proxy = loop_proxy;
     session_bus_ = new dbus::Bus(options);
     bus = session_bus_.get();
 #endif
@@ -83,7 +85,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
   // MediaTransferProtocolManager override.
   const std::vector<std::string> GetStorages() const OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(thread_checker_.CalledOnValidThread());
     std::vector<std::string> storages;
     for (StorageInfoMap::const_iterator it = storage_info_map_.begin();
          it != storage_info_map_.end();
@@ -96,7 +98,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   // MediaTransferProtocolManager override.
   virtual const MtpStorageInfo* GetStorageInfo(
       const std::string& storage_name) const OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(thread_checker_.CalledOnValidThread());
     StorageInfoMap::const_iterator it = storage_info_map_.find(storage_name);
     if (it == storage_info_map_.end())
       return NULL;
@@ -107,7 +109,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   virtual void OpenStorage(const std::string& storage_name,
                            const std::string& mode,
                            const OpenStorageCallback& callback) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(storage_info_map_, storage_name)) {
       callback.Run("", true);
       return;
@@ -125,7 +127,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   // MediaTransferProtocolManager override.
   virtual void CloseStorage(const std::string& storage_handle,
                             const CloseStorageCallback& callback) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle)) {
       callback.Run(true);
       return;
@@ -144,7 +146,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       const std::string& storage_handle,
       const std::string& path,
       const ReadDirectoryCallback& callback) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle)) {
       callback.Run(std::vector<MtpFileEntry>(), true);
       return;
@@ -164,7 +166,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       const std::string& storage_handle,
       uint32 file_id,
       const ReadDirectoryCallback& callback) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle)) {
       callback.Run(std::vector<MtpFileEntry>(), true);
       return;
@@ -185,7 +187,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                                    uint32 offset,
                                    uint32 count,
                                    const ReadFileCallback& callback) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle)) {
       callback.Run(std::string(), true);
       return;
@@ -205,7 +207,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                                  uint32 offset,
                                  uint32 count,
                                  const ReadFileCallback& callback) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle)) {
       callback.Run(std::string(), true);
       return;
@@ -222,7 +224,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   virtual void GetFileInfoByPath(const std::string& storage_handle,
                                  const std::string& path,
                                  const GetFileInfoCallback& callback) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle)) {
       callback.Run(MtpFileEntry(), true);
       return;
@@ -240,7 +242,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   virtual void GetFileInfoById(const std::string& storage_handle,
                                uint32 file_id,
                                const GetFileInfoCallback& callback) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle)) {
       callback.Run(MtpFileEntry(), true);
       return;
@@ -269,7 +271,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   typedef std::queue<GetFileInfoCallback> GetFileInfoCallbackQueue;
 
   void OnStorageChanged(bool is_attach, const std::string& storage_name) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(thread_checker_.CalledOnValidThread());
     if (is_attach) {
       mtp_client_->GetStorageInfo(
           storage_name,
@@ -293,6 +295,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   void OnEnumerateStorages(const std::vector<std::string>& storage_names) {
+    DCHECK(thread_checker_.CalledOnValidThread());
     for (size_t i = 0; i < storage_names.size(); ++i) {
       mtp_client_->GetStorageInfo(
           storage_names[i],
@@ -303,7 +306,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   void OnGetStorageInfo(const MtpStorageInfo& storage_info) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(thread_checker_.CalledOnValidThread());
     const std::string& storage_name = storage_info.storage_name();
     if (ContainsKey(storage_info_map_, storage_name)) {
       // This should not happen, since MediaTransferProtocolManagerImpl should
@@ -324,6 +327,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   void OnOpenStorage(const std::string& handle) {
+    DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, handle)) {
       handles_.insert(handle);
       open_storage_callbacks_.front().Run(handle, false);
@@ -340,6 +344,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   void OnCloseStorage() {
+    DCHECK(thread_checker_.CalledOnValidThread());
     const std::string& handle = close_storage_callbacks_.front().second;
     if (ContainsKey(handles_, handle)) {
       handles_.erase(handle);
@@ -352,36 +357,43 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   void OnCloseStorageError() {
+    DCHECK(thread_checker_.CalledOnValidThread());
     close_storage_callbacks_.front().first.Run(true);
     close_storage_callbacks_.pop();
   }
 
   void OnReadDirectory(const std::vector<MtpFileEntry>& file_entries) {
+    DCHECK(thread_checker_.CalledOnValidThread());
     read_directory_callbacks_.front().Run(file_entries, false);
     read_directory_callbacks_.pop();
   }
 
   void OnReadDirectoryError() {
+    DCHECK(thread_checker_.CalledOnValidThread());
     read_directory_callbacks_.front().Run(std::vector<MtpFileEntry>(), true);
     read_directory_callbacks_.pop();
   }
 
   void OnReadFile(const std::string& data) {
+    DCHECK(thread_checker_.CalledOnValidThread());
     read_file_callbacks_.front().Run(data, false);
     read_file_callbacks_.pop();
   }
 
   void OnReadFileError() {
+    DCHECK(thread_checker_.CalledOnValidThread());
     read_file_callbacks_.front().Run(std::string(), true);
     read_file_callbacks_.pop();
   }
 
   void OnGetFileInfo(const MtpFileEntry& entry) {
+    DCHECK(thread_checker_.CalledOnValidThread());
     get_file_info_callbacks_.front().Run(entry, false);
     get_file_info_callbacks_.pop();
   }
 
   void OnGetFileInfoError() {
+    DCHECK(thread_checker_.CalledOnValidThread());
     get_file_info_callbacks_.front().Run(MtpFileEntry(), true);
     get_file_info_callbacks_.pop();
   }
@@ -414,18 +426,22 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   ReadFileCallbackQueue read_file_callbacks_;
   GetFileInfoCallbackQueue get_file_info_callbacks_;
 
+  base::ThreadChecker thread_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolManagerImpl);
 };
 
 }  // namespace
 
 // static
-void MediaTransferProtocolManager::Initialize() {
+void MediaTransferProtocolManager::Initialize(
+    scoped_refptr<base::MessageLoopProxy> loop_proxy) {
   if (g_media_transfer_protocol_manager) {
     LOG(WARNING) << "MediaTransferProtocolManager was already initialized";
     return;
   }
-  g_media_transfer_protocol_manager = new MediaTransferProtocolManagerImpl();
+  g_media_transfer_protocol_manager =
+      new MediaTransferProtocolManagerImpl(loop_proxy);
   VLOG(1) << "MediaTransferProtocolManager initialized";
 }
 

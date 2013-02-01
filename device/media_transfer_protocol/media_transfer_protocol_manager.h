@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 
 #if !defined(OS_LINUX)
@@ -17,6 +18,10 @@
 
 class MtpFileEntry;
 class MtpStorageInfo;
+
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace device {
 
@@ -128,7 +133,11 @@ class MediaTransferProtocolManager {
                                const GetFileInfoCallback& callback) = 0;
 
   // Creates the global MediaTransferProtocolManager instance.
-  static void Initialize();
+  // On Linux, |loop_proxy| specifies the message loop proxy to process
+  // asynchronous operations.
+  // On ChromeOS, |loop_proxy| is set to NULL because ChromeOS already has a
+  // dedicated message loop proxy.
+  static void Initialize(scoped_refptr<base::MessageLoopProxy> loop_proxy);
 
   // Destroys the global MediaTransferProtocolManager instance if it exists.
   static void Shutdown();

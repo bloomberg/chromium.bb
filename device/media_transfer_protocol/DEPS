@@ -2,6 +2,5 @@ include_rules = [
   # The media transfer protocol daemon uses D-Bus.
   "+dbus",
   "+chromeos/dbus",
-  "+content/public/browser/browser_thread.h",
   "+third_party/cros_system_api/dbus",
 ]
