@@ -43,6 +43,7 @@
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
+#include "chrome/installer/util/eula_util.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/google_update_util.h"
@@ -1406,6 +1407,8 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       LOG(DFATAL) << "Chrome product not found.";
     }
     *exit_code = InstallUtil::GetInstallReturnCode(status);
+  } else if (cmd_line.HasSwitch(installer::switches::kQueryEULAAcceptance)) {
+    *exit_code = installer::IsEULAAccepted(installer_state->system_install());
   } else if (cmd_line.HasSwitch(installer::switches::kInactiveUserToast)) {
     // Launch the inactive user toast experiment.
     int flavor = -1;

@@ -134,6 +134,8 @@
             'installer/util/compat_checks.h',
             'installer/util/delete_after_reboot_helper.cc',
             'installer/util/delete_after_reboot_helper.h',
+            'installer/util/eula_util.cc',
+            'installer/util/eula_util.h',
             'installer/util/google_chrome_distribution.cc',
             'installer/util/google_chrome_distribution.h',
             'installer/util/html_dialog.h',

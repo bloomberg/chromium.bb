@@ -270,6 +270,39 @@ void InstallationValidator::ValidateOnOsUpgradeCommand(
   }
 }
 
+// Validates the "query-eula-acceptance" Google Update product command.
+void InstallationValidator::ValidateQueryEULAAcceptanceCommand(
+    const ProductContext& ctx,
+    const AppCommand& command,
+    bool* is_valid) {
+  DCHECK(is_valid);
+
+  CommandLine the_command(CommandLine::FromString(command.command_line()));
+
+  ValidateSetupPath(ctx, the_command.GetProgram(), "query EULA acceptance",
+                    is_valid);
+
+  SwitchExpectations expected;
+  expected.push_back(std::make_pair(std::string(switches::kQueryEULAAcceptance),
+                                    true));
+  expected.push_back(std::make_pair(std::string(switches::kSystemLevel),
+                                    ctx.system_install));
+
+  ValidateCommandExpectations(ctx, the_command, expected,
+                              "query EULA acceptance", is_valid);
+
+  if (command.sends_pings()) {
+    *is_valid = false;
+    LOG(ERROR) << "Query-EULA-acceptance command "
+                  "should not be able to send pings.";
+  }
+
+  if (!command.is_web_accessible()) {
+    *is_valid = false;
+    LOG(ERROR) << "Query-EULA-acceptance command is not web accessible.";
+  }
+}
+
 // Validates the "quick-enable-cf" Google Update product command.
 void InstallationValidator::ValidateQuickEnableCfCommand(
     const ProductContext& ctx,
@@ -410,6 +443,8 @@ void InstallationValidator::ValidateBinariesCommands(
 
     expectations[kCmdQuickEnableApplicationHost] =
         &ValidateQuickEnableApplicationHostCommand;
+
+    expectations[kCmdQueryEULAAcceptance] = &ValidateQueryEULAAcceptanceCommand;
   }
 
   ValidateAppCommandExpectations(ctx, expectations, is_valid);

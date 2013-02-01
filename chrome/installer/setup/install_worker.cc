@@ -211,7 +211,6 @@ void AddInstallerCopyTasks(const InstallerState& installer_state,
 
 void AddInstallAppCommandWorkItems(const InstallerState& installer_state,
                                    const InstallationState& machine_state,
-                                   const FilePath& setup_path,
                                    const Version& new_version,
                                    const Product& product,
                                    WorkItemList* work_item_list) {
@@ -252,11 +251,15 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
     }
     if (p.is_chrome_app_host()) {
       AddInstallAppCommandWorkItems(installer_state, original_state,
-                                    setup_path, new_version, p, list);
+                                    new_version, p, list);
     }
     if (p.is_chrome()) {
       AddOsUpgradeWorkItems(installer_state, setup_path, new_version, p,
                             list);
+    }
+    if (p.is_chrome_binaries()) {
+      AddQueryEULAAcceptanceWorkItems(installer_state, setup_path, new_version,
+                                      p, list);
     }
   }
 }
@@ -1633,6 +1636,35 @@ void AddOsUpgradeWorkItems(const InstallerState& installer_state,
     AppCommand cmd(cmd_line.GetCommandLineString());
     cmd.set_is_auto_run_on_os_upgrade(true);
     cmd.AddWorkItems(installer_state.root_key(), cmd_key, install_list);
+  }
+}
+
+void AddQueryEULAAcceptanceWorkItems(const InstallerState& installer_state,
+                                     const FilePath& setup_path,
+                                     const Version& new_version,
+                                     const Product& product,
+                                     WorkItemList* work_item_list) {
+  const HKEY root_key = installer_state.root_key();
+  string16 cmd_key(product.distribution()->GetVersionKey());
+  cmd_key.append(1, FilePath::kSeparators[0])
+      .append(google_update::kRegCommandsKey)
+      .append(1, FilePath::kSeparators[0])
+      .append(kCmdQueryEULAAcceptance);
+  if (installer_state.operation() == InstallerState::UNINSTALL) {
+    work_item_list->AddDeleteRegKeyWorkItem(root_key, cmd_key)->
+        set_log_message("Removing query EULA acceptance command");
+  } else {
+    CommandLine cmd_line(installer_state
+        .GetInstallerDirectory(new_version)
+        .Append(setup_path.BaseName()));
+    cmd_line.AppendSwitch(switches::kQueryEULAAcceptance);
+    if (installer_state.system_install())
+      cmd_line.AppendSwitch(installer::switches::kSystemLevel);
+    if (installer_state.verbose_logging())
+      cmd_line.AppendSwitch(installer::switches::kVerboseLogging);
+    AppCommand cmd(cmd_line.GetCommandLineString());
+    cmd.set_is_web_accessible(true);
+    cmd.AddWorkItems(installer_state.root_key(), cmd_key, work_item_list);
   }
 }
 

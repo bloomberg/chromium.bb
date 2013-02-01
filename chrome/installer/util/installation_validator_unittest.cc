@@ -90,6 +90,10 @@ class FakeProductState : public ProductState {
                            Level install_level,
                            const char* version,
                            int channel_modifiers);
+  void AddQueryEULAAcceptanceCommand(BrowserDistribution::Type dist_type,
+                                     Level install_level,
+                                     const char* version,
+                                     int channel_modifiers);
   void set_multi_install(bool is_multi_install) {
     multi_install_ = is_multi_install;
   }
@@ -264,6 +268,25 @@ void FakeProductState::AddOsUpgradeCommand(BrowserDistribution::Type dist_type,
   AppCommand app_cmd(cmd_line.GetCommandLineString());
   app_cmd.set_is_auto_run_on_os_upgrade(true);
   commands_.Set(installer::kCmdOnOsUpgrade, app_cmd);
+}
+
+// Adds the "query-eula-acceptance" Google Update product command.
+void FakeProductState::AddQueryEULAAcceptanceCommand(
+    BrowserDistribution::Type dist_type,
+    Level install_level,
+    const char* version,
+    int channel_modifiers) {
+  DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BINARIES);
+
+  CommandLine cmd_line(GetSetupExePath(dist_type, install_level, version,
+                                       channel_modifiers));
+  cmd_line.AppendSwitch(installer::switches::kQueryEULAAcceptance);
+  if (install_level == SYSTEM_LEVEL)
+    cmd_line.AppendSwitch(installer::switches::kSystemLevel);
+  cmd_line.AppendSwitch(installer::switches::kVerboseLogging);
+  AppCommand app_cmd(cmd_line.GetCommandLineString());
+  app_cmd.set_is_web_accessible(true);
+  commands_.Set(installer::kCmdQueryEULAAcceptance, app_cmd);
 }
 
 }  // namespace
@@ -450,12 +473,17 @@ void InstallationValidatorTest::MakeProductState(
   state->SetUninstallCommand(prod_type, install_level, chrome::kChromeVersion,
                              channel_modifiers, vehicle);
   state->set_multi_install(is_multi_install);
-  if (prod_type == BrowserDistribution::CHROME_BINARIES &&
-      (inst_type == InstallationValidator::CHROME_MULTI ||
-       inst_type ==
-           InstallationValidator::CHROME_FRAME_READY_MODE_CHROME_MULTI)) {
-    state->AddQuickEnableCfCommand(prod_type, install_level,
-                                   chrome::kChromeVersion, channel_modifiers);
+  if (prod_type == BrowserDistribution::CHROME_BINARIES) {
+    if (inst_type == InstallationValidator::CHROME_MULTI ||
+         inst_type ==
+             InstallationValidator::CHROME_FRAME_READY_MODE_CHROME_MULTI) {
+      state->AddQuickEnableCfCommand(prod_type, install_level,
+                                     chrome::kChromeVersion, channel_modifiers);
+    }
+    state->AddQueryEULAAcceptanceCommand(prod_type,
+                                         install_level,
+                                         chrome::kChromeVersion,
+                                         channel_modifiers);
   }
   if (prod_type == BrowserDistribution::CHROME_BINARIES) {
     state->AddQuickEnableApplicationHostCommand(prod_type,

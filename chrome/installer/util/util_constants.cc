@@ -122,6 +122,10 @@ const char kNewSetupExe[] = "new-setup-exe";
 // Notify the installer that the OS has been upgraded.
 const char kOnOsUpgrade[] = "on-os-upgrade";
 
+// Determines whether or not EULA has been accepted at some point. Returns via
+// exit code: 0 if EULA not accepted, 1 if EULA accepted, and E_FAIL on error.
+const char kQueryEULAAcceptance[] = "query-eula-acceptance";
+
 // Register Chrome as a valid browser on the current sytem. This option
 // requires that setup.exe is running as admin. If this option is specified,
 // options kInstallArchive and kUninstall are ignored.
@@ -215,6 +219,7 @@ const wchar_t kChromeNewExe[] = L"new_chrome.exe";
 const wchar_t kChromeOldExe[] = L"old_chrome.exe";
 const wchar_t kCmdInstallApp[] = L"install-application";
 const wchar_t kCmdOnOsUpgrade[] = L"on-os-upgrade";
+const wchar_t kCmdQueryEULAAcceptance[] = L"query-eula-acceptance";
 const wchar_t kCmdQuickEnableApplicationHost[] =
     L"quick-enable-application-host";
 const wchar_t kCmdQuickEnableCf[] = L"quick-enable-cf";

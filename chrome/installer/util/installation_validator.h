@@ -186,12 +186,15 @@ class InstallationValidator {
     const ProductRules& rules;
   };
 
-  static void ValidateOnOsUpgradeCommand(const ProductContext& ctx,
-                                         const AppCommand& command,
-                                         bool* is_valid);
   static void ValidateInstallAppCommand(const ProductContext& ctx,
                                         const AppCommand& command,
                                         bool* is_valid);
+  static void ValidateOnOsUpgradeCommand(const ProductContext& ctx,
+                                         const AppCommand& command,
+                                         bool* is_valid);
+  static void ValidateQueryEULAAcceptanceCommand(const ProductContext& ctx,
+                                                 const AppCommand& command,
+                                                 bool* is_valid);
   static void ValidateQuickEnableCfCommand(const ProductContext& ctx,
                                            const AppCommand& command,
                                            bool* is_valid);
