@@ -171,14 +171,9 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
 
   InitJNI(env, obj);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCssTransformPinch)) {
-    dpi_scale_ = 1;
-  } else {
-    const gfx::Display& display =
-        gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
-    dpi_scale_ = display.device_scale_factor();
-  }
+  const gfx::Display& display =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  dpi_scale_ = display.device_scale_factor();
 
   // Currently, the only use case we have for overriding a user agent involves
   // spoofing a desktop Linux user agent for "Request desktop site".

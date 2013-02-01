@@ -322,9 +322,6 @@ const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 // Enables compositor-accelerated touch-screen pinch gestures.
 const char kEnablePinch[]                   = "enable-pinch";
 
-// Enables Android-style touch-screen pinch gestures.
-const char kEnableCssTransformPinch[]       = "enable-css-transform-pinch";
-
 // Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
 const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 

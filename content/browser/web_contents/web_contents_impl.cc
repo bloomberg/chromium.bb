@@ -656,21 +656,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
     prefs.max_untiled_layer_height =
         GetSwitchValueAsInt(command_line, switches::kMaxUntiledLayerHeight, 1);
 
-  // TODO(scottmg): Probably Native is wrong: http://crbug.com/133312
-  if (gfx::Screen::GetNativeScreen()->IsDIPEnabled()) {
-    // Only apply when using DIP coordinate system as this setting interferes
-    // with fixed layout mode.
-    // TODO(danakj): Fixed layout mode is going away, so turn this on always.
-    prefs.apply_default_device_scale_factor_in_compositor = true;
-  }
-
-  prefs.apply_page_scale_factor_in_compositor =
-      command_line.HasSwitch(switches::kEnablePinch);
-
-  if (command_line.HasSwitch(switches::kEnableCssTransformPinch)) {
-    prefs.apply_default_device_scale_factor_in_compositor = false;
-    prefs.apply_page_scale_factor_in_compositor = false;
-  }
+  prefs.apply_default_device_scale_factor_in_compositor = true;
+  prefs.apply_page_scale_factor_in_compositor = true;
 
   prefs.per_tile_painting_enabled =
       command_line.HasSwitch(cc::switches::kEnablePerTilePainting);
