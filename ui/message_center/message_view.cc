@@ -263,8 +263,9 @@ void MessageView::OnGestureEvent(ui::GestureEvent* event) {
   }
 
   SlideOutView::OnGestureEvent(event);
-  if (event->handled())
-    return;
+  // Do not return here by checking handled(). SlideOutView calls SetHandled()
+  // even though the scroll gesture doesn't make no (or little) effects on the
+  // slide-out behavior. See http://crbug.com/172991
 
   if (!event->IsScrollGestureEvent())
     return;
