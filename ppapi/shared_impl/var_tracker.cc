@@ -186,13 +186,18 @@ PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes) {
 
 PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes,
                                         const void* data) {
-  DCHECK(CalledOnValidThread());
+  ArrayBufferVar* array_buffer = MakeArrayBufferVar(size_in_bytes, data);
+  return array_buffer ? array_buffer->GetPPVar() : PP_MakeNull();
+}
 
-  scoped_refptr<ArrayBufferVar> array_buffer(CreateArrayBuffer(size_in_bytes));
+ArrayBufferVar* VarTracker::MakeArrayBufferVar(uint32 size_in_bytes,
+                                               const void* data) {
+  DCHECK(CalledOnValidThread());
+  ArrayBufferVar* array_buffer(CreateArrayBuffer(size_in_bytes));
   if (!array_buffer)
-    return PP_MakeNull();
+    return NULL;
   memcpy(array_buffer->Map(), data, size_in_bytes);
-  return array_buffer->GetPPVar();
+  return array_buffer;
 }
 
 std::vector<PP_Var> VarTracker::GetLiveVars() {

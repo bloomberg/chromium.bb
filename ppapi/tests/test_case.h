@@ -313,7 +313,7 @@ class TestCaseFactory {
             instance_->pp_instance()) != objects) \
       error_message = MakeFailureMessage(__FILE__, __LINE__, \
           "reference leak check"); \
-    instance_->LogTest(#name, error_message); \
+    instance_->LogTest(#name, CheckResourcesAndVars(error_message)); \
   }
 
 // Helper macros for checking values in tests, and returning a location

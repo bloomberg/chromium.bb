@@ -423,10 +423,10 @@ void WebSocketResource::OnPluginMsgReceiveBinaryReply(
     return;
 
   // Append received data to queue.
-  scoped_refptr<Var> message_var(ArrayBufferVar::FromPPVar(
-      PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
+  scoped_refptr<Var> message_var(
+      PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferVar(
           message.size(),
-          &message.front())));
+          &message.front()));
   received_messages_.push(message_var);
 
   if (!TrackedCallback::IsPending(receive_callback_))
