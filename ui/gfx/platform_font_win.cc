@@ -55,7 +55,7 @@ int AdjustFontSize(int lf_height, int size_delta) {
 
 // Sets style properties on |font_info| based on |font_style|.
 void SetLogFontStyle(int font_style, LOGFONT* font_info) {
-  font_info->lfUnderline = (font_style & gfx::Font::UNDERLINED) != 0;
+  font_info->lfUnderline = (font_style & gfx::Font::UNDERLINE) != 0;
   font_info->lfItalic = (font_style & gfx::Font::ITALIC) != 0;
   font_info->lfWeight = (font_style & gfx::Font::BOLD) ? FW_BOLD : FW_NORMAL;
 }
@@ -242,7 +242,7 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
   if (font_metrics.tmItalic)
     style |= Font::ITALIC;
   if (font_metrics.tmUnderlined)
-    style |= Font::UNDERLINED;
+    style |= Font::UNDERLINE;
   if (font_metrics.tmWeight >= kTextMetricWeightBold)
     style |= Font::BOLD;
 

@@ -15,12 +15,10 @@
 
 // TouchOmniboxResultView ------------------------------------------------
 
-TouchOmniboxResultView::TouchOmniboxResultView(
-    OmniboxResultViewModel* model,
-    int model_index,
-    const gfx::Font& font,
-    const gfx::Font& bold_font)
-    : OmniboxResultView(model, model_index, font, bold_font) {
+TouchOmniboxResultView::TouchOmniboxResultView(OmniboxResultViewModel* model,
+                                               int model_index,
+                                               const gfx::Font& font)
+    : OmniboxResultView(model, model_index, font) {
   set_edge_item_padding(8);
   set_item_padding(8);
   set_minimum_text_vertical_padding(10);
@@ -100,9 +98,8 @@ void TouchOmniboxPopupContentsView::PaintResultViews(gfx::Canvas* canvas) {
 OmniboxResultView* TouchOmniboxPopupContentsView::CreateResultView(
     OmniboxResultViewModel* model,
     int model_index,
-    const gfx::Font& font,
-    const gfx::Font& bold_font) {
-  return new TouchOmniboxResultView(model, model_index, font, bold_font);
+    const gfx::Font& font) {
+  return new TouchOmniboxResultView(model, model_index, font);
 }
 
 std::vector<views::View*> TouchOmniboxPopupContentsView::GetVisibleChildren() {

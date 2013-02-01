@@ -45,6 +45,9 @@ class RenderTextLinux : public RenderText {
   virtual void DrawVisualText(Canvas* canvas) OVERRIDE;
 
  private:
+  friend class RenderTextTest;
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, PangoAttributes);
+
   // Returns the run that contains the character attached to the caret in the
   // given selection model. Return NULL if not found.
   GSList* GetRunContainingCaret(const SelectionModel& caret) const;
@@ -70,6 +73,9 @@ class RenderTextLinux : public RenderText {
 
   // Get the visual bounds of the logical selection.
   std::vector<Rect> GetSelectionBounds();
+
+  // Get the text index corresponding to the |run|'s |glyph_index|.
+  size_t GetGlyphTextIndex(PangoLayoutRun* run, int glyph_index) const;
 
   // Pango Layout.
   PangoLayout* layout_;

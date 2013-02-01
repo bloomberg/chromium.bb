@@ -89,8 +89,7 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
       omnibox_view_(omnibox_view),
       profile_(edit_model->profile()),
       location_bar_(location_bar),
-      result_font_(font.DeriveFont(kEditFontAdjust)),
-      result_bold_font_(result_font_.DeriveFont(0, gfx::Font::BOLD)),
+      font_(font.DeriveFont(kEditFontAdjust)),
       ignore_mouse_drag_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)) {
   // The following little dance is required because set_border() requires a
@@ -109,8 +108,7 @@ void OmniboxPopupContentsView::Init() {
   // necessarily our final class yet, and we may have subclasses
   // overriding CreateResultView.
   for (size_t i = 0; i < AutocompleteResult::kMaxMatches; ++i) {
-    OmniboxResultView* result_view =
-        CreateResultView(this, i, result_font_, result_bold_font_);
+    OmniboxResultView* result_view = CreateResultView(this, i, font_);
     result_view->SetVisible(false);
     AddChildViewAt(result_view, static_cast<int>(i));
   }
@@ -393,9 +391,8 @@ int OmniboxPopupContentsView::CalculatePopupHeight() {
 OmniboxResultView* OmniboxPopupContentsView::CreateResultView(
     OmniboxResultViewModel* model,
     int model_index,
-    const gfx::Font& font,
-    const gfx::Font& bold_font) {
-  return new OmniboxResultView(model, model_index, font, bold_font);
+    const gfx::Font& font) {
+  return new OmniboxResultView(model, model_index, font);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

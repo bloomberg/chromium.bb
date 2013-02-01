@@ -296,10 +296,7 @@ void PublicAccountUserDetails::Layout() {
     position.set_y(position.y() + size.height());
 
     // Set the default text color for the line.
-    gfx::StyleRange default_style(line->default_style());
-    default_style.foreground = kPublicAccountUserCardTextColor;
-    line->set_default_style(default_style);
-    line->ApplyDefaultStyle();
+    line->SetColor(kPublicAccountUserCardTextColor);
 
     // If a range of the line contains the user's display name, apply a custom
     // text color to it.
@@ -308,11 +305,9 @@ void PublicAccountUserDetails::Layout() {
     if (!display_name.is_empty()) {
       display_name.set_end(
           it->find(kDisplayNameMark, display_name.start() + 1));
-      gfx::StyleRange display_name_style(line->default_style());
-      display_name_style.foreground = kPublicAccountUserCardNameColor;
       ui::Range line_range(0, it->size());
-      display_name_style.range = display_name.Intersect(line_range);
-      line->ApplyStyleRange(display_name_style);
+      line->ApplyColor(kPublicAccountUserCardNameColor,
+                       display_name.Intersect(line_range));
       // Update the range for the next line.
       if (display_name.end() >= line_range.end())
         display_name.set_start(0);

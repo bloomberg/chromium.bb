@@ -28,8 +28,7 @@ void ParseFontDescriptionString(const std::string& font_description_string,
   DCHECK_GT(*font_size, 0);
   font_names->pop_back();
 
-  // Besides underline (which is supported through StyleRange), Font only
-  // supports BOLD and ITALIC, but not other styles.
+  // Font supports BOLD and ITALIC; underline is supported via RenderText.
   *font_style = 0;
   for (size_t i = 0; i < styles_size.size() - 1; ++i) {
     // Styles are separated by white spaces. base::SplitString splits styles

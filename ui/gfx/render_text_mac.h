@@ -61,7 +61,9 @@ class RenderTextMac : public RenderText {
     int font_style;
     SkScalar text_size;
     SkColor foreground;
-    StyleRange style;
+    bool underline;
+    bool strike;
+    bool diagonal_strike;
 
     TextRun();
     ~TextRun();

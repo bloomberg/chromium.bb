@@ -369,22 +369,14 @@ class InstalledBubbleContent : public views::View,
                            line->GetStringSize().height());
       line->SetDisplayRect(gfx::Rect(position, size));
       position.set_y(position.y() + size.height());
-
-      // The link is always first in the text and is assumed to not be long
-      // enough to wrap to the next line.
-      if (it == lines.begin()) {
-        // First line we treat specially, because we will draw the link on its
-        // own, so we don't want to draw the text for the link twice. We
-        // therefore set it to transparent.
-        gfx::StyleRange link_text_style(line->default_style());
-        link_text_style.foreground = SK_ColorTRANSPARENT;
-        link_text_style.range = ui::Range(0, signin_promo_link_text_.size());
-        line->ApplyStyleRange(link_text_style);
-      }
-
       sign_in_promo_lines_.push_back(line);
       height += size.height();
     }
+
+    // The link is drawn separately; make it transparent here to only draw once.
+    // The link always leads other text and is assumed to fit on the first line.
+    sign_in_promo_lines_.front()->ApplyColor(SK_ColorTRANSPARENT,
+        ui::Range(0, signin_promo_link_text_.size()));
 
     return height;
   }

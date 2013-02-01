@@ -85,11 +85,9 @@ class OmniboxPopupContentsView : public views::View,
 
   // Calculates the height needed to show all the results in the model.
   virtual int CalculatePopupHeight();
-  virtual OmniboxResultView* CreateResultView(
-      OmniboxResultViewModel* model,
-      int model_index,
-      const gfx::Font& font,
-      const gfx::Font& bold_font);
+  virtual OmniboxResultView* CreateResultView(OmniboxResultViewModel* model,
+                                              int model_index,
+                                              const gfx::Font& font);
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -164,12 +162,8 @@ class OmniboxPopupContentsView : public views::View,
   // Our border, which can compute our desired bounds.
   const views::BubbleBorder* bubble_border_;
 
-  // The font that we should use for result rows. This is based on the font used
-  // by the edit that created us.
-  gfx::Font result_font_;
-
-  // The font used for portions that match the input.
-  gfx::Font result_bold_font_;
+  // The font used for result rows, based on the omnibox font.
+  gfx::Font font_;
 
   // If the user cancels a dragging action (i.e. by pressing ESC), we don't have
   // a convenient way to release mouse capture. Instead we use this flag to

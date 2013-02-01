@@ -40,6 +40,17 @@ enum DirectionalityMode {
   DIRECTIONALITY_FORCE_RTL,
 };
 
+// Text styles and adornments.
+// TODO(msw): Merge with gfx::Font::FontStyle.
+enum TextStyle {
+  BOLD = 0,
+  ITALIC,
+  STRIKE,
+  DIAGONAL_STRIKE,
+  UNDERLINE,
+  NUM_TEXT_STYLES,
+};
+
 }  // namespace gfx
 
 #endif  // UI_GFX_TEXT_CONSTANTS_H_

@@ -368,14 +368,26 @@ size_t Textfield::GetCursorPosition() const {
   return native_wrapper_->GetCursorPosition();
 }
 
-void Textfield::ApplyStyleRange(const gfx::StyleRange& style) {
+void Textfield::SetColor(SkColor value) {
   DCHECK(native_wrapper_);
-  return native_wrapper_->ApplyStyleRange(style);
+  return native_wrapper_->SetColor(value);
 }
 
-void Textfield::ApplyDefaultStyle() {
+void Textfield::ApplyColor(SkColor value, const ui::Range& range) {
   DCHECK(native_wrapper_);
-  native_wrapper_->ApplyDefaultStyle();
+  return native_wrapper_->ApplyColor(value, range);
+}
+
+void Textfield::SetStyle(gfx::TextStyle style, bool value) {
+  DCHECK(native_wrapper_);
+  return native_wrapper_->SetStyle(style, value);
+}
+
+void Textfield::ApplyStyle(gfx::TextStyle style,
+                           bool value,
+                           const ui::Range& range) {
+  DCHECK(native_wrapper_);
+  return native_wrapper_->ApplyStyle(style, value, range);
 }
 
 void Textfield::ClearEditHistory() {

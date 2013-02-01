@@ -240,8 +240,8 @@ NativeFont PlatformFontPango::GetNativeFont() const {
     case gfx::Font::ITALIC:
       pango_font_description_set_style(pfd, PANGO_STYLE_ITALIC);
       break;
-    case gfx::Font::UNDERLINED:
-      // TODO(deanm): How to do underlined?  Where do we use it?  Probably have
+    case gfx::Font::UNDERLINE:
+      // TODO(deanm): How to do underline?  Where do we use it?  Probably have
       // to paint it ourselves, see pango_font_metrics_get_underline_position.
       break;
   }

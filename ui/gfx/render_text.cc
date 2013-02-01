@@ -17,6 +17,8 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_constants.h"
 
+namespace gfx {
+
 namespace {
 
 // All chars are replaced by this char when the password style is set.
@@ -24,90 +26,31 @@ namespace {
 // that's available in the font (find_invisible_char() in gtkentry.c).
 const char16 kPasswordReplacementChar = '*';
 
-// Default color used for the cursor.
-const SkColor kDefaultCursorColor = SK_ColorBLACK;
-
-// Default color used for drawing selection text.
-const SkColor kDefaultSelectionColor = SK_ColorBLACK;
+// Default color used for the text and cursor.
+const SkColor kDefaultColor = SK_ColorBLACK;
 
 // Default color used for drawing selection background.
 const SkColor kDefaultSelectionBackgroundColor = SK_ColorGRAY;
 
-#ifndef NDEBUG
-// Check StyleRanges invariant conditions: sorted and non-overlapping ranges.
-void CheckStyleRanges(const gfx::StyleRanges& style_ranges, size_t length) {
-  if (length == 0) {
-    DCHECK(style_ranges.empty()) << "Style ranges exist for empty text.";
-    return;
-  }
-  for (gfx::StyleRanges::size_type i = 0; i < style_ranges.size() - 1; i++) {
-    const ui::Range& former = style_ranges[i].range;
-    const ui::Range& latter = style_ranges[i + 1].range;
-    DCHECK(!former.is_empty()) << "Empty range at " << i << ":" <<
-        former.ToString();
-    DCHECK(former.IsValid()) << "Invalid range at " << i << ":" <<
-        former.ToString();
-    DCHECK(!former.is_reversed()) << "Reversed range at " << i << ":" <<
-        former.ToString();
-    DCHECK(former.end() == latter.start()) << "Ranges gap/overlap/unsorted." <<
-        "former:" << former.ToString() << ", latter:" << latter.ToString();
-  }
-  const gfx::StyleRange& end_style = *style_ranges.rbegin();
-  DCHECK(!end_style.range.is_empty()) << "Empty range at end.";
-  DCHECK(end_style.range.IsValid()) << "Invalid range at end.";
-  DCHECK(!end_style.range.is_reversed()) << "Reversed range at end.";
-  DCHECK(end_style.range.end() == length) << "Style and text length mismatch.";
-}
-#endif
-
-void ApplyStyleRangeImpl(gfx::StyleRanges* style_ranges,
-                         const gfx::StyleRange& style_range) {
-  const ui::Range& new_range = style_range.range;
-  // Follow StyleRanges invariant conditions: sorted and non-overlapping ranges.
-  gfx::StyleRanges::iterator i;
-  for (i = style_ranges->begin(); i != style_ranges->end();) {
-    if (i->range.end() < new_range.start()) {
-      i++;
-    } else if (i->range.start() == new_range.end()) {
-      break;
-    } else if (new_range.Contains(i->range)) {
-      i = style_ranges->erase(i);
-      if (i == style_ranges->end())
-        break;
-    } else if (i->range.start() < new_range.start() &&
-               i->range.end() > new_range.end()) {
-      // Split the current style into two styles.
-      gfx::StyleRange split_style = gfx::StyleRange(*i);
-      split_style.range.set_end(new_range.start());
-      i = style_ranges->insert(i, split_style) + 1;
-      i->range.set_start(new_range.end());
-      break;
-    } else if (i->range.start() < new_range.start()) {
-      i->range.set_end(new_range.start());
-      i++;
-    } else if (i->range.end() > new_range.end()) {
-      i->range.set_start(new_range.end());
-      break;
-    } else {
-      NOTREACHED();
-    }
-  }
-  // Add the new range in its sorted location.
-  style_ranges->insert(i, style_range);
-}
+// Fraction of the text size to lower a strike through below the baseline.
+const SkScalar kStrikeThroughOffset = (-SK_Scalar1 * 6 / 21);
+// Fraction of the text size to lower an underline below the baseline.
+const SkScalar kUnderlineOffset = (SK_Scalar1 / 9);
+// Fraction of the text size to use for a strike through or under-line.
+const SkScalar kLineThickness = (SK_Scalar1 / 18);
+// Fraction of the text size to use for a top margin of a diagonal strike.
+const SkScalar kDiagonalStrikeMarginOffset = (SK_Scalar1 / 4);
 
 // Converts |gfx::Font::FontStyle| flags to |SkTypeface::Style| flags.
 SkTypeface::Style ConvertFontStyleToSkiaTypefaceStyle(int font_style) {
   int skia_style = SkTypeface::kNormal;
-  if (font_style & gfx::Font::BOLD)
-    skia_style |= SkTypeface::kBold;
-  if (font_style & gfx::Font::ITALIC)
-    skia_style |= SkTypeface::kItalic;
+  skia_style |= (font_style & gfx::Font::BOLD) ? SkTypeface::kBold : 0;
+  skia_style |= (font_style & gfx::Font::ITALIC) ? SkTypeface::kItalic : 0;
   return static_cast<SkTypeface::Style>(skia_style);
 }
 
 // Given |font| and |display_width|, returns the width of the fade gradient.
-int CalculateFadeGradientWidth(const gfx::Font& font, int display_width) {
+int CalculateFadeGradientWidth(const Font& font, int display_width) {
   // Fade in/out about 2.5 characters of the beginning/end of the string.
   // The .5 here is helpful if one of the characters is a space.
   // Use a quarter of the display width if the display width is very short.
@@ -120,8 +63,8 @@ int CalculateFadeGradientWidth(const gfx::Font& font, int display_width) {
 
 // Appends to |positions| and |colors| values corresponding to the fade over
 // |fade_rect| from color |c0| to color |c1|.
-void AddFadeEffect(const gfx::Rect& text_rect,
-                   const gfx::Rect& fade_rect,
+void AddFadeEffect(const Rect& text_rect,
+                   const Rect& fade_rect,
                    SkColor c0,
                    SkColor c1,
                    std::vector<SkScalar>* positions,
@@ -143,9 +86,9 @@ void AddFadeEffect(const gfx::Rect& text_rect,
 
 // Creates a SkShader to fade the text, with |left_part| specifying the left
 // fade effect, if any, and |right_part| specifying the right fade effect.
-skia::RefPtr<SkShader> CreateFadeShader(const gfx::Rect& text_rect,
-                                        const gfx::Rect& left_part,
-                                        const gfx::Rect& right_part,
+skia::RefPtr<SkShader> CreateFadeShader(const Rect& text_rect,
+                                        const Rect& left_part,
+                                        const Rect& right_part,
                                         SkColor color) {
   // Fade alpha of 51/255 corresponds to a fade of 0.2 of the original color.
   const SkColor fade_color = SkColorSetA(color, 51);
@@ -176,8 +119,6 @@ skia::RefPtr<SkShader> CreateFadeShader(const gfx::Rect& text_rect,
 }
 
 }  // namespace
-
-namespace gfx {
 
 namespace internal {
 
@@ -293,103 +234,84 @@ void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
   canvas_skia_->drawPosText(&glyphs[0], byte_length, &pos[0], paint_);
 }
 
-// Draw underline and strike through text decorations.
-// Based on |SkCanvas::DrawTextDecorations()| and constants from:
-//   third_party/skia/src/core/SkTextFormatParams.h
-void SkiaTextRenderer::DrawDecorations(int x, int y, int width,
-                                       const StyleRange& style) {
-  if (!style.underline && !style.strike && !style.diagonal_strike)
-    return;
+void SkiaTextRenderer::DrawDecorations(int x, int y, int width, bool underline,
+                                       bool strike, bool diagonal_strike) {
+  if (underline)
+    DrawUnderline(x, y, width);
+  if (strike)
+    DrawStrike(x, y, width);
+  if (diagonal_strike)
+    DrawDiagonalStrike(x, y, width);
+}
 
-  // Fraction of the text size to lower a strike through below the baseline.
-  const SkScalar kStrikeThroughOffset = (-SK_Scalar1 * 6 / 21);
-  // Fraction of the text size to lower an underline below the baseline.
-  const SkScalar kUnderlineOffset = (SK_Scalar1 / 9);
-  // Fraction of the text size to use for a strike through or under-line.
-  const SkScalar kLineThickness = (SK_Scalar1 / 18);
-  // Fraction of the text size to use for a top margin of a diagonal strike.
-  const SkScalar kDiagonalStrikeThroughMarginOffset = (SK_Scalar1 / 4);
-
-  SkScalar text_size = paint_.getTextSize();
-  SkScalar height = SkScalarMul(text_size, kLineThickness);
-  SkRect r;
-
-  r.fLeft = x;
-  r.fRight = x + width;
-
-  if (style.underline) {
-    if (underline_thickness_ == kUnderlineMetricsNotSet) {
-      r.fTop = SkScalarMulAdd(text_size, kUnderlineOffset, y);
-      r.fBottom = r.fTop + height;
-    } else {
-      r.fTop = y + underline_position_;
-      r.fBottom = r.fTop + underline_thickness_;
-    }
-    canvas_skia_->drawRect(r, paint_);
+void SkiaTextRenderer::DrawUnderline(int x, int y, int width) {
+  SkRect r = SkRect::MakeLTRB(x, y + underline_position_, x + width,
+                              y + underline_position_ + underline_thickness_);
+  if (underline_thickness_ == kUnderlineMetricsNotSet) {
+    const SkScalar text_size = paint_.getTextSize();
+    r.fTop = SkScalarMulAdd(text_size, kUnderlineOffset, y);
+    r.fBottom = r.fTop + SkScalarMul(text_size, kLineThickness);
   }
-  if (style.strike) {
-    SkScalar offset = SkScalarMulAdd(text_size, kStrikeThroughOffset, y);
-    r.fTop = offset;
-    r.fBottom = offset + height;
-    canvas_skia_->drawRect(r, paint_);
-  }
-  if (style.diagonal_strike) {
-    SkScalar offset =
-        SkScalarMul(text_size, kDiagonalStrikeThroughMarginOffset);
-    SkPaint paint(paint_);
-    paint.setAntiAlias(true);
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setStrokeWidth(height * 2);
-    canvas_skia_->drawLine(
-        SkIntToScalar(x), SkIntToScalar(y),
-        SkIntToScalar(x + width), SkIntToScalar(y) - text_size + offset,
-        paint);
-  }
+  canvas_skia_->drawRect(r, paint_);
+}
+
+void SkiaTextRenderer::DrawStrike(int x, int y, int width) const {
+  const SkScalar text_size = paint_.getTextSize();
+  const SkScalar height = SkScalarMul(text_size, kLineThickness);
+  const SkScalar offset = SkScalarMulAdd(text_size, kStrikeThroughOffset, y);
+  const SkRect r = SkRect::MakeLTRB(x, offset, x + width, offset + height);
+  canvas_skia_->drawRect(r, paint_);
+}
+
+void SkiaTextRenderer::DrawDiagonalStrike(int x, int y, int width) const {
+  const SkScalar text_size = paint_.getTextSize();
+  const SkScalar offset = SkScalarMul(text_size, kDiagonalStrikeMarginOffset);
+
+  SkPaint paint(paint_);
+  paint.setAntiAlias(true);
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setStrokeWidth(SkScalarMul(text_size, kLineThickness) * 2);
+  canvas_skia_->drawLine(x, y, x + width, y - text_size + offset, paint);
+}
+
+StyleIterator::StyleIterator(const BreakList<SkColor>& colors,
+                             const std::vector<BreakList<bool> >& styles)
+    : colors_(colors),
+      styles_(styles) {
+  color_ = colors_.breaks().begin();
+  for (size_t i = 0; i < styles_.size(); ++i)
+    style_.push_back(styles_[i].breaks().begin());
+}
+
+StyleIterator::~StyleIterator() {}
+
+ui::Range StyleIterator::GetRange() const {
+  ui::Range range(colors_.GetRange(color_));
+  for (size_t i = 0; i < NUM_TEXT_STYLES; ++i)
+    range = range.Intersect(styles_[i].GetRange(style_[i]));
+  return range;
+}
+
+void StyleIterator::UpdatePosition(size_t position) {
+  color_ = colors_.GetBreak(position);
+  for (size_t i = 0; i < NUM_TEXT_STYLES; ++i)
+    style_[i] = styles_[i].GetBreak(position);
 }
 
 }  // namespace internal
-
-
-StyleRange::StyleRange()
-    : foreground(SK_ColorBLACK),
-      font_style(gfx::Font::NORMAL),
-      strike(false),
-      diagonal_strike(false),
-      underline(false) {
-}
 
 RenderText::~RenderText() {
 }
 
 void RenderText::SetText(const string16& text) {
   DCHECK(!composition_range_.IsValid());
-  size_t old_text_length = text_.length();
   text_ = text;
 
-  // Update the style ranges as needed.
-  if (text_.empty()) {
-    style_ranges_.clear();
-  } else if (style_ranges_.empty()) {
-    ApplyDefaultStyle();
-  } else if (text_.length() > old_text_length) {
-    style_ranges_.back().range.set_end(text_.length());
-  } else if (text_.length() < old_text_length) {
-    StyleRanges::iterator i;
-    for (i = style_ranges_.begin(); i != style_ranges_.end(); i++) {
-      if (i->range.start() >= text_.length()) {
-        // Style ranges are sorted and non-overlapping, so all the subsequent
-        // style ranges should be out of text_.length() as well.
-        style_ranges_.erase(i, style_ranges_.end());
-        break;
-      }
-    }
-    // Since style ranges are sorted and non-overlapping, if there is a style
-    // range ends beyond text_.length, it must be the last one.
-    style_ranges_.back().range.set_end(text_.length());
-  }
-#ifndef NDEBUG
-  CheckStyleRanges(style_ranges_, text_.length());
-#endif
+  // Adjust ranged styles and colors to accommodate a new text length.
+  const size_t text_length = text_.length();
+  colors_.SetMax(text_length);
+  for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
+    styles_[style].SetMax(text_length);
   cached_bounds_and_offset_valid_ = false;
 
   // Reset selection model. SetText should always followed by SetSelectionModel
@@ -582,28 +504,56 @@ void RenderText::SetCompositionRange(const ui::Range& composition_range) {
   ResetLayout();
 }
 
-void RenderText::ApplyStyleRange(const StyleRange& style_range) {
-  const ui::Range& new_range = style_range.range;
-  if (!new_range.IsValid() || new_range.is_empty())
-    return;
-  CHECK(!new_range.is_reversed());
-  CHECK(ui::Range(0, text_.length()).Contains(new_range));
-  ApplyStyleRangeImpl(&style_ranges_, style_range);
-#ifndef NDEBUG
-  CheckStyleRanges(style_ranges_, text_.length());
-#endif
-  // TODO(xji): only invalidate if font or underline changes.
+void RenderText::SetColor(SkColor value) {
+  colors_.SetValue(value);
+
+#if defined(OS_WIN)
+  // TODO(msw): Windows applies colors and decorations in the layout process.
   cached_bounds_and_offset_valid_ = false;
   ResetLayout();
+#endif
 }
 
-void RenderText::ApplyDefaultStyle() {
-  style_ranges_.clear();
-  StyleRange style = StyleRange(default_style_);
-  style.range.set_end(text_.length());
-  style_ranges_.push_back(style);
+void RenderText::ApplyColor(SkColor value, const ui::Range& range) {
+  colors_.ApplyValue(value, range);
+
+#if defined(OS_WIN)
+  // TODO(msw): Windows applies colors and decorations in the layout process.
   cached_bounds_and_offset_valid_ = false;
   ResetLayout();
+#endif
+}
+
+void RenderText::SetStyle(TextStyle style, bool value) {
+  styles_[style].SetValue(value);
+
+  // Only invalidate the layout on font changes; not for colors or decorations.
+  bool invalidate = (style == BOLD) || (style == ITALIC);
+#if defined(OS_WIN)
+  // TODO(msw): Windows applies colors and decorations in the layout process.
+  invalidate = true;
+#endif
+  if (invalidate) {
+    cached_bounds_and_offset_valid_ = false;
+    ResetLayout();
+  }
+}
+
+void RenderText::ApplyStyle(TextStyle style,
+                            bool value,
+                            const ui::Range& range) {
+  styles_[style].ApplyValue(value, range);
+
+  // Only invalidate the layout on font changes; not for colors or decorations.
+  bool invalidate = (style == BOLD) || (style == ITALIC);
+#if defined(OS_WIN)
+  // TODO(msw): Windows applies colors and decorations in the layout process.
+  invalidate = true;
+#endif
+  if (invalidate) {
+    cached_bounds_and_offset_valid_ = false;
+    ResetLayout();
+  }
 }
 
 void RenderText::SetDirectionalityMode(DirectionalityMode mode) {
@@ -651,7 +601,7 @@ void RenderText::Draw(Canvas* canvas) {
   EnsureLayout();
 
   if (clip_to_display_rect()) {
-    gfx::Rect clip_rect(display_rect());
+    Rect clip_rect(display_rect());
     clip_rect.Inset(ShadowValue::GetMargin(text_shadows_));
 
     canvas->Save();
@@ -752,12 +702,15 @@ RenderText::RenderText()
       cursor_enabled_(true),
       cursor_visible_(false),
       insert_mode_(true),
-      cursor_color_(kDefaultCursorColor),
-      selection_color_(kDefaultSelectionColor),
+      cursor_color_(kDefaultColor),
+      selection_color_(kDefaultColor),
       selection_background_focused_color_(kDefaultSelectionBackgroundColor),
       selection_background_unfocused_color_(kDefaultSelectionBackgroundColor),
       focused_(false),
       composition_range_(ui::Range::InvalidRange()),
+      colors_(kDefaultColor),
+      styles_(NUM_TEXT_STYLES),
+      composition_and_selection_styles_applied_(false),
       obscured_(false),
       fade_head_(false),
       fade_tail_(false),
@@ -802,42 +755,36 @@ const string16& RenderText::GetLayoutText() const {
   return obscured() ? obscured_text_ : text();
 }
 
-void RenderText::ApplyCompositionAndSelectionStyles(
-    StyleRanges* style_ranges) {
-  // TODO(msw): This pattern ought to be reconsidered; what about composition
-  //            and selection overlaps, retain existing local style features?
-  // Apply a composition style override to a copy of the style ranges.
-  if (composition_range_.IsValid() && !composition_range_.is_empty()) {
-    StyleRange composition_style(default_style_);
-    composition_style.underline = true;
-    composition_style.range = composition_range_;
-    ApplyStyleRangeImpl(style_ranges, composition_style);
-  }
-  // Apply a selection style override to a copy of the style ranges.
+void RenderText::ApplyCompositionAndSelectionStyles() {
+  // Save the underline and color breaks to undo the temporary styles later.
+  DCHECK(!composition_and_selection_styles_applied_);
+  saved_colors_ = colors_;
+  saved_underlines_ = styles_[UNDERLINE];
+
+  // Apply an underline to the composition range in |underlines|.
+  if (composition_range_.IsValid() && !composition_range_.is_empty())
+    styles_[UNDERLINE].ApplyValue(true, composition_range_);
+
+  // Apply the selected text color to the [un-reversed] selection range.
   if (!selection().is_empty()) {
-    StyleRange selection_style(default_style_);
-    selection_style.foreground = selection_color_;
-    selection_style.range = ui::Range(selection().GetMin(),
-                                      selection().GetMax());
-    ApplyStyleRangeImpl(style_ranges, selection_style);
+    const ui::Range range(selection().GetMin(), selection().GetMax());
+    colors_.ApplyValue(selection_color_, range);
   }
-  // Apply replacement-mode style override to a copy of the style ranges.
-  //
-  // TODO(xji): NEED TO FIX FOR WINDOWS ASAP. Windows call this function (to
-  // apply styles) in ItemizeLogicalText(). In order for the cursor's underline
-  // character to be drawn correctly, we will need to re-layout the text. It's
-  // not practical to do layout on every cursor blink. We need to fix Windows
-  // port to apply styles during drawing phase like Linux port does.
-  // http://crbug.com/110109
+  // Apply the selected text color to the cursor range in overtype mode.
   if (!insert_mode_ && cursor_visible() && focused()) {
-    StyleRange replacement_mode_style(default_style_);
-    replacement_mode_style.foreground = selection_color_;
-    size_t cursor = cursor_position();
-    replacement_mode_style.range.set_start(cursor);
-    replacement_mode_style.range.set_end(
-        IndexOfAdjacentGrapheme(cursor, CURSOR_FORWARD));
-    ApplyStyleRangeImpl(style_ranges, replacement_mode_style);
+    const size_t cursor = cursor_position();
+    const size_t next = IndexOfAdjacentGrapheme(cursor, CURSOR_FORWARD);
+    colors_.ApplyValue(selection_color_, ui::Range(cursor, next));
   }
+  composition_and_selection_styles_applied_ = true;
+}
+
+void RenderText::UndoCompositionAndSelectionStyles() {
+  // Restore the underline and color breaks to undo the temporary styles.
+  DCHECK(composition_and_selection_styles_applied_);
+  colors_ = saved_colors_;
+  styles_[UNDERLINE] = saved_underlines_;
+  composition_and_selection_styles_applied_ = false;
 }
 
 Vector2d RenderText::GetTextOffset() {
@@ -899,9 +846,9 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
   if (horizontal_alignment() == ALIGN_RIGHT)
     std::swap(fade_left, fade_right);
 
-  gfx::Rect solid_part = display_rect();
-  gfx::Rect left_part;
-  gfx::Rect right_part;
+  Rect solid_part = display_rect();
+  Rect left_part;
+  Rect right_part;
   if (fade_left) {
     left_part = solid_part;
     left_part.Inset(0, 0, solid_part.width() - gradient_width, 0);
@@ -913,19 +860,18 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
     solid_part.Inset(0, 0, gradient_width, 0);
   }
 
-  gfx::Rect text_rect = display_rect();
+  Rect text_rect = display_rect();
   text_rect.Inset(GetAlignmentOffset().x(), 0, 0, 0);
 
-  const SkColor color = default_style().foreground;
-  skia::RefPtr<SkShader> shader =
-      CreateFadeShader(text_rect, left_part, right_part, color);
+  // TODO(msw): Use the actual text colors corresponding to each faded part.
+  skia::RefPtr<SkShader> shader = CreateFadeShader(
+      text_rect, left_part, right_part, colors_.breaks().front().second);
   if (shader)
     renderer->SetShader(shader.get(), display_rect());
 }
 
 void RenderText::ApplyTextShadows(internal::SkiaTextRenderer* renderer) {
-  skia::RefPtr<SkDrawLooper> looper =
-      gfx::CreateShadowDrawLooper(text_shadows_);
+  skia::RefPtr<SkDrawLooper> looper = CreateShadowDrawLooper(text_shadows_);
   renderer->SetDrawLooper(looper.get());
 }
 
@@ -999,7 +945,7 @@ void RenderText::UpdateCachedBoundsAndOffset() {
     }
   }
 
-  gfx::Vector2d delta_offset(delta_x, 0);
+  Vector2d delta_offset(delta_x, 0);
   display_offset_ += delta_offset;
   cursor_bounds_ += delta_offset;
 }

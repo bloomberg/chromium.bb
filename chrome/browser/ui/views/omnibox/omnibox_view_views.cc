@@ -81,19 +81,6 @@ struct AutocompleteEditState : public base::SupportsUserData::Data {
   const ViewState view_state;
 };
 
-// A convenience method for applying URL styles.
-void ApplyURLStyle(views::Textfield* textfield,
-                   size_t start,
-                   size_t end,
-                   SkColor color,
-                   bool diagonal_strike) {
-  gfx::StyleRange style;
-  style.foreground = color;
-  style.range = ui::Range(start, end);
-  style.diagonal_strike = diagonal_strike;
-  textfield->ApplyStyleRange(style);
-}
-
 // The following const value is the same as in browser_defaults.
 const int kAutocompleteEditFontPixelSize = 15;
 // Font size 10px (as defined in browser_defaults) is too small for many
@@ -912,16 +899,12 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   AutocompleteInput::ParseForEmphasizeComponents(text, model()->GetDesiredTLD(),
                                                  &scheme, &host);
   const bool emphasize = model()->CurrentTextIsURL() && (host.len > 0);
-
-  SkColor base_color = location_bar_view_->GetColor(
-      security_level_,
-      emphasize ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT);
-  ApplyURLStyle(textfield_, 0, text.length(), base_color, false);
-
+  textfield_->SetColor(location_bar_view_->GetColor(security_level_,
+      emphasize ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT));
   if (emphasize) {
-    SkColor normal_color = location_bar_view_->GetColor(
-        security_level_, LocationBarView::TEXT);
-    ApplyURLStyle(textfield_, host.begin, host.end(), normal_color, false);
+    textfield_->ApplyColor(
+        location_bar_view_->GetColor(security_level_, LocationBarView::TEXT),
+        ui::Range(host.begin, host.end()));
   }
 
   // Emphasize the scheme for security UI display purposes (if necessary).
@@ -933,9 +916,10 @@ void OmniboxViewViews::EmphasizeURLComponents() {
       scheme.is_nonempty() && (security_level_ != ToolbarModel::NONE)) {
     SkColor security_color = location_bar_view_->GetColor(
         security_level_, LocationBarView::SECURITY_TEXT);
-    bool use_strikethrough = (security_level_ == ToolbarModel::SECURITY_ERROR);
-    ApplyURLStyle(textfield_, scheme.begin, scheme.end(),
-                  security_color, use_strikethrough);
+    const bool strike = (security_level_ == ToolbarModel::SECURITY_ERROR);
+    const ui::Range scheme_range(scheme.begin, scheme.end());
+    textfield_->ApplyColor(security_color, scheme_range);
+    textfield_->ApplyStyle(gfx::DIAGONAL_STRIKE, strike, scheme_range);
   }
 }
 

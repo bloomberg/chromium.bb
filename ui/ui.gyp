@@ -332,6 +332,7 @@
         'gfx/android/window_android.h',
         'gfx/blit.cc',
         'gfx/blit.h',
+        'gfx/break_list.h',
         'gfx/canvas.cc',
         'gfx/canvas.h',
         'gfx/canvas_android.cc',

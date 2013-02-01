@@ -29,7 +29,7 @@ class UI_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   // Returns a new Font derived from the existing font.
   // |size_delta| is the size in pixels to add to the current font.
   // The style parameter specifies the new style for the font, and is a
-  // bitmask of the values: BOLD, ITALIC and UNDERLINED.
+  // bitmask of the values: BOLD, ITALIC and UNDERLINE.
   virtual Font DeriveFont(int size_delta, int style) const = 0;
 
   // Returns the number of vertical pixels needed to display characters from

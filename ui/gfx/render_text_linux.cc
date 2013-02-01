@@ -325,26 +325,33 @@ void RenderTextLinux::EnsureLayout() {
 void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
   PangoAttrList* attrs = pango_attr_list_new();
 
-  int default_font_style = font_list().GetFontStyle();
-  for (StyleRanges::const_iterator i = style_ranges().begin();
-       i < style_ranges().end(); ++i) {
-    // In Pango, different fonts means different runs, and it breaks Arabic
-    // shaping across run boundaries. So, set font only when it is different
-    // from the default font.
-    // TODO(xji): We'll eventually need to split up StyleRange into components
-    // (ColorRange, FontRange, etc.) so that we can combine adjacent ranges
-    // with the same Fonts (to avoid unnecessarily splitting up runs).
-    if (i->font_style != default_font_style) {
-      FontList derived_font_list = font_list().DeriveFontList(i->font_style);
+  // Splitting text runs to accommodate styling can break Arabic glyph shaping.
+  // Only split text runs as needed for bold and italic font styles changes.
+  BreakList<bool>::const_iterator bold = styles()[BOLD].breaks().begin();
+  BreakList<bool>::const_iterator italic = styles()[ITALIC].breaks().begin();
+  while (bold != styles()[BOLD].breaks().end() &&
+         italic != styles()[ITALIC].breaks().end()) {
+    const int style = (bold->second ? Font::BOLD : 0) |
+                      (italic->second ? Font::ITALIC : 0);
+    const size_t bold_end = styles()[BOLD].GetRange(bold).end();
+    const size_t italic_end = styles()[ITALIC].GetRange(italic).end();
+    const size_t style_end = std::min(bold_end, italic_end);
+    if (style != font_list().GetFontStyle()) {
+      FontList derived_font_list = font_list().DeriveFontList(style);
       ScopedPangoFontDescription desc(pango_font_description_from_string(
           derived_font_list.GetFontDescriptionString().c_str()));
 
       PangoAttribute* pango_attr = pango_attr_font_desc_new(desc.get());
-      pango_attr->start_index = TextIndexToLayoutIndex(i->range.start());
-      pango_attr->end_index = TextIndexToLayoutIndex(i->range.end());
+      pango_attr->start_index =
+          TextIndexToLayoutIndex(std::max(bold->first, italic->first));
+      pango_attr->end_index = TextIndexToLayoutIndex(style_end);
       pango_attr_list_insert(attrs, pango_attr);
     }
+    bold += bold_end == style_end ? 1 : 0;
+    italic += italic_end == style_end ? 1 : 0;
   }
+  DCHECK(bold == styles()[BOLD].breaks().end());
+  DCHECK(italic == styles()[ITALIC].breaks().end());
 
   pango_layout_set_attributes(layout, attrs);
   pango_attr_list_unref(attrs);
@@ -363,20 +370,6 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
   std::vector<SkPoint> pos;
   std::vector<uint16> glyphs;
 
-  StyleRanges styles(style_ranges());
-  ApplyCompositionAndSelectionStyles(&styles);
-
-  // Pre-calculate UTF8 indices from UTF16 indices.
-  // TODO(asvitkine): Can we cache these?
-  std::vector<ui::Range> style_ranges_utf8;
-  style_ranges_utf8.reserve(styles.size());
-  size_t start_index = 0;
-  for (size_t i = 0; i < styles.size(); ++i) {
-    size_t end_index = TextIndexToLayoutIndex(styles[i].range.end());
-    style_ranges_utf8.push_back(ui::Range(start_index, end_index));
-    start_index = end_index;
-  }
-
   internal::SkiaTextRenderer renderer(canvas);
   ApplyFadeEffects(&renderer);
   ApplyTextShadows(&renderer);
@@ -391,26 +384,15 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
       render_params.antialiasing,
       use_subpixel_rendering && !background_is_transparent());
 
+  // Temporarily apply composition underlines and selection colors.
+  ApplyCompositionAndSelectionStyles();
+
+  internal::StyleIterator style(colors(), styles());
   for (GSList* it = current_line_->runs; it; it = it->next) {
     PangoLayoutRun* run = reinterpret_cast<PangoLayoutRun*>(it->data);
     int glyph_count = run->glyphs->num_glyphs;
     if (glyph_count == 0)
       continue;
-
-    size_t run_start = run->item->offset;
-    size_t first_glyph_byte_index = run_start + run->glyphs->log_clusters[0];
-    size_t style_increment = IsForwardMotion(CURSOR_RIGHT, run->item) ? 1 : -1;
-
-    // Find the initial style for this run.
-    // TODO(asvitkine): Can we avoid looping here, e.g. by caching this per run?
-    int style = -1;
-    for (size_t i = 0; i < style_ranges_utf8.size(); ++i) {
-      if (IndexInRange(style_ranges_utf8[i], first_glyph_byte_index)) {
-        style = i;
-        break;
-      }
-    }
-    DCHECK_GE(style, 0);
 
     ScopedPangoFontDescription desc(
         pango_font_describe(run->item->analysis.font));
@@ -419,60 +401,59 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
         pango_font_description_get_family(desc.get());
     renderer.SetTextSize(GetPangoFontSizeInPixels(desc.get()));
 
-    SkScalar glyph_x = x;
-    SkScalar start_x = x;
-    int start = 0;
-
     glyphs.resize(glyph_count);
     pos.resize(glyph_count);
 
-    for (int i = 0; i < glyph_count; ++i) {
-      const PangoGlyphInfo& glyph = run->glyphs->glyphs[i];
-      glyphs[i] = static_cast<uint16>(glyph.glyph);
-      // Use pango_units_to_double() rather than PANGO_PIXELS() here so that
-      // units won't get rounded to the pixel grid if we're using subpixel
-      // positioning.
-      pos[i].set(glyph_x + pango_units_to_double(glyph.geometry.x_offset),
-                 y + pango_units_to_double(glyph.geometry.y_offset));
+    // Track the current glyph and the glyph at the start of its styled range.
+    int glyph_index = 0;
+    int style_start_glyph_index = glyph_index;
 
-      // If this glyph is beyond the current style, draw the glyphs so far and
-      // advance to the next style.
-      size_t glyph_byte_index = run_start + run->glyphs->log_clusters[i];
-      DCHECK_GE(style, 0);
-      DCHECK_LT(style, static_cast<int>(styles.size()));
-      if (!IndexInRange(style_ranges_utf8[style], glyph_byte_index)) {
+    // Track the x-coordinates for each styled range (|x| marks the current).
+    SkScalar style_start_x = x;
+
+    // Track the current style and its text (not layout) index range.
+    style.UpdatePosition(GetGlyphTextIndex(run, style_start_glyph_index));
+    ui::Range style_range = style.GetRange();
+
+    do {
+      const PangoGlyphInfo& glyph = run->glyphs->glyphs[glyph_index];
+      glyphs[glyph_index] = static_cast<uint16>(glyph.glyph);
+      // Use pango_units_to_double() rather than PANGO_PIXELS() here, so units
+      // are not rounded to the pixel grid if subpixel positioning is enabled.
+      pos[glyph_index].set(x + pango_units_to_double(glyph.geometry.x_offset),
+                           y + pango_units_to_double(glyph.geometry.y_offset));
+      x += pango_units_to_double(glyph.geometry.width);
+
+      ++glyph_index;
+      const size_t glyph_text_index = (glyph_index == glyph_count) ?
+          style_range.end() : GetGlyphTextIndex(run, glyph_index);
+      if (!IndexInRange(style_range, glyph_text_index)) {
         // TODO(asvitkine): For cases like "fi", where "fi" is a single glyph
         //                  but can span multiple styles, Pango splits the
         //                  styles evenly over the glyph. We can do this too by
         //                  clipping and drawing the glyph several times.
-        renderer.SetForegroundColor(styles[style].foreground);
-        renderer.SetFontFamilyWithStyle(family_name, styles[style].font_style);
-        renderer.DrawPosText(&pos[start], &glyphs[start], i - start);
-        if (styles[style].underline)
+        renderer.SetForegroundColor(style.color());
+        const int font_style = (style.style(BOLD) ? Font::BOLD : 0) |
+                               (style.style(ITALIC) ? Font::ITALIC : 0);
+        renderer.SetFontFamilyWithStyle(family_name, font_style);
+        renderer.DrawPosText(&pos[style_start_glyph_index],
+                             &glyphs[style_start_glyph_index],
+                             glyph_index - style_start_glyph_index);
+        if (style.style(UNDERLINE))
           SetPangoUnderlineMetrics(desc.get(), &renderer);
-        renderer.DrawDecorations(start_x, y, glyph_x - start_x, styles[style]);
-
-        start = i;
-        start_x = glyph_x;
-        // Loop to find the next style, in case the glyph spans multiple styles.
-        do {
-          style += style_increment;
-        } while (style >= 0 && style < static_cast<int>(styles.size()) &&
-                 !IndexInRange(style_ranges_utf8[style], glyph_byte_index));
+        renderer.DrawDecorations(style_start_x, y, x - style_start_x,
+                                 style.style(UNDERLINE), style.style(STRIKE),
+                                 style.style(DIAGONAL_STRIKE));
+        style.UpdatePosition(glyph_text_index);
+        style_range = style.GetRange();
+        style_start_glyph_index = glyph_index;
+        style_start_x = x;
       }
-
-      glyph_x += pango_units_to_double(glyph.geometry.width);
-    }
-
-    // Draw the remaining glyphs.
-    renderer.SetForegroundColor(styles[style].foreground);
-    renderer.SetFontFamilyWithStyle(family_name, styles[style].font_style);
-    renderer.DrawPosText(&pos[start], &glyphs[start], glyph_count - start);
-    if (styles[style].underline)
-      SetPangoUnderlineMetrics(desc.get(), &renderer);
-    renderer.DrawDecorations(start_x, y, glyph_x - start_x, styles[style]);
-    x = glyph_x;
+    } while (glyph_index < glyph_count);
   }
+
+  // Undo the temporarily applied composition underlines and selection colors.
+  UndoCompositionAndSelectionStyles();
 }
 
 GSList* RenderTextLinux::GetRunContainingCaret(
@@ -536,6 +517,12 @@ std::vector<Rect> RenderTextLinux::GetSelectionBounds() {
   if (selection_visual_bounds_.empty())
     selection_visual_bounds_ = CalculateSubstringBounds(selection());
   return selection_visual_bounds_;
+}
+
+size_t RenderTextLinux::GetGlyphTextIndex(PangoLayoutRun* run,
+                                          int glyph_index) const {
+  return LayoutIndexToTextIndex(run->item->offset +
+                                run->glyphs->log_clusters[glyph_index]);
 }
 
 RenderText* RenderText::CreateInstance() {

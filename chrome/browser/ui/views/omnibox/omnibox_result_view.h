@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_RESULT_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_RESULT_VIEW_H_
 
+#include <vector>
+
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -18,6 +20,7 @@ class OmniboxResultViewModel;
 
 namespace gfx {
 class Canvas;
+class RenderText;
 }
 
 class OmniboxResultView : public views::View,
@@ -43,8 +46,7 @@ class OmniboxResultView : public views::View,
 
   OmniboxResultView(OmniboxResultViewModel* model,
                     int model_index,
-                    const gfx::Font& font,
-                    const gfx::Font& bold_font);
+                    const gfx::Font& font);
   virtual ~OmniboxResultView();
 
   SkColor GetColor(ResultViewState state, ColorKind kind) const;
@@ -92,11 +94,9 @@ class OmniboxResultView : public views::View,
   }
 
  private:
-  struct ClassificationData;
-  typedef std::vector<ClassificationData> Classifications;
-
   struct RunData;
   typedef std::vector<RunData> Runs;
+  typedef std::vector<gfx::RenderText*> Classifications;
 
   // Common initialization code of the colors returned by GetColors().
   static void CommonInitColors(const ui::NativeTheme* theme,
@@ -144,8 +144,8 @@ class OmniboxResultView : public views::View,
   OmniboxResultViewModel* model_;
   size_t model_index_;
 
-  const gfx::Font normal_font_;
-  const gfx::Font bold_font_;
+  const gfx::Font font_;
+  int font_height_;
 
   // Width of the ellipsis in the normal font.
   int ellipsis_width_;

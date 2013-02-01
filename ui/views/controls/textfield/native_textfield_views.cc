@@ -441,11 +441,7 @@ void NativeTextfieldViews::UpdateBorderColor() {
 }
 
 void NativeTextfieldViews::UpdateTextColor() {
-  gfx::StyleRange default_style(GetRenderText()->default_style());
-  default_style.foreground = textfield_->GetTextColor();
-  GetRenderText()->set_default_style(default_style);
-  GetRenderText()->ApplyDefaultStyle();
-  SchedulePaint();
+  SetColor(textfield_->GetTextColor());
 }
 
 void NativeTextfieldViews::UpdateBackgroundColor() {
@@ -698,13 +694,25 @@ void NativeTextfieldViews::ExecuteCommand(int command_id) {
   OnAfterUserAction();
 }
 
-void NativeTextfieldViews::ApplyStyleRange(const gfx::StyleRange& style) {
-  GetRenderText()->ApplyStyleRange(style);
+void NativeTextfieldViews::SetColor(SkColor value) {
+  GetRenderText()->SetColor(value);
   SchedulePaint();
 }
 
-void NativeTextfieldViews::ApplyDefaultStyle() {
-  GetRenderText()->ApplyDefaultStyle();
+void NativeTextfieldViews::ApplyColor(SkColor value, const ui::Range& range) {
+  GetRenderText()->ApplyColor(value, range);
+  SchedulePaint();
+}
+
+void NativeTextfieldViews::SetStyle(gfx::TextStyle style, bool value) {
+  GetRenderText()->SetStyle(style, value);
+  SchedulePaint();
+}
+
+void NativeTextfieldViews::ApplyStyle(gfx::TextStyle style,
+                                      bool value,
+                                      const ui::Range& range) {
+  GetRenderText()->ApplyStyle(style, value, range);
   SchedulePaint();
 }
 

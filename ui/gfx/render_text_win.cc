@@ -111,7 +111,7 @@ void DeriveFontIfNecessary(int font_size,
   const int current_style = (font->GetStyle() & kStyleMask);
   const int current_size = font->GetFontSize();
   if (current_style != target_style || current_size != font_size)
-    *font = font->DeriveFont(font_size - current_size, font_style);
+    *font = font->DeriveFont(font_size - current_size, target_style);
 }
 
 // Returns true if |c| is a Unicode BiDi control character.
@@ -334,11 +334,9 @@ SelectionModel RenderTextWin::AdjacentWordSelectionModel(
 
 void RenderTextWin::SetSelectionModel(const SelectionModel& model) {
   RenderText::SetSelectionModel(model);
-  // TODO(xji): The styles are applied to text inside ItemizeLogicalText(). So,
-  // we need to update layout here in order for the styles, such as selection
-  // foreground, to be picked up. Eventually, we should separate styles from
-  // layout by applying foreground, strike, and underline styles during
-  // DrawVisualText as what RenderTextLinux does.
+  // TODO(xji|msw): The text selection color is applied in ItemizeLogicalText().
+  // So, the layout must be updated in order to draw the proper selection range.
+  // Colors should be applied in DrawVisualText(), as done by RenderTextLinux.
   ResetLayout();
 }
 
@@ -487,15 +485,8 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
     renderer.SetFontFamilyWithStyle(run->font.GetFontName(), run->font_style);
     renderer.SetForegroundColor(run->foreground);
     renderer.DrawPosText(&pos[0], run->glyphs.get(), run->glyph_count);
-    // TODO(oshima|msw): Consider refactoring StyleRange into Style
-    // class and StyleRange containing Style, and use Style class in
-    // TextRun class.  This may conflict with msw's comment in
-    // TextRun, so please consult with msw when refactoring.
-    StyleRange style;
-    style.strike = run->strike;
-    style.diagonal_strike = run->diagonal_strike;
-    style.underline = run->underline;
-    renderer.DrawDecorations(x, y, run->width, style);
+    renderer.DrawDecorations(x, y, run->width, run->underline, run->strike,
+                             run->diagonal_strike);
 
     x = glyph_x;
   }
@@ -516,7 +507,7 @@ void RenderTextWin::ItemizeLogicalText() {
   HRESULT hr = E_OUTOFMEMORY;
   int script_items_count = 0;
   std::vector<SCRIPT_ITEM> script_items;
-  const int text_length = GetLayoutText().length();
+  const size_t text_length = GetLayoutText().length();
   for (size_t n = kGuessItems; hr == E_OUTOFMEMORY && n < kMaxItems; n *= 2) {
     // Derive the array of Uniscribe script items from the logical text.
     // ScriptItemize always adds a terminal array item so that the length of the
@@ -535,36 +526,41 @@ void RenderTextWin::ItemizeLogicalText() {
   if (script_items_count <= 0)
     return;
 
-  // Build the list of runs, merge font/underline styles.
-  // TODO(msw): Only break for font changes, not color etc. See TextRun comment.
-  StyleRanges styles(style_ranges());
-  ApplyCompositionAndSelectionStyles(&styles);
-  StyleRanges::const_iterator style = styles.begin();
+  // Temporarily apply composition underlines and selection colors.
+  ApplyCompositionAndSelectionStyles();
+
+  // Build the list of runs from the script items and ranged colors/styles.
+  // TODO(msw): Only break for bold/italic, not color etc. See TextRun comment.
+  internal::StyleIterator style(colors(), styles());
   SCRIPT_ITEM* script_item = &script_items[0];
-  for (int run_break = 0; run_break < text_length;) {
+  const size_t layout_text_length = GetLayoutText().length();
+  for (size_t run_break = 0; run_break < layout_text_length;) {
     internal::TextRun* run = new internal::TextRun();
     run->range.set_start(run_break);
     run->font = GetFont();
-    run->font_style = style->font_style;
+    run->font_style = (style.style(BOLD) ? Font::BOLD : 0) |
+                      (style.style(ITALIC) ? Font::ITALIC : 0);
     DeriveFontIfNecessary(run->font.GetFontSize(), run->font.GetHeight(),
                           run->font_style, &run->font);
-    run->foreground = style->foreground;
-    run->strike = style->strike;
-    run->diagonal_strike = style->diagonal_strike;
-    run->underline = style->underline;
+    run->foreground = style.color();
+    run->strike = style.style(STRIKE);
+    run->diagonal_strike = style.style(DIAGONAL_STRIKE);
+    run->underline = style.style(UNDERLINE);
     run->script_analysis = script_item->a;
 
-    // Find the range end and advance the structures as needed.
-    const int script_item_end = (script_item + 1)->iCharPos;
-    const int style_range_end = TextIndexToLayoutIndex(style->range.end());
-    run_break = std::min(script_item_end, style_range_end);
-    if (script_item_end <= style_range_end)
+    // Find the next break and advance the iterators as needed.
+    const size_t script_item_break = (script_item + 1)->iCharPos;
+    run_break = std::min(script_item_break,
+                         TextIndexToLayoutIndex(style.GetRange().end()));
+    style.UpdatePosition(LayoutIndexToTextIndex(run_break));
+    if (script_item_break == run_break)
       script_item++;
-    if (script_item_end >= style_range_end)
-      style++;
     run->range.set_end(run_break);
     runs_.push_back(run);
   }
+
+  // Undo the temporarily applied composition underlines and selection colors.
+  UndoCompositionAndSelectionStyles();
 }
 
 void RenderTextWin::LayoutVisualText() {

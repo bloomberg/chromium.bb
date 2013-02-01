@@ -346,7 +346,7 @@ void DrawPangoLayout(cairo_t* cr,
   cairo_move_to(cr, text_rect.x(), text_rect.y());
   pango_cairo_show_layout(cr, layout);
 
-  if (font.GetStyle() & gfx::Font::UNDERLINED) {
+  if (font.GetStyle() & gfx::Font::UNDERLINE) {
     gfx::PlatformFontPango* platform_font =
         static_cast<gfx::PlatformFontPango*>(font.platform_font());
     DrawPangoTextUnderline(cr, platform_font, 0.0, text_rect);

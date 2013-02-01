@@ -25,14 +25,14 @@ struct TextRun {
 
   ui::Range range;
   Font font;
-  // TODO(msw): Disambiguate color, strike, etc. from TextRuns.
-  //            Otherwise, this breaks the glyph shaping process.
-  //            See the example at: http://www.catch22.net/tuts/neatpad/12.
-  SkColor foreground;
   // A gfx::Font::FontStyle flag to specify bold and italic styles.
   // Supersedes |font.GetFontStyle()|. Stored separately to avoid calling
   // |font.DeriveFont()|, which is expensive on Windows.
   int font_style;
+
+  // TODO(msw): Disambiguate color/style from TextRuns for proper glyph shaping.
+  //            See an example: http://www.catch22.net/tuts/uniscribe-mysteries
+  SkColor foreground;
   bool strike;
   bool diagonal_strike;
   bool underline;

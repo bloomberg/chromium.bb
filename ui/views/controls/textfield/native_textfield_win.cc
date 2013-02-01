@@ -413,11 +413,21 @@ ui::TextInputClient* NativeTextfieldWin::GetTextInputClient() {
   return NULL;
 }
 
-void NativeTextfieldWin::ApplyStyleRange(const gfx::StyleRange& style) {
+void NativeTextfieldWin::SetColor(SkColor value) {
   NOTREACHED();
 }
 
-void NativeTextfieldWin::ApplyDefaultStyle() {
+void NativeTextfieldWin::ApplyColor(SkColor value, const ui::Range& range) {
+  NOTREACHED();
+}
+
+void NativeTextfieldWin::SetStyle(gfx::TextStyle style, bool value) {
+  NOTREACHED();
+}
+
+void NativeTextfieldWin::ApplyStyle(gfx::TextStyle style,
+                                    bool value,
+                                    const ui::Range& range) {
   NOTREACHED();
 }
 

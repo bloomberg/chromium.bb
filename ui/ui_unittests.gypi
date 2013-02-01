@@ -124,6 +124,7 @@
         'base/text/utf16_indexing_unittest.cc',
         'base/view_prop_unittest.cc',
         'gfx/blit_unittest.cc',
+        'gfx/break_list_unittest.cc',
         'gfx/canvas_unittest.cc',
         'gfx/codec/jpeg_codec_unittest.cc',
         'gfx/color_analysis_unittest.cc',

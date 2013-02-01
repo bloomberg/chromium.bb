@@ -64,11 +64,7 @@ gfx::RenderText* CreateRenderText(const string16& text,
                                   const app_list::SearchResult::Tags& tags) {
   gfx::RenderText* render_text = gfx::RenderText::CreateInstance();
   render_text->SetText(text);
-
-  gfx::StyleRange default_style;
-  default_style.foreground = kDefaultTextColor;
-  render_text->set_default_style(default_style);
-  render_text->ApplyDefaultStyle();
+  render_text->SetColor(kDefaultTextColor);
 
   for (app_list::SearchResult::Tags::const_iterator it = tags.begin();
        it != tags.end();
@@ -77,17 +73,12 @@ gfx::RenderText* CreateRenderText(const string16& text,
     if (it->styles == app_list::SearchResult::Tag::NONE)
       continue;
 
-    gfx::StyleRange style;
-    style.range = it->range;
-
     if (it->styles & app_list::SearchResult::Tag::MATCH)
-      style.font_style = gfx::Font::BOLD;
-    if (it->styles & app_list::SearchResult::Tag::URL)
-      style.foreground = kURLTextColor;
+      render_text->ApplyStyle(gfx::BOLD, true, it->range);
     if (it->styles & app_list::SearchResult::Tag::DIM)
-      style.foreground = kDimmedTextColor;
-
-    render_text->ApplyStyleRange(style);
+      render_text->ApplyColor(kDimmedTextColor, it->range);
+    else if (it->styles & app_list::SearchResult::Tag::URL)
+      render_text->ApplyColor(kURLTextColor, it->range);
   }
 
   return render_text;

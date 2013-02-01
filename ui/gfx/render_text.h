@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/range/range.h"
+#include "ui/gfx/break_list.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -37,7 +38,6 @@ namespace gfx {
 class Canvas;
 class Font;
 class RenderTextTest;
-struct StyleRange;
 
 namespace internal {
 
@@ -62,7 +62,14 @@ class SkiaTextRenderer {
   void DrawPosText(const SkPoint* pos,
                    const uint16* glyphs,
                    size_t glyph_count);
-  void DrawDecorations(int x, int y, int width, const StyleRange& style);
+  // Draw underline and strike-through text decorations.
+  // Based on |SkCanvas::DrawTextDecorations()| and constants from:
+  //   third_party/skia/src/core/SkTextFormatParams.h
+  void DrawDecorations(int x, int y, int width, bool underline, bool strike,
+                       bool diagonal_strike);
+  void DrawUnderline(int x, int y, int width);
+  void DrawStrike(int x, int y, int width) const;
+  void DrawDiagonalStrike(int x, int y, int width) const;
 
  private:
   SkCanvas* canvas_skia_;
@@ -76,22 +83,34 @@ class SkiaTextRenderer {
   DISALLOW_COPY_AND_ASSIGN(SkiaTextRenderer);
 };
 
-}  // namespace internal
+// Internal helper class used by derived classes to iterate colors and styles.
+class StyleIterator {
+ public:
+  StyleIterator(const BreakList<SkColor>& colors,
+                const std::vector<BreakList<bool> >& styles);
+  ~StyleIterator();
 
-// A visual style applicable to a range of text.
-struct UI_EXPORT StyleRange {
-  StyleRange();
+  // Get the colors and styles at the current iterator position.
+  SkColor color() const { return color_->second; }
+  bool style(TextStyle s) const { return style_[s]->second; }
 
-  SkColor foreground;
-  // A gfx::Font::FontStyle flag to specify bold and italic styles.
-  int font_style;
-  bool strike;
-  bool diagonal_strike;
-  bool underline;
-  ui::Range range;
+  // Get the intersecting range of the current iterator set.
+  ui::Range GetRange() const;
+
+  // Update the iterator to point to colors and styles applicable at |position|.
+  void UpdatePosition(size_t position);
+
+ private:
+  BreakList<SkColor> colors_;
+  std::vector<BreakList<bool> > styles_;
+
+  BreakList<SkColor>::const_iterator color_;
+  std::vector<BreakList<bool>::const_iterator> style_;
+
+  DISALLOW_COPY_AND_ASSIGN(StyleIterator);
 };
 
-typedef std::vector<StyleRange> StyleRanges;
+}  // namespace internal
 
 // RenderText represents an abstract model of styled text and its corresponding
 // visual layout. Support is built in for a cursor, a selection, simple styling,
@@ -156,9 +175,6 @@ class UI_EXPORT RenderText {
 
   bool clip_to_display_rect() const { return clip_to_display_rect_; }
   void set_clip_to_display_rect(bool clip) { clip_to_display_rect_ = clip; }
-
-  const StyleRange& default_style() const { return default_style_; }
-  void set_default_style(const StyleRange& style) { default_style_ = style; }
 
   // In an obscured (password) field, all text is drawn as asterisks or bullets.
   bool obscured() const { return obscured_; }
@@ -227,11 +243,16 @@ class UI_EXPORT RenderText {
   const ui::Range& GetCompositionRange() const;
   void SetCompositionRange(const ui::Range& composition_range);
 
-  // Apply |style_range| to the internal style model.
-  void ApplyStyleRange(const StyleRange& style_range);
+  // Set the text color over the entire text or a logical character range.
+  // The |range| should be valid, non-reversed, and within [0, text().length()].
+  void SetColor(SkColor value);
+  void ApplyColor(SkColor value, const ui::Range& range);
 
-  // Apply |default_style_| over the entire text range.
-  void ApplyDefaultStyle();
+  // Set various text styles over the entire text or a logical character range.
+  // The respective |style| is applied if |value| is true, or removed if false.
+  // The |range| should be valid, non-reversed, and within [0, text().length()].
+  void SetStyle(TextStyle style, bool value);
+  void ApplyStyle(TextStyle style, bool value, const ui::Range& range);
 
   // Set the text directionality mode and get the text direction yielded.
   void SetDirectionalityMode(DirectionalityMode mode);
@@ -295,13 +316,14 @@ class UI_EXPORT RenderText {
  protected:
   RenderText();
 
+  const BreakList<SkColor>& colors() const { return colors_; }
+  const std::vector<BreakList<bool> >& styles() const { return styles_; }
+
   const Vector2d& GetUpdatedDisplayOffset();
 
   void set_cached_bounds_and_offset_valid(bool valid) {
     cached_bounds_and_offset_valid_ = valid;
   }
-
-  const StyleRanges& style_ranges() const { return style_ranges_; }
 
   // Get the selection model that visually neighbors |position| by |break_type|.
   // The returned value represents a cursor/caret position without a selection.
@@ -364,9 +386,9 @@ class UI_EXPORT RenderText {
   // Returns the text used for layout, which may be |obscured_text_|.
   const string16& GetLayoutText() const;
 
-  // Apply composition style (underline) to composition range and selection
-  // style (foreground) to selection range.
-  void ApplyCompositionAndSelectionStyles(StyleRanges* style_ranges);
+  // Apply (and undo) temporary composition underlines and selection colors.
+  void ApplyCompositionAndSelectionStyles();
+  void UndoCompositionAndSelectionStyles();
 
   // Returns the text offset from the origin after applying text alignment and
   // display offset.
@@ -402,11 +424,9 @@ class UI_EXPORT RenderText {
 
  private:
   friend class RenderTextTest;
-
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, DefaultStyle);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, CustomDefaultStyle);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ApplyStyleRange);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, StyleRangesAdjust);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, SetColorAndStyle);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ApplyColorAndStyle);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ObscuredText);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GraphemePositions);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, EdgeSelectionModels);
@@ -478,10 +498,16 @@ class UI_EXPORT RenderText {
   // Composition text range.
   ui::Range composition_range_;
 
-  // List of style ranges. Elements in the list never overlap each other.
-  StyleRanges style_ranges_;
-  // The default text style.
-  StyleRange default_style_;
+  // Color and style breaks, used to color and stylize ranges of text.
+  // BreakList positions are stored with text indices, not layout indices.
+  // TODO(msw): Expand to support cursor, selection, background, etc. colors.
+  BreakList<SkColor> colors_;
+  std::vector<BreakList<bool> > styles_;
+
+  // Breaks saved without temporary composition and selection styling.
+  BreakList<SkColor> saved_colors_;
+  BreakList<bool> saved_underlines_;
+  bool composition_and_selection_styles_applied_;
 
   // A flag and the text to display for obscured (password) fields.
   // Asterisks are used instead of the actual text glyphs when true.

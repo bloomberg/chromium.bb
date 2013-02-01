@@ -93,24 +93,21 @@ void TextfieldExample::ButtonPressed(Button* sender, const ui::Event& event) {
     name_->SetText(ASCIIToUTF16("[set]"));
   } else if (sender == set_style_) {
     if (!name_->text().empty()) {
-      gfx::StyleRange color;
-      color.foreground = SK_ColorYELLOW;
-      color.range = ui::Range(0, name_->text().length());
-      name_->ApplyStyleRange(color);
+      name_->SetColor(SK_ColorGREEN);
+      name_->SetStyle(gfx::BOLD, true);
 
       if (name_->text().length() >= 5) {
         size_t fifth = name_->text().length() / 5;
-        gfx::StyleRange underline;
-        underline.underline = true;
-        underline.foreground = SK_ColorBLUE;
-        underline.range = ui::Range(1 * fifth, 4 * fifth);
-        name_->ApplyStyleRange(underline);
+        const ui::Range big_range(1 * fifth, 4 * fifth);
+        name_->ApplyStyle(gfx::BOLD, false, big_range);
+        name_->ApplyStyle(gfx::UNDERLINE, true, big_range);
+        name_->ApplyColor(SK_ColorBLUE, big_range);
 
-        gfx::StyleRange strike;
-        strike.strike = true;
-        strike.foreground = SK_ColorRED;
-        strike.range = ui::Range(2 * fifth, 3 * fifth);
-        name_->ApplyStyleRange(strike);
+        const ui::Range small_range(2 * fifth, 3 * fifth);
+        name_->ApplyStyle(gfx::ITALIC, true, small_range);
+        name_->ApplyStyle(gfx::UNDERLINE, false, small_range);
+        name_->ApplyStyle(gfx::DIAGONAL_STRIKE, true, small_range);
+        name_->ApplyColor(SK_ColorRED, small_range);
       }
     }
   }

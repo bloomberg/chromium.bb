@@ -25,7 +25,7 @@ class UI_EXPORT Font {
     NORMAL = 0,
     BOLD = 1,
     ITALIC = 2,
-    UNDERLINED = 4,
+    UNDERLINE = 4,
   };
 
   // Creates a font with the default name and style.
@@ -56,7 +56,7 @@ class UI_EXPORT Font {
   // |size_delta| is the size in pixels to add to the current font. See the
   // single argument version of this method for an example.
   // The style parameter specifies the new style for the font, and is a
-  // bitmask of the values: BOLD, ITALIC and UNDERLINED.
+  // bitmask of the values: BOLD, ITALIC and UNDERLINE.
   Font DeriveFont(int size_delta, int style) const;
 
   // Returns the number of vertical pixels needed to display characters from

@@ -50,27 +50,20 @@ const int kMinimumTextVerticalPadding = 3;
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, public:
 
-// Precalculated data used to draw the portion of a match classification that
-// fits entirely within one run.
-struct OmniboxResultView::ClassificationData {
-  string16 text;
-  const gfx::Font* font;
-  SkColor color;
-  gfx::Size pixel_size;
-  gfx::RenderText* render_text;  // Weak.
-};
-
 // Precalculated data used to draw a complete visual run within the match.
-// This will include all or part of at leasdt one, and possibly several,
+// This will include all or part of at least one, and possibly several,
 // classifications.
 struct OmniboxResultView::RunData {
+  RunData() : run_start(0), visual_order(0), is_rtl(false), pixel_width(0) {}
+
   size_t run_start;  // Offset within the match text where this run begins.
   int visual_order;  // Where this run occurs in visual order.  The earliest
   // run drawn is run 0.
   bool is_rtl;
   int pixel_width;
-  Classifications classifications;  // Classification pieces within this run,
-                                    // in logical order.
+
+  // Styled text classification pieces within this run, in logical order.
+  Classifications classifications;
 };
 
 // This class is a utility class for calculations affected by whether the result
@@ -112,15 +105,15 @@ class OmniboxResultView::MirroringContext {
 OmniboxResultView::OmniboxResultView(
     OmniboxResultViewModel* model,
     int model_index,
-    const gfx::Font& font,
-    const gfx::Font& bold_font)
+    const gfx::Font& font)
     : edge_item_padding_(LocationBarView::GetItemPadding()),
       item_padding_(LocationBarView::GetItemPadding()),
       minimum_text_vertical_padding_(kMinimumTextVerticalPadding),
       model_(model),
       model_index_(model_index),
-      normal_font_(font),
-      bold_font_(bold_font),
+      font_(font),
+      font_height_(std::max(font.GetHeight(),
+                            font.DeriveFont(0, gfx::BOLD).GetHeight())),
       ellipsis_width_(font.GetStringWidth(string16(kEllipsis))),
       mirroring_context_(new MirroringContext()),
       keyword_icon_(new views::ImageView()),
@@ -249,7 +242,7 @@ void OmniboxResultView::PaintMatch(gfx::Canvas* canvas,
 }
 
 int OmniboxResultView::GetTextHeight() const {
-  return std::max(normal_font_.GetHeight(), bold_font_.GetHeight());
+  return font_height_;
 }
 
 // static
@@ -400,36 +393,24 @@ int OmniboxResultView::DrawString(
       if (text_end <= current_run->run_start)
         continue;  // We haven't reached the first classification in the run.
 
-      current_run->classifications.push_back(ClassificationData());
-      ClassificationData* current_data =
-          &current_run->classifications.back();
-      current_data->text = text.substr(text_start, text_end - text_start);
+      render_texts.push_back(gfx::RenderText::CreateInstance());
+      gfx::RenderText* render_text = render_texts.back();
+      current_run->classifications.push_back(render_text);
+      render_text->SetText(text.substr(text_start, text_end - text_start));
+      render_text->SetFont(font_);
 
       // Calculate style-related data.
-      const int style = classifications[i].style;
-      const bool use_bold_font = !!(style & ACMatchClassification::MATCH);
-      current_data->font = &(use_bold_font ? bold_font_ : normal_font_);
+      if (classifications[i].style & ACMatchClassification::MATCH)
+        render_text->SetStyle(gfx::BOLD, true);
       const ResultViewState state = GetState();
-      if (style & ACMatchClassification::URL)
-        current_data->color = GetColor(state, URL);
-      else if (style & ACMatchClassification::DIM)
-        current_data->color = GetColor(state, DIMMED_TEXT);
+      if (classifications[i].style & ACMatchClassification::URL)
+        render_text->SetColor(GetColor(state, URL));
+      else if (classifications[i].style & ACMatchClassification::DIM)
+        render_text->SetColor(GetColor(state, DIMMED_TEXT));
       else
-        current_data->color = GetColor(state, force_dim ? DIMMED_TEXT : TEXT);
+        render_text->SetColor(GetColor(state, force_dim ? DIMMED_TEXT : TEXT));
 
-      render_texts.push_back(gfx::RenderText::CreateInstance());
-      current_data->render_text = render_texts.back();
-      current_data->render_text->SetFont(*current_data->font);
-      current_data->render_text->SetText(current_data->text);
-
-      gfx::StyleRange style_range;
-      style_range.foreground = current_data->color;
-      style_range.font_style = current_data->font->GetStyle();
-      current_data->render_text->set_default_style(style_range);
-      current_data->render_text->ApplyDefaultStyle();
-
-      current_data->pixel_size = current_data->render_text->GetStringSize();
-      current_run->pixel_width += current_data->pixel_size.width();
+      current_run->pixel_width += render_text->GetStringSize().width();
     }
     DCHECK(!current_run->classifications.empty());
   }
@@ -452,7 +433,8 @@ int OmniboxResultView::DrawString(
       // This run or one before it needs to be elided.
       for (Classifications::iterator j(i->classifications.begin());
            j != i->classifications.end(); ++j) {
-        if (j->pixel_size.width() > remaining_width) {
+        const int width = (*j)->GetStringSize().width();
+        if (width > remaining_width) {
           // This classification or one before it needs to be elided.  Erase all
           // further classifications and runs so Elide() can simply reverse-
           // iterate over everything to find the specific classification to
@@ -462,7 +444,7 @@ int OmniboxResultView::DrawString(
           Elide(&runs, remaining_width);
           break;
         }
-        remaining_width -= j->pixel_size.width();
+        remaining_width -= width;
       }
       break;
     }
@@ -479,15 +461,15 @@ int OmniboxResultView::DrawString(
       std::reverse(i->classifications.begin(), i->classifications.end());
     for (Classifications::const_iterator j(i->classifications.begin());
          j != i->classifications.end(); ++j) {
-      const int left =
-          mirroring_context_->mirrored_left_coord(x, x + j->pixel_size.width());
+      const gfx::Size size = (*j)->GetStringSize();
       // Align the text runs to a common baseline.
-      const int top =
-          y + normal_font_.GetBaseline() - j->render_text->GetBaseline();
-      gfx::Rect rect(left, top, j->pixel_size.width(), j->pixel_size.height());
-      j->render_text->SetDisplayRect(rect);
-      j->render_text->Draw(canvas);
-      x += j->pixel_size.width();
+      const gfx::Rect rect(
+          mirroring_context_->mirrored_left_coord(x, x + size.width()),
+          y + font_.GetBaseline() - (*j)->GetBaseline(),
+          size.width(), size.height());
+      (*j)->SetDisplayRect(rect);
+      (*j)->Draw(canvas);
+      x += size.width();
     }
   }
 
@@ -511,26 +493,23 @@ void OmniboxResultView::Elide(Runs* runs, int remaining_width) const {
     for (Classifications::reverse_iterator j(i->classifications.rbegin());
          j != i->classifications.rend(); ++j) {
       if (!first_classification) {
-        // For all but the first classification we consider, we need to append
-        // an ellipsis, since there isn't enough room to draw it after this
-        // classification.
-        j->text += kEllipsis;
-        j->render_text->SetText(j->text);
-
         // We also add this classification's width (sans ellipsis) back to the
         // available width since we want to consider the available space we'll
         // have when we draw this classification.
-        remaining_width += j->pixel_size.width();
+        remaining_width += (*j)->GetStringSize().width();
+
+        // For all but the first classification we consider, we need to append
+        // an ellipsis, since there isn't enough room to draw it after this
+        // classification.
+        (*j)->SetText((*j)->text() + kEllipsis);
       }
       first_classification = false;
 
       // Can we fit at least an ellipsis?
-      string16 elided_text =
-          ui::ElideText(j->text, *j->font, remaining_width, ui::ELIDE_AT_END);
-      Classifications::reverse_iterator prior_classification(j);
-      ++prior_classification;
-      const bool on_first_classification =
-        (prior_classification == i->classifications.rend());
+      string16 elided_text = ui::ElideText((*j)->text(), (*j)->GetFont(),
+                                           remaining_width, ui::ELIDE_AT_END);
+      Classifications::reverse_iterator prior(j + 1);
+      const bool on_first_classification = (prior == i->classifications.rend());
       if (elided_text.empty() && (remaining_width >= ellipsis_width_) &&
           on_first_classification) {
         // Edge case: This classification is bold, we can't fit a bold ellipsis
@@ -545,20 +524,17 @@ void OmniboxResultView::Elide(Runs* runs, int remaining_width) const {
       }
       if (!elided_text.empty()) {
         // Success.  Elide this classification and stop.
-        j->text = elided_text;
+        (*j)->SetText(elided_text);
 
         // If we could only fit an ellipsis, then only make it bold if there was
         // an immediate prior classification in this run that was also bold, or
         // it will look orphaned.
-        if ((j->font != &normal_font_) && (elided_text.length() == 1) &&
+        if ((((*j)->GetFont().GetStyle() & gfx::BOLD) != 0) &&
+            (elided_text.length() == 1) &&
             (on_first_classification ||
-             (prior_classification->font == &normal_font_))) {
-          j->font = &normal_font_;
-          j->render_text->SetFont(*j->font);
+             (((*prior)->GetFont().GetStyle() & gfx::BOLD) == 0))) {
+          (*j)->SetStyle(gfx::BOLD, false);
         }
-
-        j->render_text->SetText(elided_text);
-        j->pixel_size = j->render_text->GetStringSize();
 
         // Erase any other classifications that come after the elided one.
         i->classifications.erase(j.base(), i->classifications.end());

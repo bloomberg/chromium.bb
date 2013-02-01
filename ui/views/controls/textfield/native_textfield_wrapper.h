@@ -8,12 +8,12 @@
 #include "base/string16.h"
 #include "base/i18n/rtl.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
 class Insets;
 class SelectionModel;
-struct StyleRange;
 }  // namespace gfx
 
 namespace ui {
@@ -148,12 +148,15 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   // support text input.
   virtual ui::TextInputClient* GetTextInputClient() = 0;
 
-  // Applies the |style| to the text specified by its range.
-  // See |Textfield::ApplyStyleRange| for detail.
-  virtual void ApplyStyleRange(const gfx::StyleRange& style) = 0;
+  // Set the text colors; see the corresponding Textfield functions for details.
+  virtual void SetColor(SkColor value) = 0;
+  virtual void ApplyColor(SkColor value, const ui::Range& range) = 0;
 
-  // Applies the default style to the textfield.
-  virtual void ApplyDefaultStyle() = 0;
+  // Set the text styles; see the corresponding Textfield functions for details.
+  virtual void SetStyle(gfx::TextStyle style, bool value) = 0;
+  virtual void ApplyStyle(gfx::TextStyle style,
+                          bool value,
+                          const ui::Range& range) = 0;
 
   // Clears Edit history.
   virtual void ClearEditHistory() = 0;

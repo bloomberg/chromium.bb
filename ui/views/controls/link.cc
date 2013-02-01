@@ -204,14 +204,12 @@ void Link::SetPressed(bool pressed) {
 }
 
 void Link::RecalculateFont() {
-  // The font should be underlined iff the link is enabled and |underline_| is
-  // true.
-  if ((enabled() && underline_) ==
-      !(font().GetStyle() & gfx::Font::UNDERLINED)) {
-    Label::SetFont(font().DeriveFont(0, enabled() && underline_ ?
-        (font().GetStyle() | gfx::Font::UNDERLINED) :
-        (font().GetStyle() & ~gfx::Font::UNDERLINED)));
-  }
+  // Underline the link iff it is enabled and |underline_| is true.
+  const int style = font().GetStyle();
+  const int intended_style = (enabled() && underline_) ?
+      (style | gfx::Font::UNDERLINE) : (style & ~gfx::Font::UNDERLINE);
+  if (style != intended_style)
+    Label::SetFont(font().DeriveFont(0, intended_style));
 }
 
 }  // namespace views

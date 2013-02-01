@@ -7,10 +7,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/text_constants.h"
+#include "ui/gfx/break_list.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#endif
+
+#if defined(OS_LINUX)
+#include "ui/gfx/render_text_linux.h"
 #endif
 
 #if defined(TOOLKIT_GTK)
@@ -56,267 +60,146 @@ class RenderTextTest : public testing::Test {
 };
 
 TEST_F(RenderTextTest, DefaultStyle) {
-  // Defaults to empty text with no styles.
+  // Check the default styles applied to new instances and adjusted text.
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   EXPECT_TRUE(render_text->text().empty());
-  EXPECT_TRUE(render_text->style_ranges().empty());
-
-  // Test that the built-in default style is applied for new text.
-  render_text->SetText(ASCIIToUTF16("abc"));
-  EXPECT_EQ(1U, render_text->style_ranges().size());
-  StyleRange style;
-  EXPECT_EQ(style.foreground, render_text->style_ranges()[0].foreground);
-  EXPECT_EQ(ui::Range(0, 3), render_text->style_ranges()[0].range);
-  EXPECT_EQ(style.strike, render_text->style_ranges()[0].strike);
-  EXPECT_EQ(style.underline, render_text->style_ranges()[0].underline);
-
-  // Test that clearing the text also clears the styles.
-  render_text->SetText(string16());
-  EXPECT_TRUE(render_text->text().empty());
-  EXPECT_TRUE(render_text->style_ranges().empty());
+  const wchar_t* const cases[] = { kWeak, kLtr, L"Hello", kRtl, L"", L"" };
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    EXPECT_TRUE(render_text->colors().EqualsValueForTesting(SK_ColorBLACK));
+    for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
+      EXPECT_TRUE(render_text->styles()[style].EqualsValueForTesting(false));
+    render_text->SetText(WideToUTF16(cases[i]));
+  }
 }
 
-TEST_F(RenderTextTest, CustomDefaultStyle) {
-  // Test a custom default style.
+TEST_F(RenderTextTest, SetColorAndStyle) {
+  // Ensure custom default styles persist across setting and clearing text.
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-  StyleRange color;
-  color.foreground = SK_ColorRED;
-  render_text->set_default_style(color);
-  render_text->SetText(ASCIIToUTF16("abc"));
-  EXPECT_EQ(1U, render_text->style_ranges().size());
-  EXPECT_EQ(color.foreground, render_text->style_ranges()[0].foreground);
+  const SkColor color = SK_ColorRED;
+  render_text->SetColor(color);
+  render_text->SetStyle(BOLD, true);
+  render_text->SetStyle(UNDERLINE, false);
+  const wchar_t* const cases[] = { kWeak, kLtr, L"Hello", kRtl, L"", L"" };
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    EXPECT_TRUE(render_text->colors().EqualsValueForTesting(color));
+    EXPECT_TRUE(render_text->styles()[BOLD].EqualsValueForTesting(true));
+    EXPECT_TRUE(render_text->styles()[UNDERLINE].EqualsValueForTesting(false));
+    render_text->SetText(WideToUTF16(cases[i]));
 
-  // Test that the custom default style persists across clearing text.
-  render_text->SetText(string16());
-  EXPECT_TRUE(render_text->style_ranges().empty());
-  render_text->SetText(ASCIIToUTF16("abc"));
-  EXPECT_EQ(1U, render_text->style_ranges().size());
-  EXPECT_EQ(color.foreground, render_text->style_ranges()[0].foreground);
-
-  // Test ApplyDefaultStyle after setting a new default.
-  StyleRange strike;
-  strike.strike = true;
-  render_text->set_default_style(strike);
-  render_text->ApplyDefaultStyle();
-  EXPECT_EQ(1U, render_text->style_ranges().size());
-  EXPECT_TRUE(render_text->style_ranges()[0].strike);
-  EXPECT_EQ(strike.foreground, render_text->style_ranges()[0].foreground);
+    // Ensure custom default styles can be applied after text has been set.
+    if (i == 1)
+      render_text->SetStyle(STRIKE, true);
+    if (i >= 1)
+      EXPECT_TRUE(render_text->styles()[STRIKE].EqualsValueForTesting(true));
+  }
 }
 
-TEST_F(RenderTextTest, ApplyStyleRange) {
+TEST_F(RenderTextTest, ApplyColorAndStyle) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->SetText(ASCIIToUTF16("012345678"));
+
+  // Apply a ranged color and style and check the resulting breaks.
+  render_text->ApplyColor(SK_ColorRED, ui::Range(1, 4));
+  render_text->ApplyStyle(BOLD, true, ui::Range(2, 5));
+  std::vector<std::pair<size_t, SkColor> > expected_color;
+  expected_color.push_back(std::pair<size_t, SkColor>(0, SK_ColorBLACK));
+  expected_color.push_back(std::pair<size_t, SkColor>(1, SK_ColorRED));
+  expected_color.push_back(std::pair<size_t, SkColor>(4, SK_ColorBLACK));
+  EXPECT_TRUE(render_text->colors().EqualsForTesting(expected_color));
+  std::vector<std::pair<size_t, bool> > expected_style;
+  expected_style.push_back(std::pair<size_t, bool>(0, false));
+  expected_style.push_back(std::pair<size_t, bool>(2, true));
+  expected_style.push_back(std::pair<size_t, bool>(5, false));
+  EXPECT_TRUE(render_text->styles()[BOLD].EqualsForTesting(expected_style));
+
+  // Ensure setting a color and style overrides the ranged colors and styles.
+  render_text->SetColor(SK_ColorBLUE);
+  EXPECT_TRUE(render_text->colors().EqualsValueForTesting(SK_ColorBLUE));
+  render_text->SetStyle(BOLD, false);
+  EXPECT_TRUE(render_text->styles()[BOLD].EqualsValueForTesting(false));
+
+  // Apply a color and style over the text end and check the resulting breaks.
+  // (INT_MAX should be used instead of the text length for the range end)
+  const size_t text_length = render_text->text().length();
+  render_text->ApplyColor(SK_ColorRED, ui::Range(0, text_length));
+  render_text->ApplyStyle(BOLD, true, ui::Range(2, text_length));
+  std::vector<std::pair<size_t, SkColor> > expected_color_end;
+  expected_color_end.push_back(std::pair<size_t, SkColor>(0, SK_ColorRED));
+  EXPECT_TRUE(render_text->colors().EqualsForTesting(expected_color_end));
+  std::vector<std::pair<size_t, bool> > expected_style_end;
+  expected_style_end.push_back(std::pair<size_t, bool>(0, false));
+  expected_style_end.push_back(std::pair<size_t, bool>(2, true));
+  EXPECT_TRUE(render_text->styles()[BOLD].EqualsForTesting(expected_style_end));
+
+  // Ensure ranged values adjust to accommodate text length changes.
+  render_text->ApplyStyle(ITALIC, true, ui::Range(0, 2));
+  render_text->ApplyStyle(ITALIC, true, ui::Range(3, 6));
+  render_text->ApplyStyle(ITALIC, true, ui::Range(7, text_length));
+  std::vector<std::pair<size_t, bool> > expected_italic;
+  expected_italic.push_back(std::pair<size_t, bool>(0, true));
+  expected_italic.push_back(std::pair<size_t, bool>(2, false));
+  expected_italic.push_back(std::pair<size_t, bool>(3, true));
+  expected_italic.push_back(std::pair<size_t, bool>(6, false));
+  expected_italic.push_back(std::pair<size_t, bool>(7, true));
+  EXPECT_TRUE(render_text->styles()[ITALIC].EqualsForTesting(expected_italic));
+
+  // Truncating the text should trim any corresponding breaks.
+  render_text->SetText(ASCIIToUTF16("0123456"));
+  expected_italic.resize(4);
+  EXPECT_TRUE(render_text->styles()[ITALIC].EqualsForTesting(expected_italic));
   render_text->SetText(ASCIIToUTF16("01234"));
-  EXPECT_EQ(1U, render_text->style_ranges().size());
+  expected_italic.resize(3);
+  EXPECT_TRUE(render_text->styles()[ITALIC].EqualsForTesting(expected_italic));
 
-  // Test ApplyStyleRange (no-op on empty range).
-  StyleRange empty;
-  empty.range = ui::Range(1, 1);
-  render_text->ApplyStyleRange(empty);
-  EXPECT_EQ(1U, render_text->style_ranges().size());
-
-  // Test ApplyStyleRange (no-op on invalid range).
-  StyleRange invalid;
-  invalid.range = ui::Range::InvalidRange();
-  render_text->ApplyStyleRange(invalid);
-  EXPECT_EQ(1U, render_text->style_ranges().size());
-
-  // Apply a style with a range contained by an existing range.
-  StyleRange underline;
-  underline.underline = true;
-  underline.range = ui::Range(2, 3);
-  render_text->ApplyStyleRange(underline);
-  EXPECT_EQ(3U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 2), render_text->style_ranges()[0].range);
-  EXPECT_FALSE(render_text->style_ranges()[0].underline);
-  EXPECT_EQ(ui::Range(2, 3), render_text->style_ranges()[1].range);
-  EXPECT_TRUE(render_text->style_ranges()[1].underline);
-  EXPECT_EQ(ui::Range(3, 5), render_text->style_ranges()[2].range);
-  EXPECT_FALSE(render_text->style_ranges()[2].underline);
-
-  // Apply a style with a range equal to another range.
-  StyleRange color;
-  color.foreground = SK_ColorWHITE;
-  color.range = ui::Range(2, 3);
-  render_text->ApplyStyleRange(color);
-  EXPECT_EQ(3U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 2), render_text->style_ranges()[0].range);
-  EXPECT_NE(SK_ColorWHITE, render_text->style_ranges()[0].foreground);
-  EXPECT_FALSE(render_text->style_ranges()[0].underline);
-  EXPECT_EQ(ui::Range(2, 3), render_text->style_ranges()[1].range);
-  EXPECT_EQ(SK_ColorWHITE, render_text->style_ranges()[1].foreground);
-  EXPECT_FALSE(render_text->style_ranges()[1].underline);
-  EXPECT_EQ(ui::Range(3, 5), render_text->style_ranges()[2].range);
-  EXPECT_NE(SK_ColorWHITE, render_text->style_ranges()[2].foreground);
-  EXPECT_FALSE(render_text->style_ranges()[2].underline);
-
-  // Apply a style with a range containing an existing range.
-  // This new style also overlaps portions of neighboring ranges.
-  StyleRange strike;
-  strike.strike = true;
-  strike.range = ui::Range(1, 4);
-  render_text->ApplyStyleRange(strike);
-  EXPECT_EQ(3U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 1), render_text->style_ranges()[0].range);
-  EXPECT_FALSE(render_text->style_ranges()[0].strike);
-  EXPECT_EQ(ui::Range(1, 4), render_text->style_ranges()[1].range);
-  EXPECT_TRUE(render_text->style_ranges()[1].strike);
-  EXPECT_EQ(ui::Range(4, 5), render_text->style_ranges()[2].range);
-  EXPECT_FALSE(render_text->style_ranges()[2].strike);
-
-  // Apply a style overlapping all ranges.
-  StyleRange strike_underline;
-  strike_underline.strike = true;
-  strike_underline.underline = true;
-  strike_underline.range = ui::Range(0, render_text->text().length());
-  render_text->ApplyStyleRange(strike_underline);
-  EXPECT_EQ(1U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 5), render_text->style_ranges()[0].range);
-  EXPECT_TRUE(render_text->style_ranges()[0].underline);
-  EXPECT_TRUE(render_text->style_ranges()[0].strike);
-
-  // Apply the default style.
-  render_text->ApplyDefaultStyle();
-  EXPECT_EQ(1U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 5), render_text->style_ranges()[0].range);
-  EXPECT_FALSE(render_text->style_ranges()[0].underline);
-  EXPECT_FALSE(render_text->style_ranges()[0].strike);
-
-  // Apply new style range that contains the 2nd last old style range.
-  render_text->SetText(ASCIIToUTF16("abcdefghi"));
-  underline.range = ui::Range(0, 3);
-  render_text->ApplyStyleRange(underline);
-  color.range = ui::Range(3, 6);
-  render_text->ApplyStyleRange(color);
-  strike.range = ui::Range(6, 9);
-  render_text->ApplyStyleRange(strike);
-  EXPECT_EQ(3U, render_text->style_ranges().size());
-
-  color.foreground = SK_ColorRED;
-  color.range = ui::Range(2, 8);
-  render_text->ApplyStyleRange(color);
-  EXPECT_EQ(3U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 2), render_text->style_ranges()[0].range);
-  EXPECT_TRUE(render_text->style_ranges()[0].underline);
-  EXPECT_EQ(ui::Range(2, 8), render_text->style_ranges()[1].range);
-  EXPECT_EQ(SK_ColorRED, render_text->style_ranges()[1].foreground);
-  EXPECT_EQ(ui::Range(8, 9), render_text->style_ranges()[2].range);
-  EXPECT_TRUE(render_text->style_ranges()[2].strike);
-
-  // Apply new style range that contains multiple old style ranges.
-  render_text->SetText(ASCIIToUTF16("abcdefghiopq"));
-  underline.range = ui::Range(0, 3);
-  render_text->ApplyStyleRange(underline);
-  color.range = ui::Range(3, 6);
-  render_text->ApplyStyleRange(color);
-  strike.range = ui::Range(6, 9);
-  render_text->ApplyStyleRange(strike);
-  strike_underline.range = ui::Range(9, 12);
-  render_text->ApplyStyleRange(strike_underline);
-  EXPECT_EQ(4U, render_text->style_ranges().size());
-
-  color.foreground = SK_ColorRED;
-  color.range = ui::Range(2, 10);
-  render_text->ApplyStyleRange(color);
-  EXPECT_EQ(3U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 2), render_text->style_ranges()[0].range);
-  EXPECT_TRUE(render_text->style_ranges()[0].underline);
-  EXPECT_EQ(ui::Range(2, 10), render_text->style_ranges()[1].range);
-  EXPECT_EQ(SK_ColorRED, render_text->style_ranges()[1].foreground);
-  EXPECT_EQ(ui::Range(10, 12), render_text->style_ranges()[2].range);
-  EXPECT_TRUE(render_text->style_ranges()[2].underline);
-  EXPECT_TRUE(render_text->style_ranges()[2].strike);
+  // Appending text should extend the terminal styles without changing breaks.
+  render_text->SetText(ASCIIToUTF16("012345678"));
+  EXPECT_TRUE(render_text->styles()[ITALIC].EqualsForTesting(expected_italic));
 }
 
-static void SetTextWith2ExtraStyles(RenderText* render_text) {
-  render_text->SetText(ASCIIToUTF16("abcdefghi"));
-
-  StyleRange strike;
-  strike.strike = true;
-  strike.range = ui::Range(0, 3);
-  render_text->ApplyStyleRange(strike);
-
-  StyleRange underline;
-  underline.underline = true;
-  underline.range = ui::Range(3, 6);
-  render_text->ApplyStyleRange(underline);
-}
-
-TEST_F(RenderTextTest, StyleRangesAdjust) {
-  // Test that style ranges adjust to the text size.
+#if defined(OS_LINUX)
+TEST_F(RenderTextTest, PangoAttributes) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-  render_text->SetText(ASCIIToUTF16("abcdef"));
-  EXPECT_EQ(1U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 6), render_text->style_ranges()[0].range);
+  render_text->SetText(ASCIIToUTF16("012345678"));
 
-  // Test that the range is clipped to the length of shorter text.
-  render_text->SetText(ASCIIToUTF16("abc"));
-  EXPECT_EQ(1U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 3), render_text->style_ranges()[0].range);
+  // Apply ranged BOLD/ITALIC styles and check the resulting Pango attributes.
+  render_text->ApplyStyle(BOLD, true, ui::Range(2, 4));
+  render_text->ApplyStyle(ITALIC, true, ui::Range(1, 3));
 
-  // Test that the last range extends to the length of longer text.
-  StyleRange strike;
-  strike.strike = true;
-  strike.range = ui::Range(2, 3);
-  render_text->ApplyStyleRange(strike);
-  render_text->SetText(ASCIIToUTF16("abcdefghi"));
-  EXPECT_EQ(2U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 2), render_text->style_ranges()[0].range);
-  EXPECT_EQ(ui::Range(2, 9), render_text->style_ranges()[1].range);
-  EXPECT_TRUE(render_text->style_ranges()[1].strike);
+  struct {
+    int start;
+    int end;
+    bool bold;
+    bool italic;
+  } cases[] = {
+    { 0, 1,       false, false },
+    { 1, 2,       false, true  },
+    { 2, 3,       true,  true  },
+    { 3, 4,       true,  false },
+    { 4, INT_MAX, false, false },
+  };
 
-  // Test that ranges are removed if they're outside the range of shorter text.
-  render_text->SetText(ASCIIToUTF16("ab"));
-  EXPECT_EQ(1U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 2), render_text->style_ranges()[0].range);
-  EXPECT_FALSE(render_text->style_ranges()[0].strike);
-
-  // Test that previously removed ranges don't return.
-  render_text->SetText(ASCIIToUTF16("abcdef"));
-  EXPECT_EQ(1U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 6), render_text->style_ranges()[0].range);
-  EXPECT_FALSE(render_text->style_ranges()[0].strike);
-
-  // Test that ranges are removed correctly if they are outside the range of
-  // shorter text.
-  SetTextWith2ExtraStyles(render_text.get());
-  EXPECT_EQ(3U, render_text->style_ranges().size());
-
-  render_text->SetText(ASCIIToUTF16("abcdefg"));
-  EXPECT_EQ(3U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 3), render_text->style_ranges()[0].range);
-  EXPECT_EQ(ui::Range(3, 6), render_text->style_ranges()[1].range);
-  EXPECT_EQ(ui::Range(6, 7), render_text->style_ranges()[2].range);
-
-  SetTextWith2ExtraStyles(render_text.get());
-  EXPECT_EQ(3U, render_text->style_ranges().size());
-
-  render_text->SetText(ASCIIToUTF16("abcdef"));
-  EXPECT_EQ(2U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 3), render_text->style_ranges()[0].range);
-  EXPECT_EQ(ui::Range(3, 6), render_text->style_ranges()[1].range);
-
-  SetTextWith2ExtraStyles(render_text.get());
-  EXPECT_EQ(3U, render_text->style_ranges().size());
-
-  render_text->SetText(ASCIIToUTF16("abcde"));
-  EXPECT_EQ(2U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 3), render_text->style_ranges()[0].range);
-  EXPECT_EQ(ui::Range(3, 5), render_text->style_ranges()[1].range);
-
-  SetTextWith2ExtraStyles(render_text.get());
-  EXPECT_EQ(3U, render_text->style_ranges().size());
-
-  render_text->SetText(ASCIIToUTF16("abc"));
-  EXPECT_EQ(1U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 3), render_text->style_ranges()[0].range);
-
-  SetTextWith2ExtraStyles(render_text.get());
-  EXPECT_EQ(3U, render_text->style_ranges().size());
-
-  render_text->SetText(ASCIIToUTF16("a"));
-  EXPECT_EQ(1U, render_text->style_ranges().size());
-  EXPECT_EQ(ui::Range(0, 1), render_text->style_ranges()[0].range);
+  int start = 0, end = 0;
+  RenderTextLinux* rt_linux = static_cast<RenderTextLinux*>(render_text.get());
+  rt_linux->EnsureLayout();
+  PangoAttrList* attributes = pango_layout_get_attributes(rt_linux->layout_);
+  PangoAttrIterator* iter = pango_attr_list_get_iterator(attributes);
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    pango_attr_iterator_range(iter, &start, &end);
+    EXPECT_EQ(cases[i].start, start);
+    EXPECT_EQ(cases[i].end, end);
+    PangoFontDescription* font = pango_font_description_new();
+    pango_attr_iterator_get_font(iter, font, NULL, NULL);
+    const string16 desc = ASCIIToUTF16(pango_font_description_to_string(font));
+    const bool bold = desc.find(ASCIIToUTF16("Bold")) != std::string::npos;
+    EXPECT_EQ(cases[i].bold, bold);
+    const bool italic = desc.find(ASCIIToUTF16("Italic")) != std::string::npos;
+    EXPECT_EQ(cases[i].italic, italic);
+    pango_attr_iterator_next(iter);
+    pango_font_description_free(font);
+  }
+  EXPECT_FALSE(pango_attr_iterator_next(iter));
 }
+#endif
 
 // TODO(asvitkine): Cursor movements tests disabled on Mac because RenderTextMac
 //                  does not implement this yet. http://crbug.com/131618
@@ -1051,33 +934,23 @@ TEST_F(RenderTextTest, StringSizeBoldWidth) {
   EXPECT_GT(plain_width, 0);
 
   // Apply a bold style and check that the new width is greater.
-  StyleRange bold;
-  bold.font_style |= Font::BOLD;
-  render_text->set_default_style(bold);
-  render_text->ApplyDefaultStyle();
-
+  render_text->SetStyle(gfx::BOLD, true);
   const int bold_width = render_text->GetStringSize().width();
   EXPECT_GT(bold_width, plain_width);
 
   // Now, apply a plain style over the first word only.
-  StyleRange plain;
-  plain.font_style = Font::NORMAL;
-  plain.range = ui::Range(0, 5);
-  render_text->ApplyStyleRange(plain);
-
+  render_text->ApplyStyle(gfx::BOLD, false, ui::Range(0, 5));
   const int plain_bold_width = render_text->GetStringSize().width();
   EXPECT_GT(plain_bold_width, plain_width);
   EXPECT_LT(plain_bold_width, bold_width);
 }
 
 TEST_F(RenderTextTest, StringSizeHeight) {
-  struct {
-    string16 text;
-  } cases[] = {
-    { WideToUTF16(L"Hello World!") },  // English
-    { WideToUTF16(L"\x6328\x62f6") },  // Japanese
-    { WideToUTF16(L"\x0915\x093f") },  // Hindi
-    { WideToUTF16(L"\x05e0\x05b8") },  // Hebrew
+  string16 cases[] = {
+    WideToUTF16(L"Hello World!"),  // English
+    WideToUTF16(L"\x6328\x62f6"),  // Japanese
+    WideToUTF16(L"\x0915\x093f"),  // Hindi
+    WideToUTF16(L"\x05e0\x05b8"),  // Hebrew
   };
 
   Font default_font;
@@ -1087,7 +960,7 @@ TEST_F(RenderTextTest, StringSizeHeight) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
     render_text->SetFont(default_font);
-    render_text->SetText(cases[i].text);
+    render_text->SetText(cases[i]);
 
     const int height1 = render_text->GetStringSize().height();
     EXPECT_GT(height1, 0);

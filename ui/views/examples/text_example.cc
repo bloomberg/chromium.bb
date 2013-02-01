@@ -256,7 +256,7 @@ void TextExample::ButtonPressed(Button* button, const ui::Event& event) {
   SetFlagFromCheckbox(break_checkbox_, &flags, gfx::Canvas::CHARACTER_BREAK);
   SetFlagFromCheckbox(bold_checkbox_, &style, gfx::Font::BOLD);
   SetFlagFromCheckbox(italic_checkbox_, &style, gfx::Font::ITALIC);
-  SetFlagFromCheckbox(underline_checkbox_, &style, gfx::Font::UNDERLINED);
+  SetFlagFromCheckbox(underline_checkbox_, &style, gfx::Font::UNDERLINE);
   text_view_->set_halo(halo_checkbox_->checked());
   text_view_->set_text_flags(flags);
   text_view_->SetFontStyle(style);

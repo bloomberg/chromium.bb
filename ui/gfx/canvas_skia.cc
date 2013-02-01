@@ -17,6 +17,8 @@
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/text_utils.h"
 
+namespace gfx {
+
 namespace {
 
 // If necessary, wraps |text| with RTL/LTR directionality characters based on
@@ -28,11 +30,11 @@ bool AdjustStringDirection(int flags, string16* text) {
 
   // If the string is empty or LTR was forced, simply return false since the
   // default RenderText directionality is already LTR.
-  if (text->empty() || (flags & gfx::Canvas::FORCE_LTR_DIRECTIONALITY))
+  if (text->empty() || (flags & Canvas::FORCE_LTR_DIRECTIONALITY))
     return false;
 
   // If RTL is forced, apply it to the string.
-  if (flags & gfx::Canvas::FORCE_RTL_DIRECTIONALITY) {
+  if (flags & Canvas::FORCE_RTL_DIRECTIONALITY) {
     base::i18n::WrapStringWithRTLFormatting(text);
     return true;
   }
@@ -84,11 +86,11 @@ bool PixelShouldGetHalo(const SkBitmap& bitmap,
 // Returns a range in |text| to underline or ui::Range::InvalidRange() if
 // underlining is not needed.
 ui::Range StripAcceleratorChars(int flags, string16* text) {
-  if (flags & (gfx::Canvas::SHOW_PREFIX | gfx::Canvas::HIDE_PREFIX)) {
+  if (flags & (Canvas::SHOW_PREFIX | Canvas::HIDE_PREFIX)) {
     int char_pos = -1;
     int char_span = 0;
-    *text = gfx::RemoveAcceleratorChar(*text, '&', &char_pos, &char_span);
-    if ((flags & gfx::Canvas::SHOW_PREFIX) && char_pos != -1)
+    *text = RemoveAcceleratorChar(*text, '&', &char_pos, &char_span);
+    if ((flags & Canvas::SHOW_PREFIX) && char_pos != -1)
       return ui::Range(char_pos, char_pos + char_span);
   }
   return ui::Range::InvalidRange();
@@ -96,7 +98,7 @@ ui::Range StripAcceleratorChars(int flags, string16* text) {
 
 // Elides |text| and adjusts |range| appropriately. If eliding causes |range|
 // to no longer point to the same character in |text|, |range| is made invalid.
-void ElideTextAndAdjustRange(const gfx::Font& font,
+void ElideTextAndAdjustRange(const Font& font,
                              int width,
                              string16* text,
                              ui::Range* range) {
@@ -111,55 +113,42 @@ void ElideTextAndAdjustRange(const gfx::Font& font,
 }
 
 // Updates |render_text| from the specified parameters.
-void UpdateRenderText(const gfx::Rect& rect,
+void UpdateRenderText(const Rect& rect,
                       const string16& text,
-                      const gfx::Font& font,
+                      const Font& font,
                       int flags,
                       SkColor color,
-                      gfx::RenderText* render_text) {
+                      RenderText* render_text) {
   render_text->SetFont(font);
   render_text->SetText(text);
   render_text->SetCursorEnabled(false);
 
-  gfx::Rect display_rect = rect;
+  Rect display_rect = rect;
   display_rect.set_height(font.GetHeight());
   render_text->SetDisplayRect(display_rect);
 
   // Set the text alignment explicitly based on the directionality of the UI,
   // if not specified.
-  if (!(flags & (gfx::Canvas::TEXT_ALIGN_CENTER |
-                 gfx::Canvas::TEXT_ALIGN_RIGHT |
-                 gfx::Canvas::TEXT_ALIGN_LEFT))) {
-    flags |= gfx::Canvas::DefaultCanvasTextAlignment();
+  if (!(flags & (Canvas::TEXT_ALIGN_CENTER |
+                 Canvas::TEXT_ALIGN_RIGHT |
+                 Canvas::TEXT_ALIGN_LEFT))) {
+    flags |= Canvas::DefaultCanvasTextAlignment();
   }
 
-  if (flags & gfx::Canvas::TEXT_ALIGN_RIGHT)
-    render_text->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-  else if (flags & gfx::Canvas::TEXT_ALIGN_CENTER)
-    render_text->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  if (flags & Canvas::TEXT_ALIGN_RIGHT)
+    render_text->SetHorizontalAlignment(ALIGN_RIGHT);
+  else if (flags & Canvas::TEXT_ALIGN_CENTER)
+    render_text->SetHorizontalAlignment(ALIGN_CENTER);
   else
-    render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    render_text->SetHorizontalAlignment(ALIGN_LEFT);
 
-  if (flags & gfx::Canvas::NO_SUBPIXEL_RENDERING)
+  if (flags & Canvas::NO_SUBPIXEL_RENDERING)
     render_text->set_background_is_transparent(true);
 
-  gfx::StyleRange style;
-  style.foreground = color;
-  style.font_style = font.GetStyle();
-  if (font.GetStyle() & gfx::Font::UNDERLINED)
-    style.underline = true;
-  render_text->set_default_style(style);
-  render_text->ApplyDefaultStyle();
-}
-
-// Adds an underline style to |render_text| over |range|.
-void ApplyUnderlineStyle(const ui::Range& range, gfx::RenderText* render_text) {
-  gfx::StyleRange style = render_text->default_style();
-  if (range.IsValid() && !style.underline) {
-    style.range = range;
-    style.underline = true;
-    render_text->ApplyStyleRange(style);
-  }
+  render_text->SetColor(color);
+  render_text->SetStyle(BOLD, (font.GetStyle() & Font::BOLD) != 0);
+  render_text->SetStyle(ITALIC, (font.GetStyle() & Font::ITALIC) != 0);
+  render_text->SetStyle(UNDERLINE, (font.GetStyle() & Font::UNDERLINE) != 0);
 }
 
 // Returns updated |flags| to match platform-specific expected behavior.
@@ -168,7 +157,7 @@ int AdjustPlatformSpecificFlags(const string16& text, int flags) {
   // TODO(asvitkine): ash/tooltips/tooltip_controller.cc adds \n's to the string
   //                  without passing MULTI_LINE.
   if (text.find('\n') != string16::npos)
-    flags |= gfx::Canvas::MULTI_LINE;
+    flags |= Canvas::MULTI_LINE;
 #endif
 
   return flags;
@@ -176,11 +165,9 @@ int AdjustPlatformSpecificFlags(const string16& text, int flags) {
 
 }  // namespace
 
-namespace gfx {
-
 // static
 void Canvas::SizeStringInt(const string16& text,
-                           const gfx::Font& font,
+                           const Font& font,
                            int* width, int* height,
                            int flags) {
   DCHECK_GE(*width, 0);
@@ -200,7 +187,7 @@ void Canvas::SizeStringInt(const string16& text,
     else if (!(flags & NO_ELLIPSIS))
       wrap_behavior = ui::ELIDE_LONG_WORDS;
 
-    gfx::Rect rect(*width, INT_MAX);
+    Rect rect(*width, INT_MAX);
     std::vector<string16> strings;
     ui::ElideRectangleText(adjusted_text, font, rect.width(), rect.height(),
                            wrap_behavior, &strings);
@@ -227,7 +214,7 @@ void Canvas::SizeStringInt(const string16& text,
       *height = font.GetHeight();
     } else {
       scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-      gfx::Rect rect(*width, *height);
+      Rect rect(*width, *height);
       StripAcceleratorChars(flags, &adjusted_text);
       UpdateRenderText(rect, adjusted_text, font, flags, 0, render_text.get());
       const Size string_size = render_text->GetStringSize();
@@ -238,9 +225,9 @@ void Canvas::SizeStringInt(const string16& text,
 }
 
 void Canvas::DrawStringWithShadows(const string16& text,
-                                   const gfx::Font& font,
+                                   const Font& font,
                                    SkColor color,
-                                   const gfx::Rect& text_bounds,
+                                   const Rect& text_bounds,
                                    int flags,
                                    const ShadowValues& shadows) {
   if (!IntersectsClipRect(text_bounds))
@@ -248,13 +235,13 @@ void Canvas::DrawStringWithShadows(const string16& text,
 
   flags = AdjustPlatformSpecificFlags(text, flags);
 
-  gfx::Rect clip_rect(text_bounds);
+  Rect clip_rect(text_bounds);
   clip_rect.Inset(ShadowValue::GetMargin(shadows));
 
   canvas_->save(SkCanvas::kClip_SaveFlag);
   ClipRect(clip_rect);
 
-  gfx::Rect rect(text_bounds);
+  Rect rect(text_bounds);
   string16 adjusted_text = text;
 
 #if defined(OS_WIN)
@@ -288,16 +275,17 @@ void Canvas::DrawStringWithShadows(const string16& text,
       if (i == 0) {
         // TODO(msw|asvitkine): Support multi-line text with varied heights.
         const int aggregate_height = strings.size() * line_height;
-        rect += gfx::Vector2d(0, (text_bounds.height() - aggregate_height) / 2);
+        rect += Vector2d(0, (text_bounds.height() - aggregate_height) / 2);
       }
 #endif
 
       rect.set_height(line_height);
 
-      ApplyUnderlineStyle(range, render_text.get());
+      if (range.IsValid())
+        render_text->ApplyStyle(UNDERLINE, true, range);
       render_text->SetDisplayRect(rect);
       render_text->Draw(this);
-      rect += gfx::Vector2d(0, line_height);
+      rect += Vector2d(0, line_height);
     }
   } else {
     ui::Range range = StripAcceleratorChars(flags, &adjusted_text);
@@ -327,11 +315,11 @@ void Canvas::DrawStringWithShadows(const string16& text,
 
     const int line_height = render_text->GetStringSize().height();
     // Center the text vertically.
-    rect += gfx::Vector2d(0, (text_bounds.height() - line_height) / 2);
+    rect += Vector2d(0, (text_bounds.height() - line_height) / 2);
     rect.set_height(line_height);
     render_text->SetDisplayRect(rect);
-
-    ApplyUnderlineStyle(range, render_text.get());
+    if (range.IsValid())
+      render_text->ApplyStyle(UNDERLINE, true, range);
     render_text->Draw(this);
   }
 
@@ -339,7 +327,7 @@ void Canvas::DrawStringWithShadows(const string16& text,
 }
 
 void Canvas::DrawStringWithHalo(const string16& text,
-                                const gfx::Font& font,
+                                const Font& font,
                                 SkColor text_color,
                                 SkColor halo_color_in,
                                 int x, int y, int w, int h,
@@ -354,7 +342,7 @@ void Canvas::DrawStringWithHalo(const string16& text,
   Canvas text_canvas(size, scale_factor(), true);
   SkPaint bkgnd_paint;
   bkgnd_paint.setColor(halo_color);
-  text_canvas.DrawRect(gfx::Rect(size), bkgnd_paint);
+  text_canvas.DrawRect(Rect(size), bkgnd_paint);
 
   // Draw the text into the temporary buffer. This will have correct
   // ClearType since the background color is the same as the halo color.
@@ -379,7 +367,7 @@ void Canvas::DrawStringWithHalo(const string16& text,
   }
 
   // Draw the halo bitmap with blur.
-  gfx::ImageSkia text_image = gfx::ImageSkia(gfx::ImageSkiaRep(text_bitmap,
+  ImageSkia text_image = ImageSkia(ImageSkiaRep(text_bitmap,
       text_canvas.scale_factor()));
   DrawImageInt(text_image, x - 1, y - 1);
 }
@@ -388,9 +376,9 @@ void Canvas::DrawFadeTruncatingString(
       const string16& text,
       TruncateFadeMode truncate_mode,
       size_t desired_characters_to_truncate_from_head,
-      const gfx::Font& font,
+      const Font& font,
       SkColor color,
-      const gfx::Rect& display_rect) {
+      const Rect& display_rect) {
   int flags = NO_ELLIPSIS;
 
   // If the whole string fits in the destination then just draw it directly.
@@ -441,12 +429,12 @@ void Canvas::DrawFadeTruncatingString(
   if (!(flags & TEXT_ALIGN_RIGHT))
     flags |= TEXT_ALIGN_LEFT;
 
-  gfx::Rect rect = display_rect;
+  Rect rect = display_rect;
   UpdateRenderText(rect, clipped_text, font, flags, color, render_text.get());
 
   const int line_height = render_text->GetStringSize().height();
   // Center the text vertically.
-  rect += gfx::Vector2d(0, (display_rect.height() - line_height) / 2);
+  rect += Vector2d(0, (display_rect.height() - line_height) / 2);
   rect.set_height(line_height);
   render_text->SetDisplayRect(rect);
 
