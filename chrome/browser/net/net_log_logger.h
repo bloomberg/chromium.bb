@@ -32,6 +32,9 @@ class NetLogLogger : public net::NetLog::ThreadSafeObserver {
   // Separate from constructor to enforce thread safety.
   void StartObserving(net::NetLog* net_log);
 
+  // Stops observing net_log().  Must already be watching.
+  void StopObserving();
+
   // net::NetLog::ThreadSafeObserver implementation:
   virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
 

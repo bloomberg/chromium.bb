@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="chrome://resources/js/util.js"></script>
+<script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://net-export/net_export.js"></script>
+<link rel="stylesheet" href="net_export.css">
+</head>
+<body>
+  <h2>NetLog Export</h2>
+  <div id="net-export-main">
+    <div>
+      <button id="export-view-start-data">Start Logging to Disk</button>
+      <span class="warning">Deletes old log</span>
+    </div>
+    <div>
+      <button id="export-view-stop-data">Stop Logging</button>
+    </div>
+    <div>
+      <button id="export-view-send-data">Email Log</button>
+    </div>
+    <pre id="export-view-file-path-text"></pre>
+    <ul>
+      <li><b>INSTRUCTIONS</b>: Start logging, reproduce the problem,
+      and then stop logging.  Make sure to send the email before
+      starting to log again. Otherwise, the log will be deleted.
+      </li>
+    </ul>
+    <p>
+      Logs can be loaded in
+      <a href="chrome://net-internals" target="_blank">net-internals</a>
+      of desktop Chrome.
+    </p>
+  </div>
+</body>
+</html>

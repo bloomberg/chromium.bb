@@ -1945,6 +1945,8 @@
         'browser/ui/webui/nacl_ui.h',
         'browser/ui/webui/set_as_default_browser_ui.cc',
         'browser/ui/webui/set_as_default_browser_ui.h',
+        'browser/ui/webui/net_export_ui.cc',
+        'browser/ui/webui/net_export_ui.h',
         'browser/ui/webui/net_internals/net_internals_ui.cc',
         'browser/ui/webui/net_internals/net_internals_ui.h',
         'browser/ui/webui/local_omnibox_popup/local_omnibox_popup_ui.cc',

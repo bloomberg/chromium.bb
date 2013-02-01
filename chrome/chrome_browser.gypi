@@ -1153,6 +1153,8 @@
         'browser/net/net_error_tab_helper.h',
         'browser/net/net_log_logger.cc',
         'browser/net/net_log_logger.h',
+        'browser/net/net_log_temp_file.cc',
+        'browser/net/net_log_temp_file.h',
         'browser/net/net_pref_observer.cc',
         'browser/net/net_pref_observer.h',
         'browser/net/network_stats.cc',

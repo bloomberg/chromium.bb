@@ -43,6 +43,10 @@ void NetLogLogger::StartObserving(net::NetLog* net_log) {
   net_log->AddThreadSafeObserver(this, net::NetLog::LOG_ALL_BUT_BYTES);
 }
 
+void NetLogLogger::StopObserving() {
+  net_log()->RemoveThreadSafeObserver(this);
+}
+
 void NetLogLogger::OnAddEntry(const net::NetLog::Entry& entry) {
   scoped_ptr<Value> value(entry.ToValue());
   // Don't pretty print, so each JSON value occupies a single line, with no

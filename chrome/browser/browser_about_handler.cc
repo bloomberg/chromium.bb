@@ -34,6 +34,9 @@ const char* const kPaths[] = {
   chrome::kChromeUIIPCHost,
   chrome::kChromeUIMediaInternalsHost,
   chrome::kChromeUIMemoryHost,
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  chrome::kChromeUINetExportHost,
+#endif
   chrome::kChromeUINetInternalsHost,
   chrome::kChromeUINetworkViewCacheHost,
   chrome::kChromeUINewTabHost,

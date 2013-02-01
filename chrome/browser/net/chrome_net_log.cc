@@ -11,13 +11,15 @@
 #include "base/values.h"
 #include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/net/net_log_logger.h"
+#include "chrome/browser/net/net_log_temp_file.h"
 #include "chrome/common/chrome_switches.h"
 
 ChromeNetLog::ChromeNetLog()
     : last_id_(0),
       base_log_level_(LOG_BASIC),
       effective_log_level_(LOG_BASIC),
-      load_timing_observer_(new LoadTimingObserver()) {
+      load_timing_observer_(new LoadTimingObserver()),
+      net_log_temp_file_(new NetLogTempFile(this)) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   // Adjust base log level based on command line switch, if present.
   // This is done before adding any observers so the call to UpdateLogLevel when
@@ -43,6 +45,7 @@ ChromeNetLog::ChromeNetLog()
 }
 
 ChromeNetLog::~ChromeNetLog() {
+  net_log_temp_file_.reset();
   // Remove the observers we own before we're destroyed.
   RemoveThreadSafeObserver(load_timing_observer_.get());
   if (net_log_logger_.get())

@@ -77,6 +77,10 @@
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
 #endif
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
+#include "chrome/browser/ui/webui/net_export_ui.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_ui.h"
 #include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
@@ -215,6 +219,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if !defined(DISABLE_NACL)
   if (url.host() == chrome::kChromeUINaClHost)
     return &NewWebUI<NaClUI>;
+#endif
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  if (url.host() == chrome::kChromeUINetExportHost)
+    return &NewWebUI<NetExportUI>;
 #endif
   if (url.host() == chrome::kChromeUINetInternalsHost)
     return &NewWebUI<NetInternalsUI>;
