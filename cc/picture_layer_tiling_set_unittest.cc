@@ -18,14 +18,14 @@ namespace {
 TEST(PictureLayerTilingSetTest, NoResources) {
   FakePictureLayerTilingClient client;
   PictureLayerTilingSet set(&client);
-  gfx::Size default_tile_size(256, 256);
+  client.SetTileSize(gfx::Size(256, 256));
 
   gfx::Size layer_bounds(1000, 800);
   set.SetLayerBounds(layer_bounds);
 
-  set.AddTiling(1.0, default_tile_size);
-  set.AddTiling(1.5, default_tile_size);
-  set.AddTiling(2.0, default_tile_size);
+  set.AddTiling(1.0);
+  set.AddTiling(1.5);
+  set.AddTiling(2.0);
 
   float contents_scale = 2.0;
   gfx::Size content_bounds(
@@ -64,15 +64,15 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
         ResourceProvider::create(output_surface.get());
 
     FakePictureLayerTilingClient client;
+    client.SetTileSize(gfx::Size(256, 256));
     PictureLayerTilingSet set(&client);
-    gfx::Size default_tile_size(256, 256);
 
     gfx::Size layer_bounds(1000, 800);
     set.SetLayerBounds(layer_bounds);
 
     float scale = min_scale;
     for (int i = 0; i < num_tilings; ++i, scale += scale_increment) {
-      PictureLayerTiling* tiling = set.AddTiling(scale, default_tile_size);
+      PictureLayerTiling* tiling = set.AddTiling(scale);
       std::vector<Tile*> tiles = tiling->AllTilesForTesting();
       for (size_t i = 0; i < tiles.size(); ++i) {
         EXPECT_FALSE(tiles[i]->ManagedStateForTesting().resource);

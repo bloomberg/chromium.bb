@@ -28,6 +28,12 @@ class TestablePictureLayerImpl : public PictureLayerImpl {
   PictureLayerTilingSet& tilings() { return *tilings_; }
   Region& invalidation() { return invalidation_; }
 
+  virtual gfx::Size CalculateTileSize(
+      gfx::Size current_tile_size,
+      gfx::Size /* content_bounds */) OVERRIDE {
+    return current_tile_size;
+  }
+
   using PictureLayerImpl::AddTiling;
 
  private:
