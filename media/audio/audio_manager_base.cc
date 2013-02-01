@@ -19,12 +19,6 @@
 #include "media/audio/virtual_audio_output_stream.h"
 #include "media/base/media_switches.h"
 
-// TODO(dalecurtis): Temporarily disabled while switching pipeline to use float,
-// http://crbug.com/114700
-#if defined(ENABLE_AUDIO_MIXER)
-#include "media/audio/audio_output_mixer.h"
-#endif
-
 namespace media {
 
 static const int kStreamCloseDelaySeconds = 5;
@@ -271,18 +265,6 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
     output_dispatchers_[dispatcher_key] = dispatcher;
     return new AudioOutputProxy(dispatcher);
   }
-
-#if defined(ENABLE_AUDIO_MIXER)
-  // TODO(dalecurtis): Browser side mixing has a couple issues that must be
-  // fixed before it can be turned on by default: http://crbug.com/138098 and
-  // http://crbug.com/140247
-  if (cmd_line->HasSwitch(switches::kEnableAudioMixer)) {
-    scoped_refptr<AudioOutputDispatcher> dispatcher =
-        new AudioOutputMixer(this, params, close_delay);
-    output_dispatchers_[dispatcher_key] = dispatcher;
-    return new AudioOutputProxy(dispatcher);
-  }
-#endif
 
   scoped_refptr<AudioOutputDispatcher> dispatcher =
       new AudioOutputDispatcherImpl(this, output_params, close_delay);

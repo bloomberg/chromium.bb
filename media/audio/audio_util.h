@@ -39,15 +39,6 @@ MEDIA_EXPORT bool AdjustVolume(void* buf,
                                int bytes_per_sample,
                                float volume);
 
-// MixStreams() mixes 2 audio streams with same sample rate and number of
-// samples, adjusting volume on one of them.
-// Dst += Src * volume.
-MEDIA_EXPORT void MixStreams(void* dst,
-                             void* src,
-                             size_t buflen,
-                             int bytes_per_sample,
-                             float volume);
-
 // Returns the default audio output hardware sample-rate.
 MEDIA_EXPORT int GetAudioHardwareSampleRate();
 
