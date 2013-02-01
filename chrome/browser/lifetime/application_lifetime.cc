@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -52,8 +53,8 @@ namespace {
 // This currently checks if there is pending download, or if it needs to
 // handle unload handler.
 bool AreAllBrowsersCloseable() {
-  BrowserList::const_iterator browser_it = BrowserList::begin();
-  if (browser_it == BrowserList::end())
+  chrome::BrowserIterator browser_it;
+  if (browser_it.done())
     return true;
 
   // If there are any downloads active, all browsers are not closeable.
@@ -61,8 +62,8 @@ bool AreAllBrowsersCloseable() {
     return false;
 
   // Check TabsNeedBeforeUnloadFired().
-  for (; browser_it != BrowserList::end(); ++browser_it) {
-    if ((*browser_it)->TabsNeedBeforeUnloadFired())
+  for (; !browser_it.done(); browser_it.Next()) {
+    if (browser_it->TabsNeedBeforeUnloadFired())
       return false;
   }
   return true;
@@ -79,10 +80,8 @@ bool g_session_manager_requested_shutdown = true;
 
 void MarkAsCleanShutdown() {
   // TODO(beng): Can this use ProfileManager::GetLoadedProfiles() instead?
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
-    (*i)->profile()->SetExitType(Profile::EXIT_NORMAL);
-  }
+  for (chrome::BrowserIterator it; !it.done(); it.Next())
+    it->profile()->SetExitType(Profile::EXIT_NORMAL);
 }
 
 void AttemptExitInternal() {
@@ -193,9 +192,8 @@ void AttemptUserExit() {
 #if !defined(OS_ANDROID)
 void AttemptRestart() {
   // TODO(beng): Can this use ProfileManager::GetLoadedProfiles instead?
-  BrowserList::const_iterator it;
-  for (it = BrowserList::begin(); it != BrowserList::end(); ++it)
-    content::BrowserContext::SaveSessionState((*it)->profile());
+  for (chrome::BrowserIterator it; !it.done(); it.Next())
+    content::BrowserContext::SaveSessionState(it->profile());
 
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kWasRestarted, true);

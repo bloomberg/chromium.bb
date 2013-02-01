@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
@@ -179,9 +180,8 @@ void CustomHomePagesTableModel::SetToCurrentlyOpenPages() {
 
   // And add all tabs for all open browsers with our profile.
   int add_index = 0;
-  for (BrowserList::const_iterator browser_i = BrowserList::begin();
-       browser_i != BrowserList::end(); ++browser_i) {
-    Browser* browser = *browser_i;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
     if (browser->profile() != profile_)
       continue;  // Skip incognito browsers.
 

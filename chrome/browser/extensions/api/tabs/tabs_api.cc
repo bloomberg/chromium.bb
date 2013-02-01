@@ -38,7 +38,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -121,13 +121,14 @@ Browser* GetBrowserInProfileWithId(Profile* profile,
   Profile* incognito_profile =
       include_incognito && profile->HasOffTheRecordProfile() ?
           profile->GetOffTheRecordProfile() : NULL;
-  for (BrowserList::const_iterator browser = BrowserList::begin();
-       browser != BrowserList::end(); ++browser) {
-    if (((*browser)->profile() == profile ||
-         (*browser)->profile() == incognito_profile) &&
-        ExtensionTabUtil::GetWindowId(*browser) == window_id &&
-        ((*browser)->window()))
-      return *browser;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
+    if ((browser->profile() == profile ||
+         browser->profile() == incognito_profile) &&
+        ExtensionTabUtil::GetWindowId(browser) == window_id &&
+        browser->window()) {
+      return browser;
+    }
   }
 
   if (error_message)
@@ -929,36 +930,36 @@ bool TabsQueryFunction::RunImpl() {
         query->GetString(keys::kWindowTypeLongKey, &window_type));
 
   ListValue* result = new ListValue();
-  for (BrowserList::const_iterator browser = BrowserList::begin();
-       browser != BrowserList::end(); ++browser) {
-    if (!profile()->IsSameProfile((*browser)->profile()))
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
+    if (!profile()->IsSameProfile(browser->profile()))
       continue;
 
-    if (!(*browser)->window())
+    if (!browser->window())
       continue;
 
-    if (!include_incognito() && profile() != (*browser)->profile())
+    if (!include_incognito() && profile() != browser->profile())
       continue;
 
-    if (window_id >= 0 && window_id != ExtensionTabUtil::GetWindowId(*browser))
+    if (window_id >= 0 && window_id != ExtensionTabUtil::GetWindowId(browser))
       continue;
 
     if (window_id == extension_misc::kCurrentWindowId &&
-        *browser != GetCurrentBrowser())
+        browser != GetCurrentBrowser())
       continue;
 
-    if (!MatchesQueryArg(current_window, *browser == GetCurrentBrowser()))
+    if (!MatchesQueryArg(current_window, browser == GetCurrentBrowser()))
       continue;
 
-    if (!MatchesQueryArg(focused_window, (*browser)->window()->IsActive()))
+    if (!MatchesQueryArg(focused_window, browser->window()->IsActive()))
       continue;
 
     if (!window_type.empty() &&
         window_type !=
-        (*browser)->extension_window_controller()->GetWindowTypeText())
+        browser->extension_window_controller()->GetWindowTypeText())
       continue;
 
-    TabStripModel* tab_strip = (*browser)->tab_strip_model();
+    TabStripModel* tab_strip = browser->tab_strip_model();
     for (int i = 0; i < tab_strip->count(); ++i) {
       const WebContents* web_contents = tab_strip->GetWebContentsAt(i);
 

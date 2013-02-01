@@ -26,6 +26,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/view_type_utils.h"
@@ -204,9 +205,8 @@ Profile* GetCurrentProfileOnChromeOS(std::string* error_message) {
 #endif  // defined(OS_CHROMEOS)
 
 Browser* GetBrowserForTab(WebContents* tab) {
-  BrowserList::const_iterator browser_iter = BrowserList::begin();
-  for (; browser_iter != BrowserList::end(); ++browser_iter) {
-    Browser* browser = *browser_iter;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
     for (int tab_index = 0;
          tab_index < browser->tab_strip_model()->count();
          ++tab_index) {
@@ -509,9 +509,8 @@ bool GetTabForId(const AutomationId& id, WebContents** tab) {
 
   printing::PrintPreviewDialogController* preview_controller =
       printing::PrintPreviewDialogController::GetInstance();
-  BrowserList::const_iterator iter = BrowserList::begin();
-  for (; iter != BrowserList::end(); ++iter) {
-    Browser* browser = *iter;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
     for (int tab_index = 0;
          tab_index < browser->tab_strip_model()->count();
          ++tab_index) {

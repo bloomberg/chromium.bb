@@ -20,7 +20,6 @@ class BrowserListObserver;
 class BrowserList {
  public:
   typedef std::vector<Browser*> BrowserVector;
-  typedef BrowserVector::iterator iterator;
   typedef BrowserVector::const_iterator const_iterator;
   typedef BrowserVector::const_reverse_iterator const_reverse_iterator;
 

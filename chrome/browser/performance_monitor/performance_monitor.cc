@@ -23,7 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -398,10 +398,8 @@ void PerformanceMonitor::UpdateLiveProfiles() {
   scoped_ptr<std::set<std::string> > active_profiles(
       new std::set<std::string>());
 
-  for (BrowserList::const_iterator iter = BrowserList::begin();
-       iter != BrowserList::end(); ++iter) {
-    active_profiles->insert((*iter)->profile()->GetDebugName());
-  }
+  for (chrome::BrowserIterator it; !it.done(); it.Next())
+    active_profiles->insert(it->profile()->GetDebugName());
 
   BrowserThread::PostBlockingPoolSequencedTask(
       Database::kDatabaseSequenceToken,

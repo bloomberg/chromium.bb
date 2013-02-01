@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
@@ -81,12 +82,11 @@ BrowserEventRouter::BrowserEventRouter(Profile* profile)
 
   // Init() can happen after the browser is running, so catch up with any
   // windows that already exist.
-  for (BrowserList::const_iterator iter = BrowserList::begin();
-       iter != BrowserList::end(); ++iter) {
-    RegisterForBrowserNotifications(*iter);
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    RegisterForBrowserNotifications(*it);
 
     // Also catch up our internal bookkeeping of tab entries.
-    Browser* browser = *iter;
+    Browser* browser = *it;
     if (browser->tab_strip_model()) {
       for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
         WebContents* contents = browser->tab_strip_model()->GetWebContentsAt(i);

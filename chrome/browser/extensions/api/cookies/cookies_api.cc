@@ -21,7 +21,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/cookies.h"
 #include "chrome/common/extensions/extension.h"
@@ -513,9 +513,8 @@ bool CookiesGetAllCookieStoresFunction::RunImpl() {
   // Iterate through all browser instances, and for each browser,
   // add its tab IDs to either the regular or incognito tab ID list depending
   // whether the browser is regular or incognito.
-  for (BrowserList::const_iterator iter = BrowserList::begin();
-       iter != BrowserList::end(); ++iter) {
-    Browser* browser = *iter;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
     if (browser->profile() == original_profile) {
       cookies_helpers::AppendToTabIdList(browser, original_tab_ids.get());
     } else if (incognito_tab_ids.get() &&

@@ -9,7 +9,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
@@ -19,10 +19,8 @@
 const std::set<browser_sync::SyncedWindowDelegate*>
     browser_sync::SyncedWindowDelegate::GetSyncedWindowDelegates() {
   std::set<browser_sync::SyncedWindowDelegate*> synced_window_delegates;
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
-    synced_window_delegates.insert((*i)->synced_window_delegate());
-  }
+  for (chrome::BrowserIterator it; !it.done(); it.Next())
+    synced_window_delegates.insert(it->synced_window_delegate());
   return synced_window_delegates;
 }
 

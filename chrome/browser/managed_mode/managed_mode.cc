@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -106,10 +107,9 @@ void ManagedMode::EnterManagedModeImpl(Profile* profile,
   // Close all other profiles.
   // At this point, we shouldn't be waiting for other browsers to close (yet).
   DCHECK_EQ(0u, browsers_to_close_.size());
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
-    if ((*i)->profile()->GetOriginalProfile() != original_profile)
-      browsers_to_close_.insert(*i);
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    if (it->profile()->GetOriginalProfile() != original_profile)
+      browsers_to_close_.insert(*it);
   }
 
   if (browsers_to_close_.empty()) {

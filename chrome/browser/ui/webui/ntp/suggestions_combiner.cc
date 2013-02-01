@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source.h"
@@ -152,8 +152,7 @@ void SuggestionsCombiner::AddExtendedInformation(
 }
 
 bool SuggestionsCombiner::IsUrlAlreadyOpen(const GURL &url) {
-  for (BrowserList::const_iterator it = BrowserList::begin();
-       it != BrowserList::end(); ++it) {
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     const Browser* browser = *it;
     if (browser->profile()->IsOffTheRecord() ||
         !browser->profile()->IsSameProfile(profile_))

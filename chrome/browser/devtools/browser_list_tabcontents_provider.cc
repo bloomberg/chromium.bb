@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
@@ -33,10 +34,9 @@ BrowserListTabContentsProvider::~BrowserListTabContentsProvider() {
 
 std::string BrowserListTabContentsProvider::GetDiscoveryPageHTML() {
   std::set<Profile*> profiles;
-  for (BrowserList::const_iterator it = BrowserList::begin(),
-       end = BrowserList::end(); it != end; ++it) {
+  for (chrome::BrowserIterator it; !it.done(); it.Next())
     profiles.insert((*it)->profile());
-  }
+
   for (std::set<Profile*>::iterator it = profiles.begin();
        it != profiles.end(); ++it) {
     history::TopSites* ts = (*it)->GetTopSites();
@@ -66,8 +66,7 @@ FilePath BrowserListTabContentsProvider::GetDebugFrontendDir() {
 
 std::string BrowserListTabContentsProvider::GetPageThumbnailData(
     const GURL& url) {
-  for (BrowserList::const_iterator it = BrowserList::begin(),
-       end = BrowserList::end(); it != end; ++it) {
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     Profile* profile = (*it)->profile();
     history::TopSites* top_sites = profile->GetTopSites();
     if (!top_sites)

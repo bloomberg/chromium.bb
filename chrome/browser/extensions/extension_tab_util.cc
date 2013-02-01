@@ -12,7 +12,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -39,9 +39,8 @@ int ExtensionTabUtil::GetWindowId(const Browser* browser) {
 
 int ExtensionTabUtil::GetWindowIdOfTabStripModel(
     const TabStripModel* tab_strip_model) {
-  for (BrowserList::const_iterator it = BrowserList::begin();
-       it != BrowserList::end(); ++it) {
-    if ((*it)->tab_strip_model() == tab_strip_model)
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    if (it->tab_strip_model() == tab_strip_model)
       return GetWindowId(*it);
   }
   return -1;
@@ -159,9 +158,8 @@ bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,
   DCHECK(tab_strip_model);
   DCHECK(tab_index);
 
-  for (BrowserList::const_iterator it = BrowserList::begin();
-      it != BrowserList::end(); ++it) {
-    TabStripModel* tab_strip = (*it)->tab_strip_model();
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    TabStripModel* tab_strip = it->tab_strip_model();
     int index = tab_strip->GetIndexOfWebContents(web_contents);
     if (index != -1) {
       *tab_strip_model = tab_strip;
@@ -199,9 +197,8 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
   Profile* incognito_profile =
       include_incognito && profile->HasOffTheRecordProfile() ?
           profile->GetOffTheRecordProfile() : NULL;
-  for (BrowserList::const_iterator iter = BrowserList::begin();
-       iter != BrowserList::end(); ++iter) {
-    Browser* target_browser = *iter;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* target_browser = *it;
     if (target_browser->profile() == profile ||
         target_browser->profile() == incognito_profile) {
       TabStripModel* target_tab_strip = target_browser->tab_strip_model();

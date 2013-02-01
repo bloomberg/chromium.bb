@@ -25,6 +25,7 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sessions/session_types.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -1386,9 +1387,8 @@ void SessionService::BuildCommandsFromBrowsers(
     IdToRange* tab_to_available_range,
     std::set<SessionID::id_type>* windows_to_track) {
   DCHECK(commands);
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
-    Browser* browser = *i;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
     // Make sure the browser has tabs and a window. Browser's destructor
     // removes itself from the BrowserList. When a browser is closed the
     // destructor is not necessarily run immediately. This means it's possible
@@ -1510,9 +1510,8 @@ bool SessionService::IsOnlyOneTabLeft() const {
   }
 
   int window_count = 0;
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
-    Browser* browser = *i;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
     const SessionID::id_type window_id = browser->session_id().id();
     if (ShouldTrackBrowser(browser) &&
         window_closing_ids_.find(window_id) == window_closing_ids_.end()) {
@@ -1520,7 +1519,7 @@ bool SessionService::IsOnlyOneTabLeft() const {
         return false;
       // By the time this is invoked the tab has been removed. As such, we use
       // > 0 here rather than > 1.
-      if ((*i)->tab_strip_model()->count() > 0)
+      if (browser->tab_strip_model()->count() > 0)
         return false;
     }
   }
@@ -1534,9 +1533,8 @@ bool SessionService::HasOpenTrackableBrowsers(
     return true;
   }
 
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
-    Browser* browser = *i;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
     const SessionID::id_type browser_id = browser->session_id().id();
     if (browser_id != window_id.id() &&
         window_closing_ids_.find(browser_id) == window_closing_ids_.end() &&

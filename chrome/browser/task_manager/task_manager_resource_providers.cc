@@ -40,7 +40,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
@@ -159,10 +159,9 @@ bool IsContentsPrerendering(WebContents* web_contents) {
 }
 
 bool IsContentsInstant(WebContents* web_contents) {
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
-    if ((*i)->instant_controller() &&
-        (*i)->instant_controller()->instant()->
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    if (it->instant_controller() &&
+        it->instant_controller()->instant()->
             GetPreviewContents() == web_contents) {
       return true;
     }
@@ -447,11 +446,10 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
     Add(*iterator);
 
   // Add all the instant pages.
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
-    if ((*i)->instant_controller() &&
-        (*i)->instant_controller()->instant()->GetPreviewContents()) {
-      Add((*i)->instant_controller()->instant()->GetPreviewContents());
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    if (it->instant_controller() &&
+        it->instant_controller()->instant()->GetPreviewContents()) {
+      Add(it->instant_controller()->instant()->GetPreviewContents());
     }
   }
 
