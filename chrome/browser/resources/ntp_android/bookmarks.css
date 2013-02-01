@@ -115,11 +115,16 @@
 }
 
 .favicon-cell .title {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  display: -webkit-box;
   height: 30px;
   line-height: 18px;
   overflow: hidden;
   padding-bottom: 8px;
   padding-top: 10px;
+  text-overflow: ellipsis;
+  word-wrap: break-word;
 }
 
 .favicon-icon {
