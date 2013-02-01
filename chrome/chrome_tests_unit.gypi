@@ -37,8 +37,6 @@
         '..',
       ],
       'sources': [
-        '../extensions/common/url_pattern_unittest.cc',
-        '../extensions/common/url_pattern_set_unittest.cc',
         'app/breakpad_mac_stubs.mm',
         'app/chrome_main_delegate.cc',
         'app/chrome_main_delegate.h',
@@ -416,6 +414,8 @@
         },
       },
       'sources': [
+        '../extensions/common/url_pattern_unittest.cc',
+        '../extensions/common/url_pattern_set_unittest.cc',
         'app/breakpad_mac_stubs.mm',
         'app/chrome_dll.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/chrome_unscaled_resources.rc',
