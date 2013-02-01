@@ -1027,6 +1027,7 @@
         'browser/chromeos/media/media_player_browsertest.cc',
         'browser/chromeos/memory/oom_priority_manager_browsertest.cc',
         'browser/chromeos/process_proxy/process_proxy_browsertest.cc',
+        'browser/chromeos/screensaver/screensaver_controller_browsertest.cc',
         'browser/chromeos/system/tray_accessibility_browsertest.cc',
         'browser/chromeos/ui/idle_logout_dialog_view_browsertest.cc',
         'browser/collected_cookies_browsertest.cc',

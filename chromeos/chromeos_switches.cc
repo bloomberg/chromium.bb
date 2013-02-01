@@ -16,6 +16,9 @@ const char kDbusStub[] = "dbus-stub";
 // Enables the new NetworkStateHandler class.
 const char kEnableNewNetworkHandlers[] = "enable-new-network-handlers";
 
+// Enables screensaver extensions.
+const char kEnableScreensaverExtensions[] = "enable-screensaver-extensions";
+
 // Sends test messages on first call to RequestUpdate (stub only).
 const char kSmsTestMessages[] = "sms-test-messages";
 

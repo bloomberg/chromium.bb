@@ -304,6 +304,10 @@
     "extension_types": ["extension", "packaged_app", "platform_app"],
     "min_manifest_version": 2
   },
+  "screensaver": {
+    "channel": "stable",
+    "extension_types": ["packaged_app", "hosted_app", "platform_app"]
+  },
   "serial": {
     "channel": "stable",
     "extension_types": ["platform_app"]

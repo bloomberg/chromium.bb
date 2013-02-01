@@ -669,6 +669,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kPointerLock);
   skip.insert(APIPermission::kPushMessaging);
   skip.insert(APIPermission::kSessionRestore);
+  skip.insert(APIPermission::kScreensaver);
   skip.insert(APIPermission::kStorage);
   skip.insert(APIPermission::kSystemInfoDisplay);
   skip.insert(APIPermission::kTts);

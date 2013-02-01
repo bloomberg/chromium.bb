@@ -27,6 +27,7 @@ class ScreensaverViewTest;
 
 ASH_EXPORT void ShowScreensaver(const GURL& url);
 ASH_EXPORT void CloseScreensaver();
+ASH_EXPORT bool IsScreensaverShown();
 
 typedef
     base::Callback<views::WebView*(content::BrowserContext*)> WebViewFactory;
@@ -41,6 +42,8 @@ class ScreensaverView : public views::WidgetDelegateView,
  public:
   static void ShowScreensaver(const GURL& url);
   static void CloseScreensaver();
+
+  static bool IsScreensaverShown();
 
  private:
   friend class test::ScreensaverViewTest;
@@ -67,6 +70,7 @@ class ScreensaverView : public views::WidgetDelegateView,
 
   // For testing purposes.
   static ASH_EXPORT ScreensaverView* GetInstance();
+  ASH_EXPORT bool IsScreensaverShowingURL(const GURL& url);
 
   // URL to show in the screensaver.
   GURL url_;

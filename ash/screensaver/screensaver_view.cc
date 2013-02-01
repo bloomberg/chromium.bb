@@ -39,6 +39,10 @@ void CloseScreensaver() {
   internal::ScreensaverView::CloseScreensaver();
 }
 
+bool IsScreensaverShown() {
+  return internal::ScreensaverView::IsScreensaverShown();
+}
+
 namespace internal {
 
 // static
@@ -55,6 +59,17 @@ void ScreensaverView::CloseScreensaver() {
     g_instance->Close();
     g_instance = NULL;
   }
+}
+
+// static
+bool ScreensaverView::IsScreensaverShown() {
+  return g_instance && g_instance->IsScreensaverShowingURL(g_instance->url_);
+}
+
+bool ScreensaverView::IsScreensaverShowingURL(const GURL& url) {
+  return screensaver_webview_ &&
+      screensaver_webview_->web_contents() &&
+      (screensaver_webview_->web_contents()->GetURL() == url);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -186,6 +186,7 @@ void APIPermissionInfo::RegisterAllPermissions(
       IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION,
       PermissionMessage::kGeolocation },
     { APIPermission::kNotification, "notifications" },
+    { APIPermission::kScreensaver, "screensaver" },
     { APIPermission::kUnlimitedStorage, "unlimitedStorage",
       kFlagCannotBeOptional },
 
