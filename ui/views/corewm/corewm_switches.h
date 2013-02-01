@@ -25,6 +25,9 @@ VIEWS_EXPORT extern const char kWindowAnimationsDisabled[];
 // Activation/FocusClient.
 VIEWS_EXPORT bool UseFocusController();
 
+// Same as above but for Desktop mode.
+VIEWS_EXPORT bool UseFocusControllerOnDesktop();
+
 }  // namespace corewm
 }  // namespace views
 
