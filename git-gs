@@ -5,5 +5,5 @@
 git grep -n -e "$@" -- "*.h" "*.hpp" "*.cpp" "*.c" "*.cc" "*.cpp" "*.inl"\
    "*.grd" "*.idl" "*.m" "*.mm" "*.py" "*.sh" "*.cfg" "*.tac" "*.go"\
    "*SConscript" "SConscript*" "*.scons" "*.vcproj" "*.vsprops" "*.make"\
-   "*.gyp" "*.gypi" "*.isolate" "*.js" "*.html" "*.css" "*.ebuild" \
+   "*.gyp" "*.gypi" "*.isolate" "*.java" "*.js" "*.html" "*.css" "*.ebuild" \
    "*.pl" "*.pm" "*.yaml"
