@@ -353,14 +353,6 @@
   fun:tracked_objects::Births::*Birth*
 }
 
-{
-   benign race on Histogram::Add - TO BE REMOVED SOON
-   ThreadSanitizer:Race
-   ...
-   fun:base::SampleVector::Accumulate
-   fun:base::Histogram::Add
-}
-
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 ############################
 # Real races in Chromium
