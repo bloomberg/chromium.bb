@@ -21,7 +21,8 @@ aura::Window* GetLocalProcessWindowAtPointImpl(
   if (!window->IsVisible())
     return NULL;
 
-  if (window->id() == ash::internal::kShellWindowId_PhantomWindow)
+  if (window->id() == ash::internal::kShellWindowId_PhantomWindow ||
+      window->id() == ash::internal::kShellWindowId_OverlayContainer)
     return NULL;
 
   if (window->layer()->type() == ui::LAYER_TEXTURED)
