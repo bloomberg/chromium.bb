@@ -48,11 +48,6 @@ class AutofillDialogController {
   virtual string16 SaveLocallyText() const = 0;
   virtual string16 ProgressBarText() const = 0;
 
-  // State ---------------------------------------------------------------------
-
-  // Whether the user is known to be signed in.
-  virtual DialogSignedInState SignedInState() const = 0;
-
   // Detail inputs -------------------------------------------------------------
 
   // Returns the set of inputs the page has requested which fall under

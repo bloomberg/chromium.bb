@@ -28,10 +28,6 @@ class AutofillDialogView {
   // Called when a different notification is available.
   virtual void UpdateNotificationArea() = 0;
 
-  // Called when account details may have changed (user logs in to GAIA, creates
-  // a new account, etc.).
-  virtual void UpdateAccountChooser() = 0;
-
   // Called when the contents of a section have changed.
   virtual void UpdateSection(DialogSection section) = 0;
 

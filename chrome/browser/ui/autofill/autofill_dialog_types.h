@@ -77,13 +77,6 @@ class DialogNotification {
   string16 display_text_;
 };
 
-enum DialogSignedInState {
-  REQUIRES_RESPONSE,
-  REQUIRES_SIGN_IN,
-  REQUIRES_PASSIVE_SIGN_IN,
-  SIGNED_IN,
-};
-
 typedef std::vector<DetailInput> DetailInputs;
 typedef std::map<const DetailInput*, string16> DetailOutputMap;
 

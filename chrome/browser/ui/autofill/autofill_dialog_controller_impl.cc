@@ -270,19 +270,6 @@ string16 AutofillDialogControllerImpl::CancelSignInText() const {
   return string16(ASCIIToUTF16("Don't sign in."));
 }
 
-DialogSignedInState AutofillDialogControllerImpl::SignedInState() const {
-  if (!wallet_items_)
-    return REQUIRES_RESPONSE;
-
-  if (HasRequiredAction(wallet::GAIA_AUTH))
-    return REQUIRES_SIGN_IN;
-
-  if (HasRequiredAction(wallet::PASSIVE_GAIA_AUTH))
-    return REQUIRES_PASSIVE_SIGN_IN;
-
-  return SIGNED_IN;
-}
-
 string16 AutofillDialogControllerImpl::SaveLocallyText() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_CHECKBOX);
 }
@@ -535,10 +522,37 @@ void AutofillDialogControllerImpl::UpdateProgressBar(double value) {
 }
 
 DialogNotification AutofillDialogControllerImpl::CurrentNotification() const {
-  if (HasRequiredAction(wallet::VERIFY_CVV)) {
-    return DialogNotification(
-        DialogNotification::REQUIRED_ACTION,
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_VERIFY_CVV));
+  if (wallet_items_ && !wallet_items_->required_actions().empty()) {
+    switch (wallet_items_->required_actions()[0]) {
+      case wallet::UNKNOWN_TYPE:
+        NOTREACHED();
+        break;
+      // TODO(dbeam): da real i18nz.
+      case wallet::SETUP_WALLET:
+        return DialogNotification(DialogNotification::REQUIRED_ACTION,
+                                  ASCIIToUTF16("Set up da walletz"));
+      case wallet::ACCEPT_TOS:
+        return DialogNotification(DialogNotification::REQUIRED_ACTION,
+                                  ASCIIToUTF16("Accept da ToS"));
+      case wallet::GAIA_AUTH:
+        return DialogNotification(DialogNotification::REQUIRED_ACTION,
+                                  ASCIIToUTF16("Sign in to da Googlez"));
+      case wallet::UPDATE_EXPIRATION_DATE:
+        return DialogNotification(DialogNotification::REQUIRED_ACTION,
+                                  ASCIIToUTF16("Update da expiration datez"));
+      case wallet::UPGRADE_MIN_ADDRESS:
+        return DialogNotification(DialogNotification::REQUIRED_ACTION,
+                                  ASCIIToUTF16("Upgrade da min addrezz"));
+      case wallet::INVALID_FORM_FIELD:
+        return DialogNotification(DialogNotification::REQUIRED_ACTION,
+                                  ASCIIToUTF16("Da form field is invalid"));
+      case wallet::VERIFY_CVV:
+        return DialogNotification(DialogNotification::REQUIRED_ACTION,
+                                  ASCIIToUTF16("Verify da CVVz"));
+      case wallet::PASSIVE_GAIA_AUTH:
+        return DialogNotification(DialogNotification::REQUIRED_ACTION,
+                                  ASCIIToUTF16("Passively sign in to Googlez"));
+    }
   }
 
   if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
@@ -631,13 +645,8 @@ void AutofillDialogControllerImpl::Observe(
   DCHECK_EQ(type, content::NOTIFICATION_NAV_ENTRY_COMMITTED);
   content::LoadCommittedDetails* load_details =
       content::Details<content::LoadCommittedDetails>(details).ptr();
-  if (wallet::IsSignInContinueUrl(load_details->entry->GetVirtualURL())) {
+  if (wallet::IsSignInContinueUrl(load_details->entry->GetVirtualURL()))
     EndSignInFlow();
-    // TODO(dbeam): the fetcher can't handle being called multiple times.
-    // Address this soon as we will be re-fetching wallet items after every
-    // required action is resolved.
-    wallet_client_.GetWalletItems(this);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -676,7 +685,6 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
 void AutofillDialogControllerImpl::OnDidGetWalletItems(
     scoped_ptr<wallet::WalletItems> wallet_items) {
   wallet_items_ = wallet_items.Pass();
-  view_->UpdateAccountChooser();
   view_->UpdateNotificationArea();
 }
 
@@ -742,16 +750,6 @@ bool AutofillDialogControllerImpl::TransmissionWillBeSecure() const {
   return source_url_.SchemeIs(chrome::kHttpsScheme) &&
          !net::IsCertStatusError(ssl_status_.cert_status) &&
          !net::IsCertStatusMinorError(ssl_status_.cert_status);
-}
-
-bool AutofillDialogControllerImpl::HasRequiredAction(
-    wallet::RequiredAction action) const {
-  if (!wallet_items_)
-    return false;
-
-  const std::vector<wallet::RequiredAction>& actions =
-      wallet_items_->required_actions();
-  return std::find(actions.begin(), actions.end(), action) != actions.end();
 }
 
 void AutofillDialogControllerImpl::GenerateSuggestionsModels() {

@@ -305,7 +305,6 @@ AutofillDialogViews::~AutofillDialogViews() {
 
 void AutofillDialogViews::Show() {
   InitChildViews();
-  UpdateAccountChooser();
   UpdateNotificationArea();
 
   // Ownership of |contents_| is handed off by this call. The
@@ -602,19 +601,10 @@ views::View* AutofillDialogViews::CreateNotificationArea() {
   notification_label_->SetAutoColorReadabilityEnabled(false);
   notification_label_->SetMultiLine(true);
   notification_label_->set_collapse_when_hidden(true);
-  notification_label_->set_border(
-      views::Border::CreateEmptyBorder(10, 0, 10, 0));
-  // TODO(dbeam): talk to msw@ or ainslie@ to make this border match the mocks.
 
   notification_area->AddChildView(notification_label_);
 
   return notification_area;
-}
-
-void AutofillDialogViews::UpdateAccountChooser() {
-  DialogSignedInState state = controller_->SignedInState();
-  sign_in_link_->SetEnabled(state != REQUIRES_RESPONSE);
-  sign_in_link_->SetVisible(state != SIGNED_IN);
 }
 
 void AutofillDialogViews::UpdateNotificationArea() {
