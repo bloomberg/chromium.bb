@@ -19,7 +19,7 @@ static int32_t TestSyscall(struct NaClAppThread *natp) {
 
   NaClCopyInDropLock(natp->nap);
 
-  NaClTlsSetIdx(0);
+  natp->user.guard_token++;
 
   return 0;
 }

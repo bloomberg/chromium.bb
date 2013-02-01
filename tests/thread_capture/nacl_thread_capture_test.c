@@ -10,11 +10,7 @@
  * test-only) syscall NaCl_test_capture, which is installed at
  * NACL_sys_test_syscall_1 when NACL_FAULT_INJECTION is used to inject
  * this code via the InjectThreadCaptureTest fault injection control,
- * must be active.  This syscall is a special, "fast path" style
- * syscall that does not perform a full context switch, but sets up
- * %gs (x86-32), the nacl_user TLS variable (x86-64), or the
- * gNaClThreadIdx TLS variable (arm) so that the thread appears to be
- * a trusted, non-NaCl thread.
+ * must be active.
  *
  * NB: this test syscall can permit sandbox escape.
  *

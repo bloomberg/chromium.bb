@@ -59,13 +59,18 @@ struct NaClThreadContext {
   /*            40 */
   uint32_t  tls_value2;
   /*            44 */
+  uint32_t  guard_token;
+  /*            48 */
 };
 
 #endif /* !defined(__ASSEMBLER__) */
 
 #define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR 0x30
+#define NACL_THREAD_CONTEXT_OFFSET_TLS_IDX 0x34
 #define NACL_THREAD_CONTEXT_OFFSET_FPSCR 0x38
 #define NACL_THREAD_CONTEXT_OFFSET_SYS_FPSCR 0x3c
+#define NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE1 0x40
+#define NACL_THREAD_CONTEXT_OFFSET_GUARD_TOKEN 0x48
 
 #if !defined(__ASSEMBLER__)
 
@@ -75,15 +80,19 @@ struct NaClThreadContext {
  * need to be called for the assertions to be checked.
  */
 static INLINE void NaClThreadContextOffsetCheck(void) {
-  NACL_COMPILE_TIME_ASSERT(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR
-                           == offsetof(struct NaClThreadContext,
-                                       trusted_stack_ptr));
-  NACL_COMPILE_TIME_ASSERT(NACL_THREAD_CONTEXT_OFFSET_FPSCR
-                           == offsetof(struct NaClThreadContext,
-                                       fpscr));
-  NACL_COMPILE_TIME_ASSERT(NACL_THREAD_CONTEXT_OFFSET_SYS_FPSCR
-                           == offsetof(struct NaClThreadContext,
-                                       sys_fpscr));
+#define NACL_CHECK_FIELD(offset_name, field) \
+    NACL_COMPILE_TIME_ASSERT(offset_name == \
+                             offsetof(struct NaClThreadContext, field));
+
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR,
+                   trusted_stack_ptr);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TLS_IDX, tls_idx);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FPSCR, fpscr);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYS_FPSCR, sys_fpscr);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE1, tls_value1);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_GUARD_TOKEN, guard_token);
+
+#undef NACL_CHECK_FIELD
 }
 
 #endif /* !defined(__ASSEMBLER__) */

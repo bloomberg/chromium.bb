@@ -11,6 +11,7 @@
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
@@ -37,8 +38,7 @@ int main(void) {
   stack_t st;
   int rc;
 
-  NaClLogModuleInit();
-  NaClInitGlobals();
+  NaClAllModulesInit();
   NaClSignalHandlerInit();
 
   /*

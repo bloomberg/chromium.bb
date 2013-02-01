@@ -20,21 +20,6 @@ static struct NaClMutex gNaClTlsMu;
 static int gNaClThreadIdxInUse[NACL_THREAD_MAX];  /* bool */
 static size_t const kNumThreads = NACL_ARRAY_SIZE_UNSAFE(gNaClThreadIdxInUse);
 
-#if NACL_DANGEROUS_USE_PTHREAD_GETSPECIFIC_ON_ANDROID
-/*
- * Android linker currently doesn't have support for __thread variables,
- * so we use regular pthread TLS.
- */
-static pthread_key_t gNaClThreadIdxKey;
-
-uint32_t NaClTlsGetIdx(void) {
-  return (uint32_t) pthread_getspecific(gNaClThreadIdxKey);
-}
-
-void NaClTlsSetIdx(uint32_t tls_idx) {
-  pthread_setspecific(gNaClThreadIdxKey, (void*) tls_idx);
-}
-#else
 /*
  * This holds the index of the current thread.
  * This is also used directly in nacl_syscall.S (NaClSyscallSeg).
@@ -48,7 +33,6 @@ uint32_t NaClTlsGetIdx(void) {
 void NaClTlsSetIdx(uint32_t tls_idx) {
   gNaClThreadIdx = tls_idx;
 }
-#endif
 
 uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {
   return natp->user.tls_idx;
@@ -59,9 +43,6 @@ int NaClTlsInit(void) {
   size_t i;
 
   NaClLog(2, "NaClTlsInit\n");
-#if NACL_DANGEROUS_USE_PTHREAD_GETSPECIFIC_ON_ANDROID
-  pthread_key_create(&gNaClThreadIdxKey, NULL);
-#endif
 
   for (i = 0; i < kNumThreads; i++) {
     gNaClThreadIdxInUse[i] = 0;
@@ -79,9 +60,6 @@ int NaClTlsInit(void) {
 void NaClTlsFini(void) {
   NaClLog(2, "NaClTlsFini\n");
   NaClMutexDtor(&gNaClTlsMu);
-#if NACL_DANGEROUS_USE_PTHREAD_GETSPECIFIC_ON_ANDROID
-  pthread_key_delete(gNaClThreadIdxKey);
-#endif
 }
 
 static int NaClThreadIdxAllocate(void) {
@@ -125,6 +103,7 @@ void NaClTlsFree(struct NaClAppThread *natp) {
   NaClXMutexUnlock(&gNaClTlsMu);
 
   natp->user.r9 = 0;
+  natp->user.guard_token = 0;
 }
 
 

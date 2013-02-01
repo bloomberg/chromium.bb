@@ -8,14 +8,19 @@
  * NaCl Secure Runtime
  */
 #include "native_client/src/include/portability_string.h"
+#include "native_client/src/shared/platform/nacl_global_secure_random.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
 
+
+uint32_t nacl_guard_token;
+
+
 void NaClInitGlobals(void) {
-   NaClLog(2, "NaClInitGlobals\n");
-  /* intentionally left empty */
+  NaClLog(2, "NaClInitGlobals\n");
+  nacl_guard_token = NaClGlobalSecureRngUint32();
 }
 
 
@@ -37,6 +42,7 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   ntcp->prog_ctr = prog_ctr;
   ntcp->tls_idx = tls_idx;
   ntcp->r9 = (uintptr_t) &ntcp->tls_value1;
+  ntcp->guard_token = nacl_guard_token;
 
   /*
    * Save the system's state of the FPSCR so we can restore
