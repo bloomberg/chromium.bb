@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/shell_javascript_dialog_creator.h"
+#include "content/shell/shell_javascript_dialog_manager.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -16,13 +16,13 @@
 
 namespace content {
 
-ShellJavaScriptDialogCreator::ShellJavaScriptDialogCreator() {
+ShellJavaScriptDialogManager::ShellJavaScriptDialogManager() {
 }
 
-ShellJavaScriptDialogCreator::~ShellJavaScriptDialogCreator() {
+ShellJavaScriptDialogManager::~ShellJavaScriptDialogManager() {
 }
 
-void ShellJavaScriptDialogCreator::RunJavaScriptDialog(
+void ShellJavaScriptDialogManager::RunJavaScriptDialog(
     WebContents* web_contents,
     const GURL& origin_url,
     const std::string& accept_lang,
@@ -71,7 +71,7 @@ void ShellJavaScriptDialogCreator::RunJavaScriptDialog(
 #endif
 }
 
-void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
+void ShellJavaScriptDialogManager::RunBeforeUnloadDialog(
     WebContents* web_contents,
     const string16& message_text,
     bool is_reload,
@@ -118,7 +118,7 @@ void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
 #endif
 }
 
-void ShellJavaScriptDialogCreator::ResetJavaScriptState(
+void ShellJavaScriptDialogManager::ResetJavaScriptState(
     WebContents* web_contents) {
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(TOOLKIT_GTK)
   if (dialog_.get()) {
@@ -130,7 +130,7 @@ void ShellJavaScriptDialogCreator::ResetJavaScriptState(
 #endif
 }
 
-void ShellJavaScriptDialogCreator::DialogClosed(ShellJavaScriptDialog* dialog) {
+void ShellJavaScriptDialogManager::DialogClosed(ShellJavaScriptDialog* dialog) {
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(TOOLKIT_GTK)
   DCHECK_EQ(dialog, dialog_.get());
   dialog_.reset();

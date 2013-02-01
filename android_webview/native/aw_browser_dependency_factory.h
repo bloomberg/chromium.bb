@@ -9,7 +9,7 @@
 
 namespace content {
 class BrowserContext;
-class JavaScriptDialogCreator;
+class JavaScriptDialogManager;
 class WebContents;
 }
 

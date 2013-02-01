@@ -25,7 +25,7 @@
 #include "content/shell/shell_browser_main_parts.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_devtools_frontend.h"
-#include "content/shell/shell_javascript_dialog_creator.h"
+#include "content/shell/shell_javascript_dialog_manager.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_controller.h"
@@ -265,10 +265,10 @@ void Shell::DidNavigateMainFramePostCommit(WebContents* web_contents) {
   PlatformSetAddressBarURL(web_contents->GetURL());
 }
 
-JavaScriptDialogCreator* Shell::GetJavaScriptDialogCreator() {
-  if (!dialog_creator_.get())
-    dialog_creator_.reset(new ShellJavaScriptDialogCreator());
-  return dialog_creator_.get();
+JavaScriptDialogManager* Shell::GetJavaScriptDialogManager() {
+  if (!dialog_manager_.get())
+    dialog_manager_.reset(new ShellJavaScriptDialogManager());
+  return dialog_manager_.get();
 }
 
 bool Shell::AddMessageToConsole(WebContents* source,

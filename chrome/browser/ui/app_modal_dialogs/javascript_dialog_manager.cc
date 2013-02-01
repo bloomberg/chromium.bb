@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
+#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 
 #include <map>
 
@@ -25,19 +25,19 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using content::JavaScriptDialogCreator;
+using content::JavaScriptDialogManager;
 using content::WebContents;
 
 namespace {
 
-class ChromeJavaScriptDialogCreator : public JavaScriptDialogCreator,
+class ChromeJavaScriptDialogManager : public JavaScriptDialogManager,
                                       public content::NotificationObserver {
  public:
-  static ChromeJavaScriptDialogCreator* GetInstance();
+  static ChromeJavaScriptDialogManager* GetInstance();
 
-  explicit ChromeJavaScriptDialogCreator(
+  explicit ChromeJavaScriptDialogManager(
       extensions::ExtensionHost* extension_host);
-  virtual ~ChromeJavaScriptDialogCreator();
+  virtual ~ChromeJavaScriptDialogManager();
 
   virtual void RunJavaScriptDialog(
       WebContents* web_contents,
@@ -58,9 +58,9 @@ class ChromeJavaScriptDialogCreator : public JavaScriptDialogCreator,
   virtual void ResetJavaScriptState(WebContents* web_contents) OVERRIDE;
 
  private:
-  ChromeJavaScriptDialogCreator();
+  ChromeJavaScriptDialogManager();
 
-  friend struct DefaultSingletonTraits<ChromeJavaScriptDialogCreator>;
+  friend struct DefaultSingletonTraits<ChromeJavaScriptDialogManager>;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
@@ -85,28 +85,28 @@ class ChromeJavaScriptDialogCreator : public JavaScriptDialogCreator,
       JavaScriptDialogExtraDataMap;
   JavaScriptDialogExtraDataMap javascript_dialog_extra_data_;
 
-  // Extension Host which owns the ChromeJavaScriptDialogCreator instance.
+  // Extension Host which owns the ChromeJavaScriptDialogManager instance.
   // It's used to get a extension name from a URL.
   // If it's not owned by any Extension, it should be NULL.
   extensions::ExtensionHost* extension_host_;
 
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeJavaScriptDialogCreator);
+  DISALLOW_COPY_AND_ASSIGN(ChromeJavaScriptDialogManager);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// ChromeJavaScriptDialogCreator, public:
+// ChromeJavaScriptDialogManager, public:
 
-ChromeJavaScriptDialogCreator::ChromeJavaScriptDialogCreator()
+ChromeJavaScriptDialogManager::ChromeJavaScriptDialogManager()
     : extension_host_(NULL) {
 }
 
-ChromeJavaScriptDialogCreator::~ChromeJavaScriptDialogCreator() {
+ChromeJavaScriptDialogManager::~ChromeJavaScriptDialogManager() {
   extension_host_ = NULL;
 }
 
-ChromeJavaScriptDialogCreator::ChromeJavaScriptDialogCreator(
+ChromeJavaScriptDialogManager::ChromeJavaScriptDialogManager(
     extensions::ExtensionHost* extension_host)
     : extension_host_(extension_host) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
@@ -114,11 +114,11 @@ ChromeJavaScriptDialogCreator::ChromeJavaScriptDialogCreator(
 }
 
 // static
-ChromeJavaScriptDialogCreator* ChromeJavaScriptDialogCreator::GetInstance() {
-  return Singleton<ChromeJavaScriptDialogCreator>::get();
+ChromeJavaScriptDialogManager* ChromeJavaScriptDialogManager::GetInstance() {
+  return Singleton<ChromeJavaScriptDialogManager>::get();
 }
 
-void ChromeJavaScriptDialogCreator::RunJavaScriptDialog(
+void ChromeJavaScriptDialogManager::RunJavaScriptDialog(
     WebContents* web_contents,
     const GURL& origin_url,
     const std::string& accept_lang,
@@ -164,11 +164,11 @@ void ChromeJavaScriptDialogCreator::RunJavaScriptDialog(
       display_suppress_checkbox,
       false,  // is_before_unload_dialog
       false,  // is_reload
-      base::Bind(&ChromeJavaScriptDialogCreator::OnDialogClosed,
+      base::Bind(&ChromeJavaScriptDialogManager::OnDialogClosed,
                  base::Unretained(this), callback)));
 }
 
-void ChromeJavaScriptDialogCreator::RunBeforeUnloadDialog(
+void ChromeJavaScriptDialogManager::RunBeforeUnloadDialog(
     WebContents* web_contents,
     const string16& message_text,
     bool is_reload,
@@ -196,17 +196,17 @@ void ChromeJavaScriptDialogCreator::RunBeforeUnloadDialog(
       false,       // display_suppress_checkbox
       true,        // is_before_unload_dialog
       is_reload,
-      base::Bind(&ChromeJavaScriptDialogCreator::OnDialogClosed,
+      base::Bind(&ChromeJavaScriptDialogManager::OnDialogClosed,
                  base::Unretained(this), callback)));
 }
 
-void ChromeJavaScriptDialogCreator::ResetJavaScriptState(
+void ChromeJavaScriptDialogManager::ResetJavaScriptState(
     WebContents* web_contents) {
   CancelPendingDialogs(web_contents);
   javascript_dialog_extra_data_.erase(web_contents);
 }
 
-void ChromeJavaScriptDialogCreator::Observe(
+void ChromeJavaScriptDialogManager::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -214,7 +214,7 @@ void ChromeJavaScriptDialogCreator::Observe(
   extension_host_ = NULL;
 }
 
-string16 ChromeJavaScriptDialogCreator::GetTitle(const GURL& origin_url,
+string16 ChromeJavaScriptDialogManager::GetTitle(const GURL& origin_url,
                                                  const std::string& accept_lang,
                                                  bool is_alert) {
   // If the URL hasn't any host, return the default string.
@@ -243,7 +243,7 @@ string16 ChromeJavaScriptDialogCreator::GetTitle(const GURL& origin_url,
       base::i18n::GetDisplayStringInLTRDirectionality(url_string));
 }
 
-void ChromeJavaScriptDialogCreator::CancelPendingDialogs(
+void ChromeJavaScriptDialogManager::CancelPendingDialogs(
     WebContents* web_contents) {
   AppModalDialogQueue* queue = AppModalDialogQueue::GetInstance();
   AppModalDialog* active_dialog = queue->active_dialog();
@@ -256,7 +256,7 @@ void ChromeJavaScriptDialogCreator::CancelPendingDialogs(
   }
 }
 
-void ChromeJavaScriptDialogCreator::OnDialogClosed(
+void ChromeJavaScriptDialogManager::OnDialogClosed(
     DialogClosedCallback callback,
     bool success,
     const string16& user_input) {
@@ -267,11 +267,11 @@ void ChromeJavaScriptDialogCreator::OnDialogClosed(
 
 }  // namespace
 
-content::JavaScriptDialogCreator* GetJavaScriptDialogCreatorInstance() {
-  return ChromeJavaScriptDialogCreator::GetInstance();
+content::JavaScriptDialogManager* GetJavaScriptDialogManagerInstance() {
+  return ChromeJavaScriptDialogManager::GetInstance();
 }
 
-content::JavaScriptDialogCreator* CreateJavaScriptDialogCreatorInstance(
+content::JavaScriptDialogManager* CreateJavaScriptDialogManagerInstance(
     extensions::ExtensionHost* extension_host) {
-  return new ChromeJavaScriptDialogCreator(extension_host);
+  return new ChromeJavaScriptDialogManager(extension_host);
 }

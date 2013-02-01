@@ -42,7 +42,7 @@ namespace content {
 
 class BrowserContext;
 class ShellDevToolsFrontend;
-class ShellJavaScriptDialogCreator;
+class ShellJavaScriptDialogManager;
 class SiteInstance;
 class WebContents;
 
@@ -122,7 +122,7 @@ class Shell : public WebContentsDelegate,
                                   WebContents* new_contents) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(
       WebContents* web_contents) OVERRIDE;
-  virtual JavaScriptDialogCreator* GetJavaScriptDialogCreator() OVERRIDE;
+  virtual JavaScriptDialogManager* GetJavaScriptDialogManager() OVERRIDE;
 #if defined(OS_MACOSX)
   virtual void HandleKeyboardEvent(
       WebContents* source,
@@ -207,7 +207,7 @@ class Shell : public WebContentsDelegate,
                      GObject*, guint, GdkModifierType);
 #endif
 
-  scoped_ptr<ShellJavaScriptDialogCreator> dialog_creator_;
+  scoped_ptr<ShellJavaScriptDialogManager> dialog_manager_;
 
   scoped_ptr<WebContents> web_contents_;
 

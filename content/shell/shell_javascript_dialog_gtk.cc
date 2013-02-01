@@ -11,7 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/shell/resource.h"
 #include "content/shell/shell.h"
-#include "content/shell/shell_javascript_dialog_creator.h"
+#include "content/shell/shell_javascript_dialog_manager.h"
 
 namespace {
 
@@ -33,13 +33,13 @@ string16 GetPromptText(GtkDialog* dialog) {
 namespace content {
 
 ShellJavaScriptDialog::ShellJavaScriptDialog(
-    ShellJavaScriptDialogCreator* creator,
+    ShellJavaScriptDialogManager* manager,
     gfx::NativeWindow parent_window,
     JavaScriptMessageType message_type,
     const string16& message_text,
     const string16& default_prompt_text,
-    const JavaScriptDialogCreator::DialogClosedCallback& callback)
-    : creator_(creator),
+    const JavaScriptDialogManager::DialogClosedCallback& callback)
+    : manager_(manager),
       callback_(callback),
       parent_window_(parent_window) {
   GtkButtonsType buttons = GTK_BUTTONS_NONE;
@@ -121,7 +121,7 @@ void ShellJavaScriptDialog::OnResponse(GtkWidget* dialog, int response_id) {
 
   gtk_widget_destroy(dialog);
 
-  creator_->DialogClosed(this);
+  manager_->DialogClosed(this);
 }
 
 }  // namespace content

@@ -7,7 +7,7 @@
 #include "base/string_util.h"
 #include "content/shell/resource.h"
 #include "content/shell/shell.h"
-#include "content/shell/shell_javascript_dialog_creator.h"
+#include "content/shell/shell_javascript_dialog_manager.h"
 
 namespace content {
 
@@ -35,7 +35,7 @@ INT_PTR CALLBACK ShellJavaScriptDialog::DialogProc(HWND dialog,
       if (owner->dialog_win_) {
         owner->dialog_win_ = 0;
         owner->callback_.Run(false, string16());
-        owner->creator_->DialogClosed(owner);
+        owner->manager_->DialogClosed(owner);
       }
       break;
     }
@@ -65,7 +65,7 @@ INT_PTR CALLBACK ShellJavaScriptDialog::DialogProc(HWND dialog,
         owner->dialog_win_ = 0;
         owner->callback_.Run(result, user_input);
         DestroyWindow(dialog);
-        owner->creator_->DialogClosed(owner);
+        owner->manager_->DialogClosed(owner);
       }
       break;
     }
@@ -76,13 +76,13 @@ INT_PTR CALLBACK ShellJavaScriptDialog::DialogProc(HWND dialog,
 }
 
 ShellJavaScriptDialog::ShellJavaScriptDialog(
-    ShellJavaScriptDialogCreator* creator,
+    ShellJavaScriptDialogManager* manager,
     gfx::NativeWindow parent_window,
     JavaScriptMessageType message_type,
     const string16& message_text,
     const string16& default_prompt_text,
-    const JavaScriptDialogCreator::DialogClosedCallback& callback)
-    : creator_(creator),
+    const JavaScriptDialogManager::DialogClosedCallback& callback)
+    : manager_(manager),
       callback_(callback),
       message_text_(message_text),
       default_prompt_text_(default_prompt_text),

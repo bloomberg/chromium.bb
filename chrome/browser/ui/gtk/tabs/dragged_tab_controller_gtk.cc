@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
+#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -213,9 +213,9 @@ void DraggedTabControllerGtk::LoadingStateChanged(WebContents* source) {
     dragged_view_->Update();
 }
 
-content::JavaScriptDialogCreator*
-DraggedTabControllerGtk::GetJavaScriptDialogCreator() {
-  return GetJavaScriptDialogCreatorInstance();
+content::JavaScriptDialogManager*
+DraggedTabControllerGtk::GetJavaScriptDialogManager() {
+  return GetJavaScriptDialogManagerInstance();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

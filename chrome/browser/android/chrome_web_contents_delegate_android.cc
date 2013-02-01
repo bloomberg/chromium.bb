@@ -10,7 +10,7 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
+#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/find_bar/find_match_rects_details.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -258,9 +258,9 @@ void ChromeWebContentsDelegateAndroid::FindMatchRectsReply(
       details_object.obj());
 }
 
-content::JavaScriptDialogCreator*
-ChromeWebContentsDelegateAndroid::GetJavaScriptDialogCreator() {
-  return GetJavaScriptDialogCreatorInstance();
+content::JavaScriptDialogManager*
+ChromeWebContentsDelegateAndroid::GetJavaScriptDialogManager() {
+  return GetJavaScriptDialogManagerInstance();
 }
 
 bool ChromeWebContentsDelegateAndroid::CanDownload(

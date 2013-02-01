@@ -55,7 +55,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/invalidate_type.h"
-#include "content/public/browser/javascript_dialogs.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/load_from_memory_cache_details.h"
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/navigation_details.h"
@@ -312,7 +312,7 @@ WebContentsImpl::WebContentsImpl(
       capturing_contents_(false),
       is_being_destroyed_(false),
       notify_disconnection_(false),
-      dialog_creator_(NULL),
+      dialog_manager_(NULL),
       is_showing_before_unload_dialog_(false),
       opener_web_ui_type_(WebUI::kNoWebUI),
       closed_by_user_gesture_(false),
@@ -334,8 +334,8 @@ WebContentsImpl::~WebContentsImpl() {
   created_widgets_.clear();
 
   // Clear out any JavaScript state.
-  if (dialog_creator_)
-    dialog_creator_->ResetJavaScriptState(this);
+  if (dialog_manager_)
+    dialog_manager_->ResetJavaScriptState(this);
 
   if (color_chooser_)
     color_chooser_->End();
@@ -2521,9 +2521,9 @@ void WebContentsImpl::DidNavigateAnyFramePostCommit(
   // If we navigate off the page, reset JavaScript state. This does nothing
   // to prevent a malicious script from spamming messages, since the script
   // could just reload the page to stop blocking.
-  if (dialog_creator_ && !details.is_in_page) {
-    dialog_creator_->ResetJavaScriptState(this);
-    dialog_creator_ = NULL;
+  if (dialog_manager_ && !details.is_in_page) {
+    dialog_manager_->ResetJavaScriptState(this);
+    dialog_manager_ = NULL;
   }
 
   // Notify observers about navigation.
@@ -3125,13 +3125,13 @@ void WebContentsImpl::RunJavaScriptMessage(
       ShowingInterstitialPage() ||
       !delegate_ ||
       delegate_->ShouldSuppressDialogs() ||
-      !delegate_->GetJavaScriptDialogCreator();
+      !delegate_->GetJavaScriptDialogManager();
 
   if (!suppress_this_message) {
     std::string accept_lang = GetContentClient()->browser()->
       GetAcceptLangs(GetBrowserContext());
-    dialog_creator_ = delegate_->GetJavaScriptDialogCreator();
-    dialog_creator_->RunJavaScriptDialog(
+    dialog_manager_ = delegate_->GetJavaScriptDialogManager();
+    dialog_manager_->RunJavaScriptDialog(
         this,
         frame_url.GetOrigin(),
         accept_lang,
@@ -3166,7 +3166,7 @@ void WebContentsImpl::RunBeforeUnloadConfirm(RenderViewHost* rvh,
       rvhi->is_swapped_out() ||
       !delegate_ ||
       delegate_->ShouldSuppressDialogs() ||
-      !delegate_->GetJavaScriptDialogCreator();
+      !delegate_->GetJavaScriptDialogManager();
   if (suppress_this_message) {
     // The reply must be sent to the RVH that sent the request.
     rvhi->JavaScriptDialogClosed(reply_msg, true, string16());
@@ -3174,8 +3174,8 @@ void WebContentsImpl::RunBeforeUnloadConfirm(RenderViewHost* rvh,
   }
 
   is_showing_before_unload_dialog_ = true;
-  dialog_creator_ = delegate_->GetJavaScriptDialogCreator();
-  dialog_creator_->RunBeforeUnloadDialog(
+  dialog_manager_ = delegate_->GetJavaScriptDialogManager();
+  dialog_manager_->RunBeforeUnloadDialog(
       this, message, is_reload,
       base::Bind(&WebContentsImpl::OnDialogClosed, base::Unretained(this), rvh,
                  reply_msg));

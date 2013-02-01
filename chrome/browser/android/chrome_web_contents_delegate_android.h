@@ -51,8 +51,8 @@ class ChromeWebContentsDelegateAndroid
                                    int version,
                                    const std::vector<gfx::RectF>& rects,
                                    const gfx::RectF& active_rect) OVERRIDE;
-  virtual content::JavaScriptDialogCreator*
-  GetJavaScriptDialogCreator() OVERRIDE;
+  virtual content::JavaScriptDialogManager*
+  GetJavaScriptDialogManager() OVERRIDE;
   virtual bool CanDownload(content::RenderViewHost* source,
                            int request_id,
                            const std::string& request_method) OVERRIDE;

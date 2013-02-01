@@ -30,7 +30,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/repost_form_warning_controller.h"
 #include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
+#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tab_contents.h"
@@ -694,9 +694,9 @@ void ExternalTabContainerWin::UnregisterRenderViewHost(
   }
 }
 
-content::JavaScriptDialogCreator*
-ExternalTabContainerWin::GetJavaScriptDialogCreator() {
-  return GetJavaScriptDialogCreatorInstance();
+content::JavaScriptDialogManager*
+ExternalTabContainerWin::GetJavaScriptDialogManager() {
+  return GetJavaScriptDialogManagerInstance();
 }
 
 bool ExternalTabContainerWin::HandleContextMenu(

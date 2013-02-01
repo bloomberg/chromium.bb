@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/time.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
-#include "content/public/browser/javascript_dialogs.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 
 // Extra data for JavaScript dialogs to add Chrome-only features.
 class ChromeJavaScriptDialogExtraData {
@@ -37,7 +37,7 @@ class JavaScriptAppModalDialog : public AppModalDialog {
       bool display_suppress_checkbox,
       bool is_before_unload_dialog,
       bool is_reload,
-      const content::JavaScriptDialogCreator::DialogClosedCallback& callback);
+      const content::JavaScriptDialogManager::DialogClosedCallback& callback);
   virtual ~JavaScriptAppModalDialog();
 
   // Overridden from AppModalDialog:
@@ -83,7 +83,7 @@ class JavaScriptAppModalDialog : public AppModalDialog {
   bool is_before_unload_dialog_;
   bool is_reload_;
 
-  content::JavaScriptDialogCreator::DialogClosedCallback callback_;
+  content::JavaScriptDialogManager::DialogClosedCallback callback_;
 
   // Used only for testing. Specifies alternative prompt text that should be
   // used when notifying the delegate, if |use_override_prompt_text_| is true.

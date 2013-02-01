@@ -16,7 +16,7 @@
 #include "base/android/jni_helper.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/android/compositor.h"
-#include "content/public/browser/javascript_dialogs.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 

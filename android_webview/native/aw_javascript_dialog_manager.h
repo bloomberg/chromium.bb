@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_NATIVE_AW_JAVASCRIPT_DIALOG_CREATOR_H_
-#define ANDROID_WEBVIEW_NATIVE_AW_JAVASCRIPT_DIALOG_CREATOR_H_
+#ifndef ANDROID_WEBVIEW_NATIVE_AW_JAVASCRIPT_DIALOG_MANAGER_H_
+#define ANDROID_WEBVIEW_NATIVE_AW_JAVASCRIPT_DIALOG_MANAGER_H_
 
-#include "content/public/browser/javascript_dialogs.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 
 namespace android_webview {
 
-class AwJavaScriptDialogCreator : public content::JavaScriptDialogCreator {
+class AwJavaScriptDialogManager : public content::JavaScriptDialogManager {
  public:
-  explicit AwJavaScriptDialogCreator();
-  virtual ~AwJavaScriptDialogCreator();
+  explicit AwJavaScriptDialogManager();
+  virtual ~AwJavaScriptDialogManager();
 
-  // Overridden from content::JavaScriptDialogCreator:
+  // Overridden from content::JavaScriptDialogManager:
   virtual void RunJavaScriptDialog(
       content::WebContents* web_contents,
       const GURL& origin_url,
@@ -33,9 +33,9 @@ class AwJavaScriptDialogCreator : public content::JavaScriptDialogCreator {
       content::WebContents* web_contents) OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AwJavaScriptDialogCreator);
+  DISALLOW_COPY_AND_ASSIGN(AwJavaScriptDialogManager);
 };
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_NATIVE_AW_JAVASCRIPT_DIALOG_CREATOR_H_
+#endif  // ANDROID_WEBVIEW_NATIVE_AW_JAVASCRIPT_DIALOG_MANAGER_H_

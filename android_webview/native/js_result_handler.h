@@ -7,7 +7,7 @@
 
 #include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
-#include "content/public/browser/javascript_dialogs.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 
 namespace android_webview {
 
@@ -15,7 +15,7 @@ bool RegisterJsResultHandler(JNIEnv* env);
 
 base::android::ScopedJavaLocalRef<jobject> createJsResultHandler(
     JNIEnv* env,
-    const content::JavaScriptDialogCreator::DialogClosedCallback*
+    const content::JavaScriptDialogManager::DialogClosedCallback*
         native_dialog_pointer);
 
 }  // namespace android_webview

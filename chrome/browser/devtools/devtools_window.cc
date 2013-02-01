@@ -913,12 +913,12 @@ void DevToolsWindow::FileSystemAdded(
     delete file_system_value;
 }
 
-content::JavaScriptDialogCreator* DevToolsWindow::GetJavaScriptDialogCreator() {
+content::JavaScriptDialogManager* DevToolsWindow::GetJavaScriptDialogManager() {
   if (inspected_web_contents_ && inspected_web_contents_->GetDelegate()) {
     return inspected_web_contents_->GetDelegate()->
-        GetJavaScriptDialogCreator();
+        GetJavaScriptDialogManager();
   }
-  return content::WebContentsDelegate::GetJavaScriptDialogCreator();
+  return content::WebContentsDelegate::GetJavaScriptDialogManager();
 }
 
 void DevToolsWindow::RunFileChooser(WebContents* web_contents,

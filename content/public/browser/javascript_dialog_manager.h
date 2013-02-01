@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_JAVASCRIPT_DIALOGS_H_
-#define CONTENT_PUBLIC_BROWSER_JAVASCRIPT_DIALOGS_H_
+#ifndef CONTENT_PUBLIC_BROWSER_JAVASCRIPT_DIALOG_MANAGER_H_
+#define CONTENT_PUBLIC_BROWSER_JAVASCRIPT_DIALOG_MANAGER_H_
 
 #include <string>
 
@@ -18,9 +18,9 @@ namespace content {
 
 class WebContents;
 
-// An interface consisting of methods that can be called to produce JavaScript
-// dialogs.
-class JavaScriptDialogCreator {
+// An interface consisting of methods that can be called to produce and manage
+// JavaScript dialogs.
+class JavaScriptDialogManager {
  public:
   typedef base::Callback<void(bool /* success */,
                               const string16& /* user_input */)>
@@ -48,9 +48,9 @@ class JavaScriptDialogCreator {
   // for the given WebContents.
   virtual void ResetJavaScriptState(WebContents* web_contents) = 0;
 
-  virtual ~JavaScriptDialogCreator() {}
+  virtual ~JavaScriptDialogManager() {}
 };
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_JAVASCRIPT_DIALOGS_H_
+#endif  // CONTENT_PUBLIC_BROWSER_JAVASCRIPT_DIALOG_MANAGER_H_

@@ -8,7 +8,7 @@
 
 #import "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
-#include "content/shell/shell_javascript_dialog_creator.h"
+#include "content/shell/shell_javascript_dialog_manager.h"
 
 // Helper object that receives the notification that the dialog/sheet is
 // going away. Is responsible for cleaning itself up.
@@ -18,12 +18,12 @@
   NSTextField* textField_;  // WEAK; owned by alert_
 
   // Copies of the fields in ShellJavaScriptDialog because they're private.
-  content::ShellJavaScriptDialogCreator* creator_;
-  content::JavaScriptDialogCreator::DialogClosedCallback callback_;
+  content::ShellJavaScriptDialogManager* manager_;
+  content::JavaScriptDialogManager::DialogClosedCallback callback_;
 }
 
-- (id)initHelperWithCreator:(content::ShellJavaScriptDialogCreator*)creator
-   andCallback:(content::JavaScriptDialogCreator::DialogClosedCallback)callback;
+- (id)initHelperWithManager:(content::ShellJavaScriptDialogManager*)manager
+   andCallback:(content::JavaScriptDialogManager::DialogClosedCallback)callback;
 - (NSAlert*)alert;
 - (NSTextField*)textField;
 - (void)alertDidEnd:(NSAlert*)alert
@@ -35,10 +35,10 @@
 
 @implementation ShellJavaScriptDialogHelper
 
-- (id)initHelperWithCreator:(content::ShellJavaScriptDialogCreator*)creator
-  andCallback:(content::JavaScriptDialogCreator::DialogClosedCallback)callback {
+- (id)initHelperWithManager:(content::ShellJavaScriptDialogManager*)manager
+  andCallback:(content::JavaScriptDialogManager::DialogClosedCallback)callback {
   if (self = [super init]) {
-    creator_ = creator;
+    manager_ = manager;
     callback_ = callback;
   }
 
@@ -73,7 +73,7 @@
   content::ShellJavaScriptDialog* native_dialog =
       reinterpret_cast<content::ShellJavaScriptDialog*>(contextInfo);
   callback_.Run(success, input);
-  creator_->DialogClosed(native_dialog);
+  manager_->DialogClosed(native_dialog);
 }
 
 - (void)cancel {
@@ -86,19 +86,19 @@
 namespace content {
 
 ShellJavaScriptDialog::ShellJavaScriptDialog(
-    ShellJavaScriptDialogCreator* creator,
+    ShellJavaScriptDialogManager* manager,
     gfx::NativeWindow parent_window,
     JavaScriptMessageType message_type,
     const string16& message_text,
     const string16& default_prompt_text,
-    const JavaScriptDialogCreator::DialogClosedCallback& callback)
-    : creator_(creator),
+    const JavaScriptDialogManager::DialogClosedCallback& callback)
+    : manager_(manager),
       callback_(callback) {
   bool text_field = message_type == JAVASCRIPT_MESSAGE_TYPE_PROMPT;
   bool one_button = message_type == JAVASCRIPT_MESSAGE_TYPE_ALERT;
 
   helper_ =
-      [[ShellJavaScriptDialogHelper alloc] initHelperWithCreator:creator
+      [[ShellJavaScriptDialogHelper alloc] initHelperWithManager:manager
                                                      andCallback:callback];
 
   // Show the modal dialog.

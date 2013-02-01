@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/native/aw_javascript_dialog_creator.h"
+#include "android_webview/native/aw_javascript_dialog_manager.h"
 
 #include "android_webview/native/aw_contents.h"
 #include "android_webview/native/js_result_handler.h"
@@ -12,7 +12,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 #include "base/string16.h"
-#include "content/public/browser/javascript_dialogs.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
 
 using base::android::AttachCurrentThread;
@@ -20,11 +20,11 @@ using base::android::ScopedJavaLocalRef;
 
 namespace android_webview {
 
-AwJavaScriptDialogCreator::AwJavaScriptDialogCreator() {}
+AwJavaScriptDialogManager::AwJavaScriptDialogManager() {}
 
-AwJavaScriptDialogCreator::~AwJavaScriptDialogCreator() {}
+AwJavaScriptDialogManager::~AwJavaScriptDialogManager() {}
 
-void AwJavaScriptDialogCreator::RunJavaScriptDialog(
+void AwJavaScriptDialogManager::RunJavaScriptDialog(
     content::WebContents* web_contents,
     const GURL& origin_url,
     const std::string& accept_lang,
@@ -42,7 +42,7 @@ void AwJavaScriptDialogCreator::RunJavaScriptDialog(
                                 default_prompt_text, js_result);
 }
 
-void AwJavaScriptDialogCreator::RunBeforeUnloadDialog(
+void AwJavaScriptDialogManager::RunBeforeUnloadDialog(
     content::WebContents* web_contents,
     const string16& message_text,
     bool is_reload,
@@ -56,7 +56,7 @@ void AwJavaScriptDialogCreator::RunBeforeUnloadDialog(
                                   js_result);
 }
 
-void AwJavaScriptDialogCreator::ResetJavaScriptState(
+void AwJavaScriptDialogManager::ResetJavaScriptState(
     content::WebContents* web_contents) {
 }
 

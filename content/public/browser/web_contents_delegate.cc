@@ -121,7 +121,7 @@ bool WebContentsDelegate::ShouldCreateWebContents(
   return true;
 }
 
-JavaScriptDialogCreator* WebContentsDelegate::GetJavaScriptDialogCreator() {
+JavaScriptDialogManager* WebContentsDelegate::GetJavaScriptDialogManager() {
   return NULL;
 }
 

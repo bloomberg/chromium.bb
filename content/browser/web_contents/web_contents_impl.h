@@ -46,7 +46,7 @@ class DateTimeChooserAndroid;
 class DownloadItem;
 class InterstitialPageImpl;
 class JavaBridgeDispatcherHostManager;
-class JavaScriptDialogCreator;
+class JavaScriptDialogManager;
 class RenderViewHost;
 class RenderViewHostDelegateView;
 class RenderViewHostImpl;
@@ -796,9 +796,9 @@ class CONTENT_EXPORT WebContentsImpl
   // once.
   bool notify_disconnection_;
 
-  // Pointer to the JavaScript dialog creator, lazily assigned. Used because the
+  // Pointer to the JavaScript dialog manager, lazily assigned. Used because the
   // delegate of this WebContentsImpl is nulled before its destructor is called.
-  JavaScriptDialogCreator* dialog_creator_;
+  JavaScriptDialogManager* dialog_manager_;
 
   // Set to true when there is an active "before unload" dialog.  When true,
   // we've forced the throbber to start in Navigate, and we need to remember to

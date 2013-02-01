@@ -588,8 +588,8 @@ class Browser : public TabStripModelObserver,
       content::WebContents* web_contents) OVERRIDE;
   virtual void DidNavigateToPendingEntry(
       content::WebContents* web_contents) OVERRIDE;
-  virtual content::JavaScriptDialogCreator*
-      GetJavaScriptDialogCreator() OVERRIDE;
+  virtual content::JavaScriptDialogManager*
+      GetJavaScriptDialogManager() OVERRIDE;
   virtual content::ColorChooser* OpenColorChooser(
       content::WebContents* web_contents,
       int color_chooser_id,

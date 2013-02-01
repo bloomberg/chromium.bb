@@ -19,7 +19,7 @@ class AwWebContentsDelegate
  public:
   AwWebContentsDelegate(JNIEnv* env, jobject obj);
   virtual ~AwWebContentsDelegate();
-  virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator()
+  virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager()
       OVERRIDE;
   virtual void FindReply(content::WebContents* web_contents,
                          int request_id,

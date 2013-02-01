@@ -16,7 +16,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/shell.h"
-#include "content/shell/shell_javascript_dialog_creator.h"
+#include "content/shell/shell_javascript_dialog_manager.h"
 #include "net/base/net_util.h"
 
 namespace content {
@@ -55,12 +55,12 @@ void NavigateToURL(Shell* window, const GURL& url) {
 }
 
 void WaitForAppModalDialog(Shell* window) {
-  ShellJavaScriptDialogCreator* dialog_creator =
-      static_cast<ShellJavaScriptDialogCreator*>(
-          window->GetJavaScriptDialogCreator());
+  ShellJavaScriptDialogManager* dialog_manager=
+      static_cast<ShellJavaScriptDialogManager*>(
+          window->GetJavaScriptDialogManager());
 
   scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner();
-  dialog_creator->set_dialog_request_callback(runner->QuitClosure());
+  dialog_manager->set_dialog_request_callback(runner->QuitClosure());
   runner->Run();
 }
 

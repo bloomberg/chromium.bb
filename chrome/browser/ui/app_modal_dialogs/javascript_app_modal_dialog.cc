@@ -14,7 +14,7 @@
 #include "ui/aura/root_window.h"
 #endif
 
-using content::JavaScriptDialogCreator;
+using content::JavaScriptDialogManager;
 using content::WebContents;
 
 namespace {
@@ -65,7 +65,7 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
     bool display_suppress_checkbox,
     bool is_before_unload_dialog,
     bool is_reload,
-    const JavaScriptDialogCreator::DialogClosedCallback& callback)
+    const JavaScriptDialogManager::DialogClosedCallback& callback)
     : AppModalDialog(web_contents, title),
       extra_data_(extra_data),
       javascript_message_type_(javascript_message_type),

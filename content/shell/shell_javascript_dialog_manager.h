@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_SHELL_JAVASCRIPT_DIALOG_CREATOR_H_
-#define CONTENT_SHELL_SHELL_JAVASCRIPT_DIALOG_CREATOR_H_
+#ifndef CONTENT_SHELL_SHELL_JAVASCRIPT_DIALOG_MANAGER_H_
+#define CONTENT_SHELL_SHELL_JAVASCRIPT_DIALOG_MANAGER_H_
 
-#include "base/compiler_specific.h"
 #include "base/callback_forward.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/javascript_dialogs.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 
 namespace content {
 
 class ShellJavaScriptDialog;
 
-class ShellJavaScriptDialogCreator : public JavaScriptDialogCreator {
+class ShellJavaScriptDialogManager : public JavaScriptDialogManager {
  public:
-  ShellJavaScriptDialogCreator();
-  virtual ~ShellJavaScriptDialogCreator();
+  ShellJavaScriptDialogManager();
+  virtual ~ShellJavaScriptDialogManager();
 
-  // JavaScriptDialogCreator:
+  // JavaScriptDialogManager:
   virtual void RunJavaScriptDialog(
       WebContents* web_contents,
       const GURL& origin_url,
@@ -56,9 +56,9 @@ class ShellJavaScriptDialogCreator : public JavaScriptDialogCreator {
 
   base::Closure dialog_request_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellJavaScriptDialogCreator);
+  DISALLOW_COPY_AND_ASSIGN(ShellJavaScriptDialogManager);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_SHELL_JAVASCRIPT_DIALOG_CREATOR_H_
+#endif  // CONTENT_SHELL_SHELL_JAVASCRIPT_DIALOG_MANAGER_H_
