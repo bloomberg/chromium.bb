@@ -1312,7 +1312,6 @@
         'browser/ui/cocoa/one_click_signin_bubble_controller_unittest.mm',
         'browser/ui/cocoa/panels/panel_cocoa_unittest.mm',
         'browser/ui/cocoa/profile_menu_controller_unittest.mm',
-        'browser/ui/cocoa/ratings_view_unittest.mm',
         'browser/ui/cocoa/run_loop_testing_unittest.mm',
         'browser/ui/cocoa/status_bubble_mac_unittest.mm',
         'browser/ui/cocoa/status_icons/status_icon_mac_unittest.mm',

@@ -704,8 +704,6 @@
         'browser/ui/cocoa/presentation_mode_controller.mm',
         'browser/ui/cocoa/profile_menu_controller.h',
         'browser/ui/cocoa/profile_menu_controller.mm',
-        'browser/ui/cocoa/ratings_view.h',
-        'browser/ui/cocoa/ratings_view.mm',
         'browser/ui/cocoa/rect_path_utils.h',
         'browser/ui/cocoa/rect_path_utils.mm',
         'browser/ui/cocoa/restart_browser.h',
