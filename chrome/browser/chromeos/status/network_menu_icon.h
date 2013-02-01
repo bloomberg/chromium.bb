@@ -33,18 +33,17 @@
 #include <map>
 #include <string>
 
+#include "ash/system/chromeos/network/network_icon_animation_observer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/throb_animation.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
 
 class NetworkIcon;
 
-class NetworkMenuIcon : public ui::AnimationDelegate {
+class NetworkMenuIcon : public ash::network_icon::AnimationObserver {
  public:
   enum Mode {
     MENU_MODE,      // Prioritizes connecting networks and sets tooltips.
@@ -91,9 +90,8 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   // Generates and returns the icon image for vpn network connection.
   const gfx::ImageSkia GetVpnIconAndText(string16* text);
 
-
-  // ui::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // ash::network_icon::AnimationObserver implementation.
+  virtual void NetworkIconChanged() OVERRIDE;
 
   // Static functions for generating network icon images:
 
@@ -142,19 +140,24 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   virtual double GetAnimation();
 
  private:
+  // Returns the index for a connecting icon.
+  int GetConnectingIndex();
   // Returns the appropriate connecting network if any.
   const Network* GetConnectingNetwork();
   // Sets the icon based on the state of the network and the network library.
   // Sets text_ to the appropriate tooltip or display text.
-  void SetIconAndText();
+  // Returns true if the icon should animate.
+  bool SetIconAndText();
   // Sets the icon and text for VPN connection.
-  void SetVpnIconAndText();
+  // Returns true if the icon should animate.
+  bool SetVpnIconAndText();
   // Set the icon and text to show a warning if unable to load the cros library.
   void SetWarningIconAndText();
   // Sets the icon and text when displaying a connecting state.
-  void SetConnectingIconAndText();
+  void SetConnectingIconAndText(const Network* connecting_network);
   // Sets the icon and text when connected to |network|.
-  void SetActiveNetworkIconAndText(const Network* network);
+  // Returns true if the icon should animate.
+  bool SetActiveNetworkIconAndText(const Network* network);
   // Sets the icon and text when disconnected.
   void SetDisconnectedIconAndText();
 
@@ -165,13 +168,13 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   // Generated image for connecting to a VPN.
   gfx::ImageSkia vpn_connecting_badge_;
   ResourceColorTheme resource_color_theme_;
-  // Animation throbber for animating the icon while conencting.
-  ui::ThrobAnimation animation_connecting_;
   // The generated icon image.
   scoped_ptr<NetworkIcon> icon_;
   // A weak pointer to the currently connecting network. Used only for
   // comparison purposes; accessing this directly may be invalid.
   const Network* connecting_network_;
+  // Index of current connecting animation.
+  int connecting_index_;
   // The tooltip or display text associated with the menu icon.
   string16 text_;
   // Timer to eliminate noise while initializing cellular.

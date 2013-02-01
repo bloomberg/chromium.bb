@@ -5,11 +5,13 @@
 #ifndef ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_ICON_ANIMATION_OBSERVER_H_
 #define ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_ICON_ANIMATION_OBSERVER_H_
 
+#include "ash/ash_export.h"
+
 namespace ash {
 namespace network_icon {
 
 // Observer interface class for animating network icons.
-class AnimationObserver {
+class ASH_EXPORT AnimationObserver {
  public:
   // Called when the image has changed due to animation. The callback should
   // trigger a call to GetImageForNetwork() to retrieve the image.

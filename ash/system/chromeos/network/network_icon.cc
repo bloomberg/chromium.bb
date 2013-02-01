@@ -5,15 +5,13 @@
 #include "ash/system/chromeos/network/network_icon.h"
 
 #include "ash/shell.h"
+#include "ash/system/chromeos/network/network_icon_animation.h"
 #include "ash/system/chromeos/network/network_icon_animation_observer.h"
-#include "base/observer_list.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -118,9 +116,6 @@ struct Badges {
   const gfx::ImageSkia* bottom_left;
   const gfx::ImageSkia* bottom_right;
 };
-
-// Animation cycle length.
-const int kThrobDurationMs = 750;
 
 // Amount to fade icons while connecting.
 const double kConnectingImageAlpha = 0.5;
@@ -401,62 +396,14 @@ void GetBadges(const NetworkState* network,
 }
 
 //------------------------------------------------------------------------------
-// Handle connecting images
-
-class ConnectingAnimation : public ui::AnimationDelegate {
- public:
-  ConnectingAnimation()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {
-    // Set up the animation throbber.
-    animation_.SetThrobDuration(kThrobDurationMs);
-    animation_.SetTweenType(ui::Tween::LINEAR);
-  }
-
-  virtual ~ConnectingAnimation() {}
-
-  // ui::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
-    if (animation == &animation_) {
-      FOR_EACH_OBSERVER(AnimationObserver, observers_, NetworkIconChanged());
-    }
-  }
-
-  double GetAnimation() {
-    if (!animation_.is_animating()) {
-      animation_.Reset();
-      animation_.StartThrobbing(-1 /*throb indefinitely*/);
-      return 0;
-    }
-    return animation_.GetCurrentValue();
-  }
-
-  void AddObserver(AnimationObserver* observer) {
-    observers_.AddObserver(observer);
-  }
-
-  void RemoveObserver(AnimationObserver* observer) {
-    observers_.RemoveObserver(observer);
-    if (observers_.size() == 0)
-      animation_.Stop();
-  }
-
- private:
-  ui::ThrobAnimation animation_;
-  ObserverList<AnimationObserver> observers_;
-};
-
-ConnectingAnimation* GetConnectingAnimation() {
-  static ConnectingAnimation* s_connecting_animation =
-      new ConnectingAnimation();
-  return s_connecting_animation;
-}
+// Get connecting images
 
 gfx::ImageSkia GetConnectingImage(const std::string& type,
                                   ResourceColorTheme color) {
   ImageType image_type = (type == flimflam::kTypeWifi) ? ARCS : BARS;
   int image_count = NumImagesForType(image_type) - 1;
   gfx::ImageSkia** images = ImageListForType(image_type, color);
-  double animation = GetConnectingAnimation()->GetAnimation();
+  double animation = NetworkIconAnimation::GetInstance()->GetAnimation();
   int index = animation * nextafter(static_cast<float>(image_count), 0);
   index = std::max(std::min(index, image_count - 1), 0);
 
@@ -553,12 +500,12 @@ gfx::ImageSkia GetImageForNetwork(const NetworkState* network,
                                   AnimationObserver* observer) {
   if (network->IsConnectingState()) {
     if (observer)
-      GetConnectingAnimation()->AddObserver(observer);
+      NetworkIconAnimation::GetInstance()->AddObserver(observer);
     return GetConnectingImage(network->type(), color);
   }
   // Not connecting, remove observer.
   if (observer)
-    GetConnectingAnimation()->RemoveObserver(observer);
+    NetworkIconAnimation::GetInstance()->RemoveObserver(observer);
 
   NetworkIconMap* icon_map = GetIconMap(color);
 
