@@ -8,6 +8,7 @@
 
 namespace cc {
 
+// IMPORTANT: new fields must be added to equal() and unite()
 LayerTreeDebugState::LayerTreeDebugState()
   : showFPSCounter(false)
   , showPlatformLayerTree(false)
@@ -38,7 +39,18 @@ bool LayerTreeDebugState::hudNeedsFont() const {
 }
 
 bool LayerTreeDebugState::equal(const LayerTreeDebugState& a, const LayerTreeDebugState& b) {
-    return memcmp(&a, &b, sizeof(LayerTreeDebugState)) == 0;
+    return (a.showFPSCounter == b.showFPSCounter &&
+            a.showPlatformLayerTree == b.showPlatformLayerTree &&
+            a.showDebugBorders == b.showDebugBorders &&
+            a.continuousPainting == b.continuousPainting &&
+            a.showPaintRects == b.showPaintRects &&
+            a.showPropertyChangedRects == b.showPropertyChangedRects &&
+            a.showSurfaceDamageRects == b.showSurfaceDamageRects &&
+            a.showScreenSpaceRects == b.showScreenSpaceRects &&
+            a.showReplicaScreenSpaceRects == b.showReplicaScreenSpaceRects &&
+            a.showOccludingRects == b.showOccludingRects &&
+            a.showNonOccludingRects == b.showNonOccludingRects &&
+            a.slowDownRasterScaleFactor == b.slowDownRasterScaleFactor);
 }
 
 LayerTreeDebugState LayerTreeDebugState::unite(const LayerTreeDebugState& a, const LayerTreeDebugState& b) {
