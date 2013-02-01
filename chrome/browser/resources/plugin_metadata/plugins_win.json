@@ -53,18 +53,18 @@
     ],
     "versions": [
       {
-        "version": "6.0.370",
+        "version": "6.0.390",
         "status": "requires_authorization",
-        "comment": "Java SE 6 Update 37. '370' is not a typo."
+        "comment": "Java SE 6 Update 39. '390' is not a typo."
       },
       {
         "version": "7",
         "status": "out_of_date"
       },
       {
-        "version": "10.11",
+        "version": "10.13",
         "status": "requires_authorization",
-        "comment": "Java SE 7u11"
+        "comment": "Java SE 7u13"
       }
     ],
     "lang": "en-US",
