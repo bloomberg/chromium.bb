@@ -56,6 +56,8 @@ void ShellContentRendererClient::RenderThreadStarted() {
 }
 
 void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return;
   WebKitTestRunner* test_runner = new WebKitTestRunner(render_view);
   if (!ShellRenderProcessObserver::GetInstance()->test_delegate()) {
     ShellRenderProcessObserver::GetInstance()->SetMainWindow(render_view,
