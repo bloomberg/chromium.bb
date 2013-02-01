@@ -173,6 +173,7 @@
     { "name": "talk.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "hostedtalkgadget.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "plus.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "plus.sandbox.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "script.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "history.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
 
