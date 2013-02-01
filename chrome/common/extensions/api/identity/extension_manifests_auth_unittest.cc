@@ -4,13 +4,23 @@
 
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 
-#include "chrome/common/extensions/extension_manifest_constants.h"
-#include "extensions/common/install_warning.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 
 namespace keys = extension_manifest_keys;
 
-TEST_F(ExtensionManifestTest, OAuth2SectionParsing) {
+namespace extensions {
+
+class OAuth2ManifestTest : public ExtensionManifestTest {
+ protected:
+  virtual void SetUp() OVERRIDE {
+    ManifestHandler::Register(extension_manifest_keys::kOAuth2,
+                              new OAuth2ManifestHandler);
+  }
+};
+
+TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
   DictionaryValue base_manifest;
 
   base_manifest.SetString(keys::kName, "test");
@@ -33,10 +43,10 @@ TEST_F(ExtensionManifestTest, OAuth2SectionParsing) {
     scoped_refptr<extensions::Extension> extension =
         LoadAndExpectSuccess(manifest);
     EXPECT_TRUE(extension->install_warnings().empty());
-    EXPECT_EQ("client1", extension->oauth2_info().client_id);
-    EXPECT_EQ(2U, extension->oauth2_info().scopes.size());
-    EXPECT_EQ("scope1", extension->oauth2_info().scopes[0]);
-    EXPECT_EQ("scope2", extension->oauth2_info().scopes[1]);
+    EXPECT_EQ("client1", OAuth2Info::GetOAuth2Info(extension).client_id);
+    EXPECT_EQ(2U, OAuth2Info::GetOAuth2Info(extension).scopes.size());
+    EXPECT_EQ("scope1", OAuth2Info::GetOAuth2Info(extension).scopes[0]);
+    EXPECT_EQ("scope2", OAuth2Info::GetOAuth2Info(extension).scopes[1]);
   }
 
   // OAuth2 section should be parsed for a packaged app.
@@ -49,10 +59,10 @@ TEST_F(ExtensionManifestTest, OAuth2SectionParsing) {
     scoped_refptr<extensions::Extension> extension =
         LoadAndExpectSuccess(manifest);
     EXPECT_TRUE(extension->install_warnings().empty());
-    EXPECT_EQ("client1", extension->oauth2_info().client_id);
-    EXPECT_EQ(2U, extension->oauth2_info().scopes.size());
-    EXPECT_EQ("scope1", extension->oauth2_info().scopes[0]);
-    EXPECT_EQ("scope2", extension->oauth2_info().scopes[1]);
+    EXPECT_EQ("client1", OAuth2Info::GetOAuth2Info(extension).client_id);
+    EXPECT_EQ(2U, OAuth2Info::GetOAuth2Info(extension).scopes.size());
+    EXPECT_EQ("scope1", OAuth2Info::GetOAuth2Info(extension).scopes[0]);
+    EXPECT_EQ("scope2", OAuth2Info::GetOAuth2Info(extension).scopes[1]);
   }
 
   // OAuth2 section should NOT be parsed for a hosted app.
@@ -70,7 +80,9 @@ TEST_F(ExtensionManifestTest, OAuth2SectionParsing) {
     EXPECT_EQ("'oauth2' is only allowed for extensions, legacy packaged apps "
                   "and packaged apps, and this is a hosted app.",
               warning.message);
-    EXPECT_EQ("", extension->oauth2_info().client_id);
-    EXPECT_TRUE(extension->oauth2_info().scopes.empty());
+    EXPECT_EQ("", OAuth2Info::GetOAuth2Info(extension).client_id);
+    EXPECT_TRUE(OAuth2Info::GetOAuth2Info(extension).scopes.empty());
   }
 }
+
+}  // namespace extensions

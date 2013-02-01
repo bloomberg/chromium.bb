@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/api/font_settings/font_settings_api.h"
 #include "chrome/browser/extensions/api/history/history_api.h"
 #include "chrome/browser/extensions/api/i18n/i18n_api.h"
+#include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
 #include "chrome/browser/extensions/api/input/input.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
@@ -266,6 +267,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::FontSettingsAPI::GetFactoryInstance();
   extensions::HistoryAPI::GetFactoryInstance();
   extensions::I18nAPI::GetFactoryInstance();
+  extensions::IdentityAPI::GetFactoryInstance();
   extensions::IdleManagerFactory::GetInstance();
 #if defined(TOOLKIT_VIEWS)
   extensions::InputAPI::GetFactoryInstance();

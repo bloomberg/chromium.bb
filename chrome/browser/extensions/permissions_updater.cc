@@ -16,6 +16,7 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -50,8 +51,8 @@ class OAuth2GrantRecorder : public OAuth2MintTokenFlow::Delegate,
               TokenServiceFactory::GetForProfile(profile)->
                   GetOAuth2LoginRefreshToken(),
               extension->id(),
-              extension->oauth2_info().client_id,
-              extension->oauth2_info().scopes,
+              OAuth2Info::GetOAuth2Info(extension).client_id,
+              OAuth2Info::GetOAuth2Info(extension).scopes,
               OAuth2MintTokenFlow::MODE_RECORD_GRANT))) {
     notification_registrar_.Add(this,
                                 chrome::NOTIFICATION_PROFILE_DESTROYED,
@@ -143,7 +144,7 @@ void PermissionsUpdater::GrantActivePermissions(const Extension* extension,
     // Only record OAuth grant if:
     // 1. The extension has client id and scopes.
     // 2. The user is signed in to Chrome.
-    const Extension::OAuth2Info& oauth2_info = extension->oauth2_info();
+    const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension);
     if (!oauth2_info.client_id.empty() && !oauth2_info.scopes.empty()) {
       TokenService* token_service = TokenServiceFactory::GetForProfile(
           profile_);
@@ -168,7 +169,7 @@ void PermissionsUpdater::DispatchEvent(
     const char* event_name,
     const PermissionSet* changed_permissions) {
   if (!profile_ ||
-      !extensions::ExtensionSystem::Get(profile_)->event_router())
+      !ExtensionSystem::Get(profile_)->event_router())
     return;
 
   scoped_ptr<ListValue> value(new ListValue());
@@ -227,8 +228,7 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
 }
 
 ExtensionPrefs* PermissionsUpdater::GetExtensionPrefs() {
-  return extensions::ExtensionSystem::Get(profile_)->extension_service()->
-      extension_prefs();
+  return ExtensionSystem::Get(profile_)->extension_service()->extension_prefs();
 }
 
 }  // namespace extensions

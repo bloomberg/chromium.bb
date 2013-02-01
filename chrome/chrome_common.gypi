@@ -146,6 +146,8 @@
         'common/extensions/api/extension_api_stub.cc',
         'common/extensions/api/i18n/default_locale_handler.cc',
         'common/extensions/api/i18n/default_locale_handler.h',
+        'common/extensions/api/identity/oauth2_manifest_handler.cc',
+        'common/extensions/api/identity/oauth2_manifest_handler.h',
         'common/extensions/api/input_ime/input_components_handler.cc',
         'common/extensions/api/input_ime/input_components_handler.h',
         'common/extensions/api/file_handlers/file_handlers_parser.cc',
@@ -486,6 +488,8 @@
             ['include', 'common/extensions/api/extension_action/browser_action_handler.h'],
             ['include', 'common/extensions/api/i18n/default_locale_handler.cc'],
             ['include', 'common/extensions/api/i18n/default_locale_handler.h'],
+            ['include', 'common/extensions/api/identity/oauth2_manifest_handler.cc'],
+            ['include', 'common/extensions/api/identity/oauth2_manifest_handler.h'],
           ],
         }],
         ['remoting==1', {

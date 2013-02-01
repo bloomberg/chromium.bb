@@ -55,8 +55,6 @@ namespace extensions {
 struct ActionInfo;
 class PermissionSet;
 
-typedef std::set<std::string> OAuth2Scopes;
-
 // Represents a Chrome extension.
 class Extension : public base::RefCountedThreadSafe<Extension> {
  public:
@@ -131,17 +129,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   struct NaClModuleInfo {
     GURL url;
     std::string mime_type;
-  };
-
-  // OAuth2 info included in the extension.
-  struct OAuth2Info {
-    OAuth2Info();
-    ~OAuth2Info();
-
-    OAuth2Scopes GetScopesAsSet();
-
-    std::string client_id;
-    std::vector<std::string> scopes;
   };
 
   // A base class for parsed manifest data that APIs want to store on
@@ -567,7 +554,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
   bool incognito_split_mode() const { return incognito_split_mode_; }
   bool offline_enabled() const { return offline_enabled_; }
-  const OAuth2Info& oauth2_info() const { return oauth2_info_; }
   bool wants_file_access() const { return wants_file_access_; }
   int creation_flags() const { return creation_flags_; }
   bool from_webstore() const { return (creation_flags_ & FROM_WEBSTORE) != 0; }
@@ -770,9 +756,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                        void(UserScript::*add_method)(const std::string& glob),
                        UserScript* instance);
 
-  // Helper method that loads the OAuth2 info from the 'oauth2' manifest key.
-  bool LoadOAuth2Info(string16* error);
-
   // Returns true if the extension has more than one "UI surface". For example,
   // an extension that has a browser action and a page action.
   bool HasMultipleUISurfaces() const;
@@ -966,9 +949,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Should this app be shown in the browser New Tab Page.
   bool display_in_new_tab_page_;
-
-  // The OAuth2 client id and scopes, if specified by the extension.
-  OAuth2Info oauth2_info_;
 
   // Whether the extension has host permissions or user script patterns that
   // imply access to file:/// scheme URLs (the user may not have actually

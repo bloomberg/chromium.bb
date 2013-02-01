@@ -15,6 +15,9 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -25,17 +28,16 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using extensions::Extension;
-using extensions::IdentityGetAuthTokenFunction;
-using extensions::IdentityLaunchWebAuthFlowFunction;
 using testing::_;
 using testing::Return;
 using testing::ReturnRef;
 
-namespace errors = extensions::identity_constants;
-namespace utils = extension_function_test_utils;
+namespace extensions {
 
 namespace {
+
+namespace errors = identity_constants;
+namespace utils = extension_function_test_utils;
 
 static const char kAccessToken[] = "auth_token";
 
@@ -142,6 +144,12 @@ class MockGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
 };
 
 class GetAuthTokenFunctionTest : public ExtensionBrowserTest {
+ public:
+  virtual void SetUp() OVERRIDE {
+    ExtensionBrowserTest::SetUp();
+    ManifestHandler::Register(extension_manifest_keys::kOAuth2,
+                              new OAuth2ManifestHandler);
+  }
  protected:
   enum OAuth2Fields {
     NONE = 0,
@@ -156,8 +164,8 @@ class GetAuthTokenFunctionTest : public ExtensionBrowserTest {
   const Extension* CreateExtension(int fields_to_set) {
     const Extension* ext = LoadExtension(
         test_data_dir_.AppendASCII("platform_apps/oauth2"));
-    Extension::OAuth2Info& oauth2_info = const_cast<Extension::OAuth2Info&>(
-        ext->oauth2_info());
+    OAuth2Info& oauth2_info = const_cast<OAuth2Info&>(
+        OAuth2Info::GetOAuth2Info(ext));
     if ((fields_to_set & CLIENT_ID) != 0)
       oauth2_info.client_id = "client1";
     if ((fields_to_set & SCOPES) != 0) {
@@ -412,7 +420,7 @@ class LaunchWebAuthFlowFunctionTest : public ExtensionBrowserTest {
 
    scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-    scoped_refptr<extensions::Extension> empty_extension(
+    scoped_refptr<Extension> empty_extension(
         utils::CreateEmptyExtension());
     function->set_extension(empty_extension.get());
     std::string args = base::StringPrintf(
@@ -452,3 +460,5 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, Bounds) {
       "\"left\": 100, \"top\": 200, \"width\": 300, \"height\": 400",
       100, 200, 300, 400);
 }
+
+}  // namespace extensions

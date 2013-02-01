@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 
+#include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -17,7 +18,10 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/extensions/api/experimental_identity.h"
+#include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
@@ -33,12 +37,11 @@ const char kNoGrant[] = "OAuth2 not granted or revoked.";
 const char kUserRejected[] = "The user did not approve access.";
 const char kUserNotSignedIn[] = "The user is not signed in.";
 const char kInvalidRedirect[] = "Did not redirect to the right URL.";
-}
+}  // namespace identity_constants
 
-namespace GetAuthToken = extensions::api::experimental_identity::GetAuthToken;
-namespace LaunchWebAuthFlow =
-    extensions::api::experimental_identity::LaunchWebAuthFlow;
-namespace identity = extensions::api::experimental_identity;
+namespace GetAuthToken = api::experimental_identity::GetAuthToken;
+namespace LaunchWebAuthFlow = api::experimental_identity::LaunchWebAuthFlow;
+namespace identity = api::experimental_identity;
 
 IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
     : interactive_(false) {}
@@ -50,7 +53,7 @@ bool IdentityGetAuthTokenFunction::RunImpl() {
   if (params->details.get() && params->details->interactive.get())
     interactive_ = *params->details->interactive;
 
-  const Extension::OAuth2Info& oauth2_info = GetExtension()->oauth2_info();
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
 
   // Check that the necessary information is present in the manfist.
   if (oauth2_info.client_id.empty()) {
@@ -183,7 +186,7 @@ void IdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
 
 OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow(
     OAuth2MintTokenFlow::Mode mode) {
-  const Extension::OAuth2Info& oauth2_info = GetExtension()->oauth2_info();
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
   return new OAuth2MintTokenFlow(
       profile()->GetRequestContext(),
@@ -250,6 +253,22 @@ void IdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure() {
   error_ = identity_constants::kInvalidRedirect;
   SendResponse(false);
   Release();  // Balanced in RunImpl.
+}
+
+IdentityAPI::IdentityAPI(Profile* profile) {
+  ManifestHandler::Register(extension_manifest_keys::kOAuth2,
+                            new OAuth2ManifestHandler);
+}
+
+IdentityAPI::~IdentityAPI() {
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<IdentityAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
+  return &g_factory.Get();
 }
 
 }  // namespace extensions

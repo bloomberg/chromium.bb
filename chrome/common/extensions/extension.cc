@@ -256,9 +256,6 @@ Extension::Requirements::Requirements()
 
 Extension::Requirements::~Requirements() {}
 
-Extension::OAuth2Info::OAuth2Info() {}
-Extension::OAuth2Info::~OAuth2Info() {}
-
 //
 // Extension
 //
@@ -1856,8 +1853,7 @@ bool Extension::LoadSharedFeatures(
       !LoadBackgroundScripts(error) ||
       !LoadBackgroundPage(api_permissions, error) ||
       !LoadBackgroundPersistent(api_permissions, error) ||
-      !LoadBackgroundAllowJSAccess(api_permissions, error) ||
-      !LoadOAuth2Info(error))
+      !LoadBackgroundAllowJSAccess(api_permissions, error))
     return false;
 
   return true;
@@ -2823,34 +2819,6 @@ bool Extension::LoadGlobsHelper(
     }
 
     (instance->*add_method)(glob);
-  }
-
-  return true;
-}
-
-bool Extension::LoadOAuth2Info(string16* error) {
-  if (!manifest_->HasKey(keys::kOAuth2))
-    return true;
-
-  if (!manifest_->GetString(keys::kOAuth2ClientId, &oauth2_info_.client_id) ||
-      oauth2_info_.client_id.empty()) {
-    *error = ASCIIToUTF16(errors::kInvalidOAuth2ClientId);
-    return false;
-  }
-
-  ListValue* list = NULL;
-  if (!manifest_->GetList(keys::kOAuth2Scopes, &list)) {
-    *error = ASCIIToUTF16(errors::kInvalidOAuth2Scopes);
-    return false;
-  }
-
-  for (size_t i = 0; i < list->GetSize(); ++i) {
-    std::string scope;
-    if (!list->GetString(i, &scope)) {
-      *error = ASCIIToUTF16(errors::kInvalidOAuth2Scopes);
-      return false;
-    }
-    oauth2_info_.scopes.push_back(scope);
   }
 
   return true;

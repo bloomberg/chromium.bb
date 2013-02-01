@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -625,7 +626,8 @@ void ExtensionInstallPrompt::FetchOAuthIssueAdviceIfNeeded() {
     return;
   }
 
-  const Extension::OAuth2Info& oauth2_info = extension_->oauth2_info();
+  const extensions::OAuth2Info& oauth2_info =
+      extensions::OAuth2Info::GetOAuth2Info(extension_);
   if (oauth2_info.client_id.empty() ||
       oauth2_info.scopes.empty()) {
     ShowConfirmation();
