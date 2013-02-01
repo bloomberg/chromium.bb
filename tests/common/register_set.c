@@ -100,10 +100,10 @@ static const uint32_t kX86KnownFlagsMask =
     (1<<0) | (1<<2) | (1<<6) | (1<<7) | (1<<11) |
     (1<<8); /* Trap flag */
 
-void RegsFillTestValues(struct NaClSignalContext *regs) {
+void RegsFillTestValues(struct NaClSignalContext *regs, int seed) {
   unsigned int index;
   for (index = 0; index < sizeof(*regs); index++) {
-    ((char *) regs)[index] = index + 1;
+    ((char *) regs)[index] = index + seed + 1;
   }
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
   /* Set x86 flags to a value that we know will work. */

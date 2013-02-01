@@ -32,7 +32,7 @@ void test_stack_alignment(void) {
   char stack[0x1000];
   int offset;
   for (offset = 0; offset < 64; offset++) {
-    RegsFillTestValues(&g_regs);
+    RegsFillTestValues(&g_regs, /* seed= */ 0);
     g_regs.stack_ptr = (uintptr_t) stack + sizeof(stack) - offset;
     RegsApplySandboxConstraints(&g_regs);
     if (!setjmp(g_jmp_buf)) {

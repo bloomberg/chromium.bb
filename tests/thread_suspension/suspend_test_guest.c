@@ -60,7 +60,7 @@ static void RegisterSetterThread(struct SuspendTestShm *test_shm) {
   struct NaClSignalContext *regs = &test_shm->expected_regs;
   char stack[0x10000];
 
-  RegsFillTestValues(regs);
+  RegsFillTestValues(regs, /* seed= */ 0);
   regs->stack_ptr = (uintptr_t) stack + sizeof(stack);
   regs->prog_ctr = (uintptr_t) spin_instruction;
   RegsApplySandboxConstraints(regs);
@@ -120,7 +120,7 @@ static void SyscallRegisterSetterThread(struct SuspendTestShm *test_shm) {
   struct NaClSignalContext call_regs;
   char stack[0x10000];
 
-  RegsFillTestValues(&call_regs);
+  RegsFillTestValues(&call_regs, /* seed= */ 0);
   call_regs.stack_ptr = (uintptr_t) stack + sizeof(stack);
   call_regs.prog_ctr = (uintptr_t) ContinueAfterSyscall;
   RegsApplySandboxConstraints(&call_regs);

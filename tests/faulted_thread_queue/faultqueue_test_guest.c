@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
 
   char stack[0x10000];
 
-  RegsFillTestValues(expected_regs);
+  RegsFillTestValues(expected_regs, /* seed= */ 0);
   expected_regs->stack_ptr = (uintptr_t) stack + sizeof(stack);
   expected_regs->prog_ctr = (uintptr_t) FaultAddr;
   RegsApplySandboxConstraints(expected_regs);

@@ -86,7 +86,7 @@ void TestSyscall(uintptr_t syscall_addr) {
   struct NaClSignalContext call_regs;
   char stack[0x10000];
 
-  RegsFillTestValues(&call_regs);
+  RegsFillTestValues(&call_regs, /* seed= */ 0);
   call_regs.stack_ptr = (uintptr_t) stack + sizeof(stack);
   call_regs.prog_ctr = (uintptr_t) ContinueAfterSyscall;
   RegsApplySandboxConstraints(&call_regs);

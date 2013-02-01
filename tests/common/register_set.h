@@ -285,7 +285,7 @@ extern const uint8_t kX86FlagBits[5];
 #endif
 
 /* Initialize the register set with arbitrary test data. */
-void RegsFillTestValues(struct NaClSignalContext *regs);
+void RegsFillTestValues(struct NaClSignalContext *regs, int seed);
 
 /* Adjust registers to follow the sandbox's constraints. */
 void RegsApplySandboxConstraints(struct NaClSignalContext *regs);
