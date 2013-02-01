@@ -539,7 +539,7 @@ cr.define('options.internet', function() {
           proxyPort = null;
 
       if (type == 'cros.session.proxy.singlehttp') {
-        proxyHost = 'proxy-host-signal-name';
+        proxyHost = 'proxy-host-single-name';
         proxyPort = 'proxy-host-single-port';
       }else if (type == 'cros.session.proxy.httpurl') {
         proxyHost = 'proxy-host-name';
