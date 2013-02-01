@@ -12,6 +12,13 @@ OptionsPage.closeOverlay = function() {
 };
 
 /**
+ * Listener for the |beforeunload| event.
+ */
+window.onbeforeunload = function() {
+  OptionsPage.willClose();
+};
+
+/**
  * DOMContentLoaded handler, sets up the page.
  */
 function load() {
