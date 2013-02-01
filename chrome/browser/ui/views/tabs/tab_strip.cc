@@ -2276,8 +2276,7 @@ void TabStrip::SetDropIndex(int tab_data_index, bool drop_before) {
                                         &is_beneath);
 
   if (!drop_info_.get()) {
-    drop_info_.reset(
-        new DropInfo(tab_data_index, drop_before, !is_beneath, GetWidget()));
+    drop_info_.reset(new DropInfo(tab_data_index, drop_before, !is_beneath));
   } else {
     drop_info_->drop_index = tab_data_index;
     drop_info_->drop_before = drop_before;
@@ -2311,10 +2310,7 @@ gfx::ImageSkia* TabStrip::GetDropArrowImage(bool is_down) {
 
 // TabStrip::DropInfo ----------------------------------------------------------
 
-TabStrip::DropInfo::DropInfo(int index,
-                             bool drop_before,
-                             bool paint_down,
-                             views::Widget* context)
+TabStrip::DropInfo::DropInfo(int drop_index, bool drop_before, bool point_down)
     : drop_index(drop_index),
       drop_before(drop_before),
       point_down(point_down) {
@@ -2328,7 +2324,6 @@ TabStrip::DropInfo::DropInfo(int index,
   params.accept_events = false;
   params.can_activate = false;
   params.bounds = gfx::Rect(drop_indicator_width, drop_indicator_height);
-  params.context = context->GetNativeView();
   arrow_window->Init(params);
   arrow_window->SetContentsView(arrow_view);
 }
