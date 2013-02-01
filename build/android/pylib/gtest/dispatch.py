@@ -23,6 +23,12 @@ def _FullyQualifiedTestSuites(exe, option_test_suite, build_type):
     exe: if True, use the executable-based test runner.
     option_test_suite: the test_suite specified as an option.
     build_type: 'Release' or 'Debug'.
+
+  Returns:
+    A list of tuples containing the suite and absolute path.
+    Ex. ('content_unittests',
+          '/tmp/chrome/src/out/Debug/content_unittests_apk/'
+          'content_unittests-debug.apk')
   """
   test_suite_dir = os.path.join(cmd_helper.OutDirectory.get(), build_type)
   if option_test_suite:
@@ -45,10 +51,10 @@ def _FullyQualifiedTestSuites(exe, option_test_suite, build_type):
                       'Supported test suites:\n %s\n'
                       'Ensure it has been built.\n' %
                       (t, q, gtest_config.STABLE_TEST_SUITES))
-  return qualified_test_suites
+  return zip(all_test_suites, qualified_test_suites)
 
 
-def _RunATestSuite(options):
+def _RunATestSuite(options, suite_name):
   """Run a single test suite.
 
   Helper for Dispatch() to allow stop/restart of the emulator across
@@ -57,6 +63,7 @@ def _RunATestSuite(options):
 
   Args:
     options: options for running the tests.
+    suite_name: name of the test suite being run.
 
   Returns:
     0 if successful, number of failing tests otherwise.
@@ -96,9 +103,15 @@ def _RunATestSuite(options):
       options.cleanup_test_files,
       options.tool,
       options.build_type,
-      options.webkit,
-      options.flakiness_dashboard_server)
+      options.webkit)
+
   test_results = sharder.RunShardedTests()
+  test_results.LogFull(
+      test_type='Unit test',
+      test_package=suite_name,
+      build_type=options.build_type,
+      flakiness_server=options.flakiness_dashboard_server)
+  test_results.PrintAnnotation()
 
   for buildbot_emulator in buildbot_emulators:
     buildbot_emulator.Shutdown()
@@ -136,11 +149,11 @@ def Dispatch(options):
   all_test_suites = _FullyQualifiedTestSuites(options.exe, options.test_suite,
                                              options.build_type)
   failures = 0
-  for suite in all_test_suites:
+  for suite_name, suite_path in all_test_suites:
     # Give each test suite its own copy of options.
     test_options = copy.deepcopy(options)
-    test_options.test_suite = suite
-    failures += _RunATestSuite(test_options)
+    test_options.test_suite = suite_path
+    failures += _RunATestSuite(test_options, suite_name)
 
   if options.use_xvfb:
     framebuffer.Stop()

@@ -15,7 +15,7 @@ class TestSharder(base_test_sharder.BaseTestSharder):
 
   def __init__(self, attached_devices, test_suite, gtest_filter,
                test_arguments, timeout, cleanup_test_files, tool,
-               build_type, in_webkit_checkout, flakiness_server=None):
+               build_type, in_webkit_checkout):
     super(TestSharder, self).__init__(attached_devices, build_type)
     self.test_suite = test_suite
     self.gtest_filter = gtest_filter or ''
@@ -24,7 +24,6 @@ class TestSharder(base_test_sharder.BaseTestSharder):
     self.cleanup_test_files = cleanup_test_files
     self.tool = tool
     self.in_webkit_checkout = in_webkit_checkout
-    self.flakiness_server = flakiness_server
     self.all_tests = []
     if not self.gtest_filter:
       # No filter has been specified, let's add all tests then.
@@ -103,12 +102,3 @@ class TestSharder(base_test_sharder.BaseTestSharder):
         self.cleanup_test_files, self.tool, index,
         self.build_type,
         self.in_webkit_checkout)
-
-  def OnTestsCompleted(self, test_runners, test_results):
-    """Notifies that we completed the tests."""
-    test_results.LogFull(
-        test_type='Unit test',
-        test_package=test_runners[0].test_package.test_suite_basename,
-        build_type=self.build_type,
-        flakiness_server=self.flakiness_server)
-    test_results.PrintAnnotation()
