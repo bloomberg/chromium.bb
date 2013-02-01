@@ -1,6 +1,6 @@
 {
     "description": "Pages hand-picked for 2012 CrOS scrolling tuning efforts.",
-    "archive_path": "../data/top_25.wpr",
+    "archive_data_file": "../data/top_25.json",
     "credentials_path": "../data/credentials.json",
     "user_agent_type": "desktop",
     "pages": [

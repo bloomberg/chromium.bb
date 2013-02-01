@@ -1,6 +1,6 @@
 {
   "description": "Self-driven Canvas2D animation examples",
-  "archive_path": "../data/tough_canvas_cases.wpr",
+  "archive_data_file": "../data/tough_canvas_cases.json",
   "pages": [
   {
     "url":"http://mudcu.be/labs/JS1k/BreathingGalaxies.html",
