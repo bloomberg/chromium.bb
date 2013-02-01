@@ -738,7 +738,7 @@ def GetWindowsEnvironment():
 
 
 def BuildStepMakeAll(pepperdir, platform, directory, step_name,
-                     clean=False, deps=True):
+                     clean=False, deps=True, config='Debug'):
   buildbot_common.BuildStep(step_name)
   make_dir = os.path.join(pepperdir, directory)
   makefile = os.path.join(make_dir, 'Makefile')
@@ -752,7 +752,7 @@ def BuildStepMakeAll(pepperdir, platform, directory, step_name,
       env = os.environ
       make = 'make'
 
-    extra_args = []
+    extra_args = ['CONFIG='+config]
     if not deps:
       extra_args += ['IGNORE_DEPS=1']
 
@@ -765,8 +765,10 @@ def BuildStepMakeAll(pepperdir, platform, directory, step_name,
 
 
 def BuildStepBuildLibraries(pepperdir, platform, directory, clean=True):
-  BuildStepMakeAll(pepperdir, platform, directory, 'Build Libraries',
-      clean=clean)
+  BuildStepMakeAll(pepperdir, platform, directory, 'Build Libraries Debug',
+      clean=clean, config='Debug')
+  BuildStepMakeAll(pepperdir, platform, directory, 'Build Libraries Release',
+      clean=clean, config='Release')
 
 
 def BuildStepGenerateNotice(pepperdir):
