@@ -1,6 +1,6 @@
 {
   "description": "Pages hand-picked from top-lists in Q32012.",
-  "archive_data_file": "../data/2012Q3.json",
+  "archive_path": "../data/2012Q3.wpr",
   "credentials_path": "../data/credentials.json",
   "pages": [
     {

@@ -1,6 +1,6 @@
 {
     "description": "Sites of Interest",
-    "archive_data_file": "../data/sites_of_interest.json",
+    "archive_path": "../data/sites_of_interest.wpr",
     "credentials_path": "../data/credentials.json",
     "pages": [
         {
