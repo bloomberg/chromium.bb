@@ -29,6 +29,19 @@ using namespace clang;
 
 namespace {
 
+const char kNoExplicitDtor[] =
+    "[chromium-style] Classes that are ref-counted should have explicit "
+    "destructors that are declared protected or private.";
+const char kPublicDtor[] =
+    "[chromium-style] Classes that are ref-counted should not have "
+    "public destructors.";
+const char kNoteInheritance[] =
+    "[chromium-style] %0 inherits from %1 here";
+const char kNoteImplicitDtor[] =
+    "[chromium-style] No explicit destructor for %0 defined";
+const char kNotePublicDtor[] =
+    "[chromium-style] Public destructor declared here";
+
 bool TypeHasNonTrivialDtor(const Type* type) {
   if (const CXXRecordDecl* cxx_r = type->getPointeeCXXRecordDecl())
     return cxx_r->hasTrivialDestructor();
@@ -37,7 +50,8 @@ bool TypeHasNonTrivialDtor(const Type* type) {
 }
 
 // Returns the underlying Type for |type| by expanding typedefs and removing
-// any namespace qualifiers.
+// any namespace qualifiers. This is similar to desugaring, except that for
+// ElaboratedTypes, desugar will unwrap too much.
 const Type* UnwrapType(const Type* type) {
   if (const ElaboratedType* elaborated = dyn_cast<ElaboratedType>(type))
     return UnwrapType(elaborated->getNamedType().getTypePtr());
@@ -50,11 +64,24 @@ const Type* UnwrapType(const Type* type) {
 class FindBadConstructsConsumer : public ChromeClassTester {
  public:
   FindBadConstructsConsumer(CompilerInstance& instance,
-                            bool check_refcounted_dtors,
+                            bool check_base_classes,
                             bool check_virtuals_in_implementations)
       : ChromeClassTester(instance),
-        check_refcounted_dtors_(check_refcounted_dtors),
+        check_base_classes_(check_base_classes),
         check_virtuals_in_implementations_(check_virtuals_in_implementations) {
+    // Register warning/error messages.
+    diag_no_explicit_dtor_ = diagnostic().getCustomDiagID(
+        getErrorLevel(), kNoExplicitDtor);
+    diag_public_dtor_ = diagnostic().getCustomDiagID(
+        getErrorLevel(), kPublicDtor);
+
+    // Registers notes to make it easier to interpret warnings.
+    diag_note_inheritance_ = diagnostic().getCustomDiagID(
+        DiagnosticsEngine::Note, kNoteInheritance);
+    diag_note_implicit_dtor_ = diagnostic().getCustomDiagID(
+        DiagnosticsEngine::Note, kNoteImplicitDtor);
+    diag_note_public_dtor_ = diagnostic().getCustomDiagID(
+        DiagnosticsEngine::Note, kNotePublicDtor);
   }
 
   virtual void CheckChromeClass(SourceLocation record_location,
@@ -75,74 +102,25 @@ class FindBadConstructsConsumer : public ChromeClassTester {
       CheckVirtualMethods(record_location, record, warn_on_inline_bodies);
     }
 
-    if (check_refcounted_dtors_)
-      CheckRefCountedDtors(record_location, record);
+    CheckRefCountedDtors(record_location, record);
   }
 
  private:
-  bool check_refcounted_dtors_;
+  // The type of problematic ref-counting pattern that was encountered.
+  enum RefcountIssue {
+    None,
+    ImplicitDestructor,
+    PublicDestructor
+  };
+
+  bool check_base_classes_;
   bool check_virtuals_in_implementations_;
 
-  // Returns true if |base| specifies one of the Chromium reference counted
-  // classes (base::RefCounted / base::RefCountedThreadSafe). |user_data| is
-  // ignored.
-  static bool IsRefCountedCallback(const CXXBaseSpecifier* base,
-                                   CXXBasePath& path,
-                                   void* user_data) {
-    FindBadConstructsConsumer* self =
-        static_cast<FindBadConstructsConsumer*>(user_data);
-
-    const TemplateSpecializationType* base_type =
-        dyn_cast<TemplateSpecializationType>(
-            UnwrapType(base->getType().getTypePtr()));
-    if (!base_type) {
-      // Base-most definition is not a template, so this cannot derive from
-      // base::RefCounted. However, it may still be possible to use with a
-      // scoped_refptr<> and support ref-counting, so this is not a perfect
-      // guarantee of safety.
-      return false;
-    }
-
-    TemplateName name = base_type->getTemplateName();
-    if (TemplateDecl* decl = name.getAsTemplateDecl()) {
-      std::string base_name = decl->getNameAsString();
-
-      // Check for both base::RefCounted and base::RefCountedThreadSafe.
-      if (base_name.compare(0, 10, "RefCounted") == 0 &&
-          self->GetNamespace(decl) == "base") {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  // Prints errors if the destructor of a RefCounted class is public.
-  void CheckRefCountedDtors(SourceLocation record_location,
-                            CXXRecordDecl* record) {
-    // Skip anonymous structs.
-    if (record->getIdentifier() == NULL)
-      return;
-
-    CXXBasePaths paths;
-    if (!record->lookupInBases(
-            &FindBadConstructsConsumer::IsRefCountedCallback, this, paths)) {
-      return;  // Class does not derive from a ref-counted base class.
-    }
-
-    if (!record->hasUserDeclaredDestructor()) {
-      emitWarning(
-          record_location,
-          "Classes that are ref-counted should have explicit "
-          "destructors that are protected or private.");
-    } else if (CXXDestructorDecl* dtor = record->getDestructor()) {
-      if (dtor->getAccess() == AS_public) {
-        emitWarning(
-            dtor->getInnerLocStart(),
-            "Classes that are ref-counted should not have "
-            "public destructors.");
-      }
-    }
-  }
+  unsigned diag_no_explicit_dtor_;
+  unsigned diag_public_dtor_;
+  unsigned diag_note_inheritance_;
+  unsigned diag_note_implicit_dtor_;
+  unsigned diag_note_public_dtor_;
 
   // Prints errors if the constructor/destructor weight is too heavy.
   void CheckCtorDtorWeight(SourceLocation record_location,
@@ -390,12 +368,197 @@ class FindBadConstructsConsumer : public ChromeClassTester {
       }
     }
   }
+
+  // Check |record| for issues that are problematic for ref-counted types.
+  // Note that |record| may not be a ref-counted type, but a base class for
+  // a type that is.
+  // If there are issues, update |loc| with the SourceLocation of the issue
+  // and returns appropriately, or returns None if there are no issues.
+  static RefcountIssue CheckRecordForRefcountIssue(
+      const CXXRecordDecl* record,
+      SourceLocation &loc) {
+    if (!record->hasUserDeclaredDestructor()) {
+      loc = record->getLocation();
+      return ImplicitDestructor;
+    }
+
+    if (CXXDestructorDecl* dtor = record->getDestructor()) {
+      if (dtor->getAccess() == AS_public) {
+        loc = dtor->getInnerLocStart();
+        return PublicDestructor;
+      }
+    }
+
+    return None;
+  }
+
+  // Adds either a warning or error, based on the current handling of
+  // -Werror.
+  DiagnosticsEngine::Level getErrorLevel() {
+    return diagnostic().getWarningsAsErrors() ?
+        DiagnosticsEngine::Error : DiagnosticsEngine::Warning;
+  }
+
+  // Returns true if |base| specifies one of the Chromium reference counted
+  // classes (base::RefCounted / base::RefCountedThreadSafe).
+  static bool IsRefCountedCallback(const CXXBaseSpecifier* base,
+                                   CXXBasePath& path,
+                                   void* user_data) {
+    FindBadConstructsConsumer* self =
+        static_cast<FindBadConstructsConsumer*>(user_data);
+
+    const TemplateSpecializationType* base_type =
+        dyn_cast<TemplateSpecializationType>(
+            UnwrapType(base->getType().getTypePtr()));
+    if (!base_type) {
+      // Base-most definition is not a template, so this cannot derive from
+      // base::RefCounted. However, it may still be possible to use with a
+      // scoped_refptr<> and support ref-counting, so this is not a perfect
+      // guarantee of safety.
+      return false;
+    }
+
+    TemplateName name = base_type->getTemplateName();
+    if (TemplateDecl* decl = name.getAsTemplateDecl()) {
+      std::string base_name = decl->getNameAsString();
+
+      // Check for both base::RefCounted and base::RefCountedThreadSafe.
+      if (base_name.compare(0, 10, "RefCounted") == 0 &&
+          self->GetNamespace(decl) == "base") {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // Returns true if |base| specifies a class that has a public destructor,
+  // either explicitly or implicitly.
+  static bool HasPublicDtorCallback(const CXXBaseSpecifier* base,
+                                    CXXBasePath& path,
+                                    void* user_data) {
+    // Only examine paths that have public inheritance, as they are the
+    // only ones which will result in the destructor potentially being
+    // exposed. This check is largely redundant, as Chromium code should be
+    // exclusively using public inheritance.
+    if (path.Access != AS_public)
+      return false;
+
+    CXXRecordDecl* record = dyn_cast<CXXRecordDecl>(
+        base->getType()->getAs<RecordType>()->getDecl());
+    SourceLocation unused;
+    return None != CheckRecordForRefcountIssue(record, unused);
+  }
+
+  // Outputs a C++ inheritance chain as a diagnostic aid.
+  void PrintInheritanceChain(const CXXBasePath& path) {
+    for (CXXBasePath::const_iterator it = path.begin(); it != path.end();
+         ++it) {
+      diagnostic().Report(it->Base->getLocStart(), diag_note_inheritance_)
+          << it->Class << it->Base->getType();
+    }
+  }
+
+  // Check |record| to determine if it has any problematic refcounting
+  // issues and, if so, print them as warnings/errors based on the current
+  // value of getErrorLevel().
+  //
+  // If |record| is a C++ class, and if it inherits from one of the Chromium
+  // ref-counting classes (base::RefCounted / base::RefCountedThreadSafe),
+  // ensure that there are no public destructors in the class hierarchy. This
+  // is to guard against accidentally stack-allocating a RefCounted class or
+  // sticking it in a non-ref-counted container (like scoped_ptr<>).
+  void CheckRefCountedDtors(SourceLocation record_location,
+                            CXXRecordDecl* record) {
+    // Skip anonymous structs.
+    if (record->getIdentifier() == NULL)
+      return;
+
+    // Determine if the current type is even ref-counted.
+    CXXBasePaths refcounted_path;
+    if (!record->lookupInBases(
+            &FindBadConstructsConsumer::IsRefCountedCallback, this,
+            refcounted_path)) {
+      return;  // Class does not derive from a ref-counted base class.
+    }
+
+    // Easy check: Check to see if the current type is problematic.
+    SourceLocation loc;
+    RefcountIssue issue = CheckRecordForRefcountIssue(record, loc);
+    if (issue == ImplicitDestructor) {
+      diagnostic().Report(loc, diag_no_explicit_dtor_);
+      PrintInheritanceChain(refcounted_path.front());
+      return;
+    }
+    if (issue == PublicDestructor) {
+      diagnostic().Report(loc, diag_public_dtor_);
+      PrintInheritanceChain(refcounted_path.front());
+      return;
+    }
+
+    // Long check: Check all possible base classes for problematic
+    // destructors. This checks for situations involving multiple
+    // inheritance, where the ref-counted class may be implementing an
+    // interface that has a public or implicit destructor.
+    //
+    // struct SomeInterface {
+    //   virtual void DoFoo();
+    // };
+    //
+    // struct RefCountedInterface
+    //    : public base::RefCounted<RefCountedInterface>,
+    //      public SomeInterface {
+    //  private:
+    //   friend class base::Refcounted<RefCountedInterface>;
+    //   virtual ~RefCountedInterface() {}
+    // };
+    //
+    // While RefCountedInterface is "safe", in that its destructor is
+    // private, it's possible to do the following "unsafe" code:
+    //   scoped_refptr<RefCountedInterface> some_class(
+    //       new RefCountedInterface);
+    //   // Calls SomeInterface::~SomeInterface(), which is unsafe.
+    //   delete static_cast<SomeInterface*>(some_class.get());
+    if (!check_base_classes_)
+      return;
+
+    // Find all public destructors. This will record the class hierarchy
+    // that leads to the public destructor in |dtor_paths|.
+    CXXBasePaths dtor_paths;
+    if (!record->lookupInBases(
+            &FindBadConstructsConsumer::HasPublicDtorCallback, this,
+            dtor_paths)) {
+      return;
+    }
+
+    for (CXXBasePaths::const_paths_iterator it = dtor_paths.begin();
+         it != dtor_paths.end(); ++it) {
+      // The record with the problem will always be the last record
+      // in the path, since it is the record that stopped the search.
+      const CXXRecordDecl* problem_record = dyn_cast<CXXRecordDecl>(
+          it->back().Base->getType()->getAs<RecordType>()->getDecl());
+
+      issue = CheckRecordForRefcountIssue(problem_record, loc);
+
+      if (issue == ImplicitDestructor) {
+        diagnostic().Report(record_location, diag_no_explicit_dtor_);
+        PrintInheritanceChain(refcounted_path.front());
+        diagnostic().Report(loc, diag_note_implicit_dtor_) << problem_record;
+        PrintInheritanceChain(*it);
+      } else if (issue == PublicDestructor) {
+        diagnostic().Report(record_location, diag_public_dtor_);
+        PrintInheritanceChain(refcounted_path.front());
+        diagnostic().Report(loc, diag_note_public_dtor_);
+        PrintInheritanceChain(*it);
+      }
+    }
+  }
 };
 
 class FindBadConstructsAction : public PluginASTAction {
  public:
   FindBadConstructsAction()
-      : check_refcounted_dtors_(true),
+      : check_base_classes_(false),
         check_virtuals_in_implementations_(true) {
   }
 
@@ -404,7 +567,7 @@ class FindBadConstructsAction : public PluginASTAction {
   virtual ASTConsumer* CreateASTConsumer(CompilerInstance& instance,
                                          llvm::StringRef ref) {
     return new FindBadConstructsConsumer(
-        instance, check_refcounted_dtors_, check_virtuals_in_implementations_);
+        instance, check_base_classes_, check_virtuals_in_implementations_);
   }
 
   virtual bool ParseArgs(const CompilerInstance& instance,
@@ -412,10 +575,12 @@ class FindBadConstructsAction : public PluginASTAction {
     bool parsed = true;
 
     for (size_t i = 0; i < args.size() && parsed; ++i) {
-      if (args[i] == "skip-refcounted-dtors") {
-        check_refcounted_dtors_ = false;
-      } else if (args[i] == "skip-virtuals-in-implementations") {
+      if (args[i] == "skip-virtuals-in-implementations") {
+        // TODO(rsleevi): Remove this once http://crbug.com/115047 is fixed.
         check_virtuals_in_implementations_ = false;
+      } else if (args[i] == "check-base-classes") {
+        // TODO(rsleevi): Remove this once http://crbug.com/123295 is fixed.
+        check_base_classes_ = true;
       } else {
         parsed = false;
         llvm::errs() << "Unknown clang plugin argument: " << args[i] << "\n";
@@ -426,7 +591,7 @@ class FindBadConstructsAction : public PluginASTAction {
   }
 
  private:
-  bool check_refcounted_dtors_;
+  bool check_base_classes_;
   bool check_virtuals_in_implementations_;
 };
 
