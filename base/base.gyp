@@ -544,6 +544,7 @@
         'system_monitor/system_monitor_unittest.cc',
         'task_runner_util_unittest.cc',
         'template_util_unittest.cc',
+        'test/expectations/expectation_unittest.cc',
         'test/sequenced_worker_pool_owner.cc',
         'test/sequenced_worker_pool_owner.h',
         'test/trace_event_analyzer_unittest.cc',
@@ -784,6 +785,8 @@
       ],
       'sources': [
         'perftimer.cc',
+        'test/expectations/expectation.cc',
+        'test/expectations/expectation.h',
         'test/main_hook.cc',
         'test/main_hook.h',
         'test/main_hook_ios.mm',
