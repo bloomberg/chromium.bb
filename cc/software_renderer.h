@@ -55,6 +55,8 @@ protected:
 private:
     SoftwareRenderer(RendererClient*, ResourceProvider*, SoftwareOutputDevice*);
 
+    void clearCanvas(SkColor color);
+    void setClipRect(const gfx::Rect& rect);
     bool isSoftwareResource(ResourceProvider::ResourceId) const;
 
     void drawDebugBorderQuad(const DrawingFrame&, const DebugBorderDrawQuad*);
@@ -66,6 +68,8 @@ private:
 
     RendererCapabilities m_capabilities;
     bool m_visible;
+    bool m_isScissorEnabled;
+    gfx::Rect m_scissorRect;
 
     SoftwareOutputDevice* m_outputDevice;
     scoped_ptr<SkCanvas> m_skRootCanvas;

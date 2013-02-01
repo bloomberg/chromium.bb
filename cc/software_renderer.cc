@@ -15,6 +15,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebImage.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkLayerRasterizer.h"
@@ -59,6 +60,7 @@ scoped_ptr<SoftwareRenderer> SoftwareRenderer::create(RendererClient* client, Re
 SoftwareRenderer::SoftwareRenderer(RendererClient* client, ResourceProvider* resourceProvider, SoftwareOutputDevice* outputDevice)
     : DirectRenderer(client, resourceProvider)
     , m_visible(true)
+    , m_isScissorEnabled(false)
     , m_outputDevice(outputDevice)
     , m_skCurrentCanvas(0)
 {
@@ -69,6 +71,7 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client, ResourceProvider* res
     m_capabilities.usingSetVisibility = true;
     // The updater can access bitmaps while the SoftwareRenderer is using them.
     m_capabilities.allowPartialTextureUpdates = true;
+    m_capabilities.usingPartialSwap = true;
 
     viewportChanged();
 }
@@ -109,8 +112,8 @@ bool SoftwareRenderer::flippedFramebuffer() const
 
 void SoftwareRenderer::ensureScissorTestEnabled()
 {
-    // Nothing to do here. Current implementation of software rendering has no
-    // notion of enabling/disabling the feature.
+    m_isScissorEnabled = true;
+    setClipRect(m_scissorRect);
 }
 
 void SoftwareRenderer::ensureScissorTestDisabled()
@@ -119,9 +122,9 @@ void SoftwareRenderer::ensureScissorTestDisabled()
     // rendering, but the underlying effect we want is to clear any existing
     // clipRect on the current SkCanvas. This is done by setting clipRect to
     // the viewport's dimensions.
-    SkISize canvasSize = m_skCurrentCanvas->getDeviceSize();
-    SkRect canvasRect = SkRect::MakeXYWH(0, 0, canvasSize.width(), canvasSize.height());
-    m_skCurrentCanvas->clipRect(canvasRect, SkRegion::kReplace_Op);
+    m_isScissorEnabled = false;
+    SkDevice* device = m_skCurrentCanvas->getDevice();
+    setClipRect(gfx::Rect(device->width(), device->height()));
 }
 
 void SoftwareRenderer::finish()
@@ -146,17 +149,38 @@ bool SoftwareRenderer::bindFramebufferToTexture(DrawingFrame& frame, const Scope
 
 void SoftwareRenderer::setScissorTestRect(const gfx::Rect& scissorRect)
 {
-    m_skCurrentCanvas->clipRect(gfx::RectToSkRect(scissorRect), SkRegion::kReplace_Op);
+    m_isScissorEnabled = true;
+    m_scissorRect = scissorRect;
+    setClipRect(scissorRect);
+}
+
+void SoftwareRenderer::setClipRect(const gfx::Rect& rect)
+{
+    // Skia applies the current matrix to clip rects so we reset it temporary.
+    SkMatrix currentMatrix = m_skCurrentCanvas->getTotalMatrix();
+    m_skCurrentCanvas->resetMatrix();
+    m_skCurrentCanvas->clipRect(gfx::RectToSkRect(rect), SkRegion::kReplace_Op);
+    m_skCurrentCanvas->setMatrix(currentMatrix);
+}
+
+void SoftwareRenderer::clearCanvas(SkColor color)
+{
+    // SkCanvas::clear doesn't respect the current clipping region
+    // so we SkCanvas::drawColor instead if scissoring is active.
+    if (m_isScissorEnabled)
+        m_skCurrentCanvas->drawColor(color, SkXfermode::kSrc_Mode);
+    else
+        m_skCurrentCanvas->clear(color);
 }
 
 void SoftwareRenderer::clearFramebuffer(DrawingFrame& frame)
 {
     if (frame.currentRenderPass->has_transparent_background) {
-        m_skCurrentCanvas->clear(SkColorSetARGB(0, 0, 0, 0));
+        clearCanvas(SkColorSetARGB(0, 0, 0, 0));
     } else {
 #ifndef NDEBUG
         // On DEBUG builds, opaque render passes are cleared to blue to easily see regions that were not drawn on the screen.
-        m_skCurrentCanvas->clear(SkColorSetARGB(255, 0, 0, 255));
+        clearCanvas(SkColorSetARGB(255, 0, 0, 255));
 #endif
     }
 }
@@ -292,15 +316,12 @@ void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const Rende
     ResourceProvider::ScopedReadLockSoftware lock(m_resourceProvider, contentTexture->id());
 
     SkRect destRect = gfx::RectFToSkRect(quadVertexRect());
-
-    const SkBitmap* content = lock.skBitmap();
-
-    SkRect contentRect;
-    content->getBounds(&contentRect);
+    SkRect contentRect = SkRect::MakeWH(quad->rect.width(), quad->rect.height());
 
     SkMatrix contentMat;
     contentMat.setRectToRect(contentRect, destRect, SkMatrix::kFill_ScaleToFit);
 
+    const SkBitmap* content = lock.skBitmap();
     skia::RefPtr<SkShader> shader = skia::AdoptRef(
         SkShader::CreateBitmapShader(*content,
                                      SkShader::kClamp_TileMode,
