@@ -74,6 +74,9 @@ class OmniboxViewViews
   void HandleMouseDragEvent(const ui::MouseEvent& event);
   void HandleMouseReleaseEvent(const ui::MouseEvent& event);
 
+  // Called when a gesture event is generated on textfield.
+  void HandleGestureEvent(const ui::GestureEvent& event);
+
   // Called when Focus is set/unset on textfield.
   void HandleFocusIn();
   void HandleFocusOut();
@@ -218,6 +221,11 @@ class OmniboxViewViews
   // until release, setting this variable back to false if we saw a drag, to
   // allow the user to select just a portion of the text.
   bool select_all_on_mouse_release_;
+
+  // Indicates if we want to select all text in the omnibox when we get a
+  // GESTURE_TAP. We want to select all only when the textfield is not in focus
+  // and gets a tap. So we use this variable to remember focus state before tap.
+  bool select_all_on_gesture_tap_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };

@@ -179,6 +179,11 @@ class OmniboxViewViews::AutocompleteTextfield : public views::Textfield {
     omnibox_view_->HandleMouseReleaseEvent(event);
   }
 
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    views::Textfield::OnGestureEvent(event);
+    omnibox_view_->HandleGestureEvent(*event);
+  }
+
  private:
   OmniboxViewViews* omnibox_view_;
   LocationBarView* location_bar_view_;
@@ -203,7 +208,8 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       delete_at_end_pressed_(false),
       location_bar_view_(location_bar),
       ime_candidate_window_open_(false),
-      select_all_on_mouse_release_(false) {
+      select_all_on_mouse_release_(false),
+      select_all_on_gesture_tap_(false) {
 }
 
 OmniboxViewViews::~OmniboxViewViews() {
@@ -368,6 +374,16 @@ void OmniboxViewViews::HandleMouseReleaseEvent(const ui::MouseEvent& event) {
     SelectAll(true);
   }
   select_all_on_mouse_release_ = false;
+}
+
+void OmniboxViewViews::HandleGestureEvent(const ui::GestureEvent& event) {
+  if (!textfield_->HasFocus() && event.type() == ui::ET_GESTURE_TAP_DOWN) {
+    select_all_on_gesture_tap_ = true;
+    return;
+  }
+  if (select_all_on_gesture_tap_ && event.type() == ui::ET_GESTURE_TAP)
+    SelectAll(false);
+  select_all_on_gesture_tap_ = false;
 }
 
 void OmniboxViewViews::HandleFocusIn() {
