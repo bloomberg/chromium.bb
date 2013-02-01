@@ -42,6 +42,7 @@ ASH_EXPORT extern const char kAshSecondaryDisplayLayout[];
 ASH_EXPORT extern const char kAshTouchHud[];
 ASH_EXPORT extern const char kAuraLegacyPowerButton[];
 ASH_EXPORT extern const char kAuraNoShadows[];
+ASH_EXPORT extern const char kAshOverrideDisplayOrientation[];
 
 }  // namespace switches
 }  // namespace ash

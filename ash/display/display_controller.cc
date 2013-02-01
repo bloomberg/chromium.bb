@@ -30,8 +30,10 @@
 #if defined(OS_CHROMEOS)
 #include "ash/display/output_configurator_animation.h"
 #include "base/chromeos/chromeos_version.h"
+#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "chromeos/display/output_configurator.h"
+#include "ui/base/x/x11_util.h"
 #endif  // defined(OS_CHROMEOS)
 
 
@@ -101,6 +103,40 @@ std::string GetStringFromPosition(DisplayLayout::Position position) {
 
 internal::DisplayManager* GetDisplayManager() {
   return Shell::GetInstance()->display_manager();
+}
+
+void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
+                                      const gfx::Display& display) {
+#if defined(OS_CHROMEOS)
+  // Native window property (Atom in X11) that specifies the display's
+  // rotation and scale factor.  They are read and used by
+  // touchpad/mouse driver directly on X (contact adlr@ for more
+  // details on touchpad/mouse driver side). The value of the rotation
+  // is one of 0 (normal), 1 (90 degrees clockwise), 2 (180 degree) or
+  // 3 (270 degrees clockwise).  The value of the scale factor is in
+  // percent (100, 140, 200 etc).
+  const char kRotationProp[] = "_CHROME_DISPLAY_ROTATION";
+  const char kScaleFactorProp[] = "_CHROME_DISPLAY_SCALE_FACTOR";
+  const char kCARDINAL[] = "CARDINAL";
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  int rotation = 0;
+  if (command_line->HasSwitch(switches::kAshOverrideDisplayOrientation)) {
+    std::string value = command_line->
+        GetSwitchValueASCII(switches::kAshOverrideDisplayOrientation);
+    DCHECK(base::StringToInt(value, &rotation));
+    DCHECK(0 <= rotation && rotation <= 3) << "Invalid rotation value="
+                                           << rotation;
+    if (rotation < 0 || rotation > 3)
+      rotation = 0;
+  }
+  gfx::AcceleratedWidget xwindow = root->GetAcceleratedWidget();
+  ui::SetIntProperty(xwindow, kRotationProp, kCARDINAL, rotation);
+  ui::SetIntProperty(xwindow,
+                     kScaleFactorProp,
+                     kCARDINAL,
+                     100 * display.device_scale_factor());
+#endif
 }
 
 }  // namespace
@@ -276,8 +312,7 @@ void DisplayController::InitPrimaryDisplay() {
   }
 #endif
   primary_display_id = primary_candidate->id();
-  aura::RootWindow* root = AddRootWindowForDisplay(*primary_candidate);
-  root->SetHostBounds(primary_candidate->bounds_in_pixel());
+  AddRootWindowForDisplay(*primary_candidate);
   UpdateDisplayBoundsForLayout();
 }
 
@@ -540,7 +575,9 @@ void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
 
   NotifyDisplayConfigurationChanging();
   UpdateDisplayBoundsForLayout();
-  root_windows_[display.id()]->SetHostBounds(display.bounds_in_pixel());
+  aura::RootWindow* root = root_windows_[display.id()];
+  SetDisplayPropertiesOnHostWindow(root, display);
+  root->SetHostBounds(display.bounds_in_pixel());
 }
 
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {
@@ -619,6 +656,7 @@ aura::RootWindow* DisplayController::AddRootWindowForDisplay(
   aura::RootWindow* root =
       GetDisplayManager()->CreateRootWindowForDisplay(display);
   root_windows_[display.id()] = root;
+  SetDisplayPropertiesOnHostWindow(root, display);
 
 #if defined(OS_CHROMEOS)
   static bool force_constrain_pointer_to_root =

@@ -97,5 +97,11 @@ const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 // Avoid drawing drop shadows under windows.
 const char kAuraNoShadows[] = "aura-no-shadows";
 
+// Overrides all displays' orientation. The value should be one of 0
+// (normal), 1 (90 degrees clockwise), 2 (180 degrees) or 3 (270
+// degrees clockwise).
+const char kAshOverrideDisplayOrientation[] =
+    "ash-override-display-orientation";
+
 }  // namespace switches
 }  // namespace ash
