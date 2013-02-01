@@ -416,6 +416,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // True when the pinch decision has been locked.
   bool pinch_locked_;
 
+  // Keeps track of if there was a finger seen during a physical click
+  bool finger_seen_since_button_down_;
+
   // Properties
 
   // Is Tap-To-Click enabled

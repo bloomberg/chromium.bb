@@ -315,6 +315,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       finger_metrics_(finger_metrics),
       pinch_guess_start_(-1.0),
       pinch_locked_(false),
+      finger_seen_since_button_down_(false),
       tap_enable_(prop_reg, "Tap Enable", true),
       tap_paused_(prop_reg, "Tap Paused", false),
       tap_timeout_(prop_reg, "Tap Timeout", 0.2),
@@ -1487,8 +1488,6 @@ int ImmediateInterpreter::EvaluateButtonType(
     return GESTURES_BUTTON_RIGHT;
   }
   int num_pointing = pointing_.size();
-  if (!zero_finger_click_enable_.val_ && hwstate.finger_cnt == 0)
-    return GESTURES_BUTTON_NONE;
   if (num_pointing <= 1)
     return hwstate.buttons_down;
   if (current_gesture_type_ == kGestureTypeScroll)
@@ -1624,9 +1623,17 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate,
   bool phys_up_edge = !button_down && prev_button_down;
 
   if (phys_down_edge) {
+    finger_seen_since_button_down_ = false;
     sent_button_down_ = false;
     button_down_timeout_ = hwstate.timestamp + button_evaluation_timeout_.val_;
   }
+
+  // If we haven't seen a finger on the pad yet we shouldn't do anything
+  finger_seen_since_button_down_ =
+      finger_seen_since_button_down_ || (hwstate.finger_cnt > 0);
+  if (!finger_seen_since_button_down_ && !zero_finger_click_enable_.val_)
+    return;
+
   if (!sent_button_down_) {
     button_type_ = EvaluateButtonType(hwstate);
     // button_up before button_evaluation_timeout_ expired.
