@@ -38,11 +38,20 @@ cr.define('options', function() {
     showCapsLockOptions_: function(show) {
       $('caps-lock-remapping-section').hidden = !show;
     },
+
+    /**
+     * Show/hide the diamond key remapping section.
+     * @private
+     */
+    showDiamondKeyOptions_: function(show) {
+      $('diamond-key-remapping-section').hidden = !show;
+    },
   };
 
   // Forward public APIs to private implementations.
   [
     'showCapsLockOptions',
+    'showDiamondKeyOptions',
   ].forEach(function(name) {
     KeyboardOverlay[name] = function() {
       var instance = KeyboardOverlay.getInstance();

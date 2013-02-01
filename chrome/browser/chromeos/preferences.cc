@@ -241,6 +241,9 @@ void Preferences::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterIntegerPref(prefs::kLanguageRemapCapsLockKeyTo,
                              input_method::kCapsLockKey,
                              PrefServiceSyncable::SYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kLanguageRemapDiamondKeyTo,
+                             input_method::kControlKey,
+                             PrefServiceSyncable::SYNCABLE_PREF);
   // We don't sync the following keyboard prefs since they are not user-
   // configurable.
   prefs->RegisterBooleanPref(prefs::kLanguageXkbAutoRepeatEnabled,

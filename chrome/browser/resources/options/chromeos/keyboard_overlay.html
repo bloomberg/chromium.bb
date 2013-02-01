@@ -56,6 +56,21 @@
                i18n-options="remapCapsLockKeyToValue" dialog-pref></select>
          </td>
        </tr>
+       <!-- The diamond key section is hidden by default. This is only visible
+            when --has-chromeos-diamond-key flag is passed. -->
+       <tr id="diamond-key-remapping-section" hidden>
+         <td>
+           <label class="option-name" for="remap-diamond-key-to"
+               i18n-content="remapDiamondKeyToContent">
+           </label>
+         </td>
+         <td class="option-value">
+           <select id="remap-diamond-key-to" class="control"
+               data-type="number"
+               pref="settings.language.remap_diamond_key_to"
+               i18n-options="remapDiamondKeyToValue" dialog-pref></select>
+         </td>
+       </tr>
     </table>
   </div>
   <div class="content-area">

@@ -265,6 +265,7 @@ extern const char kLanguageRemapCapsLockKeyTo[];
 extern const char kLanguageRemapSearchKeyTo[];
 extern const char kLanguageRemapControlKeyTo[];
 extern const char kLanguageRemapAltKeyTo[];
+extern const char kLanguageRemapDiamondKeyTo[];
 extern const char kLanguageXkbAutoRepeatEnabled[];
 extern const char kLanguageXkbAutoRepeatDelay[];
 extern const char kLanguageXkbAutoRepeatInterval[];
