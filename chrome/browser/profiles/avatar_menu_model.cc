@@ -5,6 +5,7 @@
 #include "chrome/browser/profiles/avatar_menu_model.h"
 
 #include "base/bind.h"
+#include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -47,6 +48,10 @@ void OnProfileCreated(bool always_create,
         always_create);
   }
 }
+
+// Constants for the show profile switcher experiment
+const char kShowProfileSwitcherFieldTrialName[] = "ShowProfileSwitcher";
+const char kAlwaysShowSwitcherGroupName[] = "AlwaysShow";
 
 }  // namespace
 
@@ -167,6 +172,12 @@ void AvatarMenuModel::Observe(int type,
 
 // static
 bool AvatarMenuModel::ShouldShowAvatarMenu() {
+  if (base::FieldTrialList::FindFullName(kShowProfileSwitcherFieldTrialName) ==
+      kAlwaysShowSwitcherGroupName) {
+    // We should only be in this group when multi-profiles is enabled.
+    DCHECK(ProfileManager::IsMultipleProfilesEnabled());
+    return true;
+  }
   return ProfileManager::IsMultipleProfilesEnabled() &&
       g_browser_process->profile_manager()->GetNumberOfProfiles() > 1;
 }

@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -1182,13 +1183,12 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode(
 
 void BrowserCommandController::UpdateCommandsForMultipleProfiles() {
   bool show_main_ui = IsShowingMainUI(window() && window()->IsFullscreen());
-  bool has_multiple_profiles = profile_manager_ &&
-                               profile_manager_->GetNumberOfProfiles() > 1;
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU,
-      show_main_ui &&
+  bool enable = show_main_ui &&
       !profile()->IsOffTheRecord() &&
-      ProfileManager::IsMultipleProfilesEnabled() &&
-      has_multiple_profiles);
+      profile_manager_ &&
+      AvatarMenuModel::ShouldShowAvatarMenu();
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU,
+                                        enable);
 }
 
 void BrowserCommandController::UpdatePrintingState() {

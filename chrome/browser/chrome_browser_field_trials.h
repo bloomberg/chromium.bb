@@ -55,6 +55,10 @@ class ChromeBrowserFieldTrials {
   // Sets up field trials for doing Cache Sensitivity Analysis.
   void SetUpCacheSensitivityAnalysisFieldTrial();
 
+  // Disables the show profile switcher field trial if multi-profiles is not
+  // enabled.
+  void DisableShowProfileSwitcherTrialIfNecessary();
+
   // A field trial to determine the impact of using non-blocking reads for
   // TCP sockets on Windows instead of overlapped I/O.
   void WindowsOverlappedTCPReadsFieldTrial();

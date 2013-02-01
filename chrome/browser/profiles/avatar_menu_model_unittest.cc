@@ -4,10 +4,12 @@
 
 #include "chrome/browser/profiles/avatar_menu_model.h"
 
+#include "base/metrics/field_trial.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -162,6 +164,49 @@ TEST_F(AvatarMenuModelTest, ChangeOnNotify) {
   const AvatarMenuModel::Item& item3 = model.GetItemAt(2);
   EXPECT_EQ(2U, item3.model_index);
   EXPECT_EQ(name3, item3.name);
+}
+
+TEST_F(AvatarMenuModelTest, ShowAvatarMenuInTrial) {
+  // If multiple profiles is not enabled, the trial will not be enabled, so it
+  // isn't tested.
+  if (!ProfileManager::IsMultipleProfilesEnabled())
+    return;
+
+  base::FieldTrialList field_trial_list_(NULL);
+  base::FieldTrialList::CreateFieldTrial("ShowProfileSwitcher", "AlwaysShow");
+
+  EXPECT_TRUE(AvatarMenuModel::ShouldShowAvatarMenu());
+}
+
+TEST_F(AvatarMenuModelTest, DontShowAvatarMenu) {
+  string16 name1(ASCIIToUTF16("Test 1"));
+  manager()->CreateTestingProfile("p1", name1, 0);
+
+  EXPECT_FALSE(AvatarMenuModel::ShouldShowAvatarMenu());
+
+  // If multiple profiles is enabled, there are no other cases when we wouldn't
+  // show the menu.
+  if (ProfileManager::IsMultipleProfilesEnabled())
+    return;
+
+  string16 name2(ASCIIToUTF16("Test 2"));
+  manager()->CreateTestingProfile("p2", name2, 0);
+
+  EXPECT_FALSE(AvatarMenuModel::ShouldShowAvatarMenu());
+}
+
+TEST_F(AvatarMenuModelTest, ShowAvatarMenu) {
+  // If multiple profiles is enabled then the menu is never show.
+  if (!ProfileManager::IsMultipleProfilesEnabled())
+    return;
+
+  string16 name1(ASCIIToUTF16("Test 1"));
+  string16 name2(ASCIIToUTF16("Test 2"));
+
+  manager()->CreateTestingProfile("p1", name1, 0);
+  manager()->CreateTestingProfile("p2", name2, 0);
+
+  EXPECT_TRUE(AvatarMenuModel::ShouldShowAvatarMenu());
 }
 
 }  // namespace

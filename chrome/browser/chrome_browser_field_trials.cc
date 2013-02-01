@@ -19,6 +19,7 @@
 #include "chrome/browser/gpu/chrome_gpu_util.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/chrome_switches.h"
@@ -145,6 +146,7 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(
   DisableNewTabFieldTrialIfNecesssary();
   SetUpInfiniteCacheFieldTrial();
   SetUpCacheSensitivityAnalysisFieldTrial();
+  DisableShowProfileSwitcherTrialIfNecessary();
   WindowsOverlappedTCPReadsFieldTrial();
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   OneClickSigninHelper::InitializeFieldTrial();
@@ -295,6 +297,14 @@ void ChromeBrowserFieldTrials::SetUpInfiniteCacheFieldTrial() {
   trial->UseOneTimeRandomization();
   trial->AppendGroup("Yes", infinite_cache_probability);
   trial->AppendGroup("Control", infinite_cache_probability);
+}
+
+void ChromeBrowserFieldTrials::DisableShowProfileSwitcherTrialIfNecessary() {
+  // This trial is created by the VariationsService, but it needs to be disabled
+  // if multi-profiles isn't enabled.
+  base::FieldTrial* trial = base::FieldTrialList::Find("ShowProfileSwitcher");
+  if (trial && !ProfileManager::IsMultipleProfilesEnabled())
+    trial->Disable();
 }
 
 void ChromeBrowserFieldTrials::SetUpCacheSensitivityAnalysisFieldTrial() {
