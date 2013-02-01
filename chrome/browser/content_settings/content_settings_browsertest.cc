@@ -10,7 +10,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/net/url_request_mock_util.h"
-#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -20,8 +19,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/plugin_service.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -316,12 +313,6 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, Basic) {
 
   content::RenderViewHost* host =
       browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
-  ChromePluginServiceFilter* filter = ChromePluginServiceFilter::GetInstance();
-  int process_id = host->GetProcess()->GetID();
-  FilePath path(FILE_PATH_LITERAL("blah"));
-  EXPECT_FALSE(filter->CanLoadPlugin(process_id, path));
-  filter->AuthorizeAllPlugins(process_id);
-  EXPECT_TRUE(filter->CanLoadPlugin(process_id, path));
   host->Send(new ChromeViewMsg_LoadBlockedPlugins(
       host->GetRoutingID(), std::string()));
 
@@ -382,8 +373,6 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, LoadAllBlockedPlugins) {
 
   content::RenderViewHost* host =
       browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
-  ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-      host->GetProcess()->GetID());
   host->Send(new ChromeViewMsg_LoadBlockedPlugins(
       host->GetRoutingID(), std::string()));
   EXPECT_EQ(expected_title1, title_watcher1.WaitAndGetTitle());
@@ -417,8 +406,6 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, NoCallbackAtLoad) {
 
   content::RenderViewHost* host =
       browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
-  ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-      host->GetProcess()->GetID());
   host->Send(new ChromeViewMsg_LoadBlockedPlugins(
       host->GetRoutingID(), std::string()));
 
@@ -439,8 +426,6 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, DeleteSelfAtLoad) {
 
   content::RenderViewHost* host =
       browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
-  ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-      host->GetProcess()->GetID());
   host->Send(new ChromeViewMsg_LoadBlockedPlugins(
       host->GetRoutingID(), std::string()));
 

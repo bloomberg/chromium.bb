@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/plugin_service_filter.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -37,11 +36,10 @@ void OpenChannel(PluginProcessHost::Client* client) {
 class MockPluginProcessHostClient : public PluginProcessHost::Client,
                                     public IPC::Listener {
  public:
-  MockPluginProcessHostClient(ResourceContext* context, bool expect_fail)
+  MockPluginProcessHostClient(ResourceContext* context)
       : context_(context),
         channel_(NULL),
-        set_plugin_info_called_(false),
-        expect_fail_(expect_fail) {
+        set_plugin_info_called_(false) {
   }
 
   virtual ~MockPluginProcessHostClient() {
@@ -82,8 +80,6 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
     return false;
   }
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE {
-    if (expect_fail_)
-      FAIL();
     QuitMessageLoop();
   }
   virtual void OnChannelError() OVERRIDE {
@@ -100,8 +96,7 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
 
  private:
   void Fail() {
-    if (!expect_fail_)
-      FAIL();
+    FAIL();
     QuitMessageLoop();
   }
 
@@ -113,25 +108,7 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
   ResourceContext* context_;
   IPC::Channel* channel_;
   bool set_plugin_info_called_;
-  bool expect_fail_;
   DISALLOW_COPY_AND_ASSIGN(MockPluginProcessHostClient);
-};
-
-class MockPluginServiceFilter : public content::PluginServiceFilter {
- public:
-  MockPluginServiceFilter() {}
-
-  virtual bool IsPluginEnabled(
-      int render_process_id,
-      int render_view_id,
-      const void* context,
-      const GURL& url,
-      const GURL& policy_url,
-      webkit::WebPluginInfo* plugin) OVERRIDE { return true; }
-
-  virtual bool CanLoadPlugin(
-      int render_process_id,
-      const FilePath& path) OVERRIDE { return false; }
 };
 
 class PluginServiceTest : public ContentBrowserTest {
@@ -163,19 +140,7 @@ class PluginServiceTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(PluginServiceTest, OpenChannelToPlugin) {
   if (!webkit::npapi::NPAPIPluginsSupported())
     return;
-  MockPluginProcessHostClient mock_client(GetResourceContext(), false);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&OpenChannel, &mock_client));
-  RunMessageLoop();
-}
-
-IN_PROC_BROWSER_TEST_F(PluginServiceTest, OpenChannelToDeniedPlugin) {
-  if (!webkit::npapi::NPAPIPluginsSupported())
-    return;
-  MockPluginServiceFilter filter;
-  PluginServiceImpl::GetInstance()->SetFilter(&filter);
-  MockPluginProcessHostClient mock_client(GetResourceContext(), true);
+  MockPluginProcessHostClient mock_client(GetResourceContext());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&OpenChannel, &mock_client));

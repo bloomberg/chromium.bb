@@ -10,7 +10,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -133,8 +132,6 @@ void PluginInfoMessageFilter::PluginsLoaded(
     output.group_name = plugin_metadata->name();
   }
 
-  context_.GrantAccess(output.status, output.plugin.path);
-
   ChromeViewHostMsg_GetPluginInfo::WriteReplyParams(reply_msg, output);
   Send(reply_msg);
 }
@@ -228,7 +225,7 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
       PluginService::GetInstance()->GetFilter();
   size_t i = 0;
   for (; i < matching_plugins.size(); ++i) {
-    if (!filter || filter->IsPluginEnabled(render_process_id_,
+    if (!filter || filter->ShouldUsePlugin(render_process_id_,
                                            render_view_id,
                                            resource_context_,
                                            url,
@@ -292,14 +289,3 @@ void PluginInfoMessageFilter::Context::GetPluginContentSetting(
       info.primary_pattern == ContentSettingsPattern::Wildcard() &&
       info.secondary_pattern == ContentSettingsPattern::Wildcard();
 }
-
-void PluginInfoMessageFilter::Context::GrantAccess(
-    const ChromeViewHostMsg_GetPluginInfo_Status& status,
-    const FilePath& path) const {
-  if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed ||
-      status.value == ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay) {
-    ChromePluginServiceFilter::GetInstance()->AuthorizePlugin(
-        render_process_id_, path);
-  }
-}
-

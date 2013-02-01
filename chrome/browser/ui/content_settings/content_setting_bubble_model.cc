@@ -12,7 +12,6 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
@@ -24,7 +23,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -398,8 +396,6 @@ void ContentSettingCookiesBubbleModel::OnCustomLinkClicked() {
   delegate()->ShowCollectedCookiesDialog(web_contents());
 }
 
-#if defined(ENABLE_PLUGINS)
-
 class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
  public:
   ContentSettingPluginBubbleModel(Delegate* delegate,
@@ -431,16 +427,12 @@ void ContentSettingPluginBubbleModel::OnCustomLinkClicked() {
   DCHECK(web_contents());
   content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   // TODO(bauerb): We should send the identifiers of blocked plug-ins here.
-  ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-      host->GetProcess()->GetID());
   host->Send(new ChromeViewMsg_LoadBlockedPlugins(host->GetRoutingID(),
                                                   std::string()));
   set_custom_link_enabled(false);
   TabSpecificContentSettings::FromWebContents(web_contents())->
       set_load_plugins_link_enabled(false);
 }
-
-#endif  // ENABLE_PLUGINS
 
 class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
  public:
@@ -898,12 +890,10 @@ ContentSettingBubbleModel*
     return new ContentSettingMediaStreamBubbleModel(delegate, web_contents,
                                                     profile);
   }
-#if defined(ENABLE_PLUGINS)
   if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS) {
     return new ContentSettingPluginBubbleModel(delegate, web_contents, profile,
                                                content_type);
   }
-#endif
   if (content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT) {
     return new ContentSettingMixedScriptBubbleModel(delegate, web_contents,
                                                     profile, content_type);

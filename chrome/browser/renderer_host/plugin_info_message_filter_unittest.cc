@@ -27,15 +27,12 @@ class FakePluginServiceFilter : public content::PluginServiceFilter {
   FakePluginServiceFilter() {}
   virtual ~FakePluginServiceFilter() {}
 
-  virtual bool IsPluginEnabled(int render_process_id,
+  virtual bool ShouldUsePlugin(int render_process_id,
                                int render_view_id,
                                const void* context,
                                const GURL& url,
                                const GURL& policy_url,
                                webkit::WebPluginInfo* plugin) OVERRIDE;
-
-  virtual bool CanLoadPlugin(int render_process_id,
-                             const FilePath& path) OVERRIDE;
 
   void set_plugin_enabled(const FilePath& plugin_path, bool enabled) {
     plugin_state_[plugin_path] = enabled;
@@ -45,7 +42,7 @@ class FakePluginServiceFilter : public content::PluginServiceFilter {
   std::map<FilePath, bool> plugin_state_;
 };
 
-bool FakePluginServiceFilter::IsPluginEnabled(int render_process_id,
+bool FakePluginServiceFilter::ShouldUsePlugin(int render_process_id,
                                               int render_view_id,
                                               const void* context,
                                               const GURL& url,
@@ -57,11 +54,6 @@ bool FakePluginServiceFilter::IsPluginEnabled(int render_process_id,
     return false;
   }
   return it->second;
-}
-
-bool FakePluginServiceFilter::CanLoadPlugin(int render_process_id,
-                                            const FilePath& path) {
-  return true;
 }
 
 }  // namespace

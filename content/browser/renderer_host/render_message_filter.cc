@@ -657,7 +657,7 @@ void RenderMessageFilter::GetPluginsCallback(
   for (size_t i = 0; i < all_plugins.size(); ++i) {
     // Copy because the filter can mutate.
     webkit::WebPluginInfo plugin(all_plugins[i]);
-    if (!filter || filter->IsPluginEnabled(child_process_id,
+    if (!filter || filter->ShouldUsePlugin(child_process_id,
                                            routing_id,
                                            resource_context_,
                                            GURL(),
@@ -704,10 +704,8 @@ void RenderMessageFilter::OnOpenChannelToPepperPlugin(
     const FilePath& path,
     IPC::Message* reply_msg) {
   plugin_service_->OpenChannelToPpapiPlugin(
-      render_process_id_,
-      path,
-      profile_data_directory_,
-      new OpenChannelToPpapiPluginCallback(this, resource_context_, reply_msg));
+      path, profile_data_directory_, new OpenChannelToPpapiPluginCallback(
+          this, resource_context_, reply_msg));
 }
 
 void RenderMessageFilter::OnDidCreateOutOfProcessPepperInstance(
@@ -757,9 +755,7 @@ void RenderMessageFilter::OnOpenChannelToPpapiBroker(int routing_id,
                                                      int request_id,
                                                      const FilePath& path) {
   plugin_service_->OpenChannelToPpapiBroker(
-      render_process_id_,
-      path,
-      new OpenChannelToPpapiBrokerCallback(this, routing_id, request_id));
+      path, new OpenChannelToPpapiBrokerCallback(this, routing_id, request_id));
 }
 
 void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {
