@@ -112,6 +112,8 @@
         'browser/extensions/mock_extension_special_storage_policy.h',
         'browser/extensions/test_blacklist.cc',
         'browser/extensions/test_blacklist.h',
+        'browser/extensions/test_extension_environment.cc',
+        'browser/extensions/test_extension_environment.h',
         'browser/extensions/test_extension_prefs.cc',
         'browser/extensions/test_extension_prefs.h',
         'browser/extensions/test_extension_service.cc',
