@@ -90,6 +90,12 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // The original content of |salt| is lost.
   virtual bool GetSystemSalt(std::vector<uint8>* salt) = 0;
 
+  // Calls GetSanitizedUsername method.  |callback| is called after the method
+  // call succeeds.
+  virtual void GetSanitizedUsername(
+      const std::string& username,
+      const StringDBusMethodCallback& callback) = 0;
+
   // Calls the AsyncMount method to asynchronously mount the cryptohome for
   // |username|, using |key| to unlock it. For supported |flags|, see the
   // documentation of AsyncMethodCaller::AsyncMount().

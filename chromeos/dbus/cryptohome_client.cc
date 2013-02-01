@@ -133,6 +133,20 @@ class CryptohomeClientImpl : public CryptohomeClient {
     return true;
   }
 
+  // CryptohomeClient override,
+  virtual void GetSanitizedUsername(
+      const std::string& username,
+      const StringDBusMethodCallback& callback) OVERRIDE {
+    INITIALIZE_METHOD_CALL(method_call,
+                           cryptohome::kCryptohomeGetSanitizedUsername);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(username);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnStringMethod,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
   // CryptohomeClient override.
   virtual void AsyncMount(const std::string& username,
                           const std::string& key,
@@ -607,6 +621,17 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
     salt->assign(kStubSystemSalt,
                  kStubSystemSalt + arraysize(kStubSystemSalt));
     return true;
+  }
+
+  // CryptohomeClient override.
+  virtual void GetSanitizedUsername(
+      const std::string& username,
+      const StringDBusMethodCallback& callback) OVERRIDE {
+    const char kStubSanitizedUsername[] =
+        "0123456789ABCDEF0123456789ABCDEF01234567";
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, kStubSanitizedUsername));
   }
 
   // CryptohomeClient override.
