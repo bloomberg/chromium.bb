@@ -510,48 +510,6 @@
    fun:ProfileManagerTest_CreateAndUseTwoProfiles_Test::TestBody
 }
 {
-   bug_47188_a
-   Heapcheck:Leak
-   fun:net::SingleThreadedProxyResolver::GetProxyForURL
-   fun:net::::IOThread::Init
-   fun:base::Thread::ThreadMain
-   fun:ThreadFunc
-   fun:start_thread
-}
-{
-   bug_47188_b
-   Heapcheck:Leak
-   fun:__gnu_cxx::new_allocator::allocate
-   fun:std::string::_Rep::_S_create
-   fun:std::string::_Rep::_M_clone
-   fun:std::string::reserve
-   fun:*InitCanonical
-   fun:GURL
-   fun:net::::IOThread::Init
-   fun:base::Thread::ThreadMain
-   fun:ThreadFunc
-   fun:start_thread
-}
-{
-   bug_47188_c
-   Heapcheck:Leak
-   ...
-   fun:net::SingleThreadedProxyResolver::Job::DoQuery
-   fun:*DispatchToMethod
-   fun:RunnableMethod::Run
-   fun:MessageLoop::RunTask
-   fun:MessageLoop::DeferOrRunPendingTask
-   fun:MessageLoop::DoWork
-   fun:base::MessagePumpDefault::Run
-   fun:MessageLoop::RunInternal
-   fun:MessageLoop::RunHandler
-   fun:MessageLoop::Run
-   fun:base::Thread::Run
-   fun:base::Thread::ThreadMain
-   fun:ThreadFunc
-   fun:start_thread
-}
-{
    bug_49300_a
    Heapcheck:Leak
    fun:disk_cache::StorageBlock::AllocateData
