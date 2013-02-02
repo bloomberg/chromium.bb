@@ -300,6 +300,12 @@ gfx::Rect PictureLayerTiling::Iterator::geometry_rect() const {
   return current_geometry_rect_;
 }
 
+gfx::Rect PictureLayerTiling::Iterator::full_tile_geometry_rect() const {
+  gfx::Rect rect = tiling_->tiling_data_.TileBoundsWithBorder(tile_i_, tile_j_);
+  rect.set_size(tiling_->tiling_data_.max_texture_size());
+  return rect;
+}
+
 gfx::RectF PictureLayerTiling::Iterator::texture_rect() const {
   gfx::PointF tex_origin =
       tiling_->tiling_data_.TileBoundsWithBorder(tile_i_, tile_j_).origin();

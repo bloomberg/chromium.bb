@@ -84,6 +84,8 @@ class TestablePicturePileImpl : public PicturePileImpl {
     picture->Record(&client, NULL);
     picture_list_map_[std::pair<int, int>(x, y)].push_back(picture);
     EXPECT_TRUE(HasRecordingAt(x, y));
+
+    UpdateRecordedRegion();
   }
 
   void RemoveRecordingAt(int x, int y) {
@@ -96,6 +98,8 @@ class TestablePicturePileImpl : public PicturePileImpl {
       return;
     picture_list_map_.erase(std::pair<int, int>(x, y));
     EXPECT_FALSE(HasRecordingAt(x, y));
+
+    UpdateRecordedRegion();
   }
 
  protected:
@@ -123,20 +127,22 @@ class PictureLayerImplTest : public testing::Test {
 
   void SetupTrees(
       scoped_refptr<PicturePileImpl> pending_pile,
-      scoped_refptr<PicturePileImpl> active_pile,
-      const Region& invalidation) {
+      scoped_refptr<PicturePileImpl> active_pile) {
     SetupPendingTree(active_pile);
     host_impl_.activatePendingTree();
 
     active_layer_ = static_cast<TestablePictureLayerImpl*>(
         host_impl_.activeTree()->LayerById(id_));
-    active_layer_->AddTiling(2.3f);
-    active_layer_->AddTiling(1.0f);
-    active_layer_->AddTiling(0.5f);
 
     SetupPendingTree(pending_pile);
     pending_layer_ = static_cast<TestablePictureLayerImpl*>(
         host_impl_.pendingTree()->LayerById(id_));
+  }
+
+  void AddDefaultTilingsWithInvalidation(const Region& invalidation) {
+    active_layer_->AddTiling(2.3f);
+    active_layer_->AddTiling(1.0f);
+    active_layer_->AddTiling(0.5f);
     pending_layer_->invalidation() = invalidation;
     pending_layer_->SyncFromActiveLayer();
   }
@@ -185,8 +191,10 @@ TEST_F(PictureLayerImplTest, cloneNoInvalidation) {
   scoped_refptr<TestablePicturePileImpl> active_pile =
       TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
 
+  SetupTrees(pending_pile, active_pile);
+
   Region invalidation;
-  SetupTrees(pending_pile, active_pile, invalidation);
+  AddDefaultTilingsWithInvalidation(invalidation);
 
   EXPECT_EQ(pending_layer_->tilings().num_tilings(),
             active_layer_->tilings().num_tilings());
@@ -207,10 +215,13 @@ TEST_F(PictureLayerImplTest, clonePartialInvalidation) {
   scoped_refptr<TestablePicturePileImpl> active_pile =
       TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
 
+  SetupTrees(pending_pile, active_pile);
+
   Region invalidation(layer_invalidation);
-  SetupTrees(pending_pile, active_pile, layer_invalidation);
+  AddDefaultTilingsWithInvalidation(invalidation);
 
   const PictureLayerTilingSet& tilings = pending_layer_->tilings();
+  EXPECT_GT(tilings.num_tilings(), 0u);
   for (size_t i = 0; i < tilings.num_tilings(); ++i) {
     const PictureLayerTiling* tiling = tilings.tiling_at(i);
     gfx::Rect content_invalidation = gfx::ToEnclosingRect(gfx::ScaleRect(
@@ -239,8 +250,10 @@ TEST_F(PictureLayerImplTest, cloneFullInvalidation) {
   scoped_refptr<TestablePicturePileImpl> active_pile =
       TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
 
+  SetupTrees(pending_pile, active_pile);
+
   Region invalidation((gfx::Rect(layer_bounds)));
-  SetupTrees(pending_pile, active_pile, invalidation);
+  AddDefaultTilingsWithInvalidation(invalidation);
 
   EXPECT_EQ(pending_layer_->tilings().num_tilings(),
             active_layer_->tilings().num_tilings());
@@ -262,10 +275,13 @@ TEST_F(PictureLayerImplTest, noInvalidationBoundsChange) {
   scoped_refptr<TestablePicturePileImpl> active_pile =
       TestablePicturePileImpl::CreateFilledPile(tile_size, active_layer_bounds);
 
+  SetupTrees(pending_pile, active_pile);
+
   Region invalidation;
-  SetupTrees(pending_pile, active_pile, invalidation);
+  AddDefaultTilingsWithInvalidation(invalidation);
 
   const PictureLayerTilingSet& tilings = pending_layer_->tilings();
+  EXPECT_GT(tilings.num_tilings(), 0u);
   for (size_t i = 0; i < tilings.num_tilings(); ++i) {
     const PictureLayerTiling* tiling = tilings.tiling_at(i);
     gfx::Rect active_content_bounds = gfx::ToEnclosingRect(gfx::ScaleRect(
@@ -311,10 +327,12 @@ TEST_F(PictureLayerImplTest, addTilesFromNewRecording) {
     }
   }
 
+  SetupTrees(pending_pile, active_pile);
   Region invalidation;
-  SetupTrees(pending_pile, active_pile, invalidation);
+  AddDefaultTilingsWithInvalidation(invalidation);
 
   const PictureLayerTilingSet& tilings = pending_layer_->tilings();
+  EXPECT_GT(tilings.num_tilings(), 0u);
   for (size_t i = 0; i < tilings.num_tilings(); ++i) {
     const PictureLayerTiling* tiling = tilings.tiling_at(i);
 
@@ -322,10 +340,12 @@ TEST_F(PictureLayerImplTest, addTilesFromNewRecording) {
                                            tiling->contents_scale(),
                                            tiling->ContentRect());
          iter; ++iter) {
-      EXPECT_FALSE(iter.geometry_rect().IsEmpty());
+      EXPECT_FALSE(iter.full_tile_geometry_rect().IsEmpty());
       // Ensure there is a recording for this tile.
       gfx::Rect layer_rect = gfx::ToEnclosingRect(
-          gfx::ScaleRect(iter.geometry_rect(), 1.f / tiling->contents_scale()));
+          gfx::ScaleRect(
+              iter.full_tile_geometry_rect(), 1.f / tiling->contents_scale()));
+      layer_rect.Intersect(gfx::Rect(layer_bounds));
 
       bool in_pending = pending_pile->recorded_region().Contains(layer_rect);
       bool in_active = active_pile->recorded_region().Contains(layer_rect);
