@@ -66,15 +66,12 @@ gfx::Rect GetMouseAnchorRect() {
   return mouse_anchor_rect;
 }
 
-gfx::ImageSkia GetIcon(bool has_unread_notifications) {
-  // TODO(dewittj): Use an icon resource for both unread and read notifications.
+gfx::ImageSkia GetIcon(bool has_unread) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* icon =
-      rb.GetImageSkiaNamed(IDR_ALLOWED_NOTIFICATION);
+  gfx::ImageSkia* icon = rb.GetImageSkiaNamed(
+      has_unread ? IDR_NOTIFICATION_TRAY_LIT : IDR_NOTIFICATION_TRAY_DIM);
   DCHECK(icon);
-  if (has_unread_notifications)
-    return *icon;
-  return gfx::ImageSkiaOperations::CreateTransparentImage(*icon, .5);
+  return *icon;
 }
 
 }  // namespace

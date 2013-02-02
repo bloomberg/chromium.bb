@@ -507,6 +507,10 @@
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL" file="common/ntp_welcome_thumb.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_NEWTAB_WEBSTORE_THUMBNAIL" file="ntp_webstore_thumb.png" />
+      <if expr="is_win">
+        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_TRAY_DIM" file="win/notification_tray_dim.png" />
+        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_TRAY_LIT" file="win/notification_tray_lit.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_C" file="common/cs_bubble_center.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_L" file="common/cs_bubble_left.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_R" file="common/cs_bubble_right.png" />
