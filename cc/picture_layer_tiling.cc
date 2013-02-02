@@ -41,9 +41,7 @@ void PictureLayerTiling::SetClient(PictureLayerTilingClient* client) {
 }
 
 gfx::Rect PictureLayerTiling::ContentRect() const {
-  gfx::Size content_bounds =
-      gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds_, contents_scale_));
-  return gfx::Rect(gfx::Point(), content_bounds);
+  return gfx::Rect(tiling_data_.total_size());
 }
 
 gfx::SizeF PictureLayerTiling::ContentSizeF() const {
@@ -193,22 +191,21 @@ PictureLayerTiling::Iterator::Iterator(const PictureLayerTiling* tiling,
     return;
 
   float dest_to_content_scale = tiling_->contents_scale_ / dest_scale;
-  dest_to_content_scale_x_ = dest_to_content_scale;
-  dest_to_content_scale_y_ = dest_to_content_scale;
+  // This is the maximum size that the dest rect can be, given the content size.
+  gfx::Size dest_content_size = gfx::ToCeiledSize(gfx::ScaleSize(
+      tiling_->ContentRect().size(),
+      1 / dest_to_content_scale,
+      1 / dest_to_content_scale));
 
-  // Do not draw last row/column of texels if they don't have enough
-  // rasterization coverage. i.e.: the ceiled content size does not equal the
-  // floored size.
-  gfx::SizeF content_size = tiling_->ContentSizeF();
-  gfx::Size content_size_ceil = gfx::ToCeiledSize(content_size);
-  gfx::Size content_size_floor = gfx::ToFlooredSize(content_size);
-
-  if (content_size_floor.width() != content_size_ceil.width())
-    dest_to_content_scale_x_ = dest_to_content_scale *
-        content_size_floor.width() / content_size_ceil.width();
-  if (content_size_floor.height() != content_size_ceil.height())
-    dest_to_content_scale_y_ = dest_to_content_scale *
-        content_size_floor.height() /content_size_ceil.height();
+  // The last row/column of texels may not have full rasterization coverage,
+  // which can happen if the ceiled content size does not equal the floored
+  // content size.  These texels will sample outside of the recording to
+  // generate their pixels.  Use the floored size here to ignore them.
+  gfx::Size content_size_floor = gfx::ToFlooredSize(tiling->ContentSizeF());
+  dest_to_content_scale_x_ = content_size_floor.width() /
+      static_cast<float>(dest_content_size.width());
+  dest_to_content_scale_y_ = content_size_floor.height() /
+      static_cast<float>(dest_content_size.height());
 
   gfx::Rect content_rect =
       gfx::ToEnclosingRect(gfx::ScaleRect(dest_rect_,
@@ -315,11 +312,7 @@ gfx::RectF PictureLayerTiling::Iterator::texture_rect() const {
   texture_rect.Scale(dest_to_content_scale_x_,
                      dest_to_content_scale_y_);
   texture_rect.Offset(-tex_origin.OffsetFromOrigin());
-
-  DCHECK_GE(texture_rect.x(), 0);
-  DCHECK_GE(texture_rect.y(), 0);
-  DCHECK_LE(texture_rect.right(), texture_size().width());
-  DCHECK_LE(texture_rect.bottom(), texture_size().height());
+  texture_rect.Intersect(tiling_->ContentRect());
 
   return texture_rect;
 }
@@ -343,8 +336,7 @@ void PictureLayerTiling::UpdateTilePriorities(
     int current_source_frame_number,
     double current_frame_time) {
   TRACE_EVENT0("cc", "PictureLayerTiling::UpdateTilePriorities");
-  gfx::Rect content_rect = ContentRect();
-  if (content_rect.IsEmpty())
+  if (ContentRect().IsEmpty())
     return;
 
   bool first_update_in_new_source_frame =

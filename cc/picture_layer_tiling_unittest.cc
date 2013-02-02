@@ -6,6 +6,7 @@
 
 #include "cc/test/fake_picture_layer_tiling_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
 
 namespace cc {
@@ -25,7 +26,12 @@ class PictureLayerTilingIteratorTest : public testing::Test {
     tiling_->SetLayerBounds(layer_bounds);
   }
 
-  void VerifyTilesExactlyCoverRect(float rect_scale, gfx::Rect rect) {
+  void VerifyTilesExactlyCoverRect(
+      float rect_scale,
+      gfx::Rect request_rect,
+      gfx::Rect expect_rect) {
+    EXPECT_TRUE(request_rect.Contains(expect_rect));
+
     // Iterators are not valid if this ratio is too large (i.e. the
     // tiling is too high-res for a low-res destination rect.)  This is an
     // artifact of snapping geometry to integer coordinates and then mapping
@@ -33,14 +39,16 @@ class PictureLayerTilingIteratorTest : public testing::Test {
     float dest_to_contents_scale = tiling_->contents_scale() / rect_scale;
     ASSERT_LE(dest_to_contents_scale, 2.0);
 
-    Region remaining = rect;
-    for (PictureLayerTiling::Iterator iter(tiling_.get(), rect_scale, rect);
+    Region remaining = expect_rect;
+    for (PictureLayerTiling::Iterator iter(tiling_.get(),
+                                           rect_scale,
+                                           request_rect);
          iter;
          ++iter) {
 
       // Geometry cannot overlap previous geometry at all
       gfx::Rect geometry = iter.geometry_rect();
-      EXPECT_TRUE(rect.Contains(geometry));
+      EXPECT_TRUE(expect_rect.Contains(geometry));
       EXPECT_TRUE(remaining.Contains(geometry));
       remaining.Subtract(geometry);
 
@@ -56,6 +64,18 @@ class PictureLayerTilingIteratorTest : public testing::Test {
 
     // The entire rect must be filled by geometry from the tiling.
     EXPECT_TRUE(remaining.IsEmpty());
+  }
+
+  void VerifyTilesExactlyCoverRect(float rect_scale, gfx::Rect rect) {
+    VerifyTilesExactlyCoverRect(rect_scale, rect, rect);
+  }
+
+  void VerifyTilesCoverNonContainedRect(float rect_scale, gfx::Rect dest_rect) {
+    float dest_to_contents_scale = tiling_->contents_scale() / rect_scale;
+    gfx::Rect clamped_rect(gfx::ToEnclosingRect(gfx::ScaleRect(
+        tiling_->ContentRect(), 1 / dest_to_contents_scale)));
+    clamped_rect.Intersect(dest_rect);
+    VerifyTilesExactlyCoverRect(rect_scale, dest_rect, clamped_rect);
   }
 
  protected:
@@ -120,18 +140,40 @@ TEST_F(PictureLayerTilingIteratorTest, IteratorCoversLayerBoundsBothScale) {
 }
 
 TEST_F(PictureLayerTilingIteratorTest, IteratorEmptyRect) {
-  Initialize(gfx::Size(100, 100), 1, gfx::Size(800, 600));
+  Initialize(gfx::Size(100, 100), 1.0f, gfx::Size(800, 600));
 
   gfx::Rect empty;
-  PictureLayerTiling::Iterator iter(tiling_.get(), 1, empty);
+  PictureLayerTiling::Iterator iter(tiling_.get(), 1.0f, empty);
   EXPECT_FALSE(iter);
 }
 
 TEST_F(PictureLayerTilingIteratorTest, NonIntersectingRect) {
-  Initialize(gfx::Size(100, 100), 1, gfx::Size(800, 600));
+  Initialize(gfx::Size(100, 100), 1.0f, gfx::Size(800, 600));
   gfx::Rect non_intersecting(1000, 1000, 50, 50);
   PictureLayerTiling::Iterator iter(tiling_.get(), 1, non_intersecting);
   EXPECT_FALSE(iter);
+}
+
+TEST_F(PictureLayerTilingIteratorTest, LayerEdgeTextureCoordinates) {
+  Initialize(gfx::Size(300, 300), 1.0f, gfx::Size(256, 256));
+  // All of these sizes are 256x256, scaled and ceiled.
+  VerifyTilesExactlyCoverRect(1.0f, gfx::Rect(gfx::Size(256, 256)));
+  VerifyTilesExactlyCoverRect(0.8f, gfx::Rect(gfx::Size(205, 205)));
+  VerifyTilesExactlyCoverRect(1.2f, gfx::Rect(gfx::Size(308, 308)));
+}
+
+TEST_F(PictureLayerTilingIteratorTest, NonContainedDestRect) {
+  Initialize(gfx::Size(100, 100), 1.0f, gfx::Size(400, 400));
+
+  // Too large in all dimensions
+  VerifyTilesCoverNonContainedRect(1.0f, gfx::Rect(-1000, -1000, 2000, 2000));
+  VerifyTilesCoverNonContainedRect(1.5f, gfx::Rect(-1000, -1000, 2000, 2000));
+  VerifyTilesCoverNonContainedRect(0.5f, gfx::Rect(-1000, -1000, 2000, 2000));
+
+  // Partially covering content, but too large
+  VerifyTilesCoverNonContainedRect(1.0f, gfx::Rect(-1000, 100, 2000, 100));
+  VerifyTilesCoverNonContainedRect(1.5f, gfx::Rect(-1000, 100, 2000, 100));
+  VerifyTilesCoverNonContainedRect(0.5f, gfx::Rect(-1000, 100, 2000, 100));
 }
 
 }  // namespace
