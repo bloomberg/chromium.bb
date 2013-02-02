@@ -67,10 +67,14 @@ public:
 protected:
   PictureLayerImpl(LayerTreeImpl* treeImpl, int id);
   PictureLayerTiling* AddTiling(float contents_scale);
+  void RemoveTiling(float contents_scale);
   void SyncFromActiveLayer(const PictureLayerImpl* other);
   gfx::Size TileSize() const;
-  void ManageTilings(float ideal_contents_scale);
-  void CleanUpUnusedTilings(std::vector<PictureLayerTiling*> used_tilings);
+  void ManageTilings();
+  void CleanUpTilingsOnActiveLayer(
+      std::vector<PictureLayerTiling*> used_tilings);
+  PictureLayerImpl* PendingTwin() const;
+  PictureLayerImpl* ActiveTwin() const;
 
   virtual void getDebugBorderProperties(
       SkColor* color, float* width) const OVERRIDE;
@@ -85,6 +89,15 @@ protected:
   float last_content_scale_;
   float ideal_contents_scale_;
   bool is_mask_;
+
+  float ideal_page_scale_;
+  float ideal_device_scale_;
+  float ideal_source_scale_;
+
+  float raster_page_scale_;
+  float raster_device_scale_;
+  float raster_source_scale_;
+  bool raster_source_scale_was_animating_;
 
   friend class PictureLayer;
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImpl);

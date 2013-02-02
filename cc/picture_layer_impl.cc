@@ -29,7 +29,14 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* treeImpl, int id)
       pile_(PicturePileImpl::Create()),
       last_content_scale_(0),
       ideal_contents_scale_(0),
-      is_mask_(false) {
+      is_mask_(false),
+      ideal_page_scale_(0.f),
+      ideal_device_scale_(0.f),
+      ideal_source_scale_(0.f),
+      raster_page_scale_(0.f),
+      raster_device_scale_(0.f),
+      raster_source_scale_(0.f),
+      raster_source_scale_was_animating_(false) {
 }
 
 PictureLayerImpl::~PictureLayerImpl() {
@@ -191,7 +198,7 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
       drawTransformIsAnimating() ||
       screenSpaceTransformIsAnimating();
   if (!is_animating)
-    CleanUpUnusedTilings(seen_tilings);
+    CleanUpTilingsOnActiveLayer(seen_tilings);
 }
 
 void PictureLayerImpl::dumpLayerProperties(std::string*, int indent) const {
@@ -257,9 +264,22 @@ void PictureLayerImpl::calculateContentsScale(
   }
 
   float min_contents_scale = layerTreeImpl()->settings().minimumContentsScale;
-  ideal_contents_scale_ = std::max(ideal_contents_scale, min_contents_scale);
+  float min_page_scale = layerTreeImpl()->min_page_scale_factor();
+  float min_device_scale = 1.f;
+  float min_source_scale =
+      min_contents_scale / min_page_scale / min_device_scale;
 
-  ManageTilings(ideal_contents_scale_);
+  float ideal_page_scale = layerTreeImpl()->total_page_scale_factor();
+  float ideal_device_scale = layerTreeImpl()->device_scale_factor();
+  float ideal_source_scale =
+      ideal_contents_scale / ideal_page_scale / ideal_device_scale;
+
+  ideal_contents_scale_ = std::max(ideal_contents_scale, min_contents_scale);
+  ideal_page_scale_ = ideal_page_scale;
+  ideal_device_scale_ = ideal_device_scale;
+  ideal_source_scale_ = std::max(ideal_source_scale, min_source_scale);
+
+  ManageTilings();
 
   // The content scale and bounds for a PictureLayerImpl is somewhat fictitious.
   // There are (usually) several tilings at different scales.  However, the
@@ -313,11 +333,8 @@ void PictureLayerImpl::SyncFromActiveLayer() {
   // If there is an active tree version of this layer, get a copy of its
   // tiles.  This needs to be done last, after setting invalidation and the
   // pile.
-  PictureLayerImpl* active_twin = static_cast<PictureLayerImpl*>(
-      layerTreeImpl()->FindActiveTreeLayerById(id()));
-  if (!active_twin)
-    return;
-  SyncFromActiveLayer(active_twin);
+  if (PictureLayerImpl* active_twin = ActiveTwin())
+    SyncFromActiveLayer(active_twin);
 }
 
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
@@ -377,61 +394,86 @@ ResourceProvider::ResourceId PictureLayerImpl::contentsResourceId() const {
 }
 
 bool PictureLayerImpl::areVisibleResourcesReady() const {
+  DCHECK(ideal_contents_scale_);
+
   const gfx::Rect& rect = visibleContentRect();
 
-  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
-    const PictureLayerTiling* tiling = tilings_->tiling_at(i);
+  float raster_contents_scale =
+      raster_page_scale_ *
+      raster_device_scale_ *
+      raster_source_scale_;
 
-    // Ignore non-high resolution tilings.
-    if (tiling->resolution() != HIGH_RESOLUTION)
+  float min_acceptable_scale =
+      std::min(raster_contents_scale, ideal_contents_scale_);
+
+  if (layerTreeImpl()->IsPendingTree()) {
+    if (PictureLayerImpl* twin = ActiveTwin()) {
+      float twin_raster_contents_scale =
+          twin->raster_page_scale_ *
+          twin->raster_device_scale_ *
+          twin->raster_source_scale_;
+
+      min_acceptable_scale = std::min(
+          min_acceptable_scale,
+          std::min(twin->ideal_contents_scale_, twin_raster_contents_scale));
+    }
+  }
+
+  Region missing_region = rect;
+  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = tilings_->tiling_at(i);
+
+    if (tiling->contents_scale() < min_acceptable_scale)
       continue;
 
     for (PictureLayerTiling::Iterator iter(tiling,
-                                           tiling->contents_scale(),
+                                           contentsScaleX(),
                                            rect);
          iter;
          ++iter) {
       // A null tile (i.e. no recording) is considered "ready".
-      if (*iter && !iter->GetResourceId())
-        return false;
+      if (!*iter || iter->GetResourceId())
+        missing_region.Subtract(iter.geometry_rect());
     }
-    return true;
   }
-  return false;
+
+  return missing_region.IsEmpty();
 }
 
 PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
-  if (contents_scale < layerTreeImpl()->settings().minimumContentsScale)
-    return NULL;
-
-  const Region& recorded = pile_->recorded_region();
-  if (recorded.IsEmpty())
-    return NULL;
+  DCHECK(contents_scale >= layerTreeImpl()->settings().minimumContentsScale);
 
   PictureLayerTiling* tiling = tilings_->AddTiling(
       contents_scale,
       TileSize());
 
+  const Region& recorded = pile_->recorded_region();
+  DCHECK(!recorded.IsEmpty());
+
   for (Region::Iterator iter(recorded); iter.has_rect(); iter.next())
     tiling->CreateTilesFromLayerRect(iter.rect());
 
-  PictureLayerImpl* twin;
-  const Region* pending_layer_invalidation = NULL;
-  if (layerTreeImpl()->IsPendingTree()) {
-    twin = static_cast<PictureLayerImpl*>(
-        layerTreeImpl()->FindActiveTreeLayerById(id()));
-    pending_layer_invalidation = &invalidation_;
-  } else {
-    twin = static_cast<PictureLayerImpl*>(
-        layerTreeImpl()->FindPendingTreeLayerById(id()));
-    pending_layer_invalidation = &twin->invalidation_;
-  }
-
+  PictureLayerImpl* twin =
+      layerTreeImpl()->IsPendingTree() ? ActiveTwin() : PendingTwin();
   if (!twin)
     return tiling;
-  DCHECK_EQ(id(), twin->id());
-  twin->SyncTiling(tiling, *pending_layer_invalidation);
+
+  if (layerTreeImpl()->IsPendingTree())
+    twin->SyncTiling(tiling, invalidation_);
+  else
+    twin->SyncTiling(tiling, twin->invalidation_);
+
   return tiling;
+}
+
+void PictureLayerImpl::RemoveTiling(float contents_scale) {
+  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = tilings_->tiling_at(i);
+    if (tiling->contents_scale() == contents_scale) {
+      tilings_->Remove(tiling);
+      break;
+    }
+  }
 }
 
 gfx::Size PictureLayerImpl::TileSize() const {
@@ -465,86 +507,92 @@ inline bool IsCloserToThan(
 
 }  // namespace
 
-void PictureLayerImpl::ManageTilings(float ideal_contents_scale) {
-  DCHECK(ideal_contents_scale);
+void PictureLayerImpl::ManageTilings() {
+  DCHECK(ideal_contents_scale_);
+  DCHECK(ideal_page_scale_);
+  DCHECK(ideal_device_scale_);
+  DCHECK(ideal_source_scale_);
+
+  if (pile_->recorded_region().IsEmpty())
+    return;
+
   float low_res_factor = layerTreeImpl()->settings().lowResContentsScaleFactor;
-  float low_res_contents_scale = ideal_contents_scale * low_res_factor;
-  bool is_animating = drawTransformIsAnimating() ||
+
+  bool is_active_layer = layerTreeImpl()->IsActiveTree();
+  bool is_pinching = layerTreeImpl()->PinchGestureActive();
+  bool is_animating =
+      drawTransformIsAnimating() ||
       screenSpaceTransformIsAnimating();
 
-  // Remove any tilings from the pending tree that don't exactly match the
-  // contents scale.  The pending tree should always come in crisp.  However,
-  // don't do this during a pinch, to avoid throwing away a tiling that should
-  // have been kept.
-  if (layerTreeImpl()->IsPendingTree() &&
-      !layerTreeImpl()->PinchGestureActive() && !is_animating) {
-    std::vector<PictureLayerTiling*> remove_list;
-    for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
-      PictureLayerTiling* tiling = tilings_->tiling_at(i);
-      if (tiling->contents_scale() == ideal_contents_scale)
-        continue;
-      if (tiling->contents_scale() == low_res_contents_scale)
-        continue;
-      remove_list.push_back(tiling);
-    }
+  bool change_target_tiling = false;
 
-    for (size_t i = 0; i < remove_list.size(); ++i)
-      tilings_->Remove(remove_list[i]);
+  if (!raster_page_scale_ || !raster_device_scale_ || !raster_source_scale_)
+    change_target_tiling = true;
+
+  // TODO(danakj): Adjust raster_source_scale_ closer to ideal_source_scale_ at
+  // a throttled rate. Possibly make use of invalidation_.IsEmpty() on pending
+  // tree. This will allow CSS scale changes to get re-rastered at an
+  // appropriate rate.
+
+  if (is_active_layer) {
+    if (raster_source_scale_was_animating_ && !is_animating)
+      change_target_tiling = true;
+    raster_source_scale_was_animating_ = is_animating;
   }
+
+  if (is_active_layer && is_pinching) {
+    // If the page scale diverges too far during pinch, change raster target to
+    // the current page scale.
+    float ratio = PositiveRatio(ideal_page_scale_, raster_page_scale_);
+    if (ratio >= kMaxScaleRatioDuringPinch)
+      change_target_tiling = true;
+  }
+
+  if (!is_pinching) {
+    // When not pinching, match the ideal page scale factor.
+    if (raster_page_scale_ != ideal_page_scale_)
+      change_target_tiling = true;
+  }
+
+  // Always match the ideal device scale factor.
+  if (raster_device_scale_ != ideal_device_scale_)
+    change_target_tiling = true;
+
+  if (!change_target_tiling)
+    return;
+
+  raster_page_scale_ = ideal_page_scale_;
+  raster_device_scale_ = ideal_device_scale_;
+  raster_source_scale_ = ideal_source_scale_;
+
+  // Don't allow animating CSS scales to drop below 1.
+  if (is_animating)
+    raster_source_scale_ = std::max(raster_source_scale_, 1.f);
+
+  float raster_contents_scale =
+      raster_page_scale_ * raster_device_scale_ * raster_source_scale_;
+  float low_res_raster_contents_scale = std::max(
+      raster_contents_scale * low_res_factor,
+      layerTreeImpl()->settings().minimumContentsScale);
 
   PictureLayerTiling* high_res = NULL;
   PictureLayerTiling* low_res = NULL;
-  PictureLayerTiling* old_high_res = NULL;
-  PictureLayerTiling* old_low_res = NULL;
 
-  // Find existing tilings closest to ideal high / low res.
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = tilings_->tiling_at(i);
-    if (!high_res || IsCloserToThan(tiling, high_res, ideal_contents_scale))
+    if (tiling->contents_scale() == raster_contents_scale)
       high_res = tiling;
-    if (!low_res || IsCloserToThan(tiling, low_res, low_res_contents_scale))
+    if (tiling->contents_scale() == low_res_raster_contents_scale)
       low_res = tiling;
-
-    if (tiling->resolution() == HIGH_RESOLUTION)
-      old_high_res = tiling;
-    else if (tiling->resolution() == LOW_RESOLUTION)
-      old_low_res = tiling;
 
     // Reset all tilings to non-ideal until the end of this function.
     tiling->set_resolution(NON_IDEAL_RESOLUTION);
   }
 
-  if (is_animating && old_high_res)
-    high_res = old_high_res;
-  if (is_animating && old_low_res)
-    low_res = old_low_res;
-
-  if (layerTreeImpl()->PinchGestureActive() && high_res) {
-    // If zooming out, if only available high-res tiling is very high
-    // resolution, create additional tilings closer to the ideal.
-    // When zooming in, add some additional tilings so that content
-    // "crisps up" prior to releasing pinch.
-    float ratio = PositiveRatio(
-        high_res->contents_scale(),
-        ideal_contents_scale);
-    if (ratio >= kMaxScaleRatioDuringPinch)
-      high_res = AddTiling(ideal_contents_scale);
-  } else {
-    bool high_res_mismatch = !is_animating && high_res &&
-        high_res->contents_scale() != ideal_contents_scale;
-    bool low_res_mismatch = !is_animating && low_res &&
-        low_res->contents_scale() != low_res_contents_scale;
-
-    // Always make sure we have some tiling.
-    if (!high_res || high_res_mismatch)
-      high_res = AddTiling(ideal_contents_scale);
-
-    // If we're not pinching then add a low res tiling at the exact scale.
-    if (!layerTreeImpl()->PinchGestureActive()) {
-      if (!low_res || low_res_mismatch)
-        low_res = AddTiling(low_res_contents_scale);
-    }
-  }
+  if (!high_res)
+    high_res = AddTiling(raster_contents_scale);
+  if (!low_res && low_res != high_res)
+    low_res = AddTiling(low_res_raster_contents_scale);
 
   if (high_res)
     high_res->set_resolution(HIGH_RESOLUTION);
@@ -552,22 +600,85 @@ void PictureLayerImpl::ManageTilings(float ideal_contents_scale) {
     low_res->set_resolution(LOW_RESOLUTION);
 }
 
-void PictureLayerImpl::CleanUpUnusedTilings(
+void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
     std::vector<PictureLayerTiling*> used_tilings) {
-  std::vector<PictureLayerTiling*> to_remove;
+  DCHECK(layerTreeImpl()->IsActiveTree());
 
-  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
-    PictureLayerTiling* tiling = tilings_->tiling_at(i);
-    // Don't remove the current high or low res tilinig.
-    if (tiling->resolution() != NON_IDEAL_RESOLUTION)
-      continue;
-    if (std::find(used_tilings.begin(), used_tilings.end(), tiling) ==
-        used_tilings.end())
-      to_remove.push_back(tiling);
+  float raster_contents_scale =
+      raster_page_scale_ * raster_device_scale_ * raster_source_scale_;
+
+  float min_acceptable_high_res_scale = std::min(
+      raster_contents_scale, ideal_contents_scale_);
+  float max_acceptable_high_res_scale = std::max(
+      raster_contents_scale, ideal_contents_scale_);
+
+  PictureLayerImpl* twin = PendingTwin();
+  if (twin) {
+    float twin_raster_contents_scale =
+        twin->raster_page_scale_ *
+        twin->raster_device_scale_ *
+        twin->raster_source_scale_;
+
+    min_acceptable_high_res_scale = std::min(
+        min_acceptable_high_res_scale,
+        std::min(twin_raster_contents_scale, twin->ideal_contents_scale_));
+    max_acceptable_high_res_scale = std::max(
+        max_acceptable_high_res_scale,
+        std::max(twin_raster_contents_scale, twin->ideal_contents_scale_));
   }
 
-  for (size_t i = 0; i < to_remove.size(); ++i)
+  float low_res_factor = layerTreeImpl()->settings().lowResContentsScaleFactor;
+
+  float min_acceptable_low_res_scale =
+      low_res_factor * min_acceptable_high_res_scale;
+  float max_acceptable_low_res_scale =
+      low_res_factor * max_acceptable_high_res_scale;
+
+  std::vector<PictureLayerTiling*> to_remove;
+  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = tilings_->tiling_at(i);
+
+    if (tiling->contents_scale() >= min_acceptable_high_res_scale &&
+        tiling->contents_scale() <= max_acceptable_high_res_scale)
+      continue;
+
+    if (tiling->contents_scale() >= min_acceptable_low_res_scale &&
+        tiling->contents_scale() <= max_acceptable_low_res_scale)
+      continue;
+
+    // Don't remove tilings that are being used and expected to stay around.
+    if (std::find(used_tilings.begin(), used_tilings.end(), tiling) !=
+        used_tilings.end())
+      continue;
+
+    to_remove.push_back(tiling);
+  }
+
+  for (size_t i = 0; i < to_remove.size(); ++i) {
+    if (twin)
+      twin->RemoveTiling(to_remove[i]->contents_scale());
     tilings_->Remove(to_remove[i]);
+  }
+}
+
+PictureLayerImpl* PictureLayerImpl::PendingTwin() const {
+  DCHECK(layerTreeImpl()->IsActiveTree());
+
+  PictureLayerImpl* twin = static_cast<PictureLayerImpl*>(
+      layerTreeImpl()->FindPendingTreeLayerById(id()));
+  if (twin)
+    DCHECK_EQ(id(), twin->id());
+  return twin;
+}
+
+PictureLayerImpl* PictureLayerImpl::ActiveTwin() const {
+  DCHECK(layerTreeImpl()->IsPendingTree());
+
+  PictureLayerImpl* twin = static_cast<PictureLayerImpl*>(
+      layerTreeImpl()->FindActiveTreeLayerById(id()));
+  if (twin)
+    DCHECK_EQ(id(), twin->id());
+  return twin;
 }
 
 void PictureLayerImpl::getDebugBorderProperties(
