@@ -179,9 +179,8 @@ void SyncBackendHostForProfileSyncTest::EmitOnInvalidatorStateChange(
 }
 
 void SyncBackendHostForProfileSyncTest::EmitOnIncomingInvalidation(
-    const syncer::ObjectIdInvalidationMap& invalidation_map,
-    const syncer::IncomingInvalidationSource source) {
-  frontend()->OnIncomingInvalidation(invalidation_map, source);
+    const syncer::ObjectIdInvalidationMap& invalidation_map) {
+  frontend()->OnIncomingInvalidation(invalidation_map);
 }
 
 void SyncBackendHostForProfileSyncTest::ContinueInitialization(

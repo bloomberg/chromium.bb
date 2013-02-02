@@ -66,15 +66,13 @@ class AndroidInvalidatorBridgeTest : public testing::Test {
   }
 
   void VerifyAndDestroyObserver(
-      const syncer::ModelTypeInvalidationMap& expected_invalidations,
-      syncer::IncomingInvalidationSource expected_source) {
+      const syncer::ModelTypeInvalidationMap& expected_invalidations) {
     ASSERT_TRUE(sync_thread_.message_loop_proxy()->PostTask(
         FROM_HERE,
         base::Bind(&AndroidInvalidatorBridgeTest::
                        VerifyAndDestroyObserverOnSyncThread,
                    base::Unretained(this),
-                   expected_invalidations,
-                   expected_source)));
+                   expected_invalidations)));
     BlockForSyncThread();
   }
 
@@ -111,8 +109,7 @@ class AndroidInvalidatorBridgeTest : public testing::Test {
 
  private:
   void VerifyAndDestroyObserverOnSyncThread(
-      const syncer::ModelTypeInvalidationMap& expected_invalidations,
-      syncer::IncomingInvalidationSource expected_source) {
+      const syncer::ModelTypeInvalidationMap& expected_invalidations) {
     DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
     if (sync_handler_.get()) {
       sync_handler_notification_success_ =
@@ -120,8 +117,7 @@ class AndroidInvalidatorBridgeTest : public testing::Test {
           ObjectIdInvalidationMapEquals(
               sync_handler_->GetLastInvalidationMap(),
               syncer::ModelTypeInvalidationMapToObjectIdInvalidationMap(
-                  expected_invalidations)) &&
-          (sync_handler_->GetLastInvalidationSource() == expected_source);
+                  expected_invalidations));
       bridge_->UnregisterHandler(sync_handler_.get());
     } else {
       sync_handler_notification_success_ = false;
@@ -174,7 +170,7 @@ TEST_F(AndroidInvalidatorBridgeTest, RemoteNotification) {
   UpdateEnabledTypes(syncer::ModelTypeSet(syncer::SESSIONS));
   TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
                              invalidation_map);
-  VerifyAndDestroyObserver(invalidation_map, syncer::REMOTE_INVALIDATION);
+  VerifyAndDestroyObserver(invalidation_map);
 }
 
 // Adds an observer on the sync thread, triggers a remote refresh
@@ -189,8 +185,7 @@ TEST_F(AndroidInvalidatorBridgeTest, RemoteNotificationEmptyPayloadMap) {
   UpdateEnabledTypes(enabled_types);
   TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
                              syncer::ModelTypeInvalidationMap());
-  VerifyAndDestroyObserver(
-      enabled_types_invalidation_map, syncer::REMOTE_INVALIDATION);
+  VerifyAndDestroyObserver(enabled_types_invalidation_map);
 }
 
 }  // namespace

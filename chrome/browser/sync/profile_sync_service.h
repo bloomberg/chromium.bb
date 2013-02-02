@@ -278,8 +278,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual void OnInvalidatorStateChange(
       syncer::InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map,
-      syncer::IncomingInvalidationSource source) OVERRIDE;
+      const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
   // SyncFrontend implementation.
   virtual void OnBackendInitialized(

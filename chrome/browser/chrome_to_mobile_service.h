@@ -151,8 +151,7 @@ class ChromeToMobileService : public ProfileKeyedService,
   virtual void OnInvalidatorStateChange(
       syncer::InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map,
-      syncer::IncomingInvalidationSource source) OVERRIDE;
+      const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
   // Expose access token accessors for test purposes.
   const std::string& GetAccessTokenForTest() const;

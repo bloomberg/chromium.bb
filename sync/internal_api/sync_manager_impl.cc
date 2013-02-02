@@ -1235,8 +1235,7 @@ void SyncManagerImpl::OnInvalidatorStateChange(InvalidatorState state) {
 }
 
 void SyncManagerImpl::OnIncomingInvalidation(
-    const ObjectIdInvalidationMap& invalidation_map,
-    IncomingInvalidationSource source) {
+    const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const ModelTypeInvalidationMap& type_invalidation_map =
       ObjectIdInvalidationMapToModelTypeInvalidationMap(invalidation_map);

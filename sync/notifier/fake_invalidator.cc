@@ -41,9 +41,8 @@ void FakeInvalidator::EmitOnInvalidatorStateChange(InvalidatorState state) {
 }
 
 void FakeInvalidator::EmitOnIncomingInvalidation(
-    const ObjectIdInvalidationMap& invalidation_map,
-    IncomingInvalidationSource source) {
-  registrar_.DispatchInvalidationsToHandlers(invalidation_map, source);
+    const ObjectIdInvalidationMap& invalidation_map) {
+  registrar_.DispatchInvalidationsToHandlers(invalidation_map);
 }
 
 void FakeInvalidator::RegisterHandler(InvalidationHandler* handler) {

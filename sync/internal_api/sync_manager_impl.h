@@ -177,8 +177,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   // InvalidationHandler implementation.
   virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map,
-      IncomingInvalidationSource source) OVERRIDE;
+      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
   // Handle explicit requests to fetch updates for the given types.
   virtual void RefreshTypes(ModelTypeSet types) OVERRIDE;

@@ -79,9 +79,8 @@ class NonBlockingInvalidatorTestDelegate {
   }
 
   void TriggerOnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map,
-      IncomingInvalidationSource source) {
-    invalidator_->OnIncomingInvalidation(invalidation_map, source);
+      const ObjectIdInvalidationMap& invalidation_map) {
+    invalidator_->OnIncomingInvalidation(invalidation_map);
   }
 
  private:

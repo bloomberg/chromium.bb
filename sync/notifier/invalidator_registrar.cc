@@ -90,8 +90,7 @@ ObjectIdSet InvalidatorRegistrar::GetAllRegisteredIds() const {
 }
 
 void InvalidatorRegistrar::DispatchInvalidationsToHandlers(
-    const ObjectIdInvalidationMap& invalidation_map,
-    IncomingInvalidationSource source) {
+    const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // If we have no handlers, there's nothing to do.
   if (!handlers_.might_have_observers()) {
@@ -114,7 +113,7 @@ void InvalidatorRegistrar::DispatchInvalidationsToHandlers(
   while ((handler = it.GetNext()) != NULL) {
     DispatchMap::const_iterator dispatch_it = dispatch_map.find(handler);
     if (dispatch_it != dispatch_map.end())
-      handler->OnIncomingInvalidation(dispatch_it->second, source);
+      handler->OnIncomingInvalidation(dispatch_it->second);
   }
 }
 

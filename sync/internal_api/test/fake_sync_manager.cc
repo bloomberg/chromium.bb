@@ -55,12 +55,11 @@ ModelTypeSet FakeSyncManager::GetAndResetEnabledTypes() {
 }
 
 void FakeSyncManager::Invalidate(
-    const ObjectIdInvalidationMap& invalidation_map,
-    IncomingInvalidationSource source) {
+    const ObjectIdInvalidationMap& invalidation_map) {
   if (!sync_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&FakeSyncManager::InvalidateOnSyncThread,
-                 base::Unretained(this), invalidation_map, source))) {
+                 base::Unretained(this), invalidation_map))) {
     NOTREACHED();
   }
 }
@@ -276,10 +275,9 @@ void FakeSyncManager::RefreshTypes(ModelTypeSet types) {
 }
 
 void FakeSyncManager::InvalidateOnSyncThread(
-    const ObjectIdInvalidationMap& invalidation_map,
-    IncomingInvalidationSource source) {
+    const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  registrar_.DispatchInvalidationsToHandlers(invalidation_map, source);
+  registrar_.DispatchInvalidationsToHandlers(invalidation_map);
 }
 
 void FakeSyncManager::UpdateInvalidatorStateOnSyncThread(

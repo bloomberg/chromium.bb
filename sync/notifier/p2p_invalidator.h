@@ -57,8 +57,7 @@ class SYNC_EXPORT_PRIVATE P2PNotificationData {
   P2PNotificationData();
   P2PNotificationData(const std::string& sender_id,
                       P2PNotificationTarget target,
-                      const ObjectIdInvalidationMap& invalidation_map,
-                      IncomingInvalidationSource source);
+                      const ObjectIdInvalidationMap& invalidation_map);
 
   ~P2PNotificationData();
 
@@ -66,8 +65,6 @@ class SYNC_EXPORT_PRIVATE P2PNotificationData {
   bool IsTargeted(const std::string& id) const;
 
   const ObjectIdInvalidationMap& GetIdInvalidationMap() const;
-
-  IncomingInvalidationSource GetSource() const;
 
   bool Equals(const P2PNotificationData& other) const;
 
@@ -84,8 +81,6 @@ class SYNC_EXPORT_PRIVATE P2PNotificationData {
   P2PNotificationTarget target_;
   // The invalidation map for the notification.
   ObjectIdInvalidationMap invalidation_map_;
-  // The source of the invalidation.
-  IncomingInvalidationSource source_;
 };
 
 class SYNC_EXPORT_PRIVATE P2PInvalidator

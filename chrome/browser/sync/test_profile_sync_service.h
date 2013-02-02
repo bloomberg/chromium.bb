@@ -70,8 +70,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
 
   void EmitOnInvalidatorStateChange(syncer::InvalidatorState state);
   void EmitOnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map,
-      const syncer::IncomingInvalidationSource source);
+      const syncer::ObjectIdInvalidationMap& invalidation_map);
 
  protected:
   virtual void InitCore(const DoInitializeOptions& options) OVERRIDE;

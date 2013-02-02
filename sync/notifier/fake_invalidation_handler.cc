@@ -8,7 +8,6 @@ namespace syncer {
 
 FakeInvalidationHandler::FakeInvalidationHandler()
     : state_(DEFAULT_INVALIDATION_ERROR),
-      last_source_(LOCAL_INVALIDATION),
       invalidation_count_(0) {}
 
 FakeInvalidationHandler::~FakeInvalidationHandler() {}
@@ -22,11 +21,6 @@ FakeInvalidationHandler::GetLastInvalidationMap() const {
   return last_invalidation_map_;
 }
 
-IncomingInvalidationSource
-FakeInvalidationHandler::GetLastInvalidationSource() const {
-  return last_source_;
-}
-
 int FakeInvalidationHandler::GetInvalidationCount() const {
   return invalidation_count_;
 }
@@ -36,10 +30,8 @@ void FakeInvalidationHandler::OnInvalidatorStateChange(InvalidatorState state) {
 }
 
 void FakeInvalidationHandler::OnIncomingInvalidation(
-    const ObjectIdInvalidationMap& invalidation_map,
-    IncomingInvalidationSource source) {
+    const ObjectIdInvalidationMap& invalidation_map) {
   last_invalidation_map_ = invalidation_map;
-  last_source_ = source;
   ++invalidation_count_;
 }
 

@@ -111,8 +111,8 @@ TEST_F(PushMessagingInvalidationHandlerTest, Dispatch) {
               OnMessage("dddddddddddddddddddddddddddddddd", 0, "payload"));
   EXPECT_CALL(delegate_,
               OnMessage("dddddddddddddddddddddddddddddddd", 3, "payload"));
-  handler_->OnIncomingInvalidation(ObjectIdSetToInvalidationMap(ids, "payload"),
-                                   syncer::REMOTE_INVALIDATION);
+  handler_->OnIncomingInvalidation(
+      ObjectIdSetToInvalidationMap(ids, "payload"));
 }
 
 // Tests that malformed object IDs don't trigger spurious callbacks.
@@ -142,8 +142,8 @@ TEST_F(PushMessagingInvalidationHandlerTest, DispatchInvalidObjectIds) {
   ids.insert(invalidation::ObjectId(
       ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
       "U/dddddddddddddddddddddddddddddddd/4"));
-  handler_->OnIncomingInvalidation(ObjectIdSetToInvalidationMap(ids, "payload"),
-                                   syncer::REMOTE_INVALIDATION);
+  handler_->OnIncomingInvalidation(
+      ObjectIdSetToInvalidationMap(ids, "payload"));
 }
 
 }  // namespace extensions

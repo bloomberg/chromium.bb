@@ -69,9 +69,7 @@ class InvalidationNotifierTestDelegate {
   }
 
   void TriggerOnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map,
-      IncomingInvalidationSource source) {
-    // None of the tests actually care about |source|.
+      const ObjectIdInvalidationMap& invalidation_map) {
     invalidator_->OnInvalidate(invalidation_map);
   }
 

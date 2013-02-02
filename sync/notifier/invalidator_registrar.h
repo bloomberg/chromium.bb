@@ -58,8 +58,7 @@ class SYNC_EXPORT InvalidatorRegistrar {
   // Invalidations for IDs with no corresponding handler are dropped, as are
   // invalidations for handlers that are not added.
   void DispatchInvalidationsToHandlers(
-      const ObjectIdInvalidationMap& invalidation_map,
-      IncomingInvalidationSource source);
+      const ObjectIdInvalidationMap& invalidation_map);
 
   // Updates the invalidator state to the given one and then notifies
   // all handlers.  Note that the order is important; handlers that

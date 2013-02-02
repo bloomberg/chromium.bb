@@ -43,8 +43,7 @@ class NonBlockingInvalidator::Core
   // InvalidationNotifier).
   virtual void OnInvalidatorStateChange(InvalidatorState reason) OVERRIDE;
   virtual void OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map,
-      IncomingInvalidationSource source) OVERRIDE;
+      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
  private:
   friend class
@@ -122,13 +121,11 @@ void NonBlockingInvalidator::Core::OnInvalidatorStateChange(
 }
 
 void NonBlockingInvalidator::Core::OnIncomingInvalidation(
-    const ObjectIdInvalidationMap& invalidation_map,
-    IncomingInvalidationSource source) {
+    const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   delegate_observer_.Call(FROM_HERE,
                           &InvalidationHandler::OnIncomingInvalidation,
-                          invalidation_map,
-                          source);
+                          invalidation_map);
 }
 
 NonBlockingInvalidator::NonBlockingInvalidator(
@@ -232,10 +229,9 @@ void NonBlockingInvalidator::OnInvalidatorStateChange(InvalidatorState state) {
 }
 
 void NonBlockingInvalidator::OnIncomingInvalidation(
-        const ObjectIdInvalidationMap& invalidation_map,
-        IncomingInvalidationSource source) {
+        const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  registrar_.DispatchInvalidationsToHandlers(invalidation_map, source);
+  registrar_.DispatchInvalidationsToHandlers(invalidation_map);
 }
 
 }  // namespace syncer

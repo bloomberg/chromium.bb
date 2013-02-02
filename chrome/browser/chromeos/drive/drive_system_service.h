@@ -87,8 +87,7 @@ class DriveSystemService : public ProfileKeyedService,
   virtual void OnInvalidatorStateChange(
       syncer::InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map,
-      syncer::IncomingInvalidationSource source) OVERRIDE;
+      const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
  private:
   // Used to destroy DriveCache with scoped_ptr_malloc_free.

@@ -57,8 +57,7 @@
 //     // observers of the Invalidator implementation with the given
 //     // parameters.
 //     void TriggerOnIncomingInvalidation(
-//         const ObjectIdInvalidationMap& invalidation_map,
-//         IncomingInvalidationSource source) {
+//         const ObjectIdInvalidationMap& invalidation_map) {
 //       ...
 //     }
 //   };
@@ -142,7 +141,7 @@ TYPED_TEST_P(InvalidatorTest, Basic) {
   states[this->id3].payload = "3";
 
   // Should be ignored since no IDs are registered to |handler|.
-  this->delegate_.TriggerOnIncomingInvalidation(states, REMOTE_INVALIDATION);
+  this->delegate_.TriggerOnIncomingInvalidation(states);
   EXPECT_EQ(0, handler.GetInvalidationCount());
 
   ObjectIdSet ids;
@@ -157,10 +156,9 @@ TYPED_TEST_P(InvalidatorTest, Basic) {
   expected_states[this->id1].payload = "1";
   expected_states[this->id2].payload = "2";
 
-  this->delegate_.TriggerOnIncomingInvalidation(states, REMOTE_INVALIDATION);
+  this->delegate_.TriggerOnIncomingInvalidation(states);
   EXPECT_EQ(1, handler.GetInvalidationCount());
   EXPECT_THAT(expected_states, Eq(handler.GetLastInvalidationMap()));
-  EXPECT_EQ(REMOTE_INVALIDATION, handler.GetLastInvalidationSource());
 
   ids.erase(this->id1);
   ids.insert(this->id3);
@@ -170,10 +168,9 @@ TYPED_TEST_P(InvalidatorTest, Basic) {
   expected_states[this->id3].payload = "3";
 
   // Removed object IDs should not be notified, newly-added ones should.
-  this->delegate_.TriggerOnIncomingInvalidation(states, REMOTE_INVALIDATION);
+  this->delegate_.TriggerOnIncomingInvalidation(states);
   EXPECT_EQ(2, handler.GetInvalidationCount());
   EXPECT_THAT(expected_states, Eq(handler.GetLastInvalidationMap()));
-  EXPECT_EQ(REMOTE_INVALIDATION, handler.GetLastInvalidationSource());
 
   this->delegate_.TriggerOnInvalidatorStateChange(TRANSIENT_INVALIDATION_ERROR);
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR,
@@ -187,7 +184,7 @@ TYPED_TEST_P(InvalidatorTest, Basic) {
   invalidator->UnregisterHandler(&handler);
 
   // Should be ignored since |handler| isn't registered anymore.
-  this->delegate_.TriggerOnIncomingInvalidation(states, REMOTE_INVALIDATION);
+  this->delegate_.TriggerOnIncomingInvalidation(states);
   EXPECT_EQ(2, handler.GetInvalidationCount());
 }
 
@@ -244,7 +241,7 @@ TYPED_TEST_P(InvalidatorTest, MultipleHandlers) {
     states[this->id2].payload = "2";
     states[this->id3].payload = "3";
     states[this->id4].payload = "4";
-    this->delegate_.TriggerOnIncomingInvalidation(states, REMOTE_INVALIDATION);
+    this->delegate_.TriggerOnIncomingInvalidation(states);
 
     ObjectIdInvalidationMap expected_states;
     expected_states[this->id1].payload = "1";
@@ -252,14 +249,12 @@ TYPED_TEST_P(InvalidatorTest, MultipleHandlers) {
 
     EXPECT_EQ(1, handler1.GetInvalidationCount());
     EXPECT_THAT(expected_states, Eq(handler1.GetLastInvalidationMap()));
-    EXPECT_EQ(REMOTE_INVALIDATION, handler1.GetLastInvalidationSource());
 
     expected_states.clear();
     expected_states[this->id3].payload = "3";
 
     EXPECT_EQ(1, handler2.GetInvalidationCount());
     EXPECT_THAT(expected_states, Eq(handler2.GetLastInvalidationMap()));
-    EXPECT_EQ(REMOTE_INVALIDATION, handler2.GetLastInvalidationSource());
 
     EXPECT_EQ(0, handler3.GetInvalidationCount());
     EXPECT_EQ(0, handler4.GetInvalidationCount());
@@ -315,7 +310,7 @@ TYPED_TEST_P(InvalidatorTest, EmptySetUnregisters) {
     states[this->id1].payload = "1";
     states[this->id2].payload = "2";
     states[this->id3].payload = "3";
-    this->delegate_.TriggerOnIncomingInvalidation(states, REMOTE_INVALIDATION);
+    this->delegate_.TriggerOnIncomingInvalidation(states);
     EXPECT_EQ(0, handler1.GetInvalidationCount());
     EXPECT_EQ(1, handler2.GetInvalidationCount());
   }

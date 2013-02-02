@@ -37,8 +37,7 @@ class AndroidInvalidatorBridge::Core
   void UnregisterHandler(syncer::InvalidationHandler* handler);
 
   void EmitInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map,
-      syncer::IncomingInvalidationSource invalidation_source);
+      const syncer::ObjectIdInvalidationMap& invalidation_map);
 
   bool IsHandlerRegisteredForTest(syncer::InvalidationHandler* handler) const;
   syncer::ObjectIdSet GetRegisteredIdsForTest(
@@ -97,8 +96,7 @@ void AndroidInvalidatorBridge::Core::UnregisterHandler(
 }
 
 void AndroidInvalidatorBridge::Core::EmitInvalidation(
-    const syncer::ObjectIdInvalidationMap& invalidation_map,
-    syncer::IncomingInvalidationSource invalidation_source) {
+    const syncer::ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   const syncer::ObjectIdInvalidationMap& effective_invalidation_map =
       invalidation_map.empty() ?
@@ -107,7 +105,7 @@ void AndroidInvalidatorBridge::Core::EmitInvalidation(
       invalidation_map;
 
   invalidator_registrar_->DispatchInvalidationsToHandlers(
-      effective_invalidation_map, invalidation_source);
+      effective_invalidation_map);
 }
 
 bool AndroidInvalidatorBridge::Core::IsHandlerRegisteredForTest(
@@ -198,9 +196,6 @@ void AndroidInvalidatorBridge::Observe(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(type, chrome::NOTIFICATION_SYNC_REFRESH_REMOTE);
 
-  syncer::IncomingInvalidationSource invalidation_source =
-      syncer::REMOTE_INVALIDATION;
-
   // TODO(akalin): Use ObjectIdInvalidationMap here instead.  We'll have to
   // make sure all emitters of the relevant notifications also use
   // ObjectIdInvalidationMap.
@@ -213,8 +208,7 @@ void AndroidInvalidatorBridge::Observe(
           base::Bind(&Core::EmitInvalidation,
                      core_,
                      ModelTypeInvalidationMapToObjectIdInvalidationMap(
-                         invalidation_map),
-                     invalidation_source))) {
+                         invalidation_map)))) {
     NOTREACHED();
   }
 }

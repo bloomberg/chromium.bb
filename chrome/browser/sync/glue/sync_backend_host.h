@@ -484,8 +484,7 @@ class SyncBackendHost
   void HandleInvalidatorStateChangeOnFrontendLoop(
       syncer::InvalidatorState state);
   void HandleIncomingInvalidationOnFrontendLoop(
-      const syncer::ObjectIdInvalidationMap& invalidation_map,
-      syncer::IncomingInvalidationSource source);
+      const syncer::ObjectIdInvalidationMap& invalidation_map);
 
   // NotificationObserver implementation.
   virtual void Observe(

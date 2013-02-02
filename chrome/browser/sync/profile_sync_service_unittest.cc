@@ -486,9 +486,8 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIdsPersistence) {
   backend->EmitOnInvalidatorStateChange(syncer::INVALIDATIONS_ENABLED);
   EXPECT_EQ(syncer::INVALIDATIONS_ENABLED, handler.GetInvalidatorState());
 
-  backend->EmitOnIncomingInvalidation(states, syncer::REMOTE_INVALIDATION);
+  backend->EmitOnIncomingInvalidation(states);
   EXPECT_THAT(states, Eq(handler.GetLastInvalidationMap()));
-  EXPECT_EQ(syncer::REMOTE_INVALIDATION, handler.GetLastInvalidationSource());
 
   backend->EmitOnInvalidatorStateChange(syncer::TRANSIENT_INVALIDATION_ERROR);
   EXPECT_EQ(syncer::TRANSIENT_INVALIDATION_ERROR,
@@ -586,10 +585,9 @@ class ProfileSyncServiceInvalidatorTestDelegate {
   }
 
   void TriggerOnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map,
-      syncer::IncomingInvalidationSource source) {
+      const syncer::ObjectIdInvalidationMap& invalidation_map) {
     harness_.service->GetBackendForTest()->EmitOnIncomingInvalidation(
-        invalidation_map, source);
+        invalidation_map);
   }
 
  private:

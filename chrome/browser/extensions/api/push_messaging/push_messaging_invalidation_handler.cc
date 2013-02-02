@@ -114,8 +114,7 @@ void PushMessagingInvalidationHandler::OnInvalidatorStateChange(
 }
 
 void PushMessagingInvalidationHandler::OnIncomingInvalidation(
-    const syncer::ObjectIdInvalidationMap& invalidation_map,
-    syncer::IncomingInvalidationSource source) {
+    const syncer::ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (syncer::ObjectIdInvalidationMap::const_iterator it =
            invalidation_map.begin(); it != invalidation_map.end(); ++it) {

@@ -87,8 +87,7 @@ void InvalidationNotifier::SendInvalidation(
 void InvalidationNotifier::OnInvalidate(
     const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(CalledOnValidThread());
-  registrar_.DispatchInvalidationsToHandlers(invalidation_map,
-                                             REMOTE_INVALIDATION);
+  registrar_.DispatchInvalidationsToHandlers(invalidation_map);
 }
 
 void InvalidationNotifier::OnInvalidatorStateChange(InvalidatorState state) {

@@ -209,8 +209,7 @@ void DriveSystemService::OnInvalidatorStateChange(
 }
 
 void DriveSystemService::OnIncomingInvalidation(
-    const syncer::ObjectIdInvalidationMap& invalidation_map,
-    syncer::IncomingInvalidationSource source) {
+    const syncer::ObjectIdInvalidationMap& invalidation_map) {
   DCHECK_EQ(1U, invalidation_map.size());
   const invalidation::ObjectId object_id(
       ipc::invalidation::ObjectSource::COSMO_CHANGELOG,

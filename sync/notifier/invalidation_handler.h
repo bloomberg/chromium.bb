@@ -11,13 +11,6 @@
 
 namespace syncer {
 
-enum IncomingInvalidationSource {
-  // The server is notifying us that one or more objects have stale data.
-  REMOTE_INVALIDATION,
-  // Something locally is requesting an optimistic refresh of its data.
-  LOCAL_INVALIDATION,
-};
-
 class SYNC_EXPORT InvalidationHandler {
  public:
   // Called when the invalidator state changes.
@@ -27,8 +20,7 @@ class SYNC_EXPORT InvalidationHandler {
   // |id_state_map| and the source is in |source|.  Note that this may be
   // called regardless of the current invalidator state.
   virtual void OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map,
-      IncomingInvalidationSource source) = 0;
+      const ObjectIdInvalidationMap& invalidation_map) = 0;
 
  protected:
   virtual ~InvalidationHandler() {}

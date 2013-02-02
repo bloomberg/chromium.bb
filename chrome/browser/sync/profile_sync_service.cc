@@ -542,7 +542,7 @@ void ProfileSyncService::EmitInvalidationForTest(
 
   const syncer::ObjectIdInvalidationMap& invalidation_map =
       ObjectIdSetToInvalidationMap(notify_ids, payload);
-  OnIncomingInvalidation(invalidation_map, syncer::REMOTE_INVALIDATION);
+  OnIncomingInvalidation(invalidation_map);
 }
 
 void ProfileSyncService::Shutdown() {
@@ -752,10 +752,8 @@ void ProfileSyncService::OnInvalidatorStateChange(
 }
 
 void ProfileSyncService::OnIncomingInvalidation(
-    const syncer::ObjectIdInvalidationMap& invalidation_map,
-    syncer::IncomingInvalidationSource source) {
-  invalidator_registrar_->DispatchInvalidationsToHandlers(invalidation_map,
-                                                          source);
+    const syncer::ObjectIdInvalidationMap& invalidation_map) {
+  invalidator_registrar_->DispatchInvalidationsToHandlers(invalidation_map);
 }
 
 void ProfileSyncService::OnBackendInitialized(

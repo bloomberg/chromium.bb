@@ -100,10 +100,9 @@ class RegistrarInvalidatorTestDelegate {
   }
 
   void TriggerOnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map,
-      IncomingInvalidationSource source) {
+      const ObjectIdInvalidationMap& invalidation_map) {
     invalidator_->GetRegistrar()->DispatchInvalidationsToHandlers(
-        invalidation_map, source);
+        invalidation_map);
   }
 
  private:

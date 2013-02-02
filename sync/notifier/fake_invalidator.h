@@ -28,8 +28,7 @@ class FakeInvalidator : public Invalidator {
 
   void EmitOnInvalidatorStateChange(InvalidatorState state);
   void EmitOnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map,
-      IncomingInvalidationSource source);
+      const ObjectIdInvalidationMap& invalidation_map);
 
   virtual void RegisterHandler(InvalidationHandler* handler) OVERRIDE;
   virtual void UpdateRegisteredIds(InvalidationHandler* handler,

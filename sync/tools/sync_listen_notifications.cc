@@ -59,15 +59,13 @@ class NotificationPrinter : public InvalidationHandler {
   }
 
   virtual void OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map,
-      IncomingInvalidationSource source) OVERRIDE {
+      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE {
     const ModelTypeInvalidationMap& type_invalidation_map =
         ObjectIdInvalidationMapToModelTypeInvalidationMap(invalidation_map);
     for (ModelTypeInvalidationMap::const_iterator it =
              type_invalidation_map.begin(); it != type_invalidation_map.end();
          ++it) {
-      LOG(INFO) << (source == REMOTE_INVALIDATION ? "Remote" : "Local")
-                << " Invalidation: type = "
+      LOG(INFO) << "Remote invalidation: type = "
                 << ModelTypeToString(it->first)
                 << ", payload = " << it->second.payload;
     }

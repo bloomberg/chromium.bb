@@ -58,8 +58,7 @@ class FakeSyncManager : public SyncManager {
   ModelTypeSet GetLastRefreshRequestTypes();
 
   // Posts a method to invalidate the given IDs on the sync thread.
-  void Invalidate(const ObjectIdInvalidationMap& invalidation_map,
-                  IncomingInvalidationSource source);
+  void Invalidate(const ObjectIdInvalidationMap& invalidation_map);
 
   // Posts a method to update the invalidator state on the sync thread.
   void UpdateInvalidatorState(InvalidatorState state);
@@ -127,8 +126,7 @@ class FakeSyncManager : public SyncManager {
 
  private:
   void InvalidateOnSyncThread(
-      const ObjectIdInvalidationMap& invalidation_map,
-      IncomingInvalidationSource source);
+      const ObjectIdInvalidationMap& invalidation_map);
   void UpdateInvalidatorStateOnSyncThread(InvalidatorState state);
 
   scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;

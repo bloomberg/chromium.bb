@@ -973,8 +973,7 @@ class SyncManagerTest : public testing::Test,
         ModelTypeSetToInvalidationMap(model_types, std::string());
     sync_manager_.OnIncomingInvalidation(
         ModelTypeInvalidationMapToObjectIdInvalidationMap(
-            invalidation_map),
-        REMOTE_INVALIDATION);
+            invalidation_map));
   }
 
   void SetProgressMarkerForType(ModelType type, bool set) {

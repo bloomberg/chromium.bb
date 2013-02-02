@@ -60,9 +60,8 @@ class MockSyncFrontend : public SyncFrontend {
 
   MOCK_METHOD1(OnInvalidatorStateChange,
                void(syncer::InvalidatorState));
-  MOCK_METHOD2(OnIncomingInvalidation,
-               void(const syncer::ObjectIdInvalidationMap&,
-                    syncer::IncomingInvalidationSource));
+  MOCK_METHOD1(OnIncomingInvalidation,
+               void(const syncer::ObjectIdInvalidationMap&));
   MOCK_METHOD3(
       OnBackendInitialized,
       void(const syncer::WeakHandle<syncer::JsBackend>&,
@@ -602,11 +601,11 @@ TEST_F(SyncBackendHostTest, Invalidate) {
 
   EXPECT_CALL(
       mock_frontend_,
-      OnIncomingInvalidation(invalidation_map, syncer::REMOTE_INVALIDATION))
+      OnIncomingInvalidation(invalidation_map))
       .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
 
   backend_->UpdateRegisteredInvalidationIds(ids);
-  fake_manager_->Invalidate(invalidation_map, syncer::REMOTE_INVALIDATION);
+  fake_manager_->Invalidate(invalidation_map);
   ui_loop_.PostDelayedTask(
       FROM_HERE, ui_loop_.QuitClosure(), TestTimeouts::action_timeout());
   ui_loop_.Run();
@@ -647,7 +646,7 @@ TEST_F(SyncBackendHostTest, InvalidationsAfterStopSyncingForShutdown) {
   fake_manager_->UpdateInvalidatorState(syncer::INVALIDATIONS_ENABLED);
   const syncer::ObjectIdInvalidationMap& invalidation_map =
       syncer::ObjectIdSetToInvalidationMap(ids, "payload");
-  fake_manager_->Invalidate(invalidation_map, syncer::REMOTE_INVALIDATION);
+  fake_manager_->Invalidate(invalidation_map);
 
   // Make sure the above calls take effect before we continue.
   fake_manager_->WaitForSyncThread();
