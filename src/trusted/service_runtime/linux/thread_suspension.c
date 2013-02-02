@@ -83,7 +83,7 @@ void NaClAppThreadSetSuspendState(struct NaClAppThread *natp,
 
 static void HandleSuspendSignal(struct NaClSignalContext *regs) {
   uint32_t tls_idx = NaClTlsGetIdx();
-  struct NaClAppThread *natp = nacl_thread[tls_idx];
+  struct NaClAppThread *natp = NaClAppThreadGetFromIndex(tls_idx);
   struct NaClSignalContext *suspended_registers =
       &natp->suspended_registers->context;
 

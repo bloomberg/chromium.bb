@@ -24,10 +24,10 @@
 /*
  * This struct is passed in a message from the main sel_ldr process to
  * the debug exception handler process to communicate the address of
- * service_runtime's global arrays, nacl_thread and nacl_thread_ids.
+ * service_runtime's global arrays, nacl_user and nacl_thread_ids.
  */
 struct StartupInfo {
-  struct NaClAppThread **nacl_thread;
+  struct NaClThreadContext **nacl_user;
   uint32_t *nacl_thread_ids;
 };
 
@@ -364,6 +364,7 @@ static BOOL HandleException(const struct StartupInfo *startup_info,
    * cannot be dereferenced directly.  We use a pointer type for the
    * convenience of calculating field offsets and sizes.
    */
+  struct NaClThreadContext *ntcp_remote;
   struct NaClAppThread *natp_remote;
   struct NaClAppThread appthread_copy;
   struct NaClApp app_copy;
@@ -383,18 +384,19 @@ static BOOL HandleException(const struct StartupInfo *startup_info,
     return FALSE;
   }
 
-  if (!READ_MEM(process_handle, startup_info->nacl_thread + nacl_thread_index,
-                &natp_remote)) {
+  if (!READ_MEM(process_handle, startup_info->nacl_user + nacl_thread_index,
+                &ntcp_remote)) {
     return FALSE;
   }
-  if (natp_remote == NULL) {
+  if (ntcp_remote == NULL) {
     /*
-     * This means the nacl_thread and nacl_thread_ids arrays do not
+     * This means the nacl_user and nacl_thread_ids arrays do not
      * match up.  TODO(mseaborn): Complain more noisily about such
      * unexpected cases and terminate the NaCl process.
      */
     return FALSE;
   }
+  natp_remote = NaClAppThreadFromThreadContext(ntcp_remote);
   /*
    * We make copies of the debuggee process's NaClApp and
    * NaClAppThread structs.  We avoid passing these copies to
@@ -536,7 +538,7 @@ int NaClDebugExceptionHandlerEnsureAttached(struct NaClApp *nap) {
   if (nap->debug_exception_handler_state
       == NACL_DEBUG_EXCEPTION_HANDLER_NOT_STARTED) {
     struct StartupInfo info;
-    info.nacl_thread = nacl_thread;
+    info.nacl_user = nacl_user;
     info.nacl_thread_ids = nacl_thread_ids;
     if (nap->attach_debug_exception_handler_func(&info, sizeof(info))) {
       nap->debug_exception_handler_state = NACL_DEBUG_EXCEPTION_HANDLER_STARTED;

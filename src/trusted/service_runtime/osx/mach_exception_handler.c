@@ -150,7 +150,7 @@ static int HandleException(mach_port_t thread_port,
    * TODO(bradnelson): Migrate that knowledge to a single shared location.
    */
   nacl_thread_index = regs.uts.ts32.__gs >> 3;
-  natp = nacl_thread[nacl_thread_index];
+  natp = NaClAppThreadGetFromIndex(nacl_thread_index);
   nap = natp->nap;
 
   if (nap->enable_faulted_thread_queue) {

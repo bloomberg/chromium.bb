@@ -85,7 +85,7 @@ void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sig_ctx,
    * See https://code.google.com/p/nativeclient/issues/detail?id=2664
    */
   *is_untrusted = (NaClGetGlobalCs() != sig_ctx->cs);
-  *result_thread = nacl_thread[sig_ctx->gs >> 3];
+  *result_thread = NaClAppThreadGetFromIndex(sig_ctx->gs >> 3);
 #elif (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64) || \
       NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm || \
       NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
@@ -94,7 +94,8 @@ void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sig_ctx,
     *is_untrusted = 0;
     *result_thread = NULL;
   } else {
-    struct NaClAppThread *thread = nacl_thread[current_thread_index];
+    struct NaClAppThread *thread =
+        NaClAppThreadGetFromIndex(current_thread_index);
     /*
      * Get the address of an arbitrary local, stack-allocated variable,
      * just for the purpose of doing a sanity check.

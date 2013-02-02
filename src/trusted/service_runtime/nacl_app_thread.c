@@ -40,7 +40,6 @@ void WINAPI NaClAppThreadLauncher(void *state) {
   CHECK(0 < thread_idx);
   CHECK(thread_idx < NACL_THREAD_MAX);
   NaClTlsSetIdx(thread_idx);
-  nacl_thread[thread_idx] = natp;
   nacl_user[thread_idx] = &natp->user;
 #if NACL_WINDOWS
   nacl_thread_ids[thread_idx] = GetCurrentThreadId();
@@ -121,7 +120,6 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
    * particular, thread_idx 0 is never used.
    */
   nacl_user[thread_idx] = NULL;
-  nacl_thread[thread_idx] = NULL;
 #if NACL_WINDOWS
   nacl_thread_ids[thread_idx] = 0;
 #endif

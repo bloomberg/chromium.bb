@@ -19,7 +19,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 
 struct NaClThreadContext    *nacl_user[NACL_THREAD_MAX] = {NULL};
-struct NaClAppThread        *nacl_thread[NACL_THREAD_MAX] = {NULL};
 #if NACL_WINDOWS
 uint32_t                    nacl_thread_ids[NACL_THREAD_MAX] = {0};
 #endif

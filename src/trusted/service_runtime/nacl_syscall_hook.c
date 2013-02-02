@@ -102,7 +102,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
    */
   NaClStackSafetyNowOnTrustedStack();
 
-  natp = nacl_thread[tls_idx];
+  natp = NaClAppThreadGetFromIndex(tls_idx);
 
   HandleStackContext(natp, &tramp_ret, &sp_user);
 
