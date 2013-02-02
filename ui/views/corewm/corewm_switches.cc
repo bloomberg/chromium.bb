@@ -15,8 +15,8 @@ namespace switches {
 const char kDisableFocusController[] = "disable-focus-controller";
 
 // When set uses the FocusController in desktop mode.
-const char kEnableFocusControllerOnDesktop[] =
-    "enable-focus-controller-on-desktop";
+const char kDisableFocusControllerOnDesktop[] =
+    "disable-focus-controller-on-desktop";
 
 // If present animations are disabled.
 const char kWindowAnimationsDisabled[] =
@@ -30,8 +30,8 @@ bool UseFocusController() {
 }
 
 bool UseFocusControllerOnDesktop() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableFocusControllerOnDesktop);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableFocusControllerOnDesktop);
 }
 
 }  // namespace corewm
