@@ -35,7 +35,7 @@ const int kMaxPendingUploadBytes = 100 * 1024 * 1024;
 
 // Determine bin based on three categories of tiles: things we need now,
 // things we need soon, and eventually.
-TileManagerBin BinFromTilePriority(const TilePriority& prio) {
+inline TileManagerBin BinFromTilePriority(const TilePriority& prio) {
   if (!prio.is_live)
     return NEVER_BIN;
 
@@ -188,20 +188,6 @@ void TileManager::UnregisterTile(Tile* tile) {
     }
   }
   DCHECK(false) << "Could not find tile version.";
-}
-
-void TileManager::WillModifyTilePriority(
-    Tile* tile, WhichTree tree, const TilePriority& new_priority) {
-  // TODO(nduca): Do something smarter if reprioritization turns out to be
-  // costly.
-  ScheduleManageTiles();
-}
-
-void TileManager::ScheduleManageTiles() {
-  if (manage_tiles_pending_)
-    return;
-  client_->ScheduleManageTiles();
-  manage_tiles_pending_ = true;
 }
 
 class BinComparator {
