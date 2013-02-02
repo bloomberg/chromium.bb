@@ -372,13 +372,7 @@ HttpResponseHeaders* URLRequest::response_headers() const {
 }
 
 void URLRequest::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
-  // Downstream functions all expect |load_timing_info| to have null times.
-  *load_timing_info = LoadTimingInfo();
-
-  if (job_)
-    job_->GetLoadTimingInfo(load_timing_info);
-  load_timing_info->request_start_time = start_time_;
-  load_timing_info->request_start = start_time_ticks_;
+  *load_timing_info = load_timing_info_;
 }
 
 bool URLRequest::GetResponseCookies(ResponseCookies* cookies) {
@@ -465,8 +459,10 @@ void URLRequest::Start() {
 
   g_url_requests_started = true;
   response_info_.request_time = base::Time::Now();
-  start_time_ = response_info_.request_time;
-  start_time_ticks_ = base::TimeTicks::Now();
+
+  load_timing_info_ = LoadTimingInfo();
+  load_timing_info_.request_start_time = response_info_.request_time;
+  load_timing_info_.request_start = base::TimeTicks::Now();
 
   // Only notify the delegate for the initial request.
   if (network_delegate_) {
@@ -733,8 +729,10 @@ void URLRequest::PrepareToRestart() {
 
   response_info_ = HttpResponseInfo();
   response_info_.request_time = base::Time::Now();
-  start_time_ = response_info_.request_time;
-  start_time_ticks_ = base::TimeTicks::Now();
+
+  load_timing_info_ = LoadTimingInfo();
+  load_timing_info_.request_start_time = response_info_.request_time;
+  load_timing_info_.request_start = base::TimeTicks::Now();
 
   status_ = URLRequestStatus();
   is_pending_ = false;
@@ -954,6 +952,14 @@ void URLRequest::NotifyReadCompleted(int bytes_read) {
     delegate_->OnReadCompleted(this, bytes_read);
 
   // Nothing below this line as OnReadCompleted may delete |this|.
+}
+
+void URLRequest::OnHeadersComplete() {
+  // Cache load timing information now, as information will be lost once the
+  // socket is closed and the ClientSocketHandle is Reset, which will happen
+  // once the body is complete.  The start times should already be populated.
+  if (job_)
+    job_->GetLoadTimingInfo(&load_timing_info_);
 }
 
 void URLRequest::NotifyRequestCompleted() {

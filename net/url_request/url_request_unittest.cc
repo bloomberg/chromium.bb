@@ -2875,7 +2875,7 @@ TEST_F(URLRequestTestHTTP, GetTestLoadTiming) {
     MessageLoop::current()->Run();
 
     LoadTimingInfo load_timing_info;
-    EXPECT_TRUE(default_network_delegate_.GetLoadTimingInfo(&load_timing_info));
+    r.GetLoadTimingInfo(&load_timing_info);
     TestLoadTimingNotReused(load_timing_info, CONNECT_TIMING_HAS_DNS_TIMES);
 
     EXPECT_EQ(1, d.response_started_count());
@@ -2993,7 +2993,7 @@ TEST_F(URLRequestTestHTTP, RedirectLoadTiming) {
                           CONNECT_TIMING_HAS_DNS_TIMES);
 
   LoadTimingInfo load_timing_info;
-  EXPECT_TRUE(default_network_delegate_.GetLoadTimingInfo(&load_timing_info));
+  req.GetLoadTimingInfo(&load_timing_info);
   TestLoadTimingNotReused(load_timing_info, CONNECT_TIMING_HAS_DNS_TIMES);
 
   // Check that a new socket was used on redirect, since the server does not
@@ -3737,7 +3737,7 @@ TEST_F(URLRequestTestHTTP, BasicAuthLoadTiming) {
                             CONNECT_TIMING_HAS_DNS_TIMES);
 
     LoadTimingInfo load_timing_info;
-    EXPECT_TRUE(default_network_delegate_.GetLoadTimingInfo(&load_timing_info));
+    r.GetLoadTimingInfo(&load_timing_info);
     // The test server does not support keep alive sockets, so the second
     // request with auth should use a new socket.
     TestLoadTimingNotReused(load_timing_info, CONNECT_TIMING_HAS_DNS_TIMES);
@@ -3766,7 +3766,7 @@ TEST_F(URLRequestTestHTTP, BasicAuthLoadTiming) {
     EXPECT_TRUE(r.was_cached());
 
     LoadTimingInfo load_timing_info;
-    EXPECT_TRUE(default_network_delegate_.GetLoadTimingInfo(&load_timing_info));
+    r.GetLoadTimingInfo(&load_timing_info);
     TestLoadTimingNoHttpConnection(load_timing_info);
   }
 }
@@ -5133,7 +5133,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPGetTest) {
     EXPECT_EQ(d.bytes_received(), static_cast<int>(file_size));
 
     LoadTimingInfo load_timing_info;
-    EXPECT_TRUE(default_network_delegate_.GetLoadTimingInfo(&load_timing_info));
+    r.GetLoadTimingInfo(&load_timing_info);
     TestLoadTimingNoHttpConnection(load_timing_info);
   }
 }

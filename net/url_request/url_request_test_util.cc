@@ -299,7 +299,6 @@ TestNetworkDelegate::TestNetworkDelegate()
       blocked_get_cookies_count_(0),
       blocked_set_cookie_count_(0),
       set_cookie_count_(0),
-      has_load_timing_info_(false),
       has_load_timing_info_before_redirect_(false),
       has_load_timing_info_before_auth_(false) {
 }
@@ -310,12 +309,6 @@ TestNetworkDelegate::~TestNetworkDelegate() {
     event_order_[i->first] += "~TestNetworkDelegate\n";
     EXPECT_TRUE(i->second & kStageDestruction) << event_order_[i->first];
   }
-}
-
-bool TestNetworkDelegate::GetLoadTimingInfo(
-    LoadTimingInfo* load_timing_info) const {
-  *load_timing_info = load_timing_info_;
-  return has_load_timing_info_;
 }
 
 bool TestNetworkDelegate::GetLoadTimingInfoBeforeRedirect(
@@ -433,11 +426,10 @@ void TestNetworkDelegate::OnBeforeRedirect(URLRequest* request,
 }
 
 void TestNetworkDelegate::OnResponseStarted(URLRequest* request) {
-  load_timing_info_ = LoadTimingInfo();
-  request->GetLoadTimingInfo(&load_timing_info_);
-  has_load_timing_info_ = true;
-  EXPECT_FALSE(load_timing_info_.request_start_time.is_null());
-  EXPECT_FALSE(load_timing_info_.request_start.is_null());
+  LoadTimingInfo load_timing_info;
+  request->GetLoadTimingInfo(&load_timing_info);
+  EXPECT_FALSE(load_timing_info.request_start_time.is_null());
+  EXPECT_FALSE(load_timing_info.request_start.is_null());
 
   int req_id = request->identifier();
   InitRequestStatesIfNew(req_id);
