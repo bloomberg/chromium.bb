@@ -180,7 +180,8 @@ bool NativePanelTestingWin::VerifySystemMinimizeState() const {
   // window. Note that owner window, instead of parent window, is returned
   // though GWL_HWNDPARENT contains 'parent'.
   HWND owner_window =
-      reinterpret_cast<HWND>(::GetWindowLong(native_window, GWL_HWNDPARENT));
+      reinterpret_cast<HWND>(::GetWindowLongPtr(native_window,
+                                                GWLP_HWNDPARENT));
   if (!owner_window || !::GetWindowPlacement(owner_window, &placement))
     return false;
   return placement.showCmd == SW_MINIMIZE ||

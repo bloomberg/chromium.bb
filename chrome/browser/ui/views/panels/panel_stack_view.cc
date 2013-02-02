@@ -192,9 +192,9 @@ void PanelStackView::UpdateWindowOwnerForTaskbarIconAppearance(Panel* panel) {
 
   // All the windows that share the same owner window will appear as a single
   // window on the taskbar.
-  ::SetWindowLong(panel_window,
-                  GWL_HWNDPARENT,
-                  reinterpret_cast<LONG>(stack_window));
+  ::SetWindowLongPtr(panel_window,
+                     GWLP_HWNDPARENT,
+                     reinterpret_cast<LONG>(stack_window));
 
 #else
   NOTIMPLEMENTED();
