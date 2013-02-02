@@ -322,9 +322,18 @@
     ],
     "versions": [
       {
-        "version": "4.1.10111.0",
+        "version": "4.1.10329.0",
         "status": "up_to_date",
-        "reference": "http://support.microsoft.com/kb/2668562"
+        "reference": "http://support.microsoft.com/kb/2690729"
+      },
+      {
+        "version": "5",
+        "status": "out_of_date"
+      },
+      {
+        "version": "5.1.10411.0",
+        "status": "up_to_date",
+        "reference": "http://support.microsoft.com/kb/2636927"
       }
     ],
     "lang": "en-US",
