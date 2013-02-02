@@ -185,6 +185,8 @@ UNFILED LINUX AMD : conformance_textures_texture_mips = FAIL
 137892 LINUX INTEL : conformance_rendering_point_size = FAIL
 137892 LINUX INTEL : conformance_textures_texture_mips = FAIL
 
+173794 LINUX NVIDIA : conformance_attribs_gl_disabled_vertex_attrib = FLAKY
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 //  Temprory entries: they should be removed once the bugs are fixed.
