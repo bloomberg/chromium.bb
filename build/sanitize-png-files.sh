@@ -27,10 +27,18 @@ remoting/resources
 remoting/webapp
 "
 
+# Files larger than this file size (in bytes) will
+# use the optimization parameters tailored for large files.
+LARGE_FILE_THRESHOLD=3000
+
 # Constants used for optimization
-readonly MIN_BLOCK_SIZE=128
-readonly LIMIT_BLOCKS=256
-readonly RANDOM_TRIALS=100
+readonly DEFAULT_MIN_BLOCK_SIZE=128
+readonly DEFAULT_LIMIT_BLOCKS=256
+readonly DEFAULT_RANDOM_TRIALS=100
+# Taken from the recommendation in the pngslim's readme.txt.
+readonly LARGE_MIN_BLOCK_SIZE=1
+readonly LARGE_LIMIT_BLOCKS=2
+readonly LARGE_RANDOM_TRIALS=1
 
 # Global variables for stats
 TOTAL_OLD_BYTES=0
@@ -54,12 +62,29 @@ function pngout_loop {
   local file=$1
   shift
   local opts=$*
-  for i in 0 128 256 512; do
+  if [ $OPTIMIZE_LEVEL == 1 ]; then
     for j in $(seq 0 5); do
       throbber
-      pngout -q -k1 -s1 -b$i -f$j $opts $file
+      pngout -q -k1 -s1 -f$j $opts $file
     done
-  done
+  else
+    for i in 0 128 256 512; do
+      for j in $(seq 0 5); do
+        throbber
+        pngout -q -k1 -s1 -b$i -f$j $opts $file
+      done
+    done
+  fi
+}
+
+# Usage: get_color_depth_list
+# Returns the list of color depth options for current optimization level.
+function get_color_depth_list {
+  if [ $OPTIMIZE_LEVEL == 1 ]; then
+    echo "-d0"
+  else
+    echo "-d1 -d2 -d4 -d8"
+  fi
 }
 
 # Usage: process_grayscale <file>
@@ -68,7 +93,7 @@ function pngout_loop {
 # TODO(oshima): Experiment with -d0 w/o -c0.
 function process_grayscale {
   echo -n "|gray"
-  for opt in -d1 -d2 -d4 -d8; do
+  for opt in $(get_color_depth_list); do
     pngout_loop $file -c0 $opt
   done
 }
@@ -78,7 +103,7 @@ function process_grayscale {
 function process_grayscale_alpha {
   echo -n "|gray-a"
   pngout_loop $file -c4
-  for opt in -d1 -d2 -d4 -d8; do
+  for opt in $(get_color_depth_list); do
     pngout_loop $file -c3 $opt
   done
 }
@@ -87,7 +112,7 @@ function process_grayscale_alpha {
 # Optimize rgb images with or without alpha for all color bit depths.
 function process_rgb {
   echo -n "|rgb"
-  for opt in -d1 -d2 -d4 -d8; do
+  for opt in $(get_color_depth_list); do
     pngout_loop $file -c3 $opt
   done
   pngout_loop $file -c2
@@ -100,11 +125,19 @@ function huffman_blocks {
   local file=$1
   echo -n "|huffman"
   local size=$(stat -c%s $file)
-  let MAX_BLOCKS=$size/$MIN_BLOCK_SIZE
-  if [ $MAX_BLOCKS -gt $LIMIT_BLOCKS ]; then
-    MAX_BLOCKS=$LIMIT_BLOCKS
+  local min_block_size=$DEFAULT_MIN_BLOCK_SIZE
+  local limit_blocks=$DEFAULT_LIMIT_BLOCKS
+
+  if [ $size -gt $LARGE_FILE_THRESHOLD ]; then
+    min_block_size=$LARGE_MIN_BLOCK_SIZE
+    limit_blocks=$LARGE_LIMIT_BLOCKS
   fi
-  for i in $(seq 2 $MAX_BLOCKS); do
+  let max_blocks=$size/$min_block_size
+  if [ $max_blocks -gt $limit_blocks ]; then
+    max_blocks=$limit_blocks
+  fi
+
+  for i in $(seq 2 $max_blocks); do
     throbber
     pngout -q -k1 -ks -s1 -n$i $file
   done
@@ -119,7 +152,12 @@ function random_huffman_table_trial {
   echo -n "|random"
   local file=$1
   local old_size=$(stat -c%s $file)
-  for i in $(seq 1 $RANDOM_TRIALS); do
+  local trials_count=$DEFAULT_RANDOM_TRIALS
+
+  if [ $old_size -gt $LARGE_FILE_THRESHOLD ]; then
+    trials_count=$LARGE_RANDOM_TRIALS
+  fi
+  for i in $(seq 1 $trials_count); do
     throbber
     pngout -q -k1 -ks -s0 -r $file
   done
@@ -135,10 +173,12 @@ function random_huffman_table_trial {
 function final_compression {
   echo -n "|final"
   local file=$1
-  for i in 32k 16k 8k 4k 2k 1k 512; do
-    throbber
-    optipng -q -nb -nc -zw$i -zc1-9 -zm1-9 -zs0-3 -f0-5 $file
-  done
+  if [ $OPTIMIZE_LEVEL == 2 ]; then
+    for i in 32k 16k 8k 4k 2k 1k 512; do
+      throbber
+      optipng -q -nb -nc -zw$i -zc1-9 -zm1-9 -zs0-3 -f0-5 $file
+    done
+  fi
   for i in $(seq 1 4); do
     throbber
     advdef -q -z -$i $file
@@ -178,11 +218,17 @@ function optimize_size {
 
   # TODO(oshima): Experiment with strategy 1.
   echo -n "|strategy"
-  for i in 3 2 0; do
-    pngout -q -k1 -ks -s$i $file
-  done
+  if [ $OPTIMIZE_LEVEL == 2 ]; then
+    for i in 3 2 0; do
+      pngout -q -k1 -ks -s$i $file
+    done
+  else
+    pngout -q -k1 -ks -s1 $file
+  fi
 
-  random_huffman_table_trial $file
+  if [ $OPTIMIZE_LEVEL == 2 ]; then
+    random_huffman_table_trial $file
+  fi
 
   final_compression $file
 }
@@ -194,7 +240,7 @@ function process_file {
   # -rem alla removes all ancillary chunks except for tRNS
   pngcrush -d $TMP_DIR -brute -reduce -rem alla $file > /dev/null
 
-  if [ ! -z "$OPTIMIZE" ]; then
+  if [ $OPTIMIZE_LEVEL != 0 ]; then
     optimize_size $TMP_DIR/$name
   fi
 }
@@ -210,8 +256,6 @@ function sanitize_file {
 
   local new=$(stat -c%s $tmp_file)
   let diff=$old-$new
-  let TOTAL_OLD_BYTES+=$old
-  let TOTAL_NEW_BYTES+=$new
   let percent=($diff*100)/$old
   let TOTAL_FILE+=1
 
@@ -219,9 +263,11 @@ function sanitize_file {
   if [ $new -lt $old ]; then
     echo -ne "$file : $old => $new ($diff bytes : $percent %)\n"
     mv "$tmp_file" "$file"
+    let TOTAL_OLD_BYTES+=$old
+    let TOTAL_NEW_BYTES+=$new
     let PROCESSED_FILE+=1
   else
-    if [ -z "$OPTIMIZE" ]; then
+    if [ $OPTIMIZE_LEVEL == 0 ]; then
       echo -ne "$file : skipped\r"
     fi
     rm $tmp_file
@@ -264,8 +310,14 @@ $program is a utility to reduce the size of png files by removing
 unnecessary chunks and compressing the image.
 
 Options:
-  -o  Aggressively optimize file size. Warning: this is *VERY* slow and
-      can take hours to process all files.
+  -o<optimize_level>  Specify optimization level: (default is 1)
+      0  Just run pngcrush. It removes unnecessary chunks and perform basic
+         optimization on the encoded data.
+      1  Optimize png files using pngout/optipng and advdef. This can further
+         reduce addtional 5~30%. This is the default level.
+      2  Aggressively optimize the size of png files. This may produce
+         addtional 1%~5% reduction.  Warning: this is *VERY*
+         slow and can take hours to process all files.
   -h  Print this help text."
   exit 1
 }
@@ -275,12 +327,17 @@ if [ ! -e ../.gclient ]; then
   exit 1
 fi
 
+OPTIMIZE_LEVEL=1
 # Parse options
-while getopts oh opts
+while getopts o:h opts
 do
   case $opts in
     o)
-      OPTIMIZE=true;
+      if [[ ! "$OPTARG" =~ [012] ]]; then
+        show_help
+      fi
+      OPTIMIZE_LEVEL=$OPTARG
+      [ "$1" == "-o" ] && shift
       shift;;
     [h?])
       show_help;;
@@ -289,7 +346,7 @@ done
 
 # Make sure we have all necessary commands installed.
 install_if_not_installed pngcrush
-if [ ! -z "$OPTIMIZE" ]; then
+if [ $OPTIMIZE_LEVEL != 2 ]; then
   install_if_not_installed optipng
   fail_if_not_installed advdef "http://advancemame.sourceforge.net/comp-download.html"
   fail_if_not_installed pngout "http://www.jonof.id.au/kenutils"
@@ -305,6 +362,7 @@ trap "rm -rf $TMP_DIR" EXIT
 DIRS=$@
 set ${DIRS:=$ALL_DIRS}
 
+echo "Optimize level=$OPTIMIZE_LEVEL"
 for d in $DIRS; do
   echo "Sanitizing png files in $d"
   sanitize_dir $d
