@@ -11,10 +11,11 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/time.h"
 
 using std::string;
@@ -113,8 +114,8 @@ void HttpUtil::ParseContentType(const string& content_type_str,
   // Iterate over parameters
   size_t param_start = content_type_str.find_first_of(';', type_end);
   if (param_start != string::npos) {
-    StringTokenizer tokenizer(begin + param_start, content_type_str.end(),
-                              ";");
+    base::StringTokenizer tokenizer(begin + param_start, content_type_str.end(),
+                                    ";");
     tokenizer.set_quote_chars("\"");
     while (tokenizer.GetNext()) {
       string::const_iterator equals_sign =
@@ -600,7 +601,7 @@ std::string HttpUtil::AssembleRawHeaders(const char* input_begin,
   // line's field-value.
 
   // TODO(ericroman): is this too permissive? (delimits on [\r\n]+)
-  CStringTokenizer lines(status_line_end, input_end, "\r\n");
+  base::CStringTokenizer lines(status_line_end, input_end, "\r\n");
 
   // This variable is true when the previous line was continuable.
   bool prev_line_continuable = false;
@@ -639,7 +640,7 @@ std::string HttpUtil::AssembleRawHeaders(const char* input_begin,
 
 std::string HttpUtil::ConvertHeadersBackToHTTPResponse(const std::string& str) {
   std::string disassembled_headers;
-  StringTokenizer tokenizer(str, std::string(1, '\0'));
+  base::StringTokenizer tokenizer(str, std::string(1, '\0'));
   while (tokenizer.GetNext()) {
     disassembled_headers.append(tokenizer.token_begin(), tokenizer.token_end());
     disassembled_headers.append("\r\n");
@@ -664,7 +665,7 @@ std::string HttpUtil::GenerateAcceptLanguageHeader(
   // two floating point numbers.
   const unsigned int kQvalueDecrement10 = 2;
   unsigned int qvalue10 = 10;
-  StringTokenizer t(raw_language_list, ",");
+  base::StringTokenizer t(raw_language_list, ",");
   std::string lang_list_with_q;
   while (t.GetNext()) {
     std::string language = t.token();

@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_STRING_TOKENIZER_H_
-#define BASE_STRING_TOKENIZER_H_
+#ifndef BASE_STRINGS_STRING_TOKENIZER_H_
+#define BASE_STRINGS_STRING_TOKENIZER_H_
 
 #include <algorithm>
 #include <string>
 
 #include "base/string_piece.h"
+
+namespace base {
 
 // StringTokenizerT is a simple string tokenizer class.  It works like an
 // iterator that with each step (see the Advance method) updates members that
@@ -253,4 +255,6 @@ typedef StringTokenizerT<std::wstring, std::wstring::const_iterator>
     WStringTokenizer;
 typedef StringTokenizerT<std::string, const char*> CStringTokenizer;
 
-#endif  // BASE_STRING_TOKENIZER_H_
+}  // namespace base
+
+#endif  // BASE_STRINGS_STRING_TOKENIZER_H_

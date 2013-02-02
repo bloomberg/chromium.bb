@@ -12,7 +12,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
-#include "base/string_tokenizer.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
@@ -351,7 +351,7 @@ TEST_F(ThreadWatcherTest, CommandLineArgs) {
             atoi(crash_on_hang_seconds.c_str()));
 
   // Check ThreadWatcherTestList has the right crash_on_hang_thread_names.
-  StringTokenizer tokens(crash_on_hang_thread_names, ",");
+  base::StringTokenizer tokens(crash_on_hang_thread_names, ",");
   std::vector<std::string> values;
   while (tokens.GetNext()) {
     const std::string& token = tokens.token();

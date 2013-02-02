@@ -5,8 +5,8 @@
 #include "net/proxy/proxy_config.h"
 
 #include "base/logging.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/values.h"
 #include "net/proxy/proxy_info.h"
 
@@ -79,9 +79,9 @@ void ProxyConfig::ProxyRules::ParseFromString(const std::string& proxy_rules) {
   proxy_for_ftp = ProxyServer();
   fallback_proxy = ProxyServer();
 
-  StringTokenizer proxy_server_list(proxy_rules, ";");
+  base::StringTokenizer proxy_server_list(proxy_rules, ";");
   while (proxy_server_list.GetNext()) {
-    StringTokenizer proxy_server_for_scheme(
+    base::StringTokenizer proxy_server_for_scheme(
         proxy_server_list.token_begin(), proxy_server_list.token_end(), "=");
 
     while (proxy_server_for_scheme.GetNext()) {

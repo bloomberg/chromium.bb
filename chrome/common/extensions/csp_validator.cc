@@ -5,8 +5,8 @@
 #include "chrome/common/extensions/csp_validator.h"
 
 #include "base/string_split.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 
 namespace extensions {
 
@@ -35,7 +35,8 @@ struct DirectiveStatus {
   bool is_secure;
 };
 
-bool HasOnlySecureTokens(StringTokenizer& tokenizer, Manifest::Type type) {
+bool HasOnlySecureTokens(base::StringTokenizer& tokenizer,
+                         Manifest::Type type) {
   while (tokenizer.GetNext()) {
     std::string source = tokenizer.token();
     StringToLowerASCII(&source);
@@ -89,7 +90,7 @@ bool HasOnlySecureTokens(StringTokenizer& tokenizer, Manifest::Type type) {
 
 // Returns true if |directive_name| matches |status.directive_name|.
 bool UpdateStatus(const std::string& directive_name,
-                  StringTokenizer& tokenizer,
+                  base::StringTokenizer& tokenizer,
                   DirectiveStatus* status,
                   Manifest::Type type) {
   if (status->seen_in_policy)
@@ -124,7 +125,7 @@ bool ContentSecurityPolicyIsSecure(const std::string& policy,
 
   for (size_t i = 0; i < directives.size(); ++i) {
     std::string& input = directives[i];
-    StringTokenizer tokenizer(input, " \t\r\n");
+    base::StringTokenizer tokenizer(input, " \t\r\n");
     if (!tokenizer.GetNext())
       continue;
 
@@ -164,7 +165,7 @@ bool ContentSecurityPolicyIsSandboxed(
 
   for (size_t i = 0; i < directives.size(); ++i) {
     std::string& input = directives[i];
-    StringTokenizer tokenizer(input, " \t\r\n");
+    base::StringTokenizer tokenizer(input, " \t\r\n");
     if (!tokenizer.GetNext())
       continue;
 

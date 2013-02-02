@@ -27,8 +27,8 @@
 #include "base/nix/xdg_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/string_number_conversions.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer.h"
 #include "googleurl/src/url_canon.h"
@@ -1053,7 +1053,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
 
   void AddHostList(StringListSetting key, const std::string& value) {
     std::vector<std::string> tokens;
-    StringTokenizer tk(value, ", ");
+    base::StringTokenizer tk(value, ", ");
     while (tk.GetNext()) {
       std::string token = tk.token();
       if (!token.empty())

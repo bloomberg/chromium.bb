@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
-#include "base/string_tokenizer.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/breakpad_mac.h"
 #include "chrome/browser/browser_about_handler.h"
@@ -1912,7 +1912,7 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
         (extension->GetType() == Manifest::TYPE_LEGACY_PACKAGED_APP ||
          extension->GetType() == Manifest::TYPE_PLATFORM_APP);
   } else if (!allowed_list.empty()) {
-    StringTokenizer t(allowed_list, ",");
+    base::StringTokenizer t(allowed_list, ",");
     while (t.GetNext()) {
       if (t.token() == host)
         return true;

@@ -37,7 +37,7 @@ void Request::ParseHeaders(const std::string& headers) {
   if (pos != std::string::npos) {
     headers_ = headers.substr(pos + 2);
 
-    StringTokenizer tokenizer(headers.begin(), headers.begin() + pos, " ");
+    base::StringTokenizer tokenizer(headers.begin(), headers.begin() + pos, " ");
     std::string* parse[] = { &method_, &path_, &version_ };
     int field = 0;
     while (tokenizer.GetNext() && field < arraysize(parse)) {

@@ -8,8 +8,8 @@
 #include <cstdlib>
 
 #include "base/logging.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 #include "build/build_config.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -103,7 +103,7 @@ base::Time ParseCookieTime(const std::string& time_string) {
 
   base::Time::Exploded exploded = {0};
 
-  StringTokenizer tokenizer(time_string, kDelimiters);
+  base::StringTokenizer tokenizer(time_string, kDelimiters);
 
   bool found_day_of_month = false;
   bool found_month = false;

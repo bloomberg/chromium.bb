@@ -16,9 +16,9 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_tokenizer.h"
 #include "content/public/app/android_library_loader_hooks.h"
 #include "content/shell/android/shell_jni_registrar.h"
 #include "jni/ContentBrowserTestsActivity_jni.h"
@@ -30,7 +30,7 @@ namespace {
 
 void ParseArgsFromString(const std::string& command_line,
                          std::vector<std::string>* args) {
-  StringTokenizer tokenizer(command_line, kWhitespaceASCII);
+  base::StringTokenizer tokenizer(command_line, kWhitespaceASCII);
   tokenizer.set_quote_chars("\"");
   while (tokenizer.GetNext()) {
     std::string token;

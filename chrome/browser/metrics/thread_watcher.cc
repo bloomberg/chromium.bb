@@ -12,7 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
-#include "base/string_tokenizer.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -543,7 +543,7 @@ void ThreadWatcherList::ParseCommandLine(
         command_line.GetSwitchValueASCII(switches::kCrashOnHangThreads);
     has_command_line_overwrite = true;
   }
-  StringTokenizer tokens(crash_on_hang_thread_names, ",");
+  base::StringTokenizer tokens(crash_on_hang_thread_names, ",");
   std::vector<std::string> values;
   while (tokens.GetNext()) {
     const std::string& token = tokens.token();

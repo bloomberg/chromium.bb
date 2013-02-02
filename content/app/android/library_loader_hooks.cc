@@ -15,7 +15,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/tracked_objects.h"
 #include "content/app/android/app_jni_registrar.h"

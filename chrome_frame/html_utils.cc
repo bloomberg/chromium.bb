@@ -8,8 +8,8 @@
 #include <urlmon.h>
 
 #include "base/string_util.h"
-#include "base/string_tokenizer.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_tokenizer.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome_frame/utils.h"
 #include "net/base/net_util.h"
@@ -82,8 +82,8 @@ bool HTMLScanner::StringRange::GetTagAttribute(const wchar_t* attribute_name,
   // from string_util.h.
   std::string search_name_ascii(WideToASCII(attribute_name));
 
-  WStringTokenizer tokenizer(start_, end_, L" =/");
-  tokenizer.set_options(WStringTokenizer::RETURN_DELIMS);
+  base::WStringTokenizer tokenizer(start_, end_, L" =/");
+  tokenizer.set_options(base::WStringTokenizer::RETURN_DELIMS);
 
   // Set up the quote chars so that we get quoted attribute values as single
   // tokens.

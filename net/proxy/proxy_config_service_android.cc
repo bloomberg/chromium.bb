@@ -16,8 +16,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 #include "googleurl/src/url_parse.h"
 #include "jni/ProxyChangeListener_jni.h"
 #include "net/base/host_port_pair.h"
@@ -101,7 +101,7 @@ void AddBypassRules(const std::string& scheme,
       get_property.Run(scheme + ".nonProxyHosts");
   if (non_proxy_hosts.empty())
     return;
-  StringTokenizer tokenizer(non_proxy_hosts, "|");
+  base::StringTokenizer tokenizer(non_proxy_hosts, "|");
   while (tokenizer.GetNext()) {
     std::string token = tokenizer.token();
     std::string pattern;

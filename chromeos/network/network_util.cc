@@ -4,8 +4,8 @@
 
 #include "chromeos/network/network_util.h"
 
-#include "base/string_tokenizer.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_tokenizer.h"
 
 namespace chromeos {
 
@@ -51,7 +51,7 @@ std::string PrefixLengthToNetmask(int32 prefix_length) {
 int32 NetmaskToPrefixLength(const std::string& netmask) {
   int count = 0;
   int prefix_length = 0;
-  StringTokenizer t(netmask, ".");
+  base::StringTokenizer t(netmask, ".");
   while (t.GetNext()) {
     // If there are more than 4 numbers, then it's invalid.
     if (count == 4)

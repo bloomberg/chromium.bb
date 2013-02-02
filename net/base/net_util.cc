@@ -12,16 +12,16 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#include <winsock2.h>
 #include <iphlpapi.h>
+#include <winsock2.h>
 #pragma comment(lib, "iphlpapi.lib")
 #elif defined(OS_POSIX)
 #include <fcntl.h>
 #if !defined(OS_ANDROID)
 #include <ifaddrs.h>
 #endif
-#include <netdb.h>
 #include <net/if.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #endif
 
@@ -42,12 +42,12 @@
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/synchronization/lock.h"
-#include "base/sys_string_conversions.h"
 #include "base/sys_byteorder.h"
+#include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_offset_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -397,7 +397,7 @@ bool IsIDNComponentSafe(const char16* str,
   // the remainder.
   component_characters.removeAll(common_characters);
 
-  StringTokenizer t(languages, ",");
+  base::StringTokenizer t(languages, ",");
   while (t.GetNext()) {
     if (IsComponentCoveredByLang(component_characters, t.token()))
       return true;

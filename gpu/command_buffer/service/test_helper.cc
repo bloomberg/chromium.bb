@@ -4,11 +4,11 @@
 
 #include "gpu/command_buffer/service/test_helper.h"
 
-#include <string>
 #include <algorithm>
+#include <string>
 
 #include "base/string_number_conversions.h"
-#include "base/string_tokenizer.h"
+#include "base/strings/string_tokenizer.h"
 #include "gpu/command_buffer/common/types.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/program_manager.h"
@@ -143,7 +143,7 @@ void TestHelper::SetupTextureManagerInitExpectations(
 
   bool ext_image_external = false;
   bool arb_texture_rectangle = false;
-  CStringTokenizer t(extensions, extensions + strlen(extensions), " ");
+  base::CStringTokenizer t(extensions, extensions + strlen(extensions), " ");
   while (t.GetNext()) {
     if (t.token() == "GL_OES_EGL_image_external") {
       ext_image_external = true;
@@ -196,7 +196,7 @@ void TestHelper::SetupTextureManagerDestructionExpectations(
 
   bool ext_image_external = false;
   bool arb_texture_rectangle = false;
-  CStringTokenizer t(extensions, extensions + strlen(extensions), " ");
+  base::CStringTokenizer t(extensions, extensions + strlen(extensions), " ");
   while (t.GetNext()) {
     if (t.token() == "GL_OES_EGL_image_external") {
       ext_image_external = true;

@@ -9,9 +9,9 @@
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
@@ -30,7 +30,7 @@ namespace {
 // - Limited attribute search.  Only "title:" is supported.
 bool EntryMatchWithQuery(const ResourceEntry& entry,
                          const std::string& query) {
-  StringTokenizer tokenizer(query, " ");
+  base::StringTokenizer tokenizer(query, " ");
   tokenizer.set_quote_chars("\"'");
   while (tokenizer.GetNext()) {
     std::string key, value;
@@ -38,7 +38,7 @@ bool EntryMatchWithQuery(const ResourceEntry& entry,
     if (token.find(':') == std::string::npos) {
       TrimString(token, "\"'", &value);
     } else {
-      StringTokenizer key_value(token, ":");
+      base::StringTokenizer key_value(token, ":");
       key_value.set_quote_chars("\"'");
       if (!key_value.GetNext())
         return false;

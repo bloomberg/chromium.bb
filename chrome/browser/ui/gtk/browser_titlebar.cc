@@ -14,7 +14,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/singleton.h"
 #include "base/string_piece.h"
-#include "base/string_tokenizer.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -406,8 +406,8 @@ void BrowserTitlebar::BuildButtons(const std::string& button_string) {
   top_padding_right_ = NULL;
 
   bool left_side = true;
-  StringTokenizer tokenizer(button_string, ":,");
-  tokenizer.set_options(StringTokenizer::RETURN_DELIMS);
+  base::StringTokenizer tokenizer(button_string, ":,");
+  tokenizer.set_options(base::StringTokenizer::RETURN_DELIMS);
   int left_count = 0;
   int right_count = 0;
   while (tokenizer.GetNext()) {

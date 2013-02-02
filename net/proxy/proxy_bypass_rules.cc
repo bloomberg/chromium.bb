@@ -5,11 +5,11 @@
 #include "net/proxy/proxy_bypass_rules.h"
 
 #include "base/stl_util.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/strings/string_tokenizer.h"
 #include "net/base/net_util.h"
 
 namespace net {
@@ -251,7 +251,7 @@ void ProxyBypassRules::ParseFromStringInternal(
     bool use_hostname_suffix_matching) {
   Clear();
 
-  StringTokenizer entries(raw, ",;");
+  base::StringTokenizer entries(raw, ",;");
   while (entries.GetNext()) {
     AddRuleFromStringInternalWithLogging(entries.token(),
                                          use_hostname_suffix_matching);

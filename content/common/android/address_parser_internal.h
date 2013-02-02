@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/string_tokenizer.h"
+#include "base/strings/string_tokenizer.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -63,7 +63,7 @@ class CONTENT_EXPORT HouseNumberParser {
 };
 
 typedef std::vector<Word> WordList;
-typedef StringTokenizerT<string16, string16::const_iterator>
+typedef base::StringTokenizerT<string16, string16::const_iterator>
     String16Tokenizer;
 
 // These are exposed for tests.

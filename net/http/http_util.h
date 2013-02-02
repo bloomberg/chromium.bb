@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/string_tokenizer.h"
+#include "base/strings/string_tokenizer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_export.h"
 #include "net/http/http_byte_range.h"
@@ -252,7 +252,7 @@ class NET_EXPORT HttpUtil {
     }
 
    private:
-    StringTokenizer lines_;
+    base::StringTokenizer lines_;
     std::string::const_iterator name_begin_;
     std::string::const_iterator name_end_;
     std::string::const_iterator values_begin_;
@@ -292,7 +292,7 @@ class NET_EXPORT HttpUtil {
     }
 
    private:
-    StringTokenizer values_;
+    base::StringTokenizer values_;
     std::string::const_iterator value_begin_;
     std::string::const_iterator value_end_;
   };

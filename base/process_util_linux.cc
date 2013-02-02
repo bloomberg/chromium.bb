@@ -14,10 +14,12 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_restrictions.h"
+
+namespace base {
 
 namespace {
 
@@ -31,7 +33,7 @@ const char kStatFile[] = "stat";
 
 // Returns a FilePath to "/proc/pid".
 FilePath GetProcPidDir(pid_t pid) {
-  return FilePath(kProcDir).Append(base::IntToString(pid));
+  return FilePath(kProcDir).Append(IntToString(pid));
 }
 
 // Fields from /proc/<pid>/stat, 0-based. See man 5 proc.
@@ -53,7 +55,7 @@ enum ProcStatsFields {
 bool ReadProcStats(pid_t pid, std::string* buffer) {
   buffer->clear();
   // Synchronously reading files in /proc is safe.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  ThreadRestrictions::ScopedAllowIO allow_io;
 
   FilePath stat_file = GetProcPidDir(pid).Append(kStatFile);
   if (!file_util::ReadFileToString(stat_file, buffer)) {
@@ -98,7 +100,7 @@ bool ParseProcStats(const std::string& stats_data,
 
   // Split the rest.
   std::vector<std::string> other_stats;
-  base::SplitString(stats_data.substr(close_parens_idx + 2), ' ', &other_stats);
+  SplitString(stats_data.substr(close_parens_idx + 2), ' ', &other_stats);
   for (size_t i = 0; i < other_stats.size(); ++i)
     proc_stats->push_back(other_stats[i]);
   return true;
@@ -113,7 +115,7 @@ int GetProcStatsFieldAsInt(const std::vector<std::string>& proc_stats,
   CHECK_LT(static_cast<size_t>(field_num), proc_stats.size());
 
   int value;
-  return base::StringToInt(proc_stats[field_num], &value) ? value : 0;
+  return StringToInt(proc_stats[field_num], &value) ? value : 0;
 }
 
 // Same as GetProcStatsFieldAsInt(), but for size_t values.
@@ -123,7 +125,7 @@ size_t GetProcStatsFieldAsSizeT(const std::vector<std::string>& proc_stats,
   CHECK_LT(static_cast<size_t>(field_num), proc_stats.size());
 
   size_t value;
-  return base::StringToSizeT(proc_stats[field_num], &value) ? value : 0;
+  return StringToSizeT(proc_stats[field_num], &value) ? value : 0;
 }
 
 // Convenience wrapper around GetProcStatsFieldAsInt(), ParseProcStats() and
@@ -175,7 +177,7 @@ std::string GetProcStatsFieldAsString(
 // delimiter.
 bool GetProcCmdline(pid_t pid, std::vector<std::string>* proc_cmd_line_args) {
   // Synchronously reading files in /proc is safe.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  ThreadRestrictions::ScopedAllowIO allow_io;
 
   FilePath cmd_line_file = GetProcPidDir(pid).Append("cmdline");
   std::string cmd_line;
@@ -204,7 +206,7 @@ pid_t ProcDirSlotToPid(const char* d_name) {
   // Read the process's command line.
   pid_t pid;
   std::string pid_string(d_name);
-  if (!base::StringToInt(pid_string, &pid)) {
+  if (!StringToInt(pid_string, &pid)) {
     NOTREACHED();
     return 0;
   }
@@ -230,12 +232,12 @@ int GetProcessCPU(pid_t pid) {
       continue;
 
     // Synchronously reading files in /proc is safe.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    ThreadRestrictions::ScopedAllowIO allow_io;
 
     std::string stat;
     FilePath stat_path = task_path.Append(ent->d_name).Append(kStatFile);
     if (file_util::ReadFileToString(stat_path, &stat)) {
-      int cpu = base::ParseProcStatCPU(stat);
+      int cpu = ParseProcStatCPU(stat);
       if (cpu > 0)
         total_cpu += cpu;
     }
@@ -252,14 +254,14 @@ size_t ReadProcStatusAndGetFieldAsSizeT(pid_t pid, const std::string& field) {
   std::string status;
   {
     // Synchronously reading files in /proc is safe.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    ThreadRestrictions::ScopedAllowIO allow_io;
     if (!file_util::ReadFileToString(stat_file, &status))
       return 0;
   }
 
   StringTokenizer tokenizer(status, ":\n");
   ParsingState state = KEY_NAME;
-  base::StringPiece last_key_name;
+  StringPiece last_key_name;
   while (tokenizer.GetNext()) {
     switch (state) {
       case KEY_NAME:
@@ -274,13 +276,13 @@ size_t ReadProcStatusAndGetFieldAsSizeT(pid_t pid, const std::string& field) {
           std::string value_str_trimmed;
           TrimWhitespaceASCII(value_str, TRIM_ALL, &value_str_trimmed);
           std::vector<std::string> split_value_str;
-          base::SplitString(value_str_trimmed, ' ', &split_value_str);
+          SplitString(value_str_trimmed, ' ', &split_value_str);
           if (split_value_str.size() != 2 || split_value_str[1] != "kB") {
             NOTREACHED();
             return 0;
           }
           size_t value;
-          if (!base::StringToSizeT(split_value_str[0], &value)) {
+          if (!StringToSizeT(split_value_str[0], &value)) {
             NOTREACHED();
             return 0;
           }
@@ -295,8 +297,6 @@ size_t ReadProcStatusAndGetFieldAsSizeT(pid_t pid, const std::string& field) {
 }
 
 }  // namespace
-
-namespace base {
 
 #if defined(USE_LINUX_BREAKPAD)
 size_t g_oom_size = 0U;
@@ -460,20 +460,20 @@ bool ProcessMetrics::GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const {
   {
     FilePath statm_file = GetProcPidDir(process_).Append("statm");
     // Synchronously reading files in /proc is safe.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    ThreadRestrictions::ScopedAllowIO allow_io;
     bool ret = file_util::ReadFileToString(statm_file, &statm);
     if (!ret || statm.length() == 0)
       return false;
   }
 
   std::vector<std::string> statm_vec;
-  base::SplitString(statm, ' ', &statm_vec);
+  SplitString(statm, ' ', &statm_vec);
   if (statm_vec.size() != 7)
     return false;  // Not the format we expect.
 
   int statm_rss, statm_shared;
-  base::StringToInt(statm_vec[1], &statm_rss);
-  base::StringToInt(statm_vec[2], &statm_shared);
+  StringToInt(statm_vec[1], &statm_rss);
+  StringToInt(statm_vec[2], &statm_shared);
 
   ws_usage->priv = (statm_rss - statm_shared) * page_size_kb;
   ws_usage->shared = statm_shared * page_size_kb;
@@ -531,7 +531,7 @@ double ProcessMetrics::GetCPUUsage() {
 // in your kernel configuration.
 bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
   // Synchronously reading files in /proc is safe.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  ThreadRestrictions::ScopedAllowIO allow_io;
 
   std::string proc_io_contents;
   FilePath io_file = GetProcPidDir(process_).Append("io");
@@ -553,16 +553,16 @@ bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
       case KEY_VALUE:
         DCHECK(!last_key_name.empty());
         if (last_key_name == "syscr") {
-          base::StringToInt64(tokenizer.token_piece(),
+          StringToInt64(tokenizer.token_piece(),
               reinterpret_cast<int64*>(&(*io_counters).ReadOperationCount));
         } else if (last_key_name == "syscw") {
-          base::StringToInt64(tokenizer.token_piece(),
+          StringToInt64(tokenizer.token_piece(),
               reinterpret_cast<int64*>(&(*io_counters).WriteOperationCount));
         } else if (last_key_name == "rchar") {
-          base::StringToInt64(tokenizer.token_piece(),
+          StringToInt64(tokenizer.token_piece(),
               reinterpret_cast<int64*>(&(*io_counters).ReadTransferCount));
         } else if (last_key_name == "wchar") {
-          base::StringToInt64(tokenizer.token_piece(),
+          StringToInt64(tokenizer.token_piece(),
               reinterpret_cast<int64*>(&(*io_counters).WriteTransferCount));
         }
         state = KEY_NAME;
@@ -577,7 +577,7 @@ ProcessMetrics::ProcessMetrics(ProcessHandle process)
       last_time_(0),
       last_system_time_(0),
       last_cpu_(0) {
-  processor_count_ = base::SysInfo::NumberOfProcessors();
+  processor_count_ = SysInfo::NumberOfProcessors();
 }
 
 
@@ -630,7 +630,7 @@ SystemMemoryInfoKB::SystemMemoryInfoKB()
 
 bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   // Synchronously reading files in /proc is safe.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  ThreadRestrictions::ScopedAllowIO allow_io;
 
   // Used memory is: total - free - buffers - caches
   FilePath meminfo_file("/proc/meminfo");
@@ -657,15 +657,15 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   DCHECK_EQ(meminfo_fields[kMemActiveFileIndex-1], "Active(file):");
   DCHECK_EQ(meminfo_fields[kMemInactiveFileIndex-1], "Inactive(file):");
 
-  base::StringToInt(meminfo_fields[kMemTotalIndex], &meminfo->total);
-  base::StringToInt(meminfo_fields[kMemFreeIndex], &meminfo->free);
-  base::StringToInt(meminfo_fields[kMemBuffersIndex], &meminfo->buffers);
-  base::StringToInt(meminfo_fields[kMemCachedIndex], &meminfo->cached);
-  base::StringToInt(meminfo_fields[kMemActiveAnonIndex], &meminfo->active_anon);
-  base::StringToInt(meminfo_fields[kMemInactiveAnonIndex],
+  StringToInt(meminfo_fields[kMemTotalIndex], &meminfo->total);
+  StringToInt(meminfo_fields[kMemFreeIndex], &meminfo->free);
+  StringToInt(meminfo_fields[kMemBuffersIndex], &meminfo->buffers);
+  StringToInt(meminfo_fields[kMemCachedIndex], &meminfo->cached);
+  StringToInt(meminfo_fields[kMemActiveAnonIndex], &meminfo->active_anon);
+  StringToInt(meminfo_fields[kMemInactiveAnonIndex],
                     &meminfo->inactive_anon);
-  base::StringToInt(meminfo_fields[kMemActiveFileIndex], &meminfo->active_file);
-  base::StringToInt(meminfo_fields[kMemInactiveFileIndex],
+  StringToInt(meminfo_fields[kMemActiveFileIndex], &meminfo->active_file);
+  StringToInt(meminfo_fields[kMemInactiveFileIndex],
                     &meminfo->inactive_file);
 #if defined(OS_CHROMEOS)
   // Chrome OS has a tweaked kernel that allows us to query Shmem, which is
@@ -674,7 +674,7 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   // string.  It always appears after "Cached:".
   for (size_t i = kMemCachedIndex+2; i < meminfo_fields.size(); i += 3) {
     if (meminfo_fields[i] == "Shmem:") {
-      base::StringToInt(meminfo_fields[i+1], &meminfo->shmem);
+      StringToInt(meminfo_fields[i+1], &meminfo->shmem);
       break;
     }
   }
@@ -854,7 +854,7 @@ bool AdjustOOMScore(ProcessId process, int score) {
   // Attempt to write the newer oom_score_adj file first.
   FilePath oom_file = oom_path.AppendASCII("oom_score_adj");
   if (file_util::PathExists(oom_file)) {
-    std::string score_str = base::IntToString(score);
+    std::string score_str = IntToString(score);
     DVLOG(1) << "Adjusting oom_score_adj of " << process << " to "
              << score_str;
     int score_len = static_cast<int>(score_str.length());
@@ -872,7 +872,7 @@ bool AdjustOOMScore(ProcessId process, int score) {
     const int kMaxOldOomScore = 15;
 
     int converted_score = score * kMaxOldOomScore / kMaxOomScore;
-    std::string score_str = base::IntToString(converted_score);
+    std::string score_str = IntToString(converted_score);
     DVLOG(1) << "Adjusting oom_adj of " << process << " to " << score_str;
     int score_len = static_cast<int>(score_str.length());
     return (score_len == file_util::WriteFile(oom_file,

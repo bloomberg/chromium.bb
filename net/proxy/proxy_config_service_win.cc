@@ -9,9 +9,9 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_tokenizer.h"
-#include "base/string_util.h"
 #include "base/stl_util.h"
+#include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/registry.h"
 #include "net/base/net_errors.h"
@@ -180,7 +180,7 @@ void ProxyConfigServiceWin::SetFromIEConfig(
   if (ie_config.lpszProxyBypass) {
     std::string proxy_bypass = WideToASCII(ie_config.lpszProxyBypass);
 
-    StringTokenizer proxy_server_bypass_list(proxy_bypass, ";, \t\n\r");
+    base::StringTokenizer proxy_server_bypass_list(proxy_bypass, ";, \t\n\r");
     while (proxy_server_bypass_list.GetNext()) {
       std::string bypass_url_domain = proxy_server_bypass_list.token();
       config->proxy_rules().bypass_rules.AddRuleFromString(bypass_url_domain);

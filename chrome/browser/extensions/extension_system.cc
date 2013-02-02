@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/string_tokenizer.h"
+#include "base/strings/string_tokenizer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
@@ -168,7 +168,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   if (command_line->HasSwitch(switches::kLoadComponentExtension)) {
     CommandLine::StringType path_list = command_line->GetSwitchValueNative(
         switches::kLoadComponentExtension);
-    StringTokenizerT<CommandLine::StringType,
+    base::StringTokenizerT<CommandLine::StringType,
         CommandLine::StringType::const_iterator> t(path_list,
                                                    FILE_PATH_LITERAL(","));
     while (t.GetNext()) {
@@ -189,7 +189,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
     if (command_line->HasSwitch(switches::kLoadExtension)) {
       CommandLine::StringType path_list = command_line->GetSwitchValueNative(
           switches::kLoadExtension);
-      StringTokenizerT<CommandLine::StringType,
+      base::StringTokenizerT<CommandLine::StringType,
           CommandLine::StringType::const_iterator> t(path_list,
                                                      FILE_PATH_LITERAL(","));
       while (t.GetNext()) {

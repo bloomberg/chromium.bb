@@ -14,9 +14,9 @@
 #include "base/memory/singleton.h"
 #include "base/process_util.h"
 #include "base/stl_util.h"
-#include "base/stringprintf.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/sys_info.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
@@ -162,7 +162,7 @@ TraceEvent::TraceEvent(int thread_id,
   }
 
   if (alloc_size) {
-    parameter_copy_storage_ = new base::RefCountedString;
+    parameter_copy_storage_ = new RefCountedString;
     parameter_copy_storage_->data().resize(alloc_size);
     char* ptr = string_as_array(&parameter_copy_storage_->data());
     const char* end = ptr + alloc_size;
@@ -279,7 +279,7 @@ void TraceEvent::AppendAsJSON(std::string* out) const {
 
 TraceResultBuffer::OutputCallback
     TraceResultBuffer::SimpleOutput::GetCallback() {
-  return base::Bind(&SimpleOutput::Append, base::Unretained(this));
+  return Bind(&SimpleOutput::Append, Unretained(this));
 }
 
 void TraceResultBuffer::SimpleOutput::Append(
@@ -365,7 +365,7 @@ TraceLog::TraceLog()
 #if defined(OS_NACL)  // NaCl shouldn't expose the process id.
   SetProcessID(0);
 #else
-  SetProcessID(static_cast<int>(base::GetCurrentProcId()));
+  SetProcessID(static_cast<int>(GetCurrentProcId()));
 #endif
 }
 
@@ -442,7 +442,7 @@ const unsigned char* TraceLog::GetCategoryEnabledInternal(const char* name) {
       // Don't hold on to the name pointer, so that we can create categories
       // with strings not known at compile time (this is required by
       // SetWatchEvent).
-      const char* new_name = base::strdup(name);
+      const char* new_name = strdup(name);
       ANNOTATE_LEAKING_OBJECT_PTR(new_name);
       g_categories[new_index] = new_name;
       DCHECK(!g_category_enabled[new_index]);
@@ -657,7 +657,7 @@ void TraceLog::AddTraceEvent(char phase,
     if (new_name != g_current_thread_name.Get().Get() &&
         new_name && *new_name) {
       g_current_thread_name.Get().Set(new_name);
-      base::hash_map<int, std::string>::iterator existing_name =
+      hash_map<int, std::string>::iterator existing_name =
           thread_names_.find(thread_id);
       if (existing_name == thread_names_.end()) {
         // This is a new thread id, and a new name.
@@ -665,7 +665,7 @@ void TraceLog::AddTraceEvent(char phase,
       } else {
         // This is a thread id that we've seen before, but potentially with a
         // new name.
-        std::vector<base::StringPiece> existing_names;
+        std::vector<StringPiece> existing_names;
         Tokenize(existing_name->second, ",", &existing_names);
         bool found = std::find(existing_names.begin(),
                                existing_names.end(),
@@ -756,7 +756,7 @@ void TraceLog::CancelWatchEvent() {
 
 void TraceLog::AddThreadNameMetadataEvents() {
   lock_.AssertAcquired();
-  for(base::hash_map<int, std::string>::iterator it = thread_names_.begin();
+  for(hash_map<int, std::string>::iterator it = thread_names_.begin();
       it != thread_names_.end();
       it++) {
     if (!it->second.empty()) {

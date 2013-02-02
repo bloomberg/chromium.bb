@@ -15,8 +15,8 @@
 
 #include "base/base64.h"
 #include "base/basictypes.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/proxy/proxy_api_constants.h"
@@ -480,7 +480,7 @@ DictionaryValue* CreatePacScriptDict(
 ListValue* TokenizeToStringList(const std::string& in,
                                 const std::string& delims) {
   ListValue* out = new ListValue;
-  StringTokenizer entries(in, delims);
+  base::StringTokenizer entries(in, delims);
   while (entries.GetNext())
     out->Append(Value::CreateStringValue(entries.token()));
   return out;

@@ -8,6 +8,7 @@
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
@@ -131,7 +132,7 @@ bool DecodeWord(const std::string& encoded_word,
   *is_rfc2047 = true;
   int part_index = 0;
   std::string charset;
-  StringTokenizer t(encoded_word, "?");
+  base::StringTokenizer t(encoded_word, "?");
   RFC2047EncodingType enc_type = Q_ENCODING;
   while (*is_rfc2047 && t.GetNext()) {
     std::string part = t.token();
@@ -236,8 +237,8 @@ bool DecodeFilenameValue(const std::string& input,
   bool is_previous_token_rfc2047 = true;
 
   // Tokenize with whitespace characters.
-  StringTokenizer t(input, " \t\n\r");
-  t.set_options(StringTokenizer::RETURN_DELIMS);
+  base::StringTokenizer t(input, " \t\n\r");
+  t.set_options(base::StringTokenizer::RETURN_DELIMS);
   while (t.GetNext()) {
     if (t.token_is_delim()) {
       // If the previous non-delimeter token is not RFC2047-encoded,
@@ -269,8 +270,8 @@ bool DecodeFilenameValue(const std::string& input,
 bool ParseExtValueComponents(const std::string& input,
                              std::string* charset,
                              std::string* value_chars) {
-  StringTokenizer t(input, "'");
-  t.set_options(StringTokenizer::RETURN_DELIMS);
+  base::StringTokenizer t(input, "'");
+  t.set_options(base::StringTokenizer::RETURN_DELIMS);
   std::string temp_charset;
   std::string temp_value;
   int numDelimsSeen = 0;

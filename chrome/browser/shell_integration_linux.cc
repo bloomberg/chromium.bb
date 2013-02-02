@@ -26,7 +26,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
-#include "base/string_tokenizer.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -454,7 +454,7 @@ bool GetDesktopShortcutTemplate(base::Environment* env,
   std::string xdg_data_dirs;
   if (env->GetVar("XDG_DATA_DIRS", &xdg_data_dirs) &&
       !xdg_data_dirs.empty()) {
-    StringTokenizer tokenizer(xdg_data_dirs, ":");
+    base::StringTokenizer tokenizer(xdg_data_dirs, ":");
     while (tokenizer.GetNext()) {
       FilePath data_dir(tokenizer.token());
       search_paths.push_back(data_dir);
@@ -583,7 +583,7 @@ std::string GetDesktopFileContents(
   if (exec_c_string) {
     std::string exec_string(exec_c_string);
     g_free(exec_c_string);
-    StringTokenizer exec_tokenizer(exec_string, " ");
+    base::StringTokenizer exec_tokenizer(exec_string, " ");
 
     std::string final_path;
     while (exec_tokenizer.GetNext() && exec_tokenizer.token() != "%U") {

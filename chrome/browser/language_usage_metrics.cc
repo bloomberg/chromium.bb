@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/metrics/histogram.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 
 namespace {
 void RecordAcceptLanguage(Language language) {
@@ -43,7 +43,7 @@ void LanguageUsageMetrics::RecordApplicationLanguage(
 void LanguageUsageMetrics::ParseAcceptLanguages(
     const std::string& accept_languages, std::set<Language>* languages) {
   languages->clear();
-  StringTokenizer locales(accept_languages, ",");
+  base::StringTokenizer locales(accept_languages, ",");
   while (locales.GetNext()) {
     const Language language = ToLanguage(locales.token());
     if (language != UNKNOWN_LANGUAGE) {
@@ -54,7 +54,7 @@ void LanguageUsageMetrics::ParseAcceptLanguages(
 
 // static
 Language LanguageUsageMetrics::ToLanguage(const std::string& locale) {
-  StringTokenizer parts(locale, "-_");
+  base::StringTokenizer parts(locale, "-_");
   if (!parts.GetNext()) {
     return UNKNOWN_LANGUAGE;
   }

@@ -15,8 +15,8 @@
 #include "base/message_loop.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 #include "library_loaders/libpci.h"
 #include "third_party/libXNVCtrl/NVCtrl.h"
 #include "third_party/libXNVCtrl/NVCtrlLib.h"
@@ -48,7 +48,7 @@ std::string CollectDriverVersionATI() {
   std::string contents;
   if (!file_util::ReadFileToString(ati_file_path, &contents))
     return std::string();
-  StringTokenizer t(contents, "\r\n");
+  base::StringTokenizer t(contents, "\r\n");
   while (t.GetNext()) {
     std::string line = t.token();
     if (StartsWithASCII(line, "ReleaseVersion=", true)) {

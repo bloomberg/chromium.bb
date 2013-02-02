@@ -15,7 +15,6 @@
 #include "base/path_service.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/string_number_conversions.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"

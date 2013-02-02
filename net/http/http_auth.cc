@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -121,7 +122,7 @@ void HttpAuth::ChallengeTokenizer::Init(std::string::const_iterator begin,
   // The first space-separated token is the auth-scheme.
   // NOTE: we are more permissive than RFC 2617 which says auth-scheme
   // is separated by 1*SP.
-  StringTokenizer tok(begin, end, HTTP_LWS);
+  base::StringTokenizer tok(begin, end, HTTP_LWS);
   if (!tok.GetNext()) {
     // Default param and scheme iterators provide empty strings
     return;

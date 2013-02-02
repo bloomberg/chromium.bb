@@ -15,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
-#include "base/string_tokenizer.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/web_socket_proxy.h"

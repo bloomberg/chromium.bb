@@ -10,7 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
-#include "base/string_tokenizer.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/threading/thread_restrictions.h"
 
 #include <execinfo.h>
@@ -40,7 +40,7 @@ struct ChromeOSVersionNumbers {
   bool parsed;
 };
 
-static base::LazyInstance<ChromeOSVersionNumbers>
+static LazyInstance<ChromeOSVersionNumbers>
     g_chrome_os_version_numbers = LAZY_INSTANCE_INITIALIZER;
 
 // static
@@ -52,7 +52,7 @@ void SysInfo::OperatingSystemVersionNumbers(int32* major_version,
     // See http://code.google.com/p/chromium/issues/detail?id=60394
     // Perhaps the caller ought to cache this?
     // Temporary allowing while we work the bug out.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    ThreadRestrictions::ScopedAllowIO allow_io;
 
     FilePath path(kLinuxStandardBaseReleaseFile);
     std::string contents;

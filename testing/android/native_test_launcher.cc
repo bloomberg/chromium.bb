@@ -26,9 +26,9 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/stringprintf.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/strings/string_tokenizer.h"
 #include "gtest/gtest.h"
 #include "testing/jni/ChromeNativeTestActivity_jni.h"
 
@@ -82,7 +82,7 @@ void InstallHandlers() {
 
 void ParseArgsFromString(const std::string& command_line,
                          std::vector<std::string>* args) {
-  StringTokenizer tokenizer(command_line, kWhitespaceASCII);
+  base::StringTokenizer tokenizer(command_line, kWhitespaceASCII);
   tokenizer.set_quote_chars("\"");
   while (tokenizer.GetNext()) {
     std::string token;

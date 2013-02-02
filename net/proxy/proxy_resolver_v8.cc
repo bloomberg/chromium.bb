@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/synchronization/lock.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
@@ -273,7 +273,7 @@ bool SortIpAddressList(const std::string& ip_address_list,
   // Split-up IP addresses and store them in a vector.
   std::vector<IPAddress> ip_vector;
   IPAddressNumber ip_num;
-  StringTokenizer str_tok(cleaned_ip_address_list, ";");
+  base::StringTokenizer str_tok(cleaned_ip_address_list, ";");
   while (str_tok.GetNext()) {
     if (!ParseIPLiteralToNumber(str_tok.token(), &ip_num))
       return false;

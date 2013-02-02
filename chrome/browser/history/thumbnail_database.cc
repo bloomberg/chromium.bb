@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
@@ -1146,7 +1146,7 @@ void ThumbnailDatabase::DatabaseStringToFaviconSizes(
     FaviconSizes* favicon_sizes) {
   bool parsing_errors = false;
 
-  StringTokenizer t(favicon_sizes_string, " ");
+  base::StringTokenizer t(favicon_sizes_string, " ");
   while (t.GetNext() && !parsing_errors) {
     int width, height = 0;
     parsing_errors |= !base::StringToInt(t.token(), &width);

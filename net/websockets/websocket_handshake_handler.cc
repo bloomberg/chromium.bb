@@ -11,6 +11,7 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_tokenizer.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -89,7 +90,7 @@ std::string FilterHeaders(
     size_t headers_to_remove_len) {
   std::string filtered_headers;
 
-  StringTokenizer lines(headers.begin(), headers.end(), "\r\n");
+  base::StringTokenizer lines(headers.begin(), headers.end(), "\r\n");
   while (lines.GetNext()) {
     std::string::const_iterator line_begin = lines.token_begin();
     std::string::const_iterator line_end = lines.token_end();

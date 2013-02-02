@@ -17,9 +17,9 @@
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/threading/thread_local.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -1401,7 +1401,7 @@ bool ChromeFrameUrl::ParseAttachExternalTabUrl() {
   }
 
   attach_to_external_tab_ = true;
-  StringTokenizer tokenizer(query, "&");
+  base::StringTokenizer tokenizer(query, "&");
   // Skip over kChromeAttachExternalTabPrefix
   tokenizer.GetNext();
   // Read the following items in order.

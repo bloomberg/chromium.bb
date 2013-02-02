@@ -7,7 +7,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/string_tokenizer.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/threading/thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/cookies/cookie_monster.h"
@@ -252,7 +252,7 @@ class CookieStoreTest : public testing::Test {
   // Returns a set of strings of type "name=value". Fails in case of duplicate.
   std::set<std::string> TokenizeCookieLine(const std::string& line) {
     std::set<std::string> tokens;
-    StringTokenizer tokenizer(line, " ;");
+    base::StringTokenizer tokenizer(line, " ;");
     while (tokenizer.GetNext())
       EXPECT_TRUE(tokens.insert(tokenizer.token()).second);
     return tokens;

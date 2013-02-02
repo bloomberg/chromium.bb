@@ -5,8 +5,8 @@
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
-#include <objidl.h>
 #include <mlang.h>
+#include <objidl.h>
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <sys/utsname.h>
 #endif
@@ -22,9 +22,9 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_piece.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
@@ -97,7 +97,7 @@ void SetJavaScriptFlags(const std::string& str) {
 void EnableWebCoreLogChannels(const std::string& channels) {
   if (channels.empty())
     return;
-  StringTokenizer t(channels, ", ");
+  base::StringTokenizer t(channels, ", ");
   while (t.GetNext()) {
     WebKit::enableLogChannel(t.token().c_str());
   }

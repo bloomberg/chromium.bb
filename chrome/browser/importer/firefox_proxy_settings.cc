@@ -5,8 +5,8 @@
 #include "chrome/browser/importer/firefox_proxy_settings.h"
 
 #include "base/file_path.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/values.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "net/proxy/proxy_config.h"
@@ -210,7 +210,7 @@ bool FirefoxProxySettings::GetSettingsFromFile(const FilePath& pref_file,
     std::string proxy_bypass;
     if (dictionary.GetStringASCII(kNoProxyListKey, &proxy_bypass) &&
         !proxy_bypass.empty()) {
-      StringTokenizer string_tok(proxy_bypass, ",");
+      base::StringTokenizer string_tok(proxy_bypass, ",");
       while (string_tok.GetNext()) {
         std::string token = string_tok.token();
         TrimWhitespaceASCII(token, TRIM_ALL, &token);

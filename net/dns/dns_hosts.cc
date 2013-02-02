@@ -7,8 +7,8 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 
 namespace net {
 
@@ -16,17 +16,17 @@ void ParseHosts(const std::string& contents, DnsHosts* dns_hosts) {
   CHECK(dns_hosts);
   DnsHosts& hosts = *dns_hosts;
   // Split into lines. Accept CR for Windows.
-  StringTokenizer contents_lines(contents, "\n\r");
+  base::StringTokenizer contents_lines(contents, "\n\r");
   while (contents_lines.GetNext()) {
     // Ignore comments after '#'.
     std::string line = contents_lines.token();
-    StringTokenizer line_parts(line, "#");
-    line_parts.set_options(StringTokenizer::RETURN_DELIMS);
+    base::StringTokenizer line_parts(line, "#");
+    line_parts.set_options(base::StringTokenizer::RETURN_DELIMS);
 
     if (line_parts.GetNext() && !line_parts.token_is_delim()) {
       // Split and trim whitespace.
       std::string part = line_parts.token();
-      StringTokenizer tokens(part, " \t");
+      base::StringTokenizer tokens(part, " \t");
 
       if (tokens.GetNext()) {
         IPAddressNumber ip;

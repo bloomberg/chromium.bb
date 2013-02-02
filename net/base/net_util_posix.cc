@@ -9,8 +9,8 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/threading/thread_restrictions.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
@@ -66,10 +66,10 @@ bool FileURLToFilePath(const GURL& url, FilePath* path) {
 bool GetNetworkList(NetworkInterfaceList* networks) {
 #if defined(OS_ANDROID)
   std::string network_list = android::GetNetworkList();
-  StringTokenizer network_interfaces(network_list, ";");
+  base::StringTokenizer network_interfaces(network_list, ";");
   while (network_interfaces.GetNext()) {
     std::string network_item = network_interfaces.token();
-    StringTokenizer network_tokenizer(network_item, ",");
+    base::StringTokenizer network_tokenizer(network_item, ",");
     std::string name;
     if (!network_tokenizer.GetNext())
       continue;

@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/stl_util.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 
 namespace chromeos {  // NOLINT
 namespace system {
@@ -70,7 +70,7 @@ bool NameValuePairsParser::ParseNameValuePairsWithComments(
     const std::string& comment_delim) {
   bool all_valid = true;
   // Set up the pair tokenizer.
-  StringTokenizer pair_toks(in_string, delim);
+  base::StringTokenizer pair_toks(in_string, delim);
   pair_toks.set_quote_chars(kQuoteChars);
   // Process token pairs.
   while (pair_toks.GetNext()) {

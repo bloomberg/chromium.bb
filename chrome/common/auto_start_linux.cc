@@ -9,7 +9,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
-#include "base/string_tokenizer.h"
+#include "base/strings/string_tokenizer.h"
 
 namespace {
 
@@ -75,7 +75,7 @@ bool AutoStart::GetAutostartFileValue(const std::string& autostart_filename,
   std::string contents;
   if (!GetAutostartFileContents(autostart_filename, &contents))
     return false;
-  StringTokenizer tokenizer(contents, "\n");
+  base::StringTokenizer tokenizer(contents, "\n");
   std::string token = value_name + "=";
   while (tokenizer.GetNext()) {
     if (tokenizer.token().substr(0, token.length()) == token) {

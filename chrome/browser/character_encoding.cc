@@ -9,8 +9,8 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "content/public/browser/browser_thread.h"
@@ -241,7 +241,7 @@ const int kDefaultEncodingMenusLength = arraysize(kDefaultEncodingMenus);
 void ParseEncodingListSeparatedWithComma(
     const std::string& encoding_list, std::vector<int>* const available_list,
     size_t maximum_size) {
-  StringTokenizer tokenizer(encoding_list, ",");
+  base::StringTokenizer tokenizer(encoding_list, ",");
   while (tokenizer.GetNext()) {
     int id = CharacterEncoding::GetCommandIdByCanonicalEncodingName(
         tokenizer.token());

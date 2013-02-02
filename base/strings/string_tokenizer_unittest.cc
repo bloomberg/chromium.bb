@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/string_tokenizer.h"
+#include "base/strings/string_tokenizer.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
+
+namespace base {
 
 namespace {
 
@@ -228,3 +230,5 @@ TEST(StringTokenizerTest, ParseQuotedString_EscapedQuotes2) {
 }
 
 }  // namespace
+
+}  // namespace base
