@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/system_logs/lsb_release_log_source.h"
 #include "chrome/browser/chromeos/system_logs/memory_details_log_source.h"
 #include "chrome/browser/chromeos/system_logs/network_event_log_source.h"
+#include "chrome/browser/chromeos/system_logs/touch_log_source.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -31,6 +32,7 @@ SystemLogsFetcher::SystemLogsFetcher()
   data_sources_.push_back(new LsbReleaseLogSource());
   data_sources_.push_back(new MemoryDetailsLogSource());
   data_sources_.push_back(new NetworkEventLogSource());
+  data_sources_.push_back(new TouchLogSource());
 
   num_pending_requests_ = data_sources_.size();
 }

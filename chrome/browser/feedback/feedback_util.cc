@@ -42,6 +42,10 @@ using content::WebContents;
 
 const char kSyncDataKey[] = "about_sync_data";
 
+#if defined(OS_CHROMEOS)
+const char kHUDLogDataKey[] = "hud_log";
+#endif
+
 namespace {
 
 const int kFeedbackVersion = 1;
@@ -320,7 +324,9 @@ void FeedbackUtil::SendReport(
     // Add the product specific data
     for (chromeos::system::LogDictionaryType::const_iterator i =
              sys_info->begin(); i != sys_info->end(); ++i) {
-      if (i->first == kSyncDataKey || ValidFeedbackSize(i->second)) {
+      if (i->first == kSyncDataKey ||
+          i->first == kHUDLogDataKey ||
+          ValidFeedbackSize(i->second)) {
         AddFeedbackData(&feedback_data, i->first, i->second);
       }
     }

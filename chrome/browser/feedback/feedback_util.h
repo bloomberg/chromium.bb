@@ -32,6 +32,10 @@ class WebContents;
 
 extern const char kSyncDataKey[];
 
+#if defined(OS_CHROMEOS)
+extern const char kHUDLogDataKey[];
+#endif
+
 class FeedbackUtil {
  public:
 

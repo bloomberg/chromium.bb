@@ -642,6 +642,8 @@
         'browser/chromeos/system_logs/network_event_log_source.h',
         'browser/chromeos/system_logs/system_logs_fetcher.cc',
         'browser/chromeos/system_logs/system_logs_fetcher.h',
+        'browser/chromeos/system_logs/touch_log_source.cc',
+        'browser/chromeos/system_logs/touch_log_source.h',
         'browser/chromeos/ui/idle_logout_dialog_view.cc',
         'browser/chromeos/ui/idle_logout_dialog_view.h',
         'browser/chromeos/upgrade_detector_chromeos.cc',
