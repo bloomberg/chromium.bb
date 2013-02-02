@@ -58,7 +58,7 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(
     int state,
     double time_stamp_seconds)
     : os_event(NULL),
-      skip_in_browser(true /* already handled by the input method */) {
+      skip_in_browser(false) {
   switch (key_event_type) {
     case ui::ET_KEY_PRESSED:
       type = is_char ? WebKit::WebInputEvent::Char :

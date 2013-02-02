@@ -1479,16 +1479,12 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
   } else {
     // We don't have to communicate with an input method here.
     if (!event->HasNativeEvent()) {
-      // Send a fabricated event, which is usually a VKEY_PROCESSKEY IME event.
-      // For keys like VK_BACK/VK_LEFT, etc we need to send the raw keycode to
-      // the renderer.
-      double now = ui::EventTimeForNow().InSecondsF();
       NativeWebKeyboardEvent webkit_event(
           event->type(),
-          false /* is_char */,
-          event->GetCharacter() ? event->GetCharacter() : event->key_code(),
+          event->is_char(),
+          event->is_char() ? event->GetCharacter() : event->key_code(),
           event->flags(),
-          now);
+          ui::EventTimeForNow().InSecondsF());
       host_->ForwardKeyboardEvent(webkit_event);
     } else {
       NativeWebKeyboardEvent webkit_event(event);

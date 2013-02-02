@@ -56,6 +56,8 @@ void UnhandledKeyboardEventHandler::HandleKeyboardEvent(
   // Any unhandled keyboard/character messages should be defproced.
   // This allows stuff like F10, etc to work correctly.
 #if defined(USE_AURA)
+  if (!event.os_event)
+    return;
   const MSG& message(event.os_event->native_event());
 #else
   const MSG& message(event.os_event);
