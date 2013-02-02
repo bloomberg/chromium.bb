@@ -1,5 +1,15 @@
 check_SCRIPTS=run-test.sh
-TESTS_ENVIRONMENT=src=${srcdir} EXEEXT=${EXEEXT} sh
+TEST_EXTENSIONS = \
+	.sh
+
+AM_TESTS_ENVIRONMENT= \
+	src=${srcdir}; \
+	EXEEXT=${EXEEXT}; \
+	export src; \
+	export EXEEXT;
+
+SH_LOG_COMPILER = sh
+
 TESTS=run-test.sh
 
 TESTDATA=4x6.pcf 8x16.pcf out.expected fonts.conf.in
