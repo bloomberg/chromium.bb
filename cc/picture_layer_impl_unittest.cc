@@ -81,8 +81,7 @@ class TestablePicturePileImpl : public PicturePileImpl {
     gfx::Rect bounds(tiling().TileBounds(x, y));
     scoped_refptr<Picture> picture(Picture::Create(bounds));
     FakeContentLayerClient client;
-    RenderingStats stats;
-    picture->Record(&client, stats);
+    picture->Record(&client, NULL);
     picture_list_map_[std::pair<int, int>(x, y)].push_back(picture);
     EXPECT_TRUE(HasRecordingAt(x, y));
   }

@@ -20,8 +20,10 @@ class RasterWorkerPool : public WorkerPool {
 
   virtual ~RasterWorkerPool();
 
-  static scoped_ptr<RasterWorkerPool> Create(size_t num_threads) {
-    return make_scoped_ptr(new RasterWorkerPool(num_threads));
+  static scoped_ptr<RasterWorkerPool> Create(
+      size_t num_threads, bool record_rendering_stats) {
+    return make_scoped_ptr(
+        new RasterWorkerPool(num_threads, record_rendering_stats));
   }
 
   void PostRasterTaskAndReply(PicturePileImpl* picture_pile,
@@ -29,7 +31,7 @@ class RasterWorkerPool : public WorkerPool {
                               const base::Closure& reply);
 
  private:
-  explicit RasterWorkerPool(size_t num_threads);
+  RasterWorkerPool(size_t num_threads, bool record_rendering_stats);
 
   DISALLOW_COPY_AND_ASSIGN(RasterWorkerPool);
 };

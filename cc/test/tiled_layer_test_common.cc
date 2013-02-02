@@ -27,7 +27,7 @@ FakeLayerUpdater::Resource::~Resource()
 {
 }
 
-void FakeLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const gfx::Rect&, const gfx::Vector2d&, bool partialUpdate, RenderingStats&)
+void FakeLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const gfx::Rect&, const gfx::Vector2d&, bool partialUpdate, RenderingStats*)
 {
     const gfx::Rect rect(0, 0, 10, 10);
     ResourceUpdate upload = ResourceUpdate::Create(
@@ -50,7 +50,7 @@ FakeLayerUpdater::~FakeLayerUpdater()
 {
 }
 
-void FakeLayerUpdater::prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size&, float, float, gfx::Rect& resultingOpaqueRect, RenderingStats&)
+void FakeLayerUpdater::prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size&, float, float, gfx::Rect& resultingOpaqueRect, RenderingStats*)
 {
     m_prepareCount++;
     m_lastUpdateRect = contentRect;

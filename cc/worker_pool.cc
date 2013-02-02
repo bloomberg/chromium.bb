@@ -26,8 +26,8 @@ class WorkerPoolTaskImpl : public internal::WorkerPoolTask {
       : internal::WorkerPoolTask(reply),
         task_(task) {}
 
-  virtual void Run() OVERRIDE {
-    task_.Run(&rendering_stats_);
+  virtual void Run(RenderingStats* rendering_stats) OVERRIDE {
+    task_.Run(rendering_stats);
   }
 
  private:
@@ -57,10 +57,14 @@ void WorkerPoolTask::Completed() {
 
 }  // namespace internal
 
-WorkerPool::Worker::Worker(WorkerPool* worker_pool, const std::string name)
+WorkerPool::Worker::Worker(
+    WorkerPool* worker_pool,
+    const std::string name,
+    scoped_ptr<RenderingStats> rendering_stats)
     : base::Thread(name.c_str()),
       worker_pool_(worker_pool),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      rendering_stats_(rendering_stats.Pass()) {
   Start();
   DCHECK(IsRunning());
 }
@@ -88,7 +92,9 @@ void WorkerPool::Worker::PostTask(scoped_ptr<internal::WorkerPoolTask> task) {
 
   message_loop_proxy()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&Worker::RunTask, base::Unretained(task.get())),
+      base::Bind(&Worker::RunTask,
+                 base::Unretained(task.get()),
+                 base::Unretained(rendering_stats_.get())),
       base::Bind(&Worker::OnTaskCompleted, weak_ptr_factory_.GetWeakPtr()));
 
   pending_tasks_.push_back(task.Pass());
@@ -105,39 +111,32 @@ void WorkerPool::Worker::Init() {
 }
 
 // static
-void WorkerPool::Worker::RunTask(internal::WorkerPoolTask* task) {
-  task->Run();
+void WorkerPool::Worker::RunTask(
+    internal::WorkerPoolTask* task, RenderingStats* rendering_stats) {
+  task->Run(rendering_stats);
 }
 
 void WorkerPool::Worker::OnTaskCompleted() {
   CHECK(!pending_tasks_.empty());
 
   scoped_ptr<internal::WorkerPoolTask> task = pending_tasks_.take_front();
-
   task->Completed();
-
-  rendering_stats_.totalRasterizeTime +=
-      task->rendering_stats().totalRasterizeTime;
-  rendering_stats_.totalPixelsRasterized +=
-      task->rendering_stats().totalPixelsRasterized;
-  rendering_stats_.totalDeferredImageDecodeTime +=
-      task->rendering_stats().totalDeferredImageDecodeTime;
-  rendering_stats_.totalDeferredImageDecodeCount +=
-      task->rendering_stats().totalDeferredImageDecodeCount;
 
   worker_pool_->DidNumPendingTasksChange();
 }
 
-WorkerPool::WorkerPool(size_t num_threads)
+WorkerPool::WorkerPool(size_t num_threads, bool record_rendering_stats)
     : workers_need_sorting_(false),
       shutdown_(false) {
   const std::string thread_name_prefix = kWorkerThreadNamePrefix;
   while (workers_.size() < num_threads) {
     int thread_number = workers_.size() + 1;
-    workers_.push_back(
-        new Worker(this,
-                   thread_name_prefix +
-                   StringPrintf("Worker%d", thread_number).c_str()));
+    scoped_ptr<RenderingStats> rendering_stats = record_rendering_stats ?
+        make_scoped_ptr(new RenderingStats) : scoped_ptr<RenderingStats>();
+    workers_.push_back(new Worker(
+        this,
+        thread_name_prefix + StringPrintf("Worker%d", thread_number).c_str(),
+        rendering_stats.Pass()));
   }
 }
 
@@ -181,14 +180,15 @@ void WorkerPool::GetRenderingStats(RenderingStats* stats) {
   for (WorkerVector::iterator it = workers_.begin();
        it != workers_.end(); ++it) {
     Worker* worker = *it;
+    CHECK(worker->rendering_stats());
     stats->totalRasterizeTime +=
-        worker->rendering_stats().totalRasterizeTime;
+        worker->rendering_stats()->totalRasterizeTime;
     stats->totalPixelsRasterized +=
-        worker->rendering_stats().totalPixelsRasterized;
+        worker->rendering_stats()->totalPixelsRasterized;
     stats->totalDeferredImageDecodeCount +=
-        worker->rendering_stats().totalDeferredImageDecodeCount;
+        worker->rendering_stats()->totalDeferredImageDecodeCount;
     stats->totalDeferredImageDecodeTime +=
-        worker->rendering_stats().totalDeferredImageDecodeTime;
+        worker->rendering_stats()->totalDeferredImageDecodeTime;
   }
 }
 

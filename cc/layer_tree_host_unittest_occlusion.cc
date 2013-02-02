@@ -20,7 +20,7 @@ class TestLayer : public Layer {
   virtual void update(
       ResourceUpdateQueue& update_queue,
       const OcclusionTracker* occlusion,
-      RenderingStats& stats) OVERRIDE {
+      RenderingStats* stats) OVERRIDE {
     if (!occlusion)
       return;
 

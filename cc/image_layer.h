@@ -20,7 +20,7 @@ public:
 
     virtual bool drawsContent() const OVERRIDE;
     virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
-    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
+    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*) OVERRIDE;
     virtual void calculateContentsScale(
         float idealContentsScale,
         float* contentsScaleX,

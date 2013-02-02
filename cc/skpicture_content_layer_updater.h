@@ -27,7 +27,7 @@ public:
         Resource(SkPictureContentLayerUpdater*, scoped_ptr<PrioritizedResource>);
         virtual ~Resource();
 
-        virtual void update(ResourceUpdateQueue&, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
+        virtual void update(ResourceUpdateQueue&, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats*) OVERRIDE;
 
     private:
         SkPictureContentLayerUpdater* updater() { return m_updater; }
@@ -44,7 +44,7 @@ protected:
     explicit SkPictureContentLayerUpdater(scoped_ptr<LayerPainter>);
     virtual ~SkPictureContentLayerUpdater();
 
-    virtual void prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size& tileSize, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats&) OVERRIDE;
+    virtual void prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size& tileSize, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats*) OVERRIDE;
     void drawPicture(SkCanvas*);
     void updateTexture(ResourceUpdateQueue& queue, PrioritizedResource* texture, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate);
 

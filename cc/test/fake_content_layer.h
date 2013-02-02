@@ -25,7 +25,7 @@ class FakeContentLayer : public ContentLayer {
   virtual void update(
       ResourceUpdateQueue& queue,
       const OcclusionTracker* occlusion,
-      RenderingStats& stats) OVERRIDE;
+      RenderingStats* stats) OVERRIDE;
 
   bool HaveBackingAt(int i, int j);
 

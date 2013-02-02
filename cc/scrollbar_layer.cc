@@ -248,7 +248,7 @@ void ScrollbarLayer::createUpdaterIfNeeded()
         m_thumb = m_thumbUpdater->createResource(layerTreeHost()->contentsTextureManager());
 }
 
-void ScrollbarLayer::updatePart(CachingBitmapContentLayerUpdater* painter, LayerUpdater::Resource* resource, const gfx::Rect& rect, ResourceUpdateQueue& queue, RenderingStats& stats)
+void ScrollbarLayer::updatePart(CachingBitmapContentLayerUpdater* painter, LayerUpdater::Resource* resource, const gfx::Rect& rect, ResourceUpdateQueue& queue, RenderingStats* stats)
 {
     // Skip painting and uploading if there are no invalidations and
     // we already have valid texture data.
@@ -311,7 +311,7 @@ void ScrollbarLayer::setTexturePriorities(const PriorityCalculator&)
     }
 }
 
-void ScrollbarLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
+void ScrollbarLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats* stats)
 {
     ContentsScalingLayer::update(queue, occlusion, stats);
 

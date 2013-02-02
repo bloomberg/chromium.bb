@@ -140,6 +140,7 @@ WebPreferences::WebPreferences()
 #endif
       supports_multiple_windows(true),
       viewport_enabled(false),
+      record_rendering_stats(false),
       cookie_enabled(true)
 #if defined(OS_ANDROID)
       ,
@@ -381,6 +382,9 @@ void WebPreferences::Apply(WebView* web_view) const {
   // Display visualization of what has changed on the screen using an
   // overlay of rects, if requested on the command line.
   settings->setShowPaintRects(show_paint_rects);
+
+  // Record rendering stats for benchmarks.
+  settings->setRecordRenderingStats(record_rendering_stats);
 
   // Set whether to throttle framerate to Vsync.
   settings->setRenderVSyncEnabled(render_vsync_enabled);

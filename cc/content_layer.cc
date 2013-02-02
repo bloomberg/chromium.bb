@@ -66,7 +66,7 @@ void ContentLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
     TiledLayer::setTexturePriorities(priorityCalc);
 }
 
-void ContentLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
+void ContentLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats* stats)
 {
     {
         base::AutoReset<bool> ignoreSetNeedsCommit(&m_ignoreSetNeedsCommit, true);

@@ -35,7 +35,7 @@ public:
 
     virtual Region visibleContentOpaqueRegion() const OVERRIDE;
 
-    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
+    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*) OVERRIDE;
 
 protected:
     TiledLayer();
@@ -81,10 +81,10 @@ private:
 
     void markOcclusionsAndRequestTextures(int left, int top, int right, int bottom, const OcclusionTracker*);
 
-    bool updateTiles(int left, int top, int right, int bottom, ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&, bool& didPaint);
+    bool updateTiles(int left, int top, int right, int bottom, ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*, bool& didPaint);
     bool haveTexturesForTiles(int left, int top, int right, int bottom, bool ignoreOcclusions);
     gfx::Rect markTilesForUpdate(int left, int top, int right, int bottom, bool ignoreOcclusions);
-    void updateTileTextures(const gfx::Rect& paintRect, int left, int top, int right, int bottom, ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&);
+    void updateTileTextures(const gfx::Rect& paintRect, int left, int top, int right, int bottom, ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*);
     void updateScrollPrediction();
 
     UpdatableTile* tileAt(int, int) const;

@@ -61,7 +61,7 @@ void PictureLayer::setNeedsDisplayRect(const gfx::RectF& layer_rect) {
 }
 
 void PictureLayer::update(ResourceUpdateQueue&, const OcclusionTracker*,
-                    RenderingStats& stats) {
+                          RenderingStats* stats) {
   // Do not early-out of this function so that PicturePile::Update has a chance
   // to record pictures due to changing visibility of this layer.
 

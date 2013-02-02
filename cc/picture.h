@@ -34,7 +34,7 @@ class CC_EXPORT Picture
 
   // Record a paint operation. To be able to safely use this SkPicture for
   // playback on a different thread this can only be called once.
-  void Record(ContentLayerClient*, RenderingStats&);
+  void Record(ContentLayerClient*, RenderingStats*);
 
   // Has Record() been called yet?
   bool HasRecording() const { return picture_.get() != NULL; }

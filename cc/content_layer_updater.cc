@@ -26,7 +26,7 @@ ContentLayerUpdater::~ContentLayerUpdater()
 {
 }
 
-void ContentLayerUpdater::paintContents(SkCanvas* canvas, const gfx::Rect& contentRect, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats& stats)
+void ContentLayerUpdater::paintContents(SkCanvas* canvas, const gfx::Rect& contentRect, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats* stats)
 {
     TRACE_EVENT0("cc", "ContentLayerUpdater::paintContents");
     canvas->save();
@@ -49,12 +49,15 @@ void ContentLayerUpdater::paintContents(SkCanvas* canvas, const gfx::Rect& conte
     canvas->clipRect(layerSkRect);
 
     gfx::RectF opaqueLayerRect;
-    base::TimeTicks paintBeginTime = base::TimeTicks::Now();
+    base::TimeTicks paintBeginTime;
+    if (stats)
+        paintBeginTime = base::TimeTicks::Now();
     m_painter->paint(canvas, layerRect, opaqueLayerRect);
-    stats.totalPaintTime += base::TimeTicks::Now() - paintBeginTime;
+    if (stats) {
+        stats->totalPaintTime += base::TimeTicks::Now() - paintBeginTime;
+        stats->totalPixelsPainted += contentRect.width() * contentRect.height();
+    }
     canvas->restore();
-
-    stats.totalPixelsPainted += contentRect.width() * contentRect.height();
 
     gfx::RectF opaqueContentRect = gfx::ScaleRect(opaqueLayerRect, contentsWidthScale, contentsHeightScale);
     resultingOpaqueRect = gfx::ToEnclosedRect(opaqueContentRect);

@@ -23,7 +23,7 @@ protected:
     explicit ContentLayerUpdater(scoped_ptr<LayerPainter>);
     virtual ~ContentLayerUpdater();
 
-    void paintContents(SkCanvas*, const gfx::Rect& contentRect, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats&);
+    void paintContents(SkCanvas*, const gfx::Rect& contentRect, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats*);
     const gfx::Rect& contentRect() const { return m_contentRect; }
 
 private:

@@ -33,7 +33,7 @@ void PicturePile::Update(
     ContentLayerClient* painter,
     const Region& invalidation,
     gfx::Rect visible_layer_rect,
-    RenderingStats& stats) {
+    RenderingStats* stats) {
   gfx::Rect interest_rect = visible_layer_rect;
   interest_rect.Inset(
       -kPixelDistanceToRecord,

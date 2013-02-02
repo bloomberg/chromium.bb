@@ -23,7 +23,7 @@ class CC_EXPORT PicturePile : public PicturePileBase {
       ContentLayerClient* painter,
       const Region& invalidation,
       gfx::Rect visible_layer_rect,
-      RenderingStats& stats);
+      RenderingStats* stats);
 
   // Update other with a shallow copy of this (main => compositor thread commit)
   void PushPropertiesTo(PicturePileImpl* other);

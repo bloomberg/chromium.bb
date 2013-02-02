@@ -32,7 +32,7 @@ class CC_EXPORT PictureLayer : public ContentsScalingLayer {
   virtual void update(
       ResourceUpdateQueue& queue,
       const OcclusionTracker* occlusion,
-      RenderingStats& stats) OVERRIDE;
+      RenderingStats* stats) OVERRIDE;
   virtual void setIsMask(bool is_mask) OVERRIDE;
 
  protected:

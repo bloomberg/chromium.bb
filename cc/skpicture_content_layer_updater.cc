@@ -22,7 +22,7 @@ SkPictureContentLayerUpdater::Resource::~Resource()
 {
 }
 
-void SkPictureContentLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats&)
+void SkPictureContentLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats*)
 {
     updater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
 }
@@ -47,7 +47,7 @@ scoped_ptr<LayerUpdater::Resource> SkPictureContentLayerUpdater::createResource(
     return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedResource::create(manager)));
 }
 
-void SkPictureContentLayerUpdater::prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size&, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats& stats)
+void SkPictureContentLayerUpdater::prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size&, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats* stats)
 {
     SkCanvas* canvas = m_picture.beginRecording(contentRect.width(), contentRect.height());
     paintContents(canvas, contentRect, contentsWidthScale, contentsHeightScale, resultingOpaqueRect, stats);

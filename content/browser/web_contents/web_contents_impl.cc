@@ -536,6 +536,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
   prefs.css_grid_layout_enabled =
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
+  prefs.record_rendering_stats =
+      command_line.HasSwitch(switches::kEnableGpuBenchmarking);
 
   bool touch_device_present = false;
 #if defined(USE_AURA) && defined(USE_X11)

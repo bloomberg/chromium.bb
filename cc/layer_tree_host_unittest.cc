@@ -795,7 +795,7 @@ public:
     int paintContentsCount() { return m_paintContentsCount; }
     void resetPaintContentsCount() { m_paintContentsCount = 0; }
 
-    virtual void update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats) OVERRIDE
+    virtual void update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats* stats) OVERRIDE
     {
         ContentLayer::update(queue, occlusion, stats);
         m_paintContentsCount++;
@@ -1477,7 +1477,7 @@ class EvictionTestLayer : public Layer {
 public:
     static scoped_refptr<EvictionTestLayer> create() { return make_scoped_refptr(new EvictionTestLayer()); }
 
-    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
+    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*) OVERRIDE;
     virtual bool drawsContent() const OVERRIDE { return true; }
 
     virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
@@ -1535,7 +1535,7 @@ void EvictionTestLayer::setTexturePriorities(const PriorityCalculator&)
     m_texture->setRequestPriority(PriorityCalculator::uiPriority(true));
 }
 
-void EvictionTestLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker*, RenderingStats&)
+void EvictionTestLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker*, RenderingStats*)
 {
     createTextureIfNeeded();
     if (!m_texture.get())

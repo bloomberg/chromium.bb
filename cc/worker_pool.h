@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "cc/rendering_stats.h"
@@ -21,17 +22,14 @@ class WorkerPoolTask {
  public:
   virtual ~WorkerPoolTask();
 
-  virtual void Run() = 0;
+  virtual void Run(RenderingStats* rendering_stats) = 0;
 
   void Completed();
-
-  RenderingStats& rendering_stats() { return rendering_stats_; }
 
  protected:
   WorkerPoolTask(const base::Closure& reply);
 
   base::Closure reply_;
-  RenderingStats rendering_stats_;
 };
 
 }  // namespace internal
@@ -44,8 +42,10 @@ class WorkerPool {
 
   virtual ~WorkerPool();
 
-  static scoped_ptr<WorkerPool> Create(size_t num_threads) {
-    return make_scoped_ptr(new WorkerPool(num_threads));
+  static scoped_ptr<WorkerPool> Create(
+      size_t num_threads, bool record_rendering_stats) {
+    return make_scoped_ptr(
+        new WorkerPool(num_threads, record_rendering_stats));
   }
 
   // Tells the worker pool to shutdown and returns once all pending tasks have
@@ -66,7 +66,10 @@ class WorkerPool {
  protected:
   class Worker : public base::Thread {
    public:
-    Worker(WorkerPool* worker_pool, const std::string name);
+    Worker(
+        WorkerPool* worker_pool,
+        const std::string name,
+        scoped_ptr<RenderingStats> rendering_stats);
     virtual ~Worker();
 
     // This must be called before the destructor.
@@ -76,23 +79,26 @@ class WorkerPool {
     void PostTask(scoped_ptr<internal::WorkerPoolTask> task);
 
     int num_pending_tasks() const { return pending_tasks_.size(); }
-    const RenderingStats& rendering_stats() const { return rendering_stats_; }
+    const RenderingStats* rendering_stats() const {
+      return rendering_stats_.get();
+    }
 
     // Overridden from base::Thread:
     virtual void Init() OVERRIDE;
 
    private:
-    static void RunTask(internal::WorkerPoolTask* task);
+    static void RunTask(
+        internal::WorkerPoolTask* task, RenderingStats* rendering_stats);
 
     void OnTaskCompleted();
 
     WorkerPool* worker_pool_;
     base::WeakPtrFactory<Worker> weak_ptr_factory_;
     ScopedPtrDeque<internal::WorkerPoolTask> pending_tasks_;
-    RenderingStats rendering_stats_;
+    scoped_ptr<RenderingStats> rendering_stats_;
   };
 
-  explicit WorkerPool(size_t num_threads);
+  WorkerPool(size_t num_threads, bool record_rendering_stats);
 
   WorkerPool::Worker* GetWorkerForNextTask();
 

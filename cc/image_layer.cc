@@ -48,7 +48,7 @@ void ImageLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
     TiledLayer::setTexturePriorities(priorityCalc);
 }
 
-void ImageLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
+void ImageLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats* stats)
 {
     createUpdaterIfNeeded();
     if (m_needsDisplay) {

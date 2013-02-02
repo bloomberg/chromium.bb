@@ -22,7 +22,7 @@ public:
 
     virtual bool drawsContent() const OVERRIDE;
     virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
-    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
+    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*) OVERRIDE;
     virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
 
     // aperture is in the pixel space of the bitmap resource and refers to

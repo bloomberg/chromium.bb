@@ -33,7 +33,7 @@ FakeScrollbarLayer::~FakeScrollbarLayer() {}
 void FakeScrollbarLayer::update(
     ResourceUpdateQueue& queue,
     const OcclusionTracker* occlusion,
-    RenderingStats& stats) {
+    RenderingStats* stats) {
   size_t full = queue.fullUploadSize();
   size_t partial = queue.partialUploadSize();
   ScrollbarLayer::update(queue, occlusion, stats);

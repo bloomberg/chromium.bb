@@ -405,6 +405,7 @@ void LayerTreeHost::didDeferCommit()
 
 void LayerTreeHost::renderingStats(RenderingStats* stats) const
 {
+    CHECK(m_settings.recordRenderingStats);
     *stats = m_renderingStats;
     m_proxy->renderingStats(stats);
 }
@@ -695,16 +696,18 @@ bool LayerTreeHost::paintMasksForRenderSurface(Layer* renderSurfaceLayer, Resour
     // in code, we already know that at least something will be drawn into this render surface, so the
     // mask and replica should be painted.
 
+    RenderingStats* stats = m_settings.recordRenderingStats ? &m_renderingStats : NULL;
+
     bool needMoreUpdates = false;
     Layer* maskLayer = renderSurfaceLayer->maskLayer();
     if (maskLayer) {
-        maskLayer->update(queue, 0, m_renderingStats);
+        maskLayer->update(queue, 0, stats);
         needMoreUpdates |= maskLayer->needMoreUpdates();
     }
 
     Layer* replicaMaskLayer = renderSurfaceLayer->replicaLayer() ? renderSurfaceLayer->replicaLayer()->maskLayer() : 0;
     if (replicaMaskLayer) {
-        replicaMaskLayer->update(queue, 0, m_renderingStats);
+        replicaMaskLayer->update(queue, 0, stats);
         needMoreUpdates |= replicaMaskLayer->needMoreUpdates();
     }
     return needMoreUpdates;
@@ -722,6 +725,8 @@ bool LayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList, 
 
     prioritizeTextures(renderSurfaceLayerList, occlusionTracker.overdrawMetrics());
 
+    RenderingStats* stats = m_settings.recordRenderingStats ? &m_renderingStats : NULL;
+
     LayerIteratorType end = LayerIteratorType::end(&renderSurfaceLayerList);
     for (LayerIteratorType it = LayerIteratorType::begin(&renderSurfaceLayerList); it != end; ++it) {
         occlusionTracker.enterLayer(it);
@@ -731,7 +736,7 @@ bool LayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList, 
             needMoreUpdates |= paintMasksForRenderSurface(*it, queue);
         } else if (it.representsItself()) {
             DCHECK(!it->bounds().IsEmpty());
-            it->update(queue, &occlusionTracker, m_renderingStats);
+            it->update(queue, &occlusionTracker, stats);
             needMoreUpdates |= it->needMoreUpdates();
         }
 

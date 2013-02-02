@@ -16,7 +16,7 @@ class CC_EXPORT HeadsUpDisplayLayer : public Layer {
 public:
     static scoped_refptr<HeadsUpDisplayLayer> create();
 
-    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
+    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*) OVERRIDE;
     virtual bool drawsContent() const OVERRIDE;
 
     void setFontAtlas(scoped_ptr<FontAtlas>);

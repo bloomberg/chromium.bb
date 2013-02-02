@@ -41,7 +41,7 @@ void ContentsScalingLayer::didUpdateBounds() {
 void ContentsScalingLayer::update(
     ResourceUpdateQueue& queue,
     const OcclusionTracker* occlusion,
-    RenderingStats& stats) {
+    RenderingStats* stats) {
   if (drawProperties().contents_scale_x == last_update_contents_scale_x_ &&
       drawProperties().contents_scale_y == last_update_contents_scale_y_)
     return;

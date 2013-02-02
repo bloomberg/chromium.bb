@@ -6,7 +6,6 @@
 
 #include "cc/bitmap_content_layer_updater.h"
 #include "cc/content_layer_client.h"
-#include "cc/rendering_stats.h"
 #include "cc/test/geometry_test_utils.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,8 +42,7 @@ TEST(ContentLayerTest, ContentLayerPainterWithDeviceScale)
     scoped_refptr<BitmapContentLayerUpdater> updater = BitmapContentLayerUpdater::create(ContentLayerPainter::create(&client).PassAs<LayerPainter>());
 
     gfx::Rect resultingOpaqueRect;
-    RenderingStats stats;
-    updater->prepareToUpdate(contentRect, gfx::Size(256, 256), contentsScale, contentsScale, resultingOpaqueRect, stats);
+    updater->prepareToUpdate(contentRect, gfx::Size(256, 256), contentsScale, contentsScale, resultingOpaqueRect, NULL);
 
     EXPECT_RECT_EQ(gfx::ToEnclosingRect(opaqueRectInContentSpace), resultingOpaqueRect);
 }

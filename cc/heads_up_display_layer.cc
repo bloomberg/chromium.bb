@@ -26,7 +26,7 @@ HeadsUpDisplayLayer::~HeadsUpDisplayLayer()
 {
 }
 
-void HeadsUpDisplayLayer::update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&)
+void HeadsUpDisplayLayer::update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*)
 {
     const LayerTreeDebugState& debugState = layerTreeHost()->debugState();
     int maxTextureSize = layerTreeHost()->rendererCapabilities().maxTextureSize;

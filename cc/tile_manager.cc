@@ -114,14 +114,16 @@ ManagedTileState::~ManagedTileState() {
 TileManager::TileManager(
     TileManagerClient* client,
     ResourceProvider* resource_provider,
-    size_t num_raster_threads)
+    size_t num_raster_threads,
+    bool record_rendering_stats)
     : client_(client),
       resource_pool_(ResourcePool::Create(resource_provider)),
-      raster_worker_pool_(RasterWorkerPool::Create(num_raster_threads)),
+      raster_worker_pool_(RasterWorkerPool::Create(num_raster_threads, record_rendering_stats)),
       manage_tiles_pending_(false),
       manage_tiles_call_count_(0),
       bytes_pending_set_pixels_(0),
-      ever_exceeded_memory_budget_(false) {
+      ever_exceeded_memory_budget_(false),
+      record_rendering_stats_(record_rendering_stats) {
   for (int i = 0; i < NUM_STATES; ++i) {
     for (int j = 0; j < NUM_TREES; ++j) {
       for (int k = 0; k < NUM_BINS; ++k)
@@ -398,6 +400,7 @@ scoped_ptr<base::Value> TileManager::GetMemoryRequirementsAsValue() const {
 }
 
 void TileManager::GetRenderingStats(RenderingStats* stats) {
+  CHECK(record_rendering_stats_);
   raster_worker_pool_->GetRenderingStats(stats);
   stats->totalDeferredImageCacheHitCount =
       rendering_stats_.totalDeferredImageCacheHitCount;
@@ -562,15 +565,19 @@ void TileManager::GatherPixelRefsForTile(Tile* tile) {
   TRACE_EVENT0("cc", "TileManager::GatherPixelRefsForTile");
   ManagedTileState& managed_state = tile->managed_state();
   if (managed_state.need_to_gather_pixel_refs) {
-    base::TimeTicks gather_begin_time = base::TimeTicks::Now();
+    base::TimeTicks gather_begin_time;
+    if (record_rendering_stats_)
+      gather_begin_time = base::TimeTicks::Now();
     tile->picture_pile()->GatherPixelRefs(
         tile->content_rect_,
         tile->contents_scale_,
         managed_state.pending_pixel_refs);
-    rendering_stats_.totalImageGatheringCount++;
-    rendering_stats_.totalImageGatheringTime +=
-        base::TimeTicks::Now() - gather_begin_time;
     managed_state.need_to_gather_pixel_refs = false;
+    if (record_rendering_stats_) {
+      rendering_stats_.totalImageGatheringCount++;
+      rendering_stats_.totalImageGatheringTime +=
+          base::TimeTicks::Now() - gather_begin_time;
+    }
   }
 }
 
@@ -772,11 +779,15 @@ void TileManager::RunRasterTask(uint8* buffer,
 void TileManager::RunImageDecodeTask(skia::LazyPixelRef* pixel_ref,
                                      RenderingStats* stats) {
   TRACE_EVENT0("cc", "TileManager::RunImageDecodeTask");
-  base::TimeTicks decode_begin_time = base::TimeTicks::Now();
+  base::TimeTicks decode_begin_time;
+  if (stats)
+    decode_begin_time = base::TimeTicks::Now();
   pixel_ref->Decode();
-  stats->totalDeferredImageDecodeCount++;
-  stats->totalDeferredImageDecodeTime +=
-      base::TimeTicks::Now() - decode_begin_time;
+  if (stats) {
+    stats->totalDeferredImageDecodeCount++;
+    stats->totalDeferredImageDecodeTime +=
+        base::TimeTicks::Now() - decode_begin_time;
+  }
 }
 
 }  // namespace cc

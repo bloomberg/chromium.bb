@@ -53,6 +53,7 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
     settings.initialDebugState.showPlatformLayerTree = webSettings.showPlatformLayerTree;
     settings.initialDebugState.showDebugBorders = webSettings.showDebugBorders;
     settings.implSidePainting = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnableImplSidePainting);
+    settings.recordRenderingStats = webSettings.recordRenderingStats;
 
     settings.calculateTopControlsPosition = CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableTopControlsPositionCalculation);
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopControlsHeight)) {

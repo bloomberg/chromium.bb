@@ -93,7 +93,8 @@ class CC_EXPORT TileManager {
  public:
   TileManager(TileManagerClient* client,
               ResourceProvider *resource_provider,
-              size_t num_raster_threads);
+              size_t num_raster_threads,
+              bool record_rendering_stats);
   virtual ~TileManager();
 
   const GlobalStateThatImpactsTilePriority& GlobalState() const {
@@ -177,6 +178,7 @@ class CC_EXPORT TileManager {
   size_t bytes_pending_set_pixels_;
   bool ever_exceeded_memory_budget_;
 
+  bool record_rendering_stats_;
   RenderingStats rendering_stats_;
 
   int raster_state_count_[NUM_STATES][NUM_TREES][NUM_BINS];

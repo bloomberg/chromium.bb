@@ -65,7 +65,9 @@ void PicturePileImpl::Raster(
 
   DCHECK(contents_scale >= min_contents_scale_);
 
-  base::TimeTicks rasterizeBeginTime = base::TimeTicks::Now();
+  base::TimeTicks rasterize_begin_time;
+  if (stats)
+    rasterize_begin_time = base::TimeTicks::Now();
 
   canvas->save();
   canvas->translate(-content_rect.x(), -content_rect.y());
@@ -112,13 +114,15 @@ void PicturePileImpl::Raster(
           SkRegion::kDifference_Op);
       unclipped.Subtract(content_clip);
 
-      stats->totalPixelsRasterized +=
-          content_clip.width() * content_clip.height();
+      if (stats)
+        stats->totalPixelsRasterized +=
+            content_clip.width() * content_clip.height();
     }
   }
   canvas->restore();
 
-  stats->totalRasterizeTime += base::TimeTicks::Now() - rasterizeBeginTime;
+  if (stats)
+    stats->totalRasterizeTime += base::TimeTicks::Now() - rasterize_begin_time;
 }
 
 void PicturePileImpl::GatherPixelRefs(

@@ -209,7 +209,7 @@ public:
 
     // These methods typically need to be overwritten by derived classes.
     virtual bool drawsContent() const;
-    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) { }
+    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*) { }
     virtual bool needMoreUpdates();
     virtual void setIsMask(bool) { }
 

@@ -21,8 +21,8 @@ class RasterWorkerPoolTaskImpl : public internal::WorkerPoolTask {
     DCHECK(picture_pile_);
   }
 
-  virtual void Run() OVERRIDE {
-    task_.Run(picture_pile_.get(), &rendering_stats_);
+  virtual void Run(RenderingStats* rendering_stats) OVERRIDE {
+    task_.Run(picture_pile_.get(), rendering_stats);
   }
 
  private:
@@ -32,8 +32,9 @@ class RasterWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 
 }  // namespace
 
-RasterWorkerPool::RasterWorkerPool(size_t num_threads)
-    : WorkerPool(num_threads) {
+RasterWorkerPool::RasterWorkerPool(
+    size_t num_threads, bool record_rendering_stats)
+    : WorkerPool(num_threads, record_rendering_stats) {
 }
 
 RasterWorkerPool::~RasterWorkerPool() {

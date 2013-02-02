@@ -1050,7 +1050,7 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurfa
         return false;
 
     if (m_settings.implSidePainting)
-      m_tileManager.reset(new TileManager(this, resourceProvider.get(), m_settings.numRasterThreads));
+      m_tileManager.reset(new TileManager(this, resourceProvider.get(), m_settings.numRasterThreads, m_settings.recordRenderingStats));
 
     if (outputSurface->Capabilities().has_parent_compositor)
         m_renderer = DelegatingRenderer::Create(this, outputSurface.get(), resourceProvider.get());

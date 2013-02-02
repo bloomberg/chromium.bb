@@ -19,7 +19,7 @@ public:
         Resource(ImageLayerUpdater* updater, scoped_ptr<PrioritizedResource> texture);
         virtual ~Resource();
 
-        virtual void update(ResourceUpdateQueue&, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
+        virtual void update(ResourceUpdateQueue&, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats*) OVERRIDE;
 
     private:
         ImageLayerUpdater* m_updater;

@@ -39,7 +39,7 @@ void PictureImageLayer::setBitmap(const SkBitmap& bitmap)
 void PictureImageLayer::update(
     ResourceUpdateQueue& queue,
     const OcclusionTracker* tracker,
-    RenderingStats& stats) {
+    RenderingStats* stats) {
   if (bounds() != bounds_) {
     // Pictures are recorded in layer space, so if the layer size changes,
     // then the picture needs to be re-scaled, as a directly composited image

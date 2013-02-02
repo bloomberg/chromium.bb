@@ -23,7 +23,7 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
   virtual void update(
       ResourceUpdateQueue& queue,
       const OcclusionTracker* tracker,
-      RenderingStats& stats) OVERRIDE;
+      RenderingStats* stats) OVERRIDE;
 
   // ContentLayerClient implementation.
   virtual void paintContents(
