@@ -306,8 +306,8 @@ void TableView::OnItemsRemoved(int start, int length) {
   if (start == 0 && length == RowCount()) {
     // Everything was removed.
     ListView_DeleteAllItems(list_view_);
-    view_to_model_.reset(NULL);
-    model_to_view_.reset(NULL);
+    view_to_model_.reset();
+    model_to_view_.reset();
   } else {
     // Only a portion of the data was removed.
     if (is_sorted()) {
@@ -876,8 +876,8 @@ void TableView::UpdateItemsLParams(int start, int length) {
 void TableView::SortItemsAndUpdateMapping() {
   if (!is_sorted()) {
     ListView_SortItems(list_view_, &TableView::NaturalSortFunc, this);
-    view_to_model_.reset(NULL);
-    model_to_view_.reset(NULL);
+    view_to_model_.reset();
+    model_to_view_.reset();
     return;
   }
 

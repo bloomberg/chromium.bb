@@ -165,8 +165,7 @@ class IconTheme {
 };
 
 IconTheme::IconTheme(const std::string& name)
-  : index_theme_loaded_(false),
-    info_array_(NULL) {
+    : index_theme_loaded_(false) {
   base::ThreadRestrictions::AssertIOAllowed();
   // Iterate on all icon directories to find directories of the specified
   // theme and load the first encountered index.theme.

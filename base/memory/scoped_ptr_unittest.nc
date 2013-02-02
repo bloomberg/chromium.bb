@@ -68,6 +68,32 @@ void WontCompile() {
   scoped_ptr<int[]> b(a.Pass());
 }
 
+#elif defined(NCTEST_NO_CONSTRUCT_SCOPED_PTR_ARRAY_FROM_NULL)  // [r"is ambiguous"]
+
+void WontCompile() {
+  scoped_ptr<int[]> x(NULL);
+}
+
+#elif defined(NCTEST_NO_CONSTRUCT_SCOPED_PTR_ARRAY_FROM_DERIVED)  // [r"is private"]
+
+void WontCompile() {
+  scoped_ptr<Parent[]> x(new Child[1]);
+}
+
+#elif defined(NCTEST_NO_RESET_SCOPED_PTR_ARRAY_FROM_NULL)  // [r"is ambiguous"]
+
+void WontCompile() {
+  scoped_ptr<int[]> x;
+  x.reset(NULL);
+}
+
+#elif defined(NCTEST_NO_RESET_SCOPED_PTR_ARRAY_FROM_DERIVED)  // [r"is private"]
+
+void WontCompile() {
+  scoped_ptr<Parent[]> x;
+  x.reset(new Child[1]);
+}
+
 #elif defined(NCTEST_NO_DELETER_REFERENCE)  // [r"fails to be a struct or class type"]
 
 struct Deleter {

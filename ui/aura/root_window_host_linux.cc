@@ -264,7 +264,6 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       window_mapped_(false),
       bounds_(bounds),
       focus_when_shown_(false),
-      pointer_barriers_(NULL),
       touch_calibrate_(new internal::TouchEventCalibrate),
       mouse_move_filter_(new MouseMoveFilter),
       atom_cache_(xdisplay_, kAtomsToCache) {

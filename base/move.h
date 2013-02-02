@@ -194,7 +194,7 @@
 #define MOVE_ONLY_TYPE_FOR_CPP_03(type, rvalue_type) \
  private: \
   struct rvalue_type { \
-    rvalue_type(type* object) : object(object) {} \
+    explicit rvalue_type(type* object) : object(object) {} \
     type* object; \
   }; \
   type(type&); \

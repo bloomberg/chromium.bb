@@ -526,10 +526,12 @@ class scoped_ptr<T[], D> {
   // call delete[] on an array whose static type does not match its dynamic
   // type.
   template <typename U> explicit scoped_ptr(U* array);
+  explicit scoped_ptr(int disallow_construction_from_null);
 
   // Disable reset() from any type other than element_type*, for the same
   // reasons as the constructor above.
   template <typename U> void reset(U* array);
+  void reset(int disallow_reset_from_null);
 
   // Forbid comparison of scoped_ptr types.  If U != T, it totally
   // doesn't make sense, and if U == T, it still doesn't make sense

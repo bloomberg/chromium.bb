@@ -304,7 +304,6 @@ bool StringValue::Equals(const Value* other) const {
 
 BinaryValue::BinaryValue()
     : Value(TYPE_BINARY),
-      buffer_(NULL),
       size_(0) {
 }
 
