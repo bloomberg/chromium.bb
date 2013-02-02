@@ -10,8 +10,11 @@
 #include "net/http/http_cache.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
-class FilePath;
 class GURL;
+
+namespace base {
+class FilePath;
+}
 
 class SimpleResourceLoaderBridge {
  public:
@@ -21,7 +24,7 @@ class SimpleResourceLoaderBridge {
   // NOTE: If this function is not called, then a default request context will
   // be initialized lazily.
   //
-  static void Init(const FilePath& cache_path,
+  static void Init(const base::FilePath& cache_path,
                    net::HttpCache::Mode cache_mode,
                    bool no_proxy);
 

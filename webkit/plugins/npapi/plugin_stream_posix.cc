@@ -19,7 +19,7 @@ void PluginStream::ResetTempFileHandle() {
 }
 
 void PluginStream::ResetTempFileName() {
-  temp_file_path_ = FilePath();
+  temp_file_path_ = base::FilePath();
 }
 
 void PluginStream::WriteAsFile() {

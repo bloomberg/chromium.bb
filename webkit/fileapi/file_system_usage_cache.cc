@@ -10,7 +10,7 @@
 
 namespace fileapi {
 
-const FilePath::CharType FileSystemUsageCache::kUsageFileName[] =
+const base::FilePath::CharType FileSystemUsageCache::kUsageFileName[] =
     FILE_PATH_LITERAL(".usage");
 const char FileSystemUsageCache::kUsageFileHeader[] = "FSU5";
 const int FileSystemUsageCache::kUsageFileHeaderSize = 4;
@@ -22,7 +22,7 @@ const int FileSystemUsageCache::kUsageFileSize =
     sizeof(int) + sizeof(int32) + sizeof(int64);
 
 // static
-int64 FileSystemUsageCache::GetUsage(const FilePath& usage_file_path) {
+int64 FileSystemUsageCache::GetUsage(const base::FilePath& usage_file_path) {
   bool is_valid = true;
   uint32 dirty = 0;
   int64 fs_usage;
@@ -35,7 +35,7 @@ int64 FileSystemUsageCache::GetUsage(const FilePath& usage_file_path) {
 }
 
 // static
-int32 FileSystemUsageCache::GetDirty(const FilePath& usage_file_path) {
+int32 FileSystemUsageCache::GetDirty(const base::FilePath& usage_file_path) {
   bool is_valid = true;
   uint32 dirty = 0;
   int64 fs_usage;
@@ -48,7 +48,7 @@ int32 FileSystemUsageCache::GetDirty(const FilePath& usage_file_path) {
 }
 
 // static
-bool FileSystemUsageCache::IncrementDirty(const FilePath& usage_file_path) {
+bool FileSystemUsageCache::IncrementDirty(const base::FilePath& usage_file_path) {
   bool is_valid = true;
   uint32 dirty = 0;
   int64 fs_usage;
@@ -61,7 +61,7 @@ bool FileSystemUsageCache::IncrementDirty(const FilePath& usage_file_path) {
 }
 
 // static
-bool FileSystemUsageCache::DecrementDirty(const FilePath& usage_file_path) {
+bool FileSystemUsageCache::DecrementDirty(const base::FilePath& usage_file_path) {
   bool is_valid = true;
   uint32 dirty = 0;
   int64 fs_usage;
@@ -74,7 +74,7 @@ bool FileSystemUsageCache::DecrementDirty(const FilePath& usage_file_path) {
 }
 
 // static
-bool FileSystemUsageCache::Invalidate(const FilePath& usage_file_path) {
+bool FileSystemUsageCache::Invalidate(const base::FilePath& usage_file_path) {
   bool is_valid = true;
   uint32 dirty = 0;
   int64 fs_usage;
@@ -83,7 +83,7 @@ bool FileSystemUsageCache::Invalidate(const FilePath& usage_file_path) {
   return fs_usage >= 0 && Write(usage_file_path, false, dirty, fs_usage);
 }
 
-bool FileSystemUsageCache::IsValid(const FilePath& usage_file_path) {
+bool FileSystemUsageCache::IsValid(const base::FilePath& usage_file_path) {
   bool is_valid = true;
   uint32 dirty = 0;
   int64 result = Read(usage_file_path, &is_valid, &dirty);
@@ -95,7 +95,7 @@ bool FileSystemUsageCache::IsValid(const FilePath& usage_file_path) {
 
 // static
 int FileSystemUsageCache::AtomicUpdateUsageByDelta(
-    const FilePath& usage_file_path, int64 delta) {
+    const base::FilePath& usage_file_path, int64 delta) {
   bool is_valid = true;
   uint32 dirty = 0;
   int64 fs_usage;
@@ -109,23 +109,23 @@ int FileSystemUsageCache::AtomicUpdateUsageByDelta(
 }
 
 // static
-int FileSystemUsageCache::UpdateUsage(const FilePath& usage_file_path,
+int FileSystemUsageCache::UpdateUsage(const base::FilePath& usage_file_path,
                                       int64 fs_usage) {
   return Write(usage_file_path, true, 0, fs_usage);
 }
 
 // static
-bool FileSystemUsageCache::Exists(const FilePath& usage_file_path) {
+bool FileSystemUsageCache::Exists(const base::FilePath& usage_file_path) {
   return file_util::PathExists(usage_file_path);
 }
 
 // static
-bool FileSystemUsageCache::Delete(const FilePath& usage_file_path) {
+bool FileSystemUsageCache::Delete(const base::FilePath& usage_file_path) {
   return file_util::Delete(usage_file_path, true);
 }
 
 // static
-int64 FileSystemUsageCache::Read(const FilePath& usage_file_path,
+int64 FileSystemUsageCache::Read(const base::FilePath& usage_file_path,
                                  bool* is_valid,
                                  uint32* dirty) {
   char buffer[kUsageFileSize];
@@ -154,7 +154,7 @@ int64 FileSystemUsageCache::Read(const FilePath& usage_file_path,
 }
 
 // static
-int FileSystemUsageCache::Write(const FilePath& usage_file_path,
+int FileSystemUsageCache::Write(const base::FilePath& usage_file_path,
                                 bool is_valid,
                                 uint32 dirty,
                                 int64 fs_usage) {
@@ -164,7 +164,7 @@ int FileSystemUsageCache::Write(const FilePath& usage_file_path,
   write_pickle.WriteUInt32(dirty);
   write_pickle.WriteInt64(fs_usage);
 
-  FilePath temporary_usage_file_path;
+  base::FilePath temporary_usage_file_path;
   if (usage_file_path.empty() ||
       !file_util::CreateTemporaryFileInDir(usage_file_path.DirName(),
                                            &temporary_usage_file_path)) {

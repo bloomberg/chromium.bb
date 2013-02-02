@@ -31,7 +31,7 @@ class UnprivilegedProcessDelegate : public WorkerProcessLauncher::Delegate {
   UnprivilegedProcessDelegate(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      const FilePath& binary_path);
+      const base::FilePath& binary_path);
   virtual ~UnprivilegedProcessDelegate();
 
   // IPC::Sender implementation.
@@ -53,7 +53,7 @@ class UnprivilegedProcessDelegate : public WorkerProcessLauncher::Delegate {
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // Path to the worker process binary.
-  FilePath binary_path_;
+  base::FilePath binary_path_;
 
   // The server end of the IPC channel used to communicate to the worker
   // process.

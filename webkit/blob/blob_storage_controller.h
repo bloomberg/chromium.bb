@@ -15,9 +15,9 @@
 #include "webkit/storage/webkit_storage_export.h"
 
 class GURL;
-class FilePath;
 
 namespace base {
+class FilePath;
 class Time;
 }
 
@@ -48,7 +48,8 @@ class WEBKIT_STORAGE_EXPORT BlobStorageController {
                           uint64 offset,
                           uint64 length);
   void AppendFileItem(BlobData* target_blob_data,
-                      const FilePath& file_path, uint64 offset, uint64 length,
+                      const base::FilePath& file_path, uint64 offset,
+                      uint64 length,
                       const base::Time& expected_modification_time);
   void AppendFileSystemFileItem(
       BlobData* target_blob_data,

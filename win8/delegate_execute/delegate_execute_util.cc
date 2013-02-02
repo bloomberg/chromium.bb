@@ -16,13 +16,13 @@ CommandLine CommandLineFromParameters(const wchar_t* params) {
     string16 command_string(L"noprogram.exe ");
     command_string.append(params);
     command_line.ParseFromString(command_string);
-    command_line.SetProgram(FilePath());
+    command_line.SetProgram(base::FilePath());
   }
 
   return command_line;
 }
 
-CommandLine MakeChromeCommandLine(const FilePath& chrome_exe,
+CommandLine MakeChromeCommandLine(const base::FilePath& chrome_exe,
                                   const CommandLine& params,
                                   const string16& argument) {
   CommandLine chrome_cmd(params);

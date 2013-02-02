@@ -81,7 +81,7 @@ class LocalFileStreamReaderTest : public testing::Test {
 
  protected:
   LocalFileStreamReader* CreateFileReader(
-      const FilePath& path,
+      const base::FilePath& path,
       int64 initial_offset,
       const base::Time& expected_modification_time) {
     return new LocalFileStreamReader(
@@ -103,8 +103,8 @@ class LocalFileStreamReaderTest : public testing::Test {
     return file_thread_.message_loop_proxy().get();
   }
 
-  FilePath test_dir() const { return dir_.path(); }
-  FilePath test_path() const { return dir_.path().AppendASCII("test"); }
+  base::FilePath test_dir() const { return dir_.path(); }
+  base::FilePath test_path() const { return dir_.path().AppendASCII("test"); }
   base::Time test_file_modification_time() const {
     return test_file_modification_time_;
   }
@@ -123,7 +123,7 @@ class LocalFileStreamReaderTest : public testing::Test {
 };
 
 TEST_F(LocalFileStreamReaderTest, NonExistent) {
-  FilePath nonexistent_path = test_dir().AppendASCII("nonexistent");
+  base::FilePath nonexistent_path = test_dir().AppendASCII("nonexistent");
   scoped_ptr<LocalFileStreamReader> reader(
       CreateFileReader(nonexistent_path, 0, base::Time()));
   int result = 0;
@@ -134,7 +134,7 @@ TEST_F(LocalFileStreamReaderTest, NonExistent) {
 }
 
 TEST_F(LocalFileStreamReaderTest, Empty) {
-  FilePath empty_path = test_dir().AppendASCII("empty");
+  base::FilePath empty_path = test_dir().AppendASCII("empty");
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   base::PlatformFile file = base::CreatePlatformFile(
       empty_path,

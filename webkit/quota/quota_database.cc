@@ -121,7 +121,7 @@ QuotaDatabase::OriginInfoTableEntry::OriginInfoTableEntry(
 }
 
 // QuotaDatabase ------------------------------------------------------------
-QuotaDatabase::QuotaDatabase(const FilePath& path)
+QuotaDatabase::QuotaDatabase(const base::FilePath& path)
     : db_file_path_(path),
       is_recreating_(false),
       is_disabled_(false) {

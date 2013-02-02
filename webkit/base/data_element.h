@@ -33,7 +33,7 @@ class WEBKIT_BASE_EXPORT DataElement {
 
   Type type() const { return type_; }
   const char* bytes() const { return bytes_ ? bytes_ : &buf_[0]; }
-  const FilePath& path() const { return path_; }
+  const base::FilePath& path() const { return path_; }
   const GURL& url() const { return url_; }
   uint64 offset() const { return offset_; }
   uint64 length() const { return length_; }
@@ -57,7 +57,7 @@ class WEBKIT_BASE_EXPORT DataElement {
   }
 
   // Sets TYPE_FILE data.
-  void SetToFilePath(const FilePath& path) {
+  void SetToFilePath(const base::FilePath& path) {
     SetToFilePathRange(path, 0, kuint64max, base::Time());
   }
 
@@ -67,7 +67,7 @@ class WEBKIT_BASE_EXPORT DataElement {
   }
 
   // Sets TYPE_FILE data with range.
-  void SetToFilePathRange(const FilePath& path,
+  void SetToFilePathRange(const base::FilePath& path,
                           uint64 offset, uint64 length,
                           const base::Time& expected_modification_time);
 
@@ -84,7 +84,7 @@ class WEBKIT_BASE_EXPORT DataElement {
   Type type_;
   std::vector<char> buf_;  // For TYPE_BYTES.
   const char* bytes_;  // For TYPE_BYTES.
-  FilePath path_;  // For TYPE_FILE.
+  base::FilePath path_;  // For TYPE_FILE.
   GURL url_;  // For TYPE_BLOB or TYPE_FILE_FILESYSTEM.
   uint64 offset_;
   uint64 length_;

@@ -21,8 +21,11 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 
-class FilePath;
 class Profile;
+
+namespace base {
+class FilePath;
+}
 
 namespace content {
 class NavigationController;
@@ -142,7 +145,7 @@ class WebstoreInstaller :public content::NotificationObserver,
 
   // Instead of using the default download directory, use |directory| instead.
   // This does *not* transfer ownership of |directory|.
-  static void SetDownloadDirectoryForTests(FilePath* directory);
+  static void SetDownloadDirectoryForTests(base::FilePath* directory);
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
@@ -158,7 +161,7 @@ class WebstoreInstaller :public content::NotificationObserver,
   virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
 
   // Starts downloading the extension to |file_path|.
-  void StartDownload(const FilePath& file_path);
+  void StartDownload(const base::FilePath& file_path);
 
   // Reports an install |error| to the delegate for the given extension if this
   // managed its installation. This also removes the associated PendingInstall.

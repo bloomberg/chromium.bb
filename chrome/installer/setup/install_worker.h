@@ -14,9 +14,12 @@
 
 class BrowserDistribution;
 class CommandLine;
-class FilePath;
 class Version;
 class WorkItemList;
+
+namespace base {
+class FilePath;
+}
 
 namespace installer {
 
@@ -28,7 +31,7 @@ class Product;
 // either the Control Panel->Add/Remove Programs list or in the Omaha client
 // state key if running under an MSI installer.
 void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
-                                   const FilePath& setup_path,
+                                   const base::FilePath& setup_path,
                                    const Version& new_version,
                                    const Product& product,
                                    WorkItemList* install_list);
@@ -79,10 +82,10 @@ void AddUsageStatsWorkItems(const InstallationState& original_state,
 // false.
 // |current_version| can be NULL to indicate no Chrome is currently installed.
 bool AppendPostInstallTasks(const InstallerState& installer_state,
-                            const FilePath& setup_path,
+                            const base::FilePath& setup_path,
                             const Version* current_version,
                             const Version& new_version,
-                            const FilePath& temp_path,
+                            const base::FilePath& temp_path,
                             WorkItemList* post_install_task_list);
 
 // Builds the complete WorkItemList used to build the set of installation steps
@@ -99,10 +102,10 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
 // |current_version| can be NULL to indicate no Chrome is currently installed.
 void AddInstallWorkItems(const InstallationState& original_state,
                          const InstallerState& installer_state,
-                         const FilePath& setup_path,
-                         const FilePath& archive_path,
-                         const FilePath& src_path,
-                         const FilePath& temp_path,
+                         const base::FilePath& setup_path,
+                         const base::FilePath& archive_path,
+                         const base::FilePath& src_path,
+                         const base::FilePath& temp_path,
                          const Version* current_version,
                          const Version& new_version,
                          WorkItemList* install_list);
@@ -116,8 +119,8 @@ void AddInstallWorkItems(const InstallationState& original_state,
 // |may_fail| states whether this is best effort or not. If |may_fail| is true
 // then |work_item_list| will still succeed if the registration fails and
 // no registration rollback will be performed.
-void AddRegisterComDllWorkItems(const FilePath& dll_folder,
-                                const std::vector<FilePath>& dll_files,
+void AddRegisterComDllWorkItems(const base::FilePath& dll_folder,
+                                const std::vector<base::FilePath>& dll_files,
                                 bool system_level,
                                 bool do_register,
                                 bool ignore_failures,
@@ -133,7 +136,7 @@ void AddSetMsiMarkerWorkItem(const InstallerState& installer_state,
 // installation.  This includes handling of the ready-mode option.
 void AddChromeFrameWorkItems(const InstallationState& original_state,
                              const InstallerState& installer_state,
-                             const FilePath& setup_path,
+                             const base::FilePath& setup_path,
                              const Version& new_version,
                              const Product& product,
                              WorkItemList* list);
@@ -143,7 +146,7 @@ void AddChromeFrameWorkItems(const InstallationState& original_state,
 // If |new_version| is empty, the registrations will point to
 // delegate_execute.exe directly in |target_path|.
 void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
-                                 const FilePath& target_path,
+                                 const base::FilePath& target_path,
                                  const Version& new_version,
                                  const Product& product,
                                  WorkItemList* list);
@@ -154,7 +157,7 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
 // |product|: The product being installed. This method is a no-op if this is
 // anything other than system-level Chrome/Chromium.
 void AddActiveSetupWorkItems(const InstallerState& installer_state,
-                             const FilePath& setup_path,
+                             const base::FilePath& setup_path,
                              const Version& new_version,
                              const Product& product,
                              WorkItemList* list);
@@ -186,7 +189,7 @@ void RefreshElevationPolicy();
 // (and may therefore be empty) when uninstalling.
 void AddQuickEnableChromeFrameWorkItems(const InstallerState& installer_state,
                                         const InstallationState& machine_state,
-                                        const FilePath& setup_path,
+                                        const base::FilePath& setup_path,
                                         const Version& new_version,
                                         WorkItemList* work_item_list);
 
@@ -201,7 +204,7 @@ void AddQuickEnableChromeFrameWorkItems(const InstallerState& installer_state,
 void AddQuickEnableApplicationLauncherWorkItems(
     const InstallerState& installer_state,
     const InstallationState& machine_state,
-    const FilePath& setup_path,
+    const base::FilePath& setup_path,
     const Version& new_version,
     WorkItemList* work_item_list);
 
@@ -210,7 +213,7 @@ void AddQuickEnableApplicationLauncherWorkItems(
 // |installer_state|).  |new_version| is the version of the product(s)
 // currently being installed -- can be empty on uninstall.
 void AddOsUpgradeWorkItems(const InstallerState& installer_state,
-                           const FilePath& setup_path,
+                           const base::FilePath& setup_path,
                            const Version& new_version,
                            const Product& product,
                            WorkItemList* install_list);
@@ -220,7 +223,7 @@ void AddOsUpgradeWorkItems(const InstallerState& installer_state,
 // in |installer_state|).  |new_version| is the version of the product(s)
 // currently being installed -- can be empty on uninstall.
 void AddQueryEULAAcceptanceWorkItems(const InstallerState& installer_state,
-                                     const FilePath& setup_path,
+                                     const base::FilePath& setup_path,
                                      const Version& new_version,
                                      const Product& product,
                                      WorkItemList* work_item_list);

@@ -13,10 +13,10 @@
 #include "content/public/common/gpu_feature_type.h"
 #include "content/public/common/gpu_switching_option.h"
 
-class FilePath;
 class GURL;
 
 namespace base {
+class FilePath;
 class ListValue;
 }
 
@@ -66,7 +66,7 @@ class GpuDataManager {
   virtual bool ShouldUseSoftwareRendering() const = 0;
 
   // Register a path to the SwiftShader software renderer.
-  virtual void RegisterSwiftShaderPath(const FilePath& path) = 0;
+  virtual void RegisterSwiftShaderPath(const base::FilePath& path) = 0;
 
   // Registers/unregister |observer|.
   virtual void AddObserver(GpuDataManagerObserver* observer) = 0;

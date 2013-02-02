@@ -7,7 +7,9 @@
 
 #include <string>
 
+namespace base {
 class FilePath;
+}
 
 // Allows for Iteration on the Properties of a given file.
 class MetadataPropertyIterator {
@@ -30,7 +32,7 @@ class MetadataPropertyIterator {
 // Represents a single instance of parsing on a particular file.
 class MetadataParser {
  public:
-  explicit MetadataParser(const FilePath& path) {}
+  explicit MetadataParser(const base::FilePath& path) {}
   virtual ~MetadataParser() {}
 
 

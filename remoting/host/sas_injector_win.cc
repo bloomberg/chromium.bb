@@ -22,7 +22,7 @@ namespace remoting {
 namespace {
 
 // Names of the API and library implementing software SAS generation.
-const FilePath::CharType kSasDllFileName[] = FILE_PATH_LITERAL("sas.dll");
+const base::FilePath::CharType kSasDllFileName[] = FILE_PATH_LITERAL("sas.dll");
 const char kSendSasName[] = "SendSAS";
 
 // The prototype of SendSAS().
@@ -144,7 +144,7 @@ bool SasInjectorWin::InjectSas() {
   // Load sas.dll. The library is expected to be in the same folder as this
   // binary.
   if (!sas_dll_.is_valid()) {
-    FilePath dir_path;
+    base::FilePath dir_path;
     if (!PathService::Get(base::DIR_EXE, &dir_path)) {
       LOG(ERROR) << "Failed to get the executable file name.";
       return false;

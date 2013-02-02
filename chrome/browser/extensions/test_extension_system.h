@@ -8,8 +8,9 @@
 #include "chrome/browser/extensions/extension_system.h"
 
 class CommandLine;
-class FilePath;
+
 namespace base {
+class FilePath;
 class Time;
 }
 
@@ -27,7 +28,7 @@ class TestExtensionSystem : public ExtensionSystem {
   // Creates an ExtensionService initialized with the testing profile and
   // returns it.
   ExtensionService* CreateExtensionService(const CommandLine* command_line,
-                                           const FilePath& install_directory,
+                                           const base::FilePath& install_directory,
                                            bool autoupdate_enabled);
 
   // Creates an ExtensionProcessManager. If not invoked, the

@@ -24,7 +24,7 @@ class WEBKIT_STORAGE_EXPORT AppCacheDiskCache
   virtual ~AppCacheDiskCache();
 
   // Initializes the object to use disk backed storage.
-  int InitWithDiskBackend(const FilePath& disk_cache_directory,
+  int InitWithDiskBackend(const base::FilePath& disk_cache_directory,
                           int disk_cache_size, bool force,
                           base::MessageLoopProxy* cache_thread,
                           const net::CompletionCallback& callback);
@@ -80,7 +80,7 @@ class WEBKIT_STORAGE_EXPORT AppCacheDiskCache
     return create_backend_callback_.get() != NULL;
   }
   disk_cache::Backend* disk_cache() { return disk_cache_.get(); }
-  int Init(net::CacheType cache_type, const FilePath& directory,
+  int Init(net::CacheType cache_type, const base::FilePath& directory,
            int cache_size, bool force, base::MessageLoopProxy* cache_thread,
            const net::CompletionCallback& callback);
   void OnCreateBackendComplete(int rv);

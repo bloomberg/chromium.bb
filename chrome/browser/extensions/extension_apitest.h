@@ -13,12 +13,13 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "content/public/browser/notification_registrar.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace extensions {
 class Extension;
 }
-
 
 // The general flow of these API tests should work like this:
 // (1) Setup initial browser state (e.g. create some bookmarks for the
@@ -158,7 +159,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // Start the test WebSocket server, and store details of its state. Those
   // details will be available to javascript tests using
   // chrome.test.getConfig().
-  bool StartWebSocketServer(const FilePath& root_directory);
+  bool StartWebSocketServer(const base::FilePath& root_directory);
 
   // Test that exactly one extension loaded.  If so, return a pointer to
   // the extension.  If not, return NULL and set message_.

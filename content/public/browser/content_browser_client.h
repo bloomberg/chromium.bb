@@ -23,8 +23,11 @@
 #endif
 
 class CommandLine;
-class FilePath;
 class GURL;
+
+namespace base {
+class FilePath;
+}
 
 namespace webkit_glue {
 struct WebPreferences;

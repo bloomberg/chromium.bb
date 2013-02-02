@@ -91,7 +91,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
   //   its parent path is a file.
   //
-  void CopyInForeignFile(const FilePath& src_local_disk_path,
+  void CopyInForeignFile(const base::FilePath& src_local_disk_path,
                          const FileSystemURL& dest_url,
                          const StatusCallback& callback);
 
@@ -149,7 +149,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
                      const StatusCallback& callback);
 
   // Synchronously gets the platform path for the given |url|.
-  void SyncGetPlatformPath(const FileSystemURL& url, FilePath* platform_path);
+  void SyncGetPlatformPath(const FileSystemURL& url, base::FilePath* platform_path);
 
  private:
   class ScopedUpdateNotifier;
@@ -235,7 +235,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   void DoMoveFileLocal(const FileSystemURL& src,
                        const FileSystemURL& dest,
                        const StatusCallback& callback);
-  void DoCopyInForeignFile(const FilePath& src_local_disk_file_path,
+  void DoCopyInForeignFile(const base::FilePath& src_local_disk_file_path,
                            const FileSystemURL& dest,
                            const StatusCallback& callback);
   void DoTruncate(const FileSystemURL& url,
@@ -264,15 +264,15 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   void DidDirectoryExists(const StatusCallback& callback,
                           base::PlatformFileError rv,
                           const base::PlatformFileInfo& file_info,
-                          const FilePath& unused);
+                          const base::FilePath& unused);
   void DidFileExists(const StatusCallback& callback,
                      base::PlatformFileError rv,
                      const base::PlatformFileInfo& file_info,
-                     const FilePath& unused);
+                     const base::FilePath& unused);
   void DidGetMetadata(const GetMetadataCallback& callback,
                       base::PlatformFileError rv,
                       const base::PlatformFileInfo& file_info,
-                      const FilePath& platform_path);
+                      const base::FilePath& platform_path);
   void DidReadDirectory(const ReadDirectoryCallback& callback,
                         base::PlatformFileError rv,
                         const std::vector<base::FileUtilProxy::Entry>& entries,
@@ -291,7 +291,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
       const SnapshotFileCallback& callback,
       base::PlatformFileError rv,
       const base::PlatformFileInfo& file_info,
-      const FilePath& platform_path,
+      const base::FilePath& platform_path,
       SnapshotFilePolicy snapshot_policy);
 
   // Checks the validity of a given |url| and populates |file_util| for |mode|.

@@ -11,7 +11,9 @@
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace fileapi {
 class FileSystemURL;
@@ -31,7 +33,7 @@ class MockRemoteChangeProcessor : public RemoteChangeProcessor {
                     const PrepareChangeCallback& callback));
   MOCK_METHOD4(ApplyRemoteChange,
                void(const fileapi::FileChange& change,
-                    const FilePath& local_path,
+                    const base::FilePath& local_path,
                     const fileapi::FileSystemURL& url,
                     const fileapi::SyncStatusCallback& callback));
   MOCK_METHOD2(ClearLocalChanges,

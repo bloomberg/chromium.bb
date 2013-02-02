@@ -10,7 +10,7 @@
 #include "webkit/chromeos/fileapi/memory_file_util.h"
 
 namespace {
-const FilePath::CharType kRootPath[] = "/mnt/memory";
+const base::FilePath::CharType kRootPath[] = "/mnt/memory";
 const char kTestString[] = "A test string. A test string.";
 const char kTestStringLength = arraysize(kTestString) - 1;
 }  // namespace
@@ -33,7 +33,7 @@ class MemoryFileUtilTest : public testing::Test {
   }
 
   void SetUp() {
-    file_util_.reset(new MemoryFileUtil(FilePath(kRootPath)));
+    file_util_.reset(new MemoryFileUtil(base::FilePath(kRootPath)));
   }
 
   MemoryFileUtil* file_util() {
@@ -105,13 +105,13 @@ class MemoryFileUtilTest : public testing::Test {
                       request_id);
   }
 
-  int CreateEmptyFile(const FilePath& file_path) {
+  int CreateEmptyFile(const base::FilePath& file_path) {
     int request_id = GetNextRequestId();
     file_util_->Create(file_path, GetStatusCallback(request_id));
     return request_id;
   }
 
-  int CreateNonEmptyFile(const FilePath& file_path,
+  int CreateNonEmptyFile(const base::FilePath& file_path,
                          const char* data,
                          int length) {
     int request_id = GetNextRequestId();
@@ -234,7 +234,7 @@ class MemoryFileUtilTest : public testing::Test {
 
 TEST_F(MemoryFileUtilTest, TestCreateGetFileInfo) {
   const int request_id1 = GetNextRequestId();
-  file_util()->GetFileInfo(FilePath("/mnt/memory/test.txt"),
+  file_util()->GetFileInfo(base::FilePath("/mnt/memory/test.txt"),
                            GetGetFileInfoCallback(request_id1));
 
   // In case the file system is truely asynchronous, RunAllPending is not
@@ -250,7 +250,7 @@ TEST_F(MemoryFileUtilTest, TestCreateGetFileInfo) {
   base::Time start_create = base::Time::Now();
 
   const int request_id2 = GetNextRequestId();
-  file_util()->Create(FilePath("/mnt/memory/test.txt"),
+  file_util()->Create(base::FilePath("/mnt/memory/test.txt"),
                       GetStatusCallback(request_id2));
   MessageLoop::current()->RunUntilIdle();
   ASSERT_EQ(CALLBACK_TYPE_STATUS, GetStatusType(request_id2));
@@ -258,7 +258,7 @@ TEST_F(MemoryFileUtilTest, TestCreateGetFileInfo) {
   ASSERT_EQ(base::PLATFORM_FILE_OK, status.result);
 
   const int request_id3 = GetNextRequestId();
-  file_util()->GetFileInfo(FilePath("/mnt/memory/test.txt"),
+  file_util()->GetFileInfo(base::FilePath("/mnt/memory/test.txt"),
                            GetGetFileInfoCallback(request_id3));
   MessageLoop::current()->RunUntilIdle();
 
@@ -280,7 +280,7 @@ TEST_F(MemoryFileUtilTest, TestReadWrite) {
   // Check that the file does not exist.
 
   const int request_id1 = GetNextRequestId();
-  file_util()->GetFileInfo(FilePath("/mnt/memory/test1.txt"),
+  file_util()->GetFileInfo(base::FilePath("/mnt/memory/test1.txt"),
                            GetGetFileInfoCallback(request_id1));
 
   MessageLoop::current()->RunUntilIdle();
@@ -293,7 +293,7 @@ TEST_F(MemoryFileUtilTest, TestReadWrite) {
 
   base::Time start_create = base::Time::Now();
   const int request_id2 = GetNextRequestId();
-  file_util()->Open(FilePath("/mnt/memory/test1.txt"),
+  file_util()->Open(base::FilePath("/mnt/memory/test1.txt"),
                     base::PLATFORM_FILE_CREATE_ALWAYS |
                     base::PLATFORM_FILE_WRITE,
                     GetOpenCallback(request_id2));
@@ -310,7 +310,7 @@ TEST_F(MemoryFileUtilTest, TestReadWrite) {
   // Check that file was created and has 0 size.
 
   const int request_id3 = GetNextRequestId();
-  file_util()->GetFileInfo(FilePath("/mnt/memory/test1.txt"),
+  file_util()->GetFileInfo(base::FilePath("/mnt/memory/test1.txt"),
                            GetGetFileInfoCallback(request_id3));
   MessageLoop::current()->RunUntilIdle();
 
@@ -340,7 +340,7 @@ TEST_F(MemoryFileUtilTest, TestReadWrite) {
   // Check that the file has now size 10 and correct modification time.
 
   const int request_id5 = GetNextRequestId();
-  file_util()->GetFileInfo(FilePath("/mnt/memory/test1.txt"),
+  file_util()->GetFileInfo(base::FilePath("/mnt/memory/test1.txt"),
                            GetGetFileInfoCallback(request_id5));
   MessageLoop::current()->RunUntilIdle();
 
@@ -369,7 +369,7 @@ TEST_F(MemoryFileUtilTest, TestReadWrite) {
   // Check the file size & modification time.
 
   const int request_id7 = GetNextRequestId();
-  file_util()->GetFileInfo(FilePath("/mnt/memory/test1.txt"),
+  file_util()->GetFileInfo(base::FilePath("/mnt/memory/test1.txt"),
                            GetGetFileInfoCallback(request_id7));
   MessageLoop::current()->RunUntilIdle();
 
@@ -383,7 +383,7 @@ TEST_F(MemoryFileUtilTest, TestReadWrite) {
   // Open file for reading.
 
   const int request_id8 = GetNextRequestId();
-  file_util()->Open(FilePath("/mnt/memory/test1.txt"),
+  file_util()->Open(base::FilePath("/mnt/memory/test1.txt"),
                     base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
                     GetOpenCallback(request_id8));
   MessageLoop::current()->RunUntilIdle();
@@ -413,7 +413,7 @@ TEST_F(MemoryFileUtilTest, TestReadWrite) {
   // Check that size & modification time have not changed.
 
   const int request_id10 = GetNextRequestId();
-  file_util()->GetFileInfo(FilePath("/mnt/memory/test1.txt"),
+  file_util()->GetFileInfo(base::FilePath("/mnt/memory/test1.txt"),
                            GetGetFileInfoCallback(request_id10));
   MessageLoop::current()->RunUntilIdle();
 
@@ -427,7 +427,7 @@ TEST_F(MemoryFileUtilTest, TestReadWrite) {
   // Open once more for writing.
 
   const int request_id11 = GetNextRequestId();
-  file_util()->Open(FilePath("/mnt/memory/test1.txt"),
+  file_util()->Open(base::FilePath("/mnt/memory/test1.txt"),
                     base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE,
                     GetOpenCallback(request_id11));
   MessageLoop::current()->RunUntilIdle();
@@ -441,7 +441,7 @@ TEST_F(MemoryFileUtilTest, TestReadWrite) {
   // Check that the size has not changed.
 
   const int request_id12 = GetNextRequestId();
-  file_util()->GetFileInfo(FilePath("/mnt/memory/test1.txt"),
+  file_util()->GetFileInfo(base::FilePath("/mnt/memory/test1.txt"),
                            GetGetFileInfoCallback(request_id12));
   MessageLoop::current()->RunUntilIdle();
 
@@ -489,7 +489,7 @@ TEST_F(MemoryFileUtilTest, TestReadWrite) {
   // Check size.
 
   const int request_id17 = GetNextRequestId();
-  file_util()->GetFileInfo(FilePath("/mnt/memory/test1.txt"),
+  file_util()->GetFileInfo(base::FilePath("/mnt/memory/test1.txt"),
                            GetGetFileInfoCallback(request_id17));
   MessageLoop::current()->RunUntilIdle();
   status = GetStatus(request_id17);
@@ -531,7 +531,7 @@ TEST_F(MemoryFileUtilTest, TestReadWrite) {
 TEST_F(MemoryFileUtilTest, TestDirectoryOperations) {
   // Check the directory is empty.
   const int request_id0 = GetNextRequestId();
-  file_util()->ReadDirectory(FilePath("/mnt/memory/"),
+  file_util()->ReadDirectory(base::FilePath("/mnt/memory/"),
                              GetReadDirectoryCallback(request_id0));
 
   MessageLoop::current()->RunUntilIdle();
@@ -548,18 +548,18 @@ TEST_F(MemoryFileUtilTest, TestDirectoryOperations) {
   // complete before starting the next one.
 
   base::Time start_create = base::Time::Now();
-  CreateEmptyFile(FilePath("/mnt/memory/a"));
+  CreateEmptyFile(base::FilePath("/mnt/memory/a"));
 
   int request_id1 = GetNextRequestId();
-  file_util()->CreateDirectory(FilePath("/mnt/memory/b"),
+  file_util()->CreateDirectory(base::FilePath("/mnt/memory/b"),
                                GetStatusCallback(request_id1));
 
-  CreateNonEmptyFile(FilePath("/mnt/memory/longer_file_name.txt"),
+  CreateNonEmptyFile(base::FilePath("/mnt/memory/longer_file_name.txt"),
                      kTestString,
                      kTestStringLength);
 
   int request_id2 = GetNextRequestId();
-  file_util()->CreateDirectory(FilePath("/mnt/memory/c"),
+  file_util()->CreateDirectory(base::FilePath("/mnt/memory/c"),
                                GetStatusCallback(request_id2));
 
   MessageLoop::current()->RunUntilIdle();
@@ -574,16 +574,16 @@ TEST_F(MemoryFileUtilTest, TestDirectoryOperations) {
   set_read_directory_buffer_size(5);  // Should complete in one go.
 
   request_id1 = GetNextRequestId();
-  file_util()->ReadDirectory(FilePath("/mnt/memory"),
+  file_util()->ReadDirectory(base::FilePath("/mnt/memory"),
                              GetReadDirectoryCallback(request_id1));
   request_id2 = GetNextRequestId();
-  file_util()->ReadDirectory(FilePath("/mnt/memory/a"),
+  file_util()->ReadDirectory(base::FilePath("/mnt/memory/a"),
                              GetReadDirectoryCallback(request_id2));
   const int request_id3 = GetNextRequestId();
-  file_util()->ReadDirectory(FilePath("/mnt/memory/b/"),
+  file_util()->ReadDirectory(base::FilePath("/mnt/memory/b/"),
                              GetReadDirectoryCallback(request_id3));
   const int request_id4 = GetNextRequestId();
-  file_util()->ReadDirectory(FilePath("/mnt/memory/d/"),
+  file_util()->ReadDirectory(base::FilePath("/mnt/memory/d/"),
                              GetReadDirectoryCallback(request_id4));
 
   MessageLoop::current()->RunUntilIdle();
@@ -595,7 +595,7 @@ TEST_F(MemoryFileUtilTest, TestDirectoryOperations) {
   ASSERT_EQ(1, status.called);  // Because the number of entries < 5.
   ASSERT_EQ(4u, status.entries.size());
 
-  std::set<FilePath::StringType> seen;
+  std::set<base::FilePath::StringType> seen;
 
   for (FileUtilAsync::FileList::const_iterator it = status.entries.begin();
        it != status.entries.end();
@@ -644,26 +644,26 @@ TEST_F(MemoryFileUtilTest, TestDirectoryOperations) {
   // /mnt/memory/b/g/h       0
 
   start_create = base::Time::Now();
-  CreateNonEmptyFile(FilePath("/mnt/memory/b/c"),
+  CreateNonEmptyFile(base::FilePath("/mnt/memory/b/c"),
                      kTestString,
                      kTestStringLength);
   request_id1 = GetNextRequestId();
-  file_util()->CreateDirectory(FilePath("/mnt/memory/b/d"),
+  file_util()->CreateDirectory(base::FilePath("/mnt/memory/b/d"),
                                GetStatusCallback(request_id1));
-  CreateEmptyFile(FilePath("/mnt/memory/b/e"));
-  CreateNonEmptyFile(FilePath("/mnt/memory/b/f"),
+  CreateEmptyFile(base::FilePath("/mnt/memory/b/e"));
+  CreateNonEmptyFile(base::FilePath("/mnt/memory/b/f"),
                      kTestString,
                      kTestStringLength);
   request_id2 = GetNextRequestId();
-  file_util()->CreateDirectory(FilePath("/mnt/memory/b/g"),
+  file_util()->CreateDirectory(base::FilePath("/mnt/memory/b/g"),
                                GetStatusCallback(request_id1));
-  CreateNonEmptyFile(FilePath("/mnt/memory/b/i"),
+  CreateNonEmptyFile(base::FilePath("/mnt/memory/b/i"),
                      kTestString,
                      kTestStringLength);
 
   MessageLoop::current()->RunUntilIdle();
 
-  CreateEmptyFile(FilePath("/mnt/memory/b/g/h"));
+  CreateEmptyFile(base::FilePath("/mnt/memory/b/g/h"));
 
   MessageLoop::current()->RunUntilIdle();
   end_create = base::Time::Now();
@@ -671,7 +671,7 @@ TEST_F(MemoryFileUtilTest, TestDirectoryOperations) {
   // Read /mnt/memory and check that the number of entries is unchanged.
 
   request_id1 = GetNextRequestId();
-  file_util()->ReadDirectory(FilePath("/mnt/memory"),
+  file_util()->ReadDirectory(base::FilePath("/mnt/memory"),
                              GetReadDirectoryCallback(request_id1));
 
   MessageLoop::current()->RunUntilIdle();
@@ -686,7 +686,7 @@ TEST_F(MemoryFileUtilTest, TestDirectoryOperations) {
   // Read /mnt/memory/b
 
   request_id1 = GetNextRequestId();
-  file_util()->ReadDirectory(FilePath("/mnt/memory/b"),
+  file_util()->ReadDirectory(base::FilePath("/mnt/memory/b"),
                              GetReadDirectoryCallback(request_id1));
 
   MessageLoop::current()->RunUntilIdle();
@@ -741,7 +741,7 @@ TEST_F(MemoryFileUtilTest, TestDirectoryOperations) {
   // Remove single file: /mnt/memory/b/f
 
   request_id1 = GetNextRequestId();
-  file_util()->Remove(FilePath("/mnt/memory/b/f"), false /* recursive */,
+  file_util()->Remove(base::FilePath("/mnt/memory/b/f"), false /* recursive */,
                       GetStatusCallback(request_id1));
   MessageLoop::current()->RunUntilIdle();
   ASSERT_EQ(base::PLATFORM_FILE_OK, GetStatus(request_id1).result);
@@ -749,7 +749,7 @@ TEST_F(MemoryFileUtilTest, TestDirectoryOperations) {
   // Check the number of files in b/
 
   request_id1 = GetNextRequestId();
-  file_util()->ReadDirectory(FilePath("/mnt/memory/b"),
+  file_util()->ReadDirectory(base::FilePath("/mnt/memory/b"),
                              GetReadDirectoryCallback(request_id1));
 
   MessageLoop::current()->RunUntilIdle();
@@ -763,7 +763,7 @@ TEST_F(MemoryFileUtilTest, TestDirectoryOperations) {
   // Try remove /mnt/memory/b non-recursively (error)
 
   request_id1 = GetNextRequestId();
-  file_util()->Remove(FilePath("/mnt/memory/b"), false /* recursive */,
+  file_util()->Remove(base::FilePath("/mnt/memory/b"), false /* recursive */,
                       GetStatusCallback(request_id1));
   MessageLoop::current()->RunUntilIdle();
   ASSERT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE,
@@ -772,13 +772,13 @@ TEST_F(MemoryFileUtilTest, TestDirectoryOperations) {
   // Non-recursively remove empty directory.
 
   request_id1 = GetNextRequestId();
-  file_util()->Remove(FilePath("/mnt/memory/b/d"), false /* recursive */,
+  file_util()->Remove(base::FilePath("/mnt/memory/b/d"), false /* recursive */,
                       GetStatusCallback(request_id1));
   MessageLoop::current()->RunUntilIdle();
   ASSERT_EQ(base::PLATFORM_FILE_OK, GetStatus(request_id1).result);
 
   request_id1 = GetNextRequestId();
-  file_util()->GetFileInfo(FilePath("/mnt/memory/b/d"),
+  file_util()->GetFileInfo(base::FilePath("/mnt/memory/b/d"),
                            GetGetFileInfoCallback(request_id1));
   MessageLoop::current()->RunUntilIdle();
   ASSERT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, GetStatus(request_id1).result);
@@ -786,7 +786,7 @@ TEST_F(MemoryFileUtilTest, TestDirectoryOperations) {
   // Remove /mnt/memory/b recursively.
 
   request_id1 = GetNextRequestId();
-  file_util()->Remove(FilePath("/mnt/memory/b"), true /* recursive */,
+  file_util()->Remove(base::FilePath("/mnt/memory/b"), true /* recursive */,
                       GetStatusCallback(request_id1));
   MessageLoop::current()->RunUntilIdle();
   ASSERT_EQ(base::PLATFORM_FILE_OK, GetStatus(request_id1).result);
@@ -794,7 +794,7 @@ TEST_F(MemoryFileUtilTest, TestDirectoryOperations) {
   // ReadDirectory /mnt/memory/b -> not found
 
   request_id1 = GetNextRequestId();
-  file_util()->ReadDirectory(FilePath("/mnt/memory/b"),
+  file_util()->ReadDirectory(base::FilePath("/mnt/memory/b"),
                              GetReadDirectoryCallback(request_id1));
   MessageLoop::current()->RunUntilIdle();
   ASSERT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, GetStatus(request_id1).result);
@@ -802,7 +802,7 @@ TEST_F(MemoryFileUtilTest, TestDirectoryOperations) {
   // ReadDirectory /mnt/memory
 
   request_id1 = GetNextRequestId();
-  file_util()->ReadDirectory(FilePath("/mnt/memory"),
+  file_util()->ReadDirectory(base::FilePath("/mnt/memory"),
                              GetReadDirectoryCallback(request_id1));
 
   MessageLoop::current()->RunUntilIdle();

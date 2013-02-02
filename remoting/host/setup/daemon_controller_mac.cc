@@ -174,7 +174,7 @@ void DaemonControllerMac::GetUsageStatsConsent(
 }
 
 void DaemonControllerMac::DoGetConfig(const GetConfigCallback& callback) {
-  FilePath config_path(kHostConfigFilePath);
+  base::FilePath config_path(kHostConfigFilePath);
   JsonHostConfig host_config(config_path);
   scoped_ptr<base::DictionaryValue> config;
 
@@ -227,7 +227,7 @@ void DaemonControllerMac::DoSetConfigAndStart(
 void DaemonControllerMac::DoUpdateConfig(
     scoped_ptr<base::DictionaryValue> config,
     const CompletionCallback& done_callback) {
-  FilePath config_file_path(kHostConfigFilePath);
+  base::FilePath config_file_path(kHostConfigFilePath);
   JsonHostConfig config_file(config_file_path);
   if (!config_file.Read()) {
     done_callback.Run(RESULT_FAILED);
@@ -246,7 +246,7 @@ void DaemonControllerMac::DoUpdateConfig(
 void DaemonControllerMac::DoGetUsageStatsConsent(
     const GetUsageStatsConsentCallback& callback) {
   bool allowed = false;
-  FilePath config_file_path(kHostConfigFilePath);
+  base::FilePath config_file_path(kHostConfigFilePath);
   JsonHostConfig host_config(config_file_path);
   if (host_config.Read()) {
     host_config.GetBoolean(kUsageStatsConsentConfigPath, &allowed);
@@ -266,7 +266,7 @@ void DaemonControllerMac::ShowPreferencePane(
 
 bool DaemonControllerMac::DoShowPreferencePane(const std::string& config_data) {
   if (!config_data.empty()) {
-    FilePath config_path;
+    base::FilePath config_path;
     if (!file_util::GetTempDir(&config_path)) {
       LOG(ERROR) << "Failed to get filename for saving configuration data.";
       return false;
@@ -282,7 +282,7 @@ bool DaemonControllerMac::DoShowPreferencePane(const std::string& config_data) {
     }
   }
 
-  FilePath pane_path;
+  base::FilePath pane_path;
   // TODO(lambroslambrou): Use NSPreferencePanesDirectory once we start
   // building against SDK 10.6.
   if (!base::mac::GetLocalDirectory(NSLibraryDirectory, &pane_path)) {

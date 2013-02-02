@@ -215,7 +215,7 @@ void BlobStorageController::AppendStorageItems(
 
 void BlobStorageController::AppendFileItem(
     BlobData* target_blob_data,
-    const FilePath& file_path, uint64 offset, uint64 length,
+    const base::FilePath& file_path, uint64 offset, uint64 length,
     const base::Time& expected_modification_time) {
   target_blob_data->AppendFile(file_path, offset, length,
                                expected_modification_time);

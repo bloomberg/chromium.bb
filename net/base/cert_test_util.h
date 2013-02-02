@@ -11,13 +11,15 @@
 #include "net/base/x509_cert_types.h"
 #include "net/base/x509_certificate.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace net {
 
 class EVRootCAMetadata;
 
-CertificateList CreateCertificateListFromFile(const FilePath& certs_dir,
+CertificateList CreateCertificateListFromFile(const base::FilePath& certs_dir,
                                               const std::string& cert_file,
                                               int format);
 
@@ -26,7 +28,7 @@ CertificateList CreateCertificateListFromFile(const FilePath& certs_dir,
 // |certs_dir| represents the test certificates directory. |cert_file| is the
 // name of the certificate file. If cert_file contains multiple certificates,
 // the first certificate found will be returned.
-scoped_refptr<X509Certificate> ImportCertFromFile(const FilePath& certs_dir,
+scoped_refptr<X509Certificate> ImportCertFromFile(const base::FilePath& certs_dir,
                                                   const std::string& cert_file);
 
 // ScopedTestEVPolicy causes certificates marked with |policy|, issued from a

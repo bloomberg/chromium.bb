@@ -66,7 +66,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       WebKit::WebPlugin** plugin) OVERRIDE;
   virtual WebKit::WebPlugin* CreatePluginReplacement(
       content::RenderView* render_view,
-      const FilePath& plugin_path) OVERRIDE;
+      const base::FilePath& plugin_path) OVERRIDE;
   virtual bool HasErrorPage(int http_status_code,
                             std::string* error_domain) OVERRIDE;
   virtual void GetNavigationErrorStrings(

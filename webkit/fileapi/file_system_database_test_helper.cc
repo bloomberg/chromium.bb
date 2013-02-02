@@ -15,15 +15,15 @@
 
 namespace fileapi {
 
-void CorruptDatabase(const FilePath& db_path,
+void CorruptDatabase(const base::FilePath& db_path,
                      leveldb::FileType type,
                      ptrdiff_t offset,
                      size_t size) {
   file_util::FileEnumerator file_enum(db_path, false /* not recursive */,
       file_util::FileEnumerator::DIRECTORIES |
       file_util::FileEnumerator::FILES);
-  FilePath file_path;
-  FilePath picked_file_path;
+  base::FilePath file_path;
+  base::FilePath picked_file_path;
   uint64 picked_file_number = kuint64max;
 
   while (!(file_path = file_enum.Next()).empty()) {

@@ -20,7 +20,7 @@ TEST(ShareableFileReferenceTest, TestReferences) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   // Create a file.
-  FilePath file;
+  base::FilePath file;
   file_util::CreateTemporaryFileInDir(temp_dir.path(), &file);
   EXPECT_TRUE(file_util::PathExists(file));
 

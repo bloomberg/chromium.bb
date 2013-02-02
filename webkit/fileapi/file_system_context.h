@@ -19,7 +19,9 @@
 #include "webkit/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/storage/webkit_storage_export.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace quota {
 class QuotaManagerProxy;
@@ -75,7 +77,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
       ExternalMountPoints* external_mount_points,
       quota::SpecialStoragePolicy* special_storage_policy,
       quota::QuotaManagerProxy* quota_manager_proxy,
-      const FilePath& partition_path,
+      const base::FilePath& partition_path,
       const FileSystemOptions& options);
 
   bool DeleteDataForOriginOnFileThread(const GURL& origin_url);
@@ -186,7 +188,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   LocalFileSyncContext* sync_context() { return sync_context_.get(); }
   void set_sync_context(LocalFileSyncContext* sync_context);
 
-  const FilePath& partition_path() const { return partition_path_; }
+  const base::FilePath& partition_path() const { return partition_path_; }
 
   // Same as |CrackFileSystemURL|, but cracks FileSystemURL created from |url|.
   FileSystemURL CrackURL(const GURL& url) const;
@@ -194,7 +196,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   // arguments.
   FileSystemURL CreateCrackedFileSystemURL(const GURL& origin,
                                            FileSystemType type,
-                                           const FilePath& path) const;
+                                           const base::FilePath& path) const;
 
  private:
   // Friended for GetFileUtil.
@@ -257,7 +259,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   std::vector<MountPoints*> url_crackers_;
 
   // The base path of the storage partition for this context.
-  const FilePath partition_path_;
+  const base::FilePath partition_path_;
 
   // For syncable file systems.
   scoped_ptr<LocalFileChangeTracker> change_tracker_;

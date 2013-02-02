@@ -13,14 +13,14 @@ namespace remoting {
 extern const char kDaemonPipeSwitchName[];
 
 // Name of the daemon process binary.
-extern const FilePath::CharType kDaemonBinaryName[];
+extern const base::FilePath::CharType kDaemonBinaryName[];
 
 // Name of the host process binary.
-extern const FilePath::CharType kHostBinaryName[];
+extern const base::FilePath::CharType kHostBinaryName[];
 
 // Returns the full path to an installed |binary| in |full_path|.
-bool GetInstalledBinaryPath(const FilePath::StringType& binary,
-                            FilePath* full_path);
+bool GetInstalledBinaryPath(const base::FilePath::StringType& binary,
+                            base::FilePath* full_path);
 
 }  // namespace remoting
 

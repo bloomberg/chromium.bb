@@ -33,7 +33,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
     virtual ~AbstractFileEnumerator() {}
 
     // Returns an empty string if there are no more results.
-    virtual FilePath Next() = 0;
+    virtual base::FilePath Next() = 0;
 
     // These methods return metadata for the file most recently returned by
     // Next(). If Next() has never been called, or if Next() most recently
@@ -46,7 +46,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
 
   class WEBKIT_STORAGE_EXPORT EmptyFileEnumerator
       : public AbstractFileEnumerator {
-    virtual FilePath Next() OVERRIDE;
+    virtual base::FilePath Next() OVERRIDE;
     virtual int64 Size() OVERRIDE;
     virtual base::Time LastModifiedTime() OVERRIDE;
     virtual bool IsDirectory() OVERRIDE;
@@ -91,7 +91,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       base::PlatformFileInfo* file_info,
-      FilePath* platform_path) = 0;
+      base::FilePath* platform_path) = 0;
 
   // Returns a pointer to a new instance of AbstractFileEnumerator which is
   // implemented for each FileSystemFileUtil subclass. The instance needs to be
@@ -114,7 +114,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
   virtual base::PlatformFileError GetLocalFilePath(
       FileSystemOperationContext* context,
       const FileSystemURL& file_system_url,
-      FilePath* local_file_path) = 0;
+      base::FilePath* local_file_path) = 0;
 
   // Updates the file metadata information.
   // See header comments for AsyncFileUtil::Touch() for more details.
@@ -154,7 +154,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
   // more details.
   virtual base::PlatformFileError CopyInForeignFile(
         FileSystemOperationContext* context,
-        const FilePath& src_file_path,
+        const base::FilePath& src_file_path,
         const FileSystemURL& dest_url) = 0;
 
   // Deletes a single file.
@@ -178,7 +178,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       base::PlatformFileInfo* file_info,
-      FilePath* platform_path,
+      base::FilePath* platform_path,
       SnapshotFilePolicy* policy) = 0;
 
  protected:

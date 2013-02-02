@@ -89,7 +89,7 @@ sql::Connection* WebDatabase::GetSQLConnection() {
   return &db_;
 }
 
-sql::InitStatus WebDatabase::Init(const FilePath& db_name,
+sql::InitStatus WebDatabase::Init(const base::FilePath& db_name,
                                   const std::string& app_locale) {
   // When running in unit tests, there is already a NotificationService object.
   // Since only one can exist at a time per thread, check first.

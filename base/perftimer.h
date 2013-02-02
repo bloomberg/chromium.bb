@@ -10,14 +10,16 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 
+namespace base {
 class FilePath;
+}
 
 // ----------------------------------------------------------------------
 // Initializes and finalizes the perf log. These functions should be
 // called at the beginning and end (respectively) of running all the
 // performance tests. The init function returns true on success.
 // ----------------------------------------------------------------------
-bool InitPerfLog(const FilePath& log_path);
+bool InitPerfLog(const base::FilePath& log_path);
 void FinalizePerfLog();
 
 // ----------------------------------------------------------------------

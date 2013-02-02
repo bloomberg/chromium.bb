@@ -10,7 +10,9 @@
 #include "base/basictypes.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
+namespace base {
 class FilePath;
+}
 
 class FeedbackUI : public ui::WebDialogUI {
  public:
@@ -18,7 +20,7 @@ class FeedbackUI : public ui::WebDialogUI {
 
 #if defined(OS_CHROMEOS)
   static void GetMostRecentScreenshots(
-      const FilePath& filepath,
+      const base::FilePath& filepath,
       std::vector<std::string>* saved_screenshots,
       size_t max_saved);
 #endif

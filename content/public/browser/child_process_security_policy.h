@@ -11,7 +11,9 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace content {
 
@@ -49,18 +51,18 @@ class ChildProcessSecurityPolicy {
   // Grants certain permissions to a file. |permissions| must be a bit-set of
   // base::PlatformFileFlags.
   virtual void GrantPermissionsForFile(int child_id,
-                                       const FilePath& file,
+                                       const base::FilePath& file,
                                        int permissions) = 0;
 
   // Before servicing a child process's request to upload a file to the web, the
   // browser should call this method to determine whether the process has the
   // capability to upload the requested file.
-  virtual bool CanReadFile(int child_id, const FilePath& file) = 0;
+  virtual bool CanReadFile(int child_id, const base::FilePath& file) = 0;
 
   // Whenever the user picks a file from a <input type="file"> element, the
   // browser should call this function to grant the child process the capability
   // to upload the file to the web.
-  virtual void GrantReadFile(int child_id, const FilePath& file) = 0;
+  virtual void GrantReadFile(int child_id, const base::FilePath& file) = 0;
 
   // Grants read access permission to the given isolated file system
   // identified by |filesystem_id|. An isolated file system can be

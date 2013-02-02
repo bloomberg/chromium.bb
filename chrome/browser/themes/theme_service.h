@@ -20,8 +20,11 @@
 class BrowserThemePack;
 class ThemeServiceTest;
 class ThemeSyncableService;
-class FilePath;
 class Profile;
+
+namespace base {
+class FilePath;
+}
 
 namespace color_utils {
 struct HSL;
@@ -247,7 +250,7 @@ class ThemeService : public base::NonThreadSafe,
   virtual ThemeSyncableService* GetThemeSyncableService() const;
 
   // Save the images to be written to disk, mapping file path to id.
-  typedef std::map<FilePath, int> ImagesDiskCache;
+  typedef std::map<base::FilePath, int> ImagesDiskCache;
 
  protected:
   // Get the specified tint - |id| is one of the TINT_* enum values.
@@ -277,7 +280,7 @@ class ThemeService : public base::NonThreadSafe,
   friend class ThemeServiceTest;
 
   // Saves the filename of the cached theme pack.
-  void SavePackName(const FilePath& pack_path);
+  void SavePackName(const base::FilePath& pack_path);
 
   // Save the id of the last theme installed.
   void SaveThemeID(const std::string& id);

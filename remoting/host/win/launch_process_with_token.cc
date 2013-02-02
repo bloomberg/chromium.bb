@@ -64,7 +64,7 @@ bool ConnectToExecutionServer(uint32 session_id,
 
   // Use winsta!WinStationQueryInformationW() to determine the process creation
   // pipe name for the session.
-  FilePath winsta_path(base::GetNativeLibraryName(UTF8ToUTF16("winsta")));
+  base::FilePath winsta_path(base::GetNativeLibraryName(UTF8ToUTF16("winsta")));
   base::ScopedNativeLibrary winsta(winsta_path);
   if (winsta.is_valid()) {
     PWINSTATIONQUERYINFORMATIONW win_station_query_information =
@@ -293,7 +293,7 @@ bool ReceiveCreateProcessResponse(
 // Sends a remote process create request to the execution server.
 bool SendCreateProcessRequest(
     HANDLE pipe,
-    const FilePath::StringType& application_name,
+    const base::FilePath::StringType& application_name,
     const CommandLine::StringType& command_line,
     DWORD creation_flags,
     const char16* desktop_name) {
@@ -376,7 +376,7 @@ bool SendCreateProcessRequest(
 // OS functionality and will likely not work on anything but XP or W2K3.
 bool CreateRemoteSessionProcess(
     uint32 session_id,
-    const FilePath::StringType& application_name,
+    const base::FilePath::StringType& application_name,
     const CommandLine::StringType& command_line,
     DWORD creation_flags,
     const char16* desktop_name,
@@ -552,7 +552,7 @@ bool CreateSessionToken(uint32 session_id, ScopedHandle* token_out) {
   return true;
 }
 
-bool LaunchProcessWithToken(const FilePath& binary,
+bool LaunchProcessWithToken(const base::FilePath& binary,
                             const CommandLine::StringType& command_line,
                             HANDLE user_token,
                             SECURITY_ATTRIBUTES* process_attributes,
@@ -562,7 +562,7 @@ bool LaunchProcessWithToken(const FilePath& binary,
                             const char16* desktop_name,
                             ScopedHandle* process_out,
                             ScopedHandle* thread_out) {
-  FilePath::StringType application_name = binary.value();
+  base::FilePath::StringType application_name = binary.value();
 
   STARTUPINFOW startup_info;
   memset(&startup_info, 0, sizeof(startup_info));

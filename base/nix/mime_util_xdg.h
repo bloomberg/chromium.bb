@@ -10,9 +10,10 @@
 #include "base/base_export.h"
 #include "build/build_config.h"
 
+namespace base {
+
 class FilePath;
 
-namespace base {
 namespace nix {
 
 // Gets the mime type for a file based on its filename. The file path does not

@@ -14,8 +14,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 
-class FilePath;
 class Profile;
+
+namespace base {
+class FilePath;
+}
 
 namespace content {
 class WebContents;
@@ -84,19 +87,21 @@ class DevToolsFileHelper {
   void SaveAsFileSelected(const std::string& url,
                           const std::string& content,
                           const SaveCallback& callback,
-                          const FilePath& path);
+                          const base::FilePath& path);
   void SaveAsFileSelectionCanceled();
   void InnerAddFileSystem(const AddFileSystemCallback& callback,
-                          const FilePath& path);
-  void AddValidatedFileSystem(const AddFileSystemCallback& callback,
-                              const std::vector<FilePath>& permitted_paths);
-  void RestoreValidatedFileSystems(const RequestFileSystemsCallback& callback,
-                                   const std::vector<FilePath>& file_paths);
+                          const base::FilePath& path);
+  void AddValidatedFileSystem(
+      const AddFileSystemCallback& callback,
+      const std::vector<base::FilePath>& permitted_paths);
+  void RestoreValidatedFileSystems(
+      const RequestFileSystemsCallback& callback,
+      const std::vector<base::FilePath>& file_paths);
 
   content::WebContents* web_contents_;
   Profile* profile_;
   base::WeakPtrFactory<DevToolsFileHelper> weak_factory_;
-  typedef std::map<std::string, FilePath> PathsMap;
+  typedef std::map<std::string, base::FilePath> PathsMap;
   PathsMap saved_files_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsFileHelper);
 };

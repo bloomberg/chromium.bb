@@ -55,10 +55,10 @@ void TrimTrailingSlash(std::string* path) {
     path->erase(path->size() - 1, 1);
 }
 
-std::string GetNameForExternalFilePath(const FilePath& in_path) {
-  const FilePath::StringType& path = in_path.value();
-  size_t pos = path.rfind(FilePath::kSeparators[0]);
-  CHECK(pos != FilePath::StringType::npos);
+std::string GetNameForExternalFilePath(const base::FilePath& in_path) {
+  const base::FilePath::StringType& path = in_path.value();
+  size_t pos = path.rfind(base::FilePath::kSeparators[0]);
+  CHECK(pos != base::FilePath::StringType::npos);
 #if defined(OS_WIN)
   return WideToUTF8(path.substr(pos + 1));
 #elif defined(OS_POSIX)
@@ -88,7 +88,7 @@ PPB_FileRef_Impl::PPB_FileRef_Impl(const PPB_FileRef_CreateInfo& info,
 }
 
 PPB_FileRef_Impl::PPB_FileRef_Impl(const PPB_FileRef_CreateInfo& info,
-                                   const FilePath& external_file_path)
+                                   const base::FilePath& external_file_path)
     : PPB_FileRef_Shared(::ppapi::OBJECT_IS_IMPL, info),
       file_system_(),
       external_file_system_path_(external_file_path) {
@@ -132,7 +132,7 @@ PPB_FileRef_Impl* PPB_FileRef_Impl::CreateInternal(PP_Resource pp_file_system,
 // static
 PPB_FileRef_Impl* PPB_FileRef_Impl::CreateExternal(
     PP_Instance instance,
-    const FilePath& external_file_path,
+    const base::FilePath& external_file_path,
     const std::string& display_name) {
   PPB_FileRef_CreateInfo info;
   info.resource = HostResource::MakeInstanceOnly(instance);
@@ -249,10 +249,10 @@ PP_Var PPB_FileRef_Impl::GetAbsolutePath() {
   return external_path_var_->GetPPVar();
 }
 
-FilePath PPB_FileRef_Impl::GetSystemPath() const {
+base::FilePath PPB_FileRef_Impl::GetSystemPath() const {
   if (GetFileSystemType() != PP_FILESYSTEMTYPE_EXTERNAL) {
     NOTREACHED();
-    return FilePath();
+    return base::FilePath();
   }
   return external_file_system_path_;
 }

@@ -84,7 +84,7 @@ const wchar_t kUsageMessage[] =
 const char* kCopiedSwitchNames[] = {
     "host-config", "daemon-pipe", switches::kV, switches::kVModule };
 
-void usage(const FilePath& program_name) {
+void usage(const base::FilePath& program_name) {
   LOG(INFO) << StringPrintf(kUsageMessage,
                             UTF16ToWide(program_name.value()).c_str());
 }
@@ -231,7 +231,7 @@ void HostService::CreateLauncher(
 
 int HostService::Elevate() {
   // Get the name of the binary to launch.
-  FilePath binary =
+  base::FilePath binary =
       CommandLine::ForCurrentProcess()->GetSwitchValuePath(kElevateSwitchName);
 
   // Create the child process command line by copying known switches from our

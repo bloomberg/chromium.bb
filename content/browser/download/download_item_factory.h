@@ -15,8 +15,11 @@
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 
-class FilePath;
 class GURL;
+
+namespace base {
+class FilePath;
+}
 
 namespace net {
 class BoundNetLog;
@@ -37,7 +40,7 @@ public:
   virtual DownloadItemImpl* CreatePersistedItem(
       DownloadItemImplDelegate* delegate,
       DownloadId download_id,
-      const FilePath& path,
+      const base::FilePath& path,
       const GURL& url,
       const GURL& referrer_url,
       const base::Time& start_time,
@@ -55,7 +58,7 @@ public:
 
   virtual DownloadItemImpl* CreateSavePageItem(
       DownloadItemImplDelegate* delegate,
-      const FilePath& path,
+      const base::FilePath& path,
       const GURL& url,
       DownloadId download_id,
       const std::string& mime_type,

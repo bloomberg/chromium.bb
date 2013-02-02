@@ -21,10 +21,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace content {
 class NotificationRegistrar;
 }
-class FilePath;
+
 class Profile;
 class PageUsageData;
 
@@ -222,7 +226,7 @@ class JumpList : public TabRestoreServiceObserver,
   std::wstring app_id_;
 
   // The directory which contains JumpList icons.
-  FilePath icon_dir_;
+  base::FilePath icon_dir_;
 
   // Items in the "Most Visited" category of the application JumpList,
   // protected by the list_lock_.

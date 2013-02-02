@@ -209,7 +209,7 @@ class BlobURLRequestJobTest : public testing::Test {
         file_system_context_->CreateCrackedFileSystemURL(
             GURL(kFileSystemURLOrigin),
             kFileSystemType,
-            FilePath().AppendASCII(filename));
+            base::FilePath().AppendASCII(filename));
 
     fileapi::FileSystemFileUtil* file_util =
         file_system_context_->GetFileUtil(kFileSystemType);
@@ -232,7 +232,7 @@ class BlobURLRequestJobTest : public testing::Test {
     base::ClosePlatformFile(handle);
 
     base::PlatformFileInfo file_info;
-    FilePath platform_path;
+    base::FilePath platform_path;
     ASSERT_EQ(base::PLATFORM_FILE_OK,
               file_util->GetFileInfo(&context, url, &file_info,
                                      &platform_path));
@@ -297,8 +297,8 @@ class BlobURLRequestJobTest : public testing::Test {
 
  protected:
   base::ScopedTempDir temp_dir_;
-  FilePath temp_file1_;
-  FilePath temp_file2_;
+  base::FilePath temp_file1_;
+  base::FilePath temp_file2_;
   base::Time temp_file_modification_time1_;
   base::Time temp_file_modification_time2_;
   GURL file_system_root_url_;
@@ -330,7 +330,7 @@ TEST_F(BlobURLRequestJobTest, TestGetSimpleFileRequest) {
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetLargeFileRequest) {
-  FilePath large_temp_file = temp_dir_.path().AppendASCII("LargeBlob.dat");
+  base::FilePath large_temp_file = temp_dir_.path().AppendASCII("LargeBlob.dat");
   std::string large_data;
   large_data.reserve(kBufferSize * 5);
   for (int i = 0; i < kBufferSize * 5; ++i)
@@ -343,7 +343,7 @@ TEST_F(BlobURLRequestJobTest, TestGetLargeFileRequest) {
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetNonExistentFileRequest) {
-  FilePath non_existent_file =
+  base::FilePath non_existent_file =
       temp_file1_.InsertBeforeExtension(FILE_PATH_LITERAL("-na"));
   blob_data_->AppendFile(non_existent_file, 0, -1, base::Time());
   TestErrorRequest(404);

@@ -183,7 +183,7 @@ void SyncableFileSystemOperation::GetMetadata(
   DCHECK(CalledOnValidThread());
   if (!operation_runner_) {
     callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                 base::PlatformFileInfo(), FilePath());
+                 base::PlatformFileInfo(), base::FilePath());
     delete file_system_operation_;
     delete this;
     return;
@@ -330,7 +330,7 @@ void SyncableFileSystemOperation::CreateSnapshotFile(
   DCHECK(CalledOnValidThread());
   if (!operation_runner_) {
     callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                 base::PlatformFileInfo(), FilePath(), NULL);
+                 base::PlatformFileInfo(), base::FilePath(), NULL);
     delete file_system_operation_;
     delete this;
     return;

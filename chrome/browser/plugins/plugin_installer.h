@@ -13,7 +13,6 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 
-class FilePath;
 class PluginInstallerObserver;
 class WeakPluginInstallerObserver;
 

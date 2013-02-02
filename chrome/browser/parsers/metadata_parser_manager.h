@@ -9,8 +9,11 @@
 #include "base/memory/scoped_vector.h"
 
 class MetadataParserFactory;
-class FilePath;
 class MetadataParser;
+
+namespace base {
+class FilePath;
+}
 
 // Metadata Parser manager is used to find the correct parser for a
 // given file.  Allows parsers to register themselves.
@@ -28,7 +31,7 @@ class MetadataParserManager {
   bool RegisterParserFactory(MetadataParserFactory* parser);
 
   // Returns a new metadata parser for a given file.
-  MetadataParser* GetParserForFile(const FilePath& path);
+  MetadataParser* GetParserForFile(const base::FilePath& path);
 
  private:
   ScopedVector<MetadataParserFactory> factories_;

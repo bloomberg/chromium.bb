@@ -13,7 +13,9 @@
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace google_apis {
 
@@ -30,7 +32,7 @@ class MockDriveService : public DriveServiceInterface {
       void(DriveServiceObserver* observer));
   MOCK_CONST_METHOD0(CanStartOperation, bool());
   MOCK_METHOD0(CancelAll, void(void));
-  MOCK_METHOD1(CancelForFilePath, bool(const FilePath& file_path));
+  MOCK_METHOD1(CancelForFilePath, bool(const base::FilePath& file_path));
   MOCK_CONST_METHOD0(GetProgressStatusList,
       OperationProgressStatusList());
   MOCK_CONST_METHOD0(GetRootResourceId, std::string());
@@ -72,8 +74,8 @@ class MockDriveService : public DriveServiceInterface {
           const GetResourceEntryCallback& callback));
   MOCK_METHOD5(
       DownloadFile,
-      void(const FilePath& virtual_path,
-          const FilePath& local_cache_path,
+      void(const base::FilePath& virtual_path,
+          const base::FilePath& local_cache_path,
           const GURL& content_url,
           const DownloadActionCallback&
           donwload_action_callback,
@@ -151,8 +153,8 @@ class MockDriveService : public DriveServiceInterface {
   // portion of the URL as the temporary file path. If |file_data_| is not null,
   // |file_data_| is written to the temporary file.
   void DownloadFileStub(
-      const FilePath& virtual_path,
-      const FilePath& local_tmp_path,
+      const base::FilePath& virtual_path,
+      const base::FilePath& local_tmp_path,
       const GURL& content_url,
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback);

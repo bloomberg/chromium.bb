@@ -37,7 +37,7 @@ class FileSystemFileUtilProxy {
   typedef base::Callback<
       void(base::PlatformFileError result,
            const base::PlatformFileInfo& file_info,
-           const FilePath& platform_path,
+           const base::FilePath& platform_path,
            FileSystemFileUtil::SnapshotFilePolicy snapshot_policy)>
       SnapshotFileCallback;
 
@@ -85,7 +85,7 @@ class FileSystemFileUtilProxy {
   static bool CopyInForeignFile(
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
-      const FilePath& src_local_disk_file_path,
+      const base::FilePath& src_local_disk_file_path,
       const FileSystemURL& dest_url,
       const StatusCallback& callback);
 

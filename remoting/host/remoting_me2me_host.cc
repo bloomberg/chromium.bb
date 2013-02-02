@@ -273,7 +273,7 @@ class HostProcess
   scoped_ptr<IPC::ChannelProxy> daemon_channel_;
 
   // Created on the UI thread but used from the network thread.
-  FilePath host_config_path_;
+  base::FilePath host_config_path_;
   scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
 
   // Accessed on the network thread.
@@ -402,7 +402,7 @@ bool HostProcess::InitWithCommandLine(const CommandLine* cmd_line) {
         context_->network_task_runner()));
   }
 
-  FilePath default_config_dir = remoting::GetConfigDir();
+  base::FilePath default_config_dir = remoting::GetConfigDir();
   host_config_path_ = default_config_dir.Append(kDefaultHostConfigFile);
   if (cmd_line->HasSwitch(kHostConfigSwitchName)) {
     host_config_path_ = cmd_line->GetSwitchValuePath(kHostConfigSwitchName);
@@ -427,7 +427,7 @@ void HostProcess::OnConfigUpdated(
   LOG(INFO) << "Processing new host configuration.";
 
   serialized_config_ = serialized_config;
-  scoped_ptr<JsonHostConfig> config(new JsonHostConfig(FilePath()));
+  scoped_ptr<JsonHostConfig> config(new JsonHostConfig(base::FilePath()));
   if (!config->SetSerializedData(serialized_config)) {
     LOG(ERROR) << "Invalid configuration.";
     ShutdownHost(kInvalidHostConfigurationExitCode);
@@ -558,7 +558,7 @@ void HostProcess::StartOnUiThread() {
 #if defined(OS_LINUX)
   // If an audio pipe is specific on the command-line then initialize
   // AudioCapturerLinux to capture from it.
-  FilePath audio_pipe_name = CommandLine::ForCurrentProcess()->
+  base::FilePath audio_pipe_name = CommandLine::ForCurrentProcess()->
       GetSwitchValuePath(kAudioPipeSwitchName);
   if (!audio_pipe_name.empty()) {
     remoting::AudioCapturerLinux::InitializePipeReader(
@@ -641,7 +641,7 @@ void HostProcess::ShutdownOnUiThread() {
   // thread will remain in-use and prevent the process from exiting.
   // TODO(wez): DesktopEnvironmentFactory should own the pipe reader.
   // See crbug.com/161373 and crbug.com/104544.
-  AudioCapturerLinux::InitializePipeReader(NULL, FilePath());
+  AudioCapturerLinux::InitializePipeReader(NULL, base::FilePath());
 #endif
 }
 
@@ -1135,7 +1135,7 @@ int CALLBACK WinMain(HINSTANCE instance,
   // Mark the process as DPI-aware, so Windows won't scale coordinates in APIs.
   // N.B. This API exists on Vista and above.
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    FilePath path(base::GetNativeLibraryName(UTF8ToUTF16("user32")));
+    base::FilePath path(base::GetNativeLibraryName(UTF8ToUTF16("user32")));
     base::ScopedNativeLibrary user32(path);
     CHECK(user32.is_valid());
 

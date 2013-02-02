@@ -25,8 +25,8 @@ namespace dom_storage {
 static const int kSessionStoraceScavengingSeconds = 60;
 
 DomStorageContext::DomStorageContext(
-    const FilePath& localstorage_directory,
-    const FilePath& sessionstorage_directory,
+    const base::FilePath& localstorage_directory,
+    const base::FilePath& sessionstorage_directory,
     quota::SpecialStoragePolicy* special_storage_policy,
     DomStorageTaskRunner* task_runner)
     : localstorage_directory_(localstorage_directory),
@@ -69,7 +69,7 @@ DomStorageNamespace* DomStorageContext::GetStorageNamespace(
         if (!file_util::CreateDirectory(localstorage_directory_)) {
           LOG(ERROR) << "Failed to create 'Local Storage' directory,"
                         " falling back to in-memory only.";
-          localstorage_directory_ = FilePath();
+          localstorage_directory_ = base::FilePath();
         }
       }
       DomStorageNamespace* local =
@@ -89,7 +89,7 @@ void DomStorageContext::GetLocalStorageUsage(
     return;
   FileEnumerator enumerator(localstorage_directory_, false,
                             FileEnumerator::FILES);
-  for (FilePath path = enumerator.Next(); !path.empty();
+  for (base::FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
     if (path.MatchesExtension(DomStorageArea::kDatabaseFileExtension)) {
       LocalStorageUsageInfo info;
@@ -313,7 +313,7 @@ void DomStorageContext::ClearSessionOnlyOrigins() {
         continue;
 
       const bool kNotRecursive = false;
-      FilePath database_file_path = localstorage_directory_.Append(
+      base::FilePath database_file_path = localstorage_directory_.Append(
           DomStorageArea::DatabaseFileNameFromOrigin(origin));
       file_util::Delete(database_file_path, kNotRecursive);
       file_util::Delete(

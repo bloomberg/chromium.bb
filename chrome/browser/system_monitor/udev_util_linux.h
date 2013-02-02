@@ -11,7 +11,9 @@
 
 #include "base/memory/scoped_generic_obj.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace chrome {
 
@@ -42,7 +44,7 @@ std::string GetUdevDevicePropertyValue(struct udev_device* udev_device,
 
 // Helper for udev_device_new_from_syspath()/udev_device_get_property_value()
 // pair. |device_path| is the absolute path to the device, including /sys.
-bool GetUdevDevicePropertyValueByPath(const FilePath& device_path,
+bool GetUdevDevicePropertyValueByPath(const base::FilePath& device_path,
                                       const char* key,
                                       std::string* result);
 

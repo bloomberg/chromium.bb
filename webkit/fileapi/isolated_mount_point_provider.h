@@ -17,7 +17,7 @@ class MediaPathFilter;
 
 class IsolatedMountPointProvider : public FileSystemMountPointProvider {
  public:
-  explicit IsolatedMountPointProvider(const FilePath& profile_path);
+  explicit IsolatedMountPointProvider(const base::FilePath& profile_path);
   virtual ~IsolatedMountPointProvider();
 
   // FileSystemMountPointProvider implementation.
@@ -26,11 +26,11 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
       FileSystemType type,
       bool create,
       const ValidateFileSystemCallback& callback) OVERRIDE;
-  virtual FilePath GetFileSystemRootPathOnFileThread(
+  virtual base::FilePath GetFileSystemRootPathOnFileThread(
       const FileSystemURL& url,
       bool create) OVERRIDE;
   virtual bool IsAccessAllowed(const FileSystemURL& url) OVERRIDE;
-  virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
+  virtual bool IsRestrictedFileName(const base::FilePath& filename) const OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
   virtual FilePermissionPolicy GetPermissionPolicy(
@@ -58,7 +58,7 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
 
  private:
   // Store the profile path. We need this to create temporary snapshot files.
-  const FilePath profile_path_;
+  const base::FilePath profile_path_;
 
   scoped_ptr<MediaPathFilter> media_path_filter_;
 

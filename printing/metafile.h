@@ -18,7 +18,9 @@
 #include "base/mac/scoped_cftyperef.h"
 #endif
 
+namespace base {
 class FilePath;
+}
 
 namespace gfx {
 class Rect;
@@ -117,7 +119,7 @@ class PRINTING_EXPORT Metafile {
 
   // Saves the underlying data to the given file. This function should ONLY be
   // called after the metafile is closed. Returns true if writing succeeded.
-  virtual bool SaveTo(const FilePath& file_path) const = 0;
+  virtual bool SaveTo(const base::FilePath& file_path) const = 0;
 
   // Returns the bounds of the given page. Pages use a 1-based index.
   virtual gfx::Rect GetPageBounds(unsigned int page_number) const = 0;

@@ -44,7 +44,7 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
   virtual uint32 GetDataSize() const OVERRIDE;
   virtual bool GetData(void* dst_buffer, uint32 dst_buffer_size) const OVERRIDE;
 
-  virtual bool SaveTo(const FilePath& file_path) const OVERRIDE;
+  virtual bool SaveTo(const base::FilePath& file_path) const OVERRIDE;
 
   virtual gfx::Rect GetPageBounds(unsigned int page_number) const OVERRIDE;
   virtual unsigned int GetPageCount() const OVERRIDE;

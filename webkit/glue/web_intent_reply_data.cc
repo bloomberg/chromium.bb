@@ -22,7 +22,7 @@ WebIntentReply::WebIntentReply(
 
 WebIntentReply::WebIntentReply(
     WebIntentReplyType response_type,
-    FilePath response_data_file,
+    base::FilePath response_data_file,
     int64 response_data_file_length)
     : type(response_type),
       data_file(response_data_file),

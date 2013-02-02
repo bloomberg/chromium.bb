@@ -17,12 +17,13 @@
 #include "chrome/browser/google_apis/drive_entry_kinds.h"
 #include "googleurl/src/gurl.h"
 
-class FilePath;
 class Profile;
 
 namespace base {
-class Value;
+class FilePath;
 class DictionaryValue;
+class Value;
+
 template <class StructType>
 class JSONValueConverter;
 
@@ -421,7 +422,7 @@ class ResourceEntry : public FeedEntry {
   static bool ParseChangestamp(const base::Value* value, int64* result);
 
   // Returns true if |file| has one of the hosted document extensions.
-  static bool HasHostedDocumentExtension(const FilePath& file);
+  static bool HasHostedDocumentExtension(const base::FilePath& file);
 
   // The resource ID is used to identify a resource, which looks like:
   // file:d41d8cd98f00b204e9800998ecf8

@@ -27,7 +27,7 @@ FileSystemURL CreateFileSystemURL(const std::string& extension,
   return mount_points->CreateCrackedFileSystemURL(
       GURL("chrome-extension://" + extension + "/"),
       fileapi::kFileSystemTypeExternal,
-      FilePath::FromUTF8Unsafe(path));
+      base::FilePath::FromUTF8Unsafe(path));
 }
 
 TEST(CrosMountPointProviderTest, DefaultMountPoints) {
@@ -39,14 +39,14 @@ TEST(CrosMountPointProviderTest, DefaultMountPoints) {
       storage_policy,
       mount_points.get(),
       fileapi::ExternalMountPoints::GetSystemInstance());
-  std::vector<FilePath> root_dirs = provider.GetRootDirectories();
-  std::set<FilePath> root_dirs_set(root_dirs.begin(), root_dirs.end());
+  std::vector<base::FilePath> root_dirs = provider.GetRootDirectories();
+  std::set<base::FilePath> root_dirs_set(root_dirs.begin(), root_dirs.end());
 
   // By default there should be 3 mount points (in system mount points):
   EXPECT_EQ(3u, root_dirs.size());
-  EXPECT_TRUE(root_dirs_set.count(FilePath(FPL("/media/removable"))));
-  EXPECT_TRUE(root_dirs_set.count(FilePath(FPL("/media/archive"))));
-  EXPECT_TRUE(root_dirs_set.count(FilePath(FPL("/usr/share/oem"))));
+  EXPECT_TRUE(root_dirs_set.count(base::FilePath(FPL("/media/removable"))));
+  EXPECT_TRUE(root_dirs_set.count(base::FilePath(FPL("/media/archive"))));
+  EXPECT_TRUE(root_dirs_set.count(base::FilePath(FPL("/usr/share/oem"))));
 }
 
 TEST(CrosMountPointProviderTest, GetRootDirectories) {
@@ -66,26 +66,26 @@ TEST(CrosMountPointProviderTest, GetRootDirectories) {
   // Register 'local' test mount points.
   mount_points->RegisterFileSystem("c",
                                    fileapi::kFileSystemTypeNativeLocal,
-                                   FilePath(FPL("/a/b/c")));
+                                   base::FilePath(FPL("/a/b/c")));
   mount_points->RegisterFileSystem("d",
                                    fileapi::kFileSystemTypeNativeLocal,
-                                   FilePath(FPL("/b/c/d")));
+                                   base::FilePath(FPL("/b/c/d")));
 
   // Register system test mount points.
   system_mount_points->RegisterFileSystem("d",
                                           fileapi::kFileSystemTypeNativeLocal,
-                                          FilePath(FPL("/g/c/d")));
+                                          base::FilePath(FPL("/g/c/d")));
   system_mount_points->RegisterFileSystem("e",
                                           fileapi::kFileSystemTypeNativeLocal,
-                                          FilePath(FPL("/g/d/e")));
+                                          base::FilePath(FPL("/g/d/e")));
 
-  std::vector<FilePath> root_dirs = provider.GetRootDirectories();
-  std::set<FilePath> root_dirs_set(root_dirs.begin(), root_dirs.end());
+  std::vector<base::FilePath> root_dirs = provider.GetRootDirectories();
+  std::set<base::FilePath> root_dirs_set(root_dirs.begin(), root_dirs.end());
   EXPECT_EQ(4u, root_dirs.size());
-  EXPECT_TRUE(root_dirs_set.count(FilePath(FPL("/a/b/c"))));
-  EXPECT_TRUE(root_dirs_set.count(FilePath(FPL("/b/c/d"))));
-  EXPECT_TRUE(root_dirs_set.count(FilePath(FPL("/g/c/d"))));
-  EXPECT_TRUE(root_dirs_set.count(FilePath(FPL("/g/d/e"))));
+  EXPECT_TRUE(root_dirs_set.count(base::FilePath(FPL("/a/b/c"))));
+  EXPECT_TRUE(root_dirs_set.count(base::FilePath(FPL("/b/c/d"))));
+  EXPECT_TRUE(root_dirs_set.count(base::FilePath(FPL("/g/c/d"))));
+  EXPECT_TRUE(root_dirs_set.count(base::FilePath(FPL("/g/d/e"))));
 }
 
 TEST(CrosMountPointProviderTest, AccessPermissions) {
@@ -110,22 +110,22 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
   ASSERT_TRUE(system_mount_points->RegisterFileSystem(
       "system",
       fileapi::kFileSystemTypeNativeLocal,
-      FilePath(FPL("/g/system"))));
+      base::FilePath(FPL("/g/system"))));
   ASSERT_TRUE(mount_points->RegisterFileSystem(
       "removable",
       fileapi::kFileSystemTypeNativeLocal,
-      FilePath(FPL("/media/removable"))));
+      base::FilePath(FPL("/media/removable"))));
   ASSERT_TRUE(mount_points->RegisterFileSystem(
       "oem",
       fileapi::kFileSystemTypeRestrictedNativeLocal,
-      FilePath(FPL("/usr/share/oem"))));
+      base::FilePath(FPL("/usr/share/oem"))));
 
   // Provider specific mount point access.
   EXPECT_FALSE(provider.IsAccessAllowed(
       CreateFileSystemURL(extension, "removable/foo", mount_points.get())));
 
   provider.GrantFileAccessToExtension(extension,
-                                      FilePath(FPL("removable/foo")));
+                                      base::FilePath(FPL("removable/foo")));
   EXPECT_TRUE(provider.IsAccessAllowed(
       CreateFileSystemURL(extension, "removable/foo", mount_points.get())));
   EXPECT_FALSE(provider.IsAccessAllowed(
@@ -135,14 +135,14 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
   EXPECT_FALSE(provider.IsAccessAllowed(
       CreateFileSystemURL(extension, "system/foo", system_mount_points.get())));
 
-  provider.GrantFileAccessToExtension(extension, FilePath(FPL("system/foo")));
+  provider.GrantFileAccessToExtension(extension, base::FilePath(FPL("system/foo")));
   EXPECT_TRUE(provider.IsAccessAllowed(
       CreateFileSystemURL(extension, "system/foo", system_mount_points.get())));
   EXPECT_FALSE(provider.IsAccessAllowed(CreateFileSystemURL(
       extension, "system/foo1", system_mount_points.get())));
 
   // oem is restricted file system.
-  provider.GrantFileAccessToExtension(extension, FilePath(FPL("oem/foo")));
+  provider.GrantFileAccessToExtension(extension, base::FilePath(FPL("oem/foo")));
   // The extension should not be able to access the file even if
   // GrantFileAccessToExtension was called.
   EXPECT_FALSE(provider.IsAccessAllowed(
@@ -165,7 +165,7 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
   ASSERT_TRUE(mount_points->RegisterFileSystem(
       "test",
       fileapi::kFileSystemTypeNativeLocal,
-      FilePath(FPL("/foo/test"))));
+      base::FilePath(FPL("/foo/test"))));
   EXPECT_FALSE(provider.IsAccessAllowed(
       CreateFileSystemURL(extension, "test_/foo", mount_points.get())));
 
@@ -176,7 +176,7 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
   fileapi::FileSystemURL internal_url = FileSystemURL::CreateForTest(
       GURL("chrome://foo"),
       fileapi::kFileSystemTypeExternal,
-      FilePath(FPL("removable/")));
+      base::FilePath(FPL("removable/")));
   // Internal WebUI should have full access.
   EXPECT_TRUE(provider.IsAccessAllowed(internal_url));
 }
@@ -196,24 +196,24 @@ TEST(CrosMountPointProvider, GetVirtualPathConflictWithSystemPoints) {
 
   // Provider specific mount points.
   ASSERT_TRUE(
-      mount_points->RegisterFileSystem("b", type, FilePath(FPL("/a/b"))));
+      mount_points->RegisterFileSystem("b", type, base::FilePath(FPL("/a/b"))));
   ASSERT_TRUE(
-      mount_points->RegisterFileSystem("y", type, FilePath(FPL("/z/y"))));
+      mount_points->RegisterFileSystem("y", type, base::FilePath(FPL("/z/y"))));
   ASSERT_TRUE(
-      mount_points->RegisterFileSystem("n", type, FilePath(FPL("/m/n"))));
+      mount_points->RegisterFileSystem("n", type, base::FilePath(FPL("/m/n"))));
 
   // System mount points
   ASSERT_TRUE(system_mount_points->RegisterFileSystem(
-      "gb", type, FilePath(FPL("/a/b"))));
+      "gb", type, base::FilePath(FPL("/a/b"))));
   ASSERT_TRUE(
-      system_mount_points->RegisterFileSystem("gz", type, FilePath(FPL("/z"))));
+      system_mount_points->RegisterFileSystem("gz", type, base::FilePath(FPL("/z"))));
   ASSERT_TRUE(system_mount_points->RegisterFileSystem(
-       "gp", type, FilePath(FPL("/m/n/o/p"))));
+       "gp", type, base::FilePath(FPL("/m/n/o/p"))));
 
   struct TestCase {
-    const FilePath::CharType* const local_path;
+    const base::FilePath::CharType* const local_path;
     bool success;
-    const FilePath::CharType* const virtual_path;
+    const base::FilePath::CharType* const virtual_path;
   };
 
   const TestCase kTestCases[] = {
@@ -231,8 +231,8 @@ TEST(CrosMountPointProvider, GetVirtualPathConflictWithSystemPoints) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     // Initialize virtual path with a value.
-    FilePath virtual_path(FPL("/mount"));
-    FilePath local_path(kTestCases[i].local_path);
+    base::FilePath virtual_path(FPL("/mount"));
+    base::FilePath local_path(kTestCases[i].local_path);
     EXPECT_EQ(kTestCases[i].success,
               provider.GetVirtualPath(local_path, &virtual_path))
         << "Resolving " << kTestCases[i].local_path;
@@ -242,7 +242,7 @@ TEST(CrosMountPointProvider, GetVirtualPathConflictWithSystemPoints) {
     if (!kTestCases[i].success)
       continue;
 
-    FilePath expected_virtual_path(kTestCases[i].virtual_path);
+    base::FilePath expected_virtual_path(kTestCases[i].virtual_path);
     EXPECT_EQ(expected_virtual_path, virtual_path)
         << "Resolving " << kTestCases[i].local_path;
   }

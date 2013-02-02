@@ -19,7 +19,6 @@ namespace policy {
 class URLBlacklist;
 }  // namespace policy
 
-class FilePath;
 class GURL;
 
 // This class manages the filtering behavior for a given URL, i.e. it tells

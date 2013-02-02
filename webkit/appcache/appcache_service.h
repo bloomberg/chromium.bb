@@ -17,13 +17,12 @@
 #include "webkit/appcache/appcache_storage.h"
 #include "webkit/storage/webkit_storage_export.h"
 
-class FilePath;
-
 namespace net {
 class URLRequestContext;
 }  // namespace net
 
 namespace base {
+class FilePath;
 class MessageLoopProxy;
 }
 
@@ -59,7 +58,7 @@ class WEBKIT_STORAGE_EXPORT AppCacheService {
   explicit AppCacheService(quota::QuotaManagerProxy* quota_manager_proxy);
   virtual ~AppCacheService();
 
-  void Initialize(const FilePath& cache_directory,
+  void Initialize(const base::FilePath& cache_directory,
                   base::MessageLoopProxy* db_thread,
                   base::MessageLoopProxy* cache_thread);
 

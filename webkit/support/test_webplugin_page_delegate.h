@@ -18,10 +18,10 @@ class TestWebPluginPageDelegate : public webkit::npapi::WebPluginPageDelegate {
   virtual ~TestWebPluginPageDelegate() {}
 
   virtual webkit::npapi::WebPluginDelegate* CreatePluginDelegate(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       const std::string& mime_type) OVERRIDE;
   virtual WebKit::WebPlugin* CreatePluginReplacement(
-      const FilePath& file_path) OVERRIDE;
+      const base::FilePath& file_path) OVERRIDE;
   virtual void CreatedPluginWindow(gfx::PluginWindowHandle handle) OVERRIDE {}
   virtual void WillDestroyPluginWindow(
       gfx::PluginWindowHandle handle) OVERRIDE {}

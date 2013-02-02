@@ -9,9 +9,8 @@
 #include "base/platform_file.h"
 #include "webkit/fileapi/file_system_file_util.h"
 
-class FilePath;
-
 namespace base {
+class FilePath;
 class SequencedTaskRunner;
 class Time;
 }
@@ -26,7 +25,7 @@ class MTPDeviceDelegate {
  public:
   // Returns information about the given file path.
   virtual base::PlatformFileError GetFileInfo(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       base::PlatformFileInfo* file_info) = 0;
 
   // Returns a pointer to a new instance of AbstractFileEnumerator to enumerate
@@ -34,15 +33,15 @@ class MTPDeviceDelegate {
   // caller, and its lifetime should not extend past when the current call
   // returns to the main media task runner thread.
   virtual scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
-      CreateFileEnumerator(const FilePath& root,
+      CreateFileEnumerator(const base::FilePath& root,
                            bool recursive) = 0;
 
   // Updates the temporary snapshot file contents given by |local_path| with
   // media file contents given by |device_file_path| and also returns the
   // metadata of the temporary file.
   virtual base::PlatformFileError CreateSnapshotFile(
-      const FilePath& device_file_path,
-      const FilePath& local_path,
+      const base::FilePath& device_file_path,
+      const base::FilePath& local_path,
       base::PlatformFileInfo* file_info) = 0;
 
   // Called when the

@@ -10,7 +10,9 @@
 #include "remoting/host/audio_silence_detector.h"
 #include "remoting/host/linux/audio_pipe_reader.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace remoting {
 
@@ -24,7 +26,7 @@ class AudioCapturerLinux : public AudioCapturer,
   // to read from the pipe.
   static void InitializePipeReader(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const FilePath& pipe_name);
+      const base::FilePath& pipe_name);
 
   explicit AudioCapturerLinux(
       scoped_refptr<AudioPipeReader> pipe_reader);

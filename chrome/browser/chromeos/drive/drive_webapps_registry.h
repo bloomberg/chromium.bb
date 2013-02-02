@@ -13,7 +13,9 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "googleurl/src/gurl.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace google_apis {
 class AppList;
@@ -57,7 +59,7 @@ class DriveWebAppsRegistry {
   virtual ~DriveWebAppsRegistry();
 
   // DriveWebAppsRegistry overrides.
-  virtual void GetWebAppsForFile(const FilePath& file,
+  virtual void GetWebAppsForFile(const base::FilePath& file,
                                  const std::string& mime_type,
                                  ScopedVector<DriveWebAppInfo>* apps);
   virtual std::set<std::string> GetExtensionsForWebStoreApp(

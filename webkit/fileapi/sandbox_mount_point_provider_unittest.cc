@@ -39,7 +39,7 @@ class SandboxMountPointProviderOriginEnumeratorTest : public testing::Test {
  protected:
   void CreateOriginTypeDirectory(const GURL& origin,
                                  fileapi::FileSystemType type) {
-    FilePath target = sandbox_provider_->
+    base::FilePath target = sandbox_provider_->
         GetBaseDirectoryForOriginAndType(origin, type, true);
     ASSERT_TRUE(!target.empty());
     ASSERT_TRUE(file_util::DirectoryExists(target));

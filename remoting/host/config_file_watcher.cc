@@ -21,7 +21,7 @@ namespace remoting {
 // file to use.
 const char kHostConfigSwitchName[] = "host-config";
 
-const FilePath::CharType kDefaultHostConfigFile[] =
+const base::FilePath::CharType kDefaultHostConfigFile[] =
     FILE_PATH_LITERAL("host.json");
 
 class ConfigFileWatcherImpl
@@ -35,7 +35,7 @@ class ConfigFileWatcherImpl
       ConfigFileWatcher::Delegate* delegate);
 
   // Starts watching |config_path|.
-  void Watch(const FilePath& config_path);
+  void Watch(const base::FilePath& config_path);
 
   // Stops watching the configuration file.
   void StopWatching();
@@ -47,13 +47,13 @@ class ConfigFileWatcherImpl
   void FinishStopping();
 
   // Called every time the host configuration file is updated.
-  void OnConfigUpdated(const FilePath& path, bool error);
+  void OnConfigUpdated(const base::FilePath& path, bool error);
 
   // Reads the configuration file and passes it to the delegate.
   void ReloadConfig();
 
   std::string config_;
-  FilePath config_path_;
+  base::FilePath config_path_;
 
   scoped_ptr<base::DelayTimer<ConfigFileWatcherImpl> > config_updated_timer_;
 
@@ -85,7 +85,7 @@ ConfigFileWatcher::~ConfigFileWatcher() {
   impl_ = NULL;
 }
 
-void ConfigFileWatcher::Watch(const FilePath& config_path) {
+void ConfigFileWatcher::Watch(const base::FilePath& config_path) {
   impl_->Watch(config_path);
 }
 
@@ -100,7 +100,7 @@ ConfigFileWatcherImpl::ConfigFileWatcherImpl(
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 }
 
-void ConfigFileWatcherImpl::Watch(const FilePath& config_path) {
+void ConfigFileWatcherImpl::Watch(const base::FilePath& config_path) {
   if (!io_task_runner_->BelongsToCurrentThread()) {
     io_task_runner_->PostTask(
         FROM_HERE,
@@ -156,7 +156,8 @@ void ConfigFileWatcherImpl::FinishStopping() {
   config_watcher_.reset(NULL);
 }
 
-void ConfigFileWatcherImpl::OnConfigUpdated(const FilePath& path, bool error) {
+void ConfigFileWatcherImpl::OnConfigUpdated(const base::FilePath& path,
+                                            bool error) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   // Call ReloadConfig() after a short delay, so that we will not try to read

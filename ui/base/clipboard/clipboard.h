@@ -33,11 +33,14 @@
 #include "base/memory/scoped_ptr.h"
 #endif
 
+namespace base {
+class FilePath;
+}
+
 namespace gfx {
 class Size;
 }
 
-class FilePath;
 class SkBitmap;
 
 #if defined(TOOLKIT_GTK)

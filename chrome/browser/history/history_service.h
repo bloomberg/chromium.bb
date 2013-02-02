@@ -40,7 +40,6 @@
 #endif
 
 class BookmarkService;
-class FilePath;
 class GURL;
 class HistoryURLProvider;
 class PageUsageData;
@@ -49,6 +48,7 @@ class Profile;
 struct HistoryURLProviderParams;
 
 namespace base {
+class FilePath;
 class Thread;
 }
 
@@ -129,7 +129,7 @@ class HistoryService : public CancelableRequestProvider,
   // not call any other functions. The given directory will be used for storing
   // the history files. The BookmarkService is used when deleting URLs to
   // test if a URL is bookmarked; it may be NULL during testing.
-  bool Init(const FilePath& history_dir, BookmarkService* bookmark_service) {
+  bool Init(const base::FilePath& history_dir, BookmarkService* bookmark_service) {
     return Init(history_dir, bookmark_service, false);
   }
 
@@ -666,7 +666,7 @@ class HistoryService : public CancelableRequestProvider,
 
   // Low-level Init().  Same as the public version, but adds a |no_db| parameter
   // that is only set by unittests which causes the backend to not init its DB.
-  bool Init(const FilePath& history_dir,
+  bool Init(const base::FilePath& history_dir,
             BookmarkService* bookmark_service,
             bool no_db);
 
@@ -1094,7 +1094,7 @@ class HistoryService : public CancelableRequestProvider,
   int current_backend_id_;
 
   // Cached values from Init(), used whenever we need to reload the backend.
-  FilePath history_dir_;
+  base::FilePath history_dir_;
   BookmarkService* bookmark_service_;
   bool no_db_;
 

@@ -16,7 +16,7 @@ namespace {
 // Returns true on success, or false otherwise.
 //
 // TODO(benchan): Find a better place outside webkit to host this function.
-bool SetPlatformSpecificDirectoryPermissions(const FilePath& dir_path) {
+bool SetPlatformSpecificDirectoryPermissions(const base::FilePath& dir_path) {
 #if defined(OS_CHROMEOS)
     // System daemons on Chrome OS may run as a user different than the Chrome
     // process but need to access files under the directories created here.
@@ -38,7 +38,7 @@ using base::PlatformFileError;
 
 class NativeFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
-  NativeFileEnumerator(const FilePath& root_path,
+  NativeFileEnumerator(const base::FilePath& root_path,
                        bool recursive,
                        int file_type)
     : file_enum_(root_path, recursive, file_type) {
@@ -49,7 +49,7 @@ class NativeFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
 
   ~NativeFileEnumerator() {}
 
-  virtual FilePath Next() OVERRIDE;
+  virtual base::FilePath Next() OVERRIDE;
   virtual int64 Size() OVERRIDE;
   virtual base::Time LastModifiedTime() OVERRIDE;
   virtual bool IsDirectory() OVERRIDE;
@@ -59,8 +59,8 @@ class NativeFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
   file_util::FileEnumerator::FindInfo file_util_info_;
 };
 
-FilePath NativeFileEnumerator::Next() {
-  FilePath rv = file_enum_.Next();
+base::FilePath NativeFileEnumerator::Next() {
+  base::FilePath rv = file_enum_.Next();
   if (!rv.empty())
     file_enum_.GetFindInfo(&file_util_info_);
   return rv;
@@ -79,7 +79,7 @@ bool NativeFileEnumerator::IsDirectory() {
 }
 
 PlatformFileError NativeFileUtil::CreateOrOpen(
-    const FilePath& path, int file_flags,
+    const base::FilePath& path, int file_flags,
     PlatformFile* file_handle, bool* created) {
   if (!file_util::DirectoryExists(path.DirName())) {
     // If its parent does not exist, should return NOT_FOUND error.
@@ -98,7 +98,7 @@ PlatformFileError NativeFileUtil::Close(PlatformFile file_handle) {
 }
 
 PlatformFileError NativeFileUtil::EnsureFileExists(
-    const FilePath& path,
+    const base::FilePath& path,
     bool* created) {
   if (!file_util::DirectoryExists(path.DirName()))
     // If its parent does not exist, should return NOT_FOUND error.
@@ -122,7 +122,7 @@ PlatformFileError NativeFileUtil::EnsureFileExists(
 }
 
 PlatformFileError NativeFileUtil::CreateDirectory(
-    const FilePath& path,
+    const base::FilePath& path,
     bool exclusive,
     bool recursive) {
   // If parent dir of file doesn't exist.
@@ -147,7 +147,7 @@ PlatformFileError NativeFileUtil::CreateDirectory(
 }
 
 PlatformFileError NativeFileUtil::GetFileInfo(
-    const FilePath& path,
+    const base::FilePath& path,
     base::PlatformFileInfo* file_info) {
   if (!file_util::PathExists(path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -157,7 +157,7 @@ PlatformFileError NativeFileUtil::GetFileInfo(
 }
 
 scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
-    NativeFileUtil::CreateFileEnumerator(const FilePath& root_path,
+    NativeFileUtil::CreateFileEnumerator(const base::FilePath& root_path,
                                          bool recursive) {
   return make_scoped_ptr(new NativeFileEnumerator(
       root_path, recursive,
@@ -167,7 +167,7 @@ scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
 }
 
 PlatformFileError NativeFileUtil::Touch(
-    const FilePath& path,
+    const base::FilePath& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
   if (!file_util::TouchFile(
@@ -176,7 +176,7 @@ PlatformFileError NativeFileUtil::Touch(
   return base::PLATFORM_FILE_OK;
 }
 
-PlatformFileError NativeFileUtil::Truncate(const FilePath& path, int64 length) {
+PlatformFileError NativeFileUtil::Truncate(const base::FilePath& path, int64 length) {
   PlatformFileError error_code(base::PLATFORM_FILE_ERROR_FAILED);
   PlatformFile file =
       base::CreatePlatformFile(
@@ -194,17 +194,17 @@ PlatformFileError NativeFileUtil::Truncate(const FilePath& path, int64 length) {
   return error_code;
 }
 
-bool NativeFileUtil::PathExists(const FilePath& path) {
+bool NativeFileUtil::PathExists(const base::FilePath& path) {
   return file_util::PathExists(path);
 }
 
-bool NativeFileUtil::DirectoryExists(const FilePath& path) {
+bool NativeFileUtil::DirectoryExists(const base::FilePath& path) {
   return file_util::DirectoryExists(path);
 }
 
 PlatformFileError NativeFileUtil::CopyOrMoveFile(
-    const FilePath& src_path,
-    const FilePath& dest_path,
+    const base::FilePath& src_path,
+    const base::FilePath& dest_path,
     bool copy) {
   base::PlatformFileInfo info;
   base::PlatformFileError error = NativeFileUtil::GetFileInfo(src_path, &info);
@@ -237,7 +237,7 @@ PlatformFileError NativeFileUtil::CopyOrMoveFile(
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
-PlatformFileError NativeFileUtil::DeleteFile(const FilePath& path) {
+PlatformFileError NativeFileUtil::DeleteFile(const base::FilePath& path) {
   if (!file_util::PathExists(path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   if (file_util::DirectoryExists(path))
@@ -247,7 +247,7 @@ PlatformFileError NativeFileUtil::DeleteFile(const FilePath& path) {
   return base::PLATFORM_FILE_OK;
 }
 
-PlatformFileError NativeFileUtil::DeleteDirectory(const FilePath& path) {
+PlatformFileError NativeFileUtil::DeleteDirectory(const base::FilePath& path) {
   if (!file_util::PathExists(path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   if (!file_util::DirectoryExists(path))

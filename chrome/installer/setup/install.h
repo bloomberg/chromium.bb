@@ -17,7 +17,9 @@
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/util_constants.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace installer {
 
@@ -55,7 +57,7 @@ void EscapeXmlAttributeValueInSingleQuotes(string16* att_value);
 // Creates VisualElementsManifest.xml beside chrome.exe in |src_path| if
 // |src_path|\VisualElements exists.
 // Returns true unless the manifest is supposed to be created, but fails to be.
-bool CreateVisualElementsManifest(const FilePath& src_path,
+bool CreateVisualElementsManifest(const base::FilePath& src_path,
                                   const Version& version);
 
 // Overwrites shortcuts (desktop, quick launch, and start menu) if they are
@@ -71,7 +73,7 @@ bool CreateVisualElementsManifest(const FilePath& src_path,
 // If creating the Start menu shortcut is successful, it is also pinned to the
 // taskbar.
 void CreateOrUpdateShortcuts(
-    const FilePath& target,
+    const base::FilePath& target,
     const Product& product,
     const MasterPreferences& prefs,
     InstallShortcutLevel install_level,
@@ -107,11 +109,11 @@ void RegisterChromeOnMachine(const InstallerState& installer_state,
 InstallStatus InstallOrUpdateProduct(
     const InstallationState& original_state,
     const InstallerState& installer_state,
-    const FilePath& setup_path,
-    const FilePath& archive_path,
-    const FilePath& install_temp_path,
-    const FilePath& src_path,
-    const FilePath& prefs_path,
+    const base::FilePath& setup_path,
+    const base::FilePath& archive_path,
+    const base::FilePath& install_temp_path,
+    const base::FilePath& src_path,
+    const base::FilePath& prefs_path,
     const installer::MasterPreferences& prefs,
     const Version& new_version);
 
@@ -127,7 +129,7 @@ void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
 // Shortcut creation is skipped if the First Run beacon is present (unless
 // |force| is set to true).
 // |chrome| The installed product (must be a browser).
-void HandleActiveSetupForBrowser(const FilePath& installation_root,
+void HandleActiveSetupForBrowser(const base::FilePath& installation_root,
                                  const Product& chrome,
                                  bool force);
 

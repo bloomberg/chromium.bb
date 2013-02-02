@@ -8,7 +8,9 @@
 #include "base/memory/scoped_handle.h"
 #include "net/base/net_log.h"
 
+namespace base {
 class FilePath;
+}
 
 // NetLogLogger watches the NetLog event stream, and sends all entries to
 // VLOG(1) or a path specified on creation.  This is to debug errors that
@@ -25,7 +27,7 @@ class NetLogLogger : public net::NetLog::ThreadSafeObserver {
   // If |log_path| is empty or file creation fails, writes to VLOG(1).
   // Otherwise, writes to |log_path|.  Uses one line per entry, for
   // easy parsing.
-  explicit NetLogLogger(const FilePath &log_path);
+  explicit NetLogLogger(const base::FilePath &log_path);
   virtual ~NetLogLogger();
 
   // Starts observing specified NetLog.  Must not already be watching a NetLog.

@@ -15,7 +15,7 @@
 
 namespace remoting {
 
-JsonHostConfig::JsonHostConfig(const FilePath& filename)
+JsonHostConfig::JsonHostConfig(const base::FilePath& filename)
     : filename_(filename) {
 }
 

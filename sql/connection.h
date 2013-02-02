@@ -17,9 +17,12 @@
 #include "base/time.h"
 #include "sql/sql_export.h"
 
-class FilePath;
 struct sqlite3;
 struct sqlite3_stmt;
+
+namespace base {
+class FilePath;
+}
 
 namespace sql {
 
@@ -154,7 +157,7 @@ class SQL_EXPORT Connection {
 
   // Initializes the SQL connection for the given file, returning true if the
   // file could be opened. You can call this or OpenInMemory.
-  bool Open(const FilePath& path) WARN_UNUSED_RESULT;
+  bool Open(const base::FilePath& path) WARN_UNUSED_RESULT;
 
   // Initializes the SQL connection for a temporary in-memory database. There
   // will be no associated file on disk, and the initial database will be

@@ -14,7 +14,9 @@
 #include "content/common/content_export.h"
 #include "content/public/utility/utility_thread.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace content {
 class WebKitPlatformSupportImpl;
@@ -42,7 +44,7 @@ class UtilityThreadImpl : public UtilityThread,
   void OnBatchModeFinished();
 
 #if defined(OS_POSIX)
-  void OnLoadPlugins(const std::vector<FilePath>& plugin_paths);
+  void OnLoadPlugins(const std::vector<base::FilePath>& plugin_paths);
 #endif  // OS_POSIX
 
   // True when we're running in batch mode.

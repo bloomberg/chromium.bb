@@ -16,10 +16,10 @@
 #include "base/task_runner.h"
 #include "net/base/net_export.h"
 
-class FilePath;
 class GURL;
 
 namespace base {
+class FilePath;
 class MessageLoopProxy;
 class TimeDelta;
 }
@@ -220,7 +220,7 @@ class NET_EXPORT URLFetcher {
   // The created file is removed when the URLFetcher is deleted unless you
   // take ownership by calling GetResponseAsFilePath().
   virtual void SaveResponseToFileAtPath(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       scoped_refptr<base::TaskRunner> file_task_runner) = 0;
 
   // By default, the response is saved in a string. Call this method to save the
@@ -284,7 +284,7 @@ class NET_EXPORT URLFetcher {
   // be removed once the URLFetcher is destroyed.  User should not take
   // ownership more than once, or call this method after taking ownership.
   virtual bool GetResponseAsFilePath(bool take_ownership,
-                                     FilePath* out_response_path) const = 0;
+                                     base::FilePath* out_response_path) const = 0;
 };
 
 }  // namespace net

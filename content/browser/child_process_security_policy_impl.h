@@ -17,8 +17,11 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "webkit/glue/resource_type.h"
 
-class FilePath;
 class GURL;
+
+namespace base {
+class FilePath;
+}
 
 namespace content {
 
@@ -37,9 +40,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   virtual void RegisterDisabledSchemes(const std::set<std::string>& schemes)
       OVERRIDE;
   virtual void GrantPermissionsForFile(int child_id,
-                                       const FilePath& file,
+                                       const base::FilePath& file,
                                        int permissions) OVERRIDE;
-  virtual void GrantReadFile(int child_id, const FilePath& file) OVERRIDE;
+  virtual void GrantReadFile(int child_id, const base::FilePath& file) OVERRIDE;
   virtual void GrantReadFileSystem(
       int child_id,
       const std::string& filesystem_id) OVERRIDE;
@@ -50,7 +53,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
       int child_id,
       const std::string& filesystem_id) OVERRIDE;
   virtual void GrantScheme(int child_id, const std::string& scheme) OVERRIDE;
-  virtual bool CanReadFile(int child_id, const FilePath& file) OVERRIDE;
+  virtual bool CanReadFile(int child_id, const base::FilePath& file) OVERRIDE;
   virtual bool CanReadFileSystem(int child_id,
                                  const std::string& filesystem_id) OVERRIDE;
   virtual bool CanReadWriteFileSystem(
@@ -95,10 +98,10 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Grants the child process permission to enumerate all the files in
   // this directory and read those files.
-  void GrantReadDirectory(int child_id, const FilePath& directory);
+  void GrantReadDirectory(int child_id, const base::FilePath& directory);
 
   // Revokes all permissions granted to the given file.
-  void RevokeAllPermissionsForFile(int child_id, const FilePath& file);
+  void RevokeAllPermissionsForFile(int child_id, const base::FilePath& file);
 
   // Grant the child process the ability to use Web UI Bindings.
   void GrantWebUIBindings(int child_id);
@@ -123,12 +126,12 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Before servicing a child process's request to enumerate a directory
   // the browser should call this method to check for the capability.
-  bool CanReadDirectory(int child_id, const FilePath& directory);
+  bool CanReadDirectory(int child_id, const base::FilePath& directory);
 
   // Determines if certain permissions were granted for a file. |permissions|
   // must be a bit-set of base::PlatformFileFlags.
   bool HasPermissionsForFile(int child_id,
-                             const FilePath& file,
+                             const base::FilePath& file,
                              int permissions);
 
   // Returns true if the specified child_id has been granted WebUIBindings.
@@ -194,7 +197,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // Determines if certain permissions were granted for a file to given child
   // process. |permissions| must be a bit-set of base::PlatformFileFlags.
   bool ChildProcessHasPermissionsForFile(int child_id,
-                                         const FilePath& file,
+                                         const base::FilePath& file,
                                          int permissions);
 
   // You must acquire this lock before reading or writing any members of this

@@ -41,7 +41,7 @@ class AppCacheDatabaseTest {};
 
 TEST(AppCacheDatabaseTest, LazyOpen) {
   // Use an empty file path to use an in-memory sqlite database.
-  const FilePath kEmptyPath;
+  const base::FilePath kEmptyPath;
   AppCacheDatabase db(kEmptyPath);
 
   EXPECT_FALSE(db.LazyOpen(false));
@@ -65,9 +65,9 @@ TEST(AppCacheDatabaseTest, ReCreate) {
   // Real files on disk for this test.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const FilePath kDbFile = temp_dir.path().AppendASCII("appcache.db");
-  const FilePath kNestedDir = temp_dir.path().AppendASCII("nested");
-  const FilePath kOtherFile =  kNestedDir.AppendASCII("other_file");
+  const base::FilePath kDbFile = temp_dir.path().AppendASCII("appcache.db");
+  const base::FilePath kNestedDir = temp_dir.path().AppendASCII("nested");
+  const base::FilePath kOtherFile =  kNestedDir.AppendASCII("other_file");
   EXPECT_TRUE(file_util::CreateDirectory(kNestedDir));
   EXPECT_EQ(3, file_util::WriteFile(kOtherFile, "foo", 3));
 
@@ -87,7 +87,7 @@ TEST(AppCacheDatabaseTest, ReCreate) {
 }
 
 TEST(AppCacheDatabaseTest, EntryRecords) {
-  const FilePath kEmptyPath;
+  const base::FilePath kEmptyPath;
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
@@ -161,7 +161,7 @@ TEST(AppCacheDatabaseTest, EntryRecords) {
 }
 
 TEST(AppCacheDatabaseTest, CacheRecords) {
-  const FilePath kEmptyPath;
+  const base::FilePath kEmptyPath;
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
@@ -203,7 +203,7 @@ TEST(AppCacheDatabaseTest, CacheRecords) {
 }
 
 TEST(AppCacheDatabaseTest, GroupRecords) {
-  const FilePath kEmptyPath;
+  const base::FilePath kEmptyPath;
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
@@ -330,7 +330,7 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
 }
 
 TEST(AppCacheDatabaseTest, NamespaceRecords) {
-  const FilePath kEmptyPath;
+  const base::FilePath kEmptyPath;
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
@@ -430,7 +430,7 @@ TEST(AppCacheDatabaseTest, NamespaceRecords) {
 }
 
 TEST(AppCacheDatabaseTest, OnlineWhiteListRecords) {
-  const FilePath kEmptyPath;
+  const base::FilePath kEmptyPath;
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
@@ -476,7 +476,7 @@ TEST(AppCacheDatabaseTest, OnlineWhiteListRecords) {
 }
 
 TEST(AppCacheDatabaseTest, DeletableResponseIds) {
-  const FilePath kEmptyPath;
+  const base::FilePath kEmptyPath;
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
@@ -552,7 +552,7 @@ TEST(AppCacheDatabaseTest, OriginUsage) {
   const GURL kOtherOriginManifestUrl("http://other/manifest");
   const GURL kOtherOrigin(kOtherOriginManifestUrl.GetOrigin());
 
-  const FilePath kEmptyPath;
+  const base::FilePath kEmptyPath;
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
@@ -621,7 +621,7 @@ TEST(AppCacheDatabaseTest, UpgradeSchema3to4) {
   // Real file on disk for this test.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const FilePath kDbFile = temp_dir.path().AppendASCII("upgrade.db");
+  const base::FilePath kDbFile = temp_dir.path().AppendASCII("upgrade.db");
 
   const GURL kMockOrigin("http://mockorigin/");
   const char kNamespaceUrlFormat[] = "namespace%d";

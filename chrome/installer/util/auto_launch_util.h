@@ -7,7 +7,9 @@
 
 #include "base/string16.h"
 
+namespace base {
 class FilePath;
+}
 
 // A namespace containing the platform specific implementation of setting Chrome
 // to launch at user login.
@@ -32,7 +34,7 @@ namespace auto_launch_util {
 // (as it will default to the application path of the current executable).
 bool AutoStartRequested(const string16& profile_directory,
                         bool window_requested,
-                        const FilePath& application_path);
+                        const base::FilePath& application_path);
 
 // Disables all auto-start features. |profile_directory| is the name of the
 // directory (leaf, not the full path) that contains the profile that was set
@@ -47,7 +49,7 @@ void DisableAllAutoStartFeatures(const string16& profile_directory);
 // auto-launch, ie. the installer. This is because |application_path|, if left
 // blank, defaults to the application path of the current executable.
 void EnableForegroundStartAtLogin(const string16& profile_directory,
-                                  const FilePath& application_path);
+                                  const base::FilePath& application_path);
 
 // Disables auto-starting Chrome in foreground mode at user login.
 // |profile_directory| is the name of the directory (leaf, not the full path)

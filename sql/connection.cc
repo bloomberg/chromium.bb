@@ -128,7 +128,7 @@ Connection::~Connection() {
   Close();
 }
 
-bool Connection::Open(const FilePath& path) {
+bool Connection::Open(const base::FilePath& path) {
 #if defined(OS_WIN)
   return OpenInternal(WideToUTF8(path.value()));
 #elif defined(OS_POSIX)

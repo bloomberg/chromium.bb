@@ -9,9 +9,10 @@
 
 #include "base/base_export.h"
 
+namespace base {
+
 class FilePath;
 
-namespace base {
 namespace android {
 
 // Retrieves the absolute path to the data directory of the current

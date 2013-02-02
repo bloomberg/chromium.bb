@@ -17,9 +17,8 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 
-class FilePath;
-
 namespace base {
+class FilePath;
 class MessageLoopProxy;
 }
 
@@ -48,7 +47,8 @@ class Backend;
 // be invoked when a backend is available or a fatal error condition is reached.
 // The pointer to receive the |backend| must remain valid until the operation
 // completes (the callback is notified).
-NET_EXPORT int CreateCacheBackend(net::CacheType type, const FilePath& path,
+NET_EXPORT int CreateCacheBackend(net::CacheType type,
+                                  const base::FilePath& path,
                                   int max_bytes, bool force,
                                   base::MessageLoopProxy* thread,
                                   net::NetLog* net_log, Backend** backend,

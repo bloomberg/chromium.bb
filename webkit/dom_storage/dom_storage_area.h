@@ -29,13 +29,13 @@ class WEBKIT_STORAGE_EXPORT DomStorageArea
     : public base::RefCountedThreadSafe<DomStorageArea> {
 
  public:
-  static const FilePath::CharType kDatabaseFileExtension[];
-  static FilePath DatabaseFileNameFromOrigin(const GURL& origin);
-  static GURL OriginFromDatabaseFileName(const FilePath& file_name);
+  static const base::FilePath::CharType kDatabaseFileExtension[];
+  static base::FilePath DatabaseFileNameFromOrigin(const GURL& origin);
+  static GURL OriginFromDatabaseFileName(const base::FilePath& file_name);
 
   // Local storage. Backed on disk if directory is nonempty.
   DomStorageArea(const GURL& origin,
-                 const FilePath& directory,
+                 const base::FilePath& directory,
                  DomStorageTaskRunner* task_runner);
 
   // Session storage. Backed on disk if |session_storage_backing| is not NULL.
@@ -119,7 +119,7 @@ class WEBKIT_STORAGE_EXPORT DomStorageArea
   int64 namespace_id_;
   std::string persistent_namespace_id_;
   GURL origin_;
-  FilePath directory_;
+  base::FilePath directory_;
   scoped_refptr<DomStorageTaskRunner> task_runner_;
   scoped_refptr<DomStorageMap> map_;
   scoped_ptr<DomStorageDatabaseAdapter> backing_;

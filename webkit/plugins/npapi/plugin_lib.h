@@ -16,7 +16,9 @@
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace webkit {
 namespace npapi {
@@ -27,12 +29,12 @@ class PluginInstance;
 // manager for new PluginInstances.
 class WEBKIT_PLUGINS_EXPORT PluginLib : public base::RefCounted<PluginLib> {
  public:
-  static PluginLib* CreatePluginLib(const FilePath& filename);
+  static PluginLib* CreatePluginLib(const base::FilePath& filename);
 
   // Creates a WebPluginInfo structure given a plugin's path.  On success
   // returns true, with the information being put into "info".
   // Returns false if the library couldn't be found, or if it's not a plugin.
-  static bool ReadWebPluginInfo(const FilePath& filename,
+  static bool ReadWebPluginInfo(const base::FilePath& filename,
                                 webkit::WebPluginInfo* info);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

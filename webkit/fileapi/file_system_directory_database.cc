@@ -33,7 +33,7 @@ bool PickleFromFileInfo(
   std::string name;
 
   data_path = fileapi::FilePathToString(info.data_path);
-  name = fileapi::FilePathToString(FilePath(info.name));
+  name = fileapi::FilePathToString(base::FilePath(info.name));
 
   if (pickle->WriteInt64(info.parent_id) &&
       pickle->WriteString(data_path) &&
@@ -66,7 +66,7 @@ bool FileInfoFromPickle(
   return false;
 }
 
-const FilePath::CharType kDirectoryDatabaseName[] = FILE_PATH_LITERAL("Paths");
+const base::FilePath::CharType kDirectoryDatabaseName[] = FILE_PATH_LITERAL("Paths");
 const char kChildLookupPrefix[] = "CHILD_OF:";
 const char kChildLookupSeparator[] = ":";
 const char kLastFileIdKey[] = "LAST_FILE_ID";
@@ -84,9 +84,9 @@ enum InitStatus {
 
 std::string GetChildLookupKey(
     fileapi::FileSystemDirectoryDatabase::FileId parent_id,
-    const FilePath::StringType& child_name) {
+    const base::FilePath::StringType& child_name) {
   std::string name;
-  name = fileapi::FilePathToString(FilePath(child_name));
+  name = fileapi::FilePathToString(base::FilePath(child_name));
   return std::string(kChildLookupPrefix) + base::Int64ToString(parent_id) +
       std::string(kChildLookupSeparator) + name;
 }
@@ -129,7 +129,7 @@ class DatabaseCheckHelper {
 
   DatabaseCheckHelper(fileapi::FileSystemDirectoryDatabase* dir_db,
                       leveldb::DB* db,
-                      const FilePath& path);
+                      const base::FilePath& path);
 
   bool IsFileSystemConsistent() {
     return IsDatabaseEmpty() ||
@@ -147,9 +147,9 @@ class DatabaseCheckHelper {
 
   fileapi::FileSystemDirectoryDatabase* dir_db_;
   leveldb::DB* db_;
-  FilePath path_;
+  base::FilePath path_;
 
-  std::set<FilePath> files_in_db_;
+  std::set<base::FilePath> files_in_db_;
 
   size_t num_directories_in_db_;
   size_t num_files_in_db_;
@@ -162,7 +162,7 @@ class DatabaseCheckHelper {
 DatabaseCheckHelper::DatabaseCheckHelper(
     fileapi::FileSystemDirectoryDatabase* dir_db,
     leveldb::DB* db,
-    const FilePath& path)
+    const base::FilePath& path)
     : dir_db_(dir_db), db_(db), path_(path),
       num_directories_in_db_(0),
       num_files_in_db_(0),
@@ -260,17 +260,17 @@ bool DatabaseCheckHelper::ScanDatabase() {
 bool DatabaseCheckHelper::ScanDirectory() {
   // TODO(kinuko): Scans all local file system entries to verify each of them
   // has a database entry.
-  const FilePath kExcludes[] = {
-    FilePath(kDirectoryDatabaseName),
-    FilePath(fileapi::FileSystemUsageCache::kUsageFileName),
+  const base::FilePath kExcludes[] = {
+    base::FilePath(kDirectoryDatabaseName),
+    base::FilePath(fileapi::FileSystemUsageCache::kUsageFileName),
   };
 
   // Any path in |pending_directories| is relative to |path_|.
-  std::stack<FilePath> pending_directories;
-  pending_directories.push(FilePath());
+  std::stack<base::FilePath> pending_directories;
+  pending_directories.push(base::FilePath());
 
   while (!pending_directories.empty()) {
-    FilePath dir_path = pending_directories.top();
+    base::FilePath dir_path = pending_directories.top();
     pending_directories.pop();
 
     file_util::FileEnumerator file_enum(
@@ -279,12 +279,12 @@ bool DatabaseCheckHelper::ScanDirectory() {
         file_util::FileEnumerator::DIRECTORIES |
         file_util::FileEnumerator::FILES);
 
-    FilePath absolute_file_path;
+    base::FilePath absolute_file_path;
     while (!(absolute_file_path = file_enum.Next()).empty()) {
       file_util::FileEnumerator::FindInfo find_info;
       file_enum.GetFindInfo(&find_info);
 
-      FilePath relative_file_path;
+      base::FilePath relative_file_path;
       if (!path_.AppendRelativePath(absolute_file_path, &relative_file_path))
         return false;
 
@@ -298,7 +298,7 @@ bool DatabaseCheckHelper::ScanDirectory() {
       }
 
       // Check if the file has a database entry.
-      std::set<FilePath>::iterator itr = files_in_db_.find(relative_file_path);
+      std::set<base::FilePath>::iterator itr = files_in_db_.find(relative_file_path);
       if (itr == files_in_db_.end()) {
         if (!file_util::Delete(absolute_file_path, false))
           return false;
@@ -373,15 +373,15 @@ bool DatabaseCheckHelper::ScanHierarchy() {
 // and does not refer to special system files.
 // This is called in GetFileInfo, AddFileInfo and UpdateFileInfo to
 // ensure we're only dealing with valid data paths.
-bool VerifyDataPath(const FilePath& data_path) {
+bool VerifyDataPath(const base::FilePath& data_path) {
   // |data_path| should not contain any ".." and should be a relative path
   // (to the filesystem_data_directory_).
   if (data_path.ReferencesParent() || data_path.IsAbsolute())
     return false;
   // See if it's not pointing to the special system paths.
-  const FilePath kExcludes[] = {
-    FilePath(kDirectoryDatabaseName),
-    FilePath(fileapi::FileSystemUsageCache::kUsageFileName),
+  const base::FilePath kExcludes[] = {
+    base::FilePath(kDirectoryDatabaseName),
+    base::FilePath(fileapi::FileSystemUsageCache::kUsageFileName),
   };
   for (size_t i = 0; i < arraysize(kExcludes); ++i) {
     if (data_path == kExcludes[i] || kExcludes[i].IsParent(data_path))
@@ -401,7 +401,7 @@ FileSystemDirectoryDatabase::FileInfo::~FileInfo() {
 }
 
 FileSystemDirectoryDatabase::FileSystemDirectoryDatabase(
-    const FilePath& filesystem_data_directory)
+    const base::FilePath& filesystem_data_directory)
     : filesystem_data_directory_(filesystem_data_directory) {
 }
 
@@ -409,7 +409,7 @@ FileSystemDirectoryDatabase::~FileSystemDirectoryDatabase() {
 }
 
 bool FileSystemDirectoryDatabase::GetChildWithName(
-    FileId parent_id, const FilePath::StringType& name, FileId* child_id) {
+    FileId parent_id, const base::FilePath::StringType& name, FileId* child_id) {
   if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(child_id);
@@ -431,13 +431,13 @@ bool FileSystemDirectoryDatabase::GetChildWithName(
 }
 
 bool FileSystemDirectoryDatabase::GetFileWithPath(
-    const FilePath& path, FileId* file_id) {
-  std::vector<FilePath::StringType> components;
+    const base::FilePath& path, FileId* file_id) {
+  std::vector<base::FilePath::StringType> components;
   VirtualPath::GetComponents(path, &components);
   FileId local_id = 0;
-  std::vector<FilePath::StringType>::iterator iter;
+  std::vector<base::FilePath::StringType>::iterator iter;
   for (iter = components.begin(); iter != components.end(); ++iter) {
-    FilePath::StringType name;
+    base::FilePath::StringType name;
     name = *iter;
     if (name == FILE_PATH_LITERAL("/"))
       continue;
@@ -497,8 +497,8 @@ bool FileSystemDirectoryDatabase::GetFileInfo(FileId file_id, FileInfo* info) {
   // Without this, a query for the root's file info, made before creating the
   // first file in the database, will fail and confuse callers.
   if (status.IsNotFound() && !file_id) {
-    info->name = FilePath::StringType();
-    info->data_path = FilePath();
+    info->name = base::FilePath::StringType();
+    info->data_path = base::FilePath();
     info->modification_time = base::Time::Now();
     info->parent_id = 0;
     return true;
@@ -686,7 +686,7 @@ bool FileSystemDirectoryDatabase::GetNextInteger(int64* next) {
 }
 
 // static
-bool FileSystemDirectoryDatabase::DestroyDatabase(const FilePath& path) {
+bool FileSystemDirectoryDatabase::DestroyDatabase(const base::FilePath& path) {
   std::string name  = FilePathToString(path.Append(kDirectoryDatabaseName));
   leveldb::Status status = leveldb::DestroyDB(name, leveldb::Options());
   if (status.ok())

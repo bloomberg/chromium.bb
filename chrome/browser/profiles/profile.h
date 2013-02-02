@@ -143,7 +143,7 @@ class Profile : public content::BrowserContext {
 
   // Create a new profile given a path. If |create_mode| is
   // CREATE_MODE_ASYNCHRONOUS then the profile is initialized asynchronously.
-  static Profile* CreateProfile(const FilePath& path,
+  static Profile* CreateProfile(const base::FilePath& path,
                                 Delegate* delegate,
                                 CreateMode create_mode);
 
@@ -227,7 +227,7 @@ class Profile : public content::BrowserContext {
 
   // Returns the request context used within |partition_id|.
   virtual net::URLRequestContextGetter* GetRequestContextForStoragePartition(
-      const FilePath& partition_path,
+      const base::FilePath& partition_path,
       bool in_memory) = 0;
 
   // Returns the SSLConfigService for this profile.
@@ -253,8 +253,8 @@ class Profile : public content::BrowserContext {
   virtual base::Time GetStartTime() const = 0;
 
   // Returns the last directory that was chosen for uploading or opening a file.
-  virtual FilePath last_selected_directory() = 0;
-  virtual void set_last_selected_directory(const FilePath& path) = 0;
+  virtual base::FilePath last_selected_directory() = 0;
+  virtual void set_last_selected_directory(const base::FilePath& path) = 0;
 
 #if defined(OS_CHROMEOS)
   enum AppLocaleChangedVia {

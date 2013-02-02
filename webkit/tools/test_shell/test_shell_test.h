@@ -20,7 +20,7 @@
 class TestShellTest : public testing::Test {
  protected:
   // Returns the path "test_case_path/test_case".
-  GURL GetTestURL(const FilePath& test_case_path,
+  GURL GetTestURL(const base::FilePath& test_case_path,
                   const std::string& test_case);
 
   virtual void SetUp() OVERRIDE;
@@ -31,7 +31,7 @@ class TestShellTest : public testing::Test {
 
  protected:
   // Location of SOURCE_ROOT/webkit/data/
-  FilePath data_dir_;
+  base::FilePath data_dir_;
 
   TestShell* test_shell_;
 };

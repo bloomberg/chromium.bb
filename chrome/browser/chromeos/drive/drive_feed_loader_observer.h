@@ -7,7 +7,9 @@
 
 #include <string>
 
+namespace base {
 class FilePath;
+}
 
 namespace drive {
 
@@ -18,7 +20,7 @@ class DriveFeedLoaderObserver {
   // Triggered when a content of a directory has been changed.
   // |directory_path| is a virtual directory path representing the
   // changed directory.
-  virtual void OnDirectoryChanged(const FilePath& directory_path) {
+  virtual void OnDirectoryChanged(const base::FilePath& directory_path) {
   }
 
   // Triggered when a resource list is fetched. |num_accumulated_entries|

@@ -6,9 +6,12 @@
 #define CLOUD_PRINT_VIRTUAL_DRIVER_WIN_VIRTUAL_DRIVER_HELPERS_H_
 
 #include <windows.h>
+
 #include "base/string16.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace cloud_print {
 
@@ -27,7 +30,7 @@ HRESULT GetLastHResult();
 string16 GetPortMonitorDllName();
 
 // Gets the standard install path for "version 3" print drivers.
-HRESULT GetPrinterDriverDir(FilePath* path);
+HRESULT GetPrinterDriverDir(base::FilePath* path);
 
 // Retrieves a string from the string table of the module that contains the
 // calling code.

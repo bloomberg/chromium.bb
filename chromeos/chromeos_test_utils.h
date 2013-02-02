@@ -7,7 +7,9 @@
 
 #include <string>
 
+namespace base {
 class FilePath;
+}
 
 namespace chromeos {
 namespace test_utils {
@@ -15,7 +17,7 @@ namespace test_utils {
 // Returns the path to the given test data file for this library.
 bool GetTestDataPath(const std::string& component,
                      const std::string& filename,
-                     FilePath* data_dir);
+                     base::FilePath* data_dir);
 
 }  // namespace test_utils
 }  // namespace chromeos

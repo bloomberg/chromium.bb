@@ -8,7 +8,7 @@ namespace fileapi {
 
 MountPoints::MountPointInfo::MountPointInfo() {}
 MountPoints::MountPointInfo::MountPointInfo(
-    const std::string& name, const FilePath& path)
+    const std::string& name, const base::FilePath& path)
     : name(name), path(path) {}
 
 }  // namespace fileapi

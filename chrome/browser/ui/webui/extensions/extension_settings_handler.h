@@ -28,11 +28,11 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 class ExtensionService;
-class FilePath;
 class PrefServiceSyncable;
 
 namespace base {
 class DictionaryValue;
+class FilePath;
 class ListValue;
 }
 
@@ -104,10 +104,10 @@ class ExtensionSettingsHandler
   virtual void RegisterMessages() OVERRIDE;
 
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index, void* params) OVERRIDE;
   virtual void MultiFilesSelected(
-      const std::vector<FilePath>& files, void* params) OVERRIDE;
+      const std::vector<base::FilePath>& files, void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE {}
 
   // content::NotificationObserver implementation.
@@ -218,7 +218,7 @@ class ExtensionSettingsHandler
 
   // Used to start the |load_extension_dialog_| in the last directory that was
   // loaded.
-  FilePath last_unpacked_directory_;
+  base::FilePath last_unpacked_directory_;
 
   // Used to show confirmation UI for uninstalling extensions in incognito mode.
   scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;

@@ -23,8 +23,11 @@
 typedef std::vector<unsigned char> ScreenshotData;
 typedef linked_ptr<ScreenshotData> ScreenshotDataPtr;
 
-class FilePath;
 class Profile;
+
+namespace base {
+class FilePath;
+}
 
 // ScreenshotSource is the data source that serves screenshots (saved
 // or current) to the bug report html ui.
@@ -40,7 +43,7 @@ class ScreenshotSource : public content::URLDataSource {
 
   // Common access for the screenshot directory, parameter is set to the
   // requested directory and return value of true is given upon success.
-  static bool GetScreenshotDirectory(FilePath* directory);
+  static bool GetScreenshotDirectory(base::FilePath* directory);
 #endif
 
   // Get the basefilename for screenshots
@@ -89,14 +92,14 @@ class ScreenshotSource : public content::URLDataSource {
   void SendSavedScreenshot(
       const std::string& screenshot_path,
       const content::URLDataSource::GotDataCallback& callback,
-      const FilePath& file);
+      const base::FilePath& file);
 
   // The callback for Drive's getting file method.
   void GetSavedScreenshotCallback(
       const std::string& screenshot_path,
       const content::URLDataSource::GotDataCallback& callback,
       drive::DriveFileError error,
-      const FilePath& file,
+      const base::FilePath& file,
       const std::string& unused_mime_type,
       drive::DriveFileType file_type);
 

@@ -10,7 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/system_monitor/removable_storage_notifications.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace chrome {
 
@@ -35,7 +37,7 @@ class RemovableDeviceNotificationsWindowWin
 
   // RemovableStorageNotifications:
   virtual bool GetDeviceInfoForPath(
-      const FilePath& path,
+      const base::FilePath& path,
       StorageInfo* device_info) const OVERRIDE;
   virtual uint64 GetStorageSize(const std::string& location) const OVERRIDE;
   virtual bool GetMTPStorageInfoFromDeviceId(
@@ -57,7 +59,7 @@ class RemovableDeviceNotificationsWindowWin
   // Gets the removable storage information given a |device_path|. On success,
   // returns true and fills in |device_location|, |unique_id|, |name| and
   // |removable|.
-  bool GetDeviceInfo(const FilePath& device_path,
+  bool GetDeviceInfo(const base::FilePath& device_path,
                      string16* device_location,
                      std::string* unique_id,
                      string16* name,

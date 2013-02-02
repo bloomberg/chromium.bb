@@ -15,7 +15,7 @@ class UnittestTestServer : public net::TestServer {
   UnittestTestServer()
       : net::TestServer(net::TestServer::TYPE_HTTP,
                         net::TestServer::kLocalhost,
-                        FilePath(FILE_PATH_LITERAL("webkit/data"))) {
+                        base::FilePath(FILE_PATH_LITERAL("webkit/data"))) {
   }
 };
 

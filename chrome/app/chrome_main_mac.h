@@ -5,11 +5,13 @@
 #ifndef CHROME_APP_CHROME_MAIN_MAC_H_
 #define CHROME_APP_CHROME_MAIN_MAC_H_
 
+namespace base {
 class FilePath;
+}
 
 // Checks if the UserDataDir policy has been set and returns its value in the
 // |user_data_dir| parameter. If no policy is set the parameter is not changed.
-void CheckUserDataDirPolicy(FilePath* user_data_dir);
+void CheckUserDataDirPolicy(base::FilePath* user_data_dir);
 
 // Sets the app bundle (base::mac::FrameworkBundle()) to the framework's bundle,
 // and sets the base bundle ID (base::mac::BaseBundleID()) to the proper value

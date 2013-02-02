@@ -509,9 +509,9 @@ WebHistoryItem HistoryItemFromString(const std::string& serialized_item) {
   return HistoryItemFromString(serialized_item, ALWAYS_INCLUDE_FORM_DATA, true);
 }
 
-std::vector<FilePath> FilePathsFromHistoryState(
+std::vector<base::FilePath> FilePathsFromHistoryState(
     const std::string& content_state) {
-  std::vector<FilePath> to_return;
+  std::vector<base::FilePath> to_return;
   // TODO(darin): We should avoid using the WebKit API here, so that we do not
   // need to have WebKit initialized before calling this method.
   const WebHistoryItem& item =

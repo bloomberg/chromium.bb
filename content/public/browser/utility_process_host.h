@@ -9,9 +9,8 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_sender.h"
 
-class FilePath;
-
 namespace base {
+class FilePath;
 class SequencedTaskRunner;
 }
 
@@ -49,7 +48,7 @@ class UtilityProcessHost : public IPC::Sender,
 
   // Allows a directory to be opened through the sandbox, in case it's needed by
   // the operation.
-  virtual void SetExposedDir(const FilePath& dir) = 0;
+  virtual void SetExposedDir(const base::FilePath& dir) = 0;
 
   // Make the process run without a sandbox.
   virtual void DisableSandbox() = 0;

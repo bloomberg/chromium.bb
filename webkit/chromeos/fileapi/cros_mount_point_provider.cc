@@ -72,18 +72,18 @@ void CrosMountPointProvider::ValidateFileSystemRoot(
   callback.Run(base::PLATFORM_FILE_OK);
 }
 
-FilePath CrosMountPointProvider::GetFileSystemRootPathOnFileThread(
+base::FilePath CrosMountPointProvider::GetFileSystemRootPathOnFileThread(
     const fileapi::FileSystemURL& url,
     bool create) {
   DCHECK(fileapi::IsolatedContext::IsIsolatedType(url.mount_type()));
   if (!url.is_valid())
-    return FilePath();
+    return base::FilePath();
 
-  FilePath root_path;
+  base::FilePath root_path;
   std::string mount_name = url.filesystem_id();
   if (!mount_points_->GetRegisteredPath(mount_name, &root_path) &&
       !system_mount_points_->GetRegisteredPath(mount_name, &root_path)) {
-    return FilePath();
+    return base::FilePath();
   }
 
   return root_path.DirName();
@@ -116,7 +116,8 @@ bool CrosMountPointProvider::IsAccessAllowed(
 }
 
 // TODO(zelidrag): Share this code with SandboxMountPointProvider impl.
-bool CrosMountPointProvider::IsRestrictedFileName(const FilePath& path) const {
+bool CrosMountPointProvider::IsRestrictedFileName(
+    const base::FilePath& path) const {
   return false;
 }
 
@@ -147,12 +148,12 @@ void CrosMountPointProvider::GrantFullAccessToExtension(
   for (size_t i = 0; i < files.size(); ++i) {
     file_access_permissions_->GrantAccessPermission(
         extension_id,
-        FilePath::FromUTF8Unsafe(files[i].name));
+        base::FilePath::FromUTF8Unsafe(files[i].name));
   }
 }
 
 void CrosMountPointProvider::GrantFileAccessToExtension(
-    const std::string& extension_id, const FilePath& virtual_path) {
+    const std::string& extension_id, const base::FilePath& virtual_path) {
   // All we care about here is access from extensions for now.
   DCHECK(special_storage_policy_->IsFileHandler(extension_id));
   if (!special_storage_policy_->IsFileHandler(extension_id))
@@ -160,7 +161,7 @@ void CrosMountPointProvider::GrantFileAccessToExtension(
 
   std::string id;
   fileapi::FileSystemType type;
-  FilePath path;
+  base::FilePath path;
   if (!mount_points_->CrackVirtualPath(virtual_path, &id, &type, &path) &&
       !system_mount_points_->CrackVirtualPath(virtual_path,
                                               &id, &type, &path)) {
@@ -180,12 +181,12 @@ void CrosMountPointProvider::RevokeAccessForExtension(
   file_access_permissions_->RevokePermissions(extension_id);
 }
 
-std::vector<FilePath> CrosMountPointProvider::GetRootDirectories() const {
+std::vector<base::FilePath> CrosMountPointProvider::GetRootDirectories() const {
   std::vector<fileapi::MountPoints::MountPointInfo> mount_points;
   mount_points_->AddMountPointInfosTo(&mount_points);
   system_mount_points_->AddMountPointInfosTo(&mount_points);
 
-  std::vector<FilePath> root_dirs;
+  std::vector<base::FilePath> root_dirs;
   for (size_t i = 0; i < mount_points.size(); ++i)
     root_dirs.push_back(mount_points[i].path);
   return root_dirs;
@@ -272,8 +273,8 @@ fileapi::FileStreamWriter* CrosMountPointProvider::CreateFileStreamWriter(
   return new fileapi::LocalFileStreamWriter(url.path(), offset);
 }
 
-bool CrosMountPointProvider::GetVirtualPath(const FilePath& filesystem_path,
-                                           FilePath* virtual_path) {
+bool CrosMountPointProvider::GetVirtualPath(const base::FilePath& filesystem_path,
+                                           base::FilePath* virtual_path) {
   return mount_points_->GetVirtualPath(filesystem_path, virtual_path) ||
          system_mount_points_->GetVirtualPath(filesystem_path, virtual_path);
 }

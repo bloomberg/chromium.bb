@@ -58,7 +58,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginImpl :
   WebPluginImpl(
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       const base::WeakPtr<WebPluginPageDelegate>& page_delegate);
   virtual ~WebPluginImpl();
 
@@ -315,7 +315,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginImpl :
   WebPluginGeometry geometry_;
 
   // The location of the plugin on disk.
-  FilePath file_path_;
+  base::FilePath file_path_;
 
   // The mime type of the plugin.
   std::string mime_type_;

@@ -11,7 +11,9 @@
 #include "base/platform_file.h"
 #include "net/base/net_export.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace disk_cache {
 

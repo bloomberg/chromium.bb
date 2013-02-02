@@ -16,7 +16,7 @@ DataElement::DataElement()
 DataElement::~DataElement() {}
 
 void DataElement::SetToFilePathRange(
-    const FilePath& path,
+    const base::FilePath& path,
     uint64 offset, uint64 length,
     const base::Time& expected_modification_time) {
   type_ = TYPE_FILE;

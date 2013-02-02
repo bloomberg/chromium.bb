@@ -10,9 +10,12 @@
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 
-class FilePath;
 class ChromeAppViewAsh;
 struct MetroViewerHostMsg_SaveAsDialogParams;
+
+namespace base {
+class FilePath;
+}
 
 // Base class for the file pickers.
 class FilePickerSessionBase {
@@ -79,7 +82,7 @@ class OpenFilePickerSession : public FilePickerSessionBase {
                                  const string16& default_path,
                                  bool allow_multi_select);
 
-  const std::vector<FilePath>& filenames() const {
+  const std::vector<base::FilePath>& filenames() const {
     return filenames_;
   }
 
@@ -113,7 +116,7 @@ class OpenFilePickerSession : public FilePickerSessionBase {
   bool allow_multi_select_;
   // If multi select is true then this member contains the list of filenames
   // to be returned back.
-  std::vector<FilePath> filenames_;
+  std::vector<base::FilePath> filenames_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenFilePickerSession);
 };

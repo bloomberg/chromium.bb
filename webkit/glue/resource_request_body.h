@@ -14,6 +14,7 @@
 #include "webkit/glue/webkit_glue_export.h"
 
 namespace base {
+class FilePath;
 class TaskRunner;
 }
 
@@ -42,7 +43,7 @@ class WEBKIT_GLUE_EXPORT ResourceRequestBody
   ResourceRequestBody();
 
   void AppendBytes(const char* bytes, int bytes_len);
-  void AppendFileRange(const FilePath& file_path,
+  void AppendFileRange(const base::FilePath& file_path,
                        uint64 offset, uint64 length,
                        const base::Time& expected_modification_time);
   void AppendBlob(const GURL& blob_url);

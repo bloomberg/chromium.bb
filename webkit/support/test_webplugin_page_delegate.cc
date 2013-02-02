@@ -11,13 +11,13 @@ namespace webkit_support {
 
 webkit::npapi::WebPluginDelegate*
 TestWebPluginPageDelegate::CreatePluginDelegate(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     const std::string& mime_type) {
   return webkit::npapi::WebPluginDelegateImpl::Create(file_path, mime_type);
 }
 
 WebKit::WebPlugin* TestWebPluginPageDelegate::CreatePluginReplacement(
-    const FilePath& file_path) {
+    const base::FilePath& file_path) {
   return NULL;
 }
 

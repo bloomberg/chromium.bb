@@ -71,14 +71,14 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
 
   // Add/Remove an extra plugin to load when we actually do the loading.  Must
   // be called before the plugins have been loaded.
-  void AddExtraPluginPath(const FilePath& plugin_path);
-  void RemoveExtraPluginPath(const FilePath& plugin_path);
+  void AddExtraPluginPath(const base::FilePath& plugin_path);
+  void RemoveExtraPluginPath(const base::FilePath& plugin_path);
 
   // Same as above, but specifies a directory in which to search for plugins.
-  void AddExtraPluginDir(const FilePath& plugin_dir);
+  void AddExtraPluginDir(const base::FilePath& plugin_dir);
 
   // Get the ordered list of directories from which to load plugins
-  void GetPluginDirectories(std::vector<FilePath>* plugin_dirs);
+  void GetPluginDirectories(std::vector<base::FilePath>* plugin_dirs);
 
   // Register an internal plugin with the specified plugin information.
   // An internal plugin must be registered before it can
@@ -100,7 +100,7 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // on the path from the version info previously registered.
   //
   // This is generally only necessary for tests.
-  void UnregisterInternalPlugin(const FilePath& path);
+  void UnregisterInternalPlugin(const base::FilePath& path);
 
   // Gets a list of all the registered internal plugins.
   void GetInternalPlugins(std::vector<webkit::WebPluginInfo>* plugins);
@@ -110,7 +110,7 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // internal plugin, "entry_points" is filled in as well with a
   // internally-owned PluginEntryPoints pointer.
   // Returns false if the library couldn't be found, or if it's not a plugin.
-  bool ReadPluginInfo(const FilePath& filename,
+  bool ReadPluginInfo(const base::FilePath& filename,
                       webkit::WebPluginInfo* info,
                       const PluginEntryPoints** entry_points);
 
@@ -153,7 +153,7 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
 
   // Load a specific plugin with full path. Return true iff loading the plug-in
   // was successful.
-  bool LoadPluginIntoPluginList(const FilePath& filename,
+  bool LoadPluginIntoPluginList(const base::FilePath& filename,
                                 std::vector<webkit::WebPluginInfo>* plugins,
                                 webkit::WebPluginInfo* plugin_info);
 
@@ -161,7 +161,7 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // using a different instance of this class.
 
   // Computes a list of all plugins to potentially load from all sources.
-  void GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths);
+  void GetPluginPathsToLoad(std::vector<base::FilePath>* plugin_paths);
 
   // Clears the internal list of Plugins and copies them from the vector.
   void SetPlugins(const std::vector<webkit::WebPluginInfo>& plugins);
@@ -200,7 +200,8 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
 
   // Walks a directory and produces a list of all the plugins to potentially
   // load in that directory.
-  void GetPluginsInDir(const FilePath& path, std::vector<FilePath>* plugins);
+  void GetPluginsInDir(const base::FilePath& path,
+                       std::vector<base::FilePath>* plugins);
 
   // Returns true if we should load the given plugin, or false otherwise.
   // |plugins| is the list of plugins we have crawled in the current plugin
@@ -234,7 +235,7 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
 
   // Gets plugin paths registered under HKCU\Software\MozillaPlugins and
   // HKLM\Software\MozillaPlugins.
-  void GetPluginPathsFromRegistry(std::vector<FilePath>* plugins);
+  void GetPluginPathsFromRegistry(std::vector<base::FilePath>* plugins);
 #endif
 
   //
@@ -247,10 +248,10 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   LoadingState loading_state_;
 
   // Extra plugin paths that we want to search when loading.
-  std::vector<FilePath> extra_plugin_paths_;
+  std::vector<base::FilePath> extra_plugin_paths_;
 
   // Extra plugin directories that we want to search when loading.
-  std::vector<FilePath> extra_plugin_dirs_;
+  std::vector<base::FilePath> extra_plugin_dirs_;
 
   // Holds information about internal plugins.
   std::vector<InternalPlugin> internal_plugins_;

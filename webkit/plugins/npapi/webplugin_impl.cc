@@ -464,7 +464,7 @@ bool WebPluginImpl::isPlaceholder() {
 WebPluginImpl::WebPluginImpl(
     WebFrame* webframe,
     const WebPluginParams& params,
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     const base::WeakPtr<WebPluginPageDelegate>& page_delegate)
     : windowless_(false),
       window_(gfx::kNullPluginWindow),

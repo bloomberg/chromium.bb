@@ -79,7 +79,7 @@ class GetFileInfoHelper {
  private:
   base::PlatformFileError error_;
   base::PlatformFileInfo file_info_;
-  FilePath platform_path_;
+  base::FilePath platform_path_;
   FileSystemFileUtil::SnapshotFilePolicy snapshot_policy_;
   DISALLOW_COPY_AND_ASSIGN(GetFileInfoHelper);
 };
@@ -181,7 +181,7 @@ bool FileSystemFileUtilProxy::MoveFileLocal(
 bool FileSystemFileUtilProxy::CopyInForeignFile(
     FileSystemOperationContext* context,
     FileSystemFileUtil* file_util,
-    const FilePath& src_local_disk_file_path,
+    const base::FilePath& src_local_disk_file_path,
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   return base::PostTaskAndReplyWithResult(

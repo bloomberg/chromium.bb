@@ -139,7 +139,7 @@ WebString SimpleWebMimeRegistryImpl::mimeTypeFromFile(
 
 WebString SimpleWebMimeRegistryImpl::preferredExtensionForMIMEType(
     const WebString& mime_type) {
-  FilePath::StringType file_extension;
+  base::FilePath::StringType file_extension;
   net::GetPreferredExtensionForMimeType(ToASCIIOrEmpty(mime_type),
                                         &file_extension);
   return webkit_base::FilePathStringToWebString(file_extension);

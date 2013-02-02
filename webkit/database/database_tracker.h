@@ -38,8 +38,9 @@ class SpecialStoragePolicy;
 
 namespace webkit_database {
 
-WEBKIT_STORAGE_EXPORT extern const FilePath::CharType kDatabaseDirectoryName[];
-WEBKIT_STORAGE_EXPORT extern const FilePath::CharType
+WEBKIT_STORAGE_EXPORT extern const base::FilePath::CharType
+    kDatabaseDirectoryName[];
+WEBKIT_STORAGE_EXPORT extern const base::FilePath::CharType
     kTrackerDatabaseFileName[];
 
 class DatabasesTable;
@@ -93,7 +94,7 @@ class WEBKIT_STORAGE_EXPORT DatabaseTracker
     virtual ~Observer() {}
   };
 
-  DatabaseTracker(const FilePath& profile_path,
+  DatabaseTracker(const base::FilePath& profile_path,
                   bool is_incognito,
                   quota::SpecialStoragePolicy* special_storage_policy,
                   quota::QuotaManagerProxy* quota_manager_proxy,
@@ -119,8 +120,8 @@ class WEBKIT_STORAGE_EXPORT DatabaseTracker
 
   void CloseTrackerDatabaseAndClearCaches();
 
-  const FilePath& DatabaseDirectory() const { return db_dir_; }
-  FilePath GetFullDBFilePath(const string16& origin_identifier,
+  const base::FilePath& DatabaseDirectory() const { return db_dir_; }
+  base::FilePath GetFullDBFilePath(const string16& origin_identifier,
                              const string16& database_name);
 
   // virtual for unit-testing only
@@ -264,8 +265,8 @@ class WEBKIT_STORAGE_EXPORT DatabaseTracker
   const bool is_incognito_;
   bool force_keep_session_state_;
   bool shutting_down_;
-  const FilePath profile_path_;
-  const FilePath db_dir_;
+  const base::FilePath profile_path_;
+  const base::FilePath db_dir_;
   scoped_ptr<sql::Connection> db_;
   scoped_ptr<DatabasesTable> databases_table_;
   scoped_ptr<sql::MetaTable> meta_table_;

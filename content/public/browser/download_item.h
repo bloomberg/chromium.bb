@@ -28,10 +28,10 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/common/page_transition_types.h"
 
-class FilePath;
 class GURL;
 
 namespace base {
+class FilePath;
 class Time;
 class TimeDelta;
 }

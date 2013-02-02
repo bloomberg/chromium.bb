@@ -50,7 +50,7 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
   // arguments to WebBlob::createFromFile. Note: when mime_data has
   // length==1, this blob will be set as the 'blob' member of the first
   // object in the delivered data payload.
-  FilePath blob_file;
+  base::FilePath blob_file;
   // Length of the blob.
   int64 blob_length;
 

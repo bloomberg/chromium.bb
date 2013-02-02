@@ -51,33 +51,33 @@ class FileUtilAsync {
   // PLATFORM_FILE_OK is passed to |callback| with a pointer to newly
   // created AsyncFileStream object. The caller should delete the
   // stream. On failure, an error code is passed instead.
-  virtual void Open(const FilePath& file_path,
+  virtual void Open(const base::FilePath& file_path,
                     int file_flags,  // PlatformFileFlags
                     const OpenCallback& callback) = 0;
 
   // Gets file info of the given |file_path|. On success,
   // PLATFORM_FILE_OK is passed to |callback| with the the obtained file
   // info. On failure, an error code is passed instead.
-  virtual void GetFileInfo(const FilePath& file_path,
+  virtual void GetFileInfo(const base::FilePath& file_path,
                            const GetFileInfoCallback& callback) = 0;
 
   // Creates a file of the given |file_path|. On success,
   // PLATFORM_FILE_OK is passed to |callback|. On failure, an error code
   // is passed instead.
-  virtual void Create(const FilePath& file_path,
+  virtual void Create(const base::FilePath& file_path,
                       const StatusCallback& callback) = 0;
 
   // Truncates a file of the given |file_path| to |length|. On success,
   // PLATFORM_FILE_OK is passed to |callback|. On failure, an error code
   // is passed instead.
-  virtual void Truncate(const FilePath& file_path,
+  virtual void Truncate(const base::FilePath& file_path,
                         int64 length,
                         const StatusCallback& callback) = 0;
 
   // Modifies the timestamps of a file of the given |file_path|. On
   // success, PLATFORM_FILE_OK is passed to |callback|. On failure, an
   // error code is passed instead.
-  virtual void Touch(const FilePath& file_path,
+  virtual void Touch(const base::FilePath& file_path,
                      const base::Time& last_access_time,
                      const base::Time& last_modified_time,
                      const StatusCallback& callback) = 0;
@@ -86,14 +86,14 @@ class FileUtilAsync {
   // is true, removes the contents of the given directory recursively. On
   // success, PLATFORM_FILE_OK is passed to |callback|. On failure, an
   // error code is passed instead.
-  virtual void Remove(const FilePath& file_path,
+  virtual void Remove(const base::FilePath& file_path,
                       bool recursive,
                       const StatusCallback& callback) = 0;
 
   // Creates a directory of the given |dir_path|. On success,
   // PLATFORM_FILE_OK is passed to |callback|. On failure, an error code
   // is passed instead.
-  virtual void CreateDirectory(const FilePath& dir_path,
+  virtual void CreateDirectory(const base::FilePath& dir_path,
                                const StatusCallback& callback) = 0;
 
   // Reads a directory of the given |dir_path|. On success,
@@ -112,7 +112,7 @@ class FileUtilAsync {
   // before callback is actually called.
   //
   // TODO(olege): Maybe make it possible to read only a part of the directory.
-  virtual void ReadDirectory(const FilePath& dir_path,
+  virtual void ReadDirectory(const base::FilePath& dir_path,
                              const ReadDirectoryCallback& callback) = 0;
 
   // TODO(olege): Add LocalCopy and LocalMove.

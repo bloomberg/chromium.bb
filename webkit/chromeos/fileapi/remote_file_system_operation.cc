@@ -236,7 +236,7 @@ void RemoteFileSystemOperation::DidDirectoryExists(
     const StatusCallback& callback,
     base::PlatformFileError rv,
     const base::PlatformFileInfo& file_info,
-    const FilePath& unused) {
+    const base::FilePath& unused) {
   if (rv == base::PLATFORM_FILE_OK && !file_info.is_directory)
     rv = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
   callback.Run(rv);
@@ -246,7 +246,7 @@ void RemoteFileSystemOperation::DidFileExists(
     const StatusCallback& callback,
     base::PlatformFileError rv,
     const base::PlatformFileInfo& file_info,
-    const FilePath& unused) {
+    const base::FilePath& unused) {
   if (rv == base::PLATFORM_FILE_OK && file_info.is_directory)
     rv = base::PLATFORM_FILE_ERROR_NOT_A_FILE;
   callback.Run(rv);
@@ -256,7 +256,7 @@ void RemoteFileSystemOperation::DidGetMetadata(
     const GetMetadataCallback& callback,
     base::PlatformFileError rv,
     const base::PlatformFileInfo& file_info,
-    const FilePath& platform_path) {
+    const base::FilePath& platform_path) {
   callback.Run(rv, file_info, platform_path);
 }
 
@@ -310,7 +310,7 @@ void RemoteFileSystemOperation::DidCreateSnapshotFile(
     const SnapshotFileCallback& callback,
     base::PlatformFileError result,
     const base::PlatformFileInfo& file_info,
-    const FilePath& platform_path,
+    const base::FilePath& platform_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   callback.Run(result, file_info, platform_path, file_ref);
 }

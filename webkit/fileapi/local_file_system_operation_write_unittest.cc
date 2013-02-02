@@ -43,7 +43,7 @@ void AssertStatusEq(base::PlatformFileError expected,
 
 class MockQuotaManager : public QuotaManager {
  public:
-  MockQuotaManager(const FilePath& base_dir, int64 quota)
+  MockQuotaManager(const base::FilePath& base_dir, int64 quota)
       : QuotaManager(false /* is_incognito */, base_dir,
                      base::MessageLoopProxy::current(),
                      base::MessageLoopProxy::current(),
@@ -109,7 +109,7 @@ class LocalFileSystemOperationWriteTest
     return &change_observer_;
   }
 
-  FileSystemURL URLForPath(const FilePath& path) const {
+  FileSystemURL URLForPath(const base::FilePath& path) const {
     return test_helper_.CreateURL(path);
   }
 
@@ -153,7 +153,7 @@ class LocalFileSystemOperationWriteTest
   MessageLoop loop_;
 
   base::ScopedTempDir dir_;
-  FilePath virtual_path_;
+  base::FilePath virtual_path_;
 
   // For post-operation status.
   base::PlatformFileError status_;
@@ -172,13 +172,13 @@ class LocalFileSystemOperationWriteTest
 
 void LocalFileSystemOperationWriteTest::SetUp() {
   ASSERT_TRUE(dir_.CreateUniqueTempDir());
-  FilePath base_dir = dir_.path().AppendASCII("filesystem");
+  base::FilePath base_dir = dir_.path().AppendASCII("filesystem");
 
   quota_manager_ = new MockQuotaManager(base_dir, 1024);
   test_helper_.SetUp(base_dir,
                      false /* unlimited quota */,
                      quota_manager_->proxy());
-  virtual_path_ = FilePath(FILE_PATH_LITERAL("temporary file"));
+  virtual_path_ = base::FilePath(FILE_PATH_LITERAL("temporary file"));
 
   operation()->CreateFile(
       URLForPath(virtual_path_), true /* exclusive */,
@@ -248,7 +248,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidFile) {
   ScopedTextBlob blob(url_request_context_, blob_url, "It\'ll not be written.");
 
   operation()->Write(&url_request_context_,
-                     URLForPath(FilePath(FILE_PATH_LITERAL("nonexist"))),
+                     URLForPath(base::FilePath(FILE_PATH_LITERAL("nonexist"))),
                      blob_url, 0, RecordWriteCallback());
   MessageLoop::current()->Run();
 
@@ -260,7 +260,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidFile) {
 }
 
 TEST_F(LocalFileSystemOperationWriteTest, TestWriteDir) {
-  FilePath virtual_dir_path(FILE_PATH_LITERAL("d"));
+  base::FilePath virtual_dir_path(FILE_PATH_LITERAL("d"));
   operation()->CreateDirectory(
       URLForPath(virtual_dir_path),
       true /* exclusive */, false /* recursive */,
@@ -330,7 +330,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelFailingWrite) {
 
   FileSystemOperation* write_operation = operation();
   write_operation->Write(&url_request_context_,
-                         URLForPath(FilePath(FILE_PATH_LITERAL("nonexist"))),
+                         URLForPath(base::FilePath(FILE_PATH_LITERAL("nonexist"))),
                          blob_url, 0, RecordWriteCallback());
   write_operation->Cancel(RecordCancelCallback());
   // We use RunAllPendings() instead of Run() here, because we won't dispatch

@@ -125,6 +125,8 @@
 class Pickle;
 class PickleIterator;
 
+namespace base {
+
 // An abstraction to isolate users from the differences between native
 // pathnames on different platforms.
 class BASE_EXPORT FilePath {
@@ -398,8 +400,13 @@ class BASE_EXPORT FilePath {
   StringType path_;
 };
 
+}  // namespace base
+
+// TODO(brettw) remove this once callers properly use the base namespace.
+using base::FilePath;
+
 // This is required by googletest to print a readable output on test failures.
-BASE_EXPORT extern void PrintTo(const FilePath& path, std::ostream* out);
+BASE_EXPORT extern void PrintTo(const base::FilePath& path, std::ostream* out);
 
 // Macros for string literal initialization of FilePath::CharType[], and for
 // using a FilePath::CharType[] in a printf-style format string.
@@ -419,15 +426,15 @@ namespace BASE_HASH_NAMESPACE {
 #if defined(COMPILER_GCC)
 
 template<>
-struct hash<FilePath> {
-  size_t operator()(const FilePath& f) const {
-    return hash<FilePath::StringType>()(f.value());
+struct hash<base::FilePath> {
+  size_t operator()(const base::FilePath& f) const {
+    return hash<base::FilePath::StringType>()(f.value());
   }
 };
 
 #elif defined(COMPILER_MSVC)
 
-inline size_t hash_value(const FilePath& f) {
+inline size_t hash_value(const base::FilePath& f) {
   return hash_value(f.value());
 }
 

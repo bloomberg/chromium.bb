@@ -17,7 +17,9 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_sync_client_observer.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace drive {
 
@@ -45,7 +47,8 @@ class DrivePrefetcher : public DriveFileSystemObserver,
 
   // DriveFileSystemObserver overrides.
   virtual void OnInitialLoadFinished(DriveFileError error) OVERRIDE;
-  virtual void OnDirectoryChanged(const FilePath& directory_path) OVERRIDE;
+  virtual void OnDirectoryChanged(
+      const base::FilePath& directory_path) OVERRIDE;
 
   // DriveSyncClientObserver overrides.
   virtual void OnSyncTaskStarted() OVERRIDE;
@@ -63,7 +66,7 @@ class DrivePrefetcher : public DriveFileSystemObserver,
   // Called when DoPrefetch is done.
   void OnPrefetchFinished(const std::string& resource_id,
                           DriveFileError error,
-                          const FilePath& file_path,
+                          const base::FilePath& file_path,
                           const std::string& mime_type,
                           DriveFileType file_type);
 
@@ -72,8 +75,8 @@ class DrivePrefetcher : public DriveFileSystemObserver,
 
   // Helper methods to traverse over the file system.
   void VisitFile(const DriveEntryProto& entry);
-  void VisitDirectory(const FilePath& directory_path);
-  void OnReadDirectory(const FilePath& directory_path,
+  void VisitDirectory(const base::FilePath& directory_path);
+  void OnReadDirectory(const base::FilePath& directory_path,
                        DriveFileError error,
                        bool hide_hosted_documents,
                        scoped_ptr<DriveEntryProtoVector> entries);

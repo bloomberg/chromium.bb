@@ -64,7 +64,7 @@ class FileSystemOperation {
   typedef base::Callback<
       void(base::PlatformFileError result,
            const base::PlatformFileInfo& file_info,
-           const FilePath& platform_path)> GetMetadataCallback;
+           const base::FilePath& platform_path)> GetMetadataCallback;
 
   // Used for OpenFile(). |result| is the return code of the operation.
   typedef base::Callback<
@@ -107,7 +107,7 @@ class FileSystemOperation {
   typedef base::Callback<
       void(base::PlatformFileError result,
            const base::PlatformFileInfo& file_info,
-           const FilePath& platform_path,
+           const base::FilePath& platform_path,
            const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref)>
           SnapshotFileCallback;
 

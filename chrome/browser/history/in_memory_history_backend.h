@@ -21,9 +21,12 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class FilePath;
 class GURL;
 class Profile;
+
+namespace base {
+class FilePath;
+}
 
 namespace history {
 
@@ -42,7 +45,7 @@ class InMemoryHistoryBackend : public content::NotificationObserver {
   // Initializes the backend from the history database pointed to by the
   // full path in |history_filename|. |db| is used for setting up the
   // InMemoryDatabase.
-  bool Init(const FilePath& history_filename, URLDatabase* db);
+  bool Init(const base::FilePath& history_filename, URLDatabase* db);
 
   // Does initialization work when this object is attached to the history
   // system on the main thread. The argument is the profile with which the

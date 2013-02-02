@@ -39,7 +39,9 @@
 #include <errno.h>
 #endif
 
+namespace base {
 class FilePath;
+}
 
 namespace net {
 
@@ -97,10 +99,10 @@ class FileStream::Context {
   // not closed yet.
   void Orphan();
 
-  void OpenAsync(const FilePath& path,
+  void OpenAsync(const base::FilePath& path,
                  int open_flags,
                  const CompletionCallback& callback);
-  int OpenSync(const FilePath& path, int open_flags);
+  int OpenSync(const base::FilePath& path, int open_flags);
 
   void CloseSync();
 
@@ -137,9 +139,9 @@ class FileStream::Context {
   // Map system error into network error code and log it with |bound_net_log_|.
   int RecordAndMapError(int error, FileErrorSource source) const;
 
-  void BeginOpenEvent(const FilePath& path);
+  void BeginOpenEvent(const base::FilePath& path);
 
-  OpenResult OpenFileImpl(const FilePath& path, int open_flags);
+  OpenResult OpenFileImpl(const base::FilePath& path, int open_flags);
 
   int ProcessOpenError(int error_code);
   void OnOpenCompleted(const CompletionCallback& callback, OpenResult result);

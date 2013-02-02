@@ -23,7 +23,7 @@ namespace {
 // check thread in the dtor.
 class ShareableFileMap {
  public:
-  typedef std::map<FilePath, ShareableFileReference*> FileMap;
+  typedef std::map<base::FilePath, ShareableFileReference*> FileMap;
   typedef FileMap::iterator iterator;
   typedef FileMap::key_type key_type;
   typedef FileMap::value_type value_type;
@@ -66,7 +66,7 @@ base::LazyInstance<ShareableFileMap> g_file_map = LAZY_INSTANCE_INITIALIZER;
 
 // static
 scoped_refptr<ShareableFileReference> ShareableFileReference::Get(
-    const FilePath& path) {
+    const base::FilePath& path) {
   ShareableFileMap::iterator found = g_file_map.Get().Find(path);
   ShareableFileReference* reference =
       (found == g_file_map.Get().End()) ? NULL : found->second;
@@ -75,7 +75,7 @@ scoped_refptr<ShareableFileReference> ShareableFileReference::Get(
 
 // static
 scoped_refptr<ShareableFileReference> ShareableFileReference::GetOrCreate(
-    const FilePath& path, FinalReleasePolicy policy,
+    const base::FilePath& path, FinalReleasePolicy policy,
     base::TaskRunner* file_task_runner) {
   DCHECK(file_task_runner);
   typedef std::pair<ShareableFileMap::iterator, bool> InsertResult;
@@ -101,7 +101,7 @@ void ShareableFileReference::AddFinalReleaseCallback(
 }
 
 ShareableFileReference::ShareableFileReference(
-    const FilePath& path, FinalReleasePolicy policy,
+    const base::FilePath& path, FinalReleasePolicy policy,
     base::TaskRunner* file_task_runner)
     : path_(path),
       final_release_policy_(policy),

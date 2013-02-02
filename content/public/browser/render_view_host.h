@@ -12,7 +12,6 @@
 #include "content/public/common/stop_find_action.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 
-class FilePath;
 class GURL;
 struct WebDropData;
 
@@ -21,6 +20,7 @@ class Point;
 }
 
 namespace base {
+class FilePath;
 class Value;
 }
 
@@ -113,7 +113,7 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // Notifies the listener that a directory enumeration is complete.
   virtual void DirectoryEnumerationFinished(
       int request_id,
-      const std::vector<FilePath>& files) = 0;
+      const std::vector<base::FilePath>& files) = 0;
 
   // Tells the renderer not to add scrollbars with height and width below a
   // threshold.

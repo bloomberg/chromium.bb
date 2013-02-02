@@ -11,9 +11,8 @@
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"
 
-class FilePath;
-
 namespace base {
+class FilePath;
 class Value;
 }
 
@@ -42,7 +41,7 @@ void RunBlockingPoolTask();
 
 // Returns the absolute path for a test file stored under
 // chrome/test/data/chromeos.
-FilePath GetTestFilePath(const std::string& relative_path);
+base::FilePath GetTestFilePath(const std::string& relative_path);
 
 // Returns the base URL for communicating with the local test server for
 // testing, running at the specified port number.
@@ -103,13 +102,13 @@ void CopyResultsFromGetAppListCallback(
 // Copies the results from DownloadActionCallback.
 void CopyResultsFromDownloadActionCallback(
     GDataErrorCode* error_out,
-    FilePath* temp_file_out,
+    base::FilePath* temp_file_out,
     GDataErrorCode error_in,
-    const FilePath& temp_file_in);
+    const base::FilePath& temp_file_in);
 
 // Returns a HttpResponse created from the given file path.
 scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
-    const FilePath& file_path);
+    const base::FilePath& file_path);
 
 // Does nothing for ReAuthenticateCallback(). This function should be used
 // if it is not expected to reach this method as there won't be any
@@ -120,7 +119,7 @@ void DoNothingForReAuthenticateCallback(
 // Returns true if |json_data| is not NULL and equals to the content in
 // |expected_json_file_path|. The failure reason will be logged into LOG(ERROR)
 // if necessary.
-bool VerifyJsonData(const FilePath& expected_json_file_path,
+bool VerifyJsonData(const base::FilePath& expected_json_file_path,
                     const base::Value* json_data);
 
 }  // namespace test_util

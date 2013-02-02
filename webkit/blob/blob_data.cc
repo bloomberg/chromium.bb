@@ -21,7 +21,7 @@ void BlobData::AppendData(const char* data, size_t length) {
   items_.back().SetToBytes(data, length);
 }
 
-void BlobData::AppendFile(const FilePath& file_path,
+void BlobData::AppendFile(const base::FilePath& file_path,
                           uint64 offset, uint64 length,
                           const base::Time& expected_modification_time) {
   DCHECK(length > 0);

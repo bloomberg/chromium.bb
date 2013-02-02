@@ -43,7 +43,7 @@ class TestShellTestSuite : public base::TestSuite {
   virtual void Initialize() {
     // Override DIR_EXE early in case anything in base::TestSuite uses it.
 #if defined(OS_MACOSX)
-    FilePath path;
+    base::FilePath path;
     PathService::Get(base::DIR_EXE, &path);
     path = path.AppendASCII("TestShell.app");
     base::mac::SetOverrideFrameworkBundlePath(path);

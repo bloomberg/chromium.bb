@@ -138,7 +138,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL("http://remote"),
         kFileSystemTypeTemporary,
-        FilePath().AppendASCII(dir_name));
+        base::FilePath().AppendASCII(dir_name));
 
     FileSystemOperationContext context(file_system_context_);
     context.set_allowed_bytes_growth(1024);
@@ -157,7 +157,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL("http://remote"),
         kFileSystemTypeTemporary,
-        FilePath().AppendASCII(file_name));
+        base::FilePath().AppendASCII(file_name));
 
     FileSystemOperationContext context(file_system_context_);
     context.set_allowed_bytes_growth(1024);
@@ -353,8 +353,8 @@ TEST_F(FileSystemURLRequestJobTest, GetMimeType) {
   const char kFilename[] = "hoge.html";
 
   std::string mime_type_direct;
-  FilePath::StringType extension =
-      FilePath().AppendASCII(kFilename).Extension();
+  base::FilePath::StringType extension =
+      base::FilePath().AppendASCII(kFilename).Extension();
   if (!extension.empty())
     extension = extension.substr(1);
   EXPECT_TRUE(net::GetWellKnownMimeTypeFromExtension(

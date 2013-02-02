@@ -85,7 +85,7 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
         file_system_context_->CreateCrackedFileSystemURL(
             GURL(kFileSystemURLOrigin),
             kFileSystemType,
-            FilePath().AppendASCII(filename));
+            base::FilePath().AppendASCII(filename));
 
     fileapi::FileSystemFileUtil* file_util =
         file_system_context_->GetFileUtil(kFileSystemType);
@@ -108,7 +108,7 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
     base::ClosePlatformFile(handle);
 
     base::PlatformFileInfo file_info;
-    FilePath platform_path;
+    base::FilePath platform_path;
     ASSERT_EQ(base::PLATFORM_FILE_OK,
               file_util->GetFileInfo(&context, url, &file_info,
                                      &platform_path));

@@ -14,13 +14,16 @@
 #include "ui/gfx/native_widget_types.h"
 
 class CommandLine;
-class FilePath;
 class GURL;
 class ImporterHost;
 class ImporterList;
 class Profile;
 class ProcessSingleton;
 class TemplateURLService;
+
+namespace base {
+class FilePath;
+}
 
 namespace installer {
 class MasterPreferences;
@@ -42,12 +45,12 @@ extern FirstRunState first_run_;
 // master preferences. Passes the master preference file path out in
 // master_prefs_path. Returns the pointer to installer::MasterPreferences object
 // if successful; otherwise, returns NULL.
-installer::MasterPreferences* LoadMasterPrefs(FilePath* master_prefs_path);
+installer::MasterPreferences* LoadMasterPrefs(base::FilePath* master_prefs_path);
 
 // Copies user preference file to master preference file. Returns true if
 // successful.
-bool CopyPrefFile(const FilePath& user_data_dir,
-                  const FilePath& master_prefs_path);
+bool CopyPrefFile(const base::FilePath& user_data_dir,
+                  const base::FilePath& master_prefs_path);
 
 // Sets up master preferences by preferences passed by installer.
 void SetupMasterPrefsFromInstallPrefs(
@@ -75,7 +78,7 @@ void DoPostImportPlatformSpecificTasks();
 // Gives the full path to the sentinel file. The file might not exist.
 // This function has a common implementation on OS_POSIX and a windows specific
 // implementation.
-bool GetFirstRunSentinelFilePath(FilePath* path);
+bool GetFirstRunSentinelFilePath(base::FilePath* path);
 
 // This function has a common implementationin for all non-linux platforms, and
 // a linux specific implementation.
@@ -100,7 +103,7 @@ int ImportBookmarkFromFileIfNeeded(Profile* profile,
                                    const CommandLine& cmdline);
 
 #if !defined(OS_WIN)
-bool ImportBookmarks(const FilePath& import_bookmarks_path);
+bool ImportBookmarks(const base::FilePath& import_bookmarks_path);
 #endif
 
 // Shows the EULA dialog if required. Returns true if the EULA is accepted,

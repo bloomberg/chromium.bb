@@ -16,17 +16,17 @@ namespace {
 // command-line switches are absent.
 #if defined(OS_WIN)
 #ifdef OFFICIAL_BUILD
-const FilePath::CharType kConfigDir[] =
+const base::FilePath::CharType kConfigDir[] =
     FILE_PATH_LITERAL("Google\\Chrome Remote Desktop");
 #else
-const FilePath::CharType kConfigDir[] =
+const base::FilePath::CharType kConfigDir[] =
     FILE_PATH_LITERAL("Chromoting");
 #endif
 #elif defined(OS_MACOSX)
-const FilePath::CharType kConfigDir[] =
+const base::FilePath::CharType kConfigDir[] =
     FILE_PATH_LITERAL("Chrome Remote Desktop");
 #else
-const FilePath::CharType kConfigDir[] =
+const base::FilePath::CharType kConfigDir[] =
     FILE_PATH_LITERAL(".config/chrome-remote-desktop");
 #endif
 
@@ -38,8 +38,8 @@ namespace remoting {
 const wchar_t kWindowsServiceName[] = L"chromoting";
 #endif
 
-FilePath GetConfigDir() {
-  FilePath app_data_dir;
+base::FilePath GetConfigDir() {
+  base::FilePath app_data_dir;
 
 #if defined(OS_WIN)
   PathService::Get(base::DIR_COMMON_APP_DATA, &app_data_dir);

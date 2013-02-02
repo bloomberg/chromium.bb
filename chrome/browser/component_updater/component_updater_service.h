@@ -11,14 +11,13 @@
 #include "base/version.h"
 #include "googleurl/src/gurl.h"
 
-class FilePath;
-
 namespace net {
 class URLRequestContextGetter;
 }
 
 namespace base {
 class DictionaryValue;
+class FilePath;
 }
 
 // Component specific installers must derive from this class and implement
@@ -36,7 +35,7 @@ class ComponentInstaller {
   // json dictionary and |unpack_path| contains the temporary directory
   // with all the unpacked CRX files.
   virtual bool Install(base::DictionaryValue* manifest,
-                       const FilePath& unpack_path) = 0;
+                       const base::FilePath& unpack_path) = 0;
 
  protected:
   virtual ~ComponentInstaller() {}

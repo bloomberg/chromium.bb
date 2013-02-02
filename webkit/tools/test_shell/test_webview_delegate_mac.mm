@@ -227,7 +227,7 @@ void TestWebViewDelegate::runModal() {
 // WebPluginPageDelegate ------------------------------------------------------
 
 webkit::npapi::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
-    const FilePath& path,
+    const base::FilePath& path,
     const std::string& mime_type) {
   WebWidgetHost *host = GetWidgetHost();
   if (!host)

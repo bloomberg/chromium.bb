@@ -10,7 +10,9 @@
 
 #include "media/base/media_export.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace media {
 
@@ -25,7 +27,7 @@ namespace media {
 // of the process.
 //
 // Returns true if everything was successfully initialized, false otherwise.
-MEDIA_EXPORT bool InitializeMediaLibrary(const FilePath& module_dir);
+MEDIA_EXPORT bool InitializeMediaLibrary(const base::FilePath& module_dir);
 
 // Helper function for unit tests to avoid boiler plate code everywhere. This
 // function will crash if it fails to load the media library. This ensures tests

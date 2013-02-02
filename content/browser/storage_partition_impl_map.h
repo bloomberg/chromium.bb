@@ -15,9 +15,8 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 
-class FilePath;
-
 namespace base {
+class FilePath;
 class SequencedTaskRunner;
 }  // namespace base
 
@@ -51,7 +50,7 @@ class StoragePartitionImplMap : public base::SupportsUserData::Data {
   //
   // The |done| closure is executed on the calling thread when garbage
   // collection is complete.
-  void GarbageCollect(scoped_ptr<base::hash_set<FilePath> > active_paths,
+  void GarbageCollect(scoped_ptr<base::hash_set<base::FilePath> > active_paths,
                       const base::Closure& done);
 
   void ForEach(const BrowserContext::StoragePartitionCallback& callback);
@@ -106,8 +105,9 @@ class StoragePartitionImplMap : public base::SupportsUserData::Data {
   // Returns the relative path from the profile's base directory, to the
   // directory that holds all the state for storage contexts in the given
   // |partition_domain| and |partition_name|.
-  static FilePath GetStoragePartitionPath(const std::string& partition_domain,
-                                          const std::string& partition_name);
+  static base::FilePath GetStoragePartitionPath(
+      const std::string& partition_domain,
+      const std::string& partition_name);
 
   // This must always be called *after* |partition| has been added to the
   // partitions_.

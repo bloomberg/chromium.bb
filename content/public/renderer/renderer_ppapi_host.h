@@ -13,7 +13,9 @@
 #include "ppapi/c/pp_instance.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace gfx {
 class Point;
@@ -65,7 +67,7 @@ class RendererPpapiHost {
   CONTENT_EXPORT static RendererPpapiHost* CreateExternalPluginModule(
       scoped_refptr<webkit::ppapi::PluginModule> plugin_module,
       webkit::ppapi::PluginInstance* plugin_instance,
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       ppapi::PpapiPermissions permissions,
       const IPC::ChannelHandle& channel_handle,
       base::ProcessId plugin_pid,

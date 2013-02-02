@@ -56,7 +56,7 @@ class WtsSessionProcessDelegate::Core
   // Stop() method has been called.
   Core(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
        scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-       const FilePath& binary_path,
+       const base::FilePath& binary_path,
        bool launch_elevated,
        const std::string& channel_security);
 
@@ -110,7 +110,7 @@ class WtsSessionProcessDelegate::Core
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // Path to the worker process binary.
-  FilePath binary_path_;
+  base::FilePath binary_path_;
 
   // The server end of the IPC channel used to communicate to the worker
   // process.
@@ -151,7 +151,7 @@ class WtsSessionProcessDelegate::Core
 WtsSessionProcessDelegate::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    const FilePath& binary_path,
+    const base::FilePath& binary_path,
     bool launch_elevated,
     const std::string& channel_security)
     : main_task_runner_(main_task_runner),
@@ -249,7 +249,7 @@ bool WtsSessionProcessDelegate::Core::LaunchProcess(
     }
 
     // Construct the helper binary name.
-    FilePath daemon_binary;
+    base::FilePath daemon_binary;
     if (!GetInstalledBinaryPath(kDaemonBinaryName, &daemon_binary))
       return false;
 
@@ -485,7 +485,7 @@ void WtsSessionProcessDelegate::Core::OnJobNotification(DWORD message,
 WtsSessionProcessDelegate::WtsSessionProcessDelegate(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    const FilePath& binary_path,
+    const base::FilePath& binary_path,
     uint32 session_id,
     bool launch_elevated,
     const std::string& channel_security) {

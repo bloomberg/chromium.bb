@@ -14,7 +14,9 @@
 #include "sql/connection.h"
 #include "sql/init_status.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace extensions {
 
@@ -30,7 +32,7 @@ class ActivityDatabase : public base::RefCountedThreadSafe<ActivityDatabase> {
   void SetErrorDelegate(sql::ErrorDelegate* error_delegate);
 
   // Opens the DB and creates tables as necessary.
-  void Init(const FilePath& db_name);
+  void Init(const base::FilePath& db_name);
   void LogInitFailure();
 
   // Record a UrlAction in the database.

@@ -28,7 +28,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE LocalFileStreamWriter
  public:
   // Create a writer for the existing file in the path |file_path| starting from
   // |initial_offset|.
-  LocalFileStreamWriter(const FilePath& file_path, int64 initial_offset);
+  LocalFileStreamWriter(const base::FilePath& file_path, int64 initial_offset);
   virtual ~LocalFileStreamWriter();
 
   // FileStreamWriter overrides.
@@ -72,7 +72,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE LocalFileStreamWriter
   bool CancelIfRequested();
 
   // Initialization parameters.
-  const FilePath file_path_;
+  const base::FilePath file_path_;
   const int64 initial_offset_;
 
   // Current states of the operation.

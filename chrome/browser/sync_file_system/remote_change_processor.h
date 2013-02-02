@@ -10,7 +10,9 @@
 #include "webkit/fileapi/syncable/sync_callbacks.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace fileapi {
 class FileChange;
@@ -59,7 +61,7 @@ class RemoteChangeProcessor {
   // have disabled any further writing).
   virtual void ApplyRemoteChange(
       const fileapi::FileChange& change,
-      const FilePath& local_path,
+      const base::FilePath& local_path,
       const fileapi::FileSystemURL& url,
       const fileapi::SyncStatusCallback& callback) = 0;
 

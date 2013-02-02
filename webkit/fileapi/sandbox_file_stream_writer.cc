@@ -121,7 +121,7 @@ void SandboxFileStreamWriter::DidGetFileInfo(
     const net::CompletionCallback& callback,
     base::PlatformFileError file_error,
     const base::PlatformFileInfo& file_info,
-    const FilePath& platform_path) {
+    const base::FilePath& platform_path) {
   if (CancelIfRequested())
     return;
   if (file_error != base::PLATFORM_FILE_OK) {

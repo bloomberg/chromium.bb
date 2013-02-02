@@ -10,9 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "remoting/host/win/worker_process_launcher.h"
 
-class FilePath;
-
 namespace base {
+class FilePath;
 class SingleThreadTaskRunner;
 } // namespace base
 
@@ -31,7 +30,7 @@ class WtsSessionProcessDelegate
   WtsSessionProcessDelegate(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      const FilePath& binary_path,
+      const base::FilePath& binary_path,
       uint32 session_id,
       bool launch_elevated,
       const std::string& channel_security);

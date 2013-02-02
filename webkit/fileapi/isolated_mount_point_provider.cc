@@ -35,7 +35,7 @@
 namespace fileapi {
 
 IsolatedMountPointProvider::IsolatedMountPointProvider(
-    const FilePath& profile_path)
+    const base::FilePath& profile_path)
     : profile_path_(profile_path),
       media_path_filter_(new MediaPathFilter()),
       isolated_file_util_(new AsyncFileUtilAdapter(new IsolatedFileUtil())),
@@ -64,12 +64,12 @@ void IsolatedMountPointProvider::ValidateFileSystemRoot(
       base::Bind(callback, base::PLATFORM_FILE_ERROR_SECURITY));
 }
 
-FilePath IsolatedMountPointProvider::GetFileSystemRootPathOnFileThread(
+base::FilePath IsolatedMountPointProvider::GetFileSystemRootPathOnFileThread(
     const FileSystemURL& url,
     bool create) {
   // This is not supposed to be used.
   NOTREACHED();
-  return FilePath();
+  return base::FilePath();
 }
 
 bool IsolatedMountPointProvider::IsAccessAllowed(const FileSystemURL& url) {
@@ -77,7 +77,7 @@ bool IsolatedMountPointProvider::IsAccessAllowed(const FileSystemURL& url) {
 }
 
 bool IsolatedMountPointProvider::IsRestrictedFileName(
-    const FilePath& filename) const {
+    const base::FilePath& filename) const {
   // TODO(kinuko): We need to check platform-specific restricted file names
   // before we actually start allowing file creation in isolated file systems.
   return false;

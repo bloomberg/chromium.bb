@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
   if (parsed_command_line.HasSwitch(test_shell::kEnableFileCookies))
     net::CookieMonster::EnableFileScheme();
 
-  FilePath cache_path =
+  base::FilePath cache_path =
       parsed_command_line.GetSwitchValuePath(test_shell::kCacheDir);
   if (cache_path.empty()) {
     PathService::Get(base::DIR_EXE, &cache_path);
@@ -214,7 +214,7 @@ int main(int argc, char* argv[]) {
   // Treat the first argument as the initial URL to open.
   GURL starting_url;
 
-  FilePath path;
+  base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("webkit").AppendASCII("data")
              .AppendASCII("test_shell").AppendASCII("index.html");
@@ -227,7 +227,7 @@ int main(int argc, char* argv[]) {
       starting_url = url;
     } else {
       // Treat as a relative file path.
-      FilePath path = FilePath(args[0]);
+      base::FilePath path = base::FilePath(args[0]);
       file_util::AbsolutePath(&path);
       starting_url = net::FilePathToFileURL(path);
     }

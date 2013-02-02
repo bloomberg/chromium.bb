@@ -20,8 +20,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-class FilePath;
-
 namespace chrome {
 
 namespace test {

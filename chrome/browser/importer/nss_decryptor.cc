@@ -232,7 +232,7 @@ void NSSDecryptor::ParseSignons(
   }
 }
 
-bool NSSDecryptor::ReadAndParseSignons(const FilePath& sqlite_file,
+bool NSSDecryptor::ReadAndParseSignons(const base::FilePath& sqlite_file,
     std::vector<content::PasswordForm>* forms) {
   sql::Connection db;
   if (!db.Open(sqlite_file))

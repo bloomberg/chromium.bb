@@ -11,13 +11,11 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-
 #include "printing/backend/print_backend.h"
-
-class FilePath;
 
 namespace base {
 class DictionaryValue;
+class FilePath;
 }
 
 namespace printing {
@@ -131,7 +129,7 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
     // time. Subsequent calls to Spool (before the Delegate::OnJobSpoolSucceeded
     // or Delegate::OnJobSpoolFailed methods are called) can fail.
     virtual bool Spool(const std::string& print_ticket,
-                       const FilePath& print_data_file_path,
+                       const base::FilePath& print_data_file_path,
                        const std::string& print_data_mime_type,
                        const std::string& printer_name,
                        const std::string& job_title,

@@ -14,7 +14,9 @@
 #include "base/gtest_prod_util.h"
 #include "printing/metafile.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace gfx {
 class Rect;
@@ -42,10 +44,10 @@ class PRINTING_EXPORT Emf : public Metafile {
 
   // Generates a new metafile that will record every GDI command, and will
   // be saved to |metafile_path|.
-  virtual bool InitToFile(const FilePath& metafile_path);
+  virtual bool InitToFile(const base::FilePath& metafile_path);
 
   // Initializes the Emf with the data in |metafile_path|.
-  virtual bool InitFromFile(const FilePath& metafile_path);
+  virtual bool InitFromFile(const base::FilePath& metafile_path);
 
   // Metafile methods.
   virtual bool Init() OVERRIDE;
@@ -71,7 +73,7 @@ class PRINTING_EXPORT Emf : public Metafile {
   // Saves the EMF data to a file as-is. It is recommended to use the .emf file
   // extension but it is not enforced. This function synchronously writes to the
   // file. For testing only.
-  virtual bool SaveTo(const FilePath& file_path) const OVERRIDE;
+  virtual bool SaveTo(const base::FilePath& file_path) const OVERRIDE;
 
   // Should be passed to Playback to keep the exact same size.
   virtual gfx::Rect GetPageBounds(unsigned int page_number) const OVERRIDE;

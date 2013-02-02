@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_USER_DATA_DIR_DIALOG_H_
 #define CHROME_BROWSER_UI_USER_DATA_DIR_DIALOG_H_
 
+namespace base {
 class FilePath;
+}
 
 namespace chrome {
 
@@ -13,7 +15,7 @@ namespace chrome {
 // is showing. If the user picks a directory, this method returns the chosen
 // directory. |user_data_dir| is the value of the directory we were not able to
 // use.
-FilePath ShowUserDataDirDialog(const FilePath& user_data_dir);
+base::FilePath ShowUserDataDirDialog(const base::FilePath& user_data_dir);
 
 }  // namespace chrome
 

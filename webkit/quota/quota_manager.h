@@ -26,9 +26,8 @@
 #include "webkit/quota/special_storage_policy.h"
 #include "webkit/storage/webkit_storage_export.h"
 
-class FilePath;
-
 namespace base {
+class FilePath;
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 }
@@ -106,7 +105,7 @@ class WEBKIT_STORAGE_EXPORT QuotaManager
   static const int64 kNoLimit;
 
   QuotaManager(bool is_incognito,
-               const FilePath& profile_path,
+               const base::FilePath& profile_path,
                base::SingleThreadTaskRunner* io_thread,
                base::SequencedTaskRunner* db_thread,
                SpecialStoragePolicy* special_storage_policy);
@@ -246,7 +245,7 @@ class WEBKIT_STORAGE_EXPORT QuotaManager
 
   // Function pointer type used to store the function which returns the
   // available disk space for the disk containing the given FilePath.
-  typedef int64 (*GetAvailableDiskSpaceFn)(const FilePath&);
+  typedef int64 (*GetAvailableDiskSpaceFn)(const base::FilePath&);
 
   typedef base::Callback<void(const QuotaTableEntries&)>
       DumpQuotaTableCallback;
@@ -365,7 +364,7 @@ class WEBKIT_STORAGE_EXPORT QuotaManager
       const base::Callback<void(bool)>& reply);
 
   const bool is_incognito_;
-  const FilePath profile_path_;
+  const base::FilePath profile_path_;
 
   scoped_refptr<QuotaManagerProxy> proxy_;
   bool db_disabled_;

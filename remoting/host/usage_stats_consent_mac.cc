@@ -23,7 +23,7 @@ bool GetUsageStatsConsent(bool* allowed, bool* set_by_policy) {
   // which itself should happen as early as possible during startup.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(kHostConfigSwitchName)) {
-    FilePath config_file_path =
+    base::FilePath config_file_path =
         command_line->GetSwitchValuePath(kHostConfigSwitchName);
     JsonHostConfig host_config(config_file_path);
     if (host_config.Read()) {

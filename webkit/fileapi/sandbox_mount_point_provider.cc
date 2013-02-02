@@ -63,12 +63,12 @@ const char kPersistentOriginsCountLabel[] = "FileSystem.PersistentOriginsCount";
 
 // Restricted names.
 // http://dev.w3.org/2009/dap/file-system/file-dir-sys.html#naming-restrictions
-const FilePath::CharType* const kRestrictedNames[] = {
+const base::FilePath::CharType* const kRestrictedNames[] = {
   FILE_PATH_LITERAL("."), FILE_PATH_LITERAL(".."),
 };
 
 // Restricted chars.
-const FilePath::CharType kRestrictedChars[] = {
+const base::FilePath::CharType kRestrictedChars[] = {
   FILE_PATH_LITERAL('/'), FILE_PATH_LITERAL('\\'),
 };
 
@@ -109,7 +109,7 @@ void ValidateRootOnFileThread(
     base::PlatformFileError* error_ptr) {
   DCHECK(error_ptr);
 
-  FilePath root_path =
+  base::FilePath root_path =
       file_util->GetDirectoryForOriginAndType(
           origin_url, type, create, error_ptr);
   if (*error_ptr != base::PLATFORM_FILE_OK) {
@@ -126,7 +126,7 @@ void ValidateRootOnFileThread(
 
 }  // anonymous namespace
 
-const FilePath::CharType SandboxMountPointProvider::kFileSystemDirectory[] =
+const base::FilePath::CharType SandboxMountPointProvider::kFileSystemDirectory[] =
     FILE_PATH_LITERAL("File System");
 
 // static
@@ -139,7 +139,7 @@ bool SandboxMountPointProvider::CanHandleType(FileSystemType type) {
 SandboxMountPointProvider::SandboxMountPointProvider(
     quota::QuotaManagerProxy* quota_manager_proxy,
     base::SequencedTaskRunner* file_task_runner,
-    const FilePath& profile_path,
+    const base::FilePath& profile_path,
     const FileSystemOptions& file_system_options)
     : file_task_runner_(file_task_runner),
       profile_path_(profile_path),
@@ -211,16 +211,16 @@ void SandboxMountPointProvider::ValidateFileSystemRoot(
                  callback, base::Owned(error_ptr)));
 };
 
-FilePath
+base::FilePath
 SandboxMountPointProvider::GetFileSystemRootPathOnFileThread(
     const FileSystemURL& url,
     bool create) {
   if (file_system_options_.is_incognito())
     // TODO(kinuko): return an isolated temporary directory.
-    return FilePath();
+    return base::FilePath();
 
   if (!IsAllowedScheme(url.origin()))
-    return FilePath();
+    return base::FilePath();
 
   return GetBaseDirectoryForOriginAndType(url.origin(), url.type(), create);
 }
@@ -233,7 +233,7 @@ bool SandboxMountPointProvider::IsAccessAllowed(const FileSystemURL& url) {
   return IsAllowedScheme(url.origin());
 }
 
-bool SandboxMountPointProvider::IsRestrictedFileName(const FilePath& filename)
+bool SandboxMountPointProvider::IsRestrictedFileName(const base::FilePath& filename)
     const {
   if (filename.value().empty())
     return false;
@@ -246,7 +246,7 @@ bool SandboxMountPointProvider::IsRestrictedFileName(const FilePath& filename)
 
   for (size_t i = 0; i < arraysize(kRestrictedChars); ++i) {
     if (filename.value().find(kRestrictedChars[i]) !=
-        FilePath::StringType::npos)
+        base::FilePath::StringType::npos)
       return true;
   }
 
@@ -341,14 +341,14 @@ SandboxMountPointProvider::CreateOriginEnumerator() {
   return new ObfuscatedOriginEnumerator(sandbox_sync_file_util());
 }
 
-FilePath SandboxMountPointProvider::GetBaseDirectoryForOriginAndType(
+base::FilePath SandboxMountPointProvider::GetBaseDirectoryForOriginAndType(
     const GURL& origin_url, fileapi::FileSystemType type, bool create) {
 
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  FilePath path = sandbox_sync_file_util()->GetDirectoryForOriginAndType(
+  base::FilePath path = sandbox_sync_file_util()->GetDirectoryForOriginAndType(
       origin_url, type, create, &error);
   if (error != base::PLATFORM_FILE_OK)
-    return FilePath();
+    return base::FilePath();
   return path;
 }
 
@@ -418,10 +418,10 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
     const GURL& origin_url,
     fileapi::FileSystemType type) {
   DCHECK(CanHandleType(type));
-  FilePath base_path =
+  base::FilePath base_path =
       GetBaseDirectoryForOriginAndType(origin_url, type, false);
   if (base_path.empty() || !file_util::DirectoryExists(base_path)) return 0;
-  FilePath usage_file_path =
+  base::FilePath usage_file_path =
       base_path.Append(FileSystemUsageCache::kUsageFileName);
 
   bool is_valid = FileSystemUsageCache::IsValid(usage_file_path);
@@ -439,11 +439,11 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
 
   FileSystemOperationContext context(file_system_context);
   FileSystemURL url = file_system_context->CreateCrackedFileSystemURL(
-      origin_url, type, FilePath());
+      origin_url, type, base::FilePath());
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
       sandbox_sync_file_util()->CreateFileEnumerator(&context, url, true));
 
-  FilePath file_path_each;
+  base::FilePath file_path_each;
   int64 usage = 0;
 
   while (!(file_path_each = enumerator->Next()).empty()) {
@@ -459,7 +459,7 @@ void SandboxMountPointProvider::InvalidateUsageCache(
     const GURL& origin_url, fileapi::FileSystemType type) {
   DCHECK(CanHandleType(type));
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  FilePath usage_file_path = GetUsageCachePathForOriginAndType(
+  base::FilePath usage_file_path = GetUsageCachePathForOriginAndType(
       sandbox_sync_file_util(), origin_url, type, &error);
   if (error != base::PLATFORM_FILE_OK)
     return;
@@ -540,29 +540,29 @@ SandboxMountPointProvider::CreateFileSystemOperationForSync(
                                       operation_context.Pass());
 }
 
-FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
+base::FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
     const GURL& origin_url,
     FileSystemType type) {
   base::PlatformFileError error;
-  FilePath path = GetUsageCachePathForOriginAndType(
+  base::FilePath path = GetUsageCachePathForOriginAndType(
       sandbox_sync_file_util(), origin_url, type, &error);
   if (error != base::PLATFORM_FILE_OK)
-    return FilePath();
+    return base::FilePath();
   return path;
 }
 
 // static
-FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
+base::FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
     ObfuscatedFileUtil* sandbox_file_util,
     const GURL& origin_url,
     fileapi::FileSystemType type,
     base::PlatformFileError* error_out) {
   DCHECK(error_out);
   *error_out = base::PLATFORM_FILE_OK;
-  FilePath base_path = sandbox_file_util->GetDirectoryForOriginAndType(
+  base::FilePath base_path = sandbox_file_util->GetDirectoryForOriginAndType(
       origin_url, type, false /* create */, error_out);
   if (*error_out != base::PLATFORM_FILE_OK)
-    return FilePath();
+    return base::FilePath();
   return base_path.Append(FileSystemUsageCache::kUsageFileName);
 }
 

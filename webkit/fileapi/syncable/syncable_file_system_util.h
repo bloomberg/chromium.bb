@@ -38,7 +38,8 @@ WEBKIT_STORAGE_EXPORT GURL GetSyncableFileSystemRootURI(
 //   path: '/foo/bar',
 // returns 'filesystem:http://www.example.com/external/service_name/foo/bar'
 WEBKIT_STORAGE_EXPORT FileSystemURL CreateSyncableFileSystemURL(
-    const GURL& origin, const std::string& service_name, const FilePath& path);
+    const GURL& origin, const std::string& service_name,
+    const base::FilePath& path);
 
 // Serializes a given FileSystemURL |url| and sets the serialized string to
 // |serialized_url|. If the URL does not represent a syncable filesystem,

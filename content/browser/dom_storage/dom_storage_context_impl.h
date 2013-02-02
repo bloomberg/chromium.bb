@@ -8,7 +8,9 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/dom_storage_context.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace dom_storage {
 class DomStorageContext;
@@ -27,7 +29,7 @@ class CONTENT_EXPORT DOMStorageContextImpl :
     public base::RefCountedThreadSafe<DOMStorageContextImpl> {
  public:
   // If |data_path| is empty, nothing will be saved to disk.
-  DOMStorageContextImpl(const FilePath& data_path,
+  DOMStorageContextImpl(const base::FilePath& data_path,
                         quota::SpecialStoragePolicy* special_storage_policy);
 
   // DOMStorageContext implementation.

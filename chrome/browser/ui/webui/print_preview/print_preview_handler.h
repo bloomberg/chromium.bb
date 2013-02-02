@@ -17,11 +17,11 @@
 #include "printing/print_job_constants.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
-class FilePath;
 class PrintSystemTaskProxy;
 
 namespace base {
 class DictionaryValue;
+class FilePath;
 class RefCountedBytes;
 }
 
@@ -48,7 +48,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
@@ -57,7 +57,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   virtual void OnPrintDialogShown() OVERRIDE;
 
   // Displays a modal dialog, prompting the user to select a file.
-  void SelectFile(const FilePath& default_path);
+  void SelectFile(const base::FilePath& default_path);
 
   // Called when the print preview dialog is destroyed. This is the last time
   // this object has access to the PrintViewManager in order to disconnect the
@@ -220,7 +220,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
 
   // Holds the path to the print to pdf request. It is empty if no such request
   // exists.
-  scoped_ptr<FilePath> print_to_pdf_path_;
+  scoped_ptr<base::FilePath> print_to_pdf_path_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandler);
 };

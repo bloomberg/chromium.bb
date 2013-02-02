@@ -134,7 +134,7 @@ MemoryFileUtil::FileEntry::FileEntry()
 MemoryFileUtil::FileEntry::~FileEntry() {
 }
 
-MemoryFileUtil::MemoryFileUtil(const FilePath& root_path)
+MemoryFileUtil::MemoryFileUtil(const base::FilePath& root_path)
     : read_directory_buffer_size_(kDefaultReadDirectoryBufferSize) {
   FileEntry root;
   root.is_directory = true;
@@ -179,7 +179,7 @@ MemoryFileUtil::~MemoryFileUtil() {
 // - OpenVerifiedFile
 //
 void MemoryFileUtil::Open(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     int flags,
     const OpenCallback& callback) {
   int create_flag = flags & (base::PLATFORM_FILE_OPEN |
@@ -230,7 +230,7 @@ void MemoryFileUtil::Open(
 }
 
 void MemoryFileUtil::GetFileInfo(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     const GetFileInfoCallback& callback) {
   MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -239,7 +239,7 @@ void MemoryFileUtil::GetFileInfo(
 }
 
 void MemoryFileUtil::Create(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     const StatusCallback& callback) {
   MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -248,7 +248,7 @@ void MemoryFileUtil::Create(
 }
 
 void MemoryFileUtil::Truncate(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     int64 length,
     const StatusCallback& callback) {
   MessageLoop::current()->PostTask(
@@ -258,7 +258,7 @@ void MemoryFileUtil::Truncate(
 }
 
 void MemoryFileUtil::Touch(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
@@ -270,7 +270,7 @@ void MemoryFileUtil::Touch(
 }
 
 void MemoryFileUtil::Remove(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     bool recursive,
     const StatusCallback& callback) {
   if (recursive) {
@@ -289,7 +289,7 @@ void MemoryFileUtil::Remove(
 }
 
 void MemoryFileUtil::CreateDirectory(
-    const FilePath& dir_path,
+    const base::FilePath& dir_path,
     const StatusCallback& callback) {
   MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -299,16 +299,16 @@ void MemoryFileUtil::CreateDirectory(
 }
 
 void MemoryFileUtil::ReadDirectory(
-    const FilePath& dir_path,
+    const base::FilePath& dir_path,
     const ReadDirectoryCallback& callback) {
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&MemoryFileUtil::DoReadDirectory,
                  base::Unretained(this), dir_path.StripTrailingSeparators(),
-                 FilePath(), callback));
+                 base::FilePath(), callback));
 }
 
-void MemoryFileUtil::DoGetFileInfo(const FilePath& file_path,
+void MemoryFileUtil::DoGetFileInfo(const base::FilePath& file_path,
                                    const GetFileInfoCallback& callback) {
   base::PlatformFileInfo file_info;
 
@@ -334,7 +334,7 @@ void MemoryFileUtil::DoGetFileInfo(const FilePath& file_path,
 }
 
 void MemoryFileUtil::DoCreate(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     bool is_directory,
     const StatusCallback& callback) {
   if (FileExists(file_path)) {
@@ -356,7 +356,7 @@ void MemoryFileUtil::DoCreate(
 }
 
 void MemoryFileUtil::DoTruncate(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     int64 length,
     const StatusCallback& callback) {
   FileIterator file_it = files_.find(file_path);
@@ -374,7 +374,7 @@ void MemoryFileUtil::DoTruncate(
 }
 
 void MemoryFileUtil::DoTouch(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
   FileIterator file_it = files_.find(file_path);
@@ -390,7 +390,7 @@ void MemoryFileUtil::DoTouch(
 }
 
 void MemoryFileUtil::DoRemoveSingleFile(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     const StatusCallback& callback) {
   FileIterator file_it = files_.find(file_path);
   if (file_it == files_.end()) {
@@ -416,7 +416,7 @@ void MemoryFileUtil::DoRemoveSingleFile(
 }
 
 void MemoryFileUtil::DoRemoveRecursive(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     const StatusCallback& callback) {
   FileIterator file_it = files_.find(file_path);
   if (file_it == files_.end()) {
@@ -445,10 +445,10 @@ void MemoryFileUtil::DoRemoveRecursive(
 }
 
 void MemoryFileUtil::DoReadDirectory(
-    const FilePath& dir_path,
-    const FilePath& in_from,
+    const base::FilePath& dir_path,
+    const base::FilePath& in_from,
     const ReadDirectoryCallback& callback) {
-  FilePath from = in_from;
+  base::FilePath from = in_from;
   read_directory_buffer_.clear();
 
   if (!FileExists(dir_path)) {
@@ -510,7 +510,7 @@ void MemoryFileUtil::DoReadDirectory(
 }
 
 void MemoryFileUtil::OpenVerifiedFile(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     int flags,
     const OpenCallback& callback) {
   FileIterator file_it = files_.find(file_path);
@@ -523,7 +523,7 @@ void MemoryFileUtil::OpenVerifiedFile(
 }
 
 void MemoryFileUtil::DidGetFileInfoForOpen(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     int flags,
     const OpenCallback& callback,
     PlatformFileError get_info_result,
@@ -550,7 +550,7 @@ void MemoryFileUtil::DidGetFileInfoForOpen(
 }
 
 void MemoryFileUtil::OpenTruncatedFileOrCreate(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     int flags,
     const OpenCallback& callback,
     PlatformFileError result) {
@@ -571,7 +571,7 @@ void MemoryFileUtil::OpenTruncatedFileOrCreate(
 }
 
 void MemoryFileUtil::DidCreateOrTruncateForOpen(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     int flags,
     int64 size,
     const OpenCallback& callback,

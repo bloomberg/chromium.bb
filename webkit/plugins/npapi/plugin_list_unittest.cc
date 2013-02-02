@@ -31,8 +31,8 @@ bool Contains(const std::vector<WebPluginInfo>& list,
   return false;
 }
 
-FilePath::CharType kFooPath[] = FILE_PATH_LITERAL("/plugins/foo.plugin");
-FilePath::CharType kBarPath[] = FILE_PATH_LITERAL("/plugins/bar.plugin");
+base::FilePath::CharType kFooPath[] = FILE_PATH_LITERAL("/plugins/foo.plugin");
+base::FilePath::CharType kBarPath[] = FILE_PATH_LITERAL("/plugins/bar.plugin");
 const char* kFooName = "Foo Plugin";
 
 }  // namespace
@@ -41,11 +41,11 @@ class PluginListTest : public testing::Test {
  public:
   PluginListTest()
       : foo_plugin_(ASCIIToUTF16(kFooName),
-                    FilePath(kFooPath),
+                    base::FilePath(kFooPath),
                     ASCIIToUTF16("1.2.3"),
                     ASCIIToUTF16("foo")),
         bar_plugin_(ASCIIToUTF16("Bar Plugin"),
-                    FilePath(kBarPath),
+                    base::FilePath(kBarPath),
                     ASCIIToUTF16("2.3.4"),
                     ASCIIToUTF16("bar")) {
   }
@@ -71,7 +71,7 @@ TEST_F(PluginListTest, GetPlugins) {
 
 TEST_F(PluginListTest, BadPluginDescription) {
   WebPluginInfo plugin_3043(
-      string16(), FilePath(FILE_PATH_LITERAL("/myplugin.3.0.43")),
+      string16(), base::FilePath(FILE_PATH_LITERAL("/myplugin.3.0.43")),
       string16(), string16());
   // Simulate loading of the plugins.
   plugin_list_.ClearPluginsToLoad();

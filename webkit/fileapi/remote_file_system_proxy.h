@@ -13,7 +13,7 @@ namespace fileapi {
 
 typedef base::Callback<
     void(base::PlatformFileError result,
-         const FilePath& platform_path,
+         const base::FilePath& platform_path,
          const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref)>
     WritableSnapshotFile;
 

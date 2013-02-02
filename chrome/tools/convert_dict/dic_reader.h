@@ -10,7 +10,9 @@
 #include <string>
 #include <vector>
 
+namespace base {
 class FilePath;
+}
 
 namespace convert_dict {
 
@@ -25,7 +27,7 @@ class DicReader {
   typedef std::pair<std::string, std::vector<int> > WordEntry;
   typedef std::vector<WordEntry> WordList;
 
-  explicit DicReader(const FilePath& path);
+  explicit DicReader(const base::FilePath& path);
   ~DicReader();
 
   // Non-numeric affixes will be added to the given AffReader and converted into

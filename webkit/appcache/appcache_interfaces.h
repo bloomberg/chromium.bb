@@ -169,7 +169,8 @@ bool IsSchemeSupported(const GURL& url);
 bool IsMethodSupported(const std::string& method);
 bool IsSchemeAndMethodSupported(const net::URLRequest* request);
 
-WEBKIT_STORAGE_EXPORT extern const FilePath::CharType kAppCacheDatabaseName[];
+WEBKIT_STORAGE_EXPORT extern const base::FilePath::CharType
+    kAppCacheDatabaseName[];
 
 }  // namespace
 

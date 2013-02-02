@@ -11,10 +11,10 @@
 #include "base/prefs/persistent_pref_store.h"
 #include "base/prefs/pref_store.h"
 
-class FilePath;
 class PrefServiceSimple;
 
 namespace base {
+class FilePath;
 class SequencedTaskRunner;
 }
 
@@ -40,7 +40,7 @@ class PrefServiceBuilder {
 
   // Specifies to use an actual file-backed user pref store.
   PrefServiceBuilder& WithUserFilePrefs(
-      const FilePath& prefs_file,
+      const base::FilePath& prefs_file,
       base::SequencedTaskRunner* task_runner);
 
   PrefServiceBuilder& WithAsync(bool async);

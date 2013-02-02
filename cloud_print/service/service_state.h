@@ -7,11 +7,8 @@
 
 #include <string>
 
-#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-
-class FilePath;
 
 // Manages Cloud Print part of Service State.
 class ServiceState {

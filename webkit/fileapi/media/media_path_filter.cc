@@ -14,7 +14,7 @@ namespace fileapi {
 
 namespace {
 
-const FilePath::CharType* const kExtraSupportedExtensions[] = {
+const base::FilePath::CharType* const kExtraSupportedExtensions[] = {
   FILE_PATH_LITERAL("3gp"),
   FILE_PATH_LITERAL("3gpp"),
   FILE_PATH_LITERAL("avi"),
@@ -27,7 +27,7 @@ const FilePath::CharType* const kExtraSupportedExtensions[] = {
   FILE_PATH_LITERAL("wmv"),
 };
 
-bool IsUnsupportedExtension(const FilePath::StringType& extension) {
+bool IsUnsupportedExtension(const base::FilePath::StringType& extension) {
   std::string mime_type;
   return !net::GetMimeTypeFromExtension(extension, &mime_type) ||
       !net::IsSupportedMimeType(mime_type);
@@ -42,7 +42,7 @@ MediaPathFilter::MediaPathFilter()
 MediaPathFilter::~MediaPathFilter() {
 }
 
-bool MediaPathFilter::Match(const FilePath& path) {
+bool MediaPathFilter::Match(const base::FilePath& path) {
   EnsureInitialized();
   return std::binary_search(media_file_extensions_.begin(),
                             media_file_extensions_.end(),
@@ -73,7 +73,7 @@ void MediaPathFilter::EnsureInitialized() {
 
   for (MediaFileExtensionList::iterator itr = media_file_extensions_.begin();
        itr != media_file_extensions_.end(); ++itr)
-    *itr = FilePath::kExtensionSeparator + *itr;
+    *itr = base::FilePath::kExtensionSeparator + *itr;
   std::sort(media_file_extensions_.begin(), media_file_extensions_.end());
 
   initialized_ = true;

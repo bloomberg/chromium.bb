@@ -51,7 +51,7 @@ class LocalFileUtilTest : public testing::Test {
     return test_helper_.CreateURLFromUTF8(file_name);
   }
 
-  FilePath LocalPath(const char *file_name) {
+  base::FilePath LocalPath(const char *file_name) {
     return test_helper_.GetLocalPathFromASCII(file_name);
   }
 

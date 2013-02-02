@@ -117,7 +117,7 @@ class NSSDecryptor {
   // Loads NSS3 library and returns true if successful.
   // |dll_path| indicates the location of NSS3 DLL files, and |db_path|
   // is the location of the database file that stores the keys.
-  bool Init(const FilePath& dll_path, const FilePath& db_path);
+  bool Init(const base::FilePath& dll_path, const base::FilePath& db_path);
 
   // Frees the libraries.
   void Free();
@@ -135,12 +135,12 @@ class NSSDecryptor {
   // Reads and parses the Firefox password sqlite db, decrypts the
   // username/password and reads other related information.
   // The result will be stored in |forms|.
-  bool ReadAndParseSignons(const FilePath& sqlite_file,
+  bool ReadAndParseSignons(const base::FilePath& sqlite_file,
                            std::vector<content::PasswordForm>* forms);
 
  private:
   // Call NSS initialization funcs.
-  bool InitNSS(const FilePath& db_path,
+  bool InitNSS(const base::FilePath& db_path,
                base::NativeLibrary plds4_dll,
                base::NativeLibrary nspr4_dll);
 

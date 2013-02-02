@@ -63,11 +63,13 @@
 // It considers 'foo/bar/x.pdf' and 'foo/baz/x.pdf' to be two different paths,
 // even though 'bar' might be a symlink to 'baz'.
 
+namespace base {
+class FilePath;
+}
+
 namespace content {
 class DownloadItem;
 }
-
-class FilePath;
 
 // Issues and tracks download paths that are in use by the download system. When
 // a target path is set for a download, this object tracks the path and the
@@ -84,7 +86,7 @@ class DownloadPathReservationTracker {
   //
   // If |requested_target_path| was not writeable, then the parent directory of
   // |target_path| may be different from that of |requested_target_path|.
-  typedef base::Callback<void(const FilePath& target_path,
+  typedef base::Callback<void(const base::FilePath& target_path,
                               bool target_path_verified)> ReservedPathCallback;
 
   // The largest index for the uniquification suffix that we will try while
@@ -99,14 +101,14 @@ class DownloadPathReservationTracker {
   // directory does not exist and is the parent directory of
   // |requested_target_path|, the directory will be created.
   static void GetReservedPath(content::DownloadItem& download_item,
-                              const FilePath& requested_target_path,
-                              const FilePath& default_download_path,
+                              const base::FilePath& requested_target_path,
+                              const base::FilePath& default_download_path,
                               bool should_uniquify_path,
                               const ReservedPathCallback& callback);
 
   // Returns true if |path| is in use by an existing path reservation. Should
   // only be called on the FILE thread. Currently only used by tests.
-  static bool IsPathInUseForTesting(const FilePath& path);
+  static bool IsPathInUseForTesting(const base::FilePath& path);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_PATH_RESERVATION_TRACKER_H_

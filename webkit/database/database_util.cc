@@ -45,17 +45,17 @@ bool DatabaseUtil::CrackVfsFileName(const string16& vfs_file_name,
   return true;
 }
 
-FilePath DatabaseUtil::GetFullFilePathForVfsFile(
+base::FilePath DatabaseUtil::GetFullFilePathForVfsFile(
     DatabaseTracker* db_tracker, const string16& vfs_file_name) {
   string16 origin_identifier;
   string16 database_name;
   string16 sqlite_suffix;
   if (!CrackVfsFileName(vfs_file_name, &origin_identifier,
                         &database_name, &sqlite_suffix)) {
-    return FilePath(); // invalid vfs_file_name
+    return base::FilePath(); // invalid vfs_file_name
   }
 
-  FilePath full_path = db_tracker->GetFullDBFilePath(
+  base::FilePath full_path = db_tracker->GetFullDBFilePath(
       origin_identifier, database_name);
   if (!full_path.empty() && !sqlite_suffix.empty()) {
     DCHECK(full_path.Extension().empty());
@@ -64,8 +64,8 @@ FilePath DatabaseUtil::GetFullFilePathForVfsFile(
   }
   // Watch out for directory traversal attempts from a compromised renderer.
   if (full_path.value().find(FILE_PATH_LITERAL("..")) !=
-          FilePath::StringType::npos)
-    return FilePath();
+          base::FilePath::StringType::npos)
+    return base::FilePath();
   return full_path;
 }
 

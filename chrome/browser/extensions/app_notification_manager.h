@@ -119,7 +119,7 @@ class AppNotificationManager
   virtual ~AppNotificationManager();
 
   // Starts loading storage_ using |storage_path|.
-  void LoadOnFileThread(const FilePath& storage_path);
+  void LoadOnFileThread(const base::FilePath& storage_path);
 
   // Called on the UI thread to handle the loaded results from storage_.
   void HandleLoadResults(NotificationMap* map);

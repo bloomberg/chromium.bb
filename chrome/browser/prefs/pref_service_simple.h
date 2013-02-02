@@ -26,7 +26,8 @@ class PrefServiceSimple : public PrefService {
   void RegisterIntegerPref(const char* path, int default_value);
   void RegisterDoublePref(const char* path, double default_value);
   void RegisterStringPref(const char* path, const std::string& default_value);
-  void RegisterFilePathPref(const char* path, const FilePath& default_value);
+  void RegisterFilePathPref(const char* path,
+                            const base::FilePath& default_value);
   void RegisterListPref(const char* path);
   void RegisterDictionaryPref(const char* path);
   void RegisterListPref(const char* path, base::ListValue* default_value);

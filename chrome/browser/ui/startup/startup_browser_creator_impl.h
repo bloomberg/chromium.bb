@@ -16,9 +16,12 @@
 
 class Browser;
 class CommandLine;
-class FilePath;
 class Profile;
 class StartupBrowserCreator;
+
+namespace base {
+class FilePath;
+}
 
 namespace content {
 class WebContents;
@@ -40,10 +43,10 @@ class StartupBrowserCreatorImpl {
   // and thus no access to distribution-specific first-run behaviors. The
   // second one is always called when the browser starts even if it is not
   // the first run.  |is_first_run| indicates that this is a new profile.
-  StartupBrowserCreatorImpl(const FilePath& cur_dir,
+  StartupBrowserCreatorImpl(const base::FilePath& cur_dir,
                             const CommandLine& command_line,
                             chrome::startup::IsFirstRun is_first_run);
-  StartupBrowserCreatorImpl(const FilePath& cur_dir,
+  StartupBrowserCreatorImpl(const base::FilePath& cur_dir,
                             const CommandLine& command_line,
                             StartupBrowserCreator* browser_creator,
                             chrome::startup::IsFirstRun is_first_run);
@@ -148,7 +151,7 @@ class StartupBrowserCreatorImpl {
       Profile* profile,
       const std::vector<GURL>& startup_urls);
 
-  const FilePath cur_dir_;
+  const base::FilePath cur_dir_;
   const CommandLine& command_line_;
   Profile* profile_;
   StartupBrowserCreator* browser_creator_;

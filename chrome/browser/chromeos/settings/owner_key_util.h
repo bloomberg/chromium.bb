@@ -14,7 +14,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace crypto {
 class RSAPrivateKey;
@@ -59,7 +61,7 @@ class OwnerKeyUtilImpl : public OwnerKeyUtil {
   // key will live.
   static const char kOwnerKeyFile[];
 
-  explicit OwnerKeyUtilImpl(const FilePath& public_key_file);
+  explicit OwnerKeyUtilImpl(const base::FilePath& public_key_file);
 
   // OwnerKeyUtil:
   virtual bool ImportPublicKey(std::vector<uint8>* output) OVERRIDE;
@@ -72,7 +74,7 @@ class OwnerKeyUtilImpl : public OwnerKeyUtil {
 
  private:
   // The file that holds the public key.
-  FilePath key_file_;
+  base::FilePath key_file_;
 
   DISALLOW_COPY_AND_ASSIGN(OwnerKeyUtilImpl);
 };

@@ -26,7 +26,9 @@
 #include "ui/base/ime/text_input_type.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace IPC {
 struct ChannelHandle;
@@ -73,7 +75,7 @@ class PepperPluginDelegateImpl
   // module. Returns the renderer host, or NULL if it couldn't be created.
   RendererPpapiHost* CreateExternalPluginModule(
       scoped_refptr<webkit::ppapi::PluginModule> module,
-      const FilePath& path,
+      const base::FilePath& path,
       ppapi::PpapiPermissions permissions,
       const IPC::ChannelHandle& channel_handle,
       base::ProcessId plugin_pid,
@@ -167,7 +169,7 @@ class PepperPluginDelegateImpl
           webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual SkBitmap* GetSadPluginBitmap() OVERRIDE;
   virtual WebKit::WebPlugin* CreatePluginReplacement(
-      const FilePath& file_path) OVERRIDE;
+      const base::FilePath& file_path) OVERRIDE;
   virtual uint32_t GetAudioHardwareOutputSampleRate() OVERRIDE;
   virtual uint32_t GetAudioHardwareOutputBufferSize() OVERRIDE;
   virtual PlatformAudioOutput* CreateAudioOutput(
@@ -197,7 +199,7 @@ class PepperPluginDelegateImpl
                                           int total,
                                           bool final_result) OVERRIDE;
   virtual void SelectedFindResultChanged(int identifier, int index) OVERRIDE;
-  virtual bool AsyncOpenFile(const FilePath& path,
+  virtual bool AsyncOpenFile(const base::FilePath& path,
                              int flags,
                              const AsyncOpenFileCallback& callback) OVERRIDE;
   virtual bool AsyncOpenFileSystemURL(
@@ -243,7 +245,7 @@ class PepperPluginDelegateImpl
   virtual void DidUpdateFile(const GURL& file_path, int64_t delta) OVERRIDE;
   virtual void SyncGetFileSystemPlatformPath(
       const GURL& url,
-      FilePath* platform_path) OVERRIDE;
+      base::FilePath* platform_path) OVERRIDE;
   virtual scoped_refptr<base::MessageLoopProxy>
       GetFileThreadMessageLoopProxy() OVERRIDE;
   virtual uint32 TCPSocketCreate() OVERRIDE;
@@ -381,7 +383,7 @@ class PepperPluginDelegateImpl
   // and perform other common initialization.
   RendererPpapiHost* CreateOutOfProcessModule(
       webkit::ppapi::PluginModule* module,
-      const FilePath& path,
+      const base::FilePath& path,
       ppapi::PpapiPermissions permissions,
       const IPC::ChannelHandle& channel_handle,
       base::ProcessId plugin_pid,

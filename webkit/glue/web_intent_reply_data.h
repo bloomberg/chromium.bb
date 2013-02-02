@@ -35,7 +35,7 @@ struct WEBKIT_GLUE_EXPORT WebIntentReply {
   WebIntentReply(WebIntentReplyType type, string16 data);
   WebIntentReply(
       WebIntentReplyType type,
-      FilePath data_file,
+      base::FilePath data_file,
       int64 data_file_size);
 
   bool operator==(const WebIntentReply& other) const;
@@ -47,7 +47,7 @@ struct WEBKIT_GLUE_EXPORT WebIntentReply {
   string16 data;
 
   // FilePath to the data to be delivered. Default value is empty.
-  FilePath data_file;
+  base::FilePath data_file;
 
   // Length of data_path.
   int64 data_file_size;

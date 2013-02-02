@@ -205,7 +205,7 @@ class RenderNodeVisitor {
   virtual void EndVisitCCNode(CCNode* v);
 };
 
-RenderNode* BuildRenderTreeFromFile(const FilePath& path);
+RenderNode* BuildRenderTreeFromFile(const base::FilePath& path);
 
 #endif  // GPU_TOOLS_COMPOSITOR_MODEL_BENCH_RENDER_TREE_H_
 

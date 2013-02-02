@@ -10,7 +10,9 @@
 
 #include "base/basictypes.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace net {
 class ProxyConfig;
@@ -78,7 +80,7 @@ class FirefoxProxySettings {
   // Gets the settings from the passed prefs.js file and returns true if
   // successful.
   // Protected for tests.
-  static bool GetSettingsFromFile(const FilePath& pref_file,
+  static bool GetSettingsFromFile(const base::FilePath& pref_file,
                                   FirefoxProxySettings* settings);
 
  private:

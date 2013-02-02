@@ -11,15 +11,15 @@ class FileAccessPermissionsTest : public testing::Test {
 
 TEST_F(FileAccessPermissionsTest, FileAccessChecks) {
 #if defined(OS_WIN)
-  FilePath good_dir(FILE_PATH_LITERAL("c:\\root\\dir"));
-  FilePath bad_dir(FILE_PATH_LITERAL("c:\\root"));
-  FilePath good_file(FILE_PATH_LITERAL("c:\\root\\dir\\good_file.txt"));
-  FilePath bad_file(FILE_PATH_LITERAL("c:\\root\\dir\\bad_file.txt"));
+  base::FilePath good_dir(FILE_PATH_LITERAL("c:\\root\\dir"));
+  base::FilePath bad_dir(FILE_PATH_LITERAL("c:\\root"));
+  base::FilePath good_file(FILE_PATH_LITERAL("c:\\root\\dir\\good_file.txt"));
+  base::FilePath bad_file(FILE_PATH_LITERAL("c:\\root\\dir\\bad_file.txt"));
 #elif defined(OS_POSIX)
-  FilePath good_dir(FILE_PATH_LITERAL("/root/dir"));
-  FilePath bad_dir(FILE_PATH_LITERAL("/root"));
-  FilePath good_file(FILE_PATH_LITERAL("/root/dir/good_file.txt"));
-  FilePath bad_file(FILE_PATH_LITERAL("/root/dir/bad_file.txt"));
+  base::FilePath good_dir(FILE_PATH_LITERAL("/root/dir"));
+  base::FilePath bad_dir(FILE_PATH_LITERAL("/root"));
+  base::FilePath good_file(FILE_PATH_LITERAL("/root/dir/good_file.txt"));
+  base::FilePath bad_file(FILE_PATH_LITERAL("/root/dir/bad_file.txt"));
 #endif
   std::string extension1("ddammdhioacbehjngdmkjcjbnfginlla");
   std::string extension2("jkhdjkhkhsdkfhsdkhrterwmtermeter");

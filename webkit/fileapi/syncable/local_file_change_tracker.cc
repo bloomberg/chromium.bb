@@ -21,7 +21,7 @@
 namespace fileapi {
 
 namespace {
-const FilePath::CharType kDatabaseName[] =
+const base::FilePath::CharType kDatabaseName[] =
     FILE_PATH_LITERAL("LocalFileChangeTracker");
 const char kMark[] = "d";
 }  // namespace
@@ -30,7 +30,7 @@ const char kMark[] = "d";
 // object must be destructed on file_task_runner.
 class LocalFileChangeTracker::TrackerDB {
  public:
-  explicit TrackerDB(const FilePath& base_path);
+  explicit TrackerDB(const base::FilePath& base_path);
 
   SyncStatusCode MarkDirty(const std::string& url);
   SyncStatusCode ClearDirty(const std::string& url);
@@ -47,7 +47,7 @@ class LocalFileChangeTracker::TrackerDB {
   void HandleError(const tracked_objects::Location& from_here,
                    const leveldb::Status& status);
 
-  const FilePath base_path_;
+  const base::FilePath base_path_;
   scoped_ptr<leveldb::DB> db_;
   SyncStatusCode db_status_;
 
@@ -60,7 +60,7 @@ LocalFileChangeTracker::ChangeInfo::~ChangeInfo() {}
 // LocalFileChangeTracker ------------------------------------------------------
 
 LocalFileChangeTracker::LocalFileChangeTracker(
-    const FilePath& base_path,
+    const base::FilePath& base_path,
     base::SequencedTaskRunner* file_task_runner)
     : initialized_(false),
       file_task_runner_(file_task_runner),
@@ -217,7 +217,7 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
       new FileSystemOperationContext(file_system_context));
 
   base::PlatformFileInfo file_info;
-  FilePath platform_path;
+  base::FilePath platform_path;
 
   while (!dirty_files.empty()) {
     const FileSystemURL url = dirty_files.front();
@@ -241,7 +241,7 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
             file_util->CreateFileEnumerator(context.get(),
                                             url,
                                             false /* recursive */));
-        FilePath path_each;
+        base::FilePath path_each;
         while (!(path_each = enumerator->Next()).empty()) {
           dirty_files.push(CreateSyncableFileSystemURL(
               url.origin(), url.filesystem_id(), path_each));
@@ -288,7 +288,7 @@ void LocalFileChangeTracker::RecordChange(
 
 // TrackerDB -------------------------------------------------------------------
 
-LocalFileChangeTracker::TrackerDB::TrackerDB(const FilePath& base_path)
+LocalFileChangeTracker::TrackerDB::TrackerDB(const base::FilePath& base_path)
   : base_path_(base_path),
     db_status_(SYNC_STATUS_OK) {}
 

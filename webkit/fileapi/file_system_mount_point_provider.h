@@ -56,7 +56,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemMountPointProvider {
   // file system url on the file thread.
   // If |create| is true this may also create the root directory for
   // the filesystem if it doesn't exist.
-  virtual FilePath GetFileSystemRootPathOnFileThread(
+  virtual base::FilePath GetFileSystemRootPathOnFileThread(
       const FileSystemURL& url,
       bool create) = 0;
 
@@ -65,7 +65,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemMountPointProvider {
 
   // Checks if a given |name| contains any restricted names/chars in it.
   // Callable on any thread.
-  virtual bool IsRestrictedFileName(const FilePath& filename) const = 0;
+  virtual bool IsRestrictedFileName(const base::FilePath& filename) const = 0;
 
   // Returns the specialized FileSystemFileUtil for this mount point.
   // It is ok to return NULL if the filesystem doesn't support synchronous
@@ -135,21 +135,21 @@ class ExternalFileSystemMountPointProvider
   // Returns the list of top level directories that are exposed by this
   // provider. This list is used to set appropriate child process file access
   // permissions.
-  virtual std::vector<FilePath> GetRootDirectories() const = 0;
+  virtual std::vector<base::FilePath> GetRootDirectories() const = 0;
   // Grants access to all external file system from extension identified with
   // |extension_id|.
   virtual void GrantFullAccessToExtension(const std::string& extension_id) = 0;
   // Grants access to |virtual_path| from |origin_url|.
   virtual void GrantFileAccessToExtension(
       const std::string& extension_id,
-      const FilePath& virtual_path) = 0;
+      const base::FilePath& virtual_path) = 0;
   // Revokes file access from extension identified with |extension_id|.
   virtual void RevokeAccessForExtension(
         const std::string& extension_id) = 0;
   // Gets virtual path by known filesystem path. Returns false when filesystem
   // path is not exposed by this provider.
-  virtual bool GetVirtualPath(const FilePath& file_system_path,
-                              FilePath* virtual_path) = 0;
+  virtual bool GetVirtualPath(const base::FilePath& file_system_path,
+                              base::FilePath* virtual_path) = 0;
 };
 
 }  // namespace fileapi

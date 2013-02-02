@@ -41,9 +41,9 @@ using WebKit::WebWidget;
 
 namespace {
 
-// Convert a FilePath into an FcChar* (used by fontconfig).
+// Convert a base::FilePath into an FcChar* (used by fontconfig).
 // The pointer only lives for the duration for the expression.
-const FcChar8* FilePathAsFcChar(const FilePath& path) {
+const FcChar8* FilePathAsFcChar(const base::FilePath& path) {
   return reinterpret_cast<const FcChar8*>(path.value().c_str());
 }
 
@@ -159,12 +159,12 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
 
   web_prefs_ = new webkit_glue::WebPreferences;
 
-  FilePath data_path;
+  base::FilePath data_path;
   PathService::Get(base::DIR_EXE, &data_path);
   data_path = data_path.Append("test_shell.pak");
   ResourceBundle::InitSharedInstanceWithPakPath(data_path);
 
-  FilePath resources_dir;
+  base::FilePath resources_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &resources_dir);
   resources_dir = resources_dir.Append("webkit/tools/test_shell/resources");
 
@@ -185,7 +185,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
     FcInit();
 
     FcConfig* fontcfg = FcConfigCreate();
-    FilePath fontconfig_path = resources_dir.Append("fonts.conf");
+    base::FilePath fontconfig_path = resources_dir.Append("fonts.conf");
     if (!FcConfigParseAndLoad(fontcfg, FilePathAsFcChar(fontconfig_path),
                               true)) {
       LOG(FATAL) << "Failed to parse fontconfig config file";
@@ -263,7 +263,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
     }
 
     // Also load the layout-test-specific "Ahem" font.
-    FilePath ahem_path = resources_dir.Append("AHEM____.TTF");
+    base::FilePath ahem_path = resources_dir.Append("AHEM____.TTF");
     if (!FcConfigAppFontAddFile(fontcfg, FilePathAsFcChar(ahem_path))) {
       LOG(FATAL) << "Failed to load font " << ahem_path.value().c_str();
     }
@@ -508,7 +508,7 @@ void TestShell::LoadURLForFrame(const GURL& url,
 }
 
 bool TestShell::PromptForSaveFile(const wchar_t* prompt_title,
-                                  FilePath* result) {
+                                  base::FilePath* result) {
   GtkWidget* dialog;
   dialog = gtk_file_chooser_dialog_new(WideToUTF8(prompt_title).c_str(),
                                        GTK_WINDOW(m_mainWnd),
@@ -525,7 +525,7 @@ bool TestShell::PromptForSaveFile(const wchar_t* prompt_title,
   }
   char* path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
   gtk_widget_destroy(dialog);
-  *result = FilePath(path);
+  *result = base::FilePath(path);
   g_free(path);
   return true;
 }
@@ -538,7 +538,7 @@ std::string TestShell::RewriteLocalUrl(const std::string& url) {
 
   std::string new_url(url);
   if (url.compare(0, kPrefixLen, kPrefix, kPrefixLen) == 0) {
-    FilePath replace_path;
+    base::FilePath replace_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &replace_path);
     replace_path = replace_path.Append(
         "third_party/WebKit/LayoutTests/");

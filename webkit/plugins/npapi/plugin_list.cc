@@ -86,7 +86,7 @@ void PluginList::RefreshPlugins() {
   loading_state_ = LOADING_STATE_NEEDS_REFRESH;
 }
 
-void PluginList::AddExtraPluginPath(const FilePath& plugin_path) {
+void PluginList::AddExtraPluginPath(const base::FilePath& plugin_path) {
   if (!NPAPIPluginsSupported()) {
     // TODO(jam): remove and just have CHECK once we're sure this doesn't get
     // triggered.
@@ -101,16 +101,16 @@ void PluginList::AddExtraPluginPath(const FilePath& plugin_path) {
 #endif
 }
 
-void PluginList::RemoveExtraPluginPath(const FilePath& plugin_path) {
+void PluginList::RemoveExtraPluginPath(const base::FilePath& plugin_path) {
   base::AutoLock lock(lock_);
-  std::vector<FilePath>::iterator it =
+  std::vector<base::FilePath>::iterator it =
       std::find(extra_plugin_paths_.begin(), extra_plugin_paths_.end(),
                 plugin_path);
   if (it != extra_plugin_paths_.end())
     extra_plugin_paths_.erase(it);
 }
 
-void PluginList::AddExtraPluginDir(const FilePath& plugin_dir) {
+void PluginList::AddExtraPluginDir(const base::FilePath& plugin_dir) {
   // Chrome OS only loads plugins from /opt/google/chrome/plugins.
 #if !defined(OS_CHROMEOS)
   base::AutoLock lock(lock_);
@@ -148,7 +148,7 @@ void PluginList::RegisterInternalPluginWithEntryPoints(
   }
 }
 
-void PluginList::UnregisterInternalPlugin(const FilePath& path) {
+void PluginList::UnregisterInternalPlugin(const base::FilePath& path) {
   base::AutoLock lock(lock_);
   for (size_t i = 0; i < internal_plugins_.size(); i++) {
     if (internal_plugins_[i].info.path == path) {
@@ -170,7 +170,7 @@ void PluginList::GetInternalPlugins(
   }
 }
 
-bool PluginList::ReadPluginInfo(const FilePath& filename,
+bool PluginList::ReadPluginInfo(const base::FilePath& filename,
                                 webkit::WebPluginInfo* info,
                                 const PluginEntryPoints** entry_points) {
   {
@@ -252,10 +252,10 @@ void PluginList::LoadPluginsIntoPluginListInternal(
   if (!will_load_callback.is_null())
     will_load_callback.Run();
 
-  std::vector<FilePath> plugin_paths;
+  std::vector<base::FilePath> plugin_paths;
   GetPluginPathsToLoad(&plugin_paths);
 
-  for (std::vector<FilePath>::const_iterator it = plugin_paths.begin();
+  for (std::vector<base::FilePath>::const_iterator it = plugin_paths.begin();
        it != plugin_paths.end();
        ++it) {
     WebPluginInfo plugin_info;
@@ -286,7 +286,7 @@ void PluginList::LoadPlugins() {
 }
 
 bool PluginList::LoadPluginIntoPluginList(
-    const FilePath& path,
+    const base::FilePath& path,
     std::vector<webkit::WebPluginInfo>* plugins,
     WebPluginInfo* plugin_info) {
   LOG_IF(ERROR, PluginList::DebugPluginLoading())
@@ -316,11 +316,11 @@ bool PluginList::LoadPluginIntoPluginList(
   return true;
 }
 
-void PluginList::GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths) {
+void PluginList::GetPluginPathsToLoad(std::vector<base::FilePath>* plugin_paths) {
   // Don't want to hold the lock while loading new plugins, so we don't block
   // other methods if they're called on other threads.
-  std::vector<FilePath> extra_plugin_paths;
-  std::vector<FilePath> extra_plugin_dirs;
+  std::vector<base::FilePath> extra_plugin_paths;
+  std::vector<base::FilePath> extra_plugin_dirs;
   {
     base::AutoLock lock(lock_);
     extra_plugin_paths = extra_plugin_paths_;
@@ -328,7 +328,7 @@ void PluginList::GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths) {
   }
 
   for (size_t i = 0; i < extra_plugin_paths.size(); ++i) {
-    const FilePath& path = extra_plugin_paths[i];
+    const base::FilePath& path = extra_plugin_paths[i];
     if (std::find(plugin_paths->begin(), plugin_paths->end(), path) !=
         plugin_paths->end()) {
       continue;
@@ -342,7 +342,7 @@ void PluginList::GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths) {
     for (size_t i = 0; i < extra_plugin_dirs.size(); ++i)
       GetPluginsInDir(extra_plugin_dirs[i], plugin_paths);
 
-    std::vector<FilePath> directories_to_scan;
+    std::vector<base::FilePath> directories_to_scan;
     GetPluginDirectories(&directories_to_scan);
     for (size_t i = 0; i < directories_to_scan.size(); ++i)
       GetPluginsInDir(directories_to_scan[i], plugin_paths);
@@ -401,12 +401,12 @@ void PluginList::GetPluginInfoArray(
   if (actual_mime_types)
     actual_mime_types->clear();
 
-  std::set<FilePath> visited_plugins;
+  std::set<base::FilePath> visited_plugins;
 
   // Add in plugins by mime type.
   for (size_t i = 0; i < plugins_list_.size(); ++i) {
     if (SupportsType(plugins_list_[i], mime_type, allow_wildcard)) {
-      FilePath path = plugins_list_[i].path;
+      base::FilePath path = plugins_list_[i].path;
       if (visited_plugins.insert(path).second) {
         info->push_back(plugins_list_[i]);
         if (actual_mime_types)
@@ -423,7 +423,7 @@ void PluginList::GetPluginInfoArray(
     std::string actual_mime_type;
     for (size_t i = 0; i < plugins_list_.size(); ++i) {
       if (SupportsExtension(plugins_list_[i], extension, &actual_mime_type)) {
-        FilePath path = plugins_list_[i].path;
+        base::FilePath path = plugins_list_[i].path;
         if (visited_plugins.insert(path).second &&
             AllowMimeTypeMismatch(mime_type, actual_mime_type)) {
           info->push_back(plugins_list_[i]);

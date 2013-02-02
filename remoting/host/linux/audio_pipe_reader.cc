@@ -47,7 +47,7 @@ const int kPipeBufferSizeBytes = kPipeBufferSizeMs * kSampleBytesPerSecond /
 // static
 scoped_refptr<AudioPipeReader> AudioPipeReader::Create(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const FilePath& pipe_name) {
+    const base::FilePath& pipe_name) {
   // Create a reference to the new AudioPipeReader before posting the
   // StartOnAudioThread task, otherwise it may be deleted on the audio
   // thread before we return.
@@ -58,7 +58,7 @@ scoped_refptr<AudioPipeReader> AudioPipeReader::Create(
   return pipe_reader;
 }
 
-void AudioPipeReader::StartOnAudioThread(const FilePath& pipe_name) {
+void AudioPipeReader::StartOnAudioThread(const base::FilePath& pipe_name) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   pipe_fd_ = HANDLE_EINTR(open(

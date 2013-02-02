@@ -9,18 +9,20 @@
 
 #include "base/callback_forward.h"
 
+namespace base {
 class FilePath;
+}
 
 // Gets the path to the default Chrome executable. Returns true on success.
-bool FindChrome(FilePath* browser_exe);
+bool FindChrome(base::FilePath* browser_exe);
 
 namespace internal {
 
 bool FindExe(
-    const base::Callback<bool(const FilePath&)>& exists_func,
-    const std::vector<FilePath>& rel_paths,
-    const std::vector<FilePath>& locations,
-    FilePath* out_path);
+    const base::Callback<bool(const base::FilePath&)>& exists_func,
+    const std::vector<base::FilePath>& rel_paths,
+    const std::vector<base::FilePath>& locations,
+    base::FilePath* out_path);
 
 }  // namespace internal
 

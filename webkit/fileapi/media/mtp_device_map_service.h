@@ -26,13 +26,13 @@ class WEBKIT_STORAGE_EXPORT MTPDeviceMapService {
   // Adds the MTP device delegate to the map service. |device_location|
   // specifies the mount location of the MTP device.
   // Called on a media task runner thread.
-  void AddDelegate(const FilePath::StringType& device_location,
+  void AddDelegate(const base::FilePath::StringType& device_location,
                    MTPDeviceDelegate* delegate);
 
   // Removes the MTP device delegate from the map service. |device_location|
   // specifies the mount location of the MTP device.
   // Called on the UI thread.
-  void RemoveDelegate(const FilePath::StringType& device_location);
+  void RemoveDelegate(const base::FilePath::StringType& device_location);
 
   // Gets the media device delegate associated with |filesystem_id|.
   // Return NULL if the |filesystem_id| is no longer valid (e.g. because the
@@ -47,7 +47,7 @@ class WEBKIT_STORAGE_EXPORT MTPDeviceMapService {
 
   // Mapping of device_location and MTPDeviceDelegate* object. It is safe to
   // store and access the raw pointer. This class operates on the IO thread.
-  typedef std::map<FilePath::StringType, MTPDeviceDelegate*> DelegateMap;
+  typedef std::map<base::FilePath::StringType, MTPDeviceDelegate*> DelegateMap;
 
   // Get access to this class using GetInstance() method.
   MTPDeviceMapService();

@@ -9,7 +9,9 @@
 #ifndef CHROME_INSTALLER_UTIL_DUPLICATE_TREE_DETECTOR_H_
 #define CHROME_INSTALLER_UTIL_DUPLICATE_TREE_DETECTOR_H_
 
+namespace base {
 class FilePath;
+}
 
 namespace installer {
 
@@ -19,8 +21,8 @@ namespace installer {
 // Note that THIS IS A WEAK DEFINITION OF IDENTICAL and is intended only to
 // catch cases of missing files or obvious modifications.
 // It notably DOES NOT CHECKSUM the files.
-bool IsIdenticalFileHierarchy(const FilePath& src_path,
-                              const FilePath& dest_path);
+bool IsIdenticalFileHierarchy(const base::FilePath& src_path,
+                              const base::FilePath& dest_path);
 
 }  // namespace installer
 

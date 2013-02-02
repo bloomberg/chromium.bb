@@ -101,13 +101,13 @@ bool MinidumpCallback(const wchar_t *dumpPath,
   // will be happening on developers' machines where they have debuggers.
   base::StackString16<kPathBufSize * 2> origPath;
   origPath->append(dumpPath);
-  origPath->push_back(FilePath::kSeparators[0]);
+  origPath->push_back(base::FilePath::kSeparators[0]);
   origPath->append(minidumpID);
   origPath->append(L".dmp");
 
   base::StackString16<kPathBufSize * 2> newPath;
   newPath->append(dumpPath);
-  newPath->push_back(FilePath::kSeparators[0]);
+  newPath->push_back(base::FilePath::kSeparators[0]);
   newPath->append(g_currentTestName);
   newPath->append(L"-");
   newPath->append(minidumpID);
@@ -121,8 +121,8 @@ bool MinidumpCallback(const wchar_t *dumpPath,
 }
 
 // Helper method for getting the path to the test shell resources directory.
-FilePath GetResourcesFilePath() {
-  FilePath path;
+base::FilePath GetResourcesFilePath() {
+  base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("webkit");
   path = path.AppendASCII("tools");
@@ -251,7 +251,7 @@ std::string TestShell::RewriteLocalUrl(const std::string& url) {
 
   std::string new_url(url);
   if (url.compare(0, kPrefixLen, kPrefix, kPrefixLen) == 0) {
-    FilePath replace_url;
+    base::FilePath replace_url;
     PathService::Get(base::DIR_EXE, &replace_url);
     replace_url = replace_url.DirName();
     replace_url = replace_url.DirName();
@@ -640,7 +640,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 }
 
 bool TestShell::PromptForSaveFile(const wchar_t* prompt_title,
-                                  FilePath* result) {
+                                  base::FilePath* result) {
   wchar_t path_buf[MAX_PATH] = L"data.txt";
 
   OPENFILENAME info = {0};
@@ -654,7 +654,7 @@ bool TestShell::PromptForSaveFile(const wchar_t* prompt_title,
   if (!GetSaveFileName(&info))
     return false;
 
-  *result = FilePath(info.lpstrFile);
+  *result = base::FilePath(info.lpstrFile);
   return true;
 }
 
@@ -689,7 +689,7 @@ base::StringPiece TestShellWebKitInit::GetDataResource(
     // Use webkit's broken image icon (16x16)
     static std::string broken_image_data;
     if (broken_image_data.empty()) {
-      FilePath path = GetResourcesFilePath();
+      base::FilePath path = GetResourcesFilePath();
       path = path.AppendASCII("missingImage.gif");
       bool success = file_util::ReadFileToString(path, &broken_image_data);
       if (!success) {
@@ -702,7 +702,7 @@ base::StringPiece TestShellWebKitInit::GetDataResource(
     // Use webkit's text area resizer image.
     static std::string resize_corner_data;
     if (resize_corner_data.empty()) {
-      FilePath path = GetResourcesFilePath();
+      base::FilePath path = GetResourcesFilePath();
       path = path.AppendASCII("textAreaResizeCorner.png");
       bool success = file_util::ReadFileToString(path, &resize_corner_data);
       if (!success) {

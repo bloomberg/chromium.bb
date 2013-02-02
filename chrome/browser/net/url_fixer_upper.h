@@ -10,12 +10,14 @@
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 
-namespace url_parse {
-  struct Component;
-  struct Parsed;
+namespace base {
+class FilePath;
 }
 
-class FilePath;
+namespace url_parse {
+struct Component;
+struct Parsed;
+}
 
 // This object is designed to convert various types of input into URLs that we
 // know are valid. For example, user typing in the URL bar or command line
@@ -62,7 +64,7 @@ namespace URLFixerUpper {
   // For "regular" input, even if it is possibly a file with a full path, you
   // should use FixupURL() directly.  This function should only be used when
   // relative path handling is desired, as for command line processing.
-  GURL FixupRelativeFile(const FilePath& base_dir, const FilePath& text);
+  GURL FixupRelativeFile(const base::FilePath& base_dir, const base::FilePath& text);
 
   // Offsets the beginning index of |part| by |offset|, which is allowed to be
   // negative.  In some cases, the desired component does not exist at the given

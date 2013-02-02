@@ -10,9 +10,12 @@
 #include "base/memory/linked_ptr.h"
 #include "chrome/common/extensions/manifest.h"
 
-class FilePath;
 class GURL;
 class Version;
+
+namespace base {
+class FilePath;
+}
 
 namespace extensions {
 
@@ -33,7 +36,7 @@ class ExternalProviderInterface {
     virtual bool OnExternalExtensionFileFound(
         const std::string& id,
         const Version* version,
-        const FilePath& path,
+        const base::FilePath& path,
         Manifest::Location location,
         int creation_flags,
         bool mark_acknowledged) = 0;

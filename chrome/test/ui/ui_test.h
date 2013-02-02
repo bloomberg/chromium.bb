@@ -30,12 +30,12 @@
 
 class AutomationProxy;
 class BrowserProxy;
-class FilePath;
 class GURL;
 class TabProxy;
 
 namespace base {
 class DictionaryValue;
+class FilePath;
 }
 
 // Base class for UI Tests. This implements the core of the functions.
@@ -146,15 +146,15 @@ class UITestBase {
   bool CloseBrowser(BrowserProxy* browser, bool* application_closed) const;
 
   // Gets the executable file path of the Chrome browser process.
-  const FilePath::CharType* GetExecutablePath();
+  const base::FilePath::CharType* GetExecutablePath();
 
   // Returns the directory name where the "typical" user data is that we use
   // for testing.
-  static FilePath ComputeTypicalUserDataSource(ProfileType profile_type);
+  static base::FilePath ComputeTypicalUserDataSource(ProfileType profile_type);
 
   // Return the user data directory being used by the browser instance in
   // UITest::SetUp().
-  FilePath user_data_dir() const {
+  base::FilePath user_data_dir() const {
     return launcher_->user_data_dir();
   }
 
@@ -163,8 +163,8 @@ class UITestBase {
   // copied into the user data directory for the test and the files will be
   // evicted from the OS cache. To start with a blank profile, supply an empty
   // string (the default).
-  const FilePath& template_user_data() const { return template_user_data_; }
-  void set_template_user_data(const FilePath& template_user_data) {
+  const base::FilePath& template_user_data() const { return template_user_data_; }
+  void set_template_user_data(const base::FilePath& template_user_data) {
     template_user_data_ = template_user_data;
   }
 
@@ -226,7 +226,7 @@ class UITestBase {
   std::string CheckErrorsAndCrashes() const;
 
   // Use Chromium binaries from the given directory.
-  void SetBrowserDirectory(const FilePath& dir);
+  void SetBrowserDirectory(const base::FilePath& dir);
 
   // Appends a command-line switch (no associated value) to be passed to the
   // browser when launched.
@@ -283,10 +283,10 @@ class UITestBase {
   // ********* Member variables *********
 
   // Path to the browser executable.
-  FilePath browser_directory_;
+  base::FilePath browser_directory_;
 
   // Path to the unit test data.
-  FilePath test_data_directory_;
+  base::FilePath test_data_directory_;
 
   // Command to launch the browser
   CommandLine launch_arguments_;
@@ -310,7 +310,7 @@ class UITestBase {
   bool dom_automation_enabled_;
 
   // See set_template_user_data().
-  FilePath template_user_data_;
+  base::FilePath template_user_data_;
 
   // Determines if the window is shown or hidden. Defaults to hidden.
   bool show_window_;
@@ -332,7 +332,7 @@ class UITestBase {
   ProfileType profile_type_;
 
   // PID file for websocket server.
-  FilePath websocket_pid_file_;
+  base::FilePath websocket_pid_file_;
 
  private:
   // Time the test was started (so we can check for new crash dumps)
@@ -377,7 +377,7 @@ class UITest : public UITestBase, public PlatformTest {
   // Apparently needed for Windows buildbots (to workaround an error when
   // file is in use).
   // TODO(phajdan.jr): Move to test_file_util if we need it in more places.
-  bool EvictFileFromSystemCacheWrapper(const FilePath& path);
+  bool EvictFileFromSystemCacheWrapper(const base::FilePath& path);
 
   // Polls the tab for a JavaScript condition and returns once one of the
   // following conditions hold true:

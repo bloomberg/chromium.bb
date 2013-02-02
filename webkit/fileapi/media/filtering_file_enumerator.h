@@ -22,7 +22,7 @@ class WEBKIT_STORAGE_EXPORT FilteringFileEnumerator
       MediaPathFilter* filter);
   virtual ~FilteringFileEnumerator();
 
-  virtual FilePath Next() OVERRIDE;
+  virtual base::FilePath Next() OVERRIDE;
   virtual int64 Size() OVERRIDE;
   virtual base::Time LastModifiedTime() OVERRIDE;
   virtual bool IsDirectory() OVERRIDE;

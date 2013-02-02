@@ -18,7 +18,7 @@ using base::win::ScopedHandle;
 
 namespace {
 
-const FilePath::CharType kDesktopBinaryName[] =
+const base::FilePath::CharType kDesktopBinaryName[] =
     FILE_PATH_LITERAL("remoting_desktop.exe");
 
 // The security descriptor of the daemon IPC endpoint. It gives full access
@@ -95,7 +95,7 @@ void DesktopSessionWin::OnSessionAttached(uint32 session_id) {
 
   // Construct the host binary name.
   if (desktop_binary_.empty()) {
-    FilePath dir_path;
+    base::FilePath dir_path;
     if (!PathService::Get(base::DIR_EXE, &dir_path)) {
       LOG(ERROR) << "Failed to get the executable file name.";
       OnPermanentError();

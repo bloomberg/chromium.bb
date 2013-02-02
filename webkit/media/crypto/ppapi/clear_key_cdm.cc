@@ -50,7 +50,7 @@ static base::AtExitManager g_at_exit_manager;
 // are required for running in the sandbox, and should no longer be required
 // after http://crbug.com/91970 is fixed.
 static bool InitializeFFmpegLibraries() {
-  FilePath file_path;
+  base::FilePath file_path;
   CHECK(PathService::Get(base::DIR_EXE, &file_path));
   CHECK(media::InitializeMediaLibrary(file_path));
   return true;

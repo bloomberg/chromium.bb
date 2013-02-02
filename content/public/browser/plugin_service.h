@@ -12,8 +12,11 @@
 #include "base/string16.h"
 #include "content/common/content_export.h"
 
-class FilePath;
 class GURL;
+
+namespace base {
+class FilePath;
+}
 
 namespace webkit {
 struct WebPluginInfo;
@@ -86,13 +89,14 @@ class PluginService {
   // Get plugin info by plugin path (including disabled plugins). Returns true
   // if the plugin is found and WebPluginInfo has been filled in |info|. This
   // will use cached data in the plugin list.
-  virtual bool GetPluginInfoByPath(const FilePath& plugin_path,
+  virtual bool GetPluginInfoByPath(const base::FilePath& plugin_path,
                                    webkit::WebPluginInfo* info) = 0;
 
   // Returns the display name for the plugin identified by the given path. If
   // the path doesn't identify a plugin, or the plugin has no display name,
   // this will attempt to generate a display name from the path.
-  virtual string16 GetPluginDisplayNameByPath(const FilePath& plugin_path) = 0;
+  virtual string16 GetPluginDisplayNameByPath(
+      const base::FilePath& plugin_path) = 0;
 
   // Asynchronously loads plugins if necessary and then calls back to the
   // provided function on the calling MessageLoop on completion.
@@ -102,17 +106,17 @@ class PluginService {
   // The caller does not own the pointer, and it's not guaranteed to live past
   // the call stack.
   virtual PepperPluginInfo* GetRegisteredPpapiPluginInfo(
-      const FilePath& plugin_path) = 0;
+      const base::FilePath& plugin_path) = 0;
 
   virtual void SetFilter(PluginServiceFilter* filter) = 0;
   virtual PluginServiceFilter* GetFilter() = 0;
 
   // If the plugin with the given path is running, cleanly shuts it down.
-  virtual void ForcePluginShutdown(const FilePath& plugin_path) = 0;
+  virtual void ForcePluginShutdown(const base::FilePath& plugin_path) = 0;
 
   // Used to monitor plug-in stability. An unstable plug-in is one that has
   // crashed more than a set number of times in a set time period.
-  virtual bool IsPluginUnstable(const FilePath& plugin_path) = 0;
+  virtual bool IsPluginUnstable(const base::FilePath& plugin_path) = 0;
 
   // The following functions are wrappers around webkit::npapi::PluginList.
   // These must be used instead of those in order to ensure that we have a
@@ -120,10 +124,10 @@ class PluginService {
   // accidentally load plugins in the wrong process or thread. Refer to
   // PluginList for further documentation of these functions.
   virtual void RefreshPlugins() = 0;
-  virtual void AddExtraPluginPath(const FilePath& path) = 0;
-  virtual void AddExtraPluginDir(const FilePath& path) = 0;
-  virtual void RemoveExtraPluginPath(const FilePath& path) = 0;
-  virtual void UnregisterInternalPlugin(const FilePath& path) = 0;
+  virtual void AddExtraPluginPath(const base::FilePath& path) = 0;
+  virtual void AddExtraPluginDir(const base::FilePath& path) = 0;
+  virtual void RemoveExtraPluginPath(const base::FilePath& path) = 0;
+  virtual void UnregisterInternalPlugin(const base::FilePath& path) = 0;
   virtual void RegisterInternalPlugin(const webkit::WebPluginInfo& info,
                                       bool add_at_beginning) = 0;
   virtual void GetInternalPlugins(

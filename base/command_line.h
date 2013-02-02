@@ -23,7 +23,9 @@
 #include "base/base_export.h"
 #include "build/build_config.h"
 
+namespace base {
 class FilePath;
+}
 
 class BASE_EXPORT CommandLine {
  public:
@@ -43,7 +45,7 @@ class BASE_EXPORT CommandLine {
   explicit CommandLine(NoProgram no_program);
 
   // Construct a new command line with |program| as argv[0].
-  explicit CommandLine(const FilePath& program);
+  explicit CommandLine(const base::FilePath& program);
 
   // Construct a new command line from an argument list.
   CommandLine(int argc, const CharType* const* argv);
@@ -92,8 +94,8 @@ class BASE_EXPORT CommandLine {
   const StringVector& argv() const { return argv_; }
 
   // Get and Set the program part of the command line string (the first item).
-  FilePath GetProgram() const;
-  void SetProgram(const FilePath& program);
+  base::FilePath GetProgram() const;
+  void SetProgram(const base::FilePath& program);
 
   // Returns true if this command line contains the given switch.
   // (Switch names are case-insensitive).
@@ -102,7 +104,7 @@ class BASE_EXPORT CommandLine {
   // Returns the value associated with the given switch. If the switch has no
   // value or isn't present, this method returns the empty string.
   std::string GetSwitchValueASCII(const std::string& switch_string) const;
-  FilePath GetSwitchValuePath(const std::string& switch_string) const;
+  base::FilePath GetSwitchValuePath(const std::string& switch_string) const;
   StringType GetSwitchValueNative(const std::string& switch_string) const;
 
   // Get a copy of all switches, along with their values.
@@ -111,7 +113,8 @@ class BASE_EXPORT CommandLine {
   // Append a switch [with optional value] to the command line.
   // Note: Switches will precede arguments regardless of appending order.
   void AppendSwitch(const std::string& switch_string);
-  void AppendSwitchPath(const std::string& switch_string, const FilePath& path);
+  void AppendSwitchPath(const std::string& switch_string,
+                        const base::FilePath& path);
   void AppendSwitchNative(const std::string& switch_string,
                           const StringType& value);
   void AppendSwitchASCII(const std::string& switch_string,
@@ -131,7 +134,7 @@ class BASE_EXPORT CommandLine {
   // AppendArg is primarily for ASCII; non-ASCII input is interpreted as UTF-8.
   // Note: Switches will precede arguments regardless of appending order.
   void AppendArg(const std::string& value);
-  void AppendArgPath(const FilePath& value);
+  void AppendArgPath(const base::FilePath& value);
   void AppendArgNative(const StringType& value);
 
   // Append the switches and arguments from another command line to this one.

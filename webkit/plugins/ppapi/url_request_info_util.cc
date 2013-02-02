@@ -64,7 +64,7 @@ bool AppendFileRefToBody(
   if (!plugin_delegate)
     return false;
 
-  FilePath platform_path;
+  base::FilePath platform_path;
   switch (file_ref->GetFileSystemType()) {
     case PP_FILESYSTEMTYPE_LOCALTEMPORARY:
     case PP_FILESYSTEMTYPE_LOCALPERSISTENT:

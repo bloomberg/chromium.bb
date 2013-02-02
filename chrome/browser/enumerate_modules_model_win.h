@@ -17,9 +17,9 @@
 #include "googleurl/src/gurl.h"
 
 class EnumerateModulesModel;
-class FilePath;
 
 namespace base {
+class FilePath;
 class ListValue;
 }
 
@@ -191,7 +191,7 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
 
   // Given a filename, returns the Subject (who signed it) retrieved from
   // the digital signature (Authenticode).
-  string16 GetSubjectNameFromDigitalSignature(const FilePath& filename);
+  string16 GetSubjectNameFromDigitalSignature(const base::FilePath& filename);
 
   // The typedef for the vector that maps a regular file path to %env_var%.
   typedef std::vector< std::pair<string16, string16> > PathMapping;

@@ -37,8 +37,11 @@
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 #include "testing/gmock_mutant.h"
 
-class FilePath;
 interface IWebBrowser2;
+
+namespace base {
+class FilePath;
+}
 
 namespace chrome_frame_test {
 
@@ -46,7 +49,7 @@ int CloseVisibleWindowsOnAllThreads(HANDLE process);
 
 base::ProcessHandle LaunchIE(const std::wstring& url);
 base::ProcessHandle LaunchChrome(const std::wstring& url,
-                                 const FilePath& user_data_dir);
+                                 const base::FilePath& user_data_dir);
 
 // Attempts to close all open IE windows.
 // The return value is the number of windows closed.
@@ -243,7 +246,7 @@ class TimedMsgLoop {
 
  private:
   static void SnapshotAndQuit() {
-    FilePath snapshot;
+    base::FilePath snapshot;
     if (ui_test_utils::SaveScreenSnapshotToDesktop(&snapshot)) {
       testing::UnitTest* unit_test = testing::UnitTest::GetInstance();
       const testing::TestInfo* test_info = unit_test->current_test_info();
@@ -286,7 +289,7 @@ HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser);
 std::wstring GetExecutableAppPath(const std::wstring& file);
 
 // Returns the profile path to be used for IE. This varies as per version.
-FilePath GetProfilePathForIE();
+base::FilePath GetProfilePathForIE();
 
 // Returns the version of the exe passed in.
 std::wstring GetExeVersion(const std::wstring& exe_path);
@@ -295,10 +298,10 @@ std::wstring GetExeVersion(const std::wstring& exe_path);
 IEVersion GetInstalledIEVersion();
 
 // Returns the folder for CF test data.
-FilePath GetTestDataFolder();
+base::FilePath GetTestDataFolder();
 
 // Returns the folder for Selenium core.
-FilePath GetSeleniumTestFolder();
+base::FilePath GetSeleniumTestFolder();
 
 // Returns the path portion of the url.
 std::wstring GetPathFromUrl(const std::wstring& url);

@@ -449,7 +449,7 @@ AppCacheService::~AppCacheService() {
   storage_.reset();
 }
 
-void AppCacheService::Initialize(const FilePath& cache_directory,
+void AppCacheService::Initialize(const base::FilePath& cache_directory,
                                  base::MessageLoopProxy* db_thread,
                                  base::MessageLoopProxy* cache_thread) {
   DCHECK(!storage_.get());

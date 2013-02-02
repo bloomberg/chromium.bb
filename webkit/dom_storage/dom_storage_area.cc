@@ -33,28 +33,28 @@ DomStorageArea::CommitBatch::~CommitBatch() {}
 
 
 // static
-const FilePath::CharType DomStorageArea::kDatabaseFileExtension[] =
+const base::FilePath::CharType DomStorageArea::kDatabaseFileExtension[] =
     FILE_PATH_LITERAL(".localstorage");
 
 // static
-FilePath DomStorageArea::DatabaseFileNameFromOrigin(const GURL& origin) {
+base::FilePath DomStorageArea::DatabaseFileNameFromOrigin(const GURL& origin) {
   std::string filename = fileapi::GetOriginIdentifierFromURL(origin);
-  // There is no FilePath.AppendExtension() method, so start with just the
+  // There is no base::FilePath.AppendExtension() method, so start with just the
   // extension as the filename, and then InsertBeforeExtension the desired
   // name.
-  return FilePath().Append(kDatabaseFileExtension).
+  return base::FilePath().Append(kDatabaseFileExtension).
       InsertBeforeExtensionASCII(filename);
 }
 
 // static
-GURL DomStorageArea::OriginFromDatabaseFileName(const FilePath& name) {
+GURL DomStorageArea::OriginFromDatabaseFileName(const base::FilePath& name) {
   DCHECK(name.MatchesExtension(kDatabaseFileExtension));
   WebKit::WebString origin_id = webkit_base::FilePathToWebString(
       name.BaseName().RemoveExtension());
   return DatabaseUtil::GetOriginFromIdentifier(origin_id);
 }
 
-DomStorageArea::DomStorageArea(const GURL& origin, const FilePath& directory,
+DomStorageArea::DomStorageArea(const GURL& origin, const base::FilePath& directory,
                                DomStorageTaskRunner* task_runner)
     : namespace_id_(kLocalStorageNamespaceId), origin_(origin),
       directory_(directory),
@@ -64,7 +64,7 @@ DomStorageArea::DomStorageArea(const GURL& origin, const FilePath& directory,
       is_shutdown_(false),
       commit_batches_in_flight_(0) {
   if (!directory.empty()) {
-    FilePath path = directory.Append(DatabaseFileNameFromOrigin(origin_));
+    base::FilePath path = directory.Append(DatabaseFileNameFromOrigin(origin_));
     backing_.reset(new LocalStorageDatabaseAdapter(path));
     is_initial_import_done_ = false;
   }

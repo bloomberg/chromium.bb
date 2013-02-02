@@ -59,14 +59,14 @@ TEST(ResourceRequestBodyTest, CreateUploadDataStreamWithoutBlob) {
   scoped_refptr<ResourceRequestBody> request_body = new ResourceRequestBody;
 
   const char kData[] = "123";
-  const FilePath::StringType kFilePath = FILE_PATH_LITERAL("abc");
+  const base::FilePath::StringType kFilePath = FILE_PATH_LITERAL("abc");
   const uint64 kFileOffset = 10U;
   const uint64 kFileLength = 100U;
   const base::Time kFileTime = base::Time::FromDoubleT(999);
   const int64 kIdentifier = 12345;
 
   request_body->AppendBytes(kData, arraysize(kData) - 1);
-  request_body->AppendFileRange(FilePath(kFilePath),
+  request_body->AppendFileRange(base::FilePath(kFilePath),
                                 kFileOffset, kFileLength, kFileTime);
   request_body->set_identifier(kIdentifier);
 
@@ -106,7 +106,7 @@ TEST(ResourceRequestBodyTest, ResolveBlobAndCreateUploadDataStream) {
 
   blob_data->AppendData("BlobData");
   blob_data->AppendFile(
-      FilePath(FILE_PATH_LITERAL("BlobFile.txt")), 0, 20, time1);
+      base::FilePath(FILE_PATH_LITERAL("BlobFile.txt")), 0, 20, time1);
 
   GURL blob_url1("blob://url_1");
   blob_storage_controller.AddFinishedBlob(blob_url1, blob_data);
@@ -132,7 +132,7 @@ TEST(ResourceRequestBodyTest, ResolveBlobAndCreateUploadDataStream) {
   ResourceRequestBody::Element upload_element1, upload_element2;
   upload_element1.SetToBytes("Hello", 5);
   upload_element2.SetToFilePathRange(
-      FilePath(FILE_PATH_LITERAL("foo1.txt")), 0, 20, time2);
+      base::FilePath(FILE_PATH_LITERAL("foo1.txt")), 0, 20, time2);
 
   // Test no blob reference.
   scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());

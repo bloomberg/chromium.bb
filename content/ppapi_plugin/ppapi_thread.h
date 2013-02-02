@@ -28,7 +28,10 @@
 #endif
 
 class CommandLine;
+
+namespace base {
 class FilePath;
+}
 
 namespace IPC {
 struct ChannelHandle;
@@ -88,7 +91,7 @@ class PpapiThread : public ChildThread,
   virtual void SetActiveURL(const std::string& url) OVERRIDE;
 
   // Message handlers.
-  void OnLoadPlugin(const FilePath& path,
+  void OnLoadPlugin(const base::FilePath& path,
                     const ppapi::PpapiPermissions& permissions);
   void OnCreateChannel(base::ProcessId renderer_pid,
                        int renderer_child_id,
@@ -108,7 +111,7 @@ class PpapiThread : public ChildThread,
                             IPC::ChannelHandle* handle);
 
   // Sets up the name of the plugin for logging using the given path.
-  void SavePluginName(const FilePath& path);
+  void SavePluginName(const base::FilePath& path);
 
   // True if running in a broker process rather than a normal plugin process.
   bool is_broker_;

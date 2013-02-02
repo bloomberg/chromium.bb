@@ -242,7 +242,7 @@ void EventPrinter::OnTraceEvent(const EVENT_TRACE* event,
 
 }  // namespace
 
-void logging_win::PrintLogFile(const FilePath& log_file,
+void logging_win::PrintLogFile(const base::FilePath& log_file,
                                std::ostream* out) {
   EventPrinter printer(out);
   logging_win::ReadLogFile(log_file, &printer);

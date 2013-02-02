@@ -116,7 +116,7 @@ class FileSystemFileUtilTest : public testing::Test {
           dest_root.path().Append(test_case.path));
 
       base::PlatformFileInfo dest_file_info;
-      FilePath data_path;
+      base::FilePath data_path;
       context.reset(NewContext(&dest_helper));
       EXPECT_EQ(base::PLATFORM_FILE_OK,
           file_util->GetFileInfo(
@@ -140,7 +140,7 @@ class FileSystemFileUtilTest : public testing::Test {
       FileSystemURL url = src_root.WithPath(
           src_root.path().Append(test_case.path));
       base::PlatformFileInfo src_file_info;
-      FilePath data_path;
+      base::FilePath data_path;
       context.reset(NewContext(&src_helper));
       base::PlatformFileError expected_result;
       if (copy)

@@ -11,12 +11,15 @@
 #include "sql/meta_table.h"
 
 class AutofillTable;
-class FilePath;
 class KeywordTable;
 class LoginsTable;
 class TokenServiceTable;
 class WebAppsTable;
 class WebIntentsTable;
+
+namespace base {
+class FilePath;
+}
 
 namespace content {
 class NotificationService;
@@ -35,7 +38,7 @@ class WebDatabase {
   // file is. If this returns an error code, no other method should be called.
   // Requires the |app_locale| to be passed as a parameter as the locale can
   // only safely be queried on the UI thread.
-  sql::InitStatus Init(const FilePath& db_name, const std::string& app_locale);
+  sql::InitStatus Init(const base::FilePath& db_name, const std::string& app_locale);
 
   // Transactions management
   void BeginTransaction();

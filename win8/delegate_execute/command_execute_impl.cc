@@ -60,12 +60,12 @@ HRESULT GetUrlFromShellItem(IShellItem* shell_item, string16* url) {
 }
 
 bool LaunchChromeBrowserProcess() {
-  FilePath delegate_exe_path;
+  base::FilePath delegate_exe_path;
   if (!PathService::Get(base::FILE_EXE, &delegate_exe_path))
     return false;
 
   // First try and go up a level to find chrome.exe.
-  FilePath chrome_exe_path =
+  base::FilePath chrome_exe_path =
       delegate_exe_path.DirName()
                        .DirName()
                        .Append(chrome::kBrowserProcessExecutableName);
@@ -242,7 +242,7 @@ STDMETHODIMP CommandExecuteImpl::GetValue(enum AHE_TYPE* pahe) {
     return S_OK;
   }
 
-  FilePath user_data_dir;
+  base::FilePath user_data_dir;
   if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))  {
     AtlTrace("Failed to get chrome's data dir path, E_FAIL\n");
     return E_FAIL;
@@ -376,11 +376,11 @@ STDMETHODIMP CommandExecuteImpl::AllowForegroundTransfer(void* reserved) {
 
 // Returns false if chrome.exe cannot be found.
 // static
-bool CommandExecuteImpl::FindChromeExe(FilePath* chrome_exe) {
+bool CommandExecuteImpl::FindChromeExe(base::FilePath* chrome_exe) {
   AtlTrace("In %hs\n", __FUNCTION__);
   // Look for chrome.exe one folder above delegate_execute.exe (as expected in
   // Chrome installs). Failing that, look for it alonside delegate_execute.exe.
-  FilePath dir_exe;
+  base::FilePath dir_exe;
   if (!PathService::Get(base::DIR_EXE, &dir_exe)) {
     AtlTrace("Failed to get current exe path\n");
     return false;

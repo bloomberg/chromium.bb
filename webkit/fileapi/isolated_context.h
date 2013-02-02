@@ -48,12 +48,12 @@ class WEBKIT_STORAGE_EXPORT IsolatedContext : public MountPoints {
     // the registered name assigned for the path. |path| needs to be
     // absolute and should not contain parent references.
     // Return false if the |path| is not valid and could not be added.
-    bool AddPath(const FilePath& path, std::string* registered_name);
+    bool AddPath(const base::FilePath& path, std::string* registered_name);
 
     // Add the given |path| with the |name|.
     // Return false if the |name| is already registered in the set or
     // is not valid and could not be added.
-    bool AddPathWithName(const FilePath& path, const std::string& name);
+    bool AddPathWithName(const base::FilePath& path, const std::string& name);
 
     const std::set<MountPointInfo>& fileset() const { return fileset_; }
 
@@ -99,7 +99,7 @@ class WEBKIT_STORAGE_EXPORT IsolatedContext : public MountPoints {
   // registered as the given |register_name|, otherwise it is populated
   // with the name internally assigned to the path.
   std::string RegisterFileSystemForPath(FileSystemType type,
-                                        const FilePath& path,
+                                        const base::FilePath& path,
                                         std::string* register_name);
 
   // Revokes all filesystem(s) registered for the given path.
@@ -110,7 +110,7 @@ class WEBKIT_STORAGE_EXPORT IsolatedContext : public MountPoints {
   // It is ok to call this for the path that has no associated filesystems.
   // Note that this only works for the filesystems registered by
   // |RegisterFileSystemForPath|.
-  void RevokeFileSystemByPath(const FilePath& path);
+  void RevokeFileSystemByPath(const base::FilePath& path);
 
   // Adds a reference to a filesystem specified by the given filesystem_id.
   void AddReference(const std::string& filesystem_id);
@@ -133,19 +133,19 @@ class WEBKIT_STORAGE_EXPORT IsolatedContext : public MountPoints {
   virtual bool HandlesFileSystemMountType(FileSystemType type) const OVERRIDE;
   virtual bool RevokeFileSystem(const std::string& filesystem_id) OVERRIDE;
   virtual bool GetRegisteredPath(const std::string& filesystem_id,
-                                 FilePath* path) const OVERRIDE;
-  virtual bool CrackVirtualPath(const FilePath& virtual_path,
+                                 base::FilePath* path) const OVERRIDE;
+  virtual bool CrackVirtualPath(const base::FilePath& virtual_path,
                                 std::string* filesystem_id,
                                 FileSystemType* type,
-                                FilePath* path) const OVERRIDE;
+                                base::FilePath* path) const OVERRIDE;
   virtual FileSystemURL CrackURL(const GURL& url) const OVERRIDE;
   virtual FileSystemURL CreateCrackedFileSystemURL(
       const GURL& origin,
       FileSystemType type,
-      const FilePath& path) const OVERRIDE;
+      const base::FilePath& path) const OVERRIDE;
 
   // Returns the virtual root path that looks like /<filesystem_id>.
-  FilePath CreateVirtualRootPath(const std::string& filesystem_id) const;
+  base::FilePath CreateVirtualRootPath(const std::string& filesystem_id) const;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<IsolatedContext>;
@@ -156,7 +156,7 @@ class WEBKIT_STORAGE_EXPORT IsolatedContext : public MountPoints {
   typedef std::map<std::string, Instance*> IDToInstance;
 
   // Reverse map from registered path to IDs.
-  typedef std::map<FilePath, std::set<std::string> > PathToID;
+  typedef std::map<base::FilePath, std::set<std::string> > PathToID;
 
   // Obtain an instance of this class via GetInstance().
   IsolatedContext();

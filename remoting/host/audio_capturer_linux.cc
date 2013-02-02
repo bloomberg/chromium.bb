@@ -27,7 +27,7 @@ base::LazyInstance<scoped_refptr<AudioPipeReader> >::Leaky
 // See crbug.com/161373 and crbug.com/104544.
 void AudioCapturerLinux::InitializePipeReader(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const FilePath& pipe_name) {
+    const base::FilePath& pipe_name) {
   scoped_refptr<AudioPipeReader> pipe_reader;
   if (!pipe_name.empty())
     pipe_reader = AudioPipeReader::Create(task_runner, pipe_name);

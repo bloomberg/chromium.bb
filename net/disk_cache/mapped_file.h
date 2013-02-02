@@ -12,7 +12,9 @@
 #include "net/disk_cache/file.h"
 #include "net/disk_cache/file_block.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace disk_cache {
 
@@ -27,7 +29,7 @@ class NET_EXPORT_PRIVATE MappedFile : public File {
   // Performs object initialization. name is the file to use, and size is the
   // amount of data to memory map from the file. If size is 0, the whole file
   // will be mapped in memory.
-  void* Init(const FilePath& name, size_t size);
+  void* Init(const base::FilePath& name, size_t size);
 
   void* buffer() const {
     return buffer_;

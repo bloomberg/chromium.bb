@@ -110,7 +110,7 @@ class CannedSyncableFileSystem
                                      const std::string& expected_data);
   base::PlatformFileError GetMetadata(const FileSystemURL& url,
                                       base::PlatformFileInfo* info,
-                                      FilePath* platform_path);
+                                      base::FilePath* platform_path);
 
   // Returns the # of bytes written (>=0) or an error code (<0).
   int64 Write(net::URLRequestContext* url_request_context,
@@ -172,7 +172,7 @@ class CannedSyncableFileSystem
                     const StatusCallback& callback);
   void DoGetMetadata(const FileSystemURL& url,
                      base::PlatformFileInfo* info,
-                     FilePath* platform_path,
+                     base::FilePath* platform_path,
                      const StatusCallback& callback);
   void DoWrite(net::URLRequestContext* url_request_context,
                const FileSystemURL& url,

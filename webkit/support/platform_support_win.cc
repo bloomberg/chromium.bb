@@ -20,8 +20,8 @@
 
 namespace {
 
-FilePath GetResourceFilePath(const char* ascii_name) {
-  FilePath path;
+base::FilePath GetResourceFilePath(const char* ascii_name) {
+  base::FilePath path;
   PathService::Get(base::DIR_EXE, &path);
   path = path.AppendASCII("DumpRenderTree_resources");
   return path.AppendASCII(ascii_name);
@@ -80,7 +80,7 @@ base::StringPiece TestWebKitPlatformSupport::GetDataResource(
     // Use webkit's broken image icon (16x16)
     static std::string broken_image_data;
     if (broken_image_data.empty()) {
-      FilePath path = GetResourceFilePath("missingImage.gif");
+      base::FilePath path = GetResourceFilePath("missingImage.gif");
       bool success = file_util::ReadFileToString(path, &broken_image_data);
       if (!success) {
         LOG(FATAL) << "Failed reading: " << path.value();
@@ -92,7 +92,7 @@ base::StringPiece TestWebKitPlatformSupport::GetDataResource(
     // Use webkit's text area resizer image.
     static std::string resize_corner_data;
     if (resize_corner_data.empty()) {
-      FilePath path = GetResourceFilePath("textAreaResizeCorner.png");
+      base::FilePath path = GetResourceFilePath("textAreaResizeCorner.png");
       bool success = file_util::ReadFileToString(path, &resize_corner_data);
       if (!success) {
         LOG(FATAL) << "Failed reading: " << path.value();

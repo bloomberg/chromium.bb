@@ -16,8 +16,11 @@
 #include "net/cookies/cookie_monster.h"
 
 class ClearOnExitPolicy;
-class FilePath;
 class Task;
+
+namespace base {
+class FilePath;
+}
 
 namespace net {
 class CanonicalCookie;
@@ -34,7 +37,7 @@ class SQLitePersistentCookieStore
   // If non-NULL, SQLitePersistentCookieStore will keep a scoped_refptr to the
   // |clear_on_exit_policy| throughout its lifetime.
   SQLitePersistentCookieStore(
-      const FilePath& path,
+      const base::FilePath& path,
       bool restore_old_session_cookies,
       ClearOnExitPolicy* clear_on_exit_policy);
 

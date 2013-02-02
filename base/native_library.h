@@ -26,9 +26,9 @@
 #define CDECL
 #endif
 
-class FilePath;
-
 namespace base {
+
+class FilePath;
 
 #if defined(OS_WIN)
 typedef HMODULE NativeLibrary;

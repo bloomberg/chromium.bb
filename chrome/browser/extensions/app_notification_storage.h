@@ -9,7 +9,9 @@
 
 #include "chrome/browser/extensions/app_notification.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace extensions {
 
@@ -20,7 +22,7 @@ namespace extensions {
 class AppNotificationStorage {
  public:
   // Must be called on the FILE thread. The storage will be created at |path|.
-  static AppNotificationStorage* Create(const FilePath& path);
+  static AppNotificationStorage* Create(const base::FilePath& path);
 
   virtual ~AppNotificationStorage();
 

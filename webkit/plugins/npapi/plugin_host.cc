@@ -467,14 +467,14 @@ static NPError PostURLNotify(NPP id,
       return NPERR_FILE_NOT_FOUND;
 
     std::string file_path_ascii(buf);
-    FilePath file_path;
+    base::FilePath file_path;
     static const char kFileUrlPrefix[] = "file:";
     if (StartsWithASCII(file_path_ascii, kFileUrlPrefix, false)) {
       GURL file_url(file_path_ascii);
       DCHECK(file_url.SchemeIsFile());
       net::FileURLToFilePath(file_url, &file_path);
     } else {
-      file_path = FilePath::FromWStringHack(
+      file_path = base::FilePath::FromWStringHack(
           base::SysNativeMBToWide(file_path_ascii));
     }
 

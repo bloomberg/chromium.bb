@@ -16,8 +16,11 @@
 #include "chrome/installer/util/util_constants.h"
 
 class CommandLine;
-class FilePath;
 class Version;
+
+namespace base {
+class FilePath;
+}
 
 namespace installer {
 
@@ -29,15 +32,15 @@ class ProductState;
 // since it checks for courgette header and fails quickly. If that fails
 // tries to apply the patch using regular bsdiff. Returns status code.
 // The installer stage is updated if |installer_state| is non-NULL.
-int ApplyDiffPatch(const FilePath& src,
-                   const FilePath& patch,
-                   const FilePath& dest,
+int ApplyDiffPatch(const base::FilePath& src,
+                   const base::FilePath& patch,
+                   const base::FilePath& dest,
                    const InstallerState* installer_state);
 
 // Find the version of Chrome from an install source directory.
 // Chrome_path should contain at least one version folder.
 // Returns the maximum version found or NULL if no version is found.
-Version* GetMaxVersionFromArchiveDir(const FilePath& chrome_path);
+Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path);
 
 // Spawns a new process that waits for a specified amount of time before
 // attempting to delete |path|.  This is useful for setup to delete the
@@ -46,7 +49,7 @@ Version* GetMaxVersionFromArchiveDir(const FilePath& chrome_path);
 // Returns true if a new process was started, false otherwise.  Note that
 // given the nature of this function, it is not possible to know if the
 // delete operation itself succeeded.
-bool DeleteFileFromTempProcess(const FilePath& path,
+bool DeleteFileFromTempProcess(const base::FilePath& path,
                                uint32 delay_before_delete_ms);
 
 // Returns true and populates |setup_exe| with the path to an existing product
@@ -55,17 +58,17 @@ bool DeleteFileFromTempProcess(const FilePath& path,
 bool GetExistingHigherInstaller(const InstallationState& original_state,
                                 bool system_install,
                                 const Version& installer_version,
-                                FilePath* setup_exe);
+                                base::FilePath* setup_exe);
 
 // Invokes the pre-existing |setup_exe| to handle the current operation (as
 // dictated by |command_line|). An installerdata file, if specified, is first
 // unconditionally copied into place so that it will be in effect in case the
 // invoked |setup_exe| runs the newly installed product prior to exiting.
 // Returns true if |setup_exe| was launched, false otherwise.
-bool DeferToExistingInstall(const FilePath& setup_exe,
+bool DeferToExistingInstall(const base::FilePath& setup_exe,
                             const CommandLine& command_line,
                             const InstallerState& installer_state,
-                            const FilePath& temp_path,
+                            const base::FilePath& temp_path,
                             InstallStatus* install_status);
 
 // This class will enable the privilege defined by |privilege_name| on the

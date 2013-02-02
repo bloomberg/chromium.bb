@@ -129,7 +129,7 @@ class FileSystemQuotaClientTest : public testing::Test {
     return context;
   }
 
-  bool CreateFileSystemDirectory(const FilePath& file_path,
+  bool CreateFileSystemDirectory(const base::FilePath& file_path,
                                  const std::string& origin_url,
                                  quota::StorageType storage_type) {
     FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
@@ -147,7 +147,7 @@ class FileSystemQuotaClientTest : public testing::Test {
     return true;
   }
 
-  bool CreateFileSystemFile(const FilePath& file_path,
+  bool CreateFileSystemFile(const base::FilePath& file_path,
                             int64 file_size,
                             const std::string& origin_url,
                             quota::StorageType storage_type) {
@@ -178,7 +178,7 @@ class FileSystemQuotaClientTest : public testing::Test {
                              const TestFile* files,
                              int num_files) {
     for (int i = 0; i < num_files; i++) {
-      FilePath path = FilePath().AppendASCII(files[i].name);
+      base::FilePath path = base::FilePath().AppendASCII(files[i].name);
       if (files[i].isDirectory) {
         ASSERT_TRUE(CreateFileSystemDirectory(
             path, files[i].origin_url, files[i].type));
@@ -210,7 +210,7 @@ class FileSystemQuotaClientTest : public testing::Test {
     for (int i = 0; i < num_files; i++) {
       if (files[i].type == type &&
           GURL(files[i].origin_url) == GURL(origin_url)) {
-        FilePath path = FilePath().AppendASCII(files[i].name);
+        base::FilePath path = base::FilePath().AppendASCII(files[i].name);
         if (!path.empty()) {
           file_paths_cost += ObfuscatedFileUtil::ComputeFilePathCost(path);
         }

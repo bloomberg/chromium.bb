@@ -7,7 +7,9 @@
 
 #include <pthread.h>
 
+namespace base {
 class FilePath;
+}
 
 namespace rlz_lib {
 
@@ -20,7 +22,7 @@ struct RecursiveCrossProcessLock {
   // Tries to acquire a recursive cross-process lock. Note that this _always_
   // acquires the in-process lock (if it wasn't already acquired). The parent
   // directory of |lock_file| must exist.
-  bool TryGetCrossProcessLock(const FilePath& lock_filename);
+  bool TryGetCrossProcessLock(const base::FilePath& lock_filename);
 
   // Releases the lock. Should always be called, even if
   // TryGetCrossProcessLock() returned |false|.

@@ -22,7 +22,7 @@ MasterPreferences::MasterPreferences(const CommandLine& cmd_line)
     : distribution_(NULL), preferences_read_from_file_(false) {
 }
 
-MasterPreferences::MasterPreferences(const FilePath& prefs_path)
+MasterPreferences::MasterPreferences(const base::FilePath& prefs_path)
     : distribution_(NULL), preferences_read_from_file_(false) {
 }
 

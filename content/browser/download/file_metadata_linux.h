@@ -7,8 +7,11 @@
 
 #include "content/common/content_export.h"
 
-class FilePath;
 class GURL;
+
+namespace base {
+class FilePath;
+}
 
 namespace content {
 
@@ -22,7 +25,7 @@ CONTENT_EXPORT extern const char kReferrerURLAttrName[];
 // Adds origin metadata to the file.
 // |source| should be the source URL for the download, and |referrer| should be
 // the URL the user initiated the download from.
-CONTENT_EXPORT void AddOriginMetadataToFile(const FilePath& file,
+CONTENT_EXPORT void AddOriginMetadataToFile(const base::FilePath& file,
                                             const GURL& source,
                                             const GURL& referrer);
 

@@ -85,7 +85,7 @@ class ATL_NO_VTABLE DECLSPEC_UUID("A2DF06F9-A21A-44A8-8A99-8B9C84F29160")
   STDMETHOD(AllowForegroundTransfer)(void* reserved);
 
  private:
-  static bool FindChromeExe(FilePath* chrome_exe);
+  static bool FindChromeExe(base::FilePath* chrome_exe);
 
   static bool path_provider_initialized_;
 
@@ -96,7 +96,7 @@ class ATL_NO_VTABLE DECLSPEC_UUID("A2DF06F9-A21A-44A8-8A99-8B9C84F29160")
 
   CComPtr<IShellItemArray> item_array_;
   CommandLine parameters_;
-  FilePath chrome_exe_;
+  base::FilePath chrome_exe_;
   STARTUPINFO start_info_;
   string16 verb_;
   string16 display_name_;

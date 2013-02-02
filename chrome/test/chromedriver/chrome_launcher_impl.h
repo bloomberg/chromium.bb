@@ -13,9 +13,12 @@
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 
 class Chrome;
-class FilePath;
 class Status;
 class URLRequestContextGetter;
+
+namespace base {
+class FilePath;
+}
 
 class ChromeLauncherImpl : public ChromeLauncher {
  public:
@@ -24,7 +27,7 @@ class ChromeLauncherImpl : public ChromeLauncher {
   virtual ~ChromeLauncherImpl();
 
   // Overridden from ChromeLauncher:
-  virtual Status Launch(const FilePath& chrome_exe,
+  virtual Status Launch(const base::FilePath& chrome_exe,
                         scoped_ptr<Chrome>* chrome) OVERRIDE;
 
  private:

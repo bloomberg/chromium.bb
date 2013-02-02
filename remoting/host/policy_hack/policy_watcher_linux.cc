@@ -32,7 +32,7 @@ namespace policy_hack {
 
 namespace {
 
-const FilePath::CharType kPolicyDir[] =
+const base::FilePath::CharType kPolicyDir[] =
   // Always read the Chrome policies (even on Chromium) so that policy
   // enforcement can't be bypassed by running Chromium.
   FILE_PATH_LITERAL("/etc/opt/chrome/policies/managed");
@@ -47,7 +47,7 @@ const int kSettleIntervalSeconds = 5;
 class PolicyWatcherLinux : public PolicyWatcher {
  public:
   PolicyWatcherLinux(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                     const FilePath& config_dir)
+                     const base::FilePath& config_dir)
       : PolicyWatcher(task_runner),
         config_dir_(config_dir),
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -89,7 +89,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
   }
 
  private:
-  void OnFilePathChanged(const FilePath& path, bool error) {
+  void OnFilePathChanged(const base::FilePath& path, bool error) {
     DCHECK(OnPolicyWatcherThread());
 
     if (!error)
@@ -113,7 +113,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
     file_util::FileEnumerator file_enumerator(config_dir_,
                                               false,
                                               file_util::FileEnumerator::FILES);
-    for (FilePath config_file = file_enumerator.Next();
+    for (base::FilePath config_file = file_enumerator.Next();
          !config_file.empty();
          config_file = file_enumerator.Next()) {
       if (file_util::GetFileInfo(config_file, &file_info) &&
@@ -130,16 +130,16 @@ class PolicyWatcherLinux : public PolicyWatcher {
   scoped_ptr<DictionaryValue> Load() {
     DCHECK(OnPolicyWatcherThread());
     // Enumerate the files and sort them lexicographically.
-    std::set<FilePath> files;
+    std::set<base::FilePath> files;
     file_util::FileEnumerator file_enumerator(config_dir_, false,
                                               file_util::FileEnumerator::FILES);
-    for (FilePath config_file_path = file_enumerator.Next();
+    for (base::FilePath config_file_path = file_enumerator.Next();
          !config_file_path.empty(); config_file_path = file_enumerator.Next())
       files.insert(config_file_path);
 
     // Start with an empty dictionary and merge the files' contents.
     scoped_ptr<DictionaryValue> policy(new DictionaryValue());
-    for (std::set<FilePath>::iterator config_file_iter = files.begin();
+    for (std::set<base::FilePath>::iterator config_file_iter = files.begin();
          config_file_iter != files.end(); ++config_file_iter) {
       JSONFileValueSerializer deserializer(*config_file_iter);
       deserializer.set_allow_trailing_comma(true);
@@ -239,7 +239,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
   // non-local filesystem involved.
   base::Time last_modification_clock_;
 
-  const FilePath config_dir_;
+  const base::FilePath config_dir_;
 
   // Allows us to cancel any inflight FileWatcher events or scheduled reloads.
   base::WeakPtrFactory<PolicyWatcherLinux> weak_factory_;
@@ -247,7 +247,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
 
 PolicyWatcher* PolicyWatcher::Create(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  FilePath policy_dir(kPolicyDir);
+  base::FilePath policy_dir(kPolicyDir);
   return new PolicyWatcherLinux(task_runner, policy_dir);
 }
 

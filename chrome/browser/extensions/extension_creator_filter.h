@@ -7,7 +7,9 @@
 
 #include "base/memory/ref_counted.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace extensions {
 
@@ -18,9 +20,9 @@ class ExtensionCreatorFilter
  public:
   ExtensionCreatorFilter() {}
 
-  // Returns true if the given FilePath should be included in a
+  // Returns true if the given base::FilePath should be included in a
   // packed extension.
-  bool ShouldPackageFile(const FilePath& file_path);
+  bool ShouldPackageFile(const base::FilePath& file_path);
 
  private:
   friend class base::RefCounted<ExtensionCreatorFilter>;

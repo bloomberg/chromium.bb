@@ -13,7 +13,7 @@
 
 namespace {
 
-const FilePath::CharType kJournal[] = FILE_PATH_LITERAL("-journal");
+const base::FilePath::CharType kJournal[] = FILE_PATH_LITERAL("-journal");
 
 class HistogramUniquifier {
  public:
@@ -29,14 +29,14 @@ sql::ErrorDelegate* GetErrorHandlerForDomStorageDatabase() {
 namespace dom_storage {
 
 // static
-FilePath DomStorageDatabase::GetJournalFilePath(
-    const FilePath& database_path) {
-  FilePath::StringType journal_file_name =
+base::FilePath DomStorageDatabase::GetJournalFilePath(
+    const base::FilePath& database_path) {
+  base::FilePath::StringType journal_file_name =
       database_path.BaseName().value() + kJournal;
   return database_path.DirName().Append(journal_file_name);
 }
 
-DomStorageDatabase::DomStorageDatabase(const FilePath& file_path)
+DomStorageDatabase::DomStorageDatabase(const base::FilePath& file_path)
     : file_path_(file_path) {
   // Note: in normal use we should never get an empty backing path here.
   // However, the unit test for this class can contruct an instance

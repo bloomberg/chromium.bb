@@ -17,8 +17,11 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-class FilePath;
 class InfoBarDelegate;
+
+namespace base {
+class FilePath;
+}
 
 // Manages per-tab state with regard to hung plugins. This only handles
 // Pepper plugins which we know are windowless. Hung NPAPI plugins (which
@@ -40,10 +43,10 @@ class HungPluginTabHelper
   virtual ~HungPluginTabHelper();
 
   // content::WebContentsObserver overrides:
-  virtual void PluginCrashed(const FilePath& plugin_path,
+  virtual void PluginCrashed(const base::FilePath& plugin_path,
                              base::ProcessId plugin_pid) OVERRIDE;
   virtual void PluginHungStatusChanged(int plugin_child_id,
-                                       const FilePath& plugin_path,
+                                       const base::FilePath& plugin_path,
                                        bool is_hung) OVERRIDE;
 
   // NotificationObserver overrides.
@@ -64,10 +67,10 @@ class HungPluginTabHelper
   // not we're currently showing the infobar.
   struct PluginState {
     // Initializes the plugin state to be a hung plugin.
-    PluginState(const FilePath& p, const string16& n);
+    PluginState(const base::FilePath& p, const string16& n);
     ~PluginState();
 
-    FilePath path;
+    base::FilePath path;
     string16 name;
 
     // Possibly-null if we're not showing an infobar right now.

@@ -17,7 +17,7 @@ TEST(WebIntentReplyDataTest, DefaultValues) {
   WebIntentReply reply;
   EXPECT_EQ(webkit_glue::WEB_INTENT_REPLY_INVALID, reply.type);
   EXPECT_EQ(string16(), reply.data);
-  EXPECT_EQ(FilePath(), reply.data_file);
+  EXPECT_EQ(base::FilePath(), reply.data_file);
   EXPECT_EQ(-1, reply.data_file_size);
 }
 
@@ -39,17 +39,17 @@ TEST(WebIntentReplyDataTest, Equality) {
 
   WebIntentReply file_a(
       webkit_glue::WEB_INTENT_REPLY_SUCCESS,
-      FilePath(),
+      base::FilePath(),
       22);
 
   WebIntentReply file_b(
       webkit_glue::WEB_INTENT_REPLY_SUCCESS,
-      FilePath(),
+      base::FilePath(),
       22);
 
   WebIntentReply file_c(
       webkit_glue::WEB_INTENT_REPLY_SUCCESS,
-      FilePath(),
+      base::FilePath(),
       17);
 
   EXPECT_EQ(file_a, file_b);

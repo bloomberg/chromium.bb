@@ -68,7 +68,7 @@ SkBitmap* MockPluginDelegate::GetSadPluginBitmap() {
 }
 
 WebKit::WebPlugin* MockPluginDelegate::CreatePluginReplacement(
-    const FilePath& file_path) {
+    const base::FilePath& file_path) {
   return NULL;
 }
 
@@ -141,7 +141,7 @@ void MockPluginDelegate::NumberOfFindResultsChanged(int identifier,
 void MockPluginDelegate::SelectedFindResultChanged(int identifier, int index) {
 }
 
-bool MockPluginDelegate::AsyncOpenFile(const FilePath& path,
+bool MockPluginDelegate::AsyncOpenFile(const base::FilePath& path,
                                        int flags,
                                        const AsyncOpenFileCallback& callback) {
   return false;
@@ -222,9 +222,9 @@ void MockPluginDelegate::DidUpdateFile(const GURL& file_path, int64_t delta) {
 
 void MockPluginDelegate::SyncGetFileSystemPlatformPath(
     const GURL& url,
-    FilePath* platform_path) {
+    base::FilePath* platform_path) {
   DCHECK(platform_path);
-  *platform_path = FilePath();
+  *platform_path = base::FilePath();
 }
 
 scoped_refptr<base::MessageLoopProxy>

@@ -21,7 +21,9 @@
 #include "base/mac/scoped_cftyperef.h"
 #endif
 
+namespace base {
 class FilePath;
+}
 
 namespace net {
 
@@ -45,7 +47,7 @@ class NET_EXPORT_PRIVATE TestRootCerts {
   // Reads a single certificate from |file| and marks it as trusted. Returns
   // false if an error is encountered, such as being unable to read |file|
   // or more than one certificate existing in |file|.
-  bool AddFromFile(const FilePath& file);
+  bool AddFromFile(const base::FilePath& file);
 
   // Clears the trusted status of any certificates that were previously
   // marked trusted via Add().

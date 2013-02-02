@@ -30,7 +30,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE TestMountPointProvider
  public:
   TestMountPointProvider(
       base::SequencedTaskRunner* task_runner,
-      const FilePath& base_path);
+      const base::FilePath& base_path);
   virtual ~TestMountPointProvider();
 
   // FileSystemMountPointProvider implementation.
@@ -39,11 +39,11 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE TestMountPointProvider
       FileSystemType type,
       bool create,
       const ValidateFileSystemCallback& callback) OVERRIDE;
-  virtual FilePath GetFileSystemRootPathOnFileThread(
+  virtual base::FilePath GetFileSystemRootPathOnFileThread(
       const FileSystemURL& url,
       bool create) OVERRIDE;
   virtual bool IsAccessAllowed(const FileSystemURL& url) OVERRIDE;
-  virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
+  virtual bool IsRestrictedFileName(const base::FilePath& filename) const OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
   virtual FilePermissionPolicy GetPermissionPolicy(
@@ -74,7 +74,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE TestMountPointProvider
  private:
   class QuotaUtil;
 
-  FilePath base_path_;
+  base::FilePath base_path_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_ptr<AsyncFileUtilAdapter> local_file_util_;
   scoped_ptr<QuotaUtil> quota_util_;

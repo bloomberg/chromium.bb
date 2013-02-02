@@ -9,7 +9,9 @@
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace gfx {
 class Rect;
@@ -28,7 +30,7 @@ class Shell;
 // The file for the tests is all located in
 // content/test/data/dir/<file>
 // The returned path is FilePath format.
-FilePath GetTestFilePath(const char* dir, const char* file);
+base::FilePath GetTestFilePath(const char* dir, const char* file);
 
 // Generate the URL for testing a particular test.
 // HTML for the tests is all located in

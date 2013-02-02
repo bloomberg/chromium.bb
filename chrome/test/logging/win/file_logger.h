@@ -11,7 +11,9 @@
 #include "base/string16.h"
 #include "base/win/event_trace_controller.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace logging_win {
 
@@ -59,7 +61,7 @@ class FileLogger {
   // extension for such files is .etl.  Returns false if the session could not
   // be started (e.g., if not running as admin) or if no providers could be
   // enabled.
-  bool StartLogging(const FilePath& log_file);
+  bool StartLogging(const base::FilePath& log_file);
 
   // Stops capturing logs.
   void StopLogging();

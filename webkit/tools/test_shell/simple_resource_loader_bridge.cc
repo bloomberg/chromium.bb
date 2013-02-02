@@ -93,14 +93,14 @@ namespace {
 
 struct TestShellRequestContextParams {
   TestShellRequestContextParams(
-      const FilePath& in_cache_path,
+      const base::FilePath& in_cache_path,
       net::HttpCache::Mode in_cache_mode,
       bool in_no_proxy)
       : cache_path(in_cache_path),
         cache_mode(in_cache_mode),
         no_proxy(in_no_proxy) {}
 
-  FilePath cache_path;
+  base::FilePath cache_path;
   net::HttpCache::Mode cache_mode;
   bool no_proxy;
 };
@@ -177,7 +177,7 @@ class TestShellNetworkDelegate : public net::NetworkDelegate {
     return rv == net::OK;
   }
   virtual bool OnCanAccessFile(const net::URLRequest& request,
-                               const FilePath& path) const OVERRIDE {
+                               const base::FilePath& path) const OVERRIDE {
     return true;
   }
   virtual bool OnCanThrottleRequest(
@@ -475,7 +475,7 @@ class RequestProxy
 
     download_to_file_ = params->download_to_file;
     if (download_to_file_) {
-      FilePath path;
+      base::FilePath path;
       if (file_util::CreateTemporaryFile(&path)) {
         downloaded_file_ = ShareableFileReference::GetOrCreate(
             path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
@@ -755,7 +755,7 @@ class RequestProxy
     // Get the File URL.
     original_request.replace(0, http_prefix.size(), file_url_prefix_);
 
-    FilePath file_path;
+    base::FilePath file_path;
     if (!net::FileURLToFilePath(GURL(original_request), &file_path)) {
       NOTREACHED();
     }
@@ -1027,7 +1027,7 @@ class CookieGetter : public base::RefCountedThreadSafe<CookieGetter> {
 
 // static
 void SimpleResourceLoaderBridge::Init(
-    const FilePath& cache_path,
+    const base::FilePath& cache_path,
     net::HttpCache::Mode cache_mode,
     bool no_proxy) {
   // Make sure to stop any existing IO thread since it may be using the

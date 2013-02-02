@@ -11,7 +11,9 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 
+namespace base {
 class FilePath;
+}
 
 // The following declarations of functions and types are from Firefox
 // NSS library.
@@ -120,7 +122,7 @@ class NSSDecryptor {
   ~NSSDecryptor();
 
   // Initializes NSS if it hasn't already been initialized.
-  bool Init(const FilePath& dll_path, const FilePath& db_path);
+  bool Init(const base::FilePath& dll_path, const base::FilePath& db_path);
 
   // Decrypts Firefox stored passwords. Before using this method,
   // make sure Init() returns true.
@@ -135,7 +137,7 @@ class NSSDecryptor {
   // Reads and parses the Firefox password sqlite db, decrypts the
   // username/password and reads other related information.
   // The result will be stored in |forms|.
-  bool ReadAndParseSignons(const FilePath& sqlite_file,
+  bool ReadAndParseSignons(const base::FilePath& sqlite_file,
                            std::vector<content::PasswordForm>* forms);
  private:
   PK11SlotInfo* GetKeySlotForDB() const { return PK11_GetInternalKeySlot(); }

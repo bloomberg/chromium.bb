@@ -72,13 +72,13 @@ class LocalFileSystemQuotaTest
     return context;
   }
 
-  void PrepareFileSet(const FilePath& virtual_path);
+  void PrepareFileSet(const base::FilePath& virtual_path);
 
-  FileSystemURL URLForPath(const FilePath& path) const {
+  FileSystemURL URLForPath(const base::FilePath& path) const {
     return test_helper_.CreateURL(path);
   }
 
-  FilePath PlatformPath(const FilePath& virtual_path) {
+  base::FilePath PlatformPath(const base::FilePath& virtual_path) {
     return test_helper_.GetLocalPath(virtual_path);
   }
 
@@ -100,24 +100,24 @@ class LocalFileSystemQuotaTest
     MessageLoop::current()->RunUntilIdle();
   }
 
-  bool FileExists(const FilePath& virtual_path) {
+  bool FileExists(const base::FilePath& virtual_path) {
     FileSystemURL url = test_helper_.CreateURL(virtual_path);
     base::PlatformFileInfo file_info;
-    FilePath platform_path;
+    base::FilePath platform_path;
     scoped_ptr<FileSystemOperationContext> context(NewContext());
     base::PlatformFileError error = file_util()->GetFileInfo(
         context.get(), url, &file_info, &platform_path);
     return error == base::PLATFORM_FILE_OK;
   }
 
-  bool DirectoryExists(const FilePath& virtual_path) {
+  bool DirectoryExists(const base::FilePath& virtual_path) {
     FileSystemURL path = test_helper_.CreateURL(virtual_path);
     scoped_ptr<FileSystemOperationContext> context(NewContext());
     return FileUtilHelper::DirectoryExists(context.get(), file_util(), path);
   }
 
-  FilePath CreateUniqueFileInDir(const FilePath& virtual_dir_path) {
-    FilePath file_name = FilePath::FromUTF8Unsafe(
+  base::FilePath CreateUniqueFileInDir(const base::FilePath& virtual_dir_path) {
+    base::FilePath file_name = base::FilePath::FromUTF8Unsafe(
         "tmpfile-" + base::IntToString(next_unique_path_suffix_++));
     FileSystemURL url = test_helper_.CreateURL(
         virtual_dir_path.Append(file_name));
@@ -130,8 +130,8 @@ class LocalFileSystemQuotaTest
     return url.path();
   }
 
-  FilePath CreateUniqueDirInDir(const FilePath& virtual_dir_path) {
-    FilePath dir_name = FilePath::FromUTF8Unsafe(
+  base::FilePath CreateUniqueDirInDir(const base::FilePath& virtual_dir_path) {
+    base::FilePath dir_name = base::FilePath::FromUTF8Unsafe(
         "tmpdir-" + base::IntToString(next_unique_path_suffix_++));
     FileSystemURL url = test_helper_.CreateURL(
         virtual_dir_path.Append(dir_name));
@@ -142,15 +142,15 @@ class LocalFileSystemQuotaTest
     return url.path();
   }
 
-  FilePath CreateUniqueDir() {
-    return CreateUniqueDirInDir(FilePath());
+  base::FilePath CreateUniqueDir() {
+    return CreateUniqueDirInDir(base::FilePath());
   }
 
-  FilePath child_dir_path_;
-  FilePath child_file1_path_;
-  FilePath child_file2_path_;
-  FilePath grandchild_file1_path_;
-  FilePath grandchild_file2_path_;
+  base::FilePath child_dir_path_;
+  base::FilePath child_file1_path_;
+  base::FilePath child_file2_path_;
+  base::FilePath grandchild_file1_path_;
+  base::FilePath grandchild_file2_path_;
 
   int64 child_path_cost_;
   int64 grandchild_path_cost_;
@@ -186,7 +186,7 @@ class LocalFileSystemQuotaTest
 
 void LocalFileSystemQuotaTest::SetUp() {
   ASSERT_TRUE(work_dir_.CreateUniqueTempDir());
-  FilePath filesystem_dir_path = work_dir_.path().AppendASCII("filesystem");
+  base::FilePath filesystem_dir_path = work_dir_.path().AppendASCII("filesystem");
   ASSERT_TRUE(file_util::CreateDirectory(filesystem_dir_path));
 
   quota_manager_ = new quota::QuotaManager(
@@ -217,7 +217,7 @@ void LocalFileSystemQuotaTest::OnGetUsageAndQuota(
   quota_ = quota;
 }
 
-void LocalFileSystemQuotaTest::PrepareFileSet(const FilePath& virtual_path) {
+void LocalFileSystemQuotaTest::PrepareFileSet(const base::FilePath& virtual_path) {
   int64 usage = SizeByQuotaUtil();
   child_dir_path_ = CreateUniqueDirInDir(virtual_path);
   child_file1_path_ = CreateUniqueFileInDir(virtual_path);
@@ -231,10 +231,10 @@ void LocalFileSystemQuotaTest::PrepareFileSet(const FilePath& virtual_path) {
 }
 
 TEST_F(LocalFileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
-  FilePath src_dir_path(CreateUniqueDir());
+  base::FilePath src_dir_path(CreateUniqueDir());
   int src_path_cost = SizeByQuotaUtil();
   PrepareFileSet(src_dir_path);
-  FilePath dest_dir_path(CreateUniqueDir());
+  base::FilePath dest_dir_path(CreateUniqueDir());
 
   EXPECT_EQ(0, ActualFileSize());
   int total_path_cost = SizeByQuotaUtil();
@@ -279,10 +279,10 @@ TEST_F(LocalFileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
 }
 
 TEST_F(LocalFileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
-  FilePath src_dir_path(CreateUniqueDir());
+  base::FilePath src_dir_path(CreateUniqueDir());
   PrepareFileSet(src_dir_path);
-  FilePath dest_dir1_path(CreateUniqueDir());
-  FilePath dest_dir2_path(CreateUniqueDir());
+  base::FilePath dest_dir1_path(CreateUniqueDir());
+  base::FilePath dest_dir2_path(CreateUniqueDir());
 
   EXPECT_EQ(0, ActualFileSize());
   int total_path_cost = SizeByQuotaUtil();

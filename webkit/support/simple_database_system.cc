@@ -221,7 +221,7 @@ void SimpleDatabaseSystem::VfsOpenFile(
     const string16& vfs_file_name, int desired_flags,
     base::PlatformFile* file_handle, base::WaitableEvent* done_event ) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
-  FilePath file_name = GetFullFilePathForVfsFile(vfs_file_name);
+  base::FilePath file_name = GetFullFilePathForVfsFile(vfs_file_name);
   if (file_name.empty()) {
     VfsBackend::OpenTempFileInDirectory(
         db_tracker_->DatabaseDirectory(), desired_flags, file_handle);
@@ -241,7 +241,7 @@ void SimpleDatabaseSystem::VfsDeleteFile(
   const int kNumDeleteRetries = 3;
   int num_retries = 0;
   *result = SQLITE_OK;
-  FilePath file_name = GetFullFilePathForVfsFile(vfs_file_name);
+  base::FilePath file_name = GetFullFilePathForVfsFile(vfs_file_name);
   do {
     *result = VfsBackend::DeleteFile(file_name, sync_dir);
   } while ((++num_retries < kNumDeleteRetries) &&
@@ -287,11 +287,11 @@ void SimpleDatabaseSystem::VfsGetSpaceAvailable(
   done_event->Signal();
 }
 
-FilePath SimpleDatabaseSystem::GetFullFilePathForVfsFile(
+base::FilePath SimpleDatabaseSystem::GetFullFilePathForVfsFile(
     const string16& vfs_file_name) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
   if (vfs_file_name.empty())  // temp file, used for vacuuming
-    return FilePath();
+    return base::FilePath();
   return DatabaseUtil::GetFullFilePathForVfsFile(
       db_tracker_.get(), vfs_file_name);
 }

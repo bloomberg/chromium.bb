@@ -88,15 +88,15 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperation {
   void DidDirectoryExists(const StatusCallback& callback,
                           base::PlatformFileError rv,
                           const base::PlatformFileInfo& file_info,
-                          const FilePath& unused);
+                          const base::FilePath& unused);
   void DidFileExists(const StatusCallback& callback,
                      base::PlatformFileError rv,
                      const base::PlatformFileInfo& file_info,
-                     const FilePath& unused);
+                     const base::FilePath& unused);
   void DidGetMetadata(const GetMetadataCallback& callback,
                       base::PlatformFileError rv,
                       const base::PlatformFileInfo& file_info,
-                      const FilePath& platform_path);
+                      const base::FilePath& platform_path);
   void DidReadDirectory(
       const ReadDirectoryCallback& callback,
       base::PlatformFileError rv,
@@ -111,7 +111,7 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperation {
       const SnapshotFileCallback& callback,
       base::PlatformFileError result,
       const base::PlatformFileInfo& file_info,
-      const FilePath& platform_path,
+      const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
   void DidOpenFile(
       const OpenFileCallback& callback,

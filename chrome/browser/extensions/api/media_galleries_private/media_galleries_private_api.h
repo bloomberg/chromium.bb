@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
 
-class FilePath;
 class Profile;
 
 namespace extensions {

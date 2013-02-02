@@ -30,8 +30,8 @@ TEST_F(FileSystemUtilTest, GetPersistentFileSystemRootURI) {
 
 TEST_F(FileSystemUtilTest, VirtualPathBaseName) {
   struct test_data {
-    const FilePath::StringType path;
-    const FilePath::StringType base_name;
+    const base::FilePath::StringType path;
+    const base::FilePath::StringType base_name;
   } test_cases[] = {
     { FILE_PATH_LITERAL("foo/bar"), FILE_PATH_LITERAL("bar") },
     { FILE_PATH_LITERAL("foo/b:bar"), FILE_PATH_LITERAL("b:bar") },
@@ -48,17 +48,17 @@ TEST_F(FileSystemUtilTest, VirtualPathBaseName) {
     { FILE_PATH_LITERAL("bar"), FILE_PATH_LITERAL("bar") }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
-    FilePath input = FilePath(test_cases[i].path);
-    FilePath base_name = VirtualPath::BaseName(input);
+    base::FilePath input = base::FilePath(test_cases[i].path);
+    base::FilePath base_name = VirtualPath::BaseName(input);
     EXPECT_EQ(test_cases[i].base_name, base_name.value());
   }
 }
 
 TEST_F(FileSystemUtilTest, VirtualPathGetComponents) {
   struct test_data {
-    const FilePath::StringType path;
+    const base::FilePath::StringType path;
     size_t count;
-    const FilePath::StringType components[3];
+    const base::FilePath::StringType components[3];
   } test_cases[] = {
     { FILE_PATH_LITERAL("foo/bar"),
       2,
@@ -83,8 +83,8 @@ TEST_F(FileSystemUtilTest, VirtualPathGetComponents) {
       { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("bar") } },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
-    FilePath input = FilePath(test_cases[i].path);
-    std::vector<FilePath::StringType> components;
+    base::FilePath input = base::FilePath(test_cases[i].path);
+    std::vector<base::FilePath::StringType> components;
     VirtualPath::GetComponents(input, &components);
     EXPECT_EQ(test_cases[i].count, components.size());
     for (size_t j = 0; j < components.size(); ++j)

@@ -65,7 +65,7 @@ bool CreateSessionToken(uint32 session_id, base::win::ScopedHandle* token_out);
 // The other parameters are passed directly to CreateProcessAsUser().
 // If |inherit_handles| is true |g_inherit_handles_lock| should be taken while
 // any inheritable handles are open.
-bool LaunchProcessWithToken(const FilePath& binary,
+bool LaunchProcessWithToken(const base::FilePath& binary,
                             const CommandLine::StringType& command_line,
                             HANDLE user_token,
                             SECURITY_ATTRIBUTES* process_attributes,

@@ -14,7 +14,9 @@
 #include "ui/base/events/event_constants.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace ui {
 class ViewProp;
@@ -27,20 +29,20 @@ class Sender;
 
 namespace aura {
 
-typedef base::Callback<void(const FilePath&, int, void*)>
+typedef base::Callback<void(const base::FilePath&, int, void*)>
     OpenFileCompletion;
 
-typedef base::Callback<void(const std::vector<FilePath>&, void*)>
+typedef base::Callback<void(const std::vector<base::FilePath>&, void*)>
     OpenMultipleFilesCompletion;
 
-typedef base::Callback<void(const FilePath&, int, void*)>
+typedef base::Callback<void(const base::FilePath&, int, void*)>
     SaveFileCompletion;
 
 // Handles the open file operation for Metro Chrome Ash. The callback passed in
 // is invoked when we receive the opened file name from the metro viewer.
 AURA_EXPORT void HandleOpenFile(
     const string16& title,
-    const FilePath& default_path,
+    const base::FilePath& default_path,
     const string16& filter,
     const OpenFileCompletion& callback);
 
@@ -49,7 +51,7 @@ AURA_EXPORT void HandleOpenFile(
 // viewer.
 AURA_EXPORT void HandleOpenMultipleFiles(
     const string16& title,
-    const FilePath& default_path,
+    const base::FilePath& default_path,
     const string16& filter,
     const OpenMultipleFilesCompletion& callback);
 
@@ -57,7 +59,7 @@ AURA_EXPORT void HandleOpenMultipleFiles(
 // is invoked when we receive the saved file name from the metro viewer.
 AURA_EXPORT void HandleSaveFile(
     const string16& title,
-    const FilePath& default_path,
+    const base::FilePath& default_path,
     const string16& filter,
     int filter_index,
     const string16& default_extension,
@@ -83,19 +85,19 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
 
   void HandleOpenFile(
       const string16& title,
-      const FilePath& default_path,
+      const base::FilePath& default_path,
       const string16& filter,
       const OpenFileCompletion& callback);
 
   void HandleOpenMultipleFiles(
       const string16& title,
-      const FilePath& default_path,
+      const base::FilePath& default_path,
       const string16& filter,
       const OpenMultipleFilesCompletion& callback);
 
   void HandleSaveFile(
       const string16& title,
-      const FilePath& default_path,
+      const base::FilePath& default_path,
       const string16& filter,
       int filter_index,
       const string16& default_extension,
@@ -133,7 +135,7 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
                         int filter_index);
   void OnFileOpenDone(bool success, string16 filename);
   void OnMultiFileOpenDone(bool success,
-                           const std::vector<FilePath>& files);
+                           const std::vector<base::FilePath>& files);
 
   // RootWindowHost overrides:
   virtual void SetDelegate(RootWindowHostDelegate* delegate) OVERRIDE;

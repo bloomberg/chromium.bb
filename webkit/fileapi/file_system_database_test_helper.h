@@ -9,11 +9,13 @@
 
 #include "third_party/leveldatabase/src/db/filename.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace fileapi {
 
-void CorruptDatabase(const FilePath& db_path,
+void CorruptDatabase(const base::FilePath& db_path,
                      leveldb::FileType type,
                      ptrdiff_t offset,
                      size_t size);

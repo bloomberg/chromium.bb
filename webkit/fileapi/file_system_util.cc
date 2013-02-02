@@ -27,26 +27,26 @@ const char kTestDir[] = "/test";
 
 // TODO(ericu): Consider removing support for '\', even on Windows, if possible.
 // There's a lot of test code that will need reworking, and we may have trouble
-// with FilePath elsewhere [e.g. DirName and other methods may also need
+// with base::FilePath elsewhere [e.g. DirName and other methods may also need
 // replacement].
-FilePath VirtualPath::BaseName(const FilePath& virtual_path) {
-  FilePath::StringType path = virtual_path.value();
+base::FilePath VirtualPath::BaseName(const base::FilePath& virtual_path) {
+  base::FilePath::StringType path = virtual_path.value();
 
   // Keep everything after the final separator, but if the pathname is only
   // one character and it's a separator, leave it alone.
-  while (path.size() > 1 && FilePath::IsSeparator(path[path.size() - 1]))
+  while (path.size() > 1 && base::FilePath::IsSeparator(path[path.size() - 1]))
     path.resize(path.size() - 1);
-  FilePath::StringType::size_type last_separator =
-      path.find_last_of(FilePath::kSeparators);
-  if (last_separator != FilePath::StringType::npos &&
+  base::FilePath::StringType::size_type last_separator =
+      path.find_last_of(base::FilePath::kSeparators);
+  if (last_separator != base::FilePath::StringType::npos &&
       last_separator < path.size() - 1)
     path.erase(0, last_separator + 1);
 
-  return FilePath(path);
+  return base::FilePath(path);
 }
 
 void VirtualPath::GetComponents(
-    const FilePath& path, std::vector<FilePath::StringType>* components) {
+    const base::FilePath& path, std::vector<base::FilePath::StringType>* components) {
   DCHECK(components);
   if (!components)
     return;
@@ -54,12 +54,12 @@ void VirtualPath::GetComponents(
   if (path.value().empty())
     return;
 
-  std::vector<FilePath::StringType> ret_val;
-  FilePath current = path;
-  FilePath base;
+  std::vector<base::FilePath::StringType> ret_val;
+  base::FilePath current = path;
+  base::FilePath base;
 
-  // Due to the way things are implemented, FilePath::DirName works here,
-  // whereas FilePath::BaseName doesn't.
+  // Due to the way things are implemented, base::FilePath::DirName works here,
+  // whereas base::FilePath::BaseName doesn't.
   while (current != current.DirName()) {
     base = BaseName(current);
     ret_val.push_back(base.value());
@@ -67,7 +67,7 @@ void VirtualPath::GetComponents(
   }
 
   *components =
-      std::vector<FilePath::StringType>(ret_val.rbegin(), ret_val.rend());
+      std::vector<base::FilePath::StringType>(ret_val.rbegin(), ret_val.rend());
 }
 
 GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type) {
@@ -193,7 +193,7 @@ std::string GetFileSystemTypeString(FileSystemType type) {
   return std::string();
 }
 
-std::string FilePathToString(const FilePath& file_path) {
+std::string FilePathToString(const base::FilePath& file_path) {
 #if defined(OS_WIN)
   return UTF16ToUTF8(file_path.value());
 #elif defined(OS_POSIX)
@@ -201,11 +201,11 @@ std::string FilePathToString(const FilePath& file_path) {
 #endif
 }
 
-FilePath StringToFilePath(const std::string& file_path_string) {
+base::FilePath StringToFilePath(const std::string& file_path_string) {
 #if defined(OS_WIN)
-  return FilePath(UTF8ToUTF16(file_path_string));
+  return base::FilePath(UTF8ToUTF16(file_path_string));
 #elif defined(OS_POSIX)
-  return FilePath(file_path_string);
+  return base::FilePath(file_path_string);
 #endif
 }
 
@@ -282,7 +282,7 @@ std::string GetIsolatedFileSystemRootURIString(
   root.append(filesystem_id);
   root.append("/");
   if (!optional_root_name.empty()) {
-    DCHECK(!FilePath::FromUTF8Unsafe(optional_root_name).ReferencesParent());
+    DCHECK(!base::FilePath::FromUTF8Unsafe(optional_root_name).ReferencesParent());
     root.append(optional_root_name);
     root.append("/");
   }

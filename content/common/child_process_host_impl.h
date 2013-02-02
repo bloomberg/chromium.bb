@@ -18,7 +18,9 @@
 #include "ipc/ipc_listener.h"
 #include "content/public/common/child_process_host.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace content {
 class ChildProcessHostDelegate;

@@ -387,7 +387,7 @@ SimpleAppCacheSystem::~SimpleAppCacheSystem() {
   }
 }
 
-void SimpleAppCacheSystem::InitOnUIThread(const FilePath& cache_directory) {
+void SimpleAppCacheSystem::InitOnUIThread(const base::FilePath& cache_directory) {
   DCHECK(!ui_message_loop_);
   ui_message_loop_ = MessageLoop::current();
   cache_directory_ = cache_directory;

@@ -78,12 +78,12 @@ base::LazyInstance <std::map<gfx::NativeWindow, TestShell *> >
     TestShell::window_map_ = LAZY_INSTANCE_INITIALIZER;
 
 // Helper method for getting the path to the test shell resources directory.
-FilePath GetResourcesFilePath() {
-  FilePath path;
+base::FilePath GetResourcesFilePath() {
+  base::FilePath path;
   // We need to know if we're bundled or not to know which path to use.
   if (base::mac::AmIBundled()) {
     PathService::Get(base::DIR_EXE, &path);
-    path = path.Append(FilePath::kParentDirectory);
+    path = path.Append(base::FilePath::kParentDirectory);
     return path.AppendASCII("Resources");
   } else {
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
@@ -215,7 +215,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
   NSString *resource_path =
       [base::mac::FrameworkBundle() pathForResource:@"test_shell"
                                              ofType:@"pak"];
-  FilePath resources_pak_path([resource_path fileSystemRepresentation]);
+  base::FilePath resources_pak_path([resource_path fileSystemRepresentation]);
   if (!g_resource_data_pack->LoadFromPath(resources_pak_path)) {
     LOG(FATAL) << "failed to load test_shell.pak";
   }
@@ -236,7 +236,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
 
   // Add <app bundle's parent dir>/plugins to the plugin path so we can load
   // test plugins.
-  FilePath plugins_dir;
+  base::FilePath plugins_dir;
   PathService::Get(base::DIR_EXE, &plugins_dir);
   if (base::mac::AmIBundled()) {
     plugins_dir = plugins_dir.AppendASCII("../../../plugins");
@@ -539,7 +539,7 @@ void TestShell::LoadURLForFrame(const GURL& url,
 }
 
 bool TestShell::PromptForSaveFile(const wchar_t* prompt_title,
-                                  FilePath* result)
+                                  base::FilePath* result)
 {
   NSSavePanel* save_panel = [NSSavePanel savePanel];
 
@@ -552,7 +552,7 @@ bool TestShell::PromptForSaveFile(const wchar_t* prompt_title,
   [save_panel setDirectoryURL:[NSURL fileURLWithPath:NSHomeDirectory()]];
   [save_panel setNameFieldStringValue:@""];
   if ([save_panel runModal] == NSFileHandlingPanelOKButton) {
-    *result = FilePath([[[save_panel URL] path] fileSystemRepresentation]);
+    *result = base::FilePath([[[save_panel URL] path] fileSystemRepresentation]);
     return true;
   }
   return false;
@@ -566,7 +566,7 @@ std::string TestShell::RewriteLocalUrl(const std::string& url) {
 
   std::string new_url(url);
   if (url.compare(0, kPrefixLen, kPrefix, kPrefixLen) == 0) {
-    FilePath replace_path;
+    base::FilePath replace_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &replace_path);
     replace_path = replace_path.Append(
         "third_party/WebKit/LayoutTests/");
@@ -628,7 +628,7 @@ base::StringPiece TestShellWebKitInit::GetDataResource(
     // Use webkit's broken image icon (16x16)
     static std::string broken_image_data;
     if (broken_image_data.empty()) {
-      FilePath path = GetResourcesFilePath();
+      base::FilePath path = GetResourcesFilePath();
       // In order to match WebKit's colors for the missing image, we have to
       // use a PNG. The GIF doesn't have the color range needed to correctly
       // match the TIFF they use in Safari.
@@ -644,7 +644,7 @@ base::StringPiece TestShellWebKitInit::GetDataResource(
     // Use webkit's text area resizer image.
     static std::string resize_corner_data;
     if (resize_corner_data.empty()) {
-      FilePath path = GetResourcesFilePath();
+      base::FilePath path = GetResourcesFilePath();
       path = path.AppendASCII("textAreaResizeCorner.png");
       bool success = file_util::ReadFileToString(path, &resize_corner_data);
       if (!success) {

@@ -58,7 +58,7 @@ FileSystemContext::FileSystemContext(
     ExternalMountPoints* external_mount_points,
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy,
-    const FilePath& partition_path,
+    const base::FilePath& partition_path,
     const FileSystemOptions& options)
     : task_runners_(task_runners.Pass()),
       quota_manager_proxy_(quota_manager_proxy),
@@ -322,7 +322,7 @@ FileSystemURL FileSystemContext::CrackURL(const GURL& url) const {
 FileSystemURL FileSystemContext::CreateCrackedFileSystemURL(
     const GURL& origin,
     FileSystemType type,
-    const FilePath& path) const {
+    const base::FilePath& path) const {
   return CrackFileSystemURL(FileSystemURL(origin, type, path));
 }
 

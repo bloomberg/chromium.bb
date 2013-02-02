@@ -823,7 +823,7 @@ void TestWebViewDelegate::openFileSystem(
 // WebPluginPageDelegate -----------------------------------------------------
 
 WebKit::WebPlugin* TestWebViewDelegate::CreatePluginReplacement(
-    const FilePath& file_path) {
+    const base::FilePath& file_path) {
   return NULL;
 }
 

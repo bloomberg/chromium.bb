@@ -52,7 +52,7 @@ class RemoteFileStreamWriter : public fileapi::FileStreamWriter {
       int buf_len,
       const net::CompletionCallback& callback,
       base::PlatformFileError open_result,
-      const FilePath& local_path,
+      const base::FilePath& local_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
   // Calls |pending_cancel_callback_|, assuming it is non-null.
   void InvokePendingCancelCallback(int result);

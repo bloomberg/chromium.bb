@@ -14,7 +14,7 @@ namespace fileapi {
 
 bool RegisterSyncableFileSystem(const std::string& service_name) {
   return ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-      service_name, kFileSystemTypeSyncable, FilePath());
+      service_name, kFileSystemTypeSyncable, base::FilePath());
 }
 
 bool RevokeSyncableFileSystem(const std::string& service_name) {
@@ -33,11 +33,11 @@ GURL GetSyncableFileSystemRootURI(const GURL& origin,
 
 FileSystemURL CreateSyncableFileSystemURL(const GURL& origin,
                                           const std::string& service_name,
-                                          const FilePath& path) {
+                                          const base::FilePath& path) {
   return ExternalMountPoints::GetSystemInstance()->CreateCrackedFileSystemURL(
       origin,
       kFileSystemTypeExternal,
-      FilePath::FromUTF8Unsafe(service_name).Append(path));
+      base::FilePath::FromUTF8Unsafe(service_name).Append(path));
 }
 
 bool SerializeSyncableFileSystemURL(const FileSystemURL& url,

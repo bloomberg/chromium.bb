@@ -34,7 +34,7 @@ bool VerifySnapshotTime(const base::Time& expected_modification_time,
 
 LocalFileStreamReader::LocalFileStreamReader(
     base::TaskRunner* task_runner,
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     int64 initial_offset,
     const base::Time& expected_modification_time)
     : task_runner_(task_runner),

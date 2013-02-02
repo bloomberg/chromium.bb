@@ -14,8 +14,11 @@
 #include "net/base/completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
 
-class FilePath;
 class GURL;
+
+namespace base {
+class FilePath;
+}
 
 namespace net {
 
@@ -92,7 +95,7 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
                     const std::string& cookie_line,
                     CookieOptions* options);
   bool CanAccessFile(const URLRequest& request,
-                     const FilePath& path) const;
+                     const base::FilePath& path) const;
   bool CanThrottleRequest(const URLRequest& request) const;
 
   int NotifyBeforeSocketStreamConnect(SocketStream* socket,
@@ -215,7 +218,7 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   // allow or block access to the given file path.  Returns true if access is
   // allowed.
   virtual bool OnCanAccessFile(const URLRequest& request,
-                               const FilePath& path) const = 0;
+                               const base::FilePath& path) const = 0;
 
   // Returns true if the given request may be rejected when the
   // URLRequestThrottlerManager believes the server servicing the

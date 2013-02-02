@@ -52,7 +52,7 @@ TestShellWebKitInit::TestShellWebKitInit(bool layout_test_mode)
   WebKit::WebRuntimeFeatures::enableJavaScriptI18NAPI(true);
 
   // Load libraries for media and enable the media player.
-  FilePath module_path;
+  base::FilePath module_path;
   WebKit::WebRuntimeFeatures::enableMediaPlayer(
       PathService::Get(base::DIR_MODULE, &module_path) &&
       media::InitializeMediaLibrary(module_path));
@@ -277,7 +277,7 @@ void TestShellWebKitInit::GetPlugins(
   webkit::npapi::PluginList::Singleton()->GetPlugins(plugins);
   // Don't load the forked TestNetscapePlugIn in the chromium code, use
   // the copy in webkit.org's repository instead.
-  const FilePath::StringType kPluginBlackList[] = {
+  const base::FilePath::StringType kPluginBlackList[] = {
     FILE_PATH_LITERAL("npapi_layout_test_plugin.dll"),
     FILE_PATH_LITERAL("WebKitTestNetscapePlugIn.plugin"),
     FILE_PATH_LITERAL("libnpapi_layout_test_plugin.so"),
@@ -285,7 +285,7 @@ void TestShellWebKitInit::GetPlugins(
   for (int i = plugins->size() - 1; i >= 0; --i) {
     webkit::WebPluginInfo plugin_info = plugins->at(i);
     for (size_t j = 0; j < arraysize(kPluginBlackList); ++j) {
-      if (plugin_info.path.BaseName() == FilePath(kPluginBlackList[j])) {
+      if (plugin_info.path.BaseName() == base::FilePath(kPluginBlackList[j])) {
         plugins->erase(plugins->begin() + i);
       }
     }

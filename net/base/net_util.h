@@ -26,10 +26,10 @@
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
 
-class FilePath;
 class GURL;
 
 namespace base {
+class FilePath;
 class Time;
 }
 
@@ -79,13 +79,13 @@ NET_EXPORT_PRIVATE extern size_t GetCountOfExplicitlyAllowedPorts();
 
 // Given the full path to a file name, creates a file: URL. The returned URL
 // may not be valid if the input is malformed.
-NET_EXPORT GURL FilePathToFileURL(const FilePath& path);
+NET_EXPORT GURL FilePathToFileURL(const base::FilePath& path);
 
 // Converts a file: URL back to a filename that can be passed to the OS. The
 // file URL must be well-formed (GURL::is_valid() must return true); we don't
 // handle degenerate cases here. Returns true on success, false if it isn't a
 // valid file URL. On failure, *file_path will be empty.
-NET_EXPORT bool FileURLToFilePath(const GURL& url, FilePath* file_path);
+NET_EXPORT bool FileURLToFilePath(const GURL& url, base::FilePath* file_path);
 
 // Splits an input of the form <host>[":"<port>] into its consitituent parts.
 // Saves the result into |*host| and |*port|. If the input did not have
@@ -278,12 +278,13 @@ NET_EXPORT string16 GetSuggestedFilename(const GURL& url,
                                          const std::string& default_name);
 
 // Similar to GetSuggestedFilename(), but returns a FilePath.
-NET_EXPORT FilePath GenerateFileName(const GURL& url,
-                                     const std::string& content_disposition,
-                                     const std::string& referrer_charset,
-                                     const std::string& suggested_name,
-                                     const std::string& mime_type,
-                                     const std::string& default_name);
+NET_EXPORT base::FilePath GenerateFileName(
+    const GURL& url,
+    const std::string& content_disposition,
+    const std::string& referrer_charset,
+    const std::string& suggested_name,
+    const std::string& mime_type,
+    const std::string& default_name);
 
 // Ensures that the filename and extension is safe to use in the filesystem.
 //
@@ -304,7 +305,7 @@ NET_EXPORT FilePath GenerateFileName(const GURL& url,
 // thread that allows IO.
 NET_EXPORT void GenerateSafeFileName(const std::string& mime_type,
                                      bool ignore_extension,
-                                     FilePath* file_path);
+                                     base::FilePath* file_path);
 
 // Checks |port| against a list of ports which are restricted by default.
 // Returns true if |port| is allowed, false if it is restricted.

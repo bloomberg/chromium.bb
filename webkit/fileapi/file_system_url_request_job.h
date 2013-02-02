@@ -17,7 +17,10 @@
 #include "webkit/storage/webkit_storage_export.h"
 
 class GURL;
+
+namespace base {
 class FilePath;
+}
 
 namespace webkit_blob {
 class FileStreamReader;
@@ -60,7 +63,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemURLRequestJob
   void DidGetMetadata(
       base::PlatformFileError error_code,
       const base::PlatformFileInfo& file_info,
-      const FilePath& platform_path);
+      const base::FilePath& platform_path);
   void DidRead(int result);
   void NotifyFailed(int rv);
 

@@ -49,7 +49,7 @@ class NET_EXPORT URLRequestContextBuilder {
     int max_size;
 
     // The cache path (when type is DISK).
-    FilePath path;
+    base::FilePath path;
   };
 
   struct NET_EXPORT HttpNetworkSessionParams {

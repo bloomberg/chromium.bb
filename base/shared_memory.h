@@ -23,9 +23,9 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-class FilePath;
-
 namespace base {
+
+class FilePath;
 
 // SharedMemoryHandle is a platform specific type which represents
 // the underlying OS handle to a shared memory segment.

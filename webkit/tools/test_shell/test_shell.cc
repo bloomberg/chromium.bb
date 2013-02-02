@@ -88,7 +88,7 @@ class URLRequestTestShellFileJob : public net::URLRequestFileJob {
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
       const std::string& scheme) {
-    FilePath path;
+    base::FilePath path;
     PathService::Get(base::DIR_EXE, &path);
     path = path.AppendASCII("resources");
     path = path.AppendASCII("inspector");
@@ -99,7 +99,7 @@ class URLRequestTestShellFileJob : public net::URLRequestFileJob {
  private:
   URLRequestTestShellFileJob(net::URLRequest* request,
                              net::NetworkDelegate* network_delegate,
-                             const FilePath& path)
+                             const base::FilePath& path)
       : net::URLRequestFileJob(request, network_delegate, path) {
   }
   virtual ~URLRequestTestShellFileJob() { }
@@ -263,7 +263,7 @@ void TestShell::InitLogging(bool suppress_error_dialogs,
       destination = logging::LOG_ONLY_TO_FILE;
 
     // We might have multiple test_shell processes going at once
-    FilePath log_filename;
+    base::FilePath log_filename;
     PathService::Get(base::DIR_EXE, &log_filename);
     log_filename = log_filename.AppendASCII("test_shell.log");
     logging::InitLogging(
@@ -459,9 +459,9 @@ WebView* TestShell::CreateWebView() {
 
 void TestShell::ShowDevTools() {
   if (!devtools_shell_) {
-    FilePath dir_exe;
+    base::FilePath dir_exe;
     PathService::Get(base::DIR_EXE, &dir_exe);
-    FilePath devtools_path =
+    base::FilePath devtools_path =
         dir_exe.AppendASCII("resources/inspector/devtools.html");
     TestShell* devtools_shell;
     TestShell::CreateNewWindow(GURL(devtools_path.value()),
@@ -502,7 +502,7 @@ void TestShell::ResetTestController() {
     geolocation_client_mock_->resetMock();
 }
 
-void TestShell::LoadFile(const FilePath& file) {
+void TestShell::LoadFile(const base::FilePath& file) {
   LoadURLForFrame(net::FilePathToFileURL(file), string16());
 }
 
@@ -559,7 +559,7 @@ void TestShell::GoBackOrForward(int offset) {
 }
 
 void TestShell::DumpDocumentText() {
-  FilePath file_path;
+  base::FilePath file_path;
   if (!PromptForSaveFile(L"Dump document text", &file_path))
       return;
 
@@ -569,7 +569,7 @@ void TestShell::DumpDocumentText() {
 }
 
 void TestShell::DumpRenderTree() {
-  FilePath file_path;
+  base::FilePath file_path;
   if (!PromptForSaveFile(L"Dump render tree", &file_path))
     return;
 

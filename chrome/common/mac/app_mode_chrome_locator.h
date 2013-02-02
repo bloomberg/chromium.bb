@@ -11,13 +11,15 @@
 
 @class NSString;
 
+namespace base {
 class FilePath;
+}
 
 namespace app_mode {
 
 // Given a bundle id, return the path of the corresponding bundle.
 // Returns true if the bundle was found, false otherwise.
-bool FindBundleById(NSString* bundle_id, FilePath* out_bundle);
+bool FindBundleById(NSString* bundle_id, base::FilePath* out_bundle);
 
 // Given the path to the Chrome bundle, read the following information:
 // |raw_version_str| - Chrome version.
@@ -25,10 +27,10 @@ bool FindBundleById(NSString* bundle_id, FilePath* out_bundle);
 // |framework_shlib_path| - Path to the chrome framework's shared library (not
 //                          the framework directory).
 // Returns true if all information read succesfuly, false otherwise.
-bool GetChromeBundleInfo(const FilePath& chrome_bundle,
+bool GetChromeBundleInfo(const base::FilePath& chrome_bundle,
                          string16* raw_version_str,
-                         FilePath* version_path,
-                         FilePath* framework_shlib_path);
+                         base::FilePath* version_path,
+                         base::FilePath* framework_shlib_path);
 
 }  // namespace app_mode
 

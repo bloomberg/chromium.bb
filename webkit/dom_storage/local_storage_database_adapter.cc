@@ -10,7 +10,7 @@
 namespace dom_storage {
 
 LocalStorageDatabaseAdapter::LocalStorageDatabaseAdapter(
-    const FilePath& path)
+    const base::FilePath& path)
     : db_(new DomStorageDatabase(path)) {
 }
 

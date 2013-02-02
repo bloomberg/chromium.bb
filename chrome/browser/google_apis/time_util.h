@@ -9,7 +9,6 @@
 
 #include "base/string_piece.h"
 
-class FilePath;
 class Profile;
 
 namespace base {

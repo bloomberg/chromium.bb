@@ -68,7 +68,7 @@ class DaemonControllerLinux : public remoting::DaemonController {
       const GetUsageStatsConsentCallback& done) OVERRIDE;
 
  private:
-  FilePath GetConfigPath();
+  base::FilePath GetConfigPath();
 
   void DoGetConfig(const GetConfigCallback& callback);
   void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
@@ -88,8 +88,8 @@ DaemonControllerLinux::DaemonControllerLinux()
   file_io_thread_.Start();
 }
 
-static bool GetScriptPath(FilePath* result) {
-  FilePath candidate_exe(kDaemonScript);
+static bool GetScriptPath(base::FilePath* result) {
+  base::FilePath candidate_exe(kDaemonScript);
   if (access(candidate_exe.value().c_str(), X_OK) == 0) {
     *result = candidate_exe;
     return true;
@@ -106,7 +106,7 @@ static bool RunHostScriptWithTimeout(
   if (getuid() == 0) {
     return false;
   }
-  FilePath script_path;
+  base::FilePath script_path;
   if (!GetScriptPath(&script_path)) {
     return false;
   }
@@ -200,7 +200,7 @@ void DaemonControllerLinux::GetVersion(
       done_callback));
 }
 
-FilePath DaemonControllerLinux::GetConfigPath() {
+base::FilePath DaemonControllerLinux::GetConfigPath() {
   std::string filename = "host#" + GetMd5(net::GetHostName()) + ".json";
   return file_util::GetHomeDir().
       Append(".config/chrome-remote-desktop").Append(filename);
@@ -245,7 +245,7 @@ void DaemonControllerLinux::DoSetConfigAndStart(
   }
 
   // Ensure the configuration directory exists.
-  FilePath config_dir = GetConfigPath().DirName();
+  base::FilePath config_dir = GetConfigPath().DirName();
   if (!file_util::DirectoryExists(config_dir) &&
       !file_util::CreateDirectory(config_dir)) {
     LOG(ERROR) << "Failed to create config directory " << config_dir.value();
@@ -314,7 +314,7 @@ void DaemonControllerLinux::DoStop(const CompletionCallback& done_callback) {
 
 void DaemonControllerLinux::DoGetVersion(
     const GetVersionCallback& done_callback) {
-  FilePath script_path;
+  base::FilePath script_path;
   if (!GetScriptPath(&script_path)) {
     done_callback.Run("");
     return;

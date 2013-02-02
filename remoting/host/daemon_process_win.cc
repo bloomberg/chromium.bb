@@ -143,7 +143,7 @@ void DaemonProcessWin::LaunchNetworkProcess() {
   DCHECK(!network_launcher_);
 
   // Construct the host binary name.
-  FilePath host_binary;
+  base::FilePath host_binary;
   if (!GetInstalledBinaryPath(kHostBinaryName, &host_binary)) {
     Stop();
     return;

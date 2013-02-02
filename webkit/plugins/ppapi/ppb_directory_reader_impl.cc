@@ -33,7 +33,7 @@ namespace ppapi {
 
 namespace {
 
-std::string FilePathStringToUTF8String(const FilePath::StringType& str) {
+std::string FilePathStringToUTF8String(const base::FilePath::StringType& str) {
 #if defined(OS_WIN)
   return WideToUTF8(str);
 #elif defined(OS_POSIX)
@@ -43,7 +43,7 @@ std::string FilePathStringToUTF8String(const FilePath::StringType& str) {
 #endif
 }
 
-FilePath::StringType UTF8StringToFilePathString(const std::string& str) {
+base::FilePath::StringType UTF8StringToFilePathString(const std::string& str) {
 #if defined(OS_WIN)
   return UTF8ToWide(str);
 #elif defined(OS_POSIX)
@@ -110,7 +110,7 @@ void PPB_DirectoryReader_Impl::AddNewEntries(
   std::string dir_path = directory_ref_->GetCreateInfo().path;
   if (dir_path[dir_path.size() - 1] != '/')
     dir_path += '/';
-  FilePath::StringType dir_file_path = UTF8StringToFilePathString(dir_path);
+  base::FilePath::StringType dir_file_path = UTF8StringToFilePathString(dir_path);
   for (std::vector<base::FileUtilProxy::Entry>::const_iterator it =
            entries.begin(); it != entries.end(); it++) {
     base::FileUtilProxy::Entry entry;

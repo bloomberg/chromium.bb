@@ -82,7 +82,7 @@ void WtsConsoleSessionProcessDriver::OnSessionAttached(uint32 session_id) {
   DCHECK(launcher_.get() == NULL);
 
   // Construct the host binary name.
-  FilePath host_binary;
+  base::FilePath host_binary;
   if (!GetInstalledBinaryPath(kHostBinaryName, &host_binary)) {
     Stop();
     return;

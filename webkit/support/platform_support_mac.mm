@@ -101,7 +101,7 @@ static void SwizzleNSPasteboard() {
 void AfterInitialize(bool unit_test_mode) {
   // Load a data pack.
   g_resource_data_pack = new ui::DataPack(ui::SCALE_FACTOR_100P);
-  FilePath resources_pak_path;
+  base::FilePath resources_pak_path;
   if (unit_test_mode) {
     PathService::Get(base::DIR_EXE, &resources_pak_path);
     resources_pak_path = resources_pak_path.Append("DumpRenderTree.app")
@@ -112,7 +112,7 @@ void AfterInitialize(bool unit_test_mode) {
     NSString* resource_path =
         [base::mac::FrameworkBundle() pathForResource:@"DumpRenderTree"
                                                ofType:@"pak"];
-    resources_pak_path = FilePath([resource_path fileSystemRepresentation]);
+    resources_pak_path = base::FilePath([resource_path fileSystemRepresentation]);
   }
   if (!g_resource_data_pack->LoadFromPath(resources_pak_path)) {
     LOG(FATAL) << "failed to load DumpRenderTree.pak";
@@ -156,7 +156,7 @@ void AfterInitialize(bool unit_test_mode) {
 
   // Add <app bundle's parent dir>/plugins to the plugin path so we can load
   // test plugins.
-  FilePath plugins_dir;
+  base::FilePath plugins_dir;
   PathService::Get(base::DIR_EXE, &plugins_dir);
   plugins_dir = plugins_dir.AppendASCII("../../../plugins");
   webkit::npapi::PluginList::Singleton()->AddExtraPluginDir(plugins_dir);
@@ -202,14 +202,14 @@ string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
 }
 
 // Helper method for getting the path to the test shell resources directory.
-static FilePath GetResourcesFilePath() {
-  FilePath path;
+static base::FilePath GetResourcesFilePath() {
+  base::FilePath path;
   // We assume the application is bundled.
   if (!base::mac::AmIBundled()) {
     LOG(FATAL) << "Failed to locate resources. The applicaiton is not bundled.";
   }
   PathService::Get(base::DIR_EXE, &path);
-  path = path.Append(FilePath::kParentDirectory);
+  path = path.Append(base::FilePath::kParentDirectory);
   return path.AppendASCII("Resources");
 }
 
@@ -221,7 +221,7 @@ base::StringPiece TestWebKitPlatformSupport::GetDataResource(
     // Use webkit's broken image icon (16x16)
     CR_DEFINE_STATIC_LOCAL(std::string, broken_image_data, ());
     if (broken_image_data.empty()) {
-      FilePath path = GetResourcesFilePath();
+      base::FilePath path = GetResourcesFilePath();
       // In order to match WebKit's colors for the missing image, we have to
       // use a PNG. The GIF doesn't have the color range needed to correctly
       // match the TIFF they use in Safari.
@@ -238,7 +238,7 @@ base::StringPiece TestWebKitPlatformSupport::GetDataResource(
     // Use webkit's text area resizer image.
     CR_DEFINE_STATIC_LOCAL(std::string, resize_corner_data, ());
     if (resize_corner_data.empty()) {
-      FilePath path = GetResourcesFilePath();
+      base::FilePath path = GetResourcesFilePath();
       path = path.AppendASCII("textAreaResizeCorner.png");
       file_util::AbsolutePath(&path);
       bool success = file_util::ReadFileToString(path, &resize_corner_data);

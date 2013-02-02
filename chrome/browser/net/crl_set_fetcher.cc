@@ -22,7 +22,7 @@ using content::BrowserThread;
 
 CRLSetFetcher::CRLSetFetcher() : cus_(NULL) {}
 
-bool CRLSetFetcher::GetCRLSetFilePath(FilePath* path) const {
+bool CRLSetFetcher::GetCRLSetFilePath(base::FilePath* path) const {
   bool ok = PathService::Get(chrome::DIR_USER_DATA, path);
   if (!ok) {
     NOTREACHED();
@@ -47,7 +47,7 @@ void CRLSetFetcher::StartInitialLoad(ComponentUpdateService* cus) {
 void CRLSetFetcher::DoInitialLoadFromDisk() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath crl_set_file_path;
+  base::FilePath crl_set_file_path;
   if (!GetCRLSetFilePath(&crl_set_file_path))
     return;
 
@@ -69,7 +69,7 @@ void CRLSetFetcher::DoInitialLoadFromDisk() {
   }
 }
 
-void CRLSetFetcher::LoadFromDisk(FilePath path,
+void CRLSetFetcher::LoadFromDisk(base::FilePath path,
                                  scoped_refptr<net::CRLSet>* out_crl_set) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -143,11 +143,12 @@ void CRLSetFetcher::OnUpdateError(int error) {
 }
 
 bool CRLSetFetcher::Install(base::DictionaryValue* manifest,
-                            const FilePath& unpack_path) {
+                            const base::FilePath& unpack_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath crl_set_file_path = unpack_path.Append(FILE_PATH_LITERAL("crl-set"));
-  FilePath save_to;
+  base::FilePath crl_set_file_path =
+      unpack_path.Append(FILE_PATH_LITERAL("crl-set"));
+  base::FilePath save_to;
   if (!GetCRLSetFilePath(&save_to))
     return true;
 

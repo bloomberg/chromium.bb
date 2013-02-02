@@ -11,7 +11,10 @@
 #include <vector>
 
 class BrowserDistribution;
+
+namespace base {
 class FilePath;
+}
 
 namespace installer {
 
@@ -20,7 +23,7 @@ namespace installer {
 // system_install: if true, the function returns system wide location
 //                 (ProgramFiles\Google). Otherwise it returns user specific
 //                 location (Document And Settings\<user>\Local Settings...)
-FilePath GetChromeInstallPath(bool system_install, BrowserDistribution* dist);
+base::FilePath GetChromeInstallPath(bool system_install, BrowserDistribution* dist);
 
 // Returns the path(s) to the directory that holds the user data (primary and,
 // if applicable to |dist|, alternate).  This is always inside a user's local
@@ -31,7 +34,7 @@ FilePath GetChromeInstallPath(bool system_install, BrowserDistribution* dist);
 // otherwise. If more than one path is returned, they are guaranteed to be
 // siblings.
 void GetChromeUserDataPaths(BrowserDistribution* dist,
-                            std::vector<FilePath>* paths);
+                            std::vector<base::FilePath>* paths);
 
 // Returns the distribution corresponding to the current process's binaries.
 // In the case of a multi-install product, this will be the CHROME_BINARIES

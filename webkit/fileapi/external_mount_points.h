@@ -15,7 +15,9 @@
 #include "webkit/fileapi/mount_points.h"
 #include "webkit/storage/webkit_storage_export.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace fileapi {
 class FileSystemURL;
@@ -60,29 +62,29 @@ class WEBKIT_STORAGE_EXPORT ExternalMountPoints
   // by calling RevokeFileSystem with |mount_name|.
   bool RegisterFileSystem(const std::string& mount_name,
                           FileSystemType type,
-                          const FilePath& path);
+                          const base::FilePath& path);
 
   // Same as |RegisterExternalFileSystem|, but also registers a remote file
   // system proxy for the file system.
   bool RegisterRemoteFileSystem(const std::string& mount_name,
                                 FileSystemType type,
                                 RemoteFileSystemProxyInterface* remote_proxy,
-                                const FilePath& path);
+                                const base::FilePath& path);
 
   // MountPoints overrides.
   virtual bool HandlesFileSystemMountType(FileSystemType type) const OVERRIDE;
   virtual bool RevokeFileSystem(const std::string& mount_name) OVERRIDE;
   virtual bool GetRegisteredPath(const std::string& mount_name,
-                                 FilePath* path) const OVERRIDE;
-  virtual bool CrackVirtualPath(const FilePath& virtual_path,
+                                 base::FilePath* path) const OVERRIDE;
+  virtual bool CrackVirtualPath(const base::FilePath& virtual_path,
                                 std::string* mount_name,
                                 FileSystemType* type,
-                                FilePath* path) const OVERRIDE;
+                                base::FilePath* path) const OVERRIDE;
   virtual FileSystemURL CrackURL(const GURL& url) const OVERRIDE;
   virtual FileSystemURL CreateCrackedFileSystemURL(
       const GURL& origin,
       FileSystemType type,
-      const FilePath& path) const OVERRIDE;
+      const base::FilePath& path) const OVERRIDE;
 
   // Retrieves the remote file system proxy for the registered file system.
   // Returns NULL if there is no file system with the given name, or if the file
@@ -102,10 +104,11 @@ class WEBKIT_STORAGE_EXPORT ExternalMountPoints
   // part of any registered filesystem).
   //
   // Returned virtual_path will have normalized path separators.
-  bool GetVirtualPath(const FilePath& absolute_path, FilePath* virtual_path);
+  bool GetVirtualPath(const base::FilePath& absolute_path,
+                      base::FilePath* virtual_path);
 
   // Returns the virtual root path that looks like /<mount_name>.
-  FilePath CreateVirtualRootPath(const std::string& mount_name) const;
+  base::FilePath CreateVirtualRootPath(const std::string& mount_name) const;
 
  private:
   friend class base::RefCountedThreadSafe<ExternalMountPoints>;
@@ -116,7 +119,7 @@ class WEBKIT_STORAGE_EXPORT ExternalMountPoints
   typedef std::map<std::string, Instance*> NameToInstance;
 
   // Reverse map from registered path to its corresponding mount name.
-  typedef std::map<FilePath, std::string> PathToName;
+  typedef std::map<base::FilePath, std::string> PathToName;
 
   // Use |GetSystemInstance| of |CreateRefCounted| to get an instance.
   ExternalMountPoints();
@@ -131,7 +134,7 @@ class WEBKIT_STORAGE_EXPORT ExternalMountPoints
   //
   // |lock_| should be taken before calling this method.
   bool ValidateNewMountPoint(const std::string& mount_name,
-                             const FilePath& path);
+                             const base::FilePath& path);
 
   // This lock needs to be obtained when accessing the instance_map_.
   mutable base::Lock lock_;
@@ -147,10 +150,10 @@ class WEBKIT_STORAGE_EXPORT ScopedExternalFileSystem {
  public:
   ScopedExternalFileSystem(const std::string& mount_name,
                            FileSystemType type,
-                           const FilePath& path);
+                           const base::FilePath& path);
   ~ScopedExternalFileSystem();
 
-  FilePath GetVirtualRootPath() const;
+  base::FilePath GetVirtualRootPath() const;
 
  private:
   const std::string mount_name_;

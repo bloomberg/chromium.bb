@@ -66,9 +66,11 @@
 #include "content/browser/download/save_types.h"
 #include "content/common/content_export.h"
 
-class FilePath;
 class GURL;
 
+namespace base {
+class FilePath;
+}
 
 namespace net {
 class IOBuffer;
@@ -99,7 +101,7 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
                int render_process_host_id,
                int render_view_id,
                SaveFileCreateInfo::SaveFileSource save_source,
-               const FilePath& file_full_path,
+               const base::FilePath& file_full_path,
                ResourceContext* context,
                SavePackage* save_package);
 
@@ -121,7 +123,7 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
                       SavePackage* package);
 
   // Helper function for deleting specified file.
-  void DeleteDirectoryOrFile(const FilePath& full_path, bool is_dir);
+  void DeleteDirectoryOrFile(const base::FilePath& full_path, bool is_dir);
 
   // Runs on file thread to save a file by copying from file system when
   // original url is using file scheme.
@@ -134,7 +136,7 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
   // final names of successfully saved files.
   void RenameAllFiles(
       const FinalNameList& final_names,
-      const FilePath& resource_dir,
+      const base::FilePath& resource_dir,
       int render_process_id,
       int render_view_id,
       int save_package_id);
@@ -199,7 +201,7 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
   // Notifications sent from the UI thread and run on the file thread.
 
   // Deletes a specified file on the file thread.
-  void OnDeleteDirectoryOrFile(const FilePath& full_path, bool is_dir);
+  void OnDeleteDirectoryOrFile(const base::FilePath& full_path, bool is_dir);
 
   // Notifications sent from the UI thread and run on the IO thread
 

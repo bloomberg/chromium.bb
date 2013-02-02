@@ -6,6 +6,7 @@
 
 #include "chrome/common/dump_without_crashing.h"
 
+#include "base/logging.h"
 #include "chrome/common/chrome_constants.h"
 
 #if defined(OS_WIN)

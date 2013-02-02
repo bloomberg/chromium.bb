@@ -15,10 +15,9 @@
 #include "base/time.h"
 #include "chrome/browser/chromeos/customization_document.h"
 
-class FilePath;
-
 namespace base {
 class DictionaryValue;
+class FilePath;
 }
 
 namespace chromeos {
@@ -180,8 +179,8 @@ class MobileConfig : public CustomizationDocument  {
                      const std::string& local_config);
 
   // Executes on FILE thread and reads config files to string.
-  void ReadConfigInBackground(const FilePath& global_config_file,
-                              const FilePath& local_config_file);
+  void ReadConfigInBackground(const base::FilePath& global_config_file,
+                              const base::FilePath& local_config_file);
 
   // Maps external carrier ID to internal carrier ID.
   CarrierIdMap carrier_id_map_;

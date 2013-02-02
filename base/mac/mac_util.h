@@ -21,9 +21,10 @@
 class NSImage;
 #endif  // __OBJC__
 
+namespace base {
+
 class FilePath;
 
-namespace base {
 namespace mac {
 
 // Full screen modes, in increasing order of priority.  More permissive modes

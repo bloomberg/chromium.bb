@@ -32,14 +32,14 @@ namespace {
 const size_t kMaxConfigFileSize = 1024 * 1024;
 
 // The host configuration file name.
-const FilePath::CharType kConfigFileName[] = FILE_PATH_LITERAL("host.json");
+const base::FilePath::CharType kConfigFileName[] = FILE_PATH_LITERAL("host.json");
 
 // The unprivileged configuration file name.
-const FilePath::CharType kUnprivilegedConfigFileName[] =
+const base::FilePath::CharType kUnprivilegedConfigFileName[] =
     FILE_PATH_LITERAL("host_unprivileged.json");
 
 // The extension for the temporary file.
-const FilePath::CharType kTempFileExtension[] = FILE_PATH_LITERAL("json~");
+const base::FilePath::CharType kTempFileExtension[] = FILE_PATH_LITERAL("json~");
 
 // The host configuration file security descriptor that enables full access to
 // Local System and built-in administrators only.
@@ -92,7 +92,7 @@ bool IsClientAdmin() {
 
 // Reads and parses the configuration file up to |kMaxConfigFileSize| in
 // size.
-HRESULT ReadConfig(const FilePath& filename,
+HRESULT ReadConfig(const base::FilePath& filename,
                    scoped_ptr<base::DictionaryValue>* config_out) {
 
   // Read raw data from the configuration file.
@@ -137,12 +137,12 @@ HRESULT ReadConfig(const FilePath& filename,
   return S_OK;
 }
 
-FilePath GetTempLocationFor(const FilePath& filename) {
+base::FilePath GetTempLocationFor(const base::FilePath& filename) {
   return filename.ReplaceExtension(kTempFileExtension);
 }
 
 // Writes a config file to a temporary location.
-HRESULT WriteConfigFileToTemp(const FilePath& filename,
+HRESULT WriteConfigFileToTemp(const base::FilePath& filename,
                               const char* security_descriptor,
                               const char* content,
                               size_t length) {
@@ -161,7 +161,7 @@ HRESULT WriteConfigFileToTemp(const FilePath& filename,
   security_attributes.bInheritHandle = FALSE;
 
   // Create a temporary file and write configuration to it.
-  FilePath tempname = GetTempLocationFor(filename);
+  base::FilePath tempname = GetTempLocationFor(filename);
   base::win::ScopedHandle file(
       CreateFileW(tempname.value().c_str(),
                   GENERIC_WRITE,
@@ -190,10 +190,10 @@ HRESULT WriteConfigFileToTemp(const FilePath& filename,
 }
 
 // Moves a config file from its temporary location to its permanent location.
-HRESULT MoveConfigFileFromTemp(const FilePath& filename) {
+HRESULT MoveConfigFileFromTemp(const base::FilePath& filename) {
   // Now that the configuration is stored successfully replace the actual
   // configuration file.
-  FilePath tempname = GetTempLocationFor(filename);
+  base::FilePath tempname = GetTempLocationFor(filename);
   if (!MoveFileExW(tempname.value().c_str(),
                    filename.value().c_str(),
                    MOVEFILE_REPLACE_EXISTING)) {
@@ -253,7 +253,7 @@ HRESULT WriteConfig(const char* content, size_t length, HWND owner_window) {
   base::JSONWriter::Write(&unprivileged_config_dict, &unprivileged_config_str);
 
   // Write the full configuration file to a temporary location.
-  FilePath full_config_file_path =
+  base::FilePath full_config_file_path =
       remoting::GetConfigDir().Append(kConfigFileName);
   HRESULT hr = WriteConfigFileToTemp(full_config_file_path,
                                      kConfigFileSecurityDescriptor,
@@ -264,7 +264,7 @@ HRESULT WriteConfig(const char* content, size_t length, HWND owner_window) {
   }
 
   // Write the unprivileged configuration file to a temporary location.
-  FilePath unprivileged_config_file_path =
+  base::FilePath unprivileged_config_file_path =
       remoting::GetConfigDir().Append(kUnprivilegedConfigFileName);
   hr = WriteConfigFileToTemp(unprivileged_config_file_path,
                              kUnprivilegedConfigFileSecurityDescriptor,
@@ -302,7 +302,7 @@ void ElevatedController::FinalRelease() {
 }
 
 STDMETHODIMP ElevatedController::GetConfig(BSTR* config_out) {
-  FilePath config_dir = remoting::GetConfigDir();
+  base::FilePath config_dir = remoting::GetConfigDir();
 
   // Read the unprivileged part of host configuration.
   scoped_ptr<base::DictionaryValue> config;
@@ -347,7 +347,7 @@ STDMETHODIMP ElevatedController::GetVersion(BSTR* version_out) {
 
 STDMETHODIMP ElevatedController::SetConfig(BSTR config) {
   // Determine the config directory path and create it if necessary.
-  FilePath config_dir = remoting::GetConfigDir();
+  base::FilePath config_dir = remoting::GetConfigDir();
   if (!file_util::CreateDirectory(config_dir)) {
     return HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED);
   }
@@ -462,7 +462,7 @@ STDMETHODIMP ElevatedController::UpdateConfig(BSTR config) {
     }
   }
   // Get the old config.
-  FilePath config_dir = remoting::GetConfigDir();
+  base::FilePath config_dir = remoting::GetConfigDir();
   scoped_ptr<base::DictionaryValue> config_old;
   HRESULT hr = ReadConfig(config_dir.Append(kConfigFileName), &config_old);
   if (FAILED(hr)) {

@@ -13,8 +13,11 @@
 #include "printing/print_settings.h"
 #include "ui/gfx/native_widget_types.h"
 
-class FilePath;
 class MessageLoop;
+
+namespace base {
+class FilePath;
+}
 
 namespace printing {
 
@@ -93,9 +96,9 @@ class PRINTING_EXPORT PrintedDocument
 
   // Sets a path where to dump printing output files for debugging. If never set
   // no files are generated.
-  static void set_debug_dump_path(const FilePath& debug_dump_path);
+  static void set_debug_dump_path(const base::FilePath& debug_dump_path);
 
-  static const FilePath& debug_dump_path();
+  static const base::FilePath& debug_dump_path();
 
  private:
   friend class base::RefCountedThreadSafe<PrintedDocument>;

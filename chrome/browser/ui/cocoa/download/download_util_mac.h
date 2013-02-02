@@ -9,11 +9,13 @@
 
 #import <Cocoa/Cocoa.h>
 
+namespace base {
 class FilePath;
+}
 
 namespace download_util {
 
-void AddFileToPasteboard(NSPasteboard* pasteboard, const FilePath& path);
+void AddFileToPasteboard(NSPasteboard* pasteboard, const base::FilePath& path);
 
 }  // namespace download_util
 

@@ -88,7 +88,7 @@ class QuotaFileIOTest : public PpapiUnittest {
   virtual void SetUp() OVERRIDE {
     PpapiUnittest::SetUp();
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
-    FilePath path;
+    base::FilePath path;
     ASSERT_TRUE(file_util::CreateTemporaryFileInDir(dir_.path(), &path));
     int file_flags = base::PLATFORM_FILE_OPEN |
                      base::PLATFORM_FILE_READ |

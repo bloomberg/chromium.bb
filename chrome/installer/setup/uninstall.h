@@ -14,7 +14,10 @@
 
 class BrowserDistribution;
 class CommandLine;
+
+namespace base {
 class FilePath;
+}
 
 namespace installer {
 
@@ -54,7 +57,7 @@ void RemoveChromeLegacyRegistryKeys(BrowserDistribution* dist,
 installer::InstallStatus UninstallProduct(
     const InstallationState& original_state,
     const InstallerState& installer_state,
-    const FilePath& setup_path,
+    const base::FilePath& setup_path,
     const Product& dist,
     bool remove_all,
     bool force_uninstall,

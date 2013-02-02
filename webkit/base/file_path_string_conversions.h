@@ -14,13 +14,13 @@ class WebString;
 
 namespace webkit_base {
 
-WEBKIT_BASE_EXPORT FilePath::StringType WebStringToFilePathString(
+WEBKIT_BASE_EXPORT base::FilePath::StringType WebStringToFilePathString(
     const WebKit::WebString& str);
 WEBKIT_BASE_EXPORT WebKit::WebString FilePathStringToWebString(
-    const FilePath::StringType& str);
-WEBKIT_BASE_EXPORT FilePath WebStringToFilePath(const WebKit::WebString& str);
+    const base::FilePath::StringType& str);
+WEBKIT_BASE_EXPORT base::FilePath WebStringToFilePath(const WebKit::WebString& str);
 WEBKIT_BASE_EXPORT WebKit::WebString FilePathToWebString(
-    const FilePath& file_path);
+    const base::FilePath& file_path);
 
 }  // namespace webkit_base
 

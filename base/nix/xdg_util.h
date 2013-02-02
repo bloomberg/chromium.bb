@@ -18,11 +18,10 @@
 #error asdf
 #endif
 
-class FilePath;
-
 namespace base {
 
 class Environment;
+class FilePath;
 
 namespace nix {
 

@@ -11,14 +11,16 @@
 
 #include <iosfwd>
 
+namespace base {
 class FilePath;
+}
 
 namespace logging_win {
 
 // Reads |log_file|, emitting messages to |out|.  Although it is safe to call
 // this from multiple threads, only one file may be read at a time; other
 // threads trying to read other log files will be blocked waiting.
-void PrintLogFile(const FilePath& log_file, std::ostream* out);
+void PrintLogFile(const base::FilePath& log_file, std::ostream* out);
 
 }  // namespace logging_win
 

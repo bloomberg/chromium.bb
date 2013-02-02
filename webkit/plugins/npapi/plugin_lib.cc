@@ -23,7 +23,7 @@ const char kPluginInstancesActiveCounter[] = "PluginInstancesActive";
 // A list of all the instantiated plugins.
 static std::vector<scoped_refptr<PluginLib> >* g_loaded_libs;
 
-PluginLib* PluginLib::CreatePluginLib(const FilePath& filename) {
+PluginLib* PluginLib::CreatePluginLib(const base::FilePath& filename) {
   // We can only have one PluginLib object per plugin as it controls the per
   // instance function calls (i.e. NP_Initialize and NP_Shutdown).  So we keep
   // a map of PluginLib objects.
@@ -271,7 +271,7 @@ bool PluginLib::Load() {
 
 // This is a helper to help perform a delayed NP_Shutdown and FreeLibrary on the
 // plugin dll.
-void FreePluginLibraryHelper(const FilePath& path,
+void FreePluginLibraryHelper(const base::FilePath& path,
                              base::NativeLibrary library,
                              NP_ShutdownFunc shutdown_func) {
   if (shutdown_func) {

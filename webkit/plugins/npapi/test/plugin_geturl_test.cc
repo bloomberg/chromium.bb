@@ -187,10 +187,10 @@ NPError PluginGetURLTest::NewStream(NPMIMEType type, NPStream* stream,
 #if defined(OS_WIN)
         filename = filename.substr(8);  // remove "file:///"
         // Assume an ASCII path on Windows.
-        FilePath path = FilePath(ASCIIToWide(filename));
+        base::FilePath path = base::FilePath(ASCIIToWide(filename));
 #else
         filename = filename.substr(7);  // remove "file://"
-        FilePath path = FilePath(filename);
+        base::FilePath path = base::FilePath(filename);
 #endif
 
         test_file_ = file_util::OpenFile(path, "r");

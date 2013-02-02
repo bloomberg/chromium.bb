@@ -12,7 +12,10 @@
 #include "chrome/browser/history/history_types.h"
 
 class CancelableTaskTracker;
+
+namespace base {
 class FilePath;
+}
 
 namespace history {
 
@@ -31,7 +34,7 @@ class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
 
   TopSitesBackend();
 
-  void Init(const FilePath& path);
+  void Init(const base::FilePath& path);
 
   // Schedules the db to be shutdown.
   void Shutdown();
@@ -64,7 +67,7 @@ class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
   virtual ~TopSitesBackend();
 
   // Invokes Init on the db_.
-  void InitDBOnDBThread(const FilePath& path);
+  void InitDBOnDBThread(const base::FilePath& path);
 
   // Shuts down the db.
   void ShutdownDBOnDBThread();
@@ -83,9 +86,9 @@ class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
                                   const Images& thumbnail);
 
   // Resets the database.
-  void ResetDatabaseOnDBThread(const FilePath& file_path);
+  void ResetDatabaseOnDBThread(const base::FilePath& file_path);
 
-  FilePath db_path_;
+  base::FilePath db_path_;
 
   scoped_ptr<TopSitesDatabase> db_;
 

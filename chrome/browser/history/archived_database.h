@@ -12,7 +12,9 @@
 #include "sql/init_status.h"
 #include "sql/meta_table.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace history {
 
@@ -30,7 +32,7 @@ class ArchivedDatabase : public URLDatabase,
 
   // Initializes the database connection. This must return true before any other
   // functions on this class are called.
-  bool Init(const FilePath& file_name);
+  bool Init(const base::FilePath& file_name);
 
   // Transactions on the database. We support nested transactions and only
   // commit when the outermost one is committed (sqlite doesn't support true

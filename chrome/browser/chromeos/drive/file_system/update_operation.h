@@ -11,8 +11,11 @@
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
-class FilePath;
 class GURL;
+
+namespace base {
+class FilePath;
+}
 
 namespace google_apis {
 class DriveUploaderInterface;
@@ -58,7 +61,7 @@ class UpdateOperation {
   void UpdateFileByEntryInfo(
       const FileOperationCallback& callback,
       DriveFileError error,
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of UpdateFileByResourceId().
@@ -66,10 +69,10 @@ class UpdateOperation {
   // UpdateFileByResourceId().
   // |callback| must not be null.
   void OnGetFileCompleteForUpdateFile(const FileOperationCallback& callback,
-                                      const FilePath& drive_file_path,
+                                      const base::FilePath& drive_file_path,
                                       scoped_ptr<DriveEntryProto> entry_proto,
                                       DriveFileError error,
-                                      const FilePath& cache_file_path);
+                                      const base::FilePath& cache_file_path);
 
   // Part of UpdateFileByResourceId().
   // Called when DriveUploader::UploadUpdatedFile() is completed for
@@ -78,15 +81,15 @@ class UpdateOperation {
   void OnUpdatedFileUploaded(
       const FileOperationCallback& callback,
       google_apis::DriveUploadError error,
-      const FilePath& gdata_path,
-      const FilePath& file_path,
+      const base::FilePath& gdata_path,
+      const base::FilePath& file_path,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
   // Part of UpdateFileByResourceId().
   // |callback| must not be null.
   void OnUpdatedFileRefreshed(const FileOperationCallback& callback,
                               DriveFileError error,
-                              const FilePath& drive_file_path,
+                              const base::FilePath& drive_file_path,
                               scoped_ptr<DriveEntryProto> entry_proto);
 
   DriveCache* cache_;

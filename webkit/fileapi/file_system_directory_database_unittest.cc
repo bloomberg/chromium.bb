@@ -23,7 +23,7 @@
 namespace fileapi {
 
 namespace {
-const FilePath::CharType kDirectoryDatabaseName[] = FPL("Paths");
+const base::FilePath::CharType kDirectoryDatabaseName[] = FPL("Paths");
 }
 
 class FileSystemDirectoryDatabaseTest : public testing::Test {
@@ -51,7 +51,7 @@ class FileSystemDirectoryDatabaseTest : public testing::Test {
     db_.reset();
   }
 
-  bool AddFileInfo(FileId parent_id, const FilePath::StringType& name) {
+  bool AddFileInfo(FileId parent_id, const base::FilePath::StringType& name) {
     FileId file_id;
     FileInfo info;
     info.parent_id = parent_id;
@@ -60,7 +60,7 @@ class FileSystemDirectoryDatabaseTest : public testing::Test {
   }
 
   void CreateDirectory(FileId parent_id,
-                       const FilePath::StringType& name,
+                       const base::FilePath::StringType& name,
                        FileId* file_id_out) {
     FileInfo info;
     info.parent_id = parent_id;
@@ -69,18 +69,18 @@ class FileSystemDirectoryDatabaseTest : public testing::Test {
   }
 
   void CreateFile(FileId parent_id,
-                  const FilePath::StringType& name,
-                  const FilePath::StringType& data_path,
+                  const base::FilePath::StringType& name,
+                  const base::FilePath::StringType& data_path,
                   FileId* file_id_out) {
     FileId file_id;
 
     FileInfo info;
     info.parent_id = parent_id;
     info.name = name;
-    info.data_path = FilePath(data_path).NormalizePathSeparators();
+    info.data_path = base::FilePath(data_path).NormalizePathSeparators();
     ASSERT_TRUE(db_->AddFileInfo(info, &file_id));
 
-    FilePath local_path = path().Append(data_path);
+    base::FilePath local_path = path().Append(data_path);
     if (!file_util::DirectoryExists(local_path.DirName()))
       ASSERT_TRUE(file_util::CreateDirectory(local_path.DirName()));
 
@@ -110,18 +110,18 @@ class FileSystemDirectoryDatabaseTest : public testing::Test {
         FilePathToString(path().Append(kDirectoryDatabaseName)));
   }
 
-  const FilePath& path() {
+  const base::FilePath& path() {
     return base_.path();
   }
 
   // Makes link from |parent_id| to |child_id| with |name|.
   void MakeHierarchyLink(FileId parent_id,
                          FileId child_id,
-                         const FilePath::StringType& name) {
+                         const base::FilePath::StringType& name) {
     ASSERT_TRUE(db()->db_->Put(
         leveldb::WriteOptions(),
         "CHILD_OF:" + base::Int64ToString(parent_id) + ":" +
-        FilePathToString(FilePath(name)),
+        FilePathToString(base::FilePath(name)),
         base::Int64ToString(child_id)).ok());
   }
 
@@ -132,7 +132,7 @@ class FileSystemDirectoryDatabaseTest : public testing::Test {
     ASSERT_TRUE(db()->db_->Delete(
         leveldb::WriteOptions(),
         "CHILD_OF:" + base::Int64ToString(file_info.parent_id) + ":" +
-        FilePathToString(FilePath(file_info.name))).ok());
+        FilePathToString(base::FilePath(file_info.name))).ok());
   }
 
  protected:
@@ -171,7 +171,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestAddNameClash) {
   EXPECT_TRUE(db()->AddFileInfo(info, &file_id));
 
   // Check for name clash in the root directory.
-  FilePath::StringType name = info.name;
+  base::FilePath::StringType name = info.name;
   EXPECT_FALSE(AddFileInfo(0, name));
   name = FILE_PATH_LITERAL("dir 1");
   EXPECT_TRUE(AddFileInfo(0, name));
@@ -188,9 +188,9 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestAddNameClash) {
 TEST_F(FileSystemDirectoryDatabaseTest, TestRenameNoMoveNameClash) {
   FileInfo info;
   FileId file_id0;
-  FilePath::StringType name0 = FILE_PATH_LITERAL("foo");
-  FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
-  FilePath::StringType name2 = FILE_PATH_LITERAL("bas");
+  base::FilePath::StringType name0 = FILE_PATH_LITERAL("foo");
+  base::FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
+  base::FilePath::StringType name2 = FILE_PATH_LITERAL("bas");
   info.parent_id = 0;
   info.name = name0;
   EXPECT_TRUE(db()->AddFileInfo(info, &file_id0));
@@ -205,8 +205,8 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestMoveSameNameNameClash) {
   FileInfo info;
   FileId file_id0;
   FileId file_id1;
-  FilePath::StringType name0 = FILE_PATH_LITERAL("foo");
-  FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
+  base::FilePath::StringType name0 = FILE_PATH_LITERAL("foo");
+  base::FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
   info.parent_id = 0;
   info.name = name0;
   EXPECT_TRUE(db()->AddFileInfo(info, &file_id0));
@@ -222,9 +222,9 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestMoveRenameNameClash) {
   FileInfo info;
   FileId file_id0;
   FileId file_id1;
-  FilePath::StringType name0 = FILE_PATH_LITERAL("foo");
-  FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
-  FilePath::StringType name2 = FILE_PATH_LITERAL("bas");
+  base::FilePath::StringType name0 = FILE_PATH_LITERAL("foo");
+  base::FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
+  base::FilePath::StringType name2 = FILE_PATH_LITERAL("bas");
   info.parent_id = 0;
   info.name = name0;
   EXPECT_TRUE(db()->AddFileInfo(info, &file_id0));
@@ -260,8 +260,8 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestGetChildWithName) {
   FileInfo info;
   FileId file_id0;
   FileId file_id1;
-  FilePath::StringType name0 = FILE_PATH_LITERAL("foo");
-  FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
+  base::FilePath::StringType name0 = FILE_PATH_LITERAL("foo");
+  base::FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
   info.parent_id = 0;
   info.name = name0;
   EXPECT_TRUE(db()->AddFileInfo(info, &file_id0));
@@ -284,9 +284,9 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestGetFileWithPath) {
   FileId file_id0;
   FileId file_id1;
   FileId file_id2;
-  FilePath::StringType name0 = FILE_PATH_LITERAL("foo");
-  FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
-  FilePath::StringType name2 = FILE_PATH_LITERAL("dog");
+  base::FilePath::StringType name0 = FILE_PATH_LITERAL("foo");
+  base::FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
+  base::FilePath::StringType name2 = FILE_PATH_LITERAL("dog");
 
   info.parent_id = 0;
   info.name = name0;
@@ -302,7 +302,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestGetFileWithPath) {
   EXPECT_NE(file_id1, file_id2);
 
   FileId check_file_id;
-  FilePath path = FilePath(name0);
+  base::FilePath path = base::FilePath(name0);
   EXPECT_TRUE(db()->GetFileWithPath(path, &check_file_id));
   EXPECT_EQ(file_id0, check_file_id);
 
@@ -376,7 +376,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestUpdateModificationTime) {
   FileId file_id;
   info0.parent_id = 0;
   info0.name = FILE_PATH_LITERAL("name");
-  info0.data_path = FilePath(FILE_PATH_LITERAL("fake path"));
+  info0.data_path = base::FilePath(FILE_PATH_LITERAL("fake path"));
   info0.modification_time = base::Time::Now();
   EXPECT_TRUE(db()->AddFileInfo(info0, &file_id));
   FileInfo info1;
@@ -406,7 +406,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestSimpleFileOperations) {
   FileInfo info0;
   EXPECT_FALSE(db()->GetFileInfo(file_id, &info0));
   info0.parent_id = 0;
-  info0.data_path = FilePath(FILE_PATH_LITERAL("foo"));
+  info0.data_path = base::FilePath(FILE_PATH_LITERAL("foo"));
   info0.name = FILE_PATH_LITERAL("file name");
   info0.modification_time = base::Time::Now();
   EXPECT_TRUE(db()->AddFileInfo(info0, &file_id));
@@ -431,7 +431,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestOverwritingMoveFileSrcDirectory) {
   FileId file_id;
   FileInfo info1;
   info1.parent_id = 0;
-  info1.data_path = FilePath(FILE_PATH_LITERAL("bar"));
+  info1.data_path = base::FilePath(FILE_PATH_LITERAL("bar"));
   info1.name = FILE_PATH_LITERAL("file");
   info1.modification_time = base::Time::UnixEpoch();
   EXPECT_TRUE(db()->AddFileInfo(info1, &file_id));
@@ -444,7 +444,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestOverwritingMoveFileDestDirectory) {
   FileInfo info0;
   info0.parent_id = 0;
   info0.name = FILE_PATH_LITERAL("file");
-  info0.data_path = FilePath(FILE_PATH_LITERAL("bar"));
+  info0.data_path = base::FilePath(FILE_PATH_LITERAL("bar"));
   info0.modification_time = base::Time::Now();
   EXPECT_TRUE(db()->AddFileInfo(info0, &file_id));
 
@@ -462,7 +462,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestOverwritingMoveFileSuccess) {
   FileId file_id0;
   FileInfo info0;
   info0.parent_id = 0;
-  info0.data_path = FilePath(FILE_PATH_LITERAL("foo"));
+  info0.data_path = base::FilePath(FILE_PATH_LITERAL("foo"));
   info0.name = FILE_PATH_LITERAL("file name 0");
   info0.modification_time = base::Time::Now();
   EXPECT_TRUE(db()->AddFileInfo(info0, &file_id0));
@@ -476,7 +476,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestOverwritingMoveFileSuccess) {
   FileId file_id1;
   FileInfo info1;
   info1.parent_id = dir_id;
-  info1.data_path = FilePath(FILE_PATH_LITERAL("bar"));
+  info1.data_path = base::FilePath(FILE_PATH_LITERAL("bar"));
   info1.name = FILE_PATH_LITERAL("file name 1");
   info1.modification_time = base::Time::UnixEpoch();
   EXPECT_TRUE(db()->AddFileInfo(info1, &file_id1));
@@ -486,9 +486,9 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestOverwritingMoveFileSuccess) {
   FileInfo check_info;
   FileId check_id;
 
-  EXPECT_FALSE(db()->GetFileWithPath(FilePath(info0.name), &check_id));
+  EXPECT_FALSE(db()->GetFileWithPath(base::FilePath(info0.name), &check_id));
   EXPECT_TRUE(db()->GetFileWithPath(
-      FilePath(dir_info.name).Append(info1.name), &check_id));
+      base::FilePath(dir_info.name).Append(info1.name), &check_id));
   EXPECT_TRUE(db()->GetFileInfo(check_id, &check_info));
 
   EXPECT_EQ(info0.data_path, check_info.data_path);
@@ -531,7 +531,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_Consistent) {
 
 TEST_F(FileSystemDirectoryDatabaseTest,
        TestConsistencyCheck_BackingMultiEntry) {
-  const FilePath::CharType kBackingFileName[] = FPL("the celeb");
+  const base::FilePath::CharType kBackingFileName[] = FPL("the celeb");
   CreateFile(0, FPL("foo"), kBackingFileName, NULL);
 
   EXPECT_TRUE(db()->IsFileSystemConsistent());
@@ -541,7 +541,7 @@ TEST_F(FileSystemDirectoryDatabaseTest,
 }
 
 TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_FileLost) {
-  const FilePath::CharType kBackingFileName[] = FPL("hoge");
+  const base::FilePath::CharType kBackingFileName[] = FPL("hoge");
   CreateFile(0, FPL("foo"), kBackingFileName, NULL);
 
   EXPECT_TRUE(db()->IsFileSystemConsistent());
@@ -576,7 +576,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_RootLoop) {
 TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_DirectoryLoop) {
   FileId dir1_id;
   FileId dir2_id;
-  FilePath::StringType dir1_name = FPL("foo");
+  base::FilePath::StringType dir1_name = FPL("foo");
   CreateDirectory(0, dir1_name, &dir1_id);
   CreateDirectory(dir1_id, FPL("bar"), &dir2_id);
 
@@ -610,13 +610,13 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_WreckedEntries) {
 }
 
 TEST_F(FileSystemDirectoryDatabaseTest, TestRepairDatabase_Success) {
-  FilePath::StringType kFileName = FPL("bar");
+  base::FilePath::StringType kFileName = FPL("bar");
 
   FileId file_id_prev;
   CreateFile(0, FPL("foo"), FPL("hoge"), NULL);
   CreateFile(0, kFileName, FPL("fuga"), &file_id_prev);
 
-  const FilePath kDatabaseDirectory = path().Append(kDirectoryDatabaseName);
+  const base::FilePath kDatabaseDirectory = path().Append(kDirectoryDatabaseName);
   CloseDatabase();
   CorruptDatabase(kDatabaseDirectory, leveldb::kDescriptorFile,
                   0, std::numeric_limits<size_t>::max());
@@ -631,12 +631,12 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestRepairDatabase_Success) {
 }
 
 TEST_F(FileSystemDirectoryDatabaseTest, TestRepairDatabase_Failure) {
-  FilePath::StringType kFileName = FPL("bar");
+  base::FilePath::StringType kFileName = FPL("bar");
 
   CreateFile(0, FPL("foo"), FPL("hoge"), NULL);
   CreateFile(0, kFileName, FPL("fuga"), NULL);
 
-  const FilePath kDatabaseDirectory = path().Append(kDirectoryDatabaseName);
+  const base::FilePath kDatabaseDirectory = path().Append(kDirectoryDatabaseName);
   CloseDatabase();
   CorruptDatabase(kDatabaseDirectory, leveldb::kDescriptorFile,
                   0, std::numeric_limits<size_t>::max());

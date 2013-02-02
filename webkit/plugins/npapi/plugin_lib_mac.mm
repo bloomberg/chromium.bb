@@ -76,7 +76,7 @@ NSDictionary* GetMIMETypes(CFBundleRef bundle) {
   }
 }
 
-bool ReadPlistPluginInfo(const FilePath& filename, CFBundleRef bundle,
+bool ReadPlistPluginInfo(const base::FilePath& filename, CFBundleRef bundle,
                          WebPluginInfo* info) {
   NSDictionary* mime_types = GetMIMETypes(bundle);
   if (!mime_types)
@@ -137,7 +137,7 @@ bool ReadPlistPluginInfo(const FilePath& filename, CFBundleRef bundle,
 
 }  // anonymous namespace
 
-bool PluginLib::ReadWebPluginInfo(const FilePath &filename,
+bool PluginLib::ReadWebPluginInfo(const base::FilePath &filename,
                                   WebPluginInfo* info) {
   // There are three ways to get information about plugin capabilities:
   // 1) a set of Info.plist keys, documented at

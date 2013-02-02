@@ -13,7 +13,9 @@
 #include "chrome/browser/media_gallery/scoped_mtp_device_map_entry.h"
 #include "webkit/fileapi/media/mtp_device_file_system_config.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace chrome {
 
@@ -26,14 +28,14 @@ class MediaFileSystemContext {
   // Register a media file system (filtered to media files) for |path| and
   // return the new file system id.
   virtual std::string RegisterFileSystemForMassStorage(
-      const std::string& device_id, const FilePath& path) = 0;
+      const std::string& device_id, const base::FilePath& path) = 0;
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // Registers and returns the file system id for the MTP or PTP device
   // specified by |device_id| and |path|. Updates |entry| with the corresponding
   // ScopedMTPDeviceMapEntry object.
   virtual std::string RegisterFileSystemForMTPDevice(
-      const std::string& device_id, const FilePath& path,
+      const std::string& device_id, const base::FilePath& path,
       scoped_refptr<ScopedMTPDeviceMapEntry>* entry) = 0;
 #endif
 

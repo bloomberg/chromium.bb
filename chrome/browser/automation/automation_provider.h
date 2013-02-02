@@ -44,7 +44,6 @@ class AutomationTabTracker;
 class AutomationWindowTracker;
 class Browser;
 class ExternalTabContainer;
-class FilePath;
 class FindInPageNotificationObserver;
 class InitialLoadObserver;
 class LoginHandler;

@@ -9,10 +9,10 @@
 
 #include "base/base_export.h"
 
-class FilePath;
 
 namespace base {
 
+class FilePath;
 class TimeDelta;
 class StringValue;
 class Value;

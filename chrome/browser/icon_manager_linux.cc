@@ -7,7 +7,8 @@
 #include "base/nix/mime_util_xdg.h"
 #include "base/threading/thread_restrictions.h"
 
-IconGroupID IconManager::GetGroupIDFromFilepath(const FilePath& filepath) {
+IconGroupID IconManager::GetGroupIDFromFilepath(
+    const base::FilePath& filepath) {
   // It turns out the call to base::nix::GetFileMimeType below does IO, but
   // callers of GetGroupIDFromFilepath assume it does not do IO (the Windows
   // and Mac implementations do not). We should fix this by either not doing IO

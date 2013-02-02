@@ -12,7 +12,10 @@
 #include "base/time.h"
 
 class CommandLine;
+
+namespace base {
 class FilePath;
+}
 
 namespace logging {
 
@@ -34,7 +37,7 @@ void InitChromeLogging(const CommandLine& command_line,
 
 #if defined(OS_CHROMEOS)
 // Get the log file location.
-FilePath GetSessionLogFile(const CommandLine& command_line);
+base::FilePath GetSessionLogFile(const CommandLine& command_line);
 
 // Redirects chrome logging to the appropriate session log dir.
 void RedirectChromeLogging(const CommandLine& command_line);
@@ -44,7 +47,7 @@ void RedirectChromeLogging(const CommandLine& command_line);
 void CleanupChromeLogging();
 
 // Returns the fully-qualified name of the log file.
-FilePath GetLogFileName();
+base::FilePath GetLogFileName();
 
 // Returns true when error/assertion dialogs are to be shown,
 // false otherwise.
@@ -64,8 +67,8 @@ size_t GetFatalAssertions(AssertionList* assertions);
 
 // Inserts timestamp before file extension in the format
 // "_yymmdd-hhmmss".
-FilePath GenerateTimestampedName(const FilePath& base_path,
-                                 base::Time timestamp);
+base::FilePath GenerateTimestampedName(const base::FilePath& base_path,
+                                       base::Time timestamp);
 }  // namespace logging
 
 #endif  // CHROME_COMMON_LOGGING_CHROME_H_

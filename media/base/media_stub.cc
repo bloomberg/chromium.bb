@@ -10,7 +10,7 @@
 // libraries (e.g., Android and iOS).
 namespace media {
 
-bool InitializeMediaLibrary(const FilePath& module_dir) {
+bool InitializeMediaLibrary(const base::FilePath& module_dir) {
   return true;
 }
 

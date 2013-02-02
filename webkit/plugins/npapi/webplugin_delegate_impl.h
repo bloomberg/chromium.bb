@@ -27,7 +27,9 @@
 typedef struct _GdkDrawable GdkPixmap;
 #endif
 
+namespace base {
 class FilePath;
+}
 
 #if defined(OS_MACOSX)
 #ifdef __OBJC__
@@ -77,7 +79,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
     PLUGIN_QUIRK_EMULATE_IME = 131072,  // Windows.
   };
 
-  static WebPluginDelegateImpl* Create(const FilePath& filename,
+  static WebPluginDelegateImpl* Create(const base::FilePath& filename,
                                        const std::string& mime_type);
 
 #if defined(OS_WIN)
@@ -138,7 +140,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   gfx::Rect GetClipRect() const { return clip_rect_; }
 
   // Returns the path for the library implementing this plugin.
-  FilePath GetPluginPath();
+  base::FilePath GetPluginPath();
 
   // Returns a combination of PluginQuirks.
   int GetQuirks() const { return quirks_; }

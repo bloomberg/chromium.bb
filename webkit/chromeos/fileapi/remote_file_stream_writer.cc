@@ -56,7 +56,7 @@ void RemoteFileStreamWriter::OnFileOpened(
     int buf_len,
     const net::CompletionCallback& callback,
     base::PlatformFileError open_result,
-    const FilePath& local_path,
+    const base::FilePath& local_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   has_pending_create_snapshot_ = false;
   if (!pending_cancel_callback_.is_null()) {

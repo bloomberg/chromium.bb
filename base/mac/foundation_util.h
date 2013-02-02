@@ -28,8 +28,6 @@ class NSString;
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
-class FilePath;
-
 // Adapted from NSPathUtilities.h and NSObjCRuntime.h.
 #if __LP64__ || NS_BUILD_32_LIKE_64
 typedef unsigned long NSSearchPathDirectory;
@@ -43,6 +41,9 @@ typedef struct OpaqueSecTrustRef* SecACLRef;
 typedef struct OpaqueSecTrustedApplicationRef* SecTrustedApplicationRef;
 
 namespace base {
+
+class FilePath;
+
 namespace mac {
 
 // Returns true if the application is running from a bundle

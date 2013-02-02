@@ -106,7 +106,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     TestRequestHelper(url, false);
   }
 
-  FileSystemURL CreateURL(const FilePath& file_path) {
+  FileSystemURL CreateURL(const base::FilePath& file_path) {
     return file_system_context_->CreateCrackedFileSystemURL(
         GURL("http://remote"),
         fileapi::kFileSystemTypeTemporary,
@@ -121,7 +121,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   }
 
   void CreateDirectory(const base::StringPiece& dir_name) {
-    FilePath path = FilePath().AppendASCII(dir_name);
+    base::FilePath path = base::FilePath().AppendASCII(dir_name);
     scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
     ASSERT_EQ(base::PLATFORM_FILE_OK, file_util()->CreateDirectory(
         context.get(),
@@ -131,22 +131,22 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   }
 
   void EnsureFileExists(const base::StringPiece file_name) {
-    FilePath path = FilePath().AppendASCII(file_name);
+    base::FilePath path = base::FilePath().AppendASCII(file_name);
     scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
     ASSERT_EQ(base::PLATFORM_FILE_OK, file_util()->EnsureFileExists(
         context.get(), CreateURL(path), NULL));
   }
 
   void TruncateFile(const base::StringPiece file_name, int64 length) {
-    FilePath path = FilePath().AppendASCII(file_name);
+    base::FilePath path = base::FilePath().AppendASCII(file_name);
     scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
     ASSERT_EQ(base::PLATFORM_FILE_OK, file_util()->Truncate(
         context.get(), CreateURL(path), length));
   }
 
-  base::PlatformFileError GetFileInfo(const FilePath& path,
+  base::PlatformFileError GetFileInfo(const base::FilePath& path,
                                       base::PlatformFileInfo* file_info,
-                                      FilePath* platform_file_path) {
+                                      base::FilePath* platform_file_path) {
     scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
     return file_util()->GetFileInfo(context.get(),
                                     CreateURL(path),

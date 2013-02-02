@@ -74,7 +74,7 @@ class DesktopSessionWin
   scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
 
   // Contains the full path to the desktop binary.
-  FilePath desktop_binary_;
+  base::FilePath desktop_binary_;
 
   // Handle of the desktop process.
   base::win::ScopedHandle desktop_process_;

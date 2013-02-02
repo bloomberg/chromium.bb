@@ -11,8 +11,11 @@
 #include "base/time.h"
 #include "chrome/browser/extensions/updater/manifest_fetch_data.h"
 
-class FilePath;
 class GURL;
+
+namespace base {
+class FilePath;
+}
 
 namespace extensions {
 
@@ -80,7 +83,7 @@ class ExtensionDownloaderDelegate {
   // to the delegate.
   virtual void OnExtensionDownloadFinished(
       const std::string& id,
-      const FilePath& path,
+      const base::FilePath& path,
       const GURL& download_url,
       const std::string& version,
       const PingResult& ping_result,

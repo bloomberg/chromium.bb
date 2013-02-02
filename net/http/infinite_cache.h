@@ -18,9 +18,8 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 
-class FilePath;
-
 namespace base {
+class FilePath;
 class SequencedTaskRunner;
 class SequencedWorkerPool;
 }
@@ -80,7 +79,7 @@ class NET_EXPORT_PRIVATE InfiniteCache
   // Initializes this object to start tracking requests. |path| is the location
   // of the file to use to store data; it can be empty, in which case the data
   // will not be persisted to disk.
-  void Init(const FilePath& path);
+  void Init(const base::FilePath& path);
 
   InfiniteCacheTransaction* CreateInfiniteCacheTransaction();
 

@@ -59,7 +59,7 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   };
 
   // The FileSystem directory name.
-  static const FilePath::CharType kFileSystemDirectory[];
+  static const base::FilePath::CharType kFileSystemDirectory[];
 
   static bool CanHandleType(FileSystemType type);
 
@@ -68,7 +68,7 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   SandboxMountPointProvider(
       quota::QuotaManagerProxy* quota_manager_proxy,
       base::SequencedTaskRunner* file_task_runner,
-      const FilePath& profile_path,
+      const base::FilePath& profile_path,
       const FileSystemOptions& file_system_options);
   virtual ~SandboxMountPointProvider();
 
@@ -78,11 +78,11 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
       FileSystemType type,
       bool create,
       const ValidateFileSystemCallback& callback) OVERRIDE;
-  virtual FilePath GetFileSystemRootPathOnFileThread(
+  virtual base::FilePath GetFileSystemRootPathOnFileThread(
       const FileSystemURL& url,
       bool create) OVERRIDE;
   virtual bool IsAccessAllowed(const FileSystemURL& url) OVERRIDE;
-  virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
+  virtual bool IsRestrictedFileName(const base::FilePath& filename) const OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
   virtual FilePermissionPolicy GetPermissionPolicy(
@@ -118,7 +118,7 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   // the 'unique' part.)
   // Returns an empty path if the given type is invalid.
   // This method can only be called on the file thread.
-  FilePath GetBaseDirectoryForOriginAndType(
+  base::FilePath GetBaseDirectoryForOriginAndType(
       const GURL& origin_url,
       FileSystemType type,
       bool create);
@@ -174,12 +174,12 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   friend class SyncableFileSystemOperation;
 
   // Returns a path to the usage cache file.
-  FilePath GetUsageCachePathForOriginAndType(
+  base::FilePath GetUsageCachePathForOriginAndType(
       const GURL& origin_url,
       FileSystemType type);
 
   // Returns a path to the usage cache file (static version).
-  static FilePath GetUsageCachePathForOriginAndType(
+  static base::FilePath GetUsageCachePathForOriginAndType(
       ObfuscatedFileUtil* sandbox_file_util,
       const GURL& origin_url,
       FileSystemType type,
@@ -202,7 +202,7 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
-  const FilePath profile_path_;
+  const base::FilePath profile_path_;
 
   FileSystemOptions file_system_options_;
 

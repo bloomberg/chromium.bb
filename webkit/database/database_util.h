@@ -9,7 +9,9 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/storage/webkit_storage_export.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace webkit_database {
 
@@ -25,8 +27,8 @@ class WEBKIT_STORAGE_EXPORT DatabaseUtil {
                                string16* origin_identifier,
                                string16* database_name,
                                string16* sqlite_suffix);
-  static FilePath GetFullFilePathForVfsFile(DatabaseTracker* db_tracker,
-                                            const string16& vfs_file_name);
+  static base::FilePath GetFullFilePathForVfsFile(DatabaseTracker* db_tracker,
+                                                  const string16& vfs_file_name);
   static string16 GetOriginIdentifier(const GURL& url);
   static GURL GetOriginFromIdentifier(const string16& origin_identifier);
 };

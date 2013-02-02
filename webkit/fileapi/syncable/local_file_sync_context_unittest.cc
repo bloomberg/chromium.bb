@@ -119,7 +119,7 @@ class LocalFileSyncContextTest : public testing::Test {
 
   SyncStatusCode ApplyRemoteChange(FileSystemContext* file_system_context,
                                    const FileChange& change,
-                                   const FilePath& local_path,
+                                   const base::FilePath& local_path,
                                    const FileSystemURL& url,
                                    SyncFileType expected_file_type) {
     SCOPED_TRACE(testing::Message() << "ApplyChange for " <<
@@ -431,7 +431,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
                     SYNC_FILE_TYPE_FILE);
   EXPECT_EQ(SYNC_STATUS_OK,
             ApplyRemoteChange(file_system.file_system_context(),
-                              change, FilePath(), kFile,
+                              change, base::FilePath(), kFile,
                               SYNC_FILE_TYPE_FILE));
 
   // The implementation doesn't check file type for deletion, and it must be ok
@@ -439,7 +439,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
   change = FileChange(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_UNKNOWN);
   EXPECT_EQ(SYNC_STATUS_OK,
             ApplyRemoteChange(file_system.file_system_context(),
-                              change, FilePath(), kDir,
+                              change, base::FilePath(), kDir,
                               SYNC_FILE_TYPE_DIRECTORY));
 
   // Check the directory/files are deleted successfully.
@@ -506,8 +506,8 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
   file_system.ClearChangeForURLInTracker(*urls.begin());
 
   // Prepare temporary files which represent the remote file data.
-  const FilePath kFilePath1(temp_dir.path().Append(FPL("file1")));
-  const FilePath kFilePath2(temp_dir.path().Append(FPL("file2")));
+  const base::FilePath kFilePath1(temp_dir.path().Append(FPL("file1")));
+  const base::FilePath kFilePath2(temp_dir.path().Append(FPL("file2")));
 
   ASSERT_EQ(static_cast<int>(arraysize(kTestFileData1) - 1),
             file_util::WriteFile(kFilePath1, kTestFileData1,
@@ -565,7 +565,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
                       SYNC_FILE_TYPE_DIRECTORY);
   EXPECT_EQ(SYNC_STATUS_OK,
             ApplyRemoteChange(file_system.file_system_context(),
-                              change, FilePath(), kDir,
+                              change, base::FilePath(), kDir,
                               SYNC_FILE_TYPE_UNKNOWN));
 
   // This should not happen, but calling ApplyRemoteChange

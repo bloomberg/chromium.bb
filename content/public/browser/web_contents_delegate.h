@@ -21,10 +21,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect_f.h"
 
-class FilePath;
 class GURL;
 
 namespace base {
+class FilePath;
 class ListValue;
 }
 
@@ -336,7 +336,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // directory.
   virtual void EnumerateDirectory(WebContents* web_contents,
                                   int request_id,
-                                  const FilePath& path) {}
+                                  const base::FilePath& path) {}
 
   // Called when the renderer puts a tab into or out of fullscreen mode.
   virtual void ToggleFullscreenModeForTab(WebContents* web_contents,
@@ -429,7 +429,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual bool RequestPpapiBrokerPermission(
       WebContents* web_contents,
       const GURL& url,
-      const FilePath& plugin_path,
+      const base::FilePath& plugin_path,
       const base::Callback<void(bool)>& callback);
 
  protected:

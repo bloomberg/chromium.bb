@@ -146,7 +146,7 @@ class PluginStream : public base::RefCounted<PluginStream> {
   HANDLE                        temp_file_handle_;
 #elif defined(OS_POSIX)
   FILE*                         temp_file_;
-  FilePath                      temp_file_path_;
+  base::FilePath                temp_file_path_;
 #endif
   std::vector<char>             delivery_data_;
   int                           data_offset_;

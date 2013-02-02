@@ -16,7 +16,9 @@
 #include <objidl.h>
 #endif
 
+namespace base {
 class FilePath;
+}
 
 namespace ui {
 

@@ -181,7 +181,7 @@ struct ResourceResponseInfo {
   // The path to a file that will contain the response body.  It may only
   // contain a portion of the response body at the time that the ResponseInfo
   // becomes available.
-  FilePath download_file_path;
+  base::FilePath download_file_path;
 
   // True if the response was delivered using SPDY.
   bool was_fetched_via_spdy;

@@ -11,7 +11,10 @@
 #include "ipc/ipc_platform_file.h"
 
 class CommandLine;
+
+namespace base {
 class FilePath;
+}
 
 namespace sandbox {
 struct SandboxInterfaceInfo;
@@ -54,7 +57,7 @@ CONTENT_EXPORT bool BrokerAddTargetPeer(HANDLE peer_process);
 // and returns a handle to it.
 CONTENT_EXPORT base::ProcessHandle StartProcessWithAccess(
     CommandLine* cmd_line,
-    const FilePath& exposed_dir);
+    const base::FilePath& exposed_dir);
 
 #elif defined(OS_MACOSX)
 
@@ -73,7 +76,7 @@ CONTENT_EXPORT base::ProcessHandle StartProcessWithAccess(
 // occurred.  If process_type isn't one that needs sandboxing, no action is
 // taken and true is always returned.
 CONTENT_EXPORT bool InitializeSandbox(int sandbox_type,
-                                      const FilePath& allowed_path);
+                                      const base::FilePath& allowed_path);
 
 #elif defined(OS_LINUX)
 

@@ -14,9 +14,8 @@
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/storage/webkit_storage_export.h"
 
-class FilePath;
-
 namespace base {
+class FilePath;
 class SequencedTaskRunner;
 }
 
@@ -60,7 +59,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemFileStreamReader
       const net::CompletionCallback& error_callback,
       base::PlatformFileError file_error,
       const base::PlatformFileInfo& file_info,
-      const FilePath& platform_path,
+      const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
   scoped_refptr<FileSystemContext> file_system_context_;

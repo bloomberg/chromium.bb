@@ -89,7 +89,7 @@ void OnGetMetadataAndVerifyData(
     const CannedSyncableFileSystem::StatusCallback& callback,
     base::PlatformFileError result,
     const base::PlatformFileInfo& file_info,
-    const FilePath& platform_path) {
+    const base::FilePath& platform_path) {
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     return;
@@ -104,11 +104,11 @@ void OnGetMetadataAndVerifyData(
 
 void OnGetMetadata(
     base::PlatformFileInfo* file_info_out,
-    FilePath* platform_path_out,
+    base::FilePath* platform_path_out,
     const CannedSyncableFileSystem::StatusCallback& callback,
     base::PlatformFileError result,
     const base::PlatformFileInfo& file_info,
-    const FilePath& platform_path) {
+    const base::FilePath& platform_path) {
   DCHECK(file_info_out);
   DCHECK(platform_path_out);
   *file_info_out = file_info;
@@ -375,7 +375,7 @@ PlatformFileError CannedSyncableFileSystem::VerifyFile(
 PlatformFileError CannedSyncableFileSystem::GetMetadata(
     const FileSystemURL& url,
     base::PlatformFileInfo* info,
-    FilePath* platform_path) {
+    base::FilePath* platform_path) {
   return RunOnThread<PlatformFileError>(
       io_task_runner_,
       FROM_HERE,
@@ -540,7 +540,7 @@ void CannedSyncableFileSystem::DoVerifyFile(
 void CannedSyncableFileSystem::DoGetMetadata(
     const FileSystemURL& url,
     base::PlatformFileInfo* info,
-    FilePath* platform_path,
+    base::FilePath* platform_path,
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
   NewOperation()->GetMetadata(

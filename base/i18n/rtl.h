@@ -12,9 +12,10 @@
 #include "base/string16.h"
 #include "build/build_config.h"
 
+namespace base {
+
 class FilePath;
 
-namespace base {
 namespace i18n {
 
 const char16 kRightToLeftMark = 0x200F;

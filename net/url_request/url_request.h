@@ -30,7 +30,6 @@
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request_status.h"
 
-class FilePath;
 // Temporary layering violation to allow existing users of a deprecated
 // interface.
 class ChildProcessSecurityPolicyTest;

@@ -19,7 +19,7 @@ namespace npapi {
 
 namespace {
 
-void GetPluginCommonDirectory(std::vector<FilePath>* plugin_dirs,
+void GetPluginCommonDirectory(std::vector<base::FilePath>* plugin_dirs,
                               bool user) {
   // Note that there are no NSSearchPathDirectory constants for these
   // directories so we can't use Cocoa's NSSearchPathForDirectoriesInDomains().
@@ -32,7 +32,7 @@ void GetPluginCommonDirectory(std::vector<FilePath>* plugin_dirs,
   if (err)
     return;
 
-  plugin_dirs->push_back(FilePath(base::mac::PathFromFSRef(ref)));
+  plugin_dirs->push_back(base::FilePath(base::mac::PathFromFSRef(ref)));
 }
 
 // Returns true if the plugin should be prevented from loading.
@@ -68,7 +68,7 @@ bool IsBlacklistedPlugin(const WebPluginInfo& info) {
 void PluginList::PlatformInit() {
 }
 
-void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
+void PluginList::GetPluginDirectories(std::vector<base::FilePath>* plugin_dirs) {
   // Load from the user's area
   GetPluginCommonDirectory(plugin_dirs, true);
 
@@ -77,11 +77,11 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
 }
 
 void PluginList::GetPluginsInDir(
-    const FilePath& path, std::vector<FilePath>* plugins) {
+    const base::FilePath& path, std::vector<base::FilePath>* plugins) {
   file_util::FileEnumerator enumerator(path,
                                        false, // not recursive
                                        file_util::FileEnumerator::DIRECTORIES);
-  for (FilePath path = enumerator.Next(); !path.value().empty();
+  for (base::FilePath path = enumerator.Next(); !path.value().empty();
        path = enumerator.Next()) {
     plugins->push_back(path);
   }

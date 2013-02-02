@@ -33,7 +33,7 @@ class SandboxQuotaObserver
     : public FileUpdateObserver,
       public FileAccessObserver {
  public:
-  typedef std::map<FilePath, int64> PendingUpdateNotificationMap;
+  typedef std::map<base::FilePath, int64> PendingUpdateNotificationMap;
 
   SandboxQuotaObserver(
       quota::QuotaManagerProxy* quota_manager_proxy,
@@ -51,9 +51,9 @@ class SandboxQuotaObserver
 
  private:
   void ApplyPendingUsageUpdate();
-  void UpdateUsageCacheFile(const FilePath& usage_file_path, int64 delta);
+  void UpdateUsageCacheFile(const base::FilePath& usage_file_path, int64 delta);
 
-  FilePath GetUsageCachePath(const FileSystemURL& url);
+  base::FilePath GetUsageCachePath(const FileSystemURL& url);
 
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<base::SequencedTaskRunner> update_notify_runner_;

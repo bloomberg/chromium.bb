@@ -13,8 +13,11 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
-class FilePath;
 class Profile;
+
+namespace base {
+class FilePath;
+}
 
 namespace chromeos {
 
@@ -31,7 +34,7 @@ class EnterpriseExtensionObserver
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  static void CheckExtensionAndNotifyEntd(const FilePath& path);
+  static void CheckExtensionAndNotifyEntd(const base::FilePath& path);
   static void NotifyEntd();
 
   Profile* profile_;

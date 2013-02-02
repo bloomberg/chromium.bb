@@ -21,20 +21,20 @@ namespace {
 // A helper class to delete a temporary file.
 class ScopedFileDeleter {
  public:
-  explicit ScopedFileDeleter(const FilePath& path) : path_(path) {}
+  explicit ScopedFileDeleter(const base::FilePath& path) : path_(path) {}
   ~ScopedFileDeleter() {
     file_util::Delete(path_, false /* recursive */);
   }
 
  private:
-  FilePath path_;
+  base::FilePath path_;
 };
 
 bool IsInRoot(const FileSystemURL& url) {
   // If path is in the root, path.DirName() will be ".",
   // since we use paths with no leading '/'.
-  FilePath parent = url.path().DirName();
-  return parent.empty() || parent == FilePath(FILE_PATH_LITERAL("."));
+  base::FilePath parent = url.path().DirName();
+  return parent.empty() || parent == base::FilePath(FILE_PATH_LITERAL("."));
 }
 
 // A helper class for cross-FileUtil Copy/Move operations.
@@ -160,7 +160,7 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveDirectory(
   // Store modified timestamp of the root directory.
   if (operation_ == OPERATION_MOVE) {
     base::PlatformFileInfo file_info;
-    FilePath platform_file_path;
+    base::FilePath platform_file_path;
     error = src_util_->GetFileInfo(
         context_, src_url, &file_info, &platform_file_path);
     if (error != base::PLATFORM_FILE_OK)
@@ -173,9 +173,9 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveDirectory(
       src_util_->CreateFileEnumerator(context_,
                                       src_url,
                                       true /* recursive */));
-  FilePath src_file_path_each;
+  base::FilePath src_file_path_each;
   while (!(src_file_path_each = file_enum->Next()).empty()) {
-    FilePath dest_file_path_each(dest_url.path());
+    base::FilePath dest_file_path_each(dest_url.path());
     src_url.path().AppendRelativePath(
         src_file_path_each, &dest_file_path_each);
 
@@ -229,7 +229,7 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveFile(
 
   // Resolve the src_url's underlying file path.
   base::PlatformFileInfo file_info;
-  FilePath platform_file_path;
+  base::FilePath platform_file_path;
   SnapshotFilePolicy snapshot_policy;
 
   PlatformFileError error = src_util_->CreateSnapshotFile(
@@ -265,7 +265,7 @@ bool FileUtilHelper::DirectoryExists(FileSystemOperationContext* context,
     return true;
 
   base::PlatformFileInfo file_info;
-  FilePath platform_path;
+  base::FilePath platform_path;
   PlatformFileError error = file_util->GetFileInfo(
       context, url, &file_info, &platform_path);
   return error == base::PLATFORM_FILE_OK && file_info.is_directory;
@@ -320,7 +320,7 @@ base::PlatformFileError FileUtilHelper::ReadDirectory(
   DCHECK(entries);
 
   base::PlatformFileInfo file_info;
-  FilePath platform_path;
+  base::FilePath platform_path;
   PlatformFileError error = file_util->GetFileInfo(
       context, url, &file_info, &platform_path);
   if (error != base::PLATFORM_FILE_OK)
@@ -331,7 +331,7 @@ base::PlatformFileError FileUtilHelper::ReadDirectory(
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
       file_util->CreateFileEnumerator(context, url, false /* recursive */));
 
-  FilePath current;
+  base::FilePath current;
   while (!(current = file_enum->Next()).empty()) {
     base::FileUtilProxy::Entry entry;
     entry.is_directory = file_enum->IsDirectory();
@@ -351,8 +351,8 @@ base::PlatformFileError FileUtilHelper::DeleteDirectoryRecursive(
 
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
       file_util->CreateFileEnumerator(context, url, true /* recursive */));
-  FilePath file_path_each;
-  std::stack<FilePath> directories;
+  base::FilePath file_path_each;
+  std::stack<base::FilePath> directories;
   while (!(file_path_each = file_enum->Next()).empty()) {
     if (file_enum->IsDirectory()) {
       directories.push(file_path_each);

@@ -18,7 +18,9 @@
 #include "chrome/browser/media_gallery/win/mtp_device_object_entry.h"
 #include "webkit/fileapi/file_system_file_util.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace chrome {
 
@@ -40,7 +42,7 @@ class RecursiveMTPDeviceObjectEnumerator
   virtual ~RecursiveMTPDeviceObjectEnumerator();
 
   // AbstractFileEnumerator:
-  virtual FilePath Next() OVERRIDE;
+  virtual base::FilePath Next() OVERRIDE;
   virtual int64 Size() OVERRIDE;
   virtual bool IsDirectory() OVERRIDE;
   virtual base::Time LastModifiedTime() OVERRIDE;

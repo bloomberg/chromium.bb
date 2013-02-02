@@ -35,7 +35,8 @@ class MockPluginDelegate : public PluginDelegate {
   virtual scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
       CreateResourceCreationAPI(PluginInstance* instance);
   virtual SkBitmap* GetSadPluginBitmap();
-  virtual WebKit::WebPlugin* CreatePluginReplacement(const FilePath& file_path);
+  virtual WebKit::WebPlugin* CreatePluginReplacement(
+      const base::FilePath& file_path);
   virtual PlatformImage2D* CreateImage2D(int width, int height);
   virtual PlatformGraphics2D* GetGraphics2D(PluginInstance* instance,
                                             PP_Resource graphics_2d);
@@ -63,7 +64,7 @@ class MockPluginDelegate : public PluginDelegate {
                                           int total,
                                           bool final_result);
   virtual void SelectedFindResultChanged(int identifier, int index);
-  virtual bool AsyncOpenFile(const FilePath& path,
+  virtual bool AsyncOpenFile(const base::FilePath& path,
                              int flags,
                              const AsyncOpenFileCallback& callback);
   virtual bool AsyncOpenFileSystemURL(
@@ -102,7 +103,7 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void WillUpdateFile(const GURL& file_path);
   virtual void DidUpdateFile(const GURL& file_path, int64_t delta);
   virtual void SyncGetFileSystemPlatformPath(const GURL& url,
-                                             FilePath* platform_path);
+                                             base::FilePath* platform_path);
   virtual scoped_refptr<base::MessageLoopProxy>
       GetFileThreadMessageLoopProxy();
   virtual uint32 TCPSocketCreate();

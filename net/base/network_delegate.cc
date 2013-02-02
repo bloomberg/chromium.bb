@@ -108,7 +108,7 @@ bool NetworkDelegate::CanGetCookies(const URLRequest& request,
 }
 
 bool NetworkDelegate::CanAccessFile(const URLRequest& request,
-                                    const FilePath& path) const {
+                                    const base::FilePath& path) const {
   DCHECK(CalledOnValidThread());
   return OnCanAccessFile(request, path);
 }

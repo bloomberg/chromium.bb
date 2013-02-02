@@ -13,7 +13,9 @@
 #include "chrome/browser/extensions/api/storage/settings_storage_quota_enforcer.h"
 #include "chrome/browser/extensions/api/storage/value_store_cache.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace extensions {
 
@@ -30,7 +32,7 @@ class SyncOrLocalValueStoreCache : public ValueStoreCache {
       const scoped_refptr<SettingsStorageFactory>& factory,
       const SettingsStorageQuotaEnforcer::Limits& quota,
       const scoped_refptr<SettingsObserverList>& observers,
-      const FilePath& profile_path);
+      const base::FilePath& profile_path);
   virtual ~SyncOrLocalValueStoreCache();
 
   SettingsBackend* GetAppBackend() const;
@@ -48,7 +50,7 @@ class SyncOrLocalValueStoreCache : public ValueStoreCache {
   void InitOnFileThread(const scoped_refptr<SettingsStorageFactory>& factory,
                         const SettingsStorageQuotaEnforcer::Limits& quota,
                         const scoped_refptr<SettingsObserverList>& observers,
-                        const FilePath& profile_path);
+                        const base::FilePath& profile_path);
 
   settings_namespace::Namespace settings_namespace_;
   scoped_ptr<SettingsBackend> app_backend_;

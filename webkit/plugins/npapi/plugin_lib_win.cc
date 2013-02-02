@@ -15,7 +15,7 @@
 namespace webkit {
 namespace npapi {
 
-bool PluginLib::ReadWebPluginInfo(const FilePath &filename,
+bool PluginLib::ReadWebPluginInfo(const base::FilePath &filename,
                                   WebPluginInfo* info) {
   // On windows, the way we get the mime types for the library is
   // to check the version information in the DLL itself.  This

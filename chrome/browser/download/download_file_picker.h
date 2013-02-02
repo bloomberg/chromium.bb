@@ -8,7 +8,9 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace content {
 class DownloadItem;
@@ -24,7 +26,7 @@ class DownloadFilePicker : public ui::SelectFileDialog::Listener {
 
   void Init(content::DownloadManager* download_manager,
             content::DownloadItem* item,
-            const FilePath& suggested_path,
+            const base::FilePath& suggested_path,
             const ChromeDownloadManagerDelegate::FileSelectedCallback&
                 callback);
 
@@ -33,28 +35,28 @@ class DownloadFilePicker : public ui::SelectFileDialog::Listener {
   // method should be overridden to set the correct suggested path to prompt the
   // user.
   virtual void InitSuggestedPath(content::DownloadItem* item,
-                                 const FilePath& suggested_path);
+                                 const base::FilePath& suggested_path);
 
-  void set_suggested_path(const FilePath& suggested_path) {
+  void set_suggested_path(const base::FilePath& suggested_path) {
     suggested_path_ = suggested_path;
   }
 
   // Runs |file_selected_callback_| with |path| and then deletes this object.
-  void OnFileSelected(const FilePath& path);
+  void OnFileSelected(const base::FilePath& path);
 
-  void RecordFileSelected(const FilePath& path);
+  void RecordFileSelected(const base::FilePath& path);
 
   scoped_refptr<content::DownloadManager> download_manager_;
   int32 download_id_;
 
  private:
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
-  FilePath suggested_path_;
+  base::FilePath suggested_path_;
 
   ChromeDownloadManagerDelegate::FileSelectedCallback file_selected_callback_;
 

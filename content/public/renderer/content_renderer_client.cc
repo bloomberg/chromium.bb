@@ -28,7 +28,7 @@ bool ContentRendererClient::OverrideCreatePlugin(
 
 WebKit::WebPlugin* ContentRendererClient::CreatePluginReplacement(
     RenderView* render_view,
-    const FilePath& plugin_path) {
+    const base::FilePath& plugin_path) {
   return NULL;
 }
 

@@ -17,7 +17,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgentClient.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace WebKit {
 class WebApplicationCacheHost;
@@ -56,7 +58,7 @@ namespace webkit_support {
 // webkit-in-chromium build, this is the root directory of the checkout. In a
 // standalone webkit build, it is Source/WebKit/chromium relative from the
 // checkout's root directory.
-FilePath GetChromiumRootDirFilePath();
+base::FilePath GetChromiumRootDirFilePath();
 
 // Initializes or terminates a test environment.
 // |unit_test_mode| should be set to true when running in a TestSuite, in which

@@ -19,7 +19,6 @@
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
 #include "chrome/browser/system_monitor/removable_storage_observer.h"
 
-class FilePath;
 class Profile;
 
 namespace base {

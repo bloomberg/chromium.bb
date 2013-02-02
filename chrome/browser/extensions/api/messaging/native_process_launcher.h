@@ -8,7 +8,9 @@
 #include "base/process.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace extensions {
 
@@ -35,7 +37,7 @@ class NativeProcessLauncher {
 
  protected:
   static bool LaunchNativeProcess(
-      const FilePath& path,
+      const base::FilePath& path,
       base::ProcessHandle* native_process_handle,
       base::PlatformFile* read_file,
       base::PlatformFile* write_file);

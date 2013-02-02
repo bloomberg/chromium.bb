@@ -17,9 +17,8 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
-class FilePath;
-
 namespace base {
+class FilePath;
 class ListValue;
 }
 
@@ -274,10 +273,10 @@ class BookmarksIOFunction : public BookmarksFunction,
  public:
   BookmarksIOFunction();
 
-  virtual void FileSelected(const FilePath& path, int index, void* params) = 0;
+  virtual void FileSelected(const base::FilePath& path, int index, void* params) = 0;
 
   // ui::SelectFileDialog::Listener:
-  virtual void MultiFilesSelected(const std::vector<FilePath>& files,
+  virtual void MultiFilesSelected(const std::vector<base::FilePath>& files,
                                   void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
@@ -289,7 +288,7 @@ class BookmarksIOFunction : public BookmarksFunction,
  private:
   void ShowSelectFileDialog(
       ui::SelectFileDialog::Type type,
-      const FilePath& default_path);
+      const base::FilePath& default_path);
 
  protected:
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
@@ -300,7 +299,7 @@ class BookmarksImportFunction : public BookmarksIOFunction {
   DECLARE_EXTENSION_FUNCTION("bookmarks.import", BOOKMARKS_IMPORT)
 
   // BookmarkManagerIOFunction:
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE;
 
@@ -316,7 +315,7 @@ class BookmarksExportFunction : public BookmarksIOFunction {
   DECLARE_EXTENSION_FUNCTION("bookmarks.export", BOOKMARKS_EXPORT)
 
   // BookmarkManagerIOFunction:
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE;
 

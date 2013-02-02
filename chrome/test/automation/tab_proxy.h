@@ -27,13 +27,14 @@
 #include "ui/base/window_open_disposition.h"
 
 class BrowserProxy;
-class FilePath;
 class GURL;
+
 namespace IPC {
 class Message;
 }
 
 namespace base {
+class FilePath;
 class Value;
 }
 
@@ -203,7 +204,7 @@ class TabProxy : public AutomationResourceProxy {
 
   // Captures the entire page and saves as a PNG at the given path. Returns
   // true on success.
-  bool CaptureEntirePageAsPNG(const FilePath& path) WARN_UNUSED_RESULT;
+  bool CaptureEntirePageAsPNG(const base::FilePath& path) WARN_UNUSED_RESULT;
 
 #if defined(OS_WIN)
   // Resizes the tab window.

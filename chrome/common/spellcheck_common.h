@@ -8,7 +8,9 @@
 #include <string>
 #include <vector>
 
+namespace base {
 class FilePath;
+}
 
 namespace chrome {
 namespace spellcheck_common {
@@ -28,8 +30,8 @@ static const size_t MAX_CUSTOM_DICTIONARY_WORD_BYTES = 99;
 
 typedef std::vector<std::string> WordList;
 
-FilePath GetVersionedFileName(const std::string& input_language,
-                              const FilePath& dict_dir);
+base::FilePath GetVersionedFileName(const std::string& input_language,
+                                    const base::FilePath& dict_dir);
 
 std::string GetCorrespondingSpellCheckLanguage(const std::string& language);
 

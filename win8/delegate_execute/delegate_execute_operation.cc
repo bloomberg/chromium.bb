@@ -20,7 +20,8 @@ DelegateExecuteOperation::~DelegateExecuteOperation() {
 }
 
 bool DelegateExecuteOperation::Init(const CommandLine* cmd_line) {
-  FilePath shortcut(cmd_line->GetSwitchValuePath(switches::kRelaunchShortcut));
+  base::FilePath shortcut(
+      cmd_line->GetSwitchValuePath(switches::kRelaunchShortcut));
   if (shortcut.empty()) {
     operation_type_ = DELEGATE_EXECUTE;
     return true;

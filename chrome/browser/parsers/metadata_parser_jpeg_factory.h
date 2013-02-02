@@ -9,17 +9,19 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/parsers/metadata_parser_factory.h"
 
+namespace base {
 class FilePath;
+}
 
 class MetadataParserJpegFactory : public MetadataParserFactory {
  public:
   MetadataParserJpegFactory();
 
   // Implementation of MetadataParserFactory
-  virtual bool CanParse(const FilePath& path,
+  virtual bool CanParse(const base::FilePath& path,
                         char* bytes,
                         int bytes_size) OVERRIDE;
-  virtual MetadataParser* CreateParser(const FilePath& path) OVERRIDE;
+  virtual MetadataParser* CreateParser(const base::FilePath& path) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MetadataParserJpegFactory);

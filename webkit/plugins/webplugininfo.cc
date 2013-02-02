@@ -51,7 +51,7 @@ WebPluginInfo& WebPluginInfo::operator=(const WebPluginInfo& rhs) {
 }
 
 WebPluginInfo::WebPluginInfo(const string16& fake_name,
-                             const FilePath& fake_path,
+                             const base::FilePath& fake_path,
                              const string16& fake_version,
                              const string16& fake_desc)
     : name(fake_name),

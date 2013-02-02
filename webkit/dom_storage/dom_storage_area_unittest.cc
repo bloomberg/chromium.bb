@@ -126,13 +126,13 @@ TEST_F(DomStorageAreaTest, BackingDatabaseOpened) {
   const int64 kSessionStorageNamespaceId = kLocalStorageNamespaceId + 1;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const FilePath kExpectedOriginFilePath = temp_dir.path().Append(
+  const base::FilePath kExpectedOriginFilePath = temp_dir.path().Append(
       DomStorageArea::DatabaseFileNameFromOrigin(kOrigin));
 
   // No directory, backing should be null.
   {
     scoped_refptr<DomStorageArea> area(
-        new DomStorageArea(kOrigin, FilePath(), NULL));
+        new DomStorageArea(kOrigin, base::FilePath(), NULL));
     EXPECT_EQ(NULL, area->backing_.get());
     EXPECT_TRUE(area->is_initial_import_done_);
     EXPECT_FALSE(file_util::PathExists(kExpectedOriginFilePath));
@@ -315,9 +315,9 @@ TEST_F(DomStorageAreaTest, DeleteOrigin) {
           new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
 
   // This test puts files on disk.
-  FilePath db_file_path = static_cast<LocalStorageDatabaseAdapter*>(
+  base::FilePath db_file_path = static_cast<LocalStorageDatabaseAdapter*>(
       area->backing_.get())->db_->file_path();
-  FilePath db_journal_file_path =
+  base::FilePath db_journal_file_path =
       DomStorageDatabase::GetJournalFilePath(db_file_path);
 
   // Nothing bad should happen when invoked w/o any files on disk.
@@ -443,9 +443,9 @@ TEST_F(DomStorageAreaTest, DatabaseFileNames) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kCases); ++i) {
     GURL origin = GURL(kCases[i].origin).GetOrigin();
-    FilePath file_name = FilePath().AppendASCII(kCases[i].file_name);
-    FilePath journal_file_name =
-        FilePath().AppendASCII(kCases[i].journal_file_name);
+    base::FilePath file_name = base::FilePath().AppendASCII(kCases[i].file_name);
+    base::FilePath journal_file_name =
+        base::FilePath().AppendASCII(kCases[i].journal_file_name);
 
     EXPECT_EQ(file_name,
               DomStorageArea::DatabaseFileNameFromOrigin(origin));
@@ -456,17 +456,17 @@ TEST_F(DomStorageAreaTest, DatabaseFileNames) {
   }
 
   // Also test some DomStorageDatabase::GetJournalFilePath cases here.
-  FilePath parent = FilePath().AppendASCII("a").AppendASCII("b");
+  base::FilePath parent = base::FilePath().AppendASCII("a").AppendASCII("b");
   EXPECT_EQ(
       parent.AppendASCII("file-journal"),
       DomStorageDatabase::GetJournalFilePath(parent.AppendASCII("file")));
   EXPECT_EQ(
-      FilePath().AppendASCII("-journal"),
-      DomStorageDatabase::GetJournalFilePath(FilePath()));
+      base::FilePath().AppendASCII("-journal"),
+      DomStorageDatabase::GetJournalFilePath(base::FilePath()));
   EXPECT_EQ(
-      FilePath().AppendASCII(".extensiononly-journal"),
+      base::FilePath().AppendASCII(".extensiononly-journal"),
       DomStorageDatabase::GetJournalFilePath(
-          FilePath().AppendASCII(".extensiononly")));
+          base::FilePath().AppendASCII(".extensiononly")));
 }
 
 }  // namespace dom_storage

@@ -177,7 +177,7 @@ AppCacheDatabase::NamespaceRecord::~NamespaceRecord() {
 }
 
 
-AppCacheDatabase::AppCacheDatabase(const FilePath& path)
+AppCacheDatabase::AppCacheDatabase(const base::FilePath& path)
     : db_file_path_(path), is_disabled_(false), is_recreating_(false) {
 }
 
@@ -1103,7 +1103,7 @@ bool AppCacheDatabase::DeleteExistingAndCreateNewDatabase() {
   ResetConnectionAndTables();
 
   // This also deletes the disk cache data.
-  FilePath directory = db_file_path_.DirName();
+  base::FilePath directory = db_file_path_.DirName();
   if (!file_util::Delete(directory, true) ||
       !file_util::CreateDirectory(directory)) {
     return false;

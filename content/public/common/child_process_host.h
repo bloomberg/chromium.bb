@@ -9,7 +9,9 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace content {
 
@@ -71,7 +73,7 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // if none of these special behaviors are required.
   //
   // On failure, returns an empty FilePath.
-  static FilePath GetChildPath(int flags);
+  static base::FilePath GetChildPath(int flags);
 
   // Send the shutdown message to the child process.
   // Does not check with the delegate's CanShutdown.

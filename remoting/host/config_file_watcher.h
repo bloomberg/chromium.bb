@@ -17,7 +17,7 @@ class SingleThreadTaskRunner;
 namespace remoting {
 
 extern const char kHostConfigSwitchName[];
-extern const FilePath::CharType kDefaultHostConfigFile[];
+extern const base::FilePath::CharType kDefaultHostConfigFile[];
 
 class ConfigFileWatcherImpl;
 
@@ -44,7 +44,7 @@ class ConfigFileWatcher {
   virtual ~ConfigFileWatcher();
 
   // Starts watching |config_path|.
-  void Watch(const FilePath& config_path);
+  void Watch(const base::FilePath& config_path);
 
  private:
   scoped_refptr<ConfigFileWatcherImpl> impl_;

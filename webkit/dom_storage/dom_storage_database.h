@@ -22,9 +22,9 @@ namespace dom_storage {
 // class is designed to be used on a single thread.
 class WEBKIT_STORAGE_EXPORT DomStorageDatabase {
  public:
-  static FilePath GetJournalFilePath(const FilePath& database_path);
+  static base::FilePath GetJournalFilePath(const base::FilePath& database_path);
 
-  explicit DomStorageDatabase(const FilePath& file_path);
+  explicit DomStorageDatabase(const base::FilePath& file_path);
   virtual ~DomStorageDatabase();  // virtual for unit testing
 
   // Reads all the key, value pairs stored in the database and returns
@@ -41,7 +41,7 @@ class WEBKIT_STORAGE_EXPORT DomStorageDatabase {
   bool CommitChanges(bool clear_all_first, const ValuesMap& changes);
 
   // Simple getter for the path we were constructed with.
-  const FilePath& file_path() const { return file_path_; }
+  const base::FilePath& file_path() const { return file_path_; }
 
  protected:
   // Constructor that uses an in-memory sqlite database, for testing.
@@ -107,7 +107,7 @@ class WEBKIT_STORAGE_EXPORT DomStorageDatabase {
   void Init();
 
   // Path to the database on disk.
-  const FilePath file_path_;
+  const base::FilePath file_path_;
   scoped_ptr<sql::Connection> db_;
   bool failed_to_open_;
   bool tried_to_recreate_;

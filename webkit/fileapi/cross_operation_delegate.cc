@@ -169,7 +169,7 @@ void CrossOperationDelegate::DidCreateSnapshot(
     const StatusCallback& callback,
     base::PlatformFileError error,
     const base::PlatformFileInfo& file_info,
-    const FilePath& platform_path,
+    const base::FilePath& platform_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   if (error != base::PLATFORM_FILE_OK) {
     callback.Run(error);
@@ -222,7 +222,7 @@ FileSystemURL CrossOperationDelegate::CreateDestURL(
   DCHECK_EQ(src_root_.type(), src_url.type());
   DCHECK_EQ(src_root_.origin(), src_url.origin());
 
-  FilePath path = dest_root_.path();
+  base::FilePath path = dest_root_.path();
   src_root_.path().AppendRelativePath(src_url.path(), &path);
   return dest_root_.WithPath(path);
 }

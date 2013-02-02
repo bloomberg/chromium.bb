@@ -8,10 +8,9 @@
 #include "base/basictypes.h"
 #include "content/public/common/process_type.h"
 
-class FilePath;
-
 namespace base {
 class DictionaryValue;
+class FilePath;
 }
 
 namespace tracked_objects {
@@ -31,7 +30,7 @@ class TaskProfilerDataSerializer {
                       content::ProcessType process_type,
                       base::DictionaryValue* dictionary);
 
-  bool WriteToFile(const FilePath& path);
+  bool WriteToFile(const base::FilePath& path);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TaskProfilerDataSerializer);

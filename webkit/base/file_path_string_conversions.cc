@@ -10,7 +10,8 @@
 
 namespace webkit_base {
 
-FilePath::StringType WebStringToFilePathString(const WebKit::WebString& str) {
+base::FilePath::StringType WebStringToFilePathString(
+    const WebKit::WebString& str) {
 #if defined(OS_POSIX)
   return base::SysWideToNativeMB(UTF16ToWideHack(str));
 #elif defined(OS_WIN)
@@ -18,7 +19,8 @@ FilePath::StringType WebStringToFilePathString(const WebKit::WebString& str) {
 #endif
 }
 
-WebKit::WebString FilePathStringToWebString(const FilePath::StringType& str) {
+WebKit::WebString FilePathStringToWebString(
+    const base::FilePath::StringType& str) {
 #if defined(OS_POSIX)
   return WideToUTF16Hack(base::SysNativeMBToWide(str));
 #elif defined(OS_WIN)
@@ -26,11 +28,11 @@ WebKit::WebString FilePathStringToWebString(const FilePath::StringType& str) {
 #endif
 }
 
-FilePath WebStringToFilePath(const WebKit::WebString& str) {
-  return FilePath(WebStringToFilePathString(str));
+base::FilePath WebStringToFilePath(const WebKit::WebString& str) {
+  return base::FilePath(WebStringToFilePathString(str));
 }
 
-WebKit::WebString FilePathToWebString(const FilePath& file_path) {
+WebKit::WebString FilePathToWebString(const base::FilePath& file_path) {
   return FilePathStringToWebString(file_path.value());
 }
 

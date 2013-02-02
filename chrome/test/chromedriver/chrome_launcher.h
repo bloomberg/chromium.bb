@@ -8,8 +8,11 @@
 #include "base/memory/scoped_ptr.h"
 
 class Chrome;
-class FilePath;
 class Status;
+
+namespace base {
+class FilePath;
+}
 
 // Launches Chrome. Must be thread safe.
 class ChromeLauncher {
@@ -18,7 +21,7 @@ class ChromeLauncher {
 
   // Launches Chrome found at the given path. If the path
   // is empty, the default Chrome binary is to be used.
-  virtual Status Launch(const FilePath& chrome_exe,
+  virtual Status Launch(const base::FilePath& chrome_exe,
                         scoped_ptr<Chrome>* chrome) = 0;
 };
 

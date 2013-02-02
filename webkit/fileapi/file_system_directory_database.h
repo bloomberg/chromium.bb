@@ -47,8 +47,8 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemDirectoryDatabase {
     }
 
     FileId parent_id;
-    FilePath data_path;
-    FilePath::StringType name;
+    base::FilePath data_path;
+    base::FilePath::StringType name;
     // This modification time is valid only for directories, not files, as
     // FileWriter will get the files out of sync.
     // For files, look at the modification time of the underlying data_path.
@@ -56,12 +56,12 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemDirectoryDatabase {
   };
 
   explicit FileSystemDirectoryDatabase(
-      const FilePath& filesystem_data_directory);
+      const base::FilePath& filesystem_data_directory);
   ~FileSystemDirectoryDatabase();
 
   bool GetChildWithName(
-      FileId parent_id, const FilePath::StringType& name, FileId* child_id);
-  bool GetFileWithPath(const FilePath& path, FileId* file_id);
+      FileId parent_id, const base::FilePath::StringType& name, FileId* child_id);
+  bool GetFileWithPath(const base::FilePath& path, FileId* file_id);
   // ListChildren will succeed, returning 0 children, if parent_id doesn't
   // exist.
   bool ListChildren(FileId parent_id, std::vector<FileId>* children);
@@ -88,7 +88,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemDirectoryDatabase {
   // Returns true if the database looks consistent with local filesystem.
   bool IsFileSystemConsistent();
 
-  static bool DestroyDatabase(const FilePath& path);
+  static bool DestroyDatabase(const base::FilePath& path);
 
  private:
   enum RecoveryOption {
@@ -111,7 +111,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemDirectoryDatabase {
   void HandleError(const tracked_objects::Location& from_here,
                    const leveldb::Status& status);
 
-  const FilePath filesystem_data_directory_;
+  const base::FilePath filesystem_data_directory_;
   scoped_ptr<leveldb::DB> db_;
   base::Time last_reported_time_;
   DISALLOW_COPY_AND_ASSIGN(FileSystemDirectoryDatabase);

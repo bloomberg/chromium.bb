@@ -15,7 +15,10 @@
 #include "chrome/installer/util/browser_distribution.h"
 
 class CommandLine;
+
+namespace base {
 class FilePath;
+}
 
 namespace installer {
 
@@ -214,7 +217,7 @@ class InstallationValidator {
                                const ProductState& binaries_state,
                                bool* is_valid);
   static void ValidateSetupPath(const ProductContext& ctx,
-                                const FilePath& setup_exe,
+                                const base::FilePath& setup_exe,
                                 const char* purpose,
                                 bool* is_valid);
   static void ValidateCommandExpectations(const ProductContext& ctx,

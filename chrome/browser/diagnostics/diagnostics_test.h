@@ -9,7 +9,9 @@
 #include "base/string16.h"
 #include "chrome/browser/diagnostics/diagnostics_model.h"
 
+namespace base {
 class FilePath;
+}
 
 // Represents a single diagnostic test and encapsulates the common
 // functionality across platforms as well.
@@ -55,7 +57,7 @@ class DiagnosticTest : public DiagnosticsModel::TestInfo {
   void RecordOutcome(const string16& additional_info,
                      DiagnosticsModel::TestResult result);
 
-  static FilePath GetUserDefaultProfileDir();
+  static base::FilePath GetUserDefaultProfileDir();
 
  protected:
   // The id needs to be overridden by derived classes and must uniquely

@@ -151,7 +151,7 @@ bool UpdateModifiedTimeOnDBThread(const GURL& origin,
   return database->SetOriginLastModifiedTime(origin, type, modified_time);
 }
 
-int64 CallSystemGetAmountOfFreeDiskSpace(const FilePath& profile_path) {
+int64 CallSystemGetAmountOfFreeDiskSpace(const base::FilePath& profile_path) {
   // Ensure the profile path exists.
   if(!file_util::CreateDirectory(profile_path)) {
     LOG(WARNING) << "Create directory failed for path" << profile_path.value();
@@ -876,7 +876,7 @@ class QuotaManager::DumpOriginInfoTableHelper {
 // QuotaManager ---------------------------------------------------------------
 
 QuotaManager::QuotaManager(bool is_incognito,
-                           const FilePath& profile_path,
+                           const base::FilePath& profile_path,
                            base::SingleThreadTaskRunner* io_thread,
                            base::SequencedTaskRunner* db_thread,
                            SpecialStoragePolicy* special_storage_policy)
@@ -1183,7 +1183,7 @@ void QuotaManager::LazyInitialize() {
   }
 
   // Use an empty path to open an in-memory only databse for incognito.
-  database_.reset(new QuotaDatabase(is_incognito_ ? FilePath() :
+  database_.reset(new QuotaDatabase(is_incognito_ ? base::FilePath() :
       profile_path_.AppendASCII(kDatabaseName)));
 
   temporary_usage_tracker_.reset(

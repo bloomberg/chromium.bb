@@ -39,7 +39,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileStreamReader : public FileStreamReader {
   // it does any succeeding read operations should fail with
   // ERR_UPLOAD_FILE_CHANGED error.
   LocalFileStreamReader(base::TaskRunner* task_runner,
-                        const FilePath& file_path,
+                        const base::FilePath& file_path,
                         int64 initial_offset,
                    const base::Time& expected_modification_time);
   virtual ~LocalFileStreamReader();
@@ -71,7 +71,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileStreamReader : public FileStreamReader {
 
   scoped_refptr<base::TaskRunner> task_runner_;
   scoped_ptr<net::FileStream> stream_impl_;
-  const FilePath file_path_;
+  const base::FilePath file_path_;
   const int64 initial_offset_;
   const base::Time expected_modification_time_;
   bool has_pending_open_;

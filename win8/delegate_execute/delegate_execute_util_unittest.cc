@@ -36,7 +36,7 @@ TEST(DelegateExecuteUtil, CommandLineFromParametersTest) {
 TEST(DelegateExecuteUtil, MakeChromeCommandLineTest) {
   static const wchar_t kSomeArgument[] = L"http://some.url/";
   static const wchar_t kOtherArgument[] = L"http://some.other.url/";
-  const FilePath this_exe(CommandLine::ForCurrentProcess()->GetProgram());
+  const base::FilePath this_exe(CommandLine::ForCurrentProcess()->GetProgram());
 
   CommandLine cl(CommandLine::NO_PROGRAM);
 

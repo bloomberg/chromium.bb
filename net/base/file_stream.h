@@ -16,7 +16,9 @@
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace net {
 
@@ -54,7 +56,7 @@ class NET_EXPORT FileStream {
   // automatically closed when FileStream is destructed in an asynchronous
   // manner (i.e. the file stream is closed in the background but you don't
   // know when).
-  virtual int Open(const FilePath& path, int open_flags,
+  virtual int Open(const base::FilePath& path, int open_flags,
                    const CompletionCallback& callback);
 
   // Call this method to open the FileStream synchronously.
@@ -64,7 +66,7 @@ class NET_EXPORT FileStream {
   //
   // If the file stream is not closed manually, the underlying file will be
   // automatically closed when FileStream is destructed.
-  virtual int OpenSync(const FilePath& path, int open_flags);
+  virtual int OpenSync(const base::FilePath& path, int open_flags);
 
   // Returns true if Open succeeded and Close has not been called.
   virtual bool IsOpen() const;

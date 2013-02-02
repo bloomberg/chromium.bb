@@ -29,11 +29,14 @@
 class AppModalDialog;
 class BookmarkModel;
 class Browser;
-class FilePath;
 class LocationBar;
 class Profile;
 class SkBitmap;
 class TemplateURLService;
+
+namespace base {
+class FilePath;
+}
 
 namespace chrome {
 struct NavigateParams;
@@ -107,17 +110,18 @@ void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
 // Generate the file path for testing a particular test.
 // The file for the tests is all located in
 // test_root_directory/dir/<file>
-// The returned path is FilePath format.
-FilePath GetTestFilePath(const FilePath& dir, const FilePath& file);
+// The returned path is base::FilePath format.
+base::FilePath GetTestFilePath(const base::FilePath& dir,
+                               const base::FilePath& file);
 
 // Generate the URL for testing a particular test.
 // HTML for the tests is all located in
 // test_root_directory/dir/<file>
 // The returned path is GURL format.
-GURL GetTestUrl(const FilePath& dir, const FilePath& file);
+GURL GetTestUrl(const base::FilePath& dir, const base::FilePath& file);
 
 // Generate the path of the build directory, relative to the source root.
-bool GetRelativeBuildDirectory(FilePath* build_dir);
+bool GetRelativeBuildDirectory(base::FilePath* build_dir);
 
 // Blocks until an application modal dialog is showns and returns it.
 AppModalDialog* WaitForAppModalDialog();
@@ -275,12 +279,12 @@ bool TakeEntirePageSnapshot(content::RenderViewHost* rvh,
 // Saves a snapshot of the entire screen to a file named
 // ChromiumSnapshotYYYYMMDDHHMMSS.png to |directory|, returning true on success.
 // The path to the file produced is returned in |screenshot_path| if non-NULL.
-bool SaveScreenSnapshotToDirectory(const FilePath& directory,
-                                   FilePath* screenshot_path);
+bool SaveScreenSnapshotToDirectory(const base::FilePath& directory,
+                                   base::FilePath* screenshot_path);
 
 // Saves a snapshot of the entire screen as above to the current user's desktop.
 // The Chrome path provider must be registered prior to calling this function.
-bool SaveScreenSnapshotToDesktop(FilePath* screenshot_path);
+bool SaveScreenSnapshotToDesktop(base::FilePath* screenshot_path);
 #endif
 
 // Configures the geolocation provider to always return the given position.

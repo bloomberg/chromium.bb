@@ -9,11 +9,8 @@
 #include "base/basictypes.h"
 #include "crypto/crypto_export.h"
 
-#if defined(USE_NSS)
-class FilePath;
-#endif  // defined(USE_NSS)
-
 namespace base {
+class FilePath;
 class Lock;
 class Time;
 }  // namespace base

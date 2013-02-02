@@ -39,9 +39,9 @@ const TestCaseRecord kRegularTestCases[] = {
 
 const size_t kRegularTestCaseSize = arraysize(kRegularTestCases);
 
-void SetUpOneTestCase(const FilePath& root_path,
+void SetUpOneTestCase(const base::FilePath& root_path,
                       const TestCaseRecord& test_case) {
-  FilePath path = root_path.Append(test_case.path);
+  base::FilePath path = root_path.Append(test_case.path);
   if (test_case.is_directory) {
     ASSERT_TRUE(file_util::CreateDirectory(path));
     return;
@@ -64,7 +64,7 @@ void SetUpOneTestCase(const FilePath& root_path,
 }
 
 
-void SetUpRegularTestCases(const FilePath& root_path) {
+void SetUpRegularTestCases(const base::FilePath& root_path) {
   for (size_t i = 0; i < arraysize(kRegularTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Creating kRegularTestCases " << i);
     SetUpOneTestCase(root_path, kRegularTestCases[i]);

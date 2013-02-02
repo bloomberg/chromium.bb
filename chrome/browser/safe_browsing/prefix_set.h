@@ -53,7 +53,9 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace safe_browsing {
 
@@ -66,8 +68,8 @@ class PrefixSet {
   bool Exists(SBPrefix prefix) const;
 
   // Persist the set on disk.
-  static PrefixSet* LoadFile(const FilePath& filter_name);
-  bool WriteFile(const FilePath& filter_name) const;
+  static PrefixSet* LoadFile(const base::FilePath& filter_name);
+  bool WriteFile(const base::FilePath& filter_name) const;
 
   // Regenerate the vector of prefixes passed to the constructor into
   // |prefixes|.  Prefixes will be added in sorted order.

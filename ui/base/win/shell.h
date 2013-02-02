@@ -10,7 +10,9 @@
 #include "base/string16.h"
 #include "ui/base/ui_export.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace ui {
 namespace win {
@@ -18,12 +20,12 @@ namespace win {
 // default application registered for the file specified by 'full_path',
 // ask the user, via the Windows "Open With" dialog.
 // Returns 'true' on successful open, 'false' otherwise.
-UI_EXPORT bool OpenItemViaShell(const FilePath& full_path);
+UI_EXPORT bool OpenItemViaShell(const base::FilePath& full_path);
 
 // The download manager now writes the alternate data stream with the
 // zone on all downloads. This function is equivalent to OpenItemViaShell
 // without showing the zone warning dialog.
-UI_EXPORT bool OpenItemViaShellNoZoneCheck(const FilePath& full_path);
+UI_EXPORT bool OpenItemViaShellNoZoneCheck(const base::FilePath& full_path);
 
 // Lower level function that allows opening of non-files like urls or GUIDs
 // don't use it if one of the above will do. |mask| is a valid combination

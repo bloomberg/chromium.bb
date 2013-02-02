@@ -36,7 +36,7 @@ MockQuotaManager::StorageInfo::~StorageInfo() {}
 
 MockQuotaManager::MockQuotaManager(
     bool is_incognito,
-    const FilePath& profile_path,
+    const base::FilePath& profile_path,
     base::SingleThreadTaskRunner* io_thread,
     base::SequencedTaskRunner* db_thread,
     SpecialStoragePolicy* special_storage_policy)

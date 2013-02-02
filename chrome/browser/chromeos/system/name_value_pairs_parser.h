@@ -10,7 +10,9 @@
 
 #include "base/basictypes.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace chromeos {
 namespace system {
@@ -36,7 +38,7 @@ class NameValuePairsParser {
   // Parses name-value pairs from the file.
   // Returns false if there was any error in the file. Valid pairs will still be
   // added to the map.
-  bool GetNameValuePairsFromFile(const FilePath& file_path,
+  bool GetNameValuePairsFromFile(const base::FilePath& file_path,
                                  const std::string& eq,
                                  const std::string& delim);
 

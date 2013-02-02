@@ -13,7 +13,10 @@
 #include "ipc/ipc_sender.h"
 
 class CommandLine;
+
+namespace base {
 class FilePath;
+}
 
 namespace content {
 
@@ -36,7 +39,7 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   // Takes ownership of |cmd_line|.
   virtual void Launch(
 #if defined(OS_WIN)
-      const FilePath& exposed_dir,
+      const base::FilePath& exposed_dir,
 #elif defined(OS_POSIX)
       bool use_zygote,
       const base::EnvironmentVector& environ,

@@ -92,7 +92,7 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode,
 
   // Load libraries for media and enable the media player.
   bool enable_media = false;
-  FilePath module_path;
+  base::FilePath module_path;
   if (PathService::Get(base::DIR_MODULE, &module_path)) {
 #if defined(OS_MACOSX)
     if (base::mac::AmIBundled())
@@ -141,7 +141,7 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode,
 
   // Initializing with a default context, which means no on-disk cookie DB,
   // and no support for directory listings.
-  SimpleResourceLoaderBridge::Init(FilePath(), cache_mode, true);
+  SimpleResourceLoaderBridge::Init(base::FilePath(), cache_mode, true);
 
   // Test shell always exposes the GC.
   webkit_glue::SetJavaScriptFlags(" --expose-gc");
@@ -483,7 +483,7 @@ void TestWebKitPlatformSupport::GetPlugins(
   webkit::npapi::PluginList::Singleton()->GetPlugins(plugins);
   // Don't load the forked npapi_layout_test_plugin in DRT, we only want to
   // use the upstream version TestNetscapePlugIn.
-  const FilePath::StringType kPluginBlackList[] = {
+  const base::FilePath::StringType kPluginBlackList[] = {
     FILE_PATH_LITERAL("npapi_layout_test_plugin.dll"),
     FILE_PATH_LITERAL("WebKitTestNetscapePlugIn.plugin"),
     FILE_PATH_LITERAL("libnpapi_layout_test_plugin.so"),
@@ -491,7 +491,7 @@ void TestWebKitPlatformSupport::GetPlugins(
   for (int i = plugins->size() - 1; i >= 0; --i) {
     webkit::WebPluginInfo plugin_info = plugins->at(i);
     for (size_t j = 0; j < arraysize(kPluginBlackList); ++j) {
-      if (plugin_info.path.BaseName() == FilePath(kPluginBlackList[j])) {
+      if (plugin_info.path.BaseName() == base::FilePath(kPluginBlackList[j])) {
         plugins->erase(plugins->begin() + i);
       }
     }
@@ -546,7 +546,7 @@ size_t TestWebKitPlatformSupport::computeLastHyphenLocation(
   if (!hyphen_dictionary_) {
     // Initialize the hyphen library with a sample dictionary. To avoid test
     // flakiness, this code synchronously loads the dictionary.
-    FilePath path = webkit_support::GetChromiumRootDirFilePath();
+    base::FilePath path = webkit_support::GetChromiumRootDirFilePath();
     path = path.Append(FILE_PATH_LITERAL("third_party/hyphen/hyph_en_US.dic"));
     std::string dictionary;
     if (!file_util::ReadFileToString(path, &dictionary))

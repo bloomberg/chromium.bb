@@ -14,7 +14,9 @@
 
 #include "base/basictypes.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace upgrade_test {
 
@@ -25,7 +27,7 @@ class ResourceLoader {
   ~ResourceLoader();
 
   // Loads |pe_image_path| in preparation for loading its resources.
-  bool Initialize(const FilePath& pe_image_path);
+  bool Initialize(const base::FilePath& pe_image_path);
 
   // Places the address and size of the resource |name| of |type| into
   // |resource_data|, returning true on success.  The address of the resource is

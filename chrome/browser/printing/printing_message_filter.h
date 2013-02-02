@@ -14,13 +14,13 @@
 #include "base/shared_memory.h"
 #endif
 
-class FilePath;
 struct PrintHostMsg_ScriptedPrint_Params;
 class Profile;
 class ProfileIOData;
 
 namespace base {
 class DictionaryValue;
+class FilePath;
 }
 
 namespace content {
@@ -60,7 +60,7 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
   void OnAllocateTempFileForPrinting(base::FileDescriptor* temp_file_fd,
                                      int* sequence_number);
   void OnTempFileForPrintingWritten(int render_view_id, int sequence_number);
-  void CreatePrintDialogForFile(int render_view_id, const FilePath& path);
+  void CreatePrintDialogForFile(int render_view_id, const base::FilePath& path);
 #endif
 
   // Given a render_view_id get the corresponding WebContents.

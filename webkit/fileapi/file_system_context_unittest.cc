@@ -28,7 +28,7 @@ namespace fileapi {
 namespace {
 
 const char kTestOrigin[] = "http://chromium.org/";
-const FilePath::CharType kVirtualPathNoRoot[] = FPL("root/file");
+const base::FilePath::CharType kVirtualPathNoRoot[] = FPL("root/file");
 
 GURL CreateRawFileSystemURL(const std::string& type_str,
                             const std::string& fs_id) {
@@ -73,8 +73,8 @@ class FileSystemContextTest : public testing::Test {
                                   const GURL& expect_origin,
                                   FileSystemType expect_mount_type,
                                   FileSystemType expect_type,
-                                  const FilePath& expect_path,
-                                  const FilePath& expect_virtual_path,
+                                  const base::FilePath& expect_path,
+                                  const base::FilePath& expect_virtual_path,
                                   const std::string& expect_filesystem_id) {
     EXPECT_TRUE(url.is_valid());
 
@@ -105,13 +105,13 @@ TEST_F(FileSystemContextTest, NullExternalMountPoints) {
   std::string isolated_id =
       IsolatedContext::GetInstance()->RegisterFileSystemForPath(
           kFileSystemTypeNativeLocal,
-          FilePath(DRIVE FPL("/test/isolated/root")),
+          base::FilePath(DRIVE FPL("/test/isolated/root")),
           &isolated_name);
   // Register system external mount point.
   ASSERT_TRUE(ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       "system",
       kFileSystemTypeNativeLocal,
-      FilePath(DRIVE FPL("/test/sys/"))));
+      base::FilePath(DRIVE FPL("/test/sys/"))));
 
   FileSystemURL cracked_isolated = file_system_context->CrackURL(
       CreateRawFileSystemURL("isolated", isolated_id));
@@ -121,8 +121,8 @@ TEST_F(FileSystemContextTest, NullExternalMountPoints) {
       GURL(kTestOrigin),
       kFileSystemTypeIsolated,
       kFileSystemTypeNativeLocal,
-      FilePath(DRIVE FPL("/test/isolated/root/file")).NormalizePathSeparators(),
-      FilePath::FromUTF8Unsafe(isolated_id).Append(FPL("root/file")).
+      base::FilePath(DRIVE FPL("/test/isolated/root/file")).NormalizePathSeparators(),
+      base::FilePath::FromUTF8Unsafe(isolated_id).Append(FPL("root/file")).
           NormalizePathSeparators(),
       isolated_id);
 
@@ -134,8 +134,8 @@ TEST_F(FileSystemContextTest, NullExternalMountPoints) {
       GURL(kTestOrigin),
       kFileSystemTypeExternal,
       kFileSystemTypeNativeLocal,
-      FilePath(DRIVE FPL("/test/sys/root/file")).NormalizePathSeparators(),
-      FilePath(FPL("system/root/file")).NormalizePathSeparators(),
+      base::FilePath(DRIVE FPL("/test/sys/root/file")).NormalizePathSeparators(),
+      base::FilePath(FPL("system/root/file")).NormalizePathSeparators(),
       "system");
 
 
@@ -152,7 +152,7 @@ TEST_F(FileSystemContextTest, FileSystemContextKeepsMountPointsAlive) {
   ASSERT_TRUE(mount_points->RegisterFileSystem(
       "system",
       kFileSystemTypeNativeLocal,
-      FilePath(DRIVE FPL("/test/sys/"))));
+      base::FilePath(DRIVE FPL("/test/sys/"))));
 
   scoped_refptr<FileSystemContext> file_system_context(
       CreateFileSystemContextForTest(mount_points.get()));
@@ -170,8 +170,8 @@ TEST_F(FileSystemContextTest, FileSystemContextKeepsMountPointsAlive) {
       GURL(kTestOrigin),
       kFileSystemTypeExternal,
       kFileSystemTypeNativeLocal,
-      FilePath(DRIVE FPL("/test/sys/root/file")).NormalizePathSeparators(),
-      FilePath(FPL("system/root/file")).NormalizePathSeparators(),
+      base::FilePath(DRIVE FPL("/test/sys/root/file")).NormalizePathSeparators(),
+      base::FilePath(FPL("system/root/file")).NormalizePathSeparators(),
       "system");
 
   // No need to revoke the registered filesystem since |mount_points| lifetime
@@ -189,32 +189,32 @@ TEST_F(FileSystemContextTest, CrackFileSystemURL) {
   const std::string kIsolatedFileSystemID =
       IsolatedContext::GetInstance()->RegisterFileSystemForPath(
           kFileSystemTypeNativeLocal,
-          FilePath(DRIVE FPL("/test/isolated/root")),
+          base::FilePath(DRIVE FPL("/test/isolated/root")),
           &isolated_file_system_name);
   // Register system external mount point.
   ASSERT_TRUE(ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       "system",
       kFileSystemTypeDrive,
-      FilePath(DRIVE FPL("/test/sys/"))));
+      base::FilePath(DRIVE FPL("/test/sys/"))));
   ASSERT_TRUE(ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       "ext",
       kFileSystemTypeNativeLocal,
-      FilePath(DRIVE FPL("/test/ext"))));
+      base::FilePath(DRIVE FPL("/test/ext"))));
   // Register a system external mount point with the same name/id as the
   // registered isolated mount point.
   ASSERT_TRUE(ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       kIsolatedFileSystemID,
       kFileSystemTypeRestrictedNativeLocal,
-      FilePath(DRIVE FPL("/test/system/isolated"))));
+      base::FilePath(DRIVE FPL("/test/system/isolated"))));
   // Add a mount points with the same name as a system mount point to
   // FileSystemContext's external mount points.
   ASSERT_TRUE(external_mount_points->RegisterFileSystem(
       "ext",
        kFileSystemTypeNativeLocal,
-       FilePath(DRIVE FPL("/test/local/ext/"))));
+       base::FilePath(DRIVE FPL("/test/local/ext/"))));
 
   const GURL kTestOrigin = GURL("http://chromium.org/");
-  const FilePath kVirtualPathNoRoot = FilePath(FPL("root/file"));
+  const base::FilePath kVirtualPathNoRoot = base::FilePath(FPL("root/file"));
 
   struct TestCase {
     // Test case values.
@@ -225,7 +225,7 @@ TEST_F(FileSystemContextTest, CrackFileSystemURL) {
     bool expect_is_valid;
     FileSystemType expect_mount_type;
     FileSystemType expect_type;
-    const FilePath::CharType* expect_path;
+    const base::FilePath::CharType* expect_path;
     bool expect_virtual_path_empty;
     std::string expect_filesystem_id;
   };
@@ -290,8 +290,8 @@ TEST_F(FileSystemContextTest, CrackFileSystemURL) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
-    const FilePath virtual_path =
-        FilePath::FromUTF8Unsafe(kTestCases[i].root).Append(kVirtualPathNoRoot);
+    const base::FilePath virtual_path =
+        base::FilePath::FromUTF8Unsafe(kTestCases[i].root).Append(kVirtualPathNoRoot);
 
     GURL raw_url =
         CreateRawFileSystemURL(kTestCases[i].type_str, kTestCases[i].root);
@@ -309,14 +309,14 @@ TEST_F(FileSystemContextTest, CrackFileSystemURL) {
         GURL(kTestOrigin),
         kTestCases[i].expect_mount_type,
         kTestCases[i].expect_type,
-        FilePath(kTestCases[i].expect_path).NormalizePathSeparators(),
+        base::FilePath(kTestCases[i].expect_path).NormalizePathSeparators(),
         kTestCases[i].expect_virtual_path_empty ?
-            FilePath() : virtual_path.NormalizePathSeparators(),
+            base::FilePath() : virtual_path.NormalizePathSeparators(),
         kTestCases[i].expect_filesystem_id);
   }
 
   IsolatedContext::GetInstance()->RevokeFileSystemByPath(
-      FilePath(DRIVE FPL("/test/isolated/root")));
+      base::FilePath(DRIVE FPL("/test/isolated/root")));
   ExternalMountPoints::GetSystemInstance()->RevokeFileSystem("system");
   ExternalMountPoints::GetSystemInstance()->RevokeFileSystem("ext");
   ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(

@@ -31,23 +31,23 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOriginDatabase {
  public:
   struct WEBKIT_STORAGE_EXPORT_PRIVATE OriginRecord {
     std::string origin;
-    FilePath path;
+    base::FilePath path;
 
     OriginRecord();
-    OriginRecord(const std::string& origin, const FilePath& path);
+    OriginRecord(const std::string& origin, const base::FilePath& path);
     ~OriginRecord();
   };
 
   // Only one instance of FileSystemOriginDatabase should exist for a given path
   // at a given time.
-  explicit FileSystemOriginDatabase(const FilePath& file_system_directory);
+  explicit FileSystemOriginDatabase(const base::FilePath& file_system_directory);
   ~FileSystemOriginDatabase();
 
   bool HasOriginPath(const std::string& origin);
 
   // This will produce a unique path and add it to its database, if it's not
   // already present.
-  bool GetPathForOrigin(const std::string& origin, FilePath* directory);
+  bool GetPathForOrigin(const std::string& origin, base::FilePath* directory);
 
   // Also returns success if the origin is not found.
   bool RemovePathForOrigin(const std::string& origin);
@@ -71,7 +71,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOriginDatabase {
   void ReportInitStatus(const leveldb::Status& status);
   bool GetLastPathNumber(int* number);
 
-  FilePath file_system_directory_;
+  base::FilePath file_system_directory_;
   scoped_ptr<leveldb::DB> db_;
   base::Time last_reported_time_;
   DISALLOW_COPY_AND_ASSIGN(FileSystemOriginDatabase);

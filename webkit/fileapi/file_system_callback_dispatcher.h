@@ -30,7 +30,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemCallbackDispatcher {
   // Callback to report information for a file.
   virtual void DidReadMetadata(
       const base::PlatformFileInfo& file_info,
-      const FilePath& platform_path) = 0;
+      const base::FilePath& platform_path) = 0;
 
   // Callback to report the contents of a directory. If the contents of
   // the given directory are reported in one batch, then |entries| will have

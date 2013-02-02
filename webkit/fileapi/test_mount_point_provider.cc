@@ -66,7 +66,7 @@ class TestMountPointProvider::QuotaUtil
 
 TestMountPointProvider::TestMountPointProvider(
     base::SequencedTaskRunner* task_runner,
-    const FilePath& base_path)
+    const base::FilePath& base_path)
     : base_path_(base_path),
       task_runner_(task_runner),
       local_file_util_(new AsyncFileUtilAdapter(new LocalFileUtil())),
@@ -89,7 +89,7 @@ void TestMountPointProvider::ValidateFileSystemRoot(
   NOTREACHED();
 }
 
-FilePath TestMountPointProvider::GetFileSystemRootPathOnFileThread(
+base::FilePath TestMountPointProvider::GetFileSystemRootPathOnFileThread(
     const FileSystemURL& url,
     bool create) {
   DCHECK_EQ(kFileSystemTypeTest, url.type());
@@ -98,7 +98,7 @@ FilePath TestMountPointProvider::GetFileSystemRootPathOnFileThread(
     success = file_util::CreateDirectory(base_path_);
   else
     success = file_util::DirectoryExists(base_path_);
-  return success ? base_path_ : FilePath();
+  return success ? base_path_ : base::FilePath();
 }
 
 bool TestMountPointProvider::IsAccessAllowed(const FileSystemURL& url) {
@@ -106,7 +106,7 @@ bool TestMountPointProvider::IsAccessAllowed(const FileSystemURL& url) {
 }
 
 bool TestMountPointProvider::IsRestrictedFileName(
-    const FilePath& filename) const {
+    const base::FilePath& filename) const {
   return false;
 }
 

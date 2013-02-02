@@ -39,7 +39,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
   // |file_task_runner| must be the one where the observee file operations run.
   // (So that we can make sure DB operations are done before actual update
   // happens)
-  LocalFileChangeTracker(const FilePath& base_path,
+  LocalFileChangeTracker(const base::FilePath& base_path,
                          base::SequencedTaskRunner* file_task_runner);
   virtual ~LocalFileChangeTracker();
 

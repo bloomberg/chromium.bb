@@ -197,7 +197,7 @@ net::URLRequestJob* FileWriterDelegateTest::Factory(
 
 void FileWriterDelegateTest::SetUp() {
   ASSERT_TRUE(dir_.CreateUniqueTempDir());
-  FilePath base_dir = dir_.path().AppendASCII("filesystem");
+  base::FilePath base_dir = dir_.path().AppendASCII("filesystem");
   test_helper_.SetUp(base_dir);
 
   scoped_ptr<FileSystemOperationContext> context(

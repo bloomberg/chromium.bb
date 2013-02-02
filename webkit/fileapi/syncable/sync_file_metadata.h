@@ -43,7 +43,7 @@ struct WEBKIT_STORAGE_EXPORT LocalFileSyncInfo {
   ~LocalFileSyncInfo();
 
   FileSystemURL url;
-  FilePath local_file_path;
+  base::FilePath local_file_path;
   SyncFileMetadata metadata;
   FileChangeList changes;
 };

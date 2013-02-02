@@ -7,8 +7,11 @@
 
 #include "base/basictypes.h"
 
-class FilePath;
 class GURL;
+
+namespace base {
+class FilePath;
+}
 
 namespace content {
 
@@ -23,11 +26,11 @@ class URLRequestPrepackagedInterceptor {
   // When requests for |url| arrive, respond with the contents of |path|. The
   // hostname of |url| must be "localhost" to avoid DNS lookups, and the scheme
   // must be "http".
-  void SetResponse(const GURL& url, const FilePath& path);
+  void SetResponse(const GURL& url, const base::FilePath& path);
 
   // Identical to SetResponse except that query parameters are ignored on
   // incoming URLs when comparing against |url|.
-  void SetResponseIgnoreQuery(const GURL& url, const FilePath& path);
+  void SetResponseIgnoreQuery(const GURL& url, const base::FilePath& path);
 
   // Returns how many requests have been issued that have a stored reply.
   int GetHitCount();

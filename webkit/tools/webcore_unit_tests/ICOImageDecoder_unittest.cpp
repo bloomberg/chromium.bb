@@ -26,8 +26,8 @@ TEST_F(ICOImageDecoderTest, Decoding) {
 TEST_F(ICOImageDecoderTest, ImageNonZeroFrameIndex) {
   // Test that the decoder decodes multiple sizes of icons which have them.
   // Load an icon that has both favicon-size and larger entries.
-  FilePath multisize_icon_path(data_dir_.AppendASCII("yahoo.ico"));
-  const FilePath md5_sum_path(
+  base::FilePath multisize_icon_path(data_dir_.AppendASCII("yahoo.ico"));
+  const base::FilePath md5_sum_path(
       GetMD5SumPath(multisize_icon_path).value() + FILE_PATH_LITERAL("2"));
   static const int kDesiredFrameIndex = 3;
   TestWebKitImageDecoder(multisize_icon_path, md5_sum_path, kDesiredFrameIndex);

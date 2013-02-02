@@ -51,7 +51,9 @@
 #include "chrome/common/cancelable_task_tracker.h"
 #include "ui/gfx/image/image.h"
 
+namespace base {
 class FilePath;
+}
 
 class IconManager : public IconLoader::Delegate {
  public:
@@ -63,7 +65,7 @@ class IconManager : public IconLoader::Delegate {
   // it via 'LoadIcon'. The returned bitmap is owned by the IconManager and must
   // not be free'd by the caller. If the caller needs to modify the icon, it
   // must make a copy and modify the copy.
-  gfx::Image* LookupIcon(const FilePath& file_name, IconLoader::IconSize size);
+  gfx::Image* LookupIcon(const base::FilePath& file_name, IconLoader::IconSize size);
 
   typedef base::Callback<void(gfx::Image*)> IconRequestCallback;
 
@@ -77,7 +79,7 @@ class IconManager : public IconLoader::Delegate {
   //    should never keep it or delete it.
   // 3. The gfx::Image pointer passed to the callback may be NULL if decoding
   //    failed.
-  CancelableTaskTracker::TaskId LoadIcon(const FilePath& file_name,
+  CancelableTaskTracker::TaskId LoadIcon(const base::FilePath& file_name,
                                          IconLoader::IconSize size,
                                          const IconRequestCallback& callback,
                                          CancelableTaskTracker* tracker);
@@ -87,7 +89,7 @@ class IconManager : public IconLoader::Delegate {
 
   // Get the identifying string for the given file. The implementation
   // is in icon_manager_[platform].cc.
-  static IconGroupID GetGroupIDFromFilepath(const FilePath& path);
+  static IconGroupID GetGroupIDFromFilepath(const base::FilePath& path);
 
  private:
   struct CacheKey {

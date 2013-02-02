@@ -17,8 +17,11 @@
 #include "ui/base/ui_export.h"
 #include "ui/gfx/font.h"
 
-class FilePath;
 class GURL;
+
+namespace base {
+class FilePath;
+}
 
 namespace ui {
 
@@ -79,7 +82,7 @@ UI_EXPORT string16 ElideText(const string16& text,
 // filename is forced to have LTR directionality, which means that in RTL UI
 // the elided filename is wrapped with LRE (Left-To-Right Embedding) mark and
 // PDF (Pop Directional Formatting) mark.
-UI_EXPORT string16 ElideFilename(const FilePath& filename,
+UI_EXPORT string16 ElideFilename(const base::FilePath& filename,
                                  const gfx::Font& font,
                                  int available_pixel_width);
 

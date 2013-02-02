@@ -8,7 +8,9 @@
 #include "base/command_line.h"
 #include "base/string16.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace delegate_execute {
 
@@ -17,7 +19,7 @@ CommandLine CommandLineFromParameters(const wchar_t* params);
 
 // Returns a CommandLine to launch |chrome_exe| with all switches and arguments
 // from |params| plus an optional |argument|.
-CommandLine MakeChromeCommandLine(const FilePath& chrome_exe,
+CommandLine MakeChromeCommandLine(const base::FilePath& chrome_exe,
                                   const CommandLine& params,
                                   const string16& argument);
 

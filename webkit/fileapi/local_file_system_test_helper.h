@@ -15,11 +15,13 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/quota/quota_types.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace quota {
 class QuotaManagerProxy;
 }
-
-class FilePath;
 
 namespace fileapi {
 
@@ -37,27 +39,27 @@ class LocalFileSystemTestOriginHelper {
   LocalFileSystemTestOriginHelper();
   ~LocalFileSystemTestOriginHelper();
 
-  void SetUp(const FilePath& base_dir);
+  void SetUp(const base::FilePath& base_dir);
   // If you want to use more than one LocalFileSystemTestOriginHelper in
   // a single base directory, they have to share a context, so that they don't
   // have multiple databases fighting over the lock to the origin directory
   // [deep down inside ObfuscatedFileUtil].
   void SetUp(FileSystemContext* file_system_context);
-  void SetUp(const FilePath& base_dir,
+  void SetUp(const base::FilePath& base_dir,
              bool unlimited_quota,
              quota::QuotaManagerProxy* quota_manager_proxy);
   void TearDown();
 
-  FilePath GetOriginRootPath() const;
-  FilePath GetLocalPath(const FilePath& path);
-  FilePath GetLocalPathFromASCII(const std::string& path);
+  base::FilePath GetOriginRootPath() const;
+  base::FilePath GetLocalPath(const base::FilePath& path);
+  base::FilePath GetLocalPathFromASCII(const std::string& path);
 
   // Returns empty path if filesystem type is neither temporary nor persistent.
-  FilePath GetUsageCachePath() const;
+  base::FilePath GetUsageCachePath() const;
 
-  FileSystemURL CreateURL(const FilePath& path) const;
+  FileSystemURL CreateURL(const base::FilePath& path) const;
   FileSystemURL CreateURLFromUTF8(const std::string& utf8) const {
-    return CreateURL(FilePath::FromUTF8Unsafe(utf8));
+    return CreateURL(base::FilePath::FromUTF8Unsafe(utf8));
   }
 
   // Helper methods for same-FileUtil copy/move.

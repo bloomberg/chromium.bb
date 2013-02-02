@@ -151,8 +151,8 @@ void DaemonProcess::Initialize() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   // Get the name of the host configuration file.
-  FilePath default_config_dir = remoting::GetConfigDir();
-  FilePath config_path = default_config_dir.Append(kDefaultHostConfigFile);
+  base::FilePath default_config_dir = remoting::GetConfigDir();
+  base::FilePath config_path = default_config_dir.Append(kDefaultHostConfigFile);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(kHostConfigSwitchName)) {
     config_path = command_line->GetSwitchValuePath(kHostConfigSwitchName);

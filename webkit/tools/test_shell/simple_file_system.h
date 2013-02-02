@@ -128,7 +128,7 @@ class SimpleFileSystem
   void DidGetMetadata(WebKit::WebFileSystemCallbacks* callbacks,
                       base::PlatformFileError result,
                       const base::PlatformFileInfo& info,
-                      const FilePath& platform_path);
+                      const base::FilePath& platform_path);
   void DidReadDirectory(
       WebKit::WebFileSystemCallbacks* callbacks,
       base::PlatformFileError result,
@@ -144,7 +144,7 @@ class SimpleFileSystem
       WebKit::WebFileSystemCallbacks* callbacks,
       base::PlatformFileError result,
       const base::PlatformFileInfo& info,
-      const FilePath& platform_path,
+      const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
   // A temporary directory for FileSystem API.

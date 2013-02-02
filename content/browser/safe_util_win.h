@@ -8,8 +8,11 @@
 #include <string>
 #include <windows.h>
 
-class FilePath;
 class GURL;
+
+namespace base {
+class FilePath;
+}
 
 namespace content {
 
@@ -38,7 +41,7 @@ namespace content {
 // dialog.
 // Returns 'true' on successful open, 'false' otherwise.
 bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
-                           const FilePath& full_path,
+                           const base::FilePath& full_path,
                            const std::wstring& source_url);
 
 // Invokes IAttachmentExecute::Save to validate the downloaded file. The call
@@ -66,7 +69,7 @@ bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
 // |full_path| : is the path to the downloaded file. This should be the final
 //               path of the download.
 // |source_url|: the source URL for the download.
-HRESULT ScanAndSaveDownloadedFile(const FilePath& full_path,
+HRESULT ScanAndSaveDownloadedFile(const base::FilePath& full_path,
                                   const GURL& source_url);
 }  // namespace content
 

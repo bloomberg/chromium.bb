@@ -15,8 +15,11 @@
 #include "chrome/test/webdriver/webdriver_error.h"
 
 class AutomationId;
-class FilePath;
 class WebViewId;
+
+namespace base {
+class FilePath;
+}
 
 namespace webdriver {
 
@@ -30,7 +33,7 @@ bool Base64Decode(const std::string& base64, std::string* bytes);
 
 // Unzip the given zip archive, after base64 decoding, into the given directory.
 // Returns true on success.
-bool Base64DecodeAndUnzip(const FilePath& unzip_dir,
+bool Base64DecodeAndUnzip(const base::FilePath& unzip_dir,
                           const std::string& base64,
                           std::string* error_msg);
 
@@ -40,9 +43,9 @@ bool Base64DecodeAndUnzip(const FilePath& unzip_dir,
 // |file| to the unzipped file.
 // TODO(kkania): Remove the ability to parse single zip file entries when
 // the current versions of all WebDriver clients send actual zip files.
-bool UnzipSoleFile(const FilePath& unzip_dir,
+bool UnzipSoleFile(const base::FilePath& unzip_dir,
                    const std::string& bytes,
-                   FilePath* file,
+                   base::FilePath* file,
                    std::string* error_msg);
 
 // Returns the equivalent JSON string for the given value.
@@ -72,7 +75,7 @@ Error* FlattenStringArray(const ListValue* src, string16* dest);
 
 #if defined(OS_MACOSX)
 // Gets the paths to the user and local application directory.
-void GetApplicationDirs(std::vector<FilePath>* app_dirs);
+void GetApplicationDirs(std::vector<base::FilePath>* app_dirs);
 #endif
 
 // Parses a given value.

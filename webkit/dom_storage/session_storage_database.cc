@@ -36,7 +36,7 @@
 
 namespace dom_storage {
 
-SessionStorageDatabase::SessionStorageDatabase(const FilePath& file_path)
+SessionStorageDatabase::SessionStorageDatabase(const base::FilePath& file_path)
     : file_path_(file_path),
       db_error_(false),
       is_inconsistent_(false) {

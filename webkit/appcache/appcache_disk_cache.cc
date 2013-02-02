@@ -164,7 +164,7 @@ AppCacheDiskCache::~AppCacheDiskCache() {
 }
 
 int AppCacheDiskCache::InitWithDiskBackend(
-    const FilePath& disk_cache_directory, int disk_cache_size, bool force,
+    const base::FilePath& disk_cache_directory, int disk_cache_size, bool force,
     base::MessageLoopProxy* cache_thread,
     const net::CompletionCallback& callback) {
   return Init(net::APP_CACHE, disk_cache_directory,
@@ -173,7 +173,7 @@ int AppCacheDiskCache::InitWithDiskBackend(
 
 int AppCacheDiskCache::InitWithMemBackend(
     int mem_cache_size, const net::CompletionCallback& callback) {
-  return Init(net::MEMORY_CACHE, FilePath(), mem_cache_size, false, NULL,
+  return Init(net::MEMORY_CACHE, base::FilePath(), mem_cache_size, false, NULL,
               callback);
 }
 
@@ -262,7 +262,7 @@ AppCacheDiskCache::PendingCall::PendingCall(PendingCallType call_type,
 AppCacheDiskCache::PendingCall::~PendingCall() {}
 
 int AppCacheDiskCache::Init(net::CacheType cache_type,
-                            const FilePath& cache_directory,
+                            const base::FilePath& cache_directory,
                             int cache_size, bool force,
                             base::MessageLoopProxy* cache_thread,
                             const net::CompletionCallback& callback) {

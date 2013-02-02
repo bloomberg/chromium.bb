@@ -11,7 +11,9 @@
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/resource_message_params.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace content {
 class BrowserPpapiHost;
@@ -63,7 +65,7 @@ class PepperFlashDeviceIDHost : public ppapi::host::ResourceHost {
     // Called on the file thread to read the contents of the file and to
     // forward it to the IO thread. The path will be empty on error (in
     // which case it will forward the empty string to the IO thread).
-    void ReadDRMFileOnFileThread(const FilePath& path);
+    void ReadDRMFileOnFileThread(const base::FilePath& path);
 
     // Called on the IO thread to call back into the device ID host with the
     // file contents, or the empty string on failure.

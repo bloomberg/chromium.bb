@@ -82,7 +82,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE AsyncFileUtilAdapter
       const StatusCallback& callback) OVERRIDE;
   virtual bool CopyInForeignFile(
         FileSystemOperationContext* context,
-        const FilePath& src_file_path,
+        const base::FilePath& src_file_path,
         const FileSystemURL& dest_url,
         const StatusCallback& callback) OVERRIDE;
   virtual bool DeleteFile(

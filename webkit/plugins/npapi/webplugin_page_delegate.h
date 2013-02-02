@@ -9,7 +9,9 @@
 
 #include "ui/gfx/native_widget_types.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace WebKit {
 class WebCookieJar;
@@ -29,12 +31,12 @@ class WebPluginPageDelegate {
   // new plugin is instanced.  See CreateWebPluginDelegateHelper
   // for a default WebPluginDelegate implementation.
   virtual WebPluginDelegate* CreatePluginDelegate(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       const std::string& mime_type) = 0;
 
   // Caled to create a replacement plug-in when loading a plug-in failed.
   virtual WebKit::WebPlugin* CreatePluginReplacement(
-      const FilePath& file_path) = 0;
+      const base::FilePath& file_path) = 0;
 
   // Called when a windowed plugin is created.
   // Lets the view delegate create anything it is using to wrap the plugin.

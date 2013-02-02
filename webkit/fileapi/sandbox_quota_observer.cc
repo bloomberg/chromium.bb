@@ -29,7 +29,7 @@ SandboxQuotaObserver::~SandboxQuotaObserver() {}
 void SandboxQuotaObserver::OnStartUpdate(const FileSystemURL& url) {
   DCHECK(SandboxMountPointProvider::CanHandleType(url.type()));
   DCHECK(update_notify_runner_->RunsTasksOnCurrentThread());
-  FilePath usage_file_path = GetUsageCachePath(url);
+  base::FilePath usage_file_path = GetUsageCachePath(url);
   if (usage_file_path.empty())
     return;
   FileSystemUsageCache::IncrementDirty(usage_file_path);
@@ -48,7 +48,7 @@ void SandboxQuotaObserver::OnUpdate(const FileSystemURL& url,
         delta);
   }
 
-  FilePath usage_file_path = GetUsageCachePath(url);
+  base::FilePath usage_file_path = GetUsageCachePath(url);
   if (usage_file_path.empty())
     return;
 
@@ -65,7 +65,7 @@ void SandboxQuotaObserver::OnEndUpdate(const FileSystemURL& url) {
   DCHECK(SandboxMountPointProvider::CanHandleType(url.type()));
   DCHECK(update_notify_runner_->RunsTasksOnCurrentThread());
 
-  FilePath usage_file_path = GetUsageCachePath(url);
+  base::FilePath usage_file_path = GetUsageCachePath(url);
   if (usage_file_path.empty())
     return;
 
@@ -89,15 +89,15 @@ void SandboxQuotaObserver::OnAccess(const FileSystemURL& url) {
   }
 }
 
-FilePath SandboxQuotaObserver::GetUsageCachePath(const FileSystemURL& url) {
+base::FilePath SandboxQuotaObserver::GetUsageCachePath(const FileSystemURL& url) {
   DCHECK(sandbox_file_util_);
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  FilePath path = SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
+  base::FilePath path = SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
       sandbox_file_util_, url.origin(), url.type(), &error);
   if (error != base::PLATFORM_FILE_OK) {
     LOG(WARNING) << "Could not get usage cache path for: "
                  << url.DebugString();
-    return FilePath();
+    return base::FilePath();
   }
   return path;
 }
@@ -114,7 +114,7 @@ void SandboxQuotaObserver::ApplyPendingUsageUpdate() {
 }
 
 void SandboxQuotaObserver::UpdateUsageCacheFile(
-    const FilePath& usage_file_path,
+    const base::FilePath& usage_file_path,
     int64 delta) {
   DCHECK(!usage_file_path.empty());
   if (!usage_file_path.empty() && delta != 0)

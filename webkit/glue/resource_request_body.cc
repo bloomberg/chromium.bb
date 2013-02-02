@@ -73,7 +73,7 @@ void ResourceRequestBody::AppendBytes(const char* bytes, int bytes_len) {
 }
 
 void ResourceRequestBody::AppendFileRange(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     uint64 offset, uint64 length,
     const base::Time& expected_modification_time) {
   elements_.push_back(Element());

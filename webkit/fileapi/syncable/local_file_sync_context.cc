@@ -174,7 +174,7 @@ void LocalFileSyncContext::RegisterURLForWaitingSync(
 void LocalFileSyncContext::ApplyRemoteChange(
     FileSystemContext* file_system_context,
     const FileChange& change,
-    const FilePath& local_path,
+    const base::FilePath& local_path,
     const FileSystemURL& url,
     const SyncStatusCallback& callback) {
   if (!io_task_runner_->RunsTasksOnCurrentThread()) {
@@ -564,7 +564,7 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
   FileChangeList changes;
   file_system_context->change_tracker()->GetChangesForURL(url, &changes);
 
-  FilePath platform_path;
+  base::FilePath platform_path;
   base::PlatformFileInfo file_info;
   FileSystemFileUtil* file_util = file_system_context->GetFileUtil(url.type());
   DCHECK(file_util);
@@ -624,7 +624,7 @@ void LocalFileSyncContext::DidGetFileMetadata(
     const SyncFileMetadataCallback& callback,
     base::PlatformFileError file_error,
     const base::PlatformFileInfo& file_info,
-    const FilePath& platform_path) {
+    const base::FilePath& platform_path) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   SyncFileMetadata metadata;
   if (file_error == base::PLATFORM_FILE_OK) {

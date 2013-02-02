@@ -27,17 +27,17 @@ extern const char kTestDir[];
 
 class WEBKIT_STORAGE_EXPORT VirtualPath {
  public:
-  // Use this instead of FilePath::BaseName when operating on virtual paths.
-  // FilePath::BaseName will get confused by ':' on Windows when it looks like a
+  // Use this instead of base::FilePath::BaseName when operating on virtual paths.
+  // base::FilePath::BaseName will get confused by ':' on Windows when it looks like a
   // drive letter separator; this will treat it as just another character.
-  static FilePath BaseName(const FilePath& virtual_path);
+  static base::FilePath BaseName(const base::FilePath& virtual_path);
 
-  // Likewise, use this instead of FilePath::GetComponents when operating on
+  // Likewise, use this instead of base::FilePath::GetComponents when operating on
   // virtual paths.
   // Note that this assumes very clean input, with no leading slash, and it will
   // not evaluate '.' or '..' components.
-  static void GetComponents(const FilePath& path,
-      std::vector<FilePath::StringType>* components);
+  static void GetComponents(const base::FilePath& path,
+      std::vector<base::FilePath::StringType>* components);
 };
 
 // Returns the root URI of the filesystem that can be specified by a pair of
@@ -99,10 +99,10 @@ WEBKIT_STORAGE_EXPORT std::string GetFileSystemTypeString(FileSystemType type);
 //
 // TODO(tzik): Replace CreateFilePath and FilePathToString in
 // third_party/leveldatabase/env_chromium.cc with them.
-WEBKIT_STORAGE_EXPORT std::string FilePathToString(const FilePath& file_path);
+WEBKIT_STORAGE_EXPORT std::string FilePathToString(const base::FilePath& file_path);
 
 // Decode a file path from |file_path_string|.
-WEBKIT_STORAGE_EXPORT FilePath StringToFilePath(
+WEBKIT_STORAGE_EXPORT base::FilePath StringToFilePath(
     const std::string& file_path_string);
 
 // File error conversion

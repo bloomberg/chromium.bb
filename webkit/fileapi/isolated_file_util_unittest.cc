@@ -39,16 +39,16 @@ namespace {
 // Random root paths in which we create each file/directory of the
 // RegularTestCases (so that we can simulate a drop with files/directories
 // from multiple directories).
-static const FilePath::CharType* kRootPaths[] = {
+static const base::FilePath::CharType* kRootPaths[] = {
   FILE_PATH_LITERAL("a"),
   FILE_PATH_LITERAL("b/c"),
   FILE_PATH_LITERAL("etc"),
 };
 
-FilePath GetTopLevelPath(const FilePath& path) {
-  std::vector<FilePath::StringType> components;
+base::FilePath GetTopLevelPath(const base::FilePath& path) {
+  std::vector<base::FilePath::StringType> components;
   path.GetComponents(&components);
-  return FilePath(components[0]);
+  return base::FilePath(components[0]);
 }
 
 bool IsDirectoryEmpty(FileSystemOperationContext* context,
@@ -100,7 +100,7 @@ class IsolatedFileUtilTest : public testing::Test {
   IsolatedContext* isolated_context() const {
     return IsolatedContext::GetInstance();
   }
-  const FilePath& root_path() const {
+  const base::FilePath& root_path() const {
     return data_dir_.path();
   }
   FileSystemContext* file_system_context() const {
@@ -112,20 +112,20 @@ class IsolatedFileUtilTest : public testing::Test {
   }
   std::string filesystem_id() const { return filesystem_id_; }
 
-  FilePath GetTestCasePlatformPath(const FilePath::StringType& path) {
-    return toplevel_root_map_[GetTopLevelPath(FilePath(path))].Append(path).
+  base::FilePath GetTestCasePlatformPath(const base::FilePath::StringType& path) {
+    return toplevel_root_map_[GetTopLevelPath(base::FilePath(path))].Append(path).
         NormalizePathSeparators();
   }
 
-  FilePath GetTestCaseLocalPath(const FilePath& path) {
-    FilePath relative;
+  base::FilePath GetTestCaseLocalPath(const base::FilePath& path) {
+    base::FilePath relative;
     if (data_dir_.path().AppendRelativePath(path, &relative))
       return relative;
     return path;
   }
 
-  FileSystemURL GetFileSystemURL(const FilePath& path) const {
-    FilePath virtual_path = isolated_context()->CreateVirtualRootPath(
+  FileSystemURL GetFileSystemURL(const base::FilePath& path) const {
+    base::FilePath virtual_path = isolated_context()->CreateVirtualRootPath(
         filesystem_id()).Append(path);
     return file_system_context_->CreateCrackedFileSystemURL(
         GURL("http://example.com"),
@@ -133,7 +133,7 @@ class IsolatedFileUtilTest : public testing::Test {
         virtual_path);
   }
 
-  FileSystemURL GetOtherFileSystemURL(const FilePath& path) {
+  FileSystemURL GetOtherFileSystemURL(const base::FilePath& path) {
     return other_file_util_helper_.CreateURL(GetTestCaseLocalPath(path));
   }
 
@@ -145,7 +145,7 @@ class IsolatedFileUtilTest : public testing::Test {
 
     // Get the file info for url1.
     base::PlatformFileInfo info1;
-    FilePath platform_path1;
+    base::FilePath platform_path1;
     context.reset(new FileSystemOperationContext(file_system_context()));
     ASSERT_EQ(base::PLATFORM_FILE_OK,
               file_util1->GetFileInfo(context.get(), url1,
@@ -153,7 +153,7 @@ class IsolatedFileUtilTest : public testing::Test {
 
     // Get the file info for url2.
     base::PlatformFileInfo info2;
-    FilePath platform_path2;
+    base::FilePath platform_path2;
     context.reset(new FileSystemOperationContext(file_system_context()));
     ASSERT_EQ(base::PLATFORM_FILE_OK,
               file_util2->GetFileInfo(context.get(), url2,
@@ -176,20 +176,20 @@ class IsolatedFileUtilTest : public testing::Test {
                                         const FileSystemURL& root1,
                                         const FileSystemURL& root2) {
     scoped_ptr<FileSystemOperationContext> context;
-    FilePath root_path1 = root1.path();
-    FilePath root_path2 = root2.path();
+    base::FilePath root_path1 = root1.path();
+    base::FilePath root_path2 = root2.path();
 
     context.reset(new FileSystemOperationContext(file_system_context()));
     scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum1 =
         file_util1->CreateFileEnumerator(context.get(), root1,
                                          true /* recursive */);
 
-    FilePath current;
-    std::set<FilePath> file_set1;
+    base::FilePath current;
+    std::set<base::FilePath> file_set1;
     while (!(current = file_enum1->Next()).empty()) {
       if (file_enum1->IsDirectory())
         continue;
-      FilePath relative;
+      base::FilePath relative;
       root_path1.AppendRelativePath(current, &relative);
       file_set1.insert(relative);
     }
@@ -200,7 +200,7 @@ class IsolatedFileUtilTest : public testing::Test {
                                          true /* recursive */);
 
     while (!(current = file_enum2->Next()).empty()) {
-      FilePath relative;
+      base::FilePath relative;
       root_path2.AppendRelativePath(current, &relative);
       FileSystemURL url1 = root1.WithPath(root_path1.Append(relative));
       FileSystemURL url2 = root2.WithPath(root_path2.Append(relative));
@@ -229,13 +229,13 @@ class IsolatedFileUtilTest : public testing::Test {
     IsolatedContext::FileInfoSet toplevels;
     for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
       const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
-      FilePath path(test_case.path);
-      FilePath toplevel = GetTopLevelPath(path);
+      base::FilePath path(test_case.path);
+      base::FilePath toplevel = GetTopLevelPath(path);
 
       // We create the test case files under one of the kRootPaths
       // to simulate a drop with multiple directories.
       if (toplevel_root_map_.find(toplevel) == toplevel_root_map_.end()) {
-        FilePath root = root_path().Append(
+        base::FilePath root = root_path().Append(
             kRootPaths[(root_path_index++) % arraysize(kRootPaths)]);
         toplevel_root_map_[toplevel] = root;
         toplevels.AddPath(root.Append(path), NULL);
@@ -253,7 +253,7 @@ class IsolatedFileUtilTest : public testing::Test {
   MessageLoop message_loop_;
   std::string filesystem_id_;
   scoped_refptr<FileSystemContext> file_system_context_;
-  std::map<FilePath, FilePath> toplevel_root_map_;
+  std::map<base::FilePath, base::FilePath> toplevel_root_map_;
   scoped_ptr<IsolatedFileUtil> file_util_;
   LocalFileSystemTestOriginHelper other_file_util_helper_;
   DISALLOW_COPY_AND_ASSIGN(IsolatedFileUtilTest);
@@ -264,13 +264,13 @@ TEST_F(IsolatedFileUtilTest, BasicTest) {
     SCOPED_TRACE(testing::Message() << "Testing RegularTestCases " << i);
     const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
 
-    FileSystemURL url = GetFileSystemURL(FilePath(test_case.path));
+    FileSystemURL url = GetFileSystemURL(base::FilePath(test_case.path));
 
     // See if we can query the file info via the isolated FileUtil.
     // (This should succeed since we have registered all the top-level
     // entries of the test cases in SetUp())
     base::PlatformFileInfo info;
-    FilePath platform_path;
+    base::FilePath platform_path;
     FileSystemOperationContext context(file_system_context());
     ASSERT_EQ(base::PLATFORM_FILE_OK,
               file_util()->GetFileInfo(&context, url, &info, &platform_path));
@@ -312,7 +312,7 @@ TEST_F(IsolatedFileUtilTest, UnregisteredPathsTest) {
   for (size_t i = 0; i < arraysize(kUnregisteredCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Creating kUnregisteredCases " << i);
     const test::TestCaseRecord& test_case = kUnregisteredCases[i];
-    FileSystemURL url = GetFileSystemURL(FilePath(test_case.path));
+    FileSystemURL url = GetFileSystemURL(base::FilePath(test_case.path));
 
     // We should not be able to get the valid URL for unregistered files.
     ASSERT_FALSE(url.is_valid());
@@ -336,13 +336,13 @@ TEST_F(IsolatedFileUtilTest, ReadDirectoryTest) {
                  << ": " << test_case.path);
 
     // Read entries in the directory to construct the expected results map.
-    typedef std::map<FilePath::StringType, base::FileUtilProxy::Entry> EntryMap;
+    typedef std::map<base::FilePath::StringType, base::FileUtilProxy::Entry> EntryMap;
     EntryMap expected_entry_map;
 
     FileEnumerator file_enum(
         GetTestCasePlatformPath(test_case.path), false /* not recursive */,
         FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
-    FilePath current;
+    base::FilePath current;
     while (!(current = file_enum.Next()).empty()) {
       FileEnumerator::FindInfo file_info;
       file_enum.GetFindInfo(&file_info);
@@ -355,7 +355,7 @@ TEST_F(IsolatedFileUtilTest, ReadDirectoryTest) {
     }
 
     // Perform ReadDirectory in the isolated filesystem.
-    FileSystemURL url = GetFileSystemURL(FilePath(test_case.path));
+    FileSystemURL url = GetFileSystemURL(base::FilePath(test_case.path));
     std::vector<base::FileUtilProxy::Entry> entries;
     FileSystemOperationContext context(file_system_context());
     ASSERT_EQ(base::PLATFORM_FILE_OK,
@@ -379,11 +379,11 @@ TEST_F(IsolatedFileUtilTest, ReadDirectoryTest) {
 TEST_F(IsolatedFileUtilTest, GetLocalFilePathTest) {
   for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
     const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
-    FileSystemURL url = GetFileSystemURL(FilePath(test_case.path));
+    FileSystemURL url = GetFileSystemURL(base::FilePath(test_case.path));
 
     FileSystemOperationContext context(file_system_context());
 
-    FilePath local_file_path;
+    base::FilePath local_file_path;
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               file_util()->GetLocalFilePath(&context, url, &local_file_path));
     EXPECT_EQ(GetTestCasePlatformPath(test_case.path).value(),
@@ -394,12 +394,12 @@ TEST_F(IsolatedFileUtilTest, GetLocalFilePathTest) {
 TEST_F(IsolatedFileUtilTest, CopyOutFileTest) {
   scoped_ptr<FileSystemOperationContext> context(
       new FileSystemOperationContext(file_system_context()));
-  FileSystemURL root_url = GetFileSystemURL(FilePath());
+  FileSystemURL root_url = GetFileSystemURL(base::FilePath());
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
       file_util()->CreateFileEnumerator(context.get(),
                                         root_url,
                                         true /* recursive */));
-  FilePath current;
+  base::FilePath current;
   while (!(current = file_enum->Next()).empty()) {
     if (file_enum->IsDirectory())
       continue;
@@ -434,12 +434,12 @@ TEST_F(IsolatedFileUtilTest, CopyOutFileTest) {
 TEST_F(IsolatedFileUtilTest, CopyOutDirectoryTest) {
   scoped_ptr<FileSystemOperationContext> context(
       new FileSystemOperationContext(file_system_context()));
-  FileSystemURL root_url = GetFileSystemURL(FilePath());
+  FileSystemURL root_url = GetFileSystemURL(base::FilePath());
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
       file_util()->CreateFileEnumerator(context.get(),
                                         root_url,
                                         false /* recursive */));
-  FilePath current;
+  base::FilePath current;
   while (!(current = file_enum->Next()).empty()) {
     if (!file_enum->IsDirectory())
       continue;
@@ -477,7 +477,7 @@ TEST_F(IsolatedFileUtilTest, TouchTest) {
     if (test_case.is_directory)
       continue;
     SCOPED_TRACE(testing::Message() << test_case.path);
-    FileSystemURL url = GetFileSystemURL(FilePath(test_case.path));
+    FileSystemURL url = GetFileSystemURL(base::FilePath(test_case.path));
 
     base::Time last_access_time = base::Time::FromTimeT(1000);
     base::Time last_modified_time = base::Time::FromTimeT(2000);
@@ -489,7 +489,7 @@ TEST_F(IsolatedFileUtilTest, TouchTest) {
 
     // Verification.
     base::PlatformFileInfo info;
-    FilePath platform_path;
+    base::FilePath platform_path;
     ASSERT_EQ(base::PLATFORM_FILE_OK,
               file_util()->GetFileInfo(GetOperationContext().get(), url,
                                        &info, &platform_path));
@@ -505,11 +505,11 @@ TEST_F(IsolatedFileUtilTest, TruncateTest) {
       continue;
 
     SCOPED_TRACE(testing::Message() << test_case.path);
-    FileSystemURL url = GetFileSystemURL(FilePath(test_case.path));
+    FileSystemURL url = GetFileSystemURL(base::FilePath(test_case.path));
 
     // Truncate to 0.
     base::PlatformFileInfo info;
-    FilePath platform_path;
+    base::FilePath platform_path;
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               file_util()->Truncate(GetOperationContext().get(), url, 0));
     ASSERT_EQ(base::PLATFORM_FILE_OK,

@@ -107,7 +107,7 @@ void FileSystemFileStreamReader::DidCreateSnapshot(
     const net::CompletionCallback& error_callback,
     base::PlatformFileError file_error,
     const base::PlatformFileInfo& file_info,
-    const FilePath& platform_path,
+    const base::FilePath& platform_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   DCHECK(has_pending_create_snapshot_);
   DCHECK(!local_file_reader_.get());

@@ -29,10 +29,10 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image.h"
 
-class FilePath;
 class Profile;
 
 namespace base {
+class FilePath;
 class RefCountedBytes;
 class RefCountedMemory;
 }
@@ -57,7 +57,7 @@ class TopSites
   explicit TopSites(Profile* profile);
 
   // Initializes TopSites.
-  void Init(const FilePath& db_name);
+  void Init(const base::FilePath& db_name);
 
   // Sets the given thumbnail for the given URL. Returns true if the thumbnail
   // was updated. False means either the URL wasn't known to us, or we felt

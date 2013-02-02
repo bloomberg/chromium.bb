@@ -25,11 +25,14 @@ class CreateRegKeyWorkItem;
 class DeleteTreeWorkItem;
 class DeleteRegKeyWorkItem;
 class DeleteRegValueWorkItem;
-class FilePath;
 class MoveTreeWorkItem;
 class SelfRegWorkItem;
 class SetRegValueWorkItem;
 class WorkItemList;
+
+namespace base {
+class FilePath;
+}
 
 // A base class that defines APIs to perform/rollback an action or a
 // sequence of actions during install/update/uninstall.
@@ -78,14 +81,14 @@ class WorkItem {
   // * If overwrite_option is NEW_NAME_IF_IN_USE, file is copied with an
   //   alternate name specified by alternative_path.
   static CopyTreeWorkItem* CreateCopyTreeWorkItem(
-      const FilePath& source_path,
-      const FilePath& dest_path,
-      const FilePath& temp_dir,
+      const base::FilePath& source_path,
+      const base::FilePath& dest_path,
+      const base::FilePath& temp_dir,
       CopyOverWriteOption overwrite_option,
-      const FilePath& alternative_path);
+      const base::FilePath& alternative_path);
 
   // Create a CreateDirWorkItem that creates a directory at the given path.
-  static CreateDirWorkItem* CreateCreateDirWorkItem(const FilePath& path);
+  static CreateDirWorkItem* CreateCreateDirWorkItem(const base::FilePath& path);
 
   // Create a CreateRegKeyWorkItem that creates a registry key at the given
   // path.
@@ -107,16 +110,16 @@ class WorkItem {
   // hierarchy at the given root path. A key file can be optionally specified
   // by key_path.
   static DeleteTreeWorkItem* CreateDeleteTreeWorkItem(
-      const FilePath& root_path,
-      const FilePath& temp_path,
-      const std::vector<FilePath>& key_paths);
+      const base::FilePath& root_path,
+      const base::FilePath& temp_path,
+      const std::vector<base::FilePath>& key_paths);
 
   // Create a MoveTreeWorkItem that recursively moves a file system hierarchy
   // from source path to destination path.
   static MoveTreeWorkItem* CreateMoveTreeWorkItem(
-      const FilePath& source_path,
-      const FilePath& dest_path,
-      const FilePath& temp_dir,
+      const base::FilePath& source_path,
+      const base::FilePath& dest_path,
+      const base::FilePath& temp_dir,
       MoveTreeOption duplicate_option);
 
   // Create a SetRegValueWorkItem that sets a registry value with REG_SZ type

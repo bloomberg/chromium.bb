@@ -7,13 +7,13 @@
 
 #include "base/basictypes.h"
 
-namespace installer {
-  class MasterPreferences;
+namespace base {
+class FilePath;
 }
 
-class FilePath;
-
 namespace installer {
+
+class MasterPreferences;
 
 // Verbose installer runs clock in at around 50K, non-verbose much less than
 // that. Some installer operations span multiple setup.exe runs, so we try
@@ -41,7 +41,7 @@ enum TruncateResult {
 // If the file needed truncation, but the truncation failed, the file will be
 // deleted and the function returns LOGFILE_DELETED. This is done to prevent
 // run-away log files and guard against full disks.
-TruncateResult TruncateLogFileIfNeeded(const FilePath& log_file);
+TruncateResult TruncateLogFileIfNeeded(const base::FilePath& log_file);
 
 // Call to initialize logging for Chrome installer.
 void InitInstallerLogging(const installer::MasterPreferences& prefs);
@@ -50,7 +50,7 @@ void InitInstallerLogging(const installer::MasterPreferences& prefs);
 void EndInstallerLogging();
 
 // Returns the full path of the log file.
-FilePath GetLogFilePath(const installer::MasterPreferences& prefs);
+base::FilePath GetLogFilePath(const installer::MasterPreferences& prefs);
 
 }  // namespace installer
 

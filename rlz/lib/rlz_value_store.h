@@ -21,7 +21,9 @@
 #include <string>
 #include <vector>
 
+namespace base {
 class FilePath;
+}
 
 namespace rlz_lib {
 
@@ -106,7 +108,7 @@ class ScopedRlzValueStoreLock {
 #if defined(OS_POSIX)
 namespace testing {
 // Prefix |directory| to the path where the RLZ data file lives, for tests.
-void SetRlzStoreDirectory(const FilePath& directory);
+void SetRlzStoreDirectory(const base::FilePath& directory);
 
 // Returns the path of the file used as data store.
 std::string RlzStoreFilenameStr();

@@ -132,7 +132,7 @@ class AppCacheStorageImplTest : public testing::Test {
   class MockQuotaManager : public quota::QuotaManager {
    public:
     MockQuotaManager()
-      : QuotaManager(true /* is_incognito */, FilePath(),
+      : QuotaManager(true /* is_incognito */, base::FilePath(),
                      io_thread->message_loop_proxy(),
                      db_thread->message_loop_proxy(),
                      NULL),
@@ -261,7 +261,7 @@ class AppCacheStorageImplTest : public testing::Test {
   void SetUpTest() {
     DCHECK(MessageLoop::current() == io_thread->message_loop());
     service_.reset(new AppCacheService(NULL));
-    service_->Initialize(FilePath(), db_thread->message_loop_proxy(), NULL);
+    service_->Initialize(base::FilePath(), db_thread->message_loop_proxy(), NULL);
     mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
     service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
     delegate_.reset(new MockStorageDelegate(this));

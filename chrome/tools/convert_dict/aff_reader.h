@@ -10,13 +10,15 @@
 #include <string>
 #include <vector>
 
+namespace base {
 class FilePath;
+}
 
 namespace convert_dict {
 
 class AffReader {
  public:
-  explicit AffReader(const FilePath& path);
+  explicit AffReader(const base::FilePath& path);
   ~AffReader();
 
   bool Read();

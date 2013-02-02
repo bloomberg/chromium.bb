@@ -20,7 +20,8 @@
 
 namespace {
 
-const FilePath::CharType kOriginDatabaseName[] = FILE_PATH_LITERAL("Origins");
+const base::FilePath::CharType kOriginDatabaseName[] =
+    FILE_PATH_LITERAL("Origins");
 const char kOriginKeyPrefix[] = "ORIGIN:";
 const char kLastPathKey[] = "LAST_PATH";
 const int64 kMinimumReportIntervalHours = 1;
@@ -51,7 +52,7 @@ FileSystemOriginDatabase::OriginRecord::OriginRecord() {
 }
 
 FileSystemOriginDatabase::OriginRecord::OriginRecord(
-    const std::string& origin_in, const FilePath& path_in)
+    const std::string& origin_in, const base::FilePath& path_in)
     : origin(origin_in), path(path_in) {
 }
 
@@ -59,7 +60,7 @@ FileSystemOriginDatabase::OriginRecord::~OriginRecord() {
 }
 
 FileSystemOriginDatabase::FileSystemOriginDatabase(
-    const FilePath& file_system_directory)
+    const base::FilePath& file_system_directory)
     : file_system_directory_(file_system_directory) {
 }
 
@@ -116,15 +117,15 @@ bool FileSystemOriginDatabase::RepairDatabase(const std::string& db_path) {
   }
 
   // See if the repaired entries match with what we have on disk.
-  std::set<FilePath> directories;
+  std::set<base::FilePath> directories;
   file_util::FileEnumerator file_enum(file_system_directory_,
                                       false /* recursive */,
                                       file_util::FileEnumerator::DIRECTORIES);
-  FilePath path_each;
+  base::FilePath path_each;
   while (!(path_each = file_enum.Next()).empty())
     directories.insert(path_each.BaseName());
-  std::set<FilePath>::iterator db_dir_itr =
-      directories.find(FilePath(kOriginDatabaseName));
+  std::set<base::FilePath>::iterator db_dir_itr =
+      directories.find(base::FilePath(kOriginDatabaseName));
   // Make sure we have the database file in its directory and therefore we are
   // working on the correct path.
   DCHECK(db_dir_itr != directories.end());
@@ -140,7 +141,7 @@ bool FileSystemOriginDatabase::RepairDatabase(const std::string& db_path) {
   for (std::vector<OriginRecord>::iterator db_origin_itr = origins.begin();
        db_origin_itr != origins.end();
        ++db_origin_itr) {
-    std::set<FilePath>::iterator dir_itr =
+    std::set<base::FilePath>::iterator dir_itr =
         directories.find(db_origin_itr->path);
     if (dir_itr == directories.end()) {
       if (!RemovePathForOrigin(db_origin_itr->origin)) {
@@ -153,7 +154,7 @@ bool FileSystemOriginDatabase::RepairDatabase(const std::string& db_path) {
   }
 
   // Delete any directories not listed in the origins database.
-  for (std::set<FilePath>::iterator dir_itr = directories.begin();
+  for (std::set<base::FilePath>::iterator dir_itr = directories.begin();
        dir_itr != directories.end();
        ++dir_itr) {
     if (!file_util::Delete(file_system_directory_.Append(*dir_itr),
@@ -214,7 +215,7 @@ bool FileSystemOriginDatabase::HasOriginPath(const std::string& origin) {
 }
 
 bool FileSystemOriginDatabase::GetPathForOrigin(
-    const std::string& origin, FilePath* directory) {
+    const std::string& origin, base::FilePath* directory) {
   if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(directory);
@@ -271,7 +272,7 @@ bool FileSystemOriginDatabase::ListAllOrigins(
       StartsWithASCII(iter->key().ToString(), origin_key_prefix, true)) {
     std::string origin =
       iter->key().ToString().substr(origin_key_prefix.length());
-    FilePath path = StringToFilePath(iter->value().ToString());
+    base::FilePath path = StringToFilePath(iter->value().ToString());
     origins->push_back(OriginRecord(origin, path));
     iter->Next();
   }

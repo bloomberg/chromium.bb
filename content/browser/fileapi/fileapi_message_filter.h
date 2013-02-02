@@ -18,10 +18,10 @@
 #include "webkit/blob/blob_data.h"
 #include "webkit/fileapi/file_system_types.h"
 
-class FilePath;
 class GURL;
 
 namespace base {
+class FilePath;
 class Time;
 }
 
@@ -113,7 +113,7 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
   void OnWillUpdate(const GURL& path);
   void OnDidUpdate(const GURL& path, int64 delta);
   void OnSyncGetPlatformPath(const GURL& path,
-                             FilePath* platform_path);
+                             base::FilePath* platform_path);
   void OnCreateSnapshotFile(int request_id,
                             const GURL& blob_url,
                             const GURL& path);
@@ -133,7 +133,7 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
   void DidGetMetadata(int request_id,
                       base::PlatformFileError result,
                       const base::PlatformFileInfo& info,
-                      const FilePath& platform_path);
+                      const base::FilePath& platform_path);
   void DidReadDirectory(int request_id,
                         base::PlatformFileError result,
                         const std::vector<base::FileUtilProxy::Entry>& entries,
@@ -155,17 +155,17 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
                            base::PlatformFileError result);
   void DidCreateSnapshot(
       int request_id,
-      const base::Callback<void(const FilePath&)>& register_file_callback,
+      const base::Callback<void(const base::FilePath&)>& register_file_callback,
       base::PlatformFileError result,
       const base::PlatformFileInfo& info,
-      const FilePath& platform_path,
+      const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
   // Registers the given file pointed by |virtual_path| and backed by
   // |platform_path| as the |blob_url|.  Called by DidCreateSnapshot.
   void RegisterFileAsBlob(const GURL& blob_url,
                           const fileapi::FileSystemURL& url,
-                          const FilePath& platform_path);
+                          const base::FilePath& platform_path);
 
   // Checks renderer's access permissions for single file.
   bool HasPermissionsForFile(const fileapi::FileSystemURL& url,

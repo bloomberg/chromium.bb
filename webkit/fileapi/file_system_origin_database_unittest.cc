@@ -22,15 +22,15 @@
 namespace fileapi {
 
 namespace {
-const FilePath::CharType kFileSystemDirName[] =
+const base::FilePath::CharType kFileSystemDirName[] =
     FILE_PATH_LITERAL("File System");
-const FilePath::CharType kOriginDatabaseName[] = FILE_PATH_LITERAL("Origins");
+const base::FilePath::CharType kOriginDatabaseName[] = FILE_PATH_LITERAL("Origins");
 }  // namespace
 
 TEST(FileSystemOriginDatabaseTest, BasicTest) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  const FilePath kFSDir = dir.path().Append(kFileSystemDirName);
+  const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   EXPECT_FALSE(file_util::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
@@ -41,8 +41,8 @@ TEST(FileSystemOriginDatabaseTest, BasicTest) {
   // Double-check to make sure that had no side effects.
   EXPECT_FALSE(database.HasOriginPath(origin));
 
-  FilePath path0;
-  FilePath path1;
+  base::FilePath path0;
+  base::FilePath path1;
 
   // Empty strings aren't valid origins.
   EXPECT_FALSE(database.GetPathForOrigin(std::string(), &path0));
@@ -60,7 +60,7 @@ TEST(FileSystemOriginDatabaseTest, BasicTest) {
 TEST(FileSystemOriginDatabaseTest, TwoPathTest) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  const FilePath kFSDir = dir.path().Append(kFileSystemDirName);
+  const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   EXPECT_FALSE(file_util::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
@@ -71,8 +71,8 @@ TEST(FileSystemOriginDatabaseTest, TwoPathTest) {
   EXPECT_FALSE(database.HasOriginPath(origin0));
   EXPECT_FALSE(database.HasOriginPath(origin1));
 
-  FilePath path0;
-  FilePath path1;
+  base::FilePath path0;
+  base::FilePath path1;
   EXPECT_TRUE(database.GetPathForOrigin(origin0, &path0));
   EXPECT_TRUE(database.HasOriginPath(origin0));
   EXPECT_FALSE(database.HasOriginPath(origin1));
@@ -88,7 +88,7 @@ TEST(FileSystemOriginDatabaseTest, TwoPathTest) {
 TEST(FileSystemOriginDatabaseTest, DropDatabaseTest) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  const FilePath kFSDir = dir.path().Append(kFileSystemDirName);
+  const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   EXPECT_FALSE(file_util::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
@@ -97,7 +97,7 @@ TEST(FileSystemOriginDatabaseTest, DropDatabaseTest) {
 
   EXPECT_FALSE(database.HasOriginPath(origin));
 
-  FilePath path0;
+  base::FilePath path0;
   EXPECT_TRUE(database.GetPathForOrigin(origin, &path0));
   EXPECT_TRUE(database.HasOriginPath(origin));
   EXPECT_FALSE(path0.empty());
@@ -106,7 +106,7 @@ TEST(FileSystemOriginDatabaseTest, DropDatabaseTest) {
 
   database.DropDatabase();
 
-  FilePath path1;
+  base::FilePath path1;
   EXPECT_TRUE(database.HasOriginPath(origin));
   EXPECT_TRUE(database.GetPathForOrigin(origin, &path1));
   EXPECT_FALSE(path1.empty());
@@ -116,7 +116,7 @@ TEST(FileSystemOriginDatabaseTest, DropDatabaseTest) {
 TEST(FileSystemOriginDatabaseTest, DeleteOriginTest) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  const FilePath kFSDir = dir.path().Append(kFileSystemDirName);
+  const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   EXPECT_FALSE(file_util::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
@@ -126,7 +126,7 @@ TEST(FileSystemOriginDatabaseTest, DeleteOriginTest) {
   EXPECT_FALSE(database.HasOriginPath(origin));
   EXPECT_TRUE(database.RemovePathForOrigin(origin));
 
-  FilePath path0;
+  base::FilePath path0;
   EXPECT_TRUE(database.GetPathForOrigin(origin, &path0));
   EXPECT_TRUE(database.HasOriginPath(origin));
   EXPECT_FALSE(path0.empty());
@@ -134,7 +134,7 @@ TEST(FileSystemOriginDatabaseTest, DeleteOriginTest) {
   EXPECT_TRUE(database.RemovePathForOrigin(origin));
   EXPECT_FALSE(database.HasOriginPath(origin));
 
-  FilePath path1;
+  base::FilePath path1;
   EXPECT_TRUE(database.GetPathForOrigin(origin, &path1));
   EXPECT_FALSE(path1.empty());
   EXPECT_NE(path0, path1);
@@ -143,7 +143,7 @@ TEST(FileSystemOriginDatabaseTest, DeleteOriginTest) {
 TEST(FileSystemOriginDatabaseTest, ListOriginsTest) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  const FilePath kFSDir = dir.path().Append(kFileSystemDirName);
+  const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   EXPECT_FALSE(file_util::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
@@ -160,8 +160,8 @@ TEST(FileSystemOriginDatabaseTest, ListOriginsTest) {
   EXPECT_FALSE(database.HasOriginPath(origin0));
   EXPECT_FALSE(database.HasOriginPath(origin1));
 
-  FilePath path0;
-  FilePath path1;
+  base::FilePath path0;
+  base::FilePath path1;
   EXPECT_TRUE(database.GetPathForOrigin(origin0, &path0));
   EXPECT_TRUE(database.ListAllOrigins(&origins));
   EXPECT_EQ(origins.size(), 1UL);
@@ -192,8 +192,8 @@ TEST(FileSystemOriginDatabaseTest, DatabaseRecoveryTest) {
 
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  const FilePath kFSDir = dir.path().Append(kFileSystemDirName);
-  const FilePath kDBDir = kFSDir.Append(kOriginDatabaseName);
+  const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
+  const base::FilePath kDBDir = kFSDir.Append(kOriginDatabaseName);
   EXPECT_FALSE(file_util::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
@@ -208,7 +208,7 @@ TEST(FileSystemOriginDatabaseTest, DatabaseRecoveryTest) {
   scoped_ptr<FileSystemOriginDatabase> database(
       new FileSystemOriginDatabase(kFSDir));
   for (size_t i = 0; i < arraysize(kOrigins); ++i) {
-    FilePath path;
+    base::FilePath path;
     EXPECT_FALSE(database->HasOriginPath(kOrigins[i]));
     EXPECT_TRUE(database->GetPathForOrigin(kOrigins[i], &path));
     EXPECT_FALSE(path.empty());
@@ -219,8 +219,8 @@ TEST(FileSystemOriginDatabaseTest, DatabaseRecoveryTest) {
   }
   database.reset();
 
-  const FilePath kGarbageDir = kFSDir.AppendASCII("foo");
-  const FilePath kGarbageFile = kGarbageDir.AppendASCII("bar");
+  const base::FilePath kGarbageDir = kFSDir.AppendASCII("foo");
+  const base::FilePath kGarbageFile = kGarbageDir.AppendASCII("bar");
   EXPECT_TRUE(file_util::CreateDirectory(kGarbageDir));
   bool created = false;
   base::PlatformFileError error;
@@ -239,7 +239,7 @@ TEST(FileSystemOriginDatabaseTest, DatabaseRecoveryTest) {
                   0, std::numeric_limits<size_t>::max());
   CorruptDatabase(kDBDir, leveldb::kLogFile, -1, 1);
 
-  FilePath path;
+  base::FilePath path;
   database.reset(new FileSystemOriginDatabase(kFSDir));
   std::vector<FileSystemOriginDatabase::OriginRecord> origins_in_db;
   EXPECT_TRUE(database->ListAllOrigins(&origins_in_db));

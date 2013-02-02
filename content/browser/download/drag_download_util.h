@@ -11,8 +11,12 @@
 #include "content/browser/download/drag_download_file.h"
 #include "ui/base/dragdrop/download_file_interface.h"
 
-class FilePath;
 class GURL;
+
+namespace base {
+class FilePath;
+}
+
 namespace net {
 class FileStream;
 }
@@ -30,7 +34,7 @@ namespace content {
 //   text/plain:example.txt:http://example.com/example.txt
 bool ParseDownloadMetadata(const string16& metadata,
                            string16* mime_type,
-                           FilePath* file_name,
+                           base::FilePath* file_name,
                            GURL* url);
 
 // Create a new file at the specified path. If the file already exists, try to
@@ -38,7 +42,7 @@ bool ParseDownloadMetadata(const string16& metadata,
 // Return a FileStream if successful.
 // |net_log| is a NetLog for the stream.
 CONTENT_EXPORT net::FileStream* CreateFileStreamForDrop(
-    FilePath* file_path, net::NetLog* net_log);
+    base::FilePath* file_path, net::NetLog* net_log);
 
 // Implementation of DownloadFileObserver to finalize the download process.
 class PromiseFileFinalizer : public ui::DownloadFileObserver {
@@ -46,7 +50,7 @@ class PromiseFileFinalizer : public ui::DownloadFileObserver {
   explicit PromiseFileFinalizer(DragDownloadFile* drag_file_downloader);
 
   // DownloadFileObserver methods.
-  virtual void OnDownloadCompleted(const FilePath& file_path) OVERRIDE;
+  virtual void OnDownloadCompleted(const base::FilePath& file_path) OVERRIDE;
   virtual void OnDownloadAborted() OVERRIDE;
 
  protected:

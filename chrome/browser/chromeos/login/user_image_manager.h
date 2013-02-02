@@ -9,8 +9,11 @@
 
 #include "chrome/browser/chromeos/login/user.h"
 
-class FilePath;
 class PrefServiceSimple;
+
+namespace base {
+class FilePath;
+}
 
 namespace gfx {
 class ImageSkia;
@@ -49,7 +52,7 @@ class UserImageManager {
   // Tries to load user image from disk; if successful, sets it for the user,
   // sends LOGIN_USER_IMAGE_CHANGED notification and updates Local State.
   virtual void SaveUserImageFromFile(const std::string& username,
-                                     const FilePath& path) = 0;
+                                     const base::FilePath& path) = 0;
 
   // Sets profile image as user image for |username|, sends
   // LOGIN_USER_IMAGE_CHANGED notification and updates Local State. If the user

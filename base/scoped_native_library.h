@@ -8,9 +8,9 @@
 #include "base/base_export.h"
 #include "base/native_library.h"
 
-class FilePath;
-
 namespace base {
+
+class FilePath;
 
 // A class which encapsulates a base::NativeLibrary object available only in a
 // scope.

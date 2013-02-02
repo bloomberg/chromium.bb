@@ -16,7 +16,7 @@
 namespace dom_storage {
 
 DomStorageNamespace::DomStorageNamespace(
-    const FilePath& directory,
+    const base::FilePath& directory,
     DomStorageTaskRunner* task_runner)
     : namespace_id_(kLocalStorageNamespaceId),
       directory_(directory),

@@ -9,7 +9,9 @@
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace drive {
 
@@ -26,7 +28,7 @@ class FileWriteHelper {
   // file is created.
   //
   // Must be called from UI thread.
-  void PrepareWritableFileAndRun(const FilePath& path,
+  void PrepareWritableFileAndRun(const base::FilePath& path,
                                  const OpenFileCallback& callback);
 
  private:
@@ -34,15 +36,15 @@ class FileWriteHelper {
   // file does not exist yet, does OpenFile to download and mark the file as
   // dirty, runs |callback|, and finally calls CloseFile.
   void PrepareWritableFileAndRunAfterCreateFile(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       const OpenFileCallback& callback,
       DriveFileError result);
   void PrepareWritableFileAndRunAfterOpenFile(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       const OpenFileCallback& callback,
       DriveFileError result,
-      const FilePath& local_cache_path);
-  void PrepareWritableFileAndRunAfterCallback(const FilePath& file_path);
+      const base::FilePath& local_cache_path);
+  void PrepareWritableFileAndRunAfterCallback(const base::FilePath& file_path);
 
   // File system owned by DriveSystemService.
   DriveFileSystemInterface* file_system_;

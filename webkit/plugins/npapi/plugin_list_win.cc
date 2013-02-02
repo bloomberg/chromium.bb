@@ -43,7 +43,7 @@ const char16 kRegistryJavaHome[] = L"JavaHome";
 const char16 kJavaDeploy1[] = L"npdeploytk.dll";
 const char16 kJavaDeploy2[] = L"npdeployjava1.dll";
 
-FilePath AppendPluginsDir(const FilePath& path) {
+base::FilePath AppendPluginsDir(const base::FilePath& path) {
   return path.AppendASCII("plugins");
 }
 
@@ -51,8 +51,8 @@ FilePath AppendPluginsDir(const FilePath& path) {
 // may be a versioned subdirectory, or it may be the same directory as the
 // GetExeDirectory(), depending on the embedder's implementation.
 // Path is an output parameter to receive the path.
-void GetAppDirectory(std::set<FilePath>* plugin_dirs) {
-  FilePath app_path;
+void GetAppDirectory(std::set<base::FilePath>* plugin_dirs) {
+  base::FilePath app_path;
   if (!PathService::Get(base::DIR_MODULE, &app_path))
     return;
   plugin_dirs->insert(AppendPluginsDir(app_path));
@@ -60,15 +60,15 @@ void GetAppDirectory(std::set<FilePath>* plugin_dirs) {
 
 // Gets the directory where the launching executable resides on disk.
 // Path is an output parameter to receive the path.
-void GetExeDirectory(std::set<FilePath>* plugin_dirs) {
-  FilePath exe_path;
+void GetExeDirectory(std::set<base::FilePath>* plugin_dirs) {
+  base::FilePath exe_path;
   if (!PathService::Get(base::DIR_EXE, &exe_path))
     return;
   plugin_dirs->insert(AppendPluginsDir(exe_path));
 }
 
 // Gets the installed path for a registered app.
-bool GetInstalledPath(const char16* app, FilePath* out) {
+bool GetInstalledPath(const char16* app, base::FilePath* out) {
   string16 reg_path(kRegistryApps);
   reg_path.append(L"\\");
   reg_path.append(app);
@@ -78,12 +78,12 @@ bool GetInstalledPath(const char16* app, FilePath* out) {
   // As of Win7 AppPaths can also be registered in HKCU: http://goo.gl/UgFOf.
   if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
       hkcu_key.ReadValue(kRegistryPath, &path) == ERROR_SUCCESS) {
-    *out = FilePath(path);
+    *out = base::FilePath(path);
     return true;
   } else {
     base::win::RegKey hklm_key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ);
     if (hklm_key.ReadValue(kRegistryPath, &path) == ERROR_SUCCESS) {
-      *out = FilePath(path);
+      *out = base::FilePath(path);
       return true;
     }
   }
@@ -95,7 +95,7 @@ bool GetInstalledPath(const char16* app, FilePath* out) {
 void GetPluginsInRegistryDirectory(
     HKEY root_key,
     const string16& registry_folder,
-    std::set<FilePath>* plugin_dirs) {
+    std::set<base::FilePath>* plugin_dirs) {
   for (base::win::RegistryKeyIterator iter(root_key, registry_folder.c_str());
        iter.Valid(); ++iter) {
     // Use the registry to gather plugin across the file system.
@@ -106,13 +106,13 @@ void GetPluginsInRegistryDirectory(
 
     string16 path;
     if (key.ReadValue(kRegistryPath, &path) == ERROR_SUCCESS)
-      plugin_dirs->insert(FilePath(path));
+      plugin_dirs->insert(base::FilePath(path));
   }
 }
 
 // Enumerate through the registry key to find all installed FireFox paths.
 // FireFox 3 beta and version 2 can coexist. See bug: 1025003
-void GetFirefoxInstalledPaths(std::vector<FilePath>* out) {
+void GetFirefoxInstalledPaths(std::vector<base::FilePath>* out) {
   base::win::RegistryKeyIterator it(HKEY_LOCAL_MACHINE,
                                     kRegistryFirefoxInstalled);
   for (; it.Valid(); ++it) {
@@ -122,7 +122,7 @@ void GetFirefoxInstalledPaths(std::vector<FilePath>* out) {
     string16 install_dir;
     if (key.ReadValue(L"Install Directory", &install_dir) != ERROR_SUCCESS)
       continue;
-    out->push_back(FilePath(install_dir));
+    out->push_back(base::FilePath(install_dir));
   }
 }
 
@@ -130,14 +130,14 @@ void GetFirefoxInstalledPaths(std::vector<FilePath>* out) {
 // of a kludge, but it helps us locate the flash player for users that
 // already have it for firefox.  Not having to download yet-another-plugin
 // is a good thing.
-void GetFirefoxDirectory(std::set<FilePath>* plugin_dirs) {
-  std::vector<FilePath> paths;
+void GetFirefoxDirectory(std::set<base::FilePath>* plugin_dirs) {
+  std::vector<base::FilePath> paths;
   GetFirefoxInstalledPaths(&paths);
   for (unsigned int i = 0; i < paths.size(); ++i) {
     plugin_dirs->insert(AppendPluginsDir(paths[i]));
   }
 
-  FilePath firefox_app_data_plugin_path;
+  base::FilePath firefox_app_data_plugin_path;
   if (PathService::Get(base::DIR_APP_DATA, &firefox_app_data_plugin_path)) {
     firefox_app_data_plugin_path =
         firefox_app_data_plugin_path.AppendASCII("Mozilla");
@@ -146,8 +146,8 @@ void GetFirefoxDirectory(std::set<FilePath>* plugin_dirs) {
 }
 
 // Hardcoded logic to detect Acrobat plugins locations.
-void GetAcrobatDirectory(std::set<FilePath>* plugin_dirs) {
-  FilePath path;
+void GetAcrobatDirectory(std::set<base::FilePath>* plugin_dirs) {
+  base::FilePath path;
   if (!GetInstalledPath(kRegistryAcrobatReader, &path) &&
       !GetInstalledPath(kRegistryAcrobat, &path)) {
     return;
@@ -157,21 +157,21 @@ void GetAcrobatDirectory(std::set<FilePath>* plugin_dirs) {
 }
 
 // Hardcoded logic to detect QuickTime plugin location.
-void GetQuicktimeDirectory(std::set<FilePath>* plugin_dirs) {
-  FilePath path;
+void GetQuicktimeDirectory(std::set<base::FilePath>* plugin_dirs) {
+  base::FilePath path;
   if (GetInstalledPath(kRegistryQuickTime, &path))
     plugin_dirs->insert(AppendPluginsDir(path));
 }
 
 // Hardcoded logic to detect Windows Media Player plugin location.
-void GetWindowsMediaDirectory(std::set<FilePath>* plugin_dirs) {
-  FilePath path;
+void GetWindowsMediaDirectory(std::set<base::FilePath>* plugin_dirs) {
+  base::FilePath path;
   if (GetInstalledPath(kRegistryWindowsMedia, &path))
     plugin_dirs->insert(path);
 }
 
 // Hardcoded logic to detect Java plugin location.
-void GetJavaDirectory(std::set<FilePath>* plugin_dirs) {
+void GetJavaDirectory(std::set<base::FilePath>* plugin_dirs) {
   // Load the new NPAPI Java plugin
   // 1. Open the main JRE key under HKLM
   base::win::RegKey java_key(HKEY_LOCAL_MACHINE, kRegistryJava,
@@ -199,12 +199,12 @@ void GetJavaDirectory(std::set<FilePath>* plugin_dirs) {
 
       // 5. We don't know the exact name of the DLL but it's in the form
       //    NP*.dll so just invoke LoadPlugins on this path.
-      plugin_dirs->insert(FilePath(java_plugin_directory));
+      plugin_dirs->insert(base::FilePath(java_plugin_directory));
     }
   }
 }
 
-bool IsValid32BitImage(const FilePath& path) {
+bool IsValid32BitImage(const base::FilePath& path) {
   file_util::MemoryMappedFile plugin_image;
 
   if (!plugin_image.InitializeAsImageSection(path))
@@ -266,9 +266,9 @@ void PluginList::PlatformInit() {
   dont_load_new_wmp_ = command_line.HasSwitch(switches::kUseOldWMPPlugin);
 }
 
-void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
+void PluginList::GetPluginDirectories(std::vector<base::FilePath>* plugin_dirs) {
   // We use a set for uniqueness, which we require, over order, which we do not.
-  std::set<FilePath> dirs;
+  std::set<base::FilePath> dirs;
 
   // Load from the application-specific area
   GetAppDirectory(&dirs);
@@ -289,12 +289,12 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
   GetQuicktimeDirectory(&dirs);
   GetWindowsMediaDirectory(&dirs);
 
-  for (std::set<FilePath>::iterator i = dirs.begin(); i != dirs.end(); ++i)
+  for (std::set<base::FilePath>::iterator i = dirs.begin(); i != dirs.end(); ++i)
     plugin_dirs->push_back(*i);
 }
 
 void PluginList::GetPluginsInDir(
-    const FilePath& path, std::vector<FilePath>* plugins) {
+    const base::FilePath& path, std::vector<base::FilePath>* plugins) {
   WIN32_FIND_DATA find_file_data;
   HANDLE find_handle;
 
@@ -308,7 +308,7 @@ void PluginList::GetPluginsInDir(
 
   do {
     if (!(find_file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-      FilePath filename = path.Append(find_file_data.cFileName);
+      base::FilePath filename = path.Append(find_file_data.cFileName);
       plugins->push_back(filename);
     }
   } while (FindNextFile(find_handle, &find_file_data) != 0);
@@ -317,15 +317,15 @@ void PluginList::GetPluginsInDir(
   FindClose(find_handle);
 }
 
-void PluginList::GetPluginPathsFromRegistry(std::vector<FilePath>* plugins) {
-  std::set<FilePath> plugin_dirs;
+void PluginList::GetPluginPathsFromRegistry(std::vector<base::FilePath>* plugins) {
+  std::set<base::FilePath> plugin_dirs;
 
   GetPluginsInRegistryDirectory(
       HKEY_CURRENT_USER, kRegistryMozillaPlugins, &plugin_dirs);
   GetPluginsInRegistryDirectory(
       HKEY_LOCAL_MACHINE, kRegistryMozillaPlugins, &plugin_dirs);
 
-  for (std::set<FilePath>::iterator i = plugin_dirs.begin();
+  for (std::set<base::FilePath>::iterator i = plugin_dirs.begin();
        i != plugin_dirs.end(); ++i) {
     plugins->push_back(*i);
   }
@@ -336,9 +336,9 @@ bool PluginList::ShouldLoadPluginUsingPluginList(
     std::vector<webkit::WebPluginInfo>* plugins) {
   // Version check
   for (size_t j = 0; j < plugins->size(); ++j) {
-    FilePath::StringType plugin1 =
+    base::FilePath::StringType plugin1 =
         StringToLowerASCII((*plugins)[j].path.BaseName().value());
-    FilePath::StringType plugin2 =
+    base::FilePath::StringType plugin2 =
         StringToLowerASCII(info.path.BaseName().value());
     if ((plugin1 == plugin2 && HaveSharedMimeType((*plugins)[j], info)) ||
         (plugin1 == kJavaDeploy1 && plugin2 == kJavaDeploy2) ||
@@ -361,7 +361,7 @@ bool PluginList::ShouldLoadPluginUsingPluginList(
   }
 
   // Troublemakers.
-  FilePath::StringType filename =
+  base::FilePath::StringType filename =
       StringToLowerASCII(info.path.BaseName().value());
   // Depends on XPCOM.
   if (filename == kMozillaActiveXPlugin)
@@ -383,7 +383,7 @@ bool PluginList::ShouldLoadPluginUsingPluginList(
   // We only work with newer versions of the Java plugin which use NPAPI only
   // and don't depend on XPCOM.
   if (filename == kJavaPlugin1 || filename == kJavaPlugin2) {
-    std::vector<FilePath::StringType> ver;
+    std::vector<base::FilePath::StringType> ver;
     base::SplitString(info.version, '.', &ver);
     int major, minor, update;
     if (ver.size() == 4 &&
@@ -417,7 +417,7 @@ bool PluginList::ShouldLoadPluginUsingPluginList(
 
 #if !defined(ARCH_CPU_X86_64)
   // The plugin in question could be a 64 bit plugin which we cannot load.
-  FilePath plugin_path(info.path);
+  base::FilePath plugin_path(info.path);
   file_util::AbsolutePath(&plugin_path);
   if (!IsValid32BitImage(plugin_path))
     return false;

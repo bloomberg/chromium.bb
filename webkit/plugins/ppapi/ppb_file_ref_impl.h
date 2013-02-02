@@ -27,7 +27,7 @@ class WEBKIT_GLUE_EXPORT PPB_FileRef_Impl
   PPB_FileRef_Impl(const ::ppapi::PPB_FileRef_CreateInfo& info,
                    PPB_FileSystem_Impl* file_system);
   PPB_FileRef_Impl(const ::ppapi::PPB_FileRef_CreateInfo& info,
-                   const FilePath& external_file_path);
+                   const base::FilePath& external_file_path);
   virtual ~PPB_FileRef_Impl();
 
   // The returned object will have a refcount of 0 (just like "new").
@@ -36,7 +36,7 @@ class WEBKIT_GLUE_EXPORT PPB_FileRef_Impl
 
   // The returned object will have a refcount of 0 (just like "new").
   static PPB_FileRef_Impl* CreateExternal(PP_Instance instance,
-                                          const FilePath& external_file_path,
+                                          const base::FilePath& external_file_path,
                                           const std::string& display_name);
 
   // PPB_FileRef_API implementation (not provided by PPB_FileRef_Shared).
@@ -59,7 +59,7 @@ class WEBKIT_GLUE_EXPORT PPB_FileRef_Impl
 
   // Returns the system path corresponding to this file. Valid only for
   // external filesystems.
-  FilePath GetSystemPath() const;
+  base::FilePath GetSystemPath() const;
 
   // Returns the FileSystem API URL corresponding to this file.
   GURL GetFileSystemURL() const;
@@ -76,7 +76,7 @@ class WEBKIT_GLUE_EXPORT PPB_FileRef_Impl
   scoped_refptr<PPB_FileSystem_Impl> file_system_;
 
   // Used only for external filesystems.
-  FilePath external_file_system_path_;
+  base::FilePath external_file_system_path_;
 
   // Lazily initialized var created from the external path. This is so we can
   // return the identical string object every time it is requested.

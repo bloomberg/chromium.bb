@@ -8,7 +8,10 @@
 #include <string>
 
 class ChromeRenderMessageFilter;
+
+namespace base {
 class FilePath;
+}
 
 namespace IPC {
 class Message;
@@ -24,9 +27,9 @@ void GetReadonlyPnaclFd(ChromeRenderMessageFilter* chrome_render_message_filter,
                         IPC::Message* reply_msg);
 
 // Return true if the filename requested is valid for opening.
-// Sets file_to_open to the FilePath which we will attempt to open.
+// Sets file_to_open to the base::FilePath which we will attempt to open.
 bool PnaclCanOpenFile(const std::string& filename,
-                      FilePath* file_to_open);
+                      base::FilePath* file_to_open);
 
 // Creates a temporary file that will be deleted when the last handle
 // is closed, or earlier.

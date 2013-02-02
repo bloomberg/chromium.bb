@@ -392,7 +392,7 @@ class PluginDelegate {
   // Creates a replacement plug-in that is shown when the plug-in at |file_path|
   // couldn't be loaded.
   virtual WebKit::WebPlugin* CreatePluginReplacement(
-      const FilePath& file_path) = 0;
+      const base::FilePath& file_path) = 0;
 
   // The caller will own the pointer returned from this.
   virtual PlatformImage2D* CreateImage2D(int width, int height) = 0;
@@ -460,7 +460,7 @@ class PluginDelegate {
   // Sends an async IPC to open a local file.
   typedef base::Callback<void (base::PlatformFileError, base::PassPlatformFile)>
       AsyncOpenFileCallback;
-  virtual bool AsyncOpenFile(const FilePath& path,
+  virtual bool AsyncOpenFile(const base::FilePath& path,
                              int flags,
                              const AsyncOpenFileCallback& callback) = 0;
 
@@ -518,7 +518,7 @@ class PluginDelegate {
 
   // Synchronously returns the platform file path for a filesystem URL.
   virtual void SyncGetFileSystemPlatformPath(const GURL& url,
-                                             FilePath* platform_path) = 0;
+                                             base::FilePath* platform_path) = 0;
 
   // Returns a MessageLoopProxy instance associated with the message loop
   // of the file thread in this renderer.

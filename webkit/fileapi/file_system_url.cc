@@ -21,7 +21,7 @@ namespace {
 bool ParseFileSystemURL(const GURL& url,
                         GURL* origin_url,
                         FileSystemType* type,
-                        FilePath* file_path) {
+                        base::FilePath* file_path) {
   GURL origin;
   FileSystemType file_system_type = kFileSystemTypeUnknown;
 
@@ -60,7 +60,7 @@ bool ParseFileSystemURL(const GURL& url,
   while (!path.empty() && path[0] == '/')
     path.erase(0, 1);
 
-  FilePath converted_path = FilePath::FromUTF8Unsafe(path);
+  base::FilePath converted_path = base::FilePath::FromUTF8Unsafe(path);
 
   // All parent references should have been resolved in the renderer.
   if (converted_path.ReferencesParent())
@@ -92,7 +92,7 @@ FileSystemURL FileSystemURL::CreateForTest(const GURL& url) {
 
 FileSystemURL FileSystemURL::CreateForTest(const GURL& origin,
                                            FileSystemType type,
-                                           const FilePath& path) {
+                                           const base::FilePath& path) {
   return FileSystemURL(origin, type, path);
 }
 
@@ -105,7 +105,7 @@ FileSystemURL::FileSystemURL(const GURL& url)
 
 FileSystemURL::FileSystemURL(const GURL& origin,
                              FileSystemType type,
-                             const FilePath& path)
+                             const base::FilePath& path)
     : is_valid_(true),
       origin_(origin),
       type_(type),
@@ -115,10 +115,10 @@ FileSystemURL::FileSystemURL(const GURL& origin,
 
 FileSystemURL::FileSystemURL(const GURL& origin,
                              FileSystemType original_type,
-                             const FilePath& original_path,
+                             const base::FilePath& original_path,
                              const std::string& filesystem_id,
                              FileSystemType cracked_type,
-                             const FilePath& cracked_path)
+                             const base::FilePath& cracked_path)
     : is_valid_(true),
       origin_(origin),
       type_(cracked_type),
@@ -149,7 +149,7 @@ std::string FileSystemURL::DebugString() const {
   return ss.str();
 }
 
-FileSystemURL FileSystemURL::WithPath(const FilePath& path) const {
+FileSystemURL FileSystemURL::WithPath(const base::FilePath& path) const {
   FileSystemURL url = *this;
   url.path_ = path;
   url.virtual_path_.clear();

@@ -33,7 +33,7 @@ class HostKeyPairTest : public testing::Test {
  protected:
   virtual void SetUp() {
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
-    FilePath config_path = test_dir_.path().AppendASCII("test_config.json");
+    base::FilePath config_path = test_dir_.path().AppendASCII("test_config.json");
     config_.reset(new JsonHostConfig(config_path));
   }
 

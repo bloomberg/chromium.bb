@@ -60,14 +60,14 @@ class DelegateExecuteOperation {
   // Returns the process id of the parent or 0 on failure.
   DWORD GetParentPid() const;
 
-  const FilePath& shortcut() const {
+  const base::FilePath& shortcut() const {
     return relaunch_shortcut_;
   }
 
  private:
   OperationType operation_type_;
   string16 relaunch_flags_;
-  FilePath relaunch_shortcut_;
+  base::FilePath relaunch_shortcut_;
   string16 mutex_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegateExecuteOperation);

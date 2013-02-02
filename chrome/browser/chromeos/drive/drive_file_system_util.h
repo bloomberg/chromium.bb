@@ -16,8 +16,11 @@
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"
 
-class FilePath;
 class Profile;
+
+namespace base {
+class FilePath;
+}
 
 namespace drive {
 
@@ -39,13 +42,13 @@ const char kWildCard[] = "*";
 const char kSymLinkToDevNull[] = "/dev/null";
 
 // Returns the Drive mount point path, which looks like "/special/drive".
-const FilePath& GetDriveMountPointPath();
+const base::FilePath& GetDriveMountPointPath();
 
 // Returns the Drive mount path as string.
 const std::string& GetDriveMountPointPathAsString();
 
 // Returns the 'local' root of remote file system as "/special".
-const FilePath& GetSpecialRemoteRootPath();
+const base::FilePath& GetSpecialRemoteRootPath();
 
 // Returns the gdata file resource url formatted as
 // chrome://drive/<resource_id>/<file_name>.
@@ -54,16 +57,16 @@ GURL GetFileResourceUrl(const std::string& resource_id,
 
 // Given a profile and a drive_cache_path, return the file resource url.
 void ModifyDriveFileResourceUrl(Profile* profile,
-                                const FilePath& drive_cache_path,
+                                const base::FilePath& drive_cache_path,
                                 GURL* url);
 
 // Returns true if the given path is under the Drive mount point.
-bool IsUnderDriveMountPoint(const FilePath& path);
+bool IsUnderDriveMountPoint(const base::FilePath& path);
 
 // Extracts the Drive path from the given path located under the Drive mount
 // point. Returns an empty path if |path| is not under the Drive mount point.
 // Examples: ExtractGDatPath("/special/drive/foo.txt") => "drive/foo.txt"
-FilePath ExtractDrivePath(const FilePath& path);
+base::FilePath ExtractDrivePath(const base::FilePath& path);
 
 // Escapes a file name in Drive cache.
 // Replaces percent ('%'), period ('.') and slash ('/') with %XX (hex)
@@ -90,13 +93,13 @@ std::string ExtractResourceIdFromUrl(const GURL& url);
 // Case 3: Mounted files have all three parts.
 // Example: path="/user/GCache/v1/persistent/pdf:a1b2.01234567.mounted" =>
 //          resource_id="pdf:a1b2", md5="01234567", extra_extension="mounted".
-void ParseCacheFilePath(const FilePath& path,
+void ParseCacheFilePath(const base::FilePath& path,
                         std::string* resource_id,
                         std::string* md5,
                         std::string* extra_extension);
 
-// Callback type for PrepareWritableFilePathAndRun.
-typedef base::Callback<void (DriveFileError, const FilePath& path)>
+// Callback type for PrepareWritablebase::FilePathAndRun.
+typedef base::Callback<void (DriveFileError, const base::FilePath& path)>
     OpenFileCallback;
 
 // Invokes |callback| on blocking thread pool, after converting virtual |path|
@@ -108,7 +111,7 @@ typedef base::Callback<void (DriveFileError, const FilePath& path)>
 //
 // Must be called from UI thread.
 void PrepareWritableFileAndRun(Profile* profile,
-                               const FilePath& path,
+                               const base::FilePath& path,
                                const OpenFileCallback& callback);
 
 // Ensures the existence of |directory| of '/special/drive/foo'.  This will
@@ -122,7 +125,7 @@ void PrepareWritableFileAndRun(Profile* profile,
 //
 // Must be called from UI/IO thread.
 void EnsureDirectoryExists(Profile* profile,
-                           const FilePath& directory,
+                           const base::FilePath& directory,
                            const FileOperationCallback& callback);
 
 // Converts GData error code into file platform error code.

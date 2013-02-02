@@ -11,8 +11,6 @@
 #include "base/threading/platform_thread.h"
 #include "sql/meta_table.h"
 
-class FilePath;
-
 namespace sql {
 class Connection;
 }

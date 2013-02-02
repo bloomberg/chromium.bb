@@ -55,7 +55,7 @@ class CrossOperationDelegate
       const StatusCallback& callback,
       base::PlatformFileError error,
       const base::PlatformFileInfo& file_info,
-      const FilePath& platform_path,
+      const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
   void DidFinishCopy(
       const FileSystemURL& src,

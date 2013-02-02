@@ -84,9 +84,9 @@ bool PluginStream::Open(const std::string& mime_type,
     GURL gurl(stream_.url);
 
 #if defined(OS_WIN)
-    FilePath path(UTF8ToWide(gurl.path()));
+    base::FilePath path(UTF8ToWide(gurl.path()));
 #elif defined(OS_POSIX)
-    FilePath path(gurl.path());
+    base::FilePath path(gurl.path());
 #endif
     if (net::GetMimeTypeFromFile(path, &temp_mime_type))
       char_mime_type = temp_mime_type.c_str();

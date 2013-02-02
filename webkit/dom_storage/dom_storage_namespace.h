@@ -27,7 +27,7 @@ class WEBKIT_STORAGE_EXPORT DomStorageNamespace
  public:
   // Constructor for a LocalStorage namespace with id of 0
   // and an optional backing directory on disk.
-  DomStorageNamespace(const FilePath& directory,  // may be empty
+  DomStorageNamespace(const base::FilePath& directory,  // may be empty
                       DomStorageTaskRunner* task_runner);
 
   // Constructor for a SessionStorage namespace with a non-zero id and an
@@ -83,7 +83,7 @@ class WEBKIT_STORAGE_EXPORT DomStorageNamespace
 
   int64 namespace_id_;
   std::string persistent_namespace_id_;
-  FilePath directory_;
+  base::FilePath directory_;
   AreaMap areas_;
   scoped_refptr<DomStorageTaskRunner> task_runner_;
   scoped_refptr<SessionStorageDatabase> session_storage_database_;

@@ -193,7 +193,7 @@ void LocalFileSystemOperation::GetMetadata(
 
   base::PlatformFileError result = SetUp(url, SETUP_FOR_READ);
   if (result != base::PLATFORM_FILE_OK) {
-    callback.Run(result, base::PlatformFileInfo(), FilePath());
+    callback.Run(result, base::PlatformFileInfo(), base::FilePath());
     delete this;
     return;
   }
@@ -372,7 +372,7 @@ LocalFileSystemOperation::AsLocalFileSystemOperation() {
 }
 
 void LocalFileSystemOperation::SyncGetPlatformPath(const FileSystemURL& url,
-                                                   FilePath* platform_path) {
+                                                   base::FilePath* platform_path) {
   DCHECK(SetPendingOperationType(kOperationGetLocalPath));
 
   base::PlatformFileError result = SetUp(url, SETUP_FOR_READ);
@@ -396,7 +396,7 @@ void LocalFileSystemOperation::CreateSnapshotFile(
 
   base::PlatformFileError result = SetUp(url, SETUP_FOR_READ);
   if (result != base::PLATFORM_FILE_OK) {
-    callback.Run(result, base::PlatformFileInfo(), FilePath(), NULL);
+    callback.Run(result, base::PlatformFileInfo(), base::FilePath(), NULL);
     delete this;
     return;
   }
@@ -408,7 +408,7 @@ void LocalFileSystemOperation::CreateSnapshotFile(
 }
 
 void LocalFileSystemOperation::CopyInForeignFile(
-    const FilePath& src_local_disk_file_path,
+    const base::FilePath& src_local_disk_file_path,
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationCopyInForeignFile));
@@ -666,7 +666,7 @@ void LocalFileSystemOperation::DoMoveFileLocal(
 }
 
 void LocalFileSystemOperation::DoCopyInForeignFile(
-    const FilePath& src_local_disk_file_path,
+    const base::FilePath& src_local_disk_file_path,
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   async_file_util_->CopyInForeignFile(
@@ -737,7 +737,7 @@ void LocalFileSystemOperation::DidDirectoryExists(
     const StatusCallback& callback,
     base::PlatformFileError rv,
     const base::PlatformFileInfo& file_info,
-    const FilePath& unused) {
+    const base::FilePath& unused) {
   if (rv == base::PLATFORM_FILE_OK && !file_info.is_directory)
     rv = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
   callback.Run(rv);
@@ -747,7 +747,7 @@ void LocalFileSystemOperation::DidFileExists(
     const StatusCallback& callback,
     base::PlatformFileError rv,
     const base::PlatformFileInfo& file_info,
-    const FilePath& unused) {
+    const base::FilePath& unused) {
   if (rv == base::PLATFORM_FILE_OK && file_info.is_directory)
     rv = base::PLATFORM_FILE_ERROR_NOT_A_FILE;
   callback.Run(rv);
@@ -757,7 +757,7 @@ void LocalFileSystemOperation::DidGetMetadata(
     const GetMetadataCallback& callback,
     base::PlatformFileError rv,
     const base::PlatformFileInfo& file_info,
-    const FilePath& platform_path) {
+    const base::FilePath& platform_path) {
   callback.Run(rv, file_info, platform_path);
 }
 
@@ -812,7 +812,7 @@ void LocalFileSystemOperation::DidCreateSnapshotFile(
     const SnapshotFileCallback& callback,
     base::PlatformFileError result,
     const base::PlatformFileInfo& file_info,
-    const FilePath& platform_path,
+    const base::FilePath& platform_path,
     SnapshotFilePolicy snapshot_policy) {
   scoped_refptr<ShareableFileReference> file_ref;
   if (result == base::PLATFORM_FILE_OK &&

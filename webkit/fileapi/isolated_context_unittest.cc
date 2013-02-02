@@ -24,19 +24,19 @@ typedef IsolatedContext::MountPointInfo FileInfo;
 
 namespace {
 
-const FilePath kTestPaths[] = {
-  FilePath(DRIVE FPL("/a/b.txt")),
-  FilePath(DRIVE FPL("/c/d/e")),
-  FilePath(DRIVE FPL("/h/")),
-  FilePath(DRIVE FPL("/")),
+const base::FilePath kTestPaths[] = {
+  base::FilePath(DRIVE FPL("/a/b.txt")),
+  base::FilePath(DRIVE FPL("/c/d/e")),
+  base::FilePath(DRIVE FPL("/h/")),
+  base::FilePath(DRIVE FPL("/")),
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
-  FilePath(DRIVE FPL("\\foo\\bar")),
-  FilePath(DRIVE FPL("\\")),
+  base::FilePath(DRIVE FPL("\\foo\\bar")),
+  base::FilePath(DRIVE FPL("\\")),
 #endif
   // For duplicated base name test.
-  FilePath(DRIVE FPL("/")),
-  FilePath(DRIVE FPL("/f/e")),
-  FilePath(DRIVE FPL("/f/b.txt")),
+  base::FilePath(DRIVE FPL("/")),
+  base::FilePath(DRIVE FPL("/f/e")),
+  base::FilePath(DRIVE FPL("/f/b.txt")),
 };
 
 }  // namespace
@@ -71,7 +71,7 @@ class IsolatedContextTest : public testing::Test {
 
  protected:
   std::string id_;
-  std::multiset<FilePath> fileset_;
+  std::multiset<base::FilePath> fileset_;
   std::vector<std::string> names_;
 
  private:
@@ -91,10 +91,10 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
   // register in SetUp() by RegisterDraggedFileSystem) is properly cracked as
   // a valid virtual path in the isolated filesystem.
   for (size_t i = 0; i < arraysize(kTestPaths); ++i) {
-    FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_)
+    base::FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_)
         .AppendASCII(names_[i]);
     std::string cracked_id;
-    FilePath cracked_path;
+    base::FilePath cracked_path;
     FileSystemType cracked_type;
     ASSERT_TRUE(isolated_context()->CrackVirtualPath(
         virtual_path, &cracked_id, &cracked_type, &cracked_path));
@@ -106,14 +106,14 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
 
   // Make sure GetRegisteredPath returns false for id_ since it is
   // registered for dragged files.
-  FilePath path;
+  base::FilePath path;
   ASSERT_FALSE(isolated_context()->GetRegisteredPath(id_, &path));
 
   // Deref the current one and registering a new one.
   isolated_context()->RemoveReference(id_);
 
   std::string id2 = isolated_context()->RegisterFileSystemForPath(
-      kFileSystemTypeNativeLocal, FilePath(DRIVE FPL("/foo")), NULL);
+      kFileSystemTypeNativeLocal, base::FilePath(DRIVE FPL("/foo")), NULL);
 
   // Make sure the GetDraggedFileInfo returns false for both ones.
   ASSERT_FALSE(isolated_context()->GetDraggedFileInfo(id2, &toplevels));
@@ -165,7 +165,7 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
 
 TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
   const struct {
-    FilePath::StringType path;
+    base::FilePath::StringType path;
     bool valid;
   } relatives[] = {
     { FPL("foo"), true },
@@ -186,10 +186,10 @@ TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
     for (size_t j = 0; j < ARRAYSIZE_UNSAFE(relatives); ++j) {
       SCOPED_TRACE(testing::Message() << "Testing "
                    << kTestPaths[i].value() << " " << relatives[j].path);
-      FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_)
+      base::FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_)
           .AppendASCII(names_[i]).Append(relatives[j].path);
       std::string cracked_id;
-      FilePath cracked_path;
+      base::FilePath cracked_path;
       FileSystemType cracked_type;
       if (!relatives[j].valid) {
         ASSERT_FALSE(isolated_context()->CrackVirtualPath(
@@ -209,7 +209,7 @@ TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
 
 TEST_F(IsolatedContextTest, CrackURLWithRelativePaths) {
   const struct {
-    FilePath::StringType path;
+    base::FilePath::StringType path;
     bool valid;
   } relatives[] = {
     { FPL("foo"), true },
@@ -230,7 +230,7 @@ TEST_F(IsolatedContextTest, CrackURLWithRelativePaths) {
     for (size_t j = 0; j < ARRAYSIZE_UNSAFE(relatives); ++j) {
       SCOPED_TRACE(testing::Message() << "Testing "
                    << kTestPaths[i].value() << " " << relatives[j].path);
-      FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_)
+      base::FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_)
           .AppendASCII(names_[i]).Append(relatives[j].path);
 
       FileSystemURL cracked = isolated_context()->CreateCrackedFileSystemURL(
@@ -254,12 +254,12 @@ TEST_F(IsolatedContextTest, CrackURLWithRelativePaths) {
 
 TEST_F(IsolatedContextTest, TestWithVirtualRoot) {
   std::string cracked_id;
-  FilePath cracked_path;
+  base::FilePath cracked_path;
 
   // Trying to crack virtual root "/" returns true but with empty cracked path
   // as "/" of the isolated filesystem is a pure virtual directory
   // that has no corresponding platform directory.
-  FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_);
+  base::FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_);
   ASSERT_TRUE(isolated_context()->CrackVirtualPath(
       virtual_path, &cracked_id, NULL, &cracked_path));
   ASSERT_EQ(FPL(""), cracked_path.value());
@@ -275,7 +275,7 @@ TEST_F(IsolatedContextTest, TestWithVirtualRoot) {
 
 TEST_F(IsolatedContextTest, CanHandleURL) {
   const GURL test_origin("http://chromium.org");
-  const FilePath test_path(FPL("/mount"));
+  const base::FilePath test_path(FPL("/mount"));
 
   // Should handle isolated file system.
   EXPECT_TRUE(isolated_context()->HandlesFileSystemMountType(

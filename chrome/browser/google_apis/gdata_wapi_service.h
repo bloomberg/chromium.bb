@@ -15,9 +15,12 @@
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 
-class FilePath;
 class GURL;
 class Profile;
+
+namespace base {
+class FilePath;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -55,7 +58,7 @@ class GDataWapiService : public DriveServiceInterface,
   virtual void RemoveObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual bool CanStartOperation() const OVERRIDE;
   virtual void CancelAll() OVERRIDE;
-  virtual bool CancelForFilePath(const FilePath& file_path) OVERRIDE;
+  virtual bool CancelForFilePath(const base::FilePath& file_path) OVERRIDE;
   virtual OperationProgressStatusList GetProgressStatusList() const OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
   virtual bool HasRefreshToken() const OVERRIDE;
@@ -76,8 +79,8 @@ class GDataWapiService : public DriveServiceInterface,
   virtual void DeleteResource(const std::string& resource_id,
                               const EntryActionCallback& callback) OVERRIDE;
   virtual void DownloadFile(
-      const FilePath& virtual_path,
-      const FilePath& local_cache_path,
+      const base::FilePath& virtual_path,
+      const base::FilePath& local_cache_path,
       const GURL& content_url,
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback) OVERRIDE;

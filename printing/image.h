@@ -13,7 +13,9 @@
 #include "printing/printing_export.h"
 #include "ui/gfx/size.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace printing {
 
@@ -26,7 +28,7 @@ class PRINTING_EXPORT Image {
   // Creates the image from the given file on disk.  Uses extension to
   // defer file type. PNG and EMF (on Windows) currently supported.
   // If image loading fails size().IsEmpty() will be true.
-  explicit Image(const FilePath& path);
+  explicit Image(const base::FilePath& path);
 
   // Creates the image from the metafile.  Deduces bounds based on bounds in
   // metafile.  If loading fails size().IsEmpty() will be true.
@@ -45,7 +47,7 @@ class PRINTING_EXPORT Image {
   std::string checksum() const;
 
   // Save image as PNG.
-  bool SaveToPng(const FilePath& filepath) const;
+  bool SaveToPng(const base::FilePath& filepath) const;
 
   // Returns % of pixels different
   double PercentageDifferent(const Image& rhs) const;

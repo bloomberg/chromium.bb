@@ -90,7 +90,7 @@ class TestWebKitPlatformSupport :
     return &url_loader_factory_;
   }
 
-  const FilePath& file_system_root() const {
+  const base::FilePath& file_system_root() const {
     return file_system_root_.path();
   }
 

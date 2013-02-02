@@ -20,7 +20,7 @@ const int kOpenFlagsForWrite = base::PLATFORM_FILE_OPEN |
 
 }  // namespace
 
-LocalFileStreamWriter::LocalFileStreamWriter(const FilePath& file_path,
+LocalFileStreamWriter::LocalFileStreamWriter(const base::FilePath& file_path,
                                              int64 initial_offset)
     : file_path_(file_path),
       initial_offset_(initial_offset),

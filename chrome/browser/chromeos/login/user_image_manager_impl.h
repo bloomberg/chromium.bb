@@ -21,6 +21,10 @@
 class ProfileDownloader;
 class UserImage;
 
+namespace base {
+class FilePath;
+}
+
 namespace chromeos {
 
 class UserImageManagerImpl : public UserImageManager,
@@ -39,7 +43,7 @@ class UserImageManagerImpl : public UserImageManager,
   virtual void SaveUserImage(const std::string& username,
                              const UserImage& user_image) OVERRIDE;
   virtual void SaveUserImageFromFile(const std::string& username,
-                                     const FilePath& path) OVERRIDE;
+                                     const base::FilePath& path) OVERRIDE;
   virtual void SaveUserImageFromProfileImage(
       const std::string& username) OVERRIDE;
   virtual void DeleteUserImage(const std::string& username) OVERRIDE;
@@ -63,7 +67,7 @@ class UserImageManagerImpl : public UserImageManager,
       ProfileDownloaderDelegate::FailureReason reason) OVERRIDE;
 
   // Returns image filepath for the given user.
-  FilePath GetImagePathForUser(const std::string& username);
+  base::FilePath GetImagePathForUser(const std::string& username);
 
   // Sets one of the default images for the specified user and saves this
   // setting in local state.
@@ -90,7 +94,7 @@ class UserImageManagerImpl : public UserImageManager,
   // Local State on UI thread.
   void SaveImageToFile(const std::string& username,
                        const UserImage& user_image,
-                       const FilePath& image_path,
+                       const base::FilePath& image_path,
                        int image_index,
                        const GURL& image_url);
 
@@ -105,7 +109,7 @@ class UserImageManagerImpl : public UserImageManager,
 
   // Saves |image| to the specified |image_path|. Runs on FILE thread.
   bool SaveBitmapToFile(const UserImage& user_image,
-                        const FilePath& image_path);
+                        const base::FilePath& image_path);
 
   // Initializes |downloaded_profile_image_| with the picture of the logged-in
   // user.

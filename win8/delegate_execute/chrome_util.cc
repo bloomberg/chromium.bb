@@ -36,7 +36,8 @@ const wchar_t kAppUserModelId[] = L"Chromium";
 
 // TODO(grt): These constants live in installer_util.  Consider moving them
 // into common_constants to allow for reuse.
-const FilePath::CharType kNewChromeExe[] = FILE_PATH_LITERAL("new_chrome.exe");
+const base::FilePath::CharType kNewChromeExe[] =
+    FILE_PATH_LITERAL("new_chrome.exe");
 const wchar_t kRenameCommandValue[] = L"cmd";
 const wchar_t kChromeAppGuid[] = L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
 const wchar_t kRegPathChromeClient[] =
@@ -48,7 +49,7 @@ const int kExitCodeRenameSuccessful = 23;
 // use by a browser process.
 // TODO(grt): Move this somewhere central so it can be used by both this
 // IsBrowserRunning (below) and IsBrowserAlreadyRunning (browser_util_win.cc).
-string16 GetEventName(const FilePath& chrome_exe) {
+string16 GetEventName(const base::FilePath& chrome_exe) {
   static wchar_t const kEventPrefix[] = L"Global\\";
   const size_t prefix_len = arraysize(kEventPrefix) - 1;
   string16 name;
@@ -63,7 +64,7 @@ string16 GetEventName(const FilePath& chrome_exe) {
 
 // Returns true if |chrome_exe| is in use by a browser process. In this case,
 // "in use" means past ChromeBrowserMainParts::PreMainMessageLoopRunImpl.
-bool IsBrowserRunning(const FilePath& chrome_exe) {
+bool IsBrowserRunning(const base::FilePath& chrome_exe) {
   base::win::ScopedHandle handle(::OpenEvent(
       SYNCHRONIZE, FALSE, GetEventName(chrome_exe).c_str()));
   if (handle.IsValid())
@@ -78,8 +79,8 @@ bool IsBrowserRunning(const FilePath& chrome_exe) {
 
 // Returns true if the file new_chrome.exe exists in the same directory as
 // |chrome_exe|.
-bool NewChromeExeExists(const FilePath& chrome_exe) {
-  FilePath new_chrome_exe(chrome_exe.DirName().Append(kNewChromeExe));
+bool NewChromeExeExists(const base::FilePath& chrome_exe) {
+  base::FilePath new_chrome_exe(chrome_exe.DirName().Append(kNewChromeExe));
   return file_util::PathExists(new_chrome_exe);
 }
 
@@ -93,7 +94,7 @@ bool GetUpdateCommand(bool is_per_user, string16* update_command) {
 #endif  // GOOGLE_CHROME_BUILD
 
 // TODO(grt): This code also lives in installer_util.  Refactor for reuse.
-bool IsPerUserInstall(const FilePath& chrome_exe) {
+bool IsPerUserInstall(const base::FilePath& chrome_exe) {
   wchar_t program_files_path[MAX_PATH] = {0};
   if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PROGRAM_FILES, NULL,
                                 SHGFP_TYPE_CURRENT, program_files_path))) {
@@ -188,7 +189,7 @@ bool GetUserSpecificRegistrySuffix(string16* suffix) {
 
 namespace delegate_execute {
 
-void UpdateChromeIfNeeded(const FilePath& chrome_exe) {
+void UpdateChromeIfNeeded(const base::FilePath& chrome_exe) {
 #if defined(GOOGLE_CHROME_BUILD)
   // Nothing to do if a browser is already running or if there's no
   // new_chrome.exe.
@@ -253,7 +254,7 @@ void UpdateChromeIfNeeded(const FilePath& chrome_exe) {
 }
 
 // TODO(gab): This code also lives in shell_util. Refactor for reuse.
-string16 GetAppId(const FilePath& chrome_exe) {
+string16 GetAppId(const base::FilePath& chrome_exe) {
   string16 app_id(kAppUserModelId);
   string16 suffix;
   if (IsPerUserInstall(chrome_exe) &&

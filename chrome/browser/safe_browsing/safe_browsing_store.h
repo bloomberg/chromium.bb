@@ -14,7 +14,9 @@
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
+namespace base {
 class FilePath;
+}
 
 // SafeBrowsingStore provides a storage abstraction for the
 // safe-browsing data used to build the bloom filter.  The items
@@ -163,7 +165,7 @@ class SafeBrowsingStore {
   // is detected, which could happen as part of any call other than
   // Delete().  The appropriate action is to use Delete() to clear the
   // store.
-  virtual void Init(const FilePath& filename,
+  virtual void Init(const base::FilePath& filename,
                     const base::Closure& corruption_callback) = 0;
 
   // Deletes the files which back the store, returning true if

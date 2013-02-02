@@ -8,7 +8,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace webkit_glue {
 
@@ -23,7 +25,7 @@ class MockResourceLoaderBridge : public webkit_glue::ResourceLoaderBridge {
 
   MOCK_METHOD2(AppendDataToUpload, void(const char* data, int data_len));
   MOCK_METHOD4(AppendFileRangeToUpload,
-               void(const FilePath& file_path,
+               void(const base::FilePath& file_path,
                     uint64 offset,
                     uint64 length,
                     const base::Time& expected_modification_time));

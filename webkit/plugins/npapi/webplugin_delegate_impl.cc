@@ -24,7 +24,7 @@ namespace webkit {
 namespace npapi {
 
 WebPluginDelegateImpl* WebPluginDelegateImpl::Create(
-    const FilePath& filename,
+    const base::FilePath& filename,
     const std::string& mime_type) {
   scoped_refptr<PluginLib> plugin_lib(PluginLib::CreatePluginLib(filename));
   if (plugin_lib.get() == NULL)
@@ -239,7 +239,7 @@ void WebPluginDelegateImpl::DidManualLoadFail() {
   instance()->DidManualLoadFail();
 }
 
-FilePath WebPluginDelegateImpl::GetPluginPath() {
+base::FilePath WebPluginDelegateImpl::GetPluginPath() {
   return instance()->plugin_lib()->plugin_info().path;
 }
 

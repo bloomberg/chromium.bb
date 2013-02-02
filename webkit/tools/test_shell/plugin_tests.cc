@@ -42,7 +42,7 @@ const char kPluginsDir[] = "plugins";
 class PluginTest : public TestShellTest {
  public:
   PluginTest() {
-    FilePath executable_directory;
+    base::FilePath executable_directory;
     PathService::Get(base::DIR_EXE, &executable_directory);
     plugin_src_ = executable_directory.AppendASCII(TEST_PLUGIN_NAME);
     CHECK(file_util::PathExists(plugin_src_));
@@ -69,8 +69,8 @@ class PluginTest : public TestShellTest {
     TestShellTest::SetUp();
   }
 
-  FilePath plugin_src_;
-  FilePath plugin_file_path_;
+  base::FilePath plugin_src_;
+  base::FilePath plugin_file_path_;
 };
 
 // Tests navigator.plugins.refresh() works.
@@ -126,7 +126,7 @@ TEST_F(PluginTest, Refresh) {
 // Tests that if a frame is deleted as a result of calling NPP_HandleEvent, we
 // don't crash.
 TEST_F(PluginTest, DeleteFrameDuringEvent) {
-  FilePath test_html = data_dir_;
+  base::FilePath test_html = data_dir_;
   test_html = test_html.AppendASCII(kPluginsDir);
   test_html = test_html.AppendASCII("delete_frame.html");
   test_shell_->LoadFile(test_html);
@@ -144,7 +144,7 @@ TEST_F(PluginTest, DeleteFrameDuringEvent) {
 
 // Tests that a forced reload of the plugin will not crash.
 TEST_F(PluginTest, ForceReload) {
-  FilePath test_html = data_dir_;
+  base::FilePath test_html = data_dir_;
   test_html = test_html.AppendASCII(kPluginsDir);
   test_html = test_html.AppendASCII("force_reload.html");
   test_shell_->LoadFile(test_html);
@@ -174,7 +174,7 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lparam) {
 #endif
 
 TEST_F(PluginTest, MAYBE_PluginVisibilty) {
-  FilePath test_html = data_dir_;
+  base::FilePath test_html = data_dir_;
   test_html = test_html.AppendASCII(kPluginsDir);
   test_html = test_html.AppendASCII("plugin_visibility.html");
   test_shell_->LoadFile(test_html);

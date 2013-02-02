@@ -41,7 +41,7 @@ void SafeBrowsingStoreTestDeleteChunks(SafeBrowsingStore* store);
 
 // Test that deleting the store deletes the store.
 void SafeBrowsingStoreTestDelete(SafeBrowsingStore* store,
-                                 const FilePath& filename);
+                                 const base::FilePath& filename);
 
 // Wrap all the tests up for implementation subclasses.
 // |test_fixture| is the class that would be passed to TEST_F(),

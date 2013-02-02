@@ -22,7 +22,7 @@ namespace fileapi {
 
 namespace {
 
-const FilePath::CharType kDeviceMediaFileUtilTempDir[] =
+const base::FilePath::CharType kDeviceMediaFileUtilTempDir[] =
     FILE_PATH_LITERAL("DeviceMediaFileSystem");
 
 MTPDeviceDelegate* GetMTPDeviceDelegate(FileSystemOperationContext* context) {
@@ -33,7 +33,7 @@ MTPDeviceDelegate* GetMTPDeviceDelegate(FileSystemOperationContext* context) {
 
 }  // namespace
 
-DeviceMediaFileUtil::DeviceMediaFileUtil(const FilePath& profile_path)
+DeviceMediaFileUtil::DeviceMediaFileUtil(const base::FilePath& profile_path)
     : profile_path_(profile_path) {
 }
 
@@ -70,7 +70,7 @@ PlatformFileError DeviceMediaFileUtil::GetFileInfo(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
     PlatformFileInfo* file_info,
-    FilePath* platform_path) {
+    base::FilePath* platform_path) {
   MTPDeviceDelegate* delegate = GetMTPDeviceDelegate(context);
   if (!delegate)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -104,7 +104,7 @@ DeviceMediaFileUtil::CreateFileEnumerator(
 PlatformFileError DeviceMediaFileUtil::GetLocalFilePath(
     FileSystemOperationContext* context,
     const FileSystemURL& file_system_url,
-    FilePath* local_file_path) {
+    base::FilePath* local_file_path) {
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
 
@@ -133,7 +133,7 @@ PlatformFileError DeviceMediaFileUtil::CopyOrMoveFile(
 
 PlatformFileError DeviceMediaFileUtil::CopyInForeignFile(
     FileSystemOperationContext* context,
-    const FilePath& src_file_path,
+    const base::FilePath& src_file_path,
     const FileSystemURL& dest_url) {
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
@@ -154,7 +154,7 @@ base::PlatformFileError DeviceMediaFileUtil::CreateSnapshotFile(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
     base::PlatformFileInfo* file_info,
-    FilePath* local_path,
+    base::FilePath* local_path,
     SnapshotFilePolicy* snapshot_policy) {
   DCHECK(file_info);
   DCHECK(local_path);
@@ -167,7 +167,7 @@ base::PlatformFileError DeviceMediaFileUtil::CreateSnapshotFile(
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   // Create a temp file in "profile_path_/kDeviceMediaFileUtilTempDir".
-  FilePath isolated_media_file_system_dir_path =
+  base::FilePath isolated_media_file_system_dir_path =
       profile_path_.Append(kDeviceMediaFileUtilTempDir);
   bool dir_exists = file_util::DirectoryExists(
       isolated_media_file_system_dir_path);

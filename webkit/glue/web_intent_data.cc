@@ -61,7 +61,7 @@ WebIntentData::WebIntentData(const string16& action_in,
 
 WebIntentData::WebIntentData(const string16& action_in,
                              const string16& type_in,
-                             const FilePath& blob_file_in,
+                             const base::FilePath& blob_file_in,
                              int64 blob_length_in)
     : action(action_in),
       type(type_in),

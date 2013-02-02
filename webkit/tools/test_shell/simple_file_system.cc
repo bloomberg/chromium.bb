@@ -54,10 +54,10 @@ namespace {
 MessageLoop* g_io_thread;
 webkit_blob::BlobStorageController* g_blob_storage_controller;
 
-void RegisterBlob(const GURL& blob_url, const FilePath& file_path) {
+void RegisterBlob(const GURL& blob_url, const base::FilePath& file_path) {
   DCHECK(g_blob_storage_controller);
 
-  FilePath::StringType extension = file_path.Extension();
+  base::FilePath::StringType extension = file_path.Extension();
   if (!extension.empty())
     extension = extension.substr(1);  // Strip leading ".".
 
@@ -324,7 +324,7 @@ void SimpleFileSystem::DidFinish(WebFileSystemCallbacks* callbacks,
 void SimpleFileSystem::DidGetMetadata(WebFileSystemCallbacks* callbacks,
                                       base::PlatformFileError result,
                                       const base::PlatformFileInfo& info,
-                                      const FilePath& platform_path) {
+                                      const base::FilePath& platform_path) {
   if (result == base::PLATFORM_FILE_OK) {
     WebFileInfo web_file_info;
     web_file_info.length = info.size;
@@ -388,7 +388,7 @@ void SimpleFileSystem::DidCreateSnapshotFile(
     WebFileSystemCallbacks* callbacks,
     base::PlatformFileError result,
     const base::PlatformFileInfo& info,
-    const FilePath& platform_path,
+    const base::FilePath& platform_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   DCHECK(g_io_thread);
   if (result == base::PLATFORM_FILE_OK) {

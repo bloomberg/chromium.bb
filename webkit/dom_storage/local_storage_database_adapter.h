@@ -10,7 +10,9 @@
 #include "webkit/dom_storage/dom_storage_database_adapter.h"
 #include "webkit/storage/webkit_storage_export.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace dom_storage {
 
@@ -19,7 +21,7 @@ class DomStorageDatabase;
 class WEBKIT_STORAGE_EXPORT LocalStorageDatabaseAdapter :
       public DomStorageDatabaseAdapter {
  public:
-  explicit LocalStorageDatabaseAdapter(const FilePath& path);
+  explicit LocalStorageDatabaseAdapter(const base::FilePath& path);
   virtual ~LocalStorageDatabaseAdapter();
   virtual void ReadAllValues(ValuesMap* result) OVERRIDE;
   virtual bool CommitChanges(bool clear_all_first,

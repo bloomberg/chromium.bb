@@ -48,7 +48,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE NativeMediaFileUtil
       bool copy) OVERRIDE;
   virtual base::PlatformFileError CopyInForeignFile(
         FileSystemOperationContext* context,
-        const FilePath& src_file_path,
+        const base::FilePath& src_file_path,
         const FileSystemURL& dest_url) OVERRIDE;
   virtual base::PlatformFileError DeleteFile(
       FileSystemOperationContext* context,
@@ -57,7 +57,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE NativeMediaFileUtil
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       base::PlatformFileInfo* file_info,
-      FilePath* platform_path) OVERRIDE;
+      base::FilePath* platform_path) OVERRIDE;
 
  private:
   // Like GetLocalFilePath(), but always take media_path_filter() into
@@ -66,7 +66,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE NativeMediaFileUtil
   base::PlatformFileError GetFilteredLocalFilePath(
       FileSystemOperationContext* context,
       const FileSystemURL& file_system_url,
-      FilePath* local_file_path);
+      base::FilePath* local_file_path);
 
   // Like GetLocalFilePath(), but if the file does not exist, then return
   // |failure_error|.
@@ -78,7 +78,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE NativeMediaFileUtil
       FileSystemOperationContext* context,
       const FileSystemURL& file_system_url,
       base::PlatformFileError failure_error,
-      FilePath* local_file_path);
+      base::FilePath* local_file_path);
 
   DISALLOW_COPY_AND_ASSIGN(NativeMediaFileUtil);
 };

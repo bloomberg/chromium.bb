@@ -19,7 +19,8 @@ const char kHttpsScheme[] = "https";
 const char kHttpGETMethod[] = "GET";
 const char kHttpHEADMethod[] = "HEAD";
 
-const FilePath::CharType kAppCacheDatabaseName[] = FILE_PATH_LITERAL("Index");
+const base::FilePath::CharType kAppCacheDatabaseName[] =
+    FILE_PATH_LITERAL("Index");
 
 AppCacheInfo::AppCacheInfo()
     : cache_id(kNoCacheId),

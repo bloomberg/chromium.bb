@@ -20,8 +20,6 @@
 #include "remoting/host/config_file_watcher.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
 
-class FilePath;
-
 namespace remoting {
 
 class AutoThreadTaskRunner;

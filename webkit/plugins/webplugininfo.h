@@ -53,7 +53,7 @@ struct WEBKIT_PLUGINS_EXPORT WebPluginInfo {
 
   // Special constructor only used during unit testing:
   WebPluginInfo(const string16& fake_name,
-                const FilePath& fake_path,
+                const base::FilePath& fake_path,
                 const string16& fake_version,
                 const string16& fake_desc);
 
@@ -61,7 +61,7 @@ struct WEBKIT_PLUGINS_EXPORT WebPluginInfo {
   string16 name;
 
   // The path to the plugin file (DLL/bundle/library).
-  FilePath path;
+  base::FilePath path;
 
   // The version number of the plugin file (may be OS-specific)
   string16 version;

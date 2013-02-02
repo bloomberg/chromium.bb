@@ -236,10 +236,10 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
 
   // webkit::npapi::WebPluginPageDelegate
   virtual webkit::npapi::WebPluginDelegate* CreatePluginDelegate(
-      const FilePath& url,
+      const base::FilePath& url,
       const std::string& mime_type) OVERRIDE;
   virtual WebKit::WebPlugin* CreatePluginReplacement(
-      const FilePath& file_path) OVERRIDE;
+      const base::FilePath& file_path) OVERRIDE;
   virtual void CreatedPluginWindow(
       gfx::PluginWindowHandle handle) OVERRIDE;
   virtual void WillDestroyPluginWindow(

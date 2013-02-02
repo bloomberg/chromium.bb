@@ -26,7 +26,7 @@ MTPDeviceMapService* MTPDeviceMapService::GetInstance() {
 }
 
 void MTPDeviceMapService::AddDelegate(
-    const FilePath::StringType& device_location,
+    const base::FilePath::StringType& device_location,
     MTPDeviceDelegate* delegate) {
   DCHECK(delegate);
   DCHECK(!device_location.empty());
@@ -38,7 +38,7 @@ void MTPDeviceMapService::AddDelegate(
 }
 
 void MTPDeviceMapService::RemoveDelegate(
-    const FilePath::StringType& device_location) {
+    const base::FilePath::StringType& device_location) {
   base::AutoLock lock(lock_);
   DelegateMap::iterator it = delegate_map_.find(device_location);
   DCHECK(it != delegate_map_.end());
@@ -48,13 +48,13 @@ void MTPDeviceMapService::RemoveDelegate(
 
 MTPDeviceDelegate* MTPDeviceMapService::GetMTPDeviceDelegate(
     const std::string& filesystem_id) {
-  FilePath device_path;
+  base::FilePath device_path;
   if (!IsolatedContext::GetInstance()->GetRegisteredPath(filesystem_id,
                                                          &device_path)) {
     return NULL;
   }
 
-  const FilePath::StringType& device_location = device_path.value();
+  const base::FilePath::StringType& device_location = device_path.value();
   DCHECK(!device_location.empty());
 
   base::AutoLock lock(lock_);

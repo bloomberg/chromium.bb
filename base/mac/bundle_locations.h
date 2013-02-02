@@ -15,9 +15,10 @@ class NSBundle;
 class NSString;
 #endif  // __OBJC__
 
+namespace base {
+
 class FilePath;
 
-namespace base {
 namespace mac {
 
 // This file provides several functions to explicitly request the various

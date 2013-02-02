@@ -19,10 +19,10 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/storage/webkit_storage_export.h"
 
-class FilePath;
 class NullableString16;
 
 namespace base {
+class FilePath;
 class Time;
 }
 
@@ -86,18 +86,18 @@ class WEBKIT_STORAGE_EXPORT DomStorageContext
   };
 
   DomStorageContext(
-      const FilePath& localstorage_directory,  // empty for incognito profiles
-      const FilePath& sessionstorage_directory,  // empty for incognito profiles
+      const base::FilePath& localstorage_directory,  // empty for incognito profiles
+      const base::FilePath& sessionstorage_directory,  // empty for incognito profiles
       quota::SpecialStoragePolicy* special_storage_policy,
       DomStorageTaskRunner* task_runner);
 
   // Returns the directory path for localStorage, or an empty directory, if
   // there is no backing on disk.
-  const FilePath& localstorage_directory() { return localstorage_directory_; }
+  const base::FilePath& localstorage_directory() { return localstorage_directory_; }
 
   // Returns the directory path for sessionStorage, or an empty directory, if
   // there is no backing on disk.
-  const FilePath& sessionstorage_directory() {
+  const base::FilePath& sessionstorage_directory() {
     return sessionstorage_directory_;
   }
 
@@ -190,12 +190,12 @@ class WEBKIT_STORAGE_EXPORT DomStorageContext
   StorageNamespaceMap namespaces_;
 
   // Where localstorage data is stored, maybe empty for the incognito use case.
-  FilePath localstorage_directory_;
+  base::FilePath localstorage_directory_;
 
   // Where sessionstorage data is stored, maybe empty for the incognito use
   // case. Always empty until the file-backed session storage feature is
   // implemented.
-  FilePath sessionstorage_directory_;
+  base::FilePath sessionstorage_directory_;
 
   // Used to schedule sequenced background tasks.
   scoped_refptr<DomStorageTaskRunner> task_runner_;

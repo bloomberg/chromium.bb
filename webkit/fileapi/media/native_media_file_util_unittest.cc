@@ -32,7 +32,7 @@ namespace {
 typedef FileSystemOperation::FileEntryList FileEntryList;
 
 struct FilteringTestCase {
-  const FilePath::CharType* path;
+  const base::FilePath::CharType* path;
   bool is_directory;
   bool visible;
 };
@@ -62,13 +62,13 @@ void ExpectMetadataEqHelper(const std::string& test_name,
                             bool expected_is_directory,
                             base::PlatformFileError actual,
                             const base::PlatformFileInfo& file_info,
-                            const FilePath& /*platform_path*/) {
+                            const base::FilePath& /*platform_path*/) {
   EXPECT_EQ(expected, actual) << test_name;
   if (actual == base::PLATFORM_FILE_OK)
     EXPECT_EQ(expected_is_directory, file_info.is_directory) << test_name;
 }
 
-void DidReadDirectory(std::set<FilePath::StringType>* content,
+void DidReadDirectory(std::set<base::FilePath::StringType>* content,
                       bool* completed,
                       base::PlatformFileError error,
                       const FileEntryList& file_list,
@@ -80,11 +80,11 @@ void DidReadDirectory(std::set<FilePath::StringType>* content,
     EXPECT_TRUE(content->insert(itr->name).second);
 }
 
-void PopulateDirectoryWithTestCases(const FilePath& dir,
+void PopulateDirectoryWithTestCases(const base::FilePath& dir,
                                     const FilteringTestCase* test_cases,
                                     size_t n) {
   for (size_t i = 0; i < n; ++i) {
-    FilePath path = dir.Append(test_cases[i].path);
+    base::FilePath path = dir.Append(test_cases[i].path);
     if (test_cases[i].is_directory) {
       ASSERT_TRUE(file_util::CreateDirectory(path));
     } else {
@@ -138,7 +138,7 @@ class NativeMediaFileUtilTest : public testing::Test {
     return file_system_context_.get();
   }
 
-  FileSystemURL CreateURL(const FilePath::CharType* test_case_path) {
+  FileSystemURL CreateURL(const base::FilePath::CharType* test_case_path) {
     return file_system_context_->CreateCrackedFileSystemURL(
         origin(),
         fileapi::kFileSystemTypeIsolated,
@@ -149,14 +149,14 @@ class NativeMediaFileUtilTest : public testing::Test {
     return IsolatedContext::GetInstance();
   }
 
-  FilePath root_path() {
+  base::FilePath root_path() {
     return data_dir_.path().Append(FPL("Media Directory"));
   }
 
-  FilePath GetVirtualPath(const FilePath::CharType* test_case_path) {
-    return FilePath::FromUTF8Unsafe(filesystem_id_).
+  base::FilePath GetVirtualPath(const base::FilePath::CharType* test_case_path) {
+    return base::FilePath::FromUTF8Unsafe(filesystem_id_).
                Append(FPL("Media Directory")).
-               Append(FilePath(test_case_path));
+               Append(base::FilePath(test_case_path));
   }
 
   FileSystemFileUtil* file_util() {
@@ -219,7 +219,7 @@ TEST_F(NativeMediaFileUtilTest, ReadDirectoryFiltering) {
                                  kFilteringTestCases,
                                  arraysize(kFilteringTestCases));
 
-  std::set<FilePath::StringType> content;
+  std::set<base::FilePath::StringType> content;
   FileSystemURL url = CreateURL(FPL(""));
   bool completed = false;
   NewOperation(url)->ReadDirectory(
@@ -229,9 +229,9 @@ TEST_F(NativeMediaFileUtilTest, ReadDirectoryFiltering) {
   EXPECT_EQ(5u, content.size());
 
   for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
-    FilePath::StringType name =
-        FilePath(kFilteringTestCases[i].path).BaseName().value();
-    std::set<FilePath::StringType>::const_iterator found = content.find(name);
+    base::FilePath::StringType name =
+        base::FilePath(kFilteringTestCases[i].path).BaseName().value();
+    std::set<base::FilePath::StringType>::const_iterator found = content.find(name);
     EXPECT_EQ(kFilteringTestCases[i].visible, found != content.end());
   }
 }
@@ -267,7 +267,7 @@ TEST_F(NativeMediaFileUtilTest, CreateFileAndCreateDirectoryFiltering) {
 }
 
 TEST_F(NativeMediaFileUtilTest, CopySourceFiltering) {
-  FilePath dest_path = root_path().AppendASCII("dest");
+  base::FilePath dest_path = root_path().AppendASCII("dest");
   FileSystemURL dest_url = CreateURL(FPL("dest"));
 
   // Run the loop twice. The first run has no source files. The second run does.
@@ -320,7 +320,7 @@ TEST_F(NativeMediaFileUtilTest, CopyDestFiltering) {
     }
 
     // Always create a dummy source data file.
-    FilePath src_path = root_path().AppendASCII("foo.jpg");
+    base::FilePath src_path = root_path().AppendASCII("foo.jpg");
     FileSystemURL src_url = CreateURL(FPL("foo.jpg"));
     static const char kDummyData[] = "dummy";
     ASSERT_TRUE(file_util::WriteFile(src_path, kDummyData, strlen(kDummyData)));
@@ -372,7 +372,7 @@ TEST_F(NativeMediaFileUtilTest, CopyDestFiltering) {
 }
 
 TEST_F(NativeMediaFileUtilTest, MoveSourceFiltering) {
-  FilePath dest_path = root_path().AppendASCII("dest");
+  base::FilePath dest_path = root_path().AppendASCII("dest");
   FileSystemURL dest_url = CreateURL(FPL("dest"));
 
   // Run the loop twice. The first run has no source files. The second run does.
@@ -434,7 +434,7 @@ TEST_F(NativeMediaFileUtilTest, MoveDestFiltering) {
       }
 
       // Create the source file for every test case because it might get moved.
-      FilePath src_path = root_path().AppendASCII("foo.jpg");
+      base::FilePath src_path = root_path().AppendASCII("foo.jpg");
       FileSystemURL src_url = CreateURL(FPL("foo.jpg"));
       static const char kDummyData[] = "dummy";
       ASSERT_TRUE(

@@ -27,18 +27,18 @@
 
 namespace webkit_database {
 
-const FilePath::CharType kDatabaseDirectoryName[] =
+const base::FilePath::CharType kDatabaseDirectoryName[] =
     FILE_PATH_LITERAL("databases");
-const FilePath::CharType kIncognitoDatabaseDirectoryName[] =
+const base::FilePath::CharType kIncognitoDatabaseDirectoryName[] =
     FILE_PATH_LITERAL("databases-incognito");
-const FilePath::CharType kTrackerDatabaseFileName[] =
+const base::FilePath::CharType kTrackerDatabaseFileName[] =
     FILE_PATH_LITERAL("Databases.db");
 static const int kCurrentVersion = 2;
 static const int kCompatibleVersion = 1;
 
-const FilePath::CharType kTemporaryDirectoryPrefix[] =
+const base::FilePath::CharType kTemporaryDirectoryPrefix[] =
     FILE_PATH_LITERAL("DeleteMe");
-const FilePath::CharType kTemporaryDirectoryPattern[] =
+const base::FilePath::CharType kTemporaryDirectoryPattern[] =
     FILE_PATH_LITERAL("DeleteMe*");
 
 OriginInfo::OriginInfo()
@@ -77,7 +77,7 @@ OriginInfo::OriginInfo(const string16& origin, int64 total_size)
     : origin_(origin), total_size_(total_size) {}
 
 DatabaseTracker::DatabaseTracker(
-    const FilePath& profile_path,
+    const base::FilePath& profile_path,
     bool is_incognito,
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy,
@@ -280,21 +280,21 @@ string16 DatabaseTracker::GetOriginDirectory(
   return origin_directory;
 }
 
-FilePath DatabaseTracker::GetFullDBFilePath(
+base::FilePath DatabaseTracker::GetFullDBFilePath(
     const string16& origin_identifier,
     const string16& database_name) {
   DCHECK(!origin_identifier.empty());
   if (!LazyInit())
-    return FilePath();
+    return base::FilePath();
 
   int64 id = databases_table_->GetDatabaseID(
       origin_identifier, database_name);
   if (id < 0)
-    return FilePath();
+    return base::FilePath();
 
-  FilePath file_name = FilePath::FromWStringHack(
+  base::FilePath file_name = base::FilePath::FromWStringHack(
       UTF8ToWide(base::Int64ToString(id)));
-  return db_dir_.Append(FilePath::FromWStringHack(
+  return db_dir_.Append(base::FilePath::FromWStringHack(
       UTF16ToWide(GetOriginDirectory(origin_identifier)))).Append(file_name);
 }
 
@@ -352,7 +352,7 @@ bool DatabaseTracker::DeleteClosedDatabase(const string16& origin_identifier,
       GetDBFileSize(origin_identifier, database_name) : 0;
 
   // Try to delete the file on the hard drive.
-  FilePath db_file = GetFullDBFilePath(origin_identifier, database_name);
+  base::FilePath db_file = GetFullDBFilePath(origin_identifier, database_name);
   if (file_util::PathExists(db_file) && !file_util::Delete(db_file, false))
     return false;
 
@@ -398,13 +398,13 @@ bool DatabaseTracker::DeleteOrigin(const string16& origin_identifier,
   }
 
   origins_info_map_.erase(origin_identifier);
-  FilePath origin_dir = db_dir_.Append(FilePath::FromWStringHack(
+  base::FilePath origin_dir = db_dir_.Append(base::FilePath::FromWStringHack(
       UTF16ToWide(origin_identifier)));
 
   // Create a temporary directory to move possibly still existing databases to,
   // as we can't delete the origin directory on windows if it contains opened
   // files.
-  FilePath new_origin_dir;
+  base::FilePath new_origin_dir;
   file_util::CreateTemporaryDirInDir(db_dir_,
                                      kTemporaryDirectoryPrefix,
                                      &new_origin_dir);
@@ -412,9 +412,9 @@ bool DatabaseTracker::DeleteOrigin(const string16& origin_identifier,
       origin_dir,
       false,
       file_util::FileEnumerator::FILES);
-  for (FilePath database = databases.Next(); !database.empty();
+  for (base::FilePath database = databases.Next(); !database.empty();
        database = databases.Next()) {
-    FilePath new_file = new_origin_dir.Append(database.BaseName());
+    base::FilePath new_file = new_origin_dir.Append(database.BaseName());
     file_util::Move(database, new_file);
   }
   file_util::Delete(origin_dir, true);
@@ -458,7 +458,7 @@ bool DatabaseTracker::LazyInit() {
           false,
           file_util::FileEnumerator::DIRECTORIES,
           kTemporaryDirectoryPattern);
-      for (FilePath directory = directories.Next(); !directory.empty();
+      for (base::FilePath directory = directories.Next(); !directory.empty();
            directory = directories.Next()) {
         file_util::Delete(directory, true);
       }
@@ -466,8 +466,8 @@ bool DatabaseTracker::LazyInit() {
 
     // If the tracker database exists, but it's corrupt or doesn't
     // have a meta table, delete the database directory.
-    const FilePath kTrackerDatabaseFullPath =
-        db_dir_.Append(FilePath(kTrackerDatabaseFileName));
+    const base::FilePath kTrackerDatabaseFullPath =
+        db_dir_.Append(base::FilePath(kTrackerDatabaseFileName));
     if (file_util::DirectoryExists(db_dir_) &&
         file_util::PathExists(kTrackerDatabaseFullPath) &&
         (!db_->Open(kTrackerDatabaseFullPath) ||
@@ -574,7 +574,8 @@ DatabaseTracker::CachedOriginInfo* DatabaseTracker::MaybeGetCachedOriginInfo(
 
 int64 DatabaseTracker::GetDBFileSize(const string16& origin_identifier,
                                      const string16& database_name) {
-  FilePath db_file_name = GetFullDBFilePath(origin_identifier, database_name);
+  base::FilePath db_file_name = GetFullDBFilePath(origin_identifier,
+                                                  database_name);
   int64 db_file_size = 0;
   if (!file_util::GetFileSize(db_file_name, &db_file_size))
     db_file_size = 0;
@@ -690,7 +691,7 @@ int DatabaseTracker::DeleteDataModifiedSince(
       rv = net::ERR_FAILED;
     for (std::vector<DatabaseDetails>::const_iterator db = details.begin();
          db != details.end(); ++db) {
-      FilePath db_file = GetFullDBFilePath(*ori, db->database_name);
+      base::FilePath db_file = GetFullDBFilePath(*ori, db->database_name);
       base::PlatformFileInfo file_info;
       file_util::GetFileInfo(db_file, &file_info);
       if (file_info.last_modified < cutoff)
@@ -789,7 +790,7 @@ void DatabaseTracker::DeleteIncognitoDBDirectory() {
        it != incognito_file_handles_.end(); it++)
     base::ClosePlatformFile(it->second);
 
-  FilePath incognito_db_dir =
+  base::FilePath incognito_db_dir =
       profile_path_.Append(kIncognitoDatabaseDirectoryName);
   if (file_util::DirectoryExists(incognito_db_dir))
     file_util::Delete(incognito_db_dir, true);

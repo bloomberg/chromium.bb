@@ -18,8 +18,11 @@ extern "C" {
 #include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
 }
 
-class FilePath;
 class SkBitmap;
+
+namespace base {
+class FilePath;
+}
 
 namespace media {
 
@@ -33,7 +36,7 @@ class MEDIA_EXPORT WebmEncoder {
  public:
   // Create new instance for writing to |output_path|. If |realtime| is |true|,
   // uses realtime deadline, otherwise - "good quality" deadline.
-  WebmEncoder(const FilePath& output_path, int bitrate, bool realtime);
+  WebmEncoder(const base::FilePath& output_path, int bitrate, bool realtime);
   ~WebmEncoder();
 
   // Encodes video from a Nx(N*M) sprite, having M frames of size NxN with FPS
@@ -87,7 +90,7 @@ class MEDIA_EXPORT WebmEncoder {
   // Stack with start offsets of currently open sub-elements.
   std::stack<long int> ebml_sub_elements_;
 
-  FilePath output_path_;
+  base::FilePath output_path_;
   FILE* output_;
 
   // True if an error occured while encoding/writing to file.

@@ -23,7 +23,7 @@ const int kFirstFrameIndex = 0;
 
 // Determine if we should test with file specified by |path| based
 // on |file_selection| and the |threshold| for the file size.
-bool ShouldSkipFile(const FilePath& path,
+bool ShouldSkipFile(const base::FilePath& path,
                     ImageDecoderTestFileSelection file_selection,
                     const int64 threshold) {
   if (file_selection == TEST_ALL)
@@ -36,21 +36,21 @@ bool ShouldSkipFile(const FilePath& path,
 
 }  // namespace
 
-void ReadFileToVector(const FilePath& path, std::vector<char>* contents) {
+void ReadFileToVector(const base::FilePath& path, std::vector<char>* contents) {
   std::string raw_image_data;
   file_util::ReadFileToString(path, &raw_image_data);
   contents->resize(raw_image_data.size());
   memcpy(&contents->at(0), raw_image_data.data(), raw_image_data.size());
 }
 
-FilePath GetMD5SumPath(const FilePath& path) {
-  static const FilePath::StringType kDecodedDataExtension(
+base::FilePath GetMD5SumPath(const base::FilePath& path) {
+  static const base::FilePath::StringType kDecodedDataExtension(
       FILE_PATH_LITERAL(".md5sum"));
-  return FilePath(path.value() + kDecodedDataExtension);
+  return base::FilePath(path.value() + kDecodedDataExtension);
 }
 
 #if defined(CALCULATE_MD5_SUMS)
-void SaveMD5Sum(const FilePath& path, const WebKit::WebImage& web_image) {
+void SaveMD5Sum(const base::FilePath& path, const WebKit::WebImage& web_image) {
   // Calculate MD5 sum.
   base::MD5Digest digest;
   web_image.getSkBitmap().lockPixels();
@@ -69,8 +69,8 @@ void SaveMD5Sum(const FilePath& path, const WebKit::WebImage& web_image) {
 
 #if !defined(CALCULATE_MD5_SUMS)
 void VerifyImage(const WebKit::WebImageDecoder& decoder,
-                 const FilePath& path,
-                 const FilePath& md5_sum_path,
+                 const base::FilePath& path,
+                 const base::FilePath& md5_sum_path,
                  size_t frame_index) {
   // Make sure decoding can complete successfully.
   EXPECT_TRUE(decoder.isSizeAvailable()) << path.value();
@@ -103,7 +103,7 @@ void VerifyImage(const WebKit::WebImageDecoder& decoder,
 #endif
 
 void ImageDecoderTest::SetUp() {
-  FilePath data_dir;
+  base::FilePath data_dir;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &data_dir));
   data_dir_ = data_dir.AppendASCII("webkit").
                        AppendASCII("data").
@@ -111,17 +111,17 @@ void ImageDecoderTest::SetUp() {
   ASSERT_TRUE(file_util::PathExists(data_dir_)) << data_dir_.value();
 }
 
-std::vector<FilePath> ImageDecoderTest::GetImageFiles() const {
+std::vector<base::FilePath> ImageDecoderTest::GetImageFiles() const {
   std::string pattern = "*." + format_;
 
   file_util::FileEnumerator enumerator(data_dir_,
                                        false,
                                        file_util::FileEnumerator::FILES);
 
-  std::vector<FilePath> image_files;
-  FilePath next_file_name;
+  std::vector<base::FilePath> image_files;
+  base::FilePath next_file_name;
   while (!(next_file_name = enumerator.Next()).empty()) {
-    FilePath base_name = next_file_name.BaseName();
+    base::FilePath base_name = next_file_name.BaseName();
 #if defined(OS_WIN)
     std::string base_name_ascii = WideToASCII(base_name.value());
 #else
@@ -135,8 +135,8 @@ std::vector<FilePath> ImageDecoderTest::GetImageFiles() const {
   return image_files;
 }
 
-bool ImageDecoderTest::ShouldImageFail(const FilePath& path) const {
-  static const FilePath::StringType kBadSuffix(FILE_PATH_LITERAL(".bad."));
+bool ImageDecoderTest::ShouldImageFail(const base::FilePath& path) const {
+  static const base::FilePath::StringType kBadSuffix(FILE_PATH_LITERAL(".bad."));
   return (path.value().length() > (kBadSuffix.length() + format_.length()) &&
           !path.value().compare(path.value().length() - format_.length() -
                                     kBadSuffix.length(),
@@ -146,18 +146,18 @@ bool ImageDecoderTest::ShouldImageFail(const FilePath& path) const {
 void ImageDecoderTest::TestDecoding(
     ImageDecoderTestFileSelection file_selection,
     const int64 threshold) {
-  const std::vector<FilePath> image_files(GetImageFiles());
-  for (std::vector<FilePath>::const_iterator i = image_files.begin();
+  const std::vector<base::FilePath> image_files(GetImageFiles());
+  for (std::vector<base::FilePath>::const_iterator i = image_files.begin();
        i != image_files.end(); ++i) {
     if (ShouldSkipFile(*i, file_selection, threshold))
       continue;
-    const FilePath md5_sum_path(GetMD5SumPath(*i));
+    const base::FilePath md5_sum_path(GetMD5SumPath(*i));
     TestWebKitImageDecoder(*i, md5_sum_path, kFirstFrameIndex);
   }
 }
 
-void  ImageDecoderTest::TestWebKitImageDecoder(const FilePath& image_path,
-  const FilePath& md5_sum_path, int desired_frame_index) const {
+void  ImageDecoderTest::TestWebKitImageDecoder(const base::FilePath& image_path,
+  const base::FilePath& md5_sum_path, int desired_frame_index) const {
   bool should_test_chunking = true;
   bool should_test_failed_images = true;
 #ifdef CALCULATE_MD5_SUMS

@@ -15,7 +15,7 @@ FileAccessPermissions::~FileAccessPermissions() {}
 
 
 void FileAccessPermissions::GrantAccessPermission(
-    const std::string& extension_id, const FilePath& path) {
+    const std::string& extension_id, const base::FilePath& path) {
   base::AutoLock locker(lock_);
   PathAccessMap::iterator path_map_iter = path_map_.find(extension_id);
   if (path_map_iter == path_map_.end()) {
@@ -30,7 +30,7 @@ void FileAccessPermissions::GrantAccessPermission(
 }
 
 bool FileAccessPermissions::HasAccessPermission(
-    const std::string& extension_id, const FilePath& path) {
+    const std::string& extension_id, const base::FilePath& path) {
   base::AutoLock locker(lock_);
   PathAccessMap::const_iterator path_map_iter = path_map_.find(extension_id);
   if (path_map_iter == path_map_.end())
@@ -38,8 +38,8 @@ bool FileAccessPermissions::HasAccessPermission(
 
   // Check this file and walk up its directory tree to find if this extension
   // has access to it.
-  FilePath current_path = path.StripTrailingSeparators();
-  FilePath last_path;
+  base::FilePath current_path = path.StripTrailingSeparators();
+  base::FilePath last_path;
   while (current_path != last_path) {
     if (path_map_iter->second.find(current_path) != path_map_iter->second.end())
       return true;

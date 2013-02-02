@@ -15,10 +15,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 
-class FilePath;
-
 namespace base {
 class DictionaryValue;
+class FilePath;
 }
 
 namespace installer {
@@ -91,7 +90,7 @@ class MasterPreferences {
 
   // Parses a specific preferences file and does not merge any command line
   // switches with the distribution dictionary.
-  explicit MasterPreferences(const FilePath& prefs_path);
+  explicit MasterPreferences(const base::FilePath& prefs_path);
 
   // Parses a preferences directly from |prefs| and does not merge any command
   // line switches with the distribution dictionary.

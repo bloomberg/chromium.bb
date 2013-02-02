@@ -37,7 +37,7 @@ enum ImageDecoderTestFileSelection {
 };
 
 // Returns the path the decoded data is saved at.
-FilePath GetMD5SumPath(const FilePath& path);
+base::FilePath GetMD5SumPath(const base::FilePath& path);
 
 class ImageDecoderTest : public testing::Test {
  public:
@@ -47,16 +47,16 @@ class ImageDecoderTest : public testing::Test {
   virtual void SetUp() OVERRIDE;
 
   // Returns the vector of image files for testing.
-  std::vector<FilePath> GetImageFiles() const;
+  std::vector<base::FilePath> GetImageFiles() const;
 
   // Returns true if the image is bogus and should not be successfully decoded.
-  bool ShouldImageFail(const FilePath& path) const;
+  bool ShouldImageFail(const base::FilePath& path) const;
 
   // Tests if decoder decodes image at image_path with underlying frame at
   // index desired_frame_index. The md5_sum_path is needed if the test is not
   // asked to generate one i.e. if # #define CALCULATE_MD5_SUMS is set.
-  void TestWebKitImageDecoder(const FilePath& image_path,
-    const FilePath& md5_sum_path, int desired_frame_index) const;
+  void TestWebKitImageDecoder(const base::FilePath& image_path,
+    const base::FilePath& md5_sum_path, int desired_frame_index) const;
 
   // Verifies each of the test image files is decoded correctly and matches the
   // expected state. |file_selection| and |threshold| can be used to select
@@ -77,7 +77,7 @@ class ImageDecoderTest : public testing::Test {
 
  protected:
   // Path to the test files.
-  FilePath data_dir_;
+  base::FilePath data_dir_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageDecoderTest);

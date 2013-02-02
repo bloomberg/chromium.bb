@@ -20,12 +20,12 @@
 
 namespace base {
 class DictionaryValue;
+class FilePath;
 class SequencedWorkerPool;
 class SequencedTaskRunner;
 class Value;
 }
 
-class FilePath;
 
 // A writable PrefStore implementation that is used for user preferences.
 class BASE_PREFS_EXPORT JsonPrefStore
@@ -35,12 +35,12 @@ class BASE_PREFS_EXPORT JsonPrefStore
   // Returns instance of SequencedTaskRunner which guarantees that file
   // operations on the same file will be executed in sequenced order.
   static scoped_refptr<base::SequencedTaskRunner> GetTaskRunnerForFile(
-      const FilePath& pref_filename,
+      const base::FilePath& pref_filename,
       base::SequencedWorkerPool* worker_pool);
 
   // |sequenced_task_runner| is must be a shutdown-blocking task runner, ideally
   // created by GetTaskRunnerForFile() method above.
-  JsonPrefStore(const FilePath& pref_filename,
+  JsonPrefStore(const base::FilePath& pref_filename,
                 base::SequencedTaskRunner* sequenced_task_runner);
 
   // PrefStore overrides:
@@ -78,7 +78,7 @@ class BASE_PREFS_EXPORT JsonPrefStore
   // ImportantFileWriter::DataSerializer overrides:
   virtual bool SerializeData(std::string* output) OVERRIDE;
 
-  FilePath path_;
+  base::FilePath path_;
   const scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
   scoped_ptr<base::DictionaryValue> prefs_;

@@ -18,6 +18,10 @@
 
 #include "base/values.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace content {
 class BrowserContext;
 }
@@ -26,7 +30,6 @@ namespace subtle {
 class PrefMemberBase;
 }
 
-class FilePath;
 class PrefObserver;
 
 class PrefServiceBase {
@@ -118,7 +121,7 @@ class PrefServiceBase {
   virtual int GetInteger(const char* path) const = 0;
   virtual double GetDouble(const char* path) const = 0;
   virtual std::string GetString(const char* path) const = 0;
-  virtual FilePath GetFilePath(const char* path) const = 0;
+  virtual base::FilePath GetFilePath(const char* path) const = 0;
 
   // Returns the branch if it exists, or the registered default value otherwise.
   // Note that |path| must point to a registered preference. In that case, these
@@ -140,7 +143,7 @@ class PrefServiceBase {
   virtual void SetInteger(const char* path, int value) = 0;
   virtual void SetDouble(const char* path, double value) = 0;
   virtual void SetString(const char* path, const std::string& value) = 0;
-  virtual void SetFilePath(const char* path, const FilePath& value) = 0;
+  virtual void SetFilePath(const char* path, const base::FilePath& value) = 0;
 
   // Int64 helper methods that actually store the given value as a string.
   // Note that if obtaining the named value via GetDictionary or GetList, the

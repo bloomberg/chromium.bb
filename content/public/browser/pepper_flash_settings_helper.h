@@ -9,7 +9,9 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace IPC {
 struct ChannelHandle;
@@ -29,7 +31,7 @@ class CONTENT_EXPORT PepperFlashSettingsHelper
   typedef base::Callback<void(bool /* success */,
                               const IPC::ChannelHandle& /* channel_handle */)>
       OpenChannelCallback;
-  virtual void OpenChannelToBroker(const FilePath& path,
+  virtual void OpenChannelToBroker(const base::FilePath& path,
                                    const OpenChannelCallback& callback) = 0;
 
  protected:

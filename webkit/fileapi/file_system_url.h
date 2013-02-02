@@ -62,11 +62,11 @@ namespace fileapi {
 // one of the friended classes.
 //
 // TODO(ericu): Look into making path() [and all FileSystem API virtual
-// paths] just an std::string, to prevent platform-specific FilePath behavior
-// from getting invoked by accident. Currently the FilePath returned here needs
+// paths] just an std::string, to prevent platform-specific base::FilePath behavior
+// from getting invoked by accident. Currently the base::FilePath returned here needs
 // special treatment, as it may contain paths that are illegal on the current
 // platform.  To avoid problems, use VirtualPath::BaseName and
-// VirtualPath::GetComponents instead of the FilePath methods.
+// VirtualPath::GetComponents instead of the base::FilePath methods.
 class WEBKIT_STORAGE_EXPORT FileSystemURL {
  public:
   FileSystemURL();
@@ -77,7 +77,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemURL {
   static FileSystemURL CreateForTest(const GURL& url);
   static FileSystemURL CreateForTest(const GURL& origin,
                                      FileSystemType type,
-                                     const FilePath& path);
+                                     const base::FilePath& path);
 
   // Returns true if this instance represents a valid FileSystem URL.
   bool is_valid() const { return is_valid_; }
@@ -90,12 +90,12 @@ class WEBKIT_STORAGE_EXPORT FileSystemURL {
 
   // Returns the path part of this URL. See the class comment for details.
   // TODO(kinuko): this must return std::string.
-  const FilePath& path() const { return path_; }
+  const base::FilePath& path() const { return path_; }
 
   // Returns the original path part of this URL.
   // See the class comment for details.
   // TODO(kinuko): this must return std::string.
-  const FilePath& virtual_path() const { return virtual_path_; }
+  const base::FilePath& virtual_path() const { return virtual_path_; }
 
   // Returns the filesystem ID/mount name for isolated/external filesystem URLs.
   // See the class comment for details.
@@ -112,7 +112,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemURL {
   // Note that the resulting FileSystemURL loses original URL information
   // if it was a cracked filesystem; i.e. virtual_path and mount_type will
   // be set to empty values.
-  FileSystemURL WithPath(const FilePath& path) const;
+  FileSystemURL WithPath(const base::FilePath& path) const;
 
   // Returns true if this URL is a strict parent of the |child|.
   bool IsParent(const FileSystemURL& child) const;
@@ -131,25 +131,25 @@ class WEBKIT_STORAGE_EXPORT FileSystemURL {
   explicit FileSystemURL(const GURL& filesystem_url);
   FileSystemURL(const GURL& origin,
                 FileSystemType type,
-                const FilePath& internal_path);
+                const base::FilePath& internal_path);
   // Creates a cracked FileSystemURL.
   FileSystemURL(const GURL& origin,
                 FileSystemType original_type,
-                const FilePath& original_path,
+                const base::FilePath& original_path,
                 const std::string& filesystem_id,
                 FileSystemType cracked_type,
-                const FilePath& cracked_path);
+                const base::FilePath& cracked_path);
 
   bool is_valid_;
 
   GURL origin_;
   FileSystemType type_;
   FileSystemType mount_type_;
-  FilePath path_;
+  base::FilePath path_;
 
   // Values specific to cracked URLs.
   std::string filesystem_id_;
-  FilePath virtual_path_;
+  base::FilePath virtual_path_;
 
 };
 

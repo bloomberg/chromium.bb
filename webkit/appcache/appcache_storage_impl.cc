@@ -39,7 +39,7 @@ static const int kDefaultQuota = 5 * 1024 * 1024;
 
 static const int kMaxDiskCacheSize = 250 * 1024 * 1024;
 static const int kMaxMemDiskCacheSize = 10 * 1024 * 1024;
-static const FilePath::CharType kDiskCacheDirectoryName[] =
+static const base::FilePath::CharType kDiskCacheDirectoryName[] =
     FILE_PATH_LITERAL("Cache");
 
 namespace {
@@ -1312,7 +1312,7 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
   }
 }
 
-void AppCacheStorageImpl::Initialize(const FilePath& cache_directory,
+void AppCacheStorageImpl::Initialize(const base::FilePath& cache_directory,
                                      base::MessageLoopProxy* db_thread,
                                      base::MessageLoopProxy* cache_thread) {
   DCHECK(db_thread);
@@ -1320,7 +1320,7 @@ void AppCacheStorageImpl::Initialize(const FilePath& cache_directory,
   cache_directory_ = cache_directory;
   is_incognito_ = cache_directory_.empty();
 
-  FilePath db_file_path;
+  base::FilePath db_file_path;
   if (!is_incognito_)
     db_file_path = cache_directory_.Append(kAppCacheDatabaseName);
   database_ = new AppCacheDatabase(db_file_path);

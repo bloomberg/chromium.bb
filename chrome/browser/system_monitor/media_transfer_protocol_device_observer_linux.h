@@ -12,7 +12,9 @@
 #include "chrome/browser/system_monitor/removable_storage_notifications.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace chrome {
 
@@ -37,7 +39,7 @@ class MediaTransferProtocolDeviceObserverLinux
   // Finds the storage that contains |path| and populates |storage_info|.
   // Returns false if unable to find the storage.
   bool GetStorageInfoForPath(
-      const FilePath& path,
+      const base::FilePath& path,
       RemovableStorageNotifications::StorageInfo* storage_info) const;
 
  protected:

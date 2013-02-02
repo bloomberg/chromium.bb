@@ -13,7 +13,9 @@
 #include "chrome/browser/history/url_database.h"  // For DBCloseScoper.
 #include "sql/meta_table.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace sql {
 class Connection;
@@ -28,7 +30,7 @@ class TopSitesDatabase {
 
   // Must be called after creation but before any other methods are called.
   // Returns true on success. If false, no other functions should be called.
-  bool Init(const FilePath& db_name);
+  bool Init(const base::FilePath& db_name);
 
   // Returns true if migration of top sites from history may be needed. A value
   // of true means either migration is definitely needed (the top sites file is
@@ -92,7 +94,7 @@ class TopSitesDatabase {
   // Returns the number of URLs (rows) in the database.
   int GetRowCount();
 
-  sql::Connection* CreateDB(const FilePath& db_name);
+  sql::Connection* CreateDB(const base::FilePath& db_name);
 
   // Encodes redirects into a string.
   static std::string GetRedirects(const MostVisitedURL& url);

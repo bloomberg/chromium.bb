@@ -78,7 +78,7 @@ class GetFileInfoHelper {
  private:
   base::PlatformFileError error_;
   base::PlatformFileInfo file_info_;
-  FilePath platform_path_;
+  base::FilePath platform_path_;
   SnapshotFilePolicy snapshot_policy_;
   DISALLOW_COPY_AND_ASSIGN(GetFileInfoHelper);
 };
@@ -91,7 +91,7 @@ class ReadDirectoryHelper {
                FileSystemOperationContext* context,
                const FileSystemURL& url) {
     base::PlatformFileInfo file_info;
-    FilePath platform_path;
+    base::FilePath platform_path;
     PlatformFileError error = file_util->GetFileInfo(
         context, url, &file_info, &platform_path);
     if (error != base::PLATFORM_FILE_OK) {
@@ -106,7 +106,7 @@ class ReadDirectoryHelper {
     scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
         file_util->CreateFileEnumerator(context, url, false /* recursive */));
 
-    FilePath current;
+    base::FilePath current;
     while (!(current = file_enum->Next()).empty()) {
       AsyncFileUtil::Entry entry;
       entry.is_directory = file_enum->IsDirectory();
@@ -257,7 +257,7 @@ bool AsyncFileUtilAdapter::MoveFileLocal(
 
 bool AsyncFileUtilAdapter::CopyInForeignFile(
       FileSystemOperationContext* context,
-      const FilePath& src_file_path,
+      const base::FilePath& src_file_path,
       const FileSystemURL& dest_url,
       const StatusCallback& callback) {
   return base::PostTaskAndReplyWithResult(

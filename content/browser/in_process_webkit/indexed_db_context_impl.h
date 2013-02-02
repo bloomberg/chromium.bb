@@ -17,7 +17,6 @@
 #include "webkit/quota/quota_types.h"
 
 class GURL;
-class FilePath;
 
 namespace WebKit {
 class WebIDBDatabase;
@@ -25,6 +24,7 @@ class WebIDBFactory;
 }
 
 namespace base {
+class FilePath;
 class MessageLoopProxy;
 }
 
@@ -39,7 +39,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
     : NON_EXPORTED_BASE(public IndexedDBContext) {
  public:
   // If |data_path| is empty, nothing will be saved to disk.
-  IndexedDBContextImpl(const FilePath& data_path,
+  IndexedDBContextImpl(const base::FilePath& data_path,
                        quota::SpecialStoragePolicy* special_storage_policy,
                        quota::QuotaManagerProxy* quota_manager_proxy,
                        base::MessageLoopProxy* webkit_thread_loop);
@@ -47,10 +47,10 @@ class CONTENT_EXPORT IndexedDBContextImpl
   WebKit::WebIDBFactory* GetIDBFactory();
 
   // The indexed db directory.
-  static const FilePath::CharType kIndexedDBDirectory[];
+  static const base::FilePath::CharType kIndexedDBDirectory[];
 
   // The indexed db file extension.
-  static const FilePath::CharType kIndexedDBExtension[];
+  static const base::FilePath::CharType kIndexedDBExtension[];
 
   // Disables the exit-time deletion of session-only data.
   void SetForceKeepSessionState() {
@@ -62,7 +62,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   virtual int64 GetOriginDiskUsage(const GURL& origin_url) OVERRIDE;
   virtual base::Time GetOriginLastModified(const GURL& origin_url) OVERRIDE;
   virtual void DeleteForOrigin(const GURL& origin_url) OVERRIDE;
-  virtual FilePath GetFilePathForTesting(
+  virtual base::FilePath GetFilePathForTesting(
       const string16& origin_id) const OVERRIDE;
 
   // Methods called by IndexedDBDispatcherHost for quota support.
@@ -74,10 +74,10 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   quota::QuotaManagerProxy* quota_manager_proxy();
 
-  FilePath data_path() const { return data_path_; }
+  base::FilePath data_path() const { return data_path_; }
 
   // For unit tests allow to override the |data_path_|.
-  void set_data_path_for_testing(const FilePath& data_path) {
+  void set_data_path_for_testing(const base::FilePath& data_path) {
     data_path_ = data_path;
   }
 
@@ -94,7 +94,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   typedef std::map<GURL, int64> OriginToSizeMap;
   class IndexedDBGetUsageAndQuotaCallback;
 
-  FilePath GetIndexedDBFilePath(const string16& origin_id) const;
+  base::FilePath GetIndexedDBFilePath(const string16& origin_id) const;
   int64 ReadUsageFromDisk(const GURL& origin_url) const;
   void EnsureDiskUsageCacheInitialized(const GURL& origin_url);
   void QueryDiskAndUpdateQuotaUsage(const GURL& origin_url);
@@ -119,7 +119,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void ResetCaches();
 
   scoped_ptr<WebKit::WebIDBFactory> idb_factory_;
-  FilePath data_path_;
+  base::FilePath data_path_;
   // If true, nothing (not even session-only data) should be deleted on exit.
   bool force_keep_session_state_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;

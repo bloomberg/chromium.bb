@@ -12,9 +12,8 @@
 #include "net/base/net_export.h"
 #include "net/base/upload_element.h"
 
-class FilePath;
-
 namespace base {
+class FilePath;
 class Time;
 }  // namespace base
 
@@ -35,7 +34,7 @@ class NET_EXPORT UploadData
 
   void AppendBytes(const char* bytes, int bytes_len);
 
-  void AppendFileRange(const FilePath& file_path,
+  void AppendFileRange(const base::FilePath& file_path,
                        uint64 offset, uint64 length,
                        const base::Time& expected_modification_time);
 

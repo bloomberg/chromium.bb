@@ -15,9 +15,9 @@
 #include <windows.h>
 #endif
 
-class FilePath;
-
 namespace base {
+
+class FilePath;
 
 // A class for recording and playing back keyboard and mouse input events.
 //

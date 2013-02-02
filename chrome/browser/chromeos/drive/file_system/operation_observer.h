@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATION_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATION_OBSERVER_H_
 
+namespace base {
 class FilePath;
+}
 
 namespace drive {
 namespace file_system {
@@ -17,7 +19,7 @@ class OperationObserver {
   // |directory_path| is a virtual directory path representing the
   // changed directory.
   virtual void OnDirectoryChangedByOperation(
-      const FilePath& directory_path) = 0;
+      const base::FilePath& directory_path) = 0;
 };
 
 }  // namespace file_system

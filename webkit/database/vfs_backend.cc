@@ -55,7 +55,7 @@ bool VfsBackend::OpenFileFlagsAreConsistent(int desired_flags) {
 }
 
 // static
-void VfsBackend::OpenFile(const FilePath& file_path,
+void VfsBackend::OpenFile(const base::FilePath& file_path,
                           int desired_flags,
                           base::PlatformFile* file_handle) {
   DCHECK(!file_path.empty());
@@ -100,7 +100,7 @@ void VfsBackend::OpenFile(const FilePath& file_path,
 
 // static
 void VfsBackend::OpenTempFileInDirectory(
-    const FilePath& dir_path,
+    const base::FilePath& dir_path,
     int desired_flags,
     base::PlatformFile* file_handle) {
   // We should be able to delete temp files when they're closed
@@ -111,7 +111,7 @@ void VfsBackend::OpenTempFileInDirectory(
   }
 
   // Get a unique temp file name in the database directory.
-  FilePath temp_file_path;
+  base::FilePath temp_file_path;
   if (!file_util::CreateTemporaryFileInDir(dir_path, &temp_file_path))
     return;
 
@@ -119,7 +119,7 @@ void VfsBackend::OpenTempFileInDirectory(
 }
 
 // static
-int VfsBackend::DeleteFile(const FilePath& file_path, bool sync_dir) {
+int VfsBackend::DeleteFile(const base::FilePath& file_path, bool sync_dir) {
   if (!file_util::PathExists(file_path))
     return SQLITE_OK;
   if (!file_util::Delete(file_path, false))
@@ -143,7 +143,7 @@ int VfsBackend::DeleteFile(const FilePath& file_path, bool sync_dir) {
 }
 
 // static
-uint32 VfsBackend::GetFileAttributes(const FilePath& file_path) {
+uint32 VfsBackend::GetFileAttributes(const base::FilePath& file_path) {
 #if defined(OS_WIN)
   uint32 attributes = ::GetFileAttributes(file_path.value().c_str());
 #elif defined(OS_POSIX)
@@ -159,7 +159,7 @@ uint32 VfsBackend::GetFileAttributes(const FilePath& file_path) {
 }
 
 // static
-int64 VfsBackend::GetFileSize(const FilePath& file_path) {
+int64 VfsBackend::GetFileSize(const base::FilePath& file_path) {
   int64 size = 0;
   return (file_util::GetFileSize(file_path, &size) ? size : 0);
 }

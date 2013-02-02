@@ -205,7 +205,7 @@ class DomSerializerTests : public TestShellTest,
   WebVector<WebString> local_paths_;
   // The local_directory_name_ is dummy relative path of directory which
   // contain all saved auxiliary files included all sub frames and resources.
-  const FilePath local_directory_name_;
+  const base::FilePath local_directory_name_;
 
  protected:
   // testing::Test
@@ -283,7 +283,7 @@ bool IsMetaElement(const WebNode& node, std::string& charset_info) {
 // If original contents have document type, the serialized contents also have
 // document type.
 TEST_F(DomSerializerTests, SerializeHTMLDOMWithDocType) {
-  FilePath page_file_path = data_dir_;
+  base::FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII("dom_serializer");
   page_file_path = page_file_path.AppendASCII("youtube_1.htm");
   GURL file_url = net::FilePathToFileURL(page_file_path);
@@ -312,7 +312,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithDocType) {
 // If original contents do not have document type, the serialized contents
 // also do not have document type.
 TEST_F(DomSerializerTests, SerializeHTMLDOMWithoutDocType) {
-  FilePath page_file_path = data_dir_;
+  base::FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII("dom_serializer");
   page_file_path = page_file_path.AppendASCII("youtube_2.htm");
   GURL file_url = net::FilePathToFileURL(page_file_path);
@@ -342,7 +342,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithoutDocType) {
 // finishing serialization, the serialized contents should be same
 // with original XML document.
 TEST_F(DomSerializerTests, SerializeXMLDocWithBuiltInEntities) {
-  FilePath page_file_path = data_dir_;
+  base::FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII("dom_serializer");
   page_file_path = page_file_path.AppendASCII("note.xml");
   // Read original contents for later comparison.
@@ -364,7 +364,7 @@ TEST_F(DomSerializerTests, SerializeXMLDocWithBuiltInEntities) {
 
 // When serializing DOM, we add MOTW declaration before html tag.
 TEST_F(DomSerializerTests, SerializeHTMLDOMWithAddingMOTW) {
-  FilePath page_file_path = data_dir_;
+  base::FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII("dom_serializer");
   page_file_path = page_file_path.AppendASCII("youtube_2.htm");
   // Read original contents for later comparison .
@@ -398,7 +398,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithAddingMOTW) {
 // http://bugs.webkit.org/show_bug.cgi?id=16621 even the original document
 // does not have META charset declaration.
 TEST_F(DomSerializerTests, SerializeHTMLDOMWithNoMetaCharsetInOriginalDoc) {
-  FilePath page_file_path = data_dir_;
+  base::FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII("dom_serializer");
   page_file_path = page_file_path.AppendASCII("youtube_1.htm");
   // Get file URL.
@@ -462,7 +462,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithNoMetaCharsetInOriginalDoc) {
 // declarations.
 TEST_F(DomSerializerTests,
        SerializeHTMLDOMWithMultipleMetaCharsetInOriginalDoc) {
-  FilePath page_file_path = data_dir_;
+  base::FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII("dom_serializer");
   page_file_path = page_file_path.AppendASCII("youtube_2.htm");
   // Get file URL.
@@ -527,7 +527,7 @@ TEST_F(DomSerializerTests,
 
 // Test situation of html entities in text when serializing HTML DOM.
 TEST_F(DomSerializerTests, SerializeHTMLDOMWithEntitiesInText) {
-  FilePath page_file_path = data_dir_;
+  base::FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII(
       "dom_serializer/htmlentities_in_text.htm");
   // Get file URL. The URL is dummy URL to identify the following loading
@@ -587,7 +587,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithEntitiesInText) {
 // HTML DOM.
 // This test started to fail at WebKit r65388. See http://crbug.com/52279.
 TEST_F(DomSerializerTests, SerializeHTMLDOMWithEntitiesInAttributeValue) {
-  FilePath page_file_path = data_dir_;
+  base::FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII(
       "dom_serializer/htmlentities_in_attribute_value.htm");
   // Get file URL. The URL is dummy URL to identify the following loading
@@ -638,7 +638,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithEntitiesInAttributeValue) {
 // This test started to fail at WebKit r65351. See http://crbug.com/52279.
 TEST_F(DomSerializerTests, SerializeHTMLDOMWithNonStandardEntities) {
   // Make a test file URL and load it.
-  FilePath page_file_path = data_dir_;
+  base::FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII("dom_serializer");
   page_file_path = page_file_path.AppendASCII("nonstandard_htmlentities.htm");
   GURL file_url = net::FilePathToFileURL(page_file_path);
@@ -678,7 +678,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithBaseTag) {
   // There are total 2 available base tags in this test file.
   const int kTotalBaseTagCountInTestFile = 2;
 
-  FilePath page_file_path = data_dir_.AppendASCII("dom_serializer");
+  base::FilePath page_file_path = data_dir_.AppendASCII("dom_serializer");
   file_util::EnsureEndsWithSeparator(&page_file_path);
 
   // Get page dir URL which is base URL of this file.
@@ -782,7 +782,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithBaseTag) {
 
 // Serializing page which has an empty HEAD tag.
 TEST_F(DomSerializerTests, SerializeHTMLDOMWithEmptyHead) {
-  FilePath page_file_path = data_dir_;
+  base::FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII("dom_serializer");
   page_file_path = page_file_path.AppendASCII("empty_head.htm");
   GURL file_url = net::FilePathToFileURL(page_file_path);
@@ -842,7 +842,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithEmptyHead) {
 // Test that we don't crash when the page contains an iframe that
 // was handled as a download (http://crbug.com/42212).
 TEST_F(DomSerializerTests, SerializeDocumentWithDownloadedIFrame) {
-  FilePath page_file_path = data_dir_;
+  base::FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII("dom_serializer");
   page_file_path = page_file_path.AppendASCII("iframe-src-is-exe.htm");
   GURL file_url = net::FilePathToFileURL(page_file_path);
@@ -854,7 +854,7 @@ TEST_F(DomSerializerTests, SerializeDocumentWithDownloadedIFrame) {
 }
 
 TEST_F(DomSerializerTests, SubResourceForElementsInNonHTMLNamespace) {
-  FilePath page_file_path = data_dir_;
+  base::FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII("dom_serializer");
   page_file_path = page_file_path.AppendASCII("non_html_namespace.htm");
   GURL file_url = net::FilePathToFileURL(page_file_path);

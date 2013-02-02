@@ -70,7 +70,7 @@ class PrefServiceSyncable : public PrefService {
                           const std::string& default_value,
                           PrefSyncStatus sync_status);
   void RegisterFilePathPref(const char* path,
-                            const FilePath& default_value,
+                            const base::FilePath& default_value,
                             PrefSyncStatus sync_status);
   void RegisterListPref(const char* path,
                         PrefSyncStatus sync_status);

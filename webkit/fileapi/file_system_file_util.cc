@@ -6,8 +6,8 @@
 
 namespace fileapi {
 
-FilePath FileSystemFileUtil::EmptyFileEnumerator::Next() {
-  return FilePath();
+base::FilePath FileSystemFileUtil::EmptyFileEnumerator::Next() {
+  return base::FilePath();
 }
 
 int64 FileSystemFileUtil::EmptyFileEnumerator::Size() {

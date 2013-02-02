@@ -9,7 +9,9 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 
+namespace base {
 class FilePath;
+}
 
 namespace google_apis {
 class DriveUploaderInterface;
@@ -52,37 +54,38 @@ class DriveOperations {
 
   // Wrapper function for copy_operation_.
   // |callback| must not be null.
-  void Copy(const FilePath& src_file_path,
-            const FilePath& dest_file_path,
+  void Copy(const base::FilePath& src_file_path,
+            const base::FilePath& dest_file_path,
             const FileOperationCallback& callback);
 
   // Wrapper function for copy_operation_.
   // |callback| must not be null.
-  void TransferFileFromRemoteToLocal(const FilePath& remote_src_file_path,
-                                     const FilePath& local_dest_file_path,
+  void TransferFileFromRemoteToLocal(const base::FilePath& remote_src_file_path,
+                                     const base::FilePath& local_dest_file_path,
                                      const FileOperationCallback& callback);
 
   // Wrapper function for copy_operation_.
   // |callback| must not be null.
-  void TransferFileFromLocalToRemote(const FilePath& local_src_file_path,
-                                     const FilePath& remote_dest_file_path,
-                                     const FileOperationCallback& callback);
+  void TransferFileFromLocalToRemote(
+      const base::FilePath& local_src_file_path,
+      const base::FilePath& remote_dest_file_path,
+      const FileOperationCallback& callback);
 
   // Wrapper function for copy_operation_.
   // |callback| must not be null.
-  void TransferRegularFile(const FilePath& local_src_file_path,
-                           const FilePath& remote_dest_file_path,
+  void TransferRegularFile(const base::FilePath& local_src_file_path,
+                           const base::FilePath& remote_dest_file_path,
                            const FileOperationCallback& callback);
 
   // Wrapper function for move_operation_.
   // |callback| must not be null.
-  void Move(const FilePath& src_file_path,
-            const FilePath& dest_file_path,
+  void Move(const base::FilePath& src_file_path,
+            const base::FilePath& dest_file_path,
             const FileOperationCallback& callback);
 
   // Wrapper function for remove_operation_.
   // |callback| must not be null.
-  void Remove(const FilePath& file_path,
+  void Remove(const base::FilePath& file_path,
               bool is_recursive,
               const FileOperationCallback& callback);
 

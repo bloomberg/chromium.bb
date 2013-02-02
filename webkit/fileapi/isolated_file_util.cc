@@ -34,10 +34,10 @@ class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
   virtual ~SetFileEnumerator() {}
 
   // AbstractFileEnumerator overrides.
-  virtual FilePath Next() OVERRIDE {
+  virtual base::FilePath Next() OVERRIDE {
     if (file_iter_ == files_.end())
-      return FilePath();
-    FilePath platform_file = (file_iter_++)->path;
+      return base::FilePath();
+    base::FilePath platform_file = (file_iter_++)->path;
     NativeFileUtil::GetFileInfo(platform_file, &file_info_);
     return platform_file;
   }
@@ -65,7 +65,7 @@ class RecursiveSetFileEnumerator
   virtual ~RecursiveSetFileEnumerator() {}
 
   // AbstractFileEnumerator overrides.
-  virtual FilePath Next() OVERRIDE;
+  virtual base::FilePath Next() OVERRIDE;
   virtual int64 Size() OVERRIDE {
     DCHECK(current_enumerator_.get());
     return current_enumerator_->Size();
@@ -85,16 +85,16 @@ class RecursiveSetFileEnumerator
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> current_enumerator_;
 };
 
-FilePath RecursiveSetFileEnumerator::Next() {
+base::FilePath RecursiveSetFileEnumerator::Next() {
   if (current_enumerator_.get()) {
-    FilePath path = current_enumerator_->Next();
+    base::FilePath path = current_enumerator_->Next();
     if (!path.empty())
       return path;
   }
 
   // We reached the end.
   if (file_iter_ == files_.end())
-    return FilePath();
+    return base::FilePath();
 
   // Enumerates subdirectories of the next path.
   FileInfo& next_file = *file_iter_++;
@@ -113,7 +113,7 @@ IsolatedFileUtil::IsolatedFileUtil() {}
 PlatformFileError IsolatedFileUtil::GetLocalFilePath(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
-    FilePath* local_file_path) {
+    base::FilePath* local_file_path) {
   DCHECK(local_file_path);
   DCHECK(url.is_valid());
   if (url.path().empty()) {
@@ -132,7 +132,7 @@ PlatformFileError DraggedFileUtil::GetFileInfo(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
     PlatformFileInfo* file_info,
-    FilePath* platform_path) {
+    base::FilePath* platform_path) {
   DCHECK(file_info);
   std::string filesystem_id;
   DCHECK(url.is_valid());
@@ -149,7 +149,7 @@ PlatformFileError DraggedFileUtil::GetFileInfo(
   }
   base::PlatformFileError error =
       NativeFileUtil::GetFileInfo(url.path(), file_info);
-  if (file_util::IsLink(url.path()) && !FilePath().IsParent(url.path())) {
+  if (file_util::IsLink(url.path()) && !base::FilePath().IsParent(url.path())) {
     // Don't follow symlinks unless it's the one that are selected by the user.
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   }

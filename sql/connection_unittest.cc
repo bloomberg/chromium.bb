@@ -25,7 +25,7 @@ class SQLConnectionTest : public testing::Test {
 
   sql::Connection& db() { return db_; }
 
-  FilePath db_path() {
+  base::FilePath db_path() {
     return temp_dir_.path().AppendASCII("SQLConnectionTest.db");
   }
 

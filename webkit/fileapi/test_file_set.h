@@ -19,7 +19,7 @@ namespace test {
 
 struct TestCaseRecord {
   bool is_directory;
-  const FilePath::CharType path[64];
+  const base::FilePath::CharType path[64];
   int64 data_file_size;
 };
 
@@ -29,10 +29,10 @@ extern const size_t kRegularTestCaseSize;
 size_t GetRegularTestCaseSize();
 
 // Creates one file or directory specified by |record|.
-void SetUpOneTestCase(const FilePath& root_path, const TestCaseRecord& record);
+void SetUpOneTestCase(const base::FilePath& root_path, const TestCaseRecord& record);
 
 // Creates the files and directories specified in kRegularTestCases.
-void SetUpRegularTestCases(const FilePath& root_path);
+void SetUpRegularTestCases(const base::FilePath& root_path);
 
 }  // namespace test
 

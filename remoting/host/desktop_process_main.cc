@@ -47,7 +47,7 @@ const char kUsageMessage[] =
   "Options:\n"
   "  --help, --?     - Print this message.\n";
 
-void Usage(const FilePath& program_name) {
+void Usage(const base::FilePath& program_name) {
   std::string display_name = UTF16ToUTF8(program_name.LossyDisplayName());
   LOG(INFO) << StringPrintf(kUsageMessage, display_name.c_str());
 }
@@ -125,7 +125,7 @@ int CALLBACK WinMain(HINSTANCE instance,
   // Mark the process as DPI-aware, so Windows won't scale coordinates in APIs.
   // N.B. This API exists on Vista and above.
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    FilePath path(base::GetNativeLibraryName(UTF8ToUTF16("user32")));
+    base::FilePath path(base::GetNativeLibraryName(UTF8ToUTF16("user32")));
     base::ScopedNativeLibrary user32(path);
     CHECK(user32.is_valid());
 

@@ -119,7 +119,7 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   virtual int GetInteger(const char* path) const OVERRIDE;
   virtual double GetDouble(const char* path) const OVERRIDE;
   virtual std::string GetString(const char* path) const OVERRIDE;
-  virtual FilePath GetFilePath(const char* path) const OVERRIDE;
+  virtual base::FilePath GetFilePath(const char* path) const OVERRIDE;
   virtual const base::DictionaryValue* GetDictionary(
       const char* path) const OVERRIDE;
   virtual const base::ListValue* GetList(const char* path) const OVERRIDE;
@@ -129,7 +129,8 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   virtual void SetInteger(const char* path, int value) OVERRIDE;
   virtual void SetDouble(const char* path, double value) OVERRIDE;
   virtual void SetString(const char* path, const std::string& value) OVERRIDE;
-  virtual void SetFilePath(const char* path, const FilePath& value) OVERRIDE;
+  virtual void SetFilePath(const char* path,
+                           const base::FilePath& value) OVERRIDE;
   virtual void SetInt64(const char* path, int64 value) OVERRIDE;
   virtual int64 GetInt64(const char* path) const OVERRIDE;
   virtual void SetUint64(const char* path, uint64 value) OVERRIDE;

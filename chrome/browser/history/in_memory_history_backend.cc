@@ -27,7 +27,7 @@ InMemoryHistoryBackend::InMemoryHistoryBackend()
 
 InMemoryHistoryBackend::~InMemoryHistoryBackend() {}
 
-bool InMemoryHistoryBackend::Init(const FilePath& history_filename,
+bool InMemoryHistoryBackend::Init(const base::FilePath& history_filename,
                                   URLDatabase* db) {
   db_.reset(new InMemoryDatabase);
   return db_->InitFromDisk(history_filename);

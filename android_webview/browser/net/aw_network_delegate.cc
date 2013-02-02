@@ -87,7 +87,7 @@ bool AwNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
 }
 
 bool AwNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
-                                        const FilePath& path) const {
+                                        const base::FilePath& path) const {
   return true;
 }
 

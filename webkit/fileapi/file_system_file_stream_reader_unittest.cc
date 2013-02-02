@@ -133,7 +133,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
     base::ClosePlatformFile(handle);
 
     base::PlatformFileInfo file_info;
-    FilePath platform_path;
+    base::FilePath platform_path;
     ASSERT_EQ(base::PLATFORM_FILE_OK,
               file_util->GetFileInfo(&context, url, &file_info,
                                      &platform_path));
@@ -150,7 +150,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
     return file_system_context_->CreateCrackedFileSystemURL(
         GURL(kURLOrigin),
         kFileSystemTypeTemporary,
-        FilePath().AppendASCII(file_name));
+        base::FilePath().AppendASCII(file_name));
   }
 
   MessageLoop message_loop_;

@@ -21,7 +21,7 @@ namespace npapi {
 namespace {
 
 // We build up a list of files and mtimes so we can sort them.
-typedef std::pair<FilePath, base::Time> FileAndTime;
+typedef std::pair<base::FilePath, base::Time> FileAndTime;
 typedef std::vector<FileAndTime> FileTimeList;
 
 enum PluginQuirk {
@@ -63,7 +63,7 @@ bool CheckQuirks(PluginQuirk quirks) {
 // Also check against any PluginQuirks the bad plugin may have.
 // The use of the file size is an optimization so we don't have to read in
 // the entire file unless we have to.
-bool IsBlacklistedBySha1sumAndQuirks(const FilePath& path) {
+bool IsBlacklistedBySha1sumAndQuirks(const base::FilePath& path) {
   const struct BadEntry {
     int64 size;
     std::string sha1;
@@ -123,7 +123,7 @@ bool IsUndesirablePlugin(const WebPluginInfo& info) {
 // This is an ugly hack to blacklist Adobe Acrobat due to not supporting
 // its Xt-based mainloop.
 // http://code.google.com/p/chromium/issues/detail?id=38229
-bool IsBlacklistedPlugin(const FilePath& path) {
+bool IsBlacklistedPlugin(const base::FilePath& path) {
   const char* kBlackListedPlugins[] = {
     "nppdf.so",           // Adobe PDF
   };
@@ -141,7 +141,7 @@ bool IsBlacklistedPlugin(const FilePath& path) {
 void PluginList::PlatformInit() {
 }
 
-void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
+void PluginList::GetPluginDirectories(std::vector<base::FilePath>* plugin_dirs) {
   // See http://groups.google.com/group/chromium-dev/browse_thread/thread/7a70e5fcbac786a9
   // for discussion.
   // We first consult Chrome-specific dirs, then fall back on the logic
@@ -152,7 +152,7 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
   // related to extra_plugin_dirs in plugin_list.cc.
 
   // The Chrome binary dir + "plugins/".
-  FilePath dir;
+  base::FilePath dir;
   PathService::Get(base::DIR_EXE, &dir);
   plugin_dirs->push_back(dir.Append("plugins"));
 
@@ -169,36 +169,36 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
     std::vector<std::string> paths;
     base::SplitString(moz_plugin_path, ':', &paths);
     for (size_t i = 0; i < paths.size(); ++i)
-      plugin_dirs->push_back(FilePath(paths[i]));
+      plugin_dirs->push_back(base::FilePath(paths[i]));
   }
 
   // 2) NS_USER_PLUGINS_DIR: ~/.mozilla/plugins.
   // This is a de-facto standard, so even though we're not Mozilla, let's
   // look in there too.
-  FilePath home = file_util::GetHomeDir();
+  base::FilePath home = file_util::GetHomeDir();
   if (!home.empty())
     plugin_dirs->push_back(home.Append(".mozilla/plugins"));
 
   // 3) NS_SYSTEM_PLUGINS_DIR:
   // This varies across different browsers and versions, so check 'em all.
-  plugin_dirs->push_back(FilePath("/usr/lib/browser-plugins"));
-  plugin_dirs->push_back(FilePath("/usr/lib/mozilla/plugins"));
-  plugin_dirs->push_back(FilePath("/usr/lib/firefox/plugins"));
-  plugin_dirs->push_back(FilePath("/usr/lib/xulrunner-addons/plugins"));
+  plugin_dirs->push_back(base::FilePath("/usr/lib/browser-plugins"));
+  plugin_dirs->push_back(base::FilePath("/usr/lib/mozilla/plugins"));
+  plugin_dirs->push_back(base::FilePath("/usr/lib/firefox/plugins"));
+  plugin_dirs->push_back(base::FilePath("/usr/lib/xulrunner-addons/plugins"));
 
 #if defined(ARCH_CPU_64_BITS)
   // On my Ubuntu system, /usr/lib64 is a symlink to /usr/lib.
   // But a user reported on their Fedora system they are separate.
-  plugin_dirs->push_back(FilePath("/usr/lib64/browser-plugins"));
-  plugin_dirs->push_back(FilePath("/usr/lib64/mozilla/plugins"));
-  plugin_dirs->push_back(FilePath("/usr/lib64/firefox/plugins"));
-  plugin_dirs->push_back(FilePath("/usr/lib64/xulrunner-addons/plugins"));
+  plugin_dirs->push_back(base::FilePath("/usr/lib64/browser-plugins"));
+  plugin_dirs->push_back(base::FilePath("/usr/lib64/mozilla/plugins"));
+  plugin_dirs->push_back(base::FilePath("/usr/lib64/firefox/plugins"));
+  plugin_dirs->push_back(base::FilePath("/usr/lib64/xulrunner-addons/plugins"));
 #endif  // defined(ARCH_CPU_64_BITS)
 #endif  // !defined(OS_CHROMEOS)
 }
 
 void PluginList::GetPluginsInDir(
-    const FilePath& dir_path, std::vector<FilePath>* plugins) {
+    const base::FilePath& dir_path, std::vector<base::FilePath>* plugins) {
   // See ScanPluginsDirectory near
   // http://mxr.mozilla.org/firefox/source/modules/plugin/base/src/nsPluginHostImpl.cpp#5052
 
@@ -208,7 +208,7 @@ void PluginList::GetPluginsInDir(
   file_util::FileEnumerator enumerator(dir_path,
                                        false,  // not recursive
                                        file_util::FileEnumerator::FILES);
-  for (FilePath path = enumerator.Next(); !path.value().empty();
+  for (base::FilePath path = enumerator.Next(); !path.value().empty();
        path = enumerator.Next()) {
     // Skip over Mozilla .xpt files.
     if (path.MatchesExtension(FILE_PATH_LITERAL(".xpt")))
@@ -218,7 +218,7 @@ void PluginList::GetPluginsInDir(
     // its path to find dependent data files.
     // file_util::AbsolutePath calls through to realpath(), which resolves
     // symlinks.
-    FilePath orig_path = path;
+    base::FilePath orig_path = path;
     file_util::AbsolutePath(&path);
     LOG_IF(ERROR, PluginList::DebugPluginLoading())
         << "Resolved " << orig_path.value() << " -> " << path.value();
