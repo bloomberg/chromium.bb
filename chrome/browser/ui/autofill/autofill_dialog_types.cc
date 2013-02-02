@@ -48,4 +48,9 @@ SkColor DialogNotification::GetTextColor() const {
   return SK_ColorTRANSPARENT;
 }
 
+bool DialogNotification::HasArrow() const {
+  return type_ == DialogNotification::SUBMISSION_OPTION ||
+         type_ == DialogNotification::WALLET_ERROR;
+}
+
 }  // namespace autofill

@@ -71,6 +71,10 @@ class DialogNotification {
   SkColor GetBackgroundColor() const;
   SkColor GetTextColor() const;
 
+  // Whether this notification has an arrow pointing up at the account chooser.
+  bool HasArrow() const;
+
+  Type type() const { return type_; }
   const string16& display_text() const { return display_text_; }
 
  private:

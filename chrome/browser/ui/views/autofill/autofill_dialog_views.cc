@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/wallet/wallet_service_url.h"
 #include "chrome/browser/profiles/profile.h"
@@ -42,12 +43,17 @@ namespace autofill {
 namespace {
 
 // Size of the triangular mark that indicates an invalid textfield.
-const int kDogEarSize = 10;
+const size_t kDogEarSize = 10;
 
-const int kAutocheckoutProgressBarWidth = 300;
-const int kAutocheckoutProgressBarHeight = 11;
+const size_t kAutocheckoutProgressBarWidth = 300;
+const size_t kAutocheckoutProgressBarHeight = 11;
+
+const size_t kArrowHeight = 7;
+const size_t kArrowWidth = 2 * kArrowHeight;
+const int kArrowEndOffset = 83;
 
 const char kDecoratedTextfieldClassName[] = "autofill/DecoratedTextfield";
+const char kNotificationAreaClassName[] = "autofill/NotificationArea";
 
 // Returns a label that describes a details section.
 views::Label* CreateDetailsSectionLabel(const string16& text) {
@@ -114,6 +120,68 @@ void AutofillDialogViews::DecoratedTextfield::OnPaint(gfx::Canvas* canvas) {
     dog_ear.close();
     canvas->ClipPath(dog_ear);
     canvas->DrawColor(SK_ColorRED);
+  }
+}
+
+// AutofillDialogViews::NotificationArea ---------------------------------------
+
+AutofillDialogViews::NotificationArea::NotificationArea()
+    : label_(new views::Label()) {
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+  layout->set_spread_blank_space(true);
+  SetLayoutManager(layout);
+
+  // This background is re-used and the color is changed in |SetNotification()|.
+  label_->set_background(
+      views::Background::CreateSolidBackground(SK_ColorTRANSPARENT));
+  label_->set_border(views::Border::CreateEmptyBorder(10, 10, 10, 10));
+  label_->set_collapse_when_hidden(true);
+  label_->SetAutoColorReadabilityEnabled(false);
+  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label_->SetMultiLine(true);
+
+  AddChildView(label_);
+}
+
+AutofillDialogViews::NotificationArea::~NotificationArea() {}
+
+void AutofillDialogViews::NotificationArea::SetNotification(
+    const DialogNotification& notification) {
+  notification_ = notification;
+
+  const string16& display_text = notification.display_text();
+  label_->SetVisible(!display_text.empty());
+  label_->SetEnabledColor(notification.GetTextColor());
+  label_->SetText(display_text);
+  label_->background()->SetNativeControlColor(
+      notification.GetBackgroundColor());
+
+  // Reserve vertical space for the arrow if necessary.
+  const size_t arrow_height = notification_.HasArrow() ? kArrowHeight : 0;
+  set_border(views::Border::CreateSolidSidedBorder(
+      arrow_height, 0, 0, 0, SK_ColorTRANSPARENT));
+}
+
+std::string AutofillDialogViews::NotificationArea::GetClassName() const {
+  return kNotificationAreaClassName;
+}
+
+void AutofillDialogViews::NotificationArea::OnPaint(gfx::Canvas* canvas) {
+  views::View::OnPaint(canvas);
+
+  if (notification_.HasArrow()) {
+    // Not using GetMirroredXWithWidthInView() here because the code would still
+    // need to subtract the width of the arrow from the result in RTL.
+    const int start_x = base::i18n::IsRTL() ? kArrowEndOffset :
+        width() - kArrowEndOffset - kArrowWidth;
+    SkPath arrow;
+    arrow.moveTo(start_x, kArrowHeight);
+    arrow.lineTo(start_x + kArrowWidth, kArrowHeight);
+    arrow.lineTo(start_x + kArrowWidth / 2.0f, 0);
+    arrow.close();
+    canvas->ClipPath(arrow);
+    canvas->DrawColor(notification_.GetBackgroundColor());
   }
 }
 
@@ -276,7 +344,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       did_submit_(false),
       window_(NULL),
       contents_(NULL),
-      notification_label_(NULL),
+      notification_area_(NULL),
       use_billing_for_shipping_(NULL),
       sign_in_link_(NULL),
       sign_in_container_(NULL),
@@ -319,6 +387,22 @@ void AutofillDialogViews::Show() {
 void AutofillDialogViews::Hide() {
   if (window_)
     window_->CloseWebContentsModalDialog();
+}
+
+void AutofillDialogViews::UpdateAccountChooser() {
+  DialogSignedInState state = controller_->SignedInState();
+  sign_in_link_->SetEnabled(state != REQUIRES_RESPONSE);
+  sign_in_link_->SetVisible(state != SIGNED_IN);
+}
+
+void AutofillDialogViews::UpdateNotificationArea() {
+  DCHECK(notification_area_);
+  notification_area_->SetNotification(controller_->CurrentNotification());
+
+  if (GetWidget())
+    GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+
+  contents_->Layout();
 }
 
 void AutofillDialogViews::UpdateSection(DialogSection section) {
@@ -582,59 +666,13 @@ views::View* AutofillDialogViews::CreateMainContainer() {
   layout->AddView(sign_in_link_);
 
   layout->StartRow(0, single_column_set);
-  layout->AddView(CreateNotificationArea());
+  notification_area_ = new NotificationArea();
+  layout->AddView(notification_area_);
 
   layout->StartRowWithPadding(0, single_column_set,
                               0, views::kUnrelatedControlVerticalSpacing);
   layout->AddView(CreateDetailsContainer());
   return main_container_;
-}
-
-views::View* AutofillDialogViews::CreateNotificationArea() {
-  views::View* notification_area = new views::View();
-  notification_area->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-  notification_area->set_background(
-      views::Background::CreateSolidBackground(SK_ColorTRANSPARENT));
-
-  DCHECK(!notification_label_);
-  notification_label_ = new views::Label();
-  notification_label_->SetAutoColorReadabilityEnabled(false);
-  notification_label_->SetMultiLine(true);
-  notification_label_->set_collapse_when_hidden(true);
-  notification_label_->set_border(
-      views::Border::CreateEmptyBorder(10, 0, 10, 0));
-  // TODO(dbeam): talk to msw@ or ainslie@ to make this border match the mocks.
-
-  notification_area->AddChildView(notification_label_);
-
-  return notification_area;
-}
-
-void AutofillDialogViews::UpdateAccountChooser() {
-  DialogSignedInState state = controller_->SignedInState();
-  sign_in_link_->SetEnabled(state != REQUIRES_RESPONSE);
-  sign_in_link_->SetVisible(state != SIGNED_IN);
-}
-
-void AutofillDialogViews::UpdateNotificationArea() {
-  DCHECK(notification_label_);
-
-  const DialogNotification& notification = controller_->CurrentNotification();
-  const string16& display_text = notification.display_text();
-
-  notification_label_->SetVisible(!display_text.empty());
-  notification_label_->SetEnabledColor(notification.GetTextColor());
-  notification_label_->SetText(display_text);
-
-  notification_label_->parent()->SetVisible(!display_text.empty());
-  notification_label_->parent()->background()->SetNativeControlColor(
-      notification.GetBackgroundColor());
-
-  if (GetWidget())
-    GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
-
-  contents_->Layout();
 }
 
 views::View* AutofillDialogViews::CreateDetailsContainer() {
