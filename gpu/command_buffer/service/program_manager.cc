@@ -163,8 +163,6 @@ std::string ProgramManager::ProgramInfo::ProcessLogInfo(
     size_t end_of_name = log.find_first_not_of(
         "0123456789abcdefABCDEF", next + kHashedNamePrefixLength);
     size_t name_length = end_of_name - next;
-    // Currently we use 64bit hashing, which converts to 16 hex digits.
-    DCHECK(name_length == kHashedNamePrefixLength + 16);
     std::string hashed_name = log.substr(next, name_length);
     const std::string* original_name =
         GetOriginalNameFromHashedName(hashed_name);
