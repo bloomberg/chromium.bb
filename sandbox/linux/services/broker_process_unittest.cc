@@ -22,6 +22,12 @@
 
 namespace sandbox {
 
+#if defined(OS_ANDROID)
+  #define DISABLE_ON_ANDROID(function) DISABLED_##function
+#else
+  #define DISABLE_ON_ANDROID(function) function
+#endif
+
 TEST(BrokerProcess, CreateAndDestroy) {
   std::vector<std::string> read_whitelist;
   read_whitelist.push_back("/proc/cpuinfo");
@@ -188,7 +194,8 @@ TEST(BrokerProcess, OpenCpuinfoNoClientCheck) {
   // expected.
 }
 
-TEST(BrokerProcess, OpenFileRW) {
+// Disabled until we implement a mkstemp that doesn't require JNI.
+TEST(BrokerProcess, DISABLE_ON_ANDROID(OpenFileRW)) {
   const char basename[] = "BrokerProcessXXXXXX";
   char template_name[2048];
 #if defined(OS_ANDROID)

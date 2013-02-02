@@ -107,6 +107,7 @@ class Forwarder(object):
   def KillHost(build_type):
     logging.info('Killing host_forwarder.')
     host_forwarder_path = _MakeBinaryPath(build_type, 'host_forwarder')
+    assert os.path.exists(host_forwarder_path), 'Please build forwarder2'
     (exit_code, output) = cmd_helper.GetCmdStatusAndOutput(
         [host_forwarder_path, 'kill-server'])
     if exit_code != 0:

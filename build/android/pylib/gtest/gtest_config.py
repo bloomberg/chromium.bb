@@ -6,7 +6,9 @@
 
 # Add new suites here before upgrading them to the stable list below.
 EXPERIMENTAL_TEST_SUITES = [
-    'sandbox_linux_unittests',
+    # The JNI version of the sandbox_linux_unittests. Should be changed to
+    # 'sandbox_linux_unittests' once it can be run with --exe.
+    'sandbox_linux_jni_unittests',
 ]
 
 # Do not modify this list without approval of an android owner.

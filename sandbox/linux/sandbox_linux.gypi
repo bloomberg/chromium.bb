@@ -65,41 +65,26 @@
       ],
     },
     {
+      # The main sandboxing test target.
       'target_name': 'sandbox_linux_unittests',
-      'type': '<(gtest_target_type)',
-      'dependencies': [
-        'sandbox',
-        '../testing/gtest.gyp:gtest',
+      'includes': [
+        'sandbox_linux_test_sources.gypi',
       ],
-      'sources': [
-        'tests/main.cc',
-        'tests/unit_tests.cc',
-        'tests/unit_tests.h',
-        'services/broker_process_unittest.cc',
+      'type': 'executable',
+    },
+    {
+      # This target is the shared library used by Android APK (i.e.
+      # JNI-friendly) tests.
+      'target_name': 'sandbox_linux_jni_unittests',
+      'includes': [
+        'sandbox_linux_test_sources.gypi',
       ],
-      'include_dirs': [
-        '../..',
-      ],
+      'type': 'shared_library',
       'conditions': [
-        [ 'compile_suid_client==1', {
-          'sources': [
-            'suid/client/setuid_sandbox_client_unittest.cc',
-          ],
-        }],
-        [ 'compile_seccomp_bpf==1', {
-          'sources': [
-            'seccomp-bpf/bpf_tests.h',
-            'seccomp-bpf/codegen_unittest.cc',
-            'seccomp-bpf/errorcode_unittest.cc',
-            'seccomp-bpf/sandbox_bpf_unittest.cc',
-            'seccomp-bpf/syscall_iterator_unittest.cc',
-            'seccomp-bpf/syscall_unittest.cc',
-          ],
-        }],
-        ['OS == "android" and gtest_target_type == "shared_library"', {
+        [ 'OS == "android" and gtest_target_type == "shared_library"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
-          ]
+          ],
         }],
       ],
     },
@@ -216,24 +201,24 @@
         '..',
       ],
     },
-
   ],
   'conditions': [
     # Strategy copied from base_unittests_apk in base/base.gyp.
     [ 'OS=="android" and gtest_target_type == "shared_library"', {
       'targets': [
         {
-        'target_name': 'sandbox_linux_unittests_apk',
+        'target_name': 'sandbox_linux_jni_unittests_apk',
         'type': 'none',
-        'dependencies': [
-          'sandbox_linux_unittests',
-        ],
         'variables': {
-          'test_suite_name': 'sandbox_linux_unittests',
+          'test_suite_name': 'sandbox_linux_jni_unittests',
           'input_shlib_path':
-              '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)sandbox_linux_unittests'
+              '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)'
+              'sandbox_linux_jni_unittests'
               '<(SHARED_LIB_SUFFIX)',
         },
+        'dependencies': [
+          'sandbox_linux_jni_unittests',
+        ],
         'includes': [ '../../build/apk_test.gypi' ],
         }
       ],
