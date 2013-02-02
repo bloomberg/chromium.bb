@@ -13,20 +13,15 @@
 #define BLOCK_SIZE (1 << 16)
 #define BLOCK_MASK (BLOCK_SIZE - 1)
 
-MountNodeMem::MountNodeMem(Mount *mount, int ino, int dev)
-    : MountNode(mount, ino, dev),
+MountNodeMem::MountNodeMem(Mount *mount)
+    : MountNode(mount),
       data_(NULL),
       capacity_(0) {
+  stat_.st_mode |= S_IFREG;
 }
 
 MountNodeMem::~MountNodeMem() {
   free(data_);
-}
-
-bool MountNodeMem::Init(int mode, short uid, short gid) {
-  bool ok = MountNode::Init(mode, uid, gid);
-  stat_.st_mode |= S_IFREG;
-  return ok;
 }
 
 int MountNodeMem::Read(size_t offs, void *buf, size_t count) {

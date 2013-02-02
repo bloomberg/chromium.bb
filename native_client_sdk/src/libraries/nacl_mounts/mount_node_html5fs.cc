@@ -215,15 +215,14 @@ size_t MountNodeHtml5Fs::GetSize() {
   return static_cast<size_t>(info.size);
 }
 
-MountNodeHtml5Fs::MountNodeHtml5Fs(Mount* mount, int ino, int dev,
-    PP_Resource fileref_resource)
-    : MountNode(mount, ino, dev),
+MountNodeHtml5Fs::MountNodeHtml5Fs(Mount* mount, PP_Resource fileref_resource)
+    : MountNode(mount),
       fileref_resource_(fileref_resource),
       fileio_resource_(0) {
 }
 
-bool MountNodeHtml5Fs::Init(int mode, short uid, short gid) {
-  if (!MountNode::Init(Mount::OpenModeToPermission(mode), uid, gid))
+bool MountNodeHtml5Fs::Init(int perm) {
+  if (!MountNode::Init(Mount::OpenModeToPermission(perm)))
     return false;
 
   fileio_resource_= mount_->ppapi()->GetFileIoInterface()->Create(
@@ -232,7 +231,7 @@ bool MountNodeHtml5Fs::Init(int mode, short uid, short gid) {
     return false;
 
   int32_t open_result = mount_->ppapi()->GetFileIoInterface()->Open(
-      fileio_resource_, fileref_resource_, ModeToOpenFlags(mode),
+      fileio_resource_, fileref_resource_, ModeToOpenFlags(perm),
       PP_BlockUntilComplete());
   if (open_result != PP_OK)
     return false;
@@ -240,7 +239,9 @@ bool MountNodeHtml5Fs::Init(int mode, short uid, short gid) {
   return true;
 }
 
-int MountNodeHtml5Fs::Close() {
+void MountNodeHtml5Fs::Destroy() {
+  FSync();
+
   if (fileio_resource_) {
     mount_->ppapi()->GetFileIoInterface()->Close(fileio_resource_);
     mount_->ppapi()->ReleaseResource(fileio_resource_);
@@ -249,5 +250,5 @@ int MountNodeHtml5Fs::Close() {
   mount_->ppapi()->ReleaseResource(fileref_resource_);
   fileio_resource_ = 0;
   fileref_resource_ = 0;
-  return 0;
+  MountNode::Destroy();
 }

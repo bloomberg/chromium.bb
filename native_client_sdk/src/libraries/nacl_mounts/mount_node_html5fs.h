@@ -25,9 +25,11 @@ class MountNodeHtml5Fs : public MountNode {
   virtual size_t GetSize();
 
  protected:
-  MountNodeHtml5Fs(Mount* mount, int ino, int dev, PP_Resource fileref);
-  virtual bool Init(int mode, short uid, short gid);
-  virtual int Close();
+  MountNodeHtml5Fs(Mount* mount, PP_Resource fileref);
+
+  // Init with standard open flags
+  virtual bool Init(int o_mode);
+  virtual void Destroy();
 
  private:
   PP_Resource fileref_resource_;

@@ -20,7 +20,7 @@ static int s_AllocNum = 0;
 
 class MockMemory : public MountNodeMem {
  public:
-  MockMemory() : MountNodeMem(NULL, 0, 0) {
+  MockMemory() : MountNodeMem(NULL) {
     s_AllocNum++;
   }
 
@@ -29,7 +29,7 @@ class MockMemory : public MountNodeMem {
   }
 
   bool Init(int mode) {
-    return MountNodeMem::Init(mode,0,0);
+    return MountNodeMem::Init(mode);
   }
   int AddChild(const std::string& name, MountNode *node) {
     return MountNodeMem::AddChild(name, node);
@@ -49,7 +49,7 @@ class MockMemory : public MountNodeMem {
 
 class MockDir : public MountNodeDir {
  public:
-  MockDir() : MountNodeDir(NULL, 0, 0) {
+  MockDir() : MountNodeDir(NULL) {
     s_AllocNum++;
   }
 
@@ -58,7 +58,7 @@ class MockDir : public MountNodeDir {
   }
 
   bool Init(int mode) {
-    return MountNodeDir::Init(mode,0,0);
+    return MountNodeDir::Init(mode);
   }
   int AddChild(const std::string& name, MountNode *node) {
     return MountNodeDir::AddChild(name, node);

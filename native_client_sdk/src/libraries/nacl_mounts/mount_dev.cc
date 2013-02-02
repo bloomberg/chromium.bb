@@ -31,7 +31,7 @@ void ReleaseAndNullNode(MountNode** node) {
 
 class NullNode : public MountNode {
  public:
-  NullNode(Mount* mount, int ino, int dev);
+  explicit NullNode(Mount* mount);
 
   virtual int Read(size_t offs, void* buf, size_t count);
   virtual int Write(size_t offs, const void* buf, size_t count);
@@ -39,7 +39,7 @@ class NullNode : public MountNode {
 
 class ConsoleNode : public NullNode {
  public:
-  ConsoleNode(Mount* mount, int ino, int dev, PP_LogLevel level);
+  ConsoleNode(Mount* mount, PP_LogLevel level);
 
   virtual int Write(size_t offs, const void* buf, size_t count);
 
@@ -50,7 +50,7 @@ private:
 
 class TtyNode : public NullNode {
  public:
-  TtyNode(Mount* mount, int ino, int dev);
+  explicit TtyNode(Mount* mount);
 
   virtual int Write(size_t offs, const void* buf, size_t count);
 };
@@ -58,7 +58,7 @@ class TtyNode : public NullNode {
 
 class ZeroNode : public MountNode {
  public:
-  ZeroNode(Mount* mount, int ino, int dev);
+  explicit ZeroNode(Mount* mount);
 
   virtual int Read(size_t offs, void* buf, size_t count);
   virtual int Write(size_t offs, const void* buf, size_t count);
@@ -66,7 +66,7 @@ class ZeroNode : public MountNode {
 
 class UrandomNode : public MountNode {
  public:
-  UrandomNode(Mount* mount, int ino, int dev);
+  explicit UrandomNode(Mount* mount);
 
   virtual int Read(size_t offs, void* buf, size_t count);
   virtual int Write(size_t offs, const void* buf, size_t count);
@@ -78,8 +78,9 @@ class UrandomNode : public MountNode {
 #endif
 };
 
-NullNode::NullNode(Mount* mount, int ino, int dev)
-    : MountNode(mount, ino, dev) {
+NullNode::NullNode(Mount* mount)
+    : MountNode(mount) {
+  stat_.st_mode = S_IFCHR;
 }
 
 int NullNode::Read(size_t offs, void* buf, size_t count) {
@@ -90,9 +91,10 @@ int NullNode::Write(size_t offs, const void* buf, size_t count) {
   return count;
 }
 
-ConsoleNode::ConsoleNode(Mount* mount, int ino, int dev, PP_LogLevel level)
-    : NullNode(mount, ino, dev),
+ConsoleNode::ConsoleNode(Mount* mount, PP_LogLevel level)
+    : NullNode(mount),
     level_(level) {
+  stat_.st_mode = S_IFCHR;
 }
 
 int ConsoleNode::Write(size_t offs, const void* buf, size_t count) {
@@ -110,8 +112,8 @@ int ConsoleNode::Write(size_t offs, const void* buf, size_t count) {
 }
 
 
-TtyNode::TtyNode(Mount* mount, int ino, int dev)
-    : NullNode(mount, ino, dev) {
+TtyNode::TtyNode(Mount* mount)
+    : NullNode(mount) {
 }
 
 int TtyNode::Write(size_t offs, const void* buf, size_t count) {
@@ -129,8 +131,9 @@ int TtyNode::Write(size_t offs, const void* buf, size_t count) {
 }
 
 
-ZeroNode::ZeroNode(Mount* mount, int ino, int dev)
-    : MountNode(mount, ino, dev) {
+ZeroNode::ZeroNode(Mount* mount)
+    : MountNode(mount) {
+  stat_.st_mode = S_IFCHR;
 }
 
 int ZeroNode::Read(size_t offs, void* buf, size_t count) {
@@ -142,8 +145,9 @@ int ZeroNode::Write(size_t offs, const void* buf, size_t count) {
   return count;
 }
 
-UrandomNode::UrandomNode(Mount* mount, int ino, int dev)
-    : MountNode(mount, ino, dev) {
+UrandomNode::UrandomNode(Mount* mount)
+    : MountNode(mount) {
+  stat_.st_mode = S_IFCHR;
 #if defined(__native_client__)
   size_t result = nacl_interface_query(NACL_IRT_RANDOM_v0_1, &random_interface_,
                                        sizeof(random_interface_));
@@ -243,24 +247,24 @@ bool MountDev::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
   if (!Mount::Init(dev, args, ppapi))
     return false;
 
-  root_ = new MountNodeDir(this, 1, dev_);
-  null_node_ = new NullNode(this, 2, dev_);
+  root_ = new MountNodeDir(this);
+  null_node_ = new NullNode(this);
   root_->AddChild("/null", null_node_);
-  zero_node_ = new ZeroNode(this, 3, dev_);
+  zero_node_ = new ZeroNode(this);
   root_->AddChild("/zero", zero_node_);
-  random_node_ = new UrandomNode(this, 4, dev_);
+  random_node_ = new UrandomNode(this);
   root_->AddChild("/urandom", random_node_);
 
-  console0_node_ = new ConsoleNode(this, 5, dev_, PP_LOGLEVEL_TIP);
+  console0_node_ = new ConsoleNode(this, PP_LOGLEVEL_TIP);
   root_->AddChild("/console0", console0_node_);
-  console1_node_ = new ConsoleNode(this, 6, dev_, PP_LOGLEVEL_LOG);
+  console1_node_ = new ConsoleNode(this, PP_LOGLEVEL_LOG);
   root_->AddChild("/console1", console1_node_);
-  console2_node_ = new ConsoleNode(this, 7, dev_, PP_LOGLEVEL_WARNING);
+  console2_node_ = new ConsoleNode(this, PP_LOGLEVEL_WARNING);
   root_->AddChild("/console2", console2_node_);
-  console3_node_ = new ConsoleNode(this, 8, dev_, PP_LOGLEVEL_ERROR);
+  console3_node_ = new ConsoleNode(this, PP_LOGLEVEL_ERROR);
   root_->AddChild("/console3", console3_node_);
 
-  tty_node_ = new TtyNode(this, 9, dev_);
+  tty_node_ = new TtyNode(this);
   root_->AddChild("/tty", tty_node_);
   return true;
 }

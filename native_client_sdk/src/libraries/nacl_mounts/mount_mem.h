@@ -31,8 +31,6 @@ class MountMem : public Mount {
   virtual MountNode* FindNode(const Path& path, int type = 0);
 
  public:
-  typedef std::vector<ino_t> INOList_t;
-
   virtual MountNode *Open(const Path& path, int mode);
   virtual int Unlink(const Path& path);
   virtual int Mkdir(const Path& path, int perm);
@@ -47,7 +45,6 @@ private:
   int RemoveInternal(const Path& path, int remove_type);
 
   MountNode* root_;
-  INOList_t inos_;
   size_t max_ino_;
 
   friend class Mount;

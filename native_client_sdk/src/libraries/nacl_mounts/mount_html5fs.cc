@@ -33,12 +33,8 @@ MountNode *MountHtml5Fs::Open(const Path& path, int mode) {
   if (!fileref)
     return NULL;
 
-  // TODO(binji): Are these needed?
-  const int ino = 0;
-  const int USR_ID = 1;
-  const int GRP_ID = 2;
-  MountNodeHtml5Fs* node = new MountNodeHtml5Fs(this, ino, dev_, fileref);
-  if (!node->Init(mode, USR_ID, GRP_ID)) {
+  MountNodeHtml5Fs* node = new MountNodeHtml5Fs(this, fileref);
+  if (!node->Init(mode)) {
     node->Release();
     return NULL;
   }

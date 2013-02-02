@@ -39,51 +39,21 @@ void MountMem::Destroy() {
 }
 
 MountNode* MountMem::AllocatePath(int mode) {
-  ino_t ino = AllocateINO();
-
-  MountNode *ptr = new MountNodeDir(this, ino, dev_);
-  if (!ptr->Init(mode, USR_ID, GRP_ID)) {
+  MountNode *ptr = new MountNodeDir(this);
+  if (!ptr->Init(mode)) {
     ptr->Release();
-    FreeINO(ino);
     return NULL;
   }
   return ptr;
 }
 
 MountNode* MountMem::AllocateData(int mode) {
-  ino_t ino = AllocateINO();
-
-  MountNode* ptr = new MountNodeMem(this, ino, dev_);
-  //if (!ptr->Init(mode, getuid(), getgid())) {
-  if (!ptr->Init(mode, USR_ID, GRP_ID)) {
+  MountNode* ptr = new MountNodeMem(this);
+  if (!ptr->Init(mode)) {
     ptr->Release();
-    FreeINO(ino);
     return NULL;
   }
   return ptr;
-}
-
-int MountMem::AllocateINO() {
-  const int INO_CNT = 8;
-
-  // If we run out of INO numbers, then allocate 8 more
-  if (inos_.size() == 0) {
-    max_ino_ += INO_CNT;
-    // Add eight more to the stack in reverse order, offset by 1
-    // since '0' refers to no INO.
-    for (int a = 0; a < INO_CNT; a++) {
-      inos_.push_back(max_ino_ - a);
-    }
-  }
-
-  // Return the INO at the top of the stack.
-  int val = inos_.back();
-  inos_.pop_back();
-  return val;
-}
-
-void MountMem::FreeINO(int ino) {
-  inos_.push_back(ino);
 }
 
 MountNode* MountMem::FindNode(const Path& path, int type) {

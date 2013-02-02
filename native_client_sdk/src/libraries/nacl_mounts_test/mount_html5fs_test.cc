@@ -161,6 +161,7 @@ void MountHtml5FsNodeTest::SetUp() {
   EXPECT_CALL(*fileio_, Close(fileio_resource_));
   EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource_));
   EXPECT_CALL(*ppapi_, ReleaseResource(fileio_resource_));
+  EXPECT_CALL(*fileio_, Flush(fileio_resource_, _));
 
   node_ = mnt_->Open(Path(path_), O_CREAT | O_RDWR);
   ASSERT_NE((MountNode*)NULL, node_);

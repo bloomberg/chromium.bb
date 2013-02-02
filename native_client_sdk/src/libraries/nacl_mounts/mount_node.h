@@ -16,16 +16,12 @@ class Mount;
 
 class MountNode : public RefObject {
  protected:
+  explicit MountNode(Mount* mount);
   virtual ~MountNode();
 
-  // This method is called by Destroy when the last reference to this
-  // MountNode is released. Override this instead of Destroy, but do not call
-  // it directly.
-  virtual int Close();
-
  protected:
-  MountNode(Mount* mount, int ino, int dev);
-  virtual bool Init(int mode, short uid, short gid);
+  // Initialize with node specific flags, in this case stat permissions.
+  virtual bool Init(int flags);
   virtual void Destroy();
 
  public:
@@ -68,6 +64,7 @@ protected:
   struct stat stat_;
   Mount* mount_;
 
+  friend class Mount;
   friend class MountDev;
   friend class MountHtml5Fs;
   friend class MountHttp;

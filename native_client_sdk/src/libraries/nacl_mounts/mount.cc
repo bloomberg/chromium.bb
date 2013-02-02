@@ -21,8 +21,7 @@
 #endif
 
 Mount::Mount()
-    : dev_(0),
-      num_nodes_(0) {
+  : dev_(0) {
 }
 
 Mount::~Mount() {}
@@ -55,22 +54,12 @@ int Mount::OpenModeToPermission(int mode) {
   return out;
 }
 
-void Mount::OnNodeCreated() {
-#if defined(__native_client__)
-  __sync_add_and_fetch(&num_nodes_, 1);
-#elif defined(WIN32)
-  InterlockedIncrement(&num_nodes_);
-#else
-#error Implement atomic functions for this platform.
-#endif
+
+void Mount::OnNodeCreated(MountNode* node) {
+  node->stat_.st_ino = inode_pool_.Acquire();
+  node->stat_.st_dev = dev_;
 }
 
-void Mount::OnNodeDestroyed() {
-#if defined(__native_client__)
-  __sync_sub_and_fetch(&num_nodes_, 1);
-#elif defined(WIN32)
-  InterlockedDecrement(&num_nodes_);
-#else
-#error Implement atomic functions for this platform.
-#endif
+void Mount::OnNodeDestroyed(MountNode* node) {
+  if (node->stat_.st_ino) inode_pool_.Release(node->stat_.st_ino);
 }

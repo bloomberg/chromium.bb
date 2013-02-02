@@ -38,6 +38,7 @@
   'HEADERS': [
     {
       'FILES': [
+        "inode_pool.h",
         "kernel_handle.h",
         "kernel_intercept.h",
         "kernel_object.h",

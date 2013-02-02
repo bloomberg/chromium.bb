@@ -22,9 +22,6 @@
 #define snprintf _snprintf
 #endif
 
-static const int USR_ID = 1001;
-static const int GRP_ID = 1002;
-
 
 typedef std::vector<char *> StringList_t;
 static size_t SplitString(char *str, const char *delim, StringList_t* list) {
@@ -163,8 +160,7 @@ class MountNodeHttp : public MountNode {
   virtual size_t GetSize();
 
  protected:
-  MountNodeHttp(Mount* mount, int ino, int dev, const std::string& url);
-  virtual int Close();
+  MountNodeHttp(Mount* mount, const std::string& url);
 
  private:
   bool OpenUrl(const char* method,
@@ -363,15 +359,9 @@ size_t MountNodeHttp::GetSize() {
   return stat_.st_size;
 }
 
-MountNodeHttp::MountNodeHttp(Mount* mount, int ino, int dev,
-                           const std::string& url)
-    : MountNode(mount, ino, dev),
+MountNodeHttp::MountNodeHttp(Mount* mount, const std::string& url)
+    : MountNode(mount),
       url_(url) {
-}
-
-
-int MountNodeHttp::Close() {
-  return 0;
 }
 
 bool MountNodeHttp::OpenUrl(const char* method,
@@ -471,8 +461,8 @@ MountNode *MountHttp::Open(const Path& path, int mode) {
       path.Range(1, path.Size()) :
       path.Join());
 
-  MountNodeHttp* node = new MountNodeHttp(this, num_nodes_++, dev_, url);
-  if (!node->Init(mode, USR_ID, GRP_ID) || (0 != node->GetStat(NULL))) {
+  MountNodeHttp* node = new MountNodeHttp(this, url);
+  if (!node->Init(mode) || (0 != node->GetStat(NULL))) {
     node->Release();
     return NULL;
   }
@@ -600,8 +590,8 @@ MountNodeDir* MountHttp::FindOrCreateDir(const Path& path) {
   }
 
   // If the node does not exist, create it, and add it to the node cache
-  MountNodeDir* node = new MountNodeDir(this, num_nodes_, dev_);
-  node->Init(S_IREAD, USR_ID, GRP_ID);
+  MountNodeDir* node = new MountNodeDir(this);
+  node->Init(S_IREAD);
   node_cache_[strpath] = node;
 
   // If not the root node, find the parent node and add it to the parent
@@ -662,8 +652,8 @@ bool MountHttp::ParseManifest(char *text) {
           path.Range(1, path.Size()) :
           path.Join());
 
-      MountNode* node = new MountNodeHttp(this, num_nodes_, dev_, url);
-      node->Init(mode, USR_ID, GRP_ID);
+      MountNode* node = new MountNodeHttp(this, url);
+      node->Init(mode);
       node->stat_.st_size = atoi(lenstr);
 
       MountNodeDir* dir_node = FindOrCreateDir(path.Parent());

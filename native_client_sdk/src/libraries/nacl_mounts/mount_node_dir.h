@@ -19,9 +19,8 @@ class MountMem;
 
 class MountNodeDir : public MountNode {
  protected:
-  MountNodeDir(Mount *mount, int ino, int dev);
+  explicit MountNodeDir(Mount* mnt);
   virtual ~MountNodeDir();
-  virtual bool Init(int mode, short uid, short gid);
 
  public:
   typedef std::map<std::string, MountNode*> MountNodeMap_t;

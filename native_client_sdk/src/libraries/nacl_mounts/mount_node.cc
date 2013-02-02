@@ -13,36 +13,32 @@
 #include "nacl_mounts/mount.h"
 #include "utils/auto_lock.h"
 
-MountNode::MountNode(Mount* mount, int ino, int dev)
+static const int USR_ID = 1001;
+static const int GRP_ID = 1002;
+
+MountNode::MountNode(Mount* mount)
     : mount_(mount) {
   memset(&stat_, 0, sizeof(stat_));
-  stat_.st_ino = ino;
-  stat_.st_dev = dev;
+  stat_.st_gid = GRP_ID;
+  stat_.st_uid = USR_ID;
 
   // Mount should normally never be NULL, but may be null in tests.
   if (mount_)
-    mount_->OnNodeCreated();
+    mount_->OnNodeCreated(this);
 }
 
 MountNode::~MountNode() {
-  if (mount_)
-    mount_->OnNodeDestroyed();
 }
 
-bool MountNode::Init(int mode, short uid, short gid) {
-  stat_.st_mode = mode;
-  stat_.st_gid = gid;
-  stat_.st_uid = uid;
+bool MountNode::Init(int perm) {
+  stat_.st_mode |= perm;
   return true;
 }
 
 void MountNode::Destroy() {
-  Close();
-}
-
-int MountNode::Close() {
-  FSync();
-  return 0;
+  if (mount_) {
+    mount_->OnNodeDestroyed(this);
+  }
 }
 
 int MountNode::FSync() {

@@ -12,19 +12,14 @@
 #include "utils/macros.h"
 #include "utils/auto_lock.h"
 
-MountNodeDir::MountNodeDir(Mount* mount, int ino, int dev)
-    : MountNode(mount, ino, dev),
+MountNodeDir::MountNodeDir(Mount* mount)
+    : MountNode(mount),
       cache_(NULL) {
+  stat_.st_mode |= S_IFDIR;
 }
 
 MountNodeDir::~MountNodeDir() {
   free(cache_);
-}
-
-bool MountNodeDir::Init(int mode, short uid, short gid) {
-  bool ok = MountNode::Init(mode, uid, gid);
-  stat_.st_mode |= S_IFDIR;
-  return ok;
 }
 
 int MountNodeDir::Read(size_t offs, void *buf, size_t count) {
@@ -69,7 +64,7 @@ int MountNodeDir::GetDents(size_t offs, struct dirent* pdir, size_t size) {
   return size;
 }
 
-int MountNodeDir:: AddChild(const std::string& name, MountNode* node) {
+int MountNodeDir::AddChild(const std::string& name, MountNode* node) {
   AutoLock lock(&lock_);
 
   if (name.empty()) {

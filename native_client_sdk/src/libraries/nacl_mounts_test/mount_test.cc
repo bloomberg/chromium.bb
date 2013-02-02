@@ -24,6 +24,10 @@ class MountMemMock : public MountMem {
     StringMap_t map;
     Init(1, map, NULL);
   };
+
+  int num_nodes() {
+    return (int) inode_pool_.size();
+  }
 };
 
 class MountDevMock : public MountDev {
@@ -31,6 +35,9 @@ class MountDevMock : public MountDev {
   MountDevMock() {
     StringMap_t map;
     Init(1, map, NULL);
+  }
+  int num_nodes() {
+    return (int) inode_pool_.size();
   }
 };
 
