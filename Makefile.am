@@ -28,7 +28,6 @@ if ENABLE_DOCS
 SUBDIRS += doc
 endif
 
-AUTOMAKE_OPTIONS = dist-bzip2
 ACLOCAL_AMFLAGS = -I m4
 
 EXTRA_DIST = \
