@@ -65,6 +65,56 @@ class FullscreenMouseLockDispatcher : public MouseLockDispatcher {
   DISALLOW_COPY_AND_ASSIGN(FullscreenMouseLockDispatcher);
 };
 
+WebMouseEvent WebMouseEventFromGestureEvent(const WebGestureEvent& gesture) {
+  WebMouseEvent mouse;
+
+  switch (gesture.type) {
+    case WebInputEvent::GestureScrollBegin:
+      mouse.type = WebInputEvent::MouseDown;
+      break;
+
+    case WebInputEvent::GestureScrollUpdate:
+      mouse.type = WebInputEvent::MouseMove;
+      break;
+
+    case WebInputEvent::GestureFlingStart:
+      if (gesture.sourceDevice == WebGestureEvent::Touchscreen) {
+        // A scroll gesture on the touchscreen may end with a GestureScrollEnd
+        // when there is no velocity, or a GestureFlingStart when it has a
+        // velocity. In both cases, it should end the drag that was initiated by
+        // the GestureScrollBegin (and subsequent GestureScrollUpdate) events.
+        mouse.type = WebInputEvent::MouseUp;
+        break;
+      } else {
+        return mouse;
+      }
+    case WebInputEvent::GestureScrollEnd:
+      mouse.type = WebInputEvent::MouseUp;
+      break;
+
+    default:
+      break;
+  }
+
+  if (mouse.type == WebInputEvent::Undefined)
+    return mouse;
+
+  mouse.timeStampSeconds = gesture.timeStampSeconds;
+  mouse.modifiers = gesture.modifiers | WebInputEvent::LeftButtonDown;
+  mouse.button = WebMouseEvent::ButtonLeft;
+  mouse.clickCount = (mouse.type == WebInputEvent::MouseDown ||
+                      mouse.type == WebInputEvent::MouseUp);
+
+  mouse.x = gesture.x;
+  mouse.y = gesture.y;
+  mouse.windowX = gesture.globalX;
+  mouse.windowY = gesture.globalY;
+  mouse.globalX = gesture.globalX;
+  mouse.globalY = gesture.globalY;
+
+  return mouse;
+}
+
 FullscreenMouseLockDispatcher::FullscreenMouseLockDispatcher(
     RenderWidgetFullscreenPepper* widget) : widget_(widget) {
 }
@@ -152,75 +202,53 @@ class PepperWidget : public WebWidget {
     // This cursor info is ignored, we always set the cursor directly from
     // RenderWidgetFullscreenPepper::DidChangeCursor.
     WebCursorInfo cursor;
-    bool result = widget_->plugin()->HandleInputEvent(event, &cursor);
 
-    // For normal web pages, WebCore::EventHandler converts selected
-    // gesture events into mouse and wheel events. We don't have a WebView
-    // so do this translation here.
-    if (!result && WebInputEvent::isGestureEventType(event.type)) {
+    // Pepper plugins do not accept gesture events. So do not send the gesture
+    // events directly to the plugin. Instead, try to convert them to equivalent
+    // mouse events, and then send to the plugin.
+    if (WebInputEvent::isGestureEventType(event.type)) {
+      bool result = false;
+      const WebGestureEvent* gesture_event =
+          static_cast<const WebGestureEvent*>(&event);
       switch (event.type) {
-        case WebInputEvent::GestureScrollUpdate: {
-          const WebGestureEvent* gesture_event =
-              static_cast<const WebGestureEvent*>(&event);
-          WebMouseWheelEvent wheel_event;
-          wheel_event.timeStampSeconds = gesture_event->timeStampSeconds;
-          wheel_event.type = WebInputEvent::MouseWheel;
-          wheel_event.modifiers = gesture_event->modifiers;
-
-          wheel_event.x = gesture_event->x;
-          wheel_event.y = gesture_event->y;
-          wheel_event.windowX = gesture_event->globalX;
-          wheel_event.windowY = gesture_event->globalX;
-          wheel_event.globalX = gesture_event->globalX;
-          wheel_event.globalY = gesture_event->globalY;
-          wheel_event.movementX = 0;
-          wheel_event.movementY = 0;
-
-          wheel_event.deltaX = gesture_event->data.scrollUpdate.deltaX;
-          wheel_event.deltaY = gesture_event->data.scrollUpdate.deltaY;
-          wheel_event.wheelTicksX =
-              gesture_event->data.scrollUpdate.deltaX / kTickDivisor;
-          wheel_event.wheelTicksY =
-              gesture_event->data.scrollUpdate.deltaY / kTickDivisor;
-          wheel_event.hasPreciseScrollingDeltas = 1;
-          wheel_event.phase = WebMouseWheelEvent::PhaseNone;
-          wheel_event.momentumPhase = WebMouseWheelEvent::PhaseNone;
-
-          result |= widget_->plugin()->HandleInputEvent(wheel_event, &cursor);
-          break;
-        }
         case WebInputEvent::GestureTap: {
-          const WebGestureEvent* gesture_event =
-              static_cast<const WebGestureEvent*>(&event);
-          WebMouseEvent mouseEvent;
+          WebMouseEvent mouse;
 
-          mouseEvent.timeStampSeconds = gesture_event->timeStampSeconds;
-          mouseEvent.type = WebInputEvent::MouseMove;
-          mouseEvent.modifiers = gesture_event->modifiers;
+          mouse.timeStampSeconds = gesture_event->timeStampSeconds;
+          mouse.type = WebInputEvent::MouseMove;
+          mouse.modifiers = gesture_event->modifiers;
 
-          mouseEvent.x = gesture_event->x;
-          mouseEvent.y = gesture_event->y;
-          mouseEvent.windowX = gesture_event->globalX;
-          mouseEvent.windowY = gesture_event->globalX;
-          mouseEvent.globalX = gesture_event->globalX;
-          mouseEvent.globalY = gesture_event->globalY;
-          mouseEvent.movementX = 0;
-          mouseEvent.movementY = 0;
-          result |= widget_->plugin()->HandleInputEvent(mouseEvent, &cursor);
+          mouse.x = gesture_event->x;
+          mouse.y = gesture_event->y;
+          mouse.windowX = gesture_event->globalX;
+          mouse.windowY = gesture_event->globalY;
+          mouse.globalX = gesture_event->globalX;
+          mouse.globalY = gesture_event->globalY;
+          mouse.movementX = 0;
+          mouse.movementY = 0;
+          result |= widget_->plugin()->HandleInputEvent(mouse, &cursor);
 
-          mouseEvent.type = WebInputEvent::MouseDown;
-          mouseEvent.button = WebMouseEvent::ButtonLeft;
-          mouseEvent.clickCount = gesture_event->data.tap.tapCount;
-          result |= widget_->plugin()->HandleInputEvent(mouseEvent, &cursor);
+          mouse.type = WebInputEvent::MouseDown;
+          mouse.button = WebMouseEvent::ButtonLeft;
+          mouse.clickCount = gesture_event->data.tap.tapCount;
+          result |= widget_->plugin()->HandleInputEvent(mouse, &cursor);
 
-          mouseEvent.type = WebInputEvent::MouseUp;
-          result |= widget_->plugin()->HandleInputEvent(mouseEvent, &cursor);
+          mouse.type = WebInputEvent::MouseUp;
+          result |= widget_->plugin()->HandleInputEvent(mouse, &cursor);
           break;
         }
-        default:
+
+        default: {
+          WebMouseEvent mouse = WebMouseEventFromGestureEvent(*gesture_event);
+          if (mouse.type != WebInputEvent::Undefined)
+            result |= widget_->plugin()->HandleInputEvent(mouse, &cursor);
           break;
+        }
       }
+      return result;
     }
+
+    bool result = widget_->plugin()->HandleInputEvent(event, &cursor);
 
     // For normal web pages, WebViewImpl does input event translations and
     // generates context menu events. Since we don't have a WebView, we need to
