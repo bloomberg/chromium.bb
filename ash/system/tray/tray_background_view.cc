@@ -6,6 +6,7 @@
 
 #include "ash/launcher/background_animator.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
@@ -350,12 +351,16 @@ gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
 
   // TODO(jennyz): May need to add left/right alignment in the following code.
   if (rect.IsEmpty()) {
-    rect = Shell::GetScreen()->GetPrimaryDisplay().bounds();
+    aura::RootWindow* target_root = anchor_widget ?
+        anchor_widget->GetNativeView()->GetRootWindow() :
+        Shell::GetPrimaryRootWindow();
+    rect = target_root->bounds();
     rect = gfx::Rect(
         base::i18n::IsRTL() ? kPaddingFromRightEdgeOfScreenBottomAlignment :
         rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
         rect.height() - kPaddingFromBottomOfScreenBottomAlignment,
         0, 0);
+    rect = ScreenAsh::ConvertRectToScreen(target_root, rect);
   }
   return rect;
 }
