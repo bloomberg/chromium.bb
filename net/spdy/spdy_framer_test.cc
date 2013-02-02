@@ -944,6 +944,29 @@ TEST_P(SpdyFramerTest, BasicCompression) {
       SpdyFrame::kHeaderSize + uncompressed_frame->length()));
 }
 
+TEST_P(SpdyFramerTest, CompressEmptyHeaders) {
+  // See crbug.com/172383
+  SpdyHeaderBlock headers;
+  headers["server"] = "SpdyServer 1.0";
+  headers["date"] = "Mon 12 Jan 2009 12:12:12 PST";
+  headers["status"] = "200";
+  headers["version"] = "HTTP/1.1";
+  headers["content-type"] = "text/html";
+  headers["content-length"] = "12";
+  headers["x-empty-header"] = "";
+
+  SpdyFramer framer(spdy_version_);
+  framer.set_enable_compression(true);
+  scoped_ptr<SpdySynStreamControlFrame> frame1(
+      framer.CreateSynStream(1,  // stream id
+                             0,  // associated stream id
+                             1,  // priority
+                             0,  // credential slot
+                             CONTROL_FLAG_NONE,
+                             true,  // compress
+                             &headers));
+}
+
 TEST_P(SpdyFramerTest, Basic) {
   const unsigned char kV2Input[] = {
     0x80, spdy_version_, 0x00, 0x01,  // SYN Stream #1

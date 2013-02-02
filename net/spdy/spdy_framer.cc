@@ -705,7 +705,10 @@ static void WriteZ(const base::StringPiece& data,
   } else {
     rv = deflate(out, Z_PARTIAL_FLUSH);
   }
-  DCHECK_EQ(Z_OK, rv);
+  if (!data.empty()) {
+    // If we didn't provide any data then zlib will return Z_BUF_ERROR.
+    DCHECK_EQ(Z_OK, rv);
+  }
   DCHECK_EQ(0u, out->avail_in);
   DCHECK_LT(0u, out->avail_out);
 }
