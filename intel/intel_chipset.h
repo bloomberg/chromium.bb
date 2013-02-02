@@ -84,6 +84,9 @@
 #define PCI_CHIP_HASWELL_CRW_S_GT2_PLUS 0x0D3A
 
 #define PCI_CHIP_VALLEYVIEW_PO		0x0f30 /* power on board */
+#define PCI_CHIP_VALLEYVIEW_1		0x0f31
+#define PCI_CHIP_VALLEYVIEW_2		0x0f32
+#define PCI_CHIP_VALLEYVIEW_3		0x0f33
 
 #define IS_830(dev) (dev == 0x3577)
 #define IS_845(dev) (dev == 0x2562)
@@ -124,7 +127,10 @@
 
 #define IS_I965GM(dev) (dev == 0x2A02)
 
-#define IS_VALLEYVIEW(dev) (dev == 0xf30)
+#define IS_VALLEYVIEW(dev) (((dev) == PCI_CHIP_VALLEYVIEW_PO) ||	\
+			    ((dev) == PCI_CHIP_VALLEYVIEW_1) ||		\
+			    ((dev) == PCI_CHIP_VALLEYVIEW_2) ||		\
+			    ((dev) == PCI_CHIP_VALLEYVIEW_3))
 
 #define IS_GEN4(dev) (dev == 0x2972 ||	\
 		      dev == 0x2982 ||	\
