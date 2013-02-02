@@ -66,6 +66,7 @@ class PlatformAppContextMenu : public RenderViewContextMenu {
   virtual void PlatformCancel() OVERRIDE {}
 };
 
+#if defined(ENABLE_WEB_INTENTS)
 // State holder for the LaunchReply test. This provides an WebIntentsDispatcher
 // that will, when used to launch a Web Intent, will return its reply via this
 // class. The result may then be waited on via WaitUntilReply().
@@ -111,6 +112,7 @@ class LaunchReplyHandler {
   content::WebIntentsDispatcher* intents_dispatcher_;
   base::WeakPtrFactory<LaunchReplyHandler> weak_ptr_factory_;
 };
+#endif
 
 // This class keeps track of tabs as they are added to the browser. It will be
 // "done" (i.e. won't block on Wait()) once |observations| tabs have been added.
@@ -160,6 +162,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OnLaunchedEvent) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch")) << message_;
 }
 
+#if defined(ENABLE_WEB_INTENTS)
 // Tests that platform apps can reply to "launch" events that contain a Web
 // Intent. This test does not test the mechanics of invoking a Web Intent
 // from a source page, and short-circuits to LaunchPlatformAppWithWebIntent.
@@ -189,6 +192,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchReply) {
 
   ASSERT_TRUE(handler.WaitUntilReply());
 }
+#endif
 
 // Tests that platform apps cannot use certain disabled window properties, but
 // can override them and then use them.

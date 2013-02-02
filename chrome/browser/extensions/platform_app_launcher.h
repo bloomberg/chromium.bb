@@ -42,6 +42,7 @@ void LaunchPlatformAppWithFileHandler(Profile* profile,
                                       const std::string& handler_id,
                                       const FilePath& file_path);
 
+#if defined(ENABLE_WEB_INTENTS)
 // Launches the platform app |extension| with the supplied web intent. Creates
 // appropriate launch data for the |web_intent_data| field present. |extension|
 // and |profile| must not be NULL.
@@ -50,6 +51,7 @@ void LaunchPlatformAppWithWebIntent(
     const Extension* extension,
     content::WebIntentsDispatcher* intents_dispatcher,
     content::WebContents* source);
+#endif
 
 }  // namespace extensions
 

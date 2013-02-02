@@ -295,6 +295,7 @@ void WebKitTestRunner::applyPreferences() {
   Send(new ShellViewHostMsg_OverridePreferences(routing_id(), prefs));
 }
 
+#if defined(ENABLE_WEB_INTENTS)
 void WebKitTestRunner::setCurrentWebIntentRequest(
     const WebIntentRequest& request) {
     intent_request_ = request;
@@ -303,6 +304,7 @@ void WebKitTestRunner::setCurrentWebIntentRequest(
 WebIntentRequest* WebKitTestRunner::currentWebIntentRequest() {
   return &intent_request_;
 }
+#endif
 
 std::string WebKitTestRunner::makeURLErrorDescription(
     const WebURLError& error) {
