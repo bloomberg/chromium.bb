@@ -31,7 +31,7 @@ class RingBuffer {
 
   // n = 0 returns the oldest value and
   // n = bufferSize() - 1 returns the most recent value.
-  T ReadBuffer(size_t n) const {
+  const T& ReadBuffer(size_t n) const {
     DCHECK(IsFilledIndex(n));
     return buffer_[BufferIndex(n)];
   }

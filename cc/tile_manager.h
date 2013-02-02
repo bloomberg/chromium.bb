@@ -12,6 +12,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "cc/memory_history.h"
 #include "cc/rendering_stats.h"
 #include "cc/resource_pool.h"
 #include "cc/tile_priority.h"
@@ -112,6 +113,8 @@ class CC_EXPORT TileManager {
   void GetRenderingStats(RenderingStats* stats);
   bool HasPendingWorkScheduled(WhichTree tree) const;
 
+  const MemoryHistory::Entry& memory_stats_from_last_assign() const { return memory_stats_from_last_assign_; }
+
  protected:
   // Methods called by Tile
   friend class Tile;
@@ -186,6 +189,7 @@ class CC_EXPORT TileManager {
   TileQueue tiles_with_pending_set_pixels_;
   size_t bytes_pending_set_pixels_;
   bool ever_exceeded_memory_budget_;
+  MemoryHistory::Entry memory_stats_from_last_assign_;
 
   bool record_rendering_stats_;
   RenderingStats rendering_stats_;

@@ -34,6 +34,7 @@ class LayerTreeHostImplTimeSourceAdapter;
 class LayerTreeImpl;
 class PageScaleAnimation;
 class PaintTimeCounter;
+class MemoryHistory;
 class RenderPassDrawQuad;
 class ResourceProvider;
 class TopControlsManager;
@@ -205,6 +206,7 @@ public:
 
     FrameRateCounter* fpsCounter() const { return m_fpsCounter.get(); }
     PaintTimeCounter* paintTimeCounter() const { return m_paintTimeCounter.get(); }
+    MemoryHistory* memoryHistory() const { return m_memoryHistory.get(); }
     DebugRectHistory* debugRectHistory() const { return m_debugRectHistory.get(); }
     ResourceProvider* resourceProvider() const { return m_resourceProvider.get(); }
     TopControlsManager* topControlsManager() const { return m_topControlsManager.get(); }
@@ -343,6 +345,7 @@ private:
 
     scoped_ptr<FrameRateCounter> m_fpsCounter;
     scoped_ptr<PaintTimeCounter> m_paintTimeCounter;
+    scoped_ptr<MemoryHistory> m_memoryHistory;
     scoped_ptr<DebugRectHistory> m_debugRectHistory;
 
     int64 m_numImplThreadScrolls;

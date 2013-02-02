@@ -25,6 +25,7 @@
 #include "cc/layer_tree_host_common.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/math_util.h"
+#include "cc/memory_history.h"
 #include "cc/overdraw_metrics.h"
 #include "cc/page_scale_animation.h"
 #include "cc/paint_time_counter.h"
@@ -148,6 +149,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     , m_pinchGestureActive(false)
     , m_fpsCounter(FrameRateCounter::create(m_proxy->hasImplThread()))
     , m_paintTimeCounter(PaintTimeCounter::create())
+    , m_memoryHistory(MemoryHistory::create())
     , m_debugRectHistory(DebugRectHistory::create())
     , m_numImplThreadScrolls(0)
     , m_numMainThreadScrolls(0)
@@ -787,6 +789,11 @@ void LayerTreeHostImpl::drawLayers(FrameData& frame)
     // This value is currently inaccessible because it is up in Chromium's
     // RenderWidget.
     m_fpsCounter->saveTimeStamp(base::TimeTicks::Now());
+
+    if (m_tileManager) {
+        m_memoryHistory->SaveEntry(
+            m_tileManager->memory_stats_from_last_assign());
+    }
 
     if (m_debugState.showHudRects())
         m_debugRectHistory->saveDebugRectsForCurrentFrame(rootLayer(), *frame.renderSurfaceLayerList, frame.occludingScreenSpaceRects, frame.nonOccludingScreenSpaceRects, m_debugState);

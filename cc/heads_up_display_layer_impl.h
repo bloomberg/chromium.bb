@@ -21,6 +21,7 @@ namespace cc {
 class DebugRectHistory;
 class FontAtlas;
 class FrameRateCounter;
+class MemoryHistory;
 class PaintTimeCounter;
 
 class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
@@ -75,6 +76,7 @@ private:
     void drawGraphLines(SkCanvas*, SkPaint*, const SkRect& bounds, const Graph&);
 
     int drawFPSDisplay(SkCanvas*, FrameRateCounter*, const int& top);
+    int drawMemoryDisplay(SkCanvas*, MemoryHistory*, const int& top);
     int drawPaintTimeDisplay(SkCanvas*, PaintTimeCounter*, const int& top);
 
     void drawDebugRects(SkCanvas*, DebugRectHistory*);

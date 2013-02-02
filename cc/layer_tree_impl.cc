@@ -374,6 +374,10 @@ PaintTimeCounter* LayerTreeImpl::paint_time_counter() const {
   return layer_tree_host_impl_->paintTimeCounter();
 }
 
+MemoryHistory* LayerTreeImpl::memory_history() const {
+  return layer_tree_host_impl_->memoryHistory();
+}
+
 bool LayerTreeImpl::IsActiveTree() const {
   return layer_tree_host_impl_->activeTree() == this;
 }

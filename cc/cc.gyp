@@ -126,6 +126,8 @@
       'managed_memory_policy.h',
       'math_util.cc',
       'math_util.h',
+      'memory_history.cc',
+      'memory_history.h',
       'nine_patch_layer.cc',
       'nine_patch_layer.h',
       'nine_patch_layer_impl.cc',

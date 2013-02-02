@@ -28,6 +28,7 @@ class LayerTreeDebugState;
 class LayerTreeHostImpl;
 class LayerTreeImpl;
 class LayerTreeSettings;
+class MemoryHistory;
 class OutputSurface;
 class PaintTimeCounter;
 class Proxy;
@@ -52,6 +53,7 @@ class CC_EXPORT LayerTreeImpl {
   TileManager* tile_manager() const;
   FrameRateCounter* frame_rate_counter() const;
   PaintTimeCounter* paint_time_counter() const;
+  MemoryHistory* memory_history() const;
   bool IsActiveTree() const;
   bool IsPendingTree() const;
   bool IsRecycleTree() const;

@@ -452,8 +452,9 @@ void TileManager::AssignGpuMemoryToTiles() {
       DidTileRasterStateChange(tile, IDLE_STATE);
   }
 
-  size_t bytes_left = global_state_.memory_limit_in_bytes - unreleasable_bytes;
+  size_t bytes_allocatable = global_state_.memory_limit_in_bytes - unreleasable_bytes;
   size_t bytes_that_exceeded_memory_budget = 0;
+  size_t bytes_left = bytes_allocatable;
   for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     Tile* tile = *it;
     size_t tile_bytes = tile->bytes_consumed_if_allocated();
@@ -481,14 +482,17 @@ void TileManager::AssignGpuMemoryToTiles() {
     }
   }
 
-  if (bytes_that_exceeded_memory_budget)
-    ever_exceeded_memory_budget_ = true;
-
+  ever_exceeded_memory_budget_ |= bytes_that_exceeded_memory_budget > 0;
   if (ever_exceeded_memory_budget_) {
       TRACE_COUNTER_ID2("cc", "over_memory_budget", this,
                         "budget", global_state_.memory_limit_in_bytes,
                         "over", bytes_that_exceeded_memory_budget);
   }
+  memory_stats_from_last_assign_.bytes_allocated =
+      bytes_allocatable - bytes_left;
+  memory_stats_from_last_assign_.bytes_unreleasable = unreleasable_bytes;
+  memory_stats_from_last_assign_.bytes_over =
+      bytes_that_exceeded_memory_budget;
 
   // Reverse two tiles_that_need_* vectors such that pop_back gets
   // the highest priority tile.

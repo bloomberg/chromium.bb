@@ -10,10 +10,12 @@
 #include "cc/font_atlas.h"
 #include "cc/frame_rate_counter.h"
 #include "cc/layer_tree_impl.h"
+#include "cc/memory_history.h"
 #include "cc/paint_time_counter.h"
 #include "cc/quad_sink.h"
 #include "cc/renderer.h"
 #include "cc/texture_draw_quad.h"
+#include "cc/tile_manager.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -191,6 +193,7 @@ void HeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
     const LayerTreeDebugState& debugState = layerTreeImpl()->debug_state();
 
     FrameRateCounter* fpsCounter = layerTreeImpl()->frame_rate_counter();
+    MemoryHistory* memoryHistory = layerTreeImpl()->memory_history();
     PaintTimeCounter* paintTimeCounter = layerTreeImpl()->paint_time_counter();
 
     if (debugState.showPlatformLayerTree) {
@@ -221,8 +224,13 @@ void HeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
         if (debugState.continuousPainting)
             top = drawPaintTimeDisplay(canvas, paintTimeCounter, top);
         // Don't show the FPS display when continuous painting is enabled, because it would show misleading numbers.
-        else if (debugState.showFPSCounter)
+        else if (debugState.showFPSCounter) {
             top = drawFPSDisplay(canvas, fpsCounter, top);
+        }
+        if (debugState.continuousPainting ||
+            debugState.showFPSCounter) {
+            top = drawMemoryDisplay(canvas, memoryHistory, top);
+        }
     }
 
     if (debugState.showPlatformLayerTree && m_fontAtlas) {
@@ -302,6 +310,7 @@ int HeadsUpDisplayLayerImpl::drawFPSDisplay(SkCanvas* canvas, FrameRateCounter* 
 
     if (m_fontAtlas.get())
         m_fontAtlas->setColor(DebugColors::FPSDisplayTextAndGraphColor());
+
     drawTextLeftAligned(canvas, &paint, textBounds, base::StringPrintf("FPS:%5.1f", m_fpsGraph.value));
     drawTextRightAligned(canvas, &paint, textBounds, base::StringPrintf("%.0f-%.0f", m_fpsGraph.min, m_fpsGraph.max));
 
@@ -368,6 +377,47 @@ int HeadsUpDisplayLayerImpl::drawFPSDisplay(SkCanvas* canvas, FrameRateCounter* 
     paint.setStrokeWidth(1);
 
     canvas->drawPath(path, paint);
+
+    return top + height + 2;
+}
+
+int HeadsUpDisplayLayerImpl::drawMemoryDisplay(SkCanvas* canvas, MemoryHistory* memoryHistory, const int& initial_top)
+{
+    // Move up by 2 to create no gap between us and previous counter.
+    int top = initial_top - 2;
+    const int padding = 4;
+    const int fontHeight = m_fontAtlas.get() ? m_fontAtlas->fontHeight() : 0;
+
+    const int width = 181;
+    const int height = 2 * fontHeight + 3 * padding;
+
+    const int left = bounds().width() - width - 2;
+    const double megabyte = static_cast<double>(1024*1024);
+
+    SkPaint paint = createPaint();
+    drawGraphBackground(canvas, &paint, SkRect::MakeXYWH(left, top, width, height));
+
+    SkRect textRun1 = SkRect::MakeXYWH(left + padding, top + padding, width, fontHeight);
+    SkRect textRun2 = SkRect::MakeXYWH(left + padding, top + 2*padding + fontHeight, width, fontHeight);
+
+    if (m_fontAtlas.get())
+        m_fontAtlas->setColor(DebugColors::FPSDisplayTextAndGraphColor());
+
+    std::string text;
+    MemoryHistory::Entry curEntry = memoryHistory->GetEntry(
+        memoryHistory->HistorySize() - 1);
+
+    double curMB = curEntry.bytes_total() / megabyte;
+
+    text = base::StringPrintf(
+        "%6.1f MB used",
+        (curEntry.bytes_unreleasable + curEntry.bytes_allocated) / megabyte);
+    drawTextLeftAligned(canvas, &paint, textRun1, text);
+
+    text = base::StringPrintf(
+        "%6.1f MB over budget",
+        (curEntry.bytes_over) / megabyte);
+    drawTextLeftAligned(canvas, &paint, textRun2, text);
 
     return top + height + 2;
 }
