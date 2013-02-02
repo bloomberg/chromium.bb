@@ -117,6 +117,7 @@ void CPU::Initialize() {
     has_ssse3_ = (cpu_info[2] & 0x00000200) != 0;
     has_sse41_ = (cpu_info[2] & 0x00080000) != 0;
     has_sse42_ = (cpu_info[2] & 0x00100000) != 0;
+    has_avx_ = (cpu_info[2] & 0x10000000) != 0;
   }
 
   // Get the brand string of the cpu.
@@ -135,6 +136,17 @@ void CPU::Initialize() {
     cpu_brand_.assign(cpu_string, cpu_string_ptr - cpu_string);
   }
 #endif
+}
+
+CPU::IntelMicroArchitecture CPU::GetIntelMicroArchitecture() const {
+  if (has_avx()) return AVX;
+  if (has_sse42()) return SSE42;
+  if (has_sse41()) return SSE41;
+  if (has_ssse3()) return SSSE3;
+  if (has_sse3()) return SSE3;
+  if (has_sse2()) return SSE2;
+  if (has_sse()) return SSE;
+  return PENTIUM;
 }
 
 }  // namespace base

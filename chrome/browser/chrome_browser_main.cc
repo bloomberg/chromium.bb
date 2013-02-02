@@ -14,6 +14,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/cpu.h"
 #include "base/debug/trace_event.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -206,6 +207,13 @@
 using content::BrowserThread;
 
 namespace {
+
+void LogIntelMicroArchitecture() {
+  base::CPU cpu;
+  base::CPU::IntelMicroArchitecture arch = cpu.GetIntelMicroArchitecture();
+  UMA_HISTOGRAM_ENUMERATION("Platform.IntelMaxMicroArchitecture", arch,
+      base::CPU::MAX_INTEL_MICRO_ARCHITECTURE);
+}
 
 // This function provides some ways to test crash and assertion handling
 // behavior of the program.
@@ -1028,6 +1036,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Now that the file thread has been started, start recording.
   StartMetricsRecording();
 #endif
+
+#if defined(ARCH_CPU_X86_FAMILY)
+  LogIntelMicroArchitecture();
+#endif  // defined(ARCH_CPU_X86_FAMILY)
 
   // Create watchdog thread after creating all other threads because it will
   // watch the other threads and they must be running.
