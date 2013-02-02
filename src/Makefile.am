@@ -84,7 +84,8 @@ module_LTLIBRARIES =				\
 	$(x11_backend)				\
 	$(drm_backend)				\
 	$(wayland_backend)			\
-	$(headless_backend)
+	$(headless_backend)			\
+	$(fbdev_backend)
 
 noinst_LTLIBRARIES =
 
@@ -173,6 +174,27 @@ headless_backend_la_CFLAGS =			\
 	$(COMPOSITOR_CFLAGS)			\
 	$(GCC_CFLAGS)
 headless_backend_la_SOURCES = compositor-headless.c
+endif
+
+if ENABLE_FBDEV_COMPOSITOR
+fbdev_backend = fbdev-backend.la
+fbdev_backend_la_LDFLAGS = -module -avoid-version
+fbdev_backend_la_LIBADD = \
+	$(COMPOSITOR_LIBS) \
+	$(FBDEV_COMPOSITOR_LIBS) \
+	../shared/libshared.la
+fbdev_backend_la_CFLAGS = \
+	$(COMPOSITOR_CFLAGS) \
+	$(FBDEV_COMPOSITOR_CFLAGS) \
+	$(PIXMAN_CFLAGS) \
+	$(GCC_CFLAGS)
+fbdev_backend_la_SOURCES = \
+	compositor-fbdev.c \
+	tty.c \
+	evdev.c \
+	evdev.h \
+	evdev-touchpad.c \
+	launcher-util.c
 endif
 
 if ENABLE_DESKTOP_SHELL

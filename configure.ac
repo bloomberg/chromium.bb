@@ -142,6 +142,16 @@ fi
 AM_CONDITIONAL(INSTALL_RPI_COMPOSITOR, test "x$have_bcm_host" = "xyes")
 
 
+AC_ARG_ENABLE([fbdev-compositor], [  --enable-fbdev-compositor],,
+              enable_fbdev_compositor=yes)
+AM_CONDITIONAL([ENABLE_FBDEV_COMPOSITOR],
+               [test x$enable_fbdev_compositor = xyes])
+AS_IF([test x$enable_fbdev_compositor = xyes], [
+  AC_DEFINE([BUILD_FBDEV_COMPOSITOR], [1], [Build the fbdev compositor])
+  PKG_CHECK_MODULES([FBDEV_COMPOSITOR], [libudev >= 136 mtdev >= 1.1.0])
+])
+
+
 AC_ARG_WITH(cairo-glesv2,
             AS_HELP_STRING([--with-cairo-glesv2],
                            [Use GLESv2 cairo instead of full GL]))
