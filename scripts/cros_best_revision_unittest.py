@@ -69,8 +69,9 @@ class ChromeCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
     osutils.WriteFile(self.lkgm_file, old_lkgm)
     self.committer.CheckoutChromeLKGM()
     self.assertTrue(self.committer._old_lkgm, old_lkgm)
-    self.assertCommandContains(['%s/%s' % (gclient.CHROME_COMMITTER_URL,
-                                           constants.PATH_TO_CHROME_LKGM)])
+    self.assertCommandContains([
+        '%s/%s' % (gclient.CHROME_COMMITTER_URL,
+                   os.path.dirname(constants.SVN_CHROME_LKGM))])
     self.assertCommandContains([constants.CHROME_LKGM_FILE])
 
   def _TestFindNewLKGM(self, all_results, lkgm):

@@ -51,7 +51,7 @@ class ChromeCommitter(object):
     """Checkout chromeos LKGM file for chrome into tmp checkout dir."""
     # We function only on an empty directory.
     lkgm_dir = '/'.join([gclient.CHROME_COMMITTER_URL,
-                         constants.PATH_TO_CHROME_LKGM])
+                         os.path.dirname(constants.SVN_CHROME_LKGM)])
 
     # We checkout the bare necessities to get the .svn/file needed to commit.
     cros_build_lib.RunCommand(['svn', 'checkout', '--depth=empty', lkgm_dir,
