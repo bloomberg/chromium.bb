@@ -23,6 +23,9 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   virtual scoped_refptr<Tile> CreateTile(
       PictureLayerTiling* tiling, gfx::Rect rect) OVERRIDE;
   virtual void UpdatePile(Tile* tile) OVERRIDE {}
+  virtual gfx::Size CalculateTileSize(
+      gfx::Size current_tile_size,
+      gfx::Size content_bounds) OVERRIDE;
 
   void SetTileSize(gfx::Size tile_size);
   gfx::Size TileSize() const { return tile_size_; }
