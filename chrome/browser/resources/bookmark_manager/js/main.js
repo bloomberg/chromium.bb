@@ -956,8 +956,10 @@ function updateOpenCommands(e, command) {
  */
 function updatePasteCommand(opt_f) {
   function update(canPaste) {
-    var command = $('paste-command');
-    command.disabled = !canPaste;
+    var organizeMenuCommand = $('paste-from-organize-menu-command');
+    var contextMenuCommand = $('paste-from-context-menu-command');
+    organizeMenuCommand.disabled = !canPaste;
+    contextMenuCommand.disabled = !canPaste;
     if (opt_f)
       opt_f();
   }
@@ -1004,7 +1006,8 @@ function canExecuteShared(e, isRecentOrSearch) {
   var command = e.command;
   var commandId = command.id;
   switch (commandId) {
-    case 'paste-command':
+    case 'paste-from-organize-menu-command':
+    case 'paste-from-context-menu-command':
       updatePasteCommand();
       break;
 
@@ -1602,6 +1605,26 @@ function recordUserAction(name) {
 }
 
 /**
+ * Returns the selected bookmark id of the active item in the list view.
+ */
+function getSelectedId() {
+  var selectedItem = list.selectedItem;
+  return selectedItem && bmm.isFolder(selectedItem) ?
+      selectedItem.id : list.parentId;
+}
+
+/**
+ * Pastes the copied/cutted bookmark into the right location depending whether
+ * if it was called from Organize Menu or from Context Menu.
+ * @param {string} id The id of the element being pasted from.
+ */
+function pasteBookmark(id) {
+  recordUserAction('Paste');
+  selectItemsAfterUserAction(list);
+  chrome.bookmarkManagerPrivate.paste(id, getSelectedBookmarkIds());
+}
+
+/**
  * Handler for the command event. This is used for context menu of list/tree
  * and organized menu.
  * @param {!Event} e The event object.
@@ -1657,11 +1680,11 @@ function handleCommand(e) {
       chrome.bookmarkManagerPrivate.cut(getSelectedBookmarkIds(),
                                         updatePasteCommand);
       break;
-    case 'paste-command':
-      recordUserAction('Paste');
-      selectItemsAfterUserAction(list);
-      chrome.bookmarkManagerPrivate.paste(list.parentId,
-                                          getSelectedBookmarkIds());
+    case 'paste-from-organize-menu-command':
+      pasteBookmark(list.parentId);
+      break;
+    case 'paste-from-context-menu-command':
+      pasteBookmark(getSelectedId());
       break;
     case 'sort-command':
       recordUserAction('Sort');
@@ -1732,7 +1755,7 @@ document.addEventListener('command', handleCommand);
   document.addEventListener('copy', handle('copy-command'));
   document.addEventListener('cut', handle('cut-command'));
 
-  var pasteHandler = handle('paste-command');
+  var pasteHandler = handle('paste-from-organize-menu-command');
   document.addEventListener('paste', function(e) {
     // Paste is a bit special since we need to do an async call to see if we can
     // paste because the paste command might not be up to date.

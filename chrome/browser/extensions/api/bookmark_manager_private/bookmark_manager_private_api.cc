@@ -268,11 +268,11 @@ bool PasteBookmarkManagerFunction::RunImpl() {
   // No need to test return value, if we got an empty list, we insert at end.
   GetNodesFromArguments(model, args_.get(), 1, &nodes);
   int highest_index = -1;  // -1 means insert at end of list.
-  for (size_t node = 0; node < nodes.size(); ++node) {
+  for (size_t i = 0; i < nodes.size(); ++i) {
     // + 1 so that we insert after the selection.
-    int this_node_index = parent_node->GetIndexOf(nodes[node]) + 1;
-    if (this_node_index > highest_index)
-      highest_index = this_node_index;
+    int index = parent_node->GetIndexOf(nodes[i]) + 1;
+    if (index > highest_index)
+      highest_index = index;
   }
 
   bookmark_utils::PasteFromClipboard(model, parent_node, highest_index);
