@@ -75,7 +75,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.13",
+  "version": "4.14",
   "entries": [
     {
       "id": 1,
@@ -485,6 +485,12 @@
           "perf_gaming": {
             "op": ">",
             "value": "3.5"
+          }
+        },
+        {
+          "cpu_info": {
+            "op": "contains",
+            "value": "Atom"
           }
         }
       ],
