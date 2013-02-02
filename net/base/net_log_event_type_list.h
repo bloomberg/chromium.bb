@@ -333,7 +333,7 @@ EVENT_TYPE(SUBMITTED_TO_RESOLVER_THREAD)
 // Socket (Shared by stream and datagram sockets)
 // ------------------------------------------------------------------------
 
-// Marks the begin/end of a socket (TCP/SOCKS/SSL/UDP).
+// Marks the begin/end of a socket (TCP/SOCKS/SSL/UDP/"SpdyProxyClientSocket").
 //
 // The BEGIN phase contains the following parameters:
 //
@@ -518,7 +518,9 @@ EVENT_TYPE(SSL_VERIFICATION_MERGED)
 //   }
 EVENT_TYPE(SSL_NSS_ERROR)
 
-// The specified number of bytes were sent on the socket.
+// The specified number of bytes were sent on the socket.  Depending on the
+// source of the event, may be logged either once the data is sent, or when it
+// is queued to be sent.
 // The following parameters are attached:
 //   {
 //     "byte_count": <Number of bytes that were just sent>,
@@ -1203,6 +1205,16 @@ EVENT_TYPE(SPDY_STREAM_UPDATE_RECV_WINDOW)
 //     "description": <The textual description for the error>,
 //   }
 EVENT_TYPE(SPDY_STREAM_ERROR)
+
+// ------------------------------------------------------------------------
+// SpdyProxyClientSocket
+// ------------------------------------------------------------------------
+
+EVENT_TYPE(SPDY_PROXY_CLIENT_SESSION)
+// Identifies the SPDY session a source is using.
+//   {
+//     "source_dependency":  <Source identifier for the underlying session>,
+//   }
 
 // ------------------------------------------------------------------------
 // HttpStreamParser

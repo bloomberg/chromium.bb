@@ -73,6 +73,7 @@ Value* NetLogString16Callback(const char* name,
 
 }  // namespace
 
+// LoadTimingInfo requires this be 0.
 const uint32 NetLog::Source::kInvalidId = 0;
 
 NetLog::Source::Source() : type(SOURCE_NONE), id(kInvalidId) {

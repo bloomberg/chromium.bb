@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/auth.h"
 #include "net/base/io_buffer.h"
@@ -27,6 +28,7 @@ SpdyProxyClientSocket::SpdyProxyClientSocket(
     const HostPortPair& endpoint,
     const GURL& url,
     const HostPortPair& proxy_server,
+    const BoundNetLog& source_net_log,
     HttpAuthCache* auth_cache,
     HttpAuthHandlerFactory* auth_handler_factory)
     : next_state_(STATE_DISCONNECTED),
@@ -41,18 +43,27 @@ SpdyProxyClientSocket::SpdyProxyClientSocket(
       write_buffer_len_(0),
       write_bytes_outstanding_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      net_log_(spdy_stream->net_log()) {
+      net_log_(BoundNetLog::Make(spdy_stream->net_log().net_log(),
+                                 NetLog::SOURCE_PROXY_CLIENT_SOCKET)) {
   request_.method = "CONNECT";
   request_.url = url;
   if (!user_agent.empty())
     request_.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent,
                                      user_agent);
+
+  net_log_.BeginEvent(NetLog::TYPE_SOCKET_ALIVE,
+                      source_net_log.source().ToEventParametersCallback());
+  net_log_.AddEvent(
+      NetLog::TYPE_SPDY_PROXY_CLIENT_SESSION,
+      spdy_stream->net_log().source().ToEventParametersCallback());
+
   spdy_stream_->SetDelegate(this);
   was_ever_used_ = spdy_stream_->WasEverUsed();
 }
 
 SpdyProxyClientSocket::~SpdyProxyClientSocket() {
   Disconnect();
+  net_log_.EndEvent(NetLog::TYPE_SOCKET_ALIVE);
 }
 
 const HttpResponseInfo* SpdyProxyClientSocket::GetConnectResponseInfo() const {
@@ -244,6 +255,15 @@ int SpdyProxyClientSocket::Write(IOBuffer* buf, int buf_len,
   write_bytes_outstanding_= buf_len;
   if (buf_len <= kMaxSpdyFrameChunkSize) {
     int rv = spdy_stream_->WriteStreamData(buf, buf_len, DATA_FLAG_NONE);
+
+    // If there's an error, log the error.  Otherwise, log the number of bytes
+    // regardless of whether or not they were actually written.
+    if (rv < 0 && rv != ERR_IO_PENDING) {
+      net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_SENT, rv, NULL);
+    } else {
+      net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_SENT,
+                                    buf_len, buf->data());
+    }
     if (rv == ERR_IO_PENDING) {
       write_callback_ = callback;
       write_buffer_len_ = buf_len;
@@ -258,6 +278,16 @@ int SpdyProxyClientSocket::Write(IOBuffer* buf, int buf_len,
     scoped_refptr<DrainableIOBuffer> iobuf(new DrainableIOBuffer(buf, i + len));
     iobuf->SetOffset(i);
     int rv = spdy_stream_->WriteStreamData(iobuf, len, DATA_FLAG_NONE);
+
+    // If there's an error, log the error.  Otherwise, log the number of bytes
+    // regardless of whether or not they were actually written.
+    if (rv < 0 && rv != ERR_IO_PENDING) {
+      net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_SENT, rv, NULL);
+    } else {
+      net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_SENT,
+                                    len, buf->data());
+    }
+
     if (rv > 0) {
       write_bytes_outstanding_ -= rv;
     } else if (rv != ERR_IO_PENDING) {
@@ -330,14 +360,19 @@ int SpdyProxyClientSocket::DoLoop(int last_io_result) {
         break;
       case STATE_SEND_REQUEST:
         DCHECK_EQ(OK, rv);
-        net_log_.BeginEvent(
-            NetLog::TYPE_HTTP_TRANSACTION_TUNNEL_SEND_REQUEST);
+        net_log_.BeginEvent(NetLog::TYPE_HTTP_TRANSACTION_TUNNEL_SEND_REQUEST);
         rv = DoSendRequest();
         break;
       case STATE_SEND_REQUEST_COMPLETE:
         net_log_.EndEventWithNetErrorCode(
             NetLog::TYPE_HTTP_TRANSACTION_TUNNEL_SEND_REQUEST, rv);
         rv = DoSendRequestComplete(rv);
+        if (rv >= 0 || rv == ERR_IO_PENDING) {
+          // Emit extra event so can use the same events as
+          // HttpProxyClientSocket.
+          net_log_.BeginEvent(
+              NetLog::TYPE_HTTP_TRANSACTION_TUNNEL_READ_HEADERS);
+        }
         break;
       case STATE_READ_REPLY_COMPLETE:
         rv = DoReadReplyComplete(rv);
@@ -519,6 +554,8 @@ void SpdyProxyClientSocket::OnHeadersSent() {
 
 // Called when data is received.
 int SpdyProxyClientSocket::OnDataReceived(const char* data, int length) {
+  net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED,
+                                length, data);
   if (length > 0) {
     // Save the received data.
     scoped_refptr<IOBuffer> io_buffer(new IOBuffer(length));

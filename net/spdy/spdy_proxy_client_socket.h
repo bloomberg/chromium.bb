@@ -46,6 +46,7 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
                         const HostPortPair& endpoint,
                         const GURL& url,
                         const HostPortPair& proxy_server,
+                        const BoundNetLog& source_net_log,
                         HttpAuthCache* auth_cache,
                         HttpAuthHandlerFactory* auth_handler_factory);
 

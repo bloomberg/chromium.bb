@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/address_list.h"
+#include "net/base/capturing_net_log.h"
 #include "net/base/net_log.h"
 #include "net/base/net_log_unittest.h"
 #include "net/base/mock_host_resolver.h"
@@ -110,6 +111,7 @@ class SpdyProxyClientSocketSpdy3Test : public PlatformTest {
   TestCompletionCallback read_callback_;
   TestCompletionCallback write_callback_;
   scoped_ptr<DeterministicSocketData> data_;
+  CapturingBoundNetLog net_log_;
 
  private:
   scoped_refptr<HttpNetworkSession> session_;
@@ -152,6 +154,7 @@ SpdyProxyClientSocketSpdy3Test::SpdyProxyClientSocketSpdy3Test()
                                                   false,
                                                   false,
                                                   OnHostResolutionCallback())) {
+  session_deps_.net_log = net_log_.bound().net_log();
 }
 
 void SpdyProxyClientSocketSpdy3Test::TearDown() {
@@ -165,9 +168,9 @@ void SpdyProxyClientSocketSpdy3Test::TearDown() {
 }
 
 void SpdyProxyClientSocketSpdy3Test::Initialize(MockRead* reads,
-                                           size_t reads_count,
-                                           MockWrite* writes,
-                                           size_t writes_count) {
+                                                size_t reads_count,
+                                                MockWrite* writes,
+                                                size_t writes_count) {
   data_.reset(new DeterministicSocketData(reads, reads_count,
                                           writes, writes_count));
   data_->set_connect_data(connect_data_);
@@ -180,32 +183,33 @@ void SpdyProxyClientSocketSpdy3Test::Initialize(MockRead* reads,
   session_ = SpdySessionDependencies::SpdyCreateSessionDeterministic(
       &session_deps_);
 
-  // Creates a new spdy session
+  // Creates a new spdy session.
   spdy_session_ =
       session_->spdy_session_pool()->Get(endpoint_host_port_proxy_pair_,
-                                         BoundNetLog());
+                                         net_log_.bound());
 
-  // Perform the TCP connect
+  // Perform the TCP connect.
   scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
   EXPECT_EQ(OK,
             connection->Init(endpoint_host_port_pair_.ToString(),
                              transport_params_, LOWEST, CompletionCallback(),
                              session_->GetTransportSocketPool(
                                  HttpNetworkSession::NORMAL_SOCKET_POOL),
-                             BoundNetLog()));
+                             net_log_.bound()));
   spdy_session_->InitializeWithSocket(connection.release(), false, OK);
 
-  // Create the SPDY Stream
+  // Create the SPDY Stream.
   ASSERT_EQ(
       OK,
-      spdy_session_->CreateStream(url_, LOWEST, &spdy_stream_, BoundNetLog(),
+      spdy_session_->CreateStream(url_, LOWEST, &spdy_stream_, net_log_.bound(),
                                   CompletionCallback()));
 
-  // Create the SpdyProxyClientSocket
+  // Create the SpdyProxyClientSocket.
   sock_.reset(
       new SpdyProxyClientSocket(spdy_stream_, user_agent_,
                                 endpoint_host_port_pair_, url_,
-                                proxy_host_port_, session_->http_auth_cache(),
+                                proxy_host_port_,  net_log_.bound(),
+                                session_->http_auth_cache(),
                                 session_->http_auth_handler_factory()));
 }
 
@@ -1287,6 +1291,61 @@ TEST_F(SpdyProxyClientSocketSpdy3Test, RstWithReadAndWritePending) {
   EXPECT_TRUE(sock_.get());
   EXPECT_TRUE(read_callback_.have_result());
   EXPECT_TRUE(write_callback_.have_result());
+}
+
+// Makes sure the proxy client socket's source gets the expected NetLog events
+// and only the expected NetLog events (No SpdySession events).
+TEST_F(SpdyProxyClientSocketSpdy3Test, NetLog) {
+  scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
+  MockWrite writes[] = {
+    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+  };
+
+  scoped_ptr<SpdyFrame> resp(ConstructConnectReplyFrame());
+  scoped_ptr<SpdyFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
+  MockRead reads[] = {
+    CreateMockRead(*resp, 1, ASYNC),
+    CreateMockRead(*msg1, 2, ASYNC),
+    MockRead(ASYNC, 0, 3),  // EOF
+  };
+
+  Initialize(reads, arraysize(reads), writes, arraysize(writes));
+
+  AssertConnectSucceeds();
+
+  Run(1);  // SpdySession consumes the next read and sends it to
+           // sock_ to be buffered.
+  AssertSyncReadEquals(kMsg1, kLen1);
+
+  NetLog::Source sock_source = sock_->NetLog().source();
+  sock_.reset();
+
+  CapturingNetLog::CapturedEntryList entry_list;
+  net_log_.GetEntriesForSource(sock_source, &entry_list);
+
+  ASSERT_EQ(entry_list.size(), 10u);
+  EXPECT_TRUE(LogContainsBeginEvent(entry_list, 0, NetLog::TYPE_SOCKET_ALIVE));
+  EXPECT_TRUE(LogContainsEvent(entry_list, 1,
+                  NetLog::TYPE_SPDY_PROXY_CLIENT_SESSION,
+                  NetLog::PHASE_NONE));
+  EXPECT_TRUE(LogContainsBeginEvent(entry_list, 2,
+                  NetLog::TYPE_HTTP_TRANSACTION_TUNNEL_SEND_REQUEST));
+  EXPECT_TRUE(LogContainsEvent(entry_list, 3,
+                  NetLog::TYPE_HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
+                  NetLog::PHASE_NONE));
+  EXPECT_TRUE(LogContainsEndEvent(entry_list, 4,
+                  NetLog::TYPE_HTTP_TRANSACTION_TUNNEL_SEND_REQUEST));
+  EXPECT_TRUE(LogContainsBeginEvent(entry_list, 5,
+                  NetLog::TYPE_HTTP_TRANSACTION_TUNNEL_READ_HEADERS));
+  EXPECT_TRUE(LogContainsEvent(entry_list, 6,
+                  NetLog::TYPE_HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
+                  NetLog::PHASE_NONE));
+  EXPECT_TRUE(LogContainsEndEvent(entry_list, 7,
+                  NetLog::TYPE_HTTP_TRANSACTION_TUNNEL_READ_HEADERS));
+  EXPECT_TRUE(LogContainsEvent(entry_list, 8,
+                  NetLog::TYPE_SOCKET_BYTES_RECEIVED,
+                  NetLog::PHASE_NONE));
+  EXPECT_TRUE(LogContainsEndEvent(entry_list, 9, NetLog::TYPE_SOCKET_ALIVE));
 }
 
 // CompletionCallback that causes the SpdyProxyClientSocket to be

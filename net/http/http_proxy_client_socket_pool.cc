@@ -330,6 +330,7 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStreamComplete(int result) {
                                 params_->endpoint(),
                                 params_->request_url(),
                                 params_->destination().host_port_pair(),
+                                net_log(),
                                 params_->http_auth_cache(),
                                 params_->http_auth_handler_factory()));
   return transport_socket_->Connect(callback_);

@@ -2943,6 +2943,408 @@ TEST_F(HttpNetworkTransactionSpdy2Test, HttpsProxySpdyConnectFailure) {
   // TODO(ttuttle): Anything else to check here?
 }
 
+// Test load timing in the case of two HTTPS (non-SPDY) requests through a SPDY
+// HTTPS Proxy to different servers.
+TEST_F(HttpNetworkTransactionSpdy2Test,
+       HttpsProxySpdyConnectHttpsLoadTimingTwoRequestsTwoServers) {
+  // Configure against https proxy server "proxy:70".
+  SpdySessionDependencies session_deps(ProxyService::CreateFixed(
+      "https://proxy:70"));
+  CapturingBoundNetLog log;
+  session_deps.net_log = log.bound().net_log();
+  scoped_refptr<HttpNetworkSession> session(
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps));
+
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("https://www.google.com/");
+  request1.load_flags = 0;
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("https://news.google.com/");
+  request2.load_flags = 0;
+
+  // CONNECT to www.google.com:443 via SPDY.
+  scoped_ptr<SpdyFrame> connect1(ConstructSpdyConnect(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> conn_resp1(ConstructSpdyGetSynReply(NULL, 0, 1));
+
+  // Fetch https://www.google.com/ via HTTP.
+  const char get1[] = "GET / HTTP/1.1\r\n"
+      "Host: www.google.com\r\n"
+      "Connection: keep-alive\r\n\r\n";
+  scoped_ptr<SpdyFrame> wrapped_get1(
+      ConstructSpdyBodyFrame(1, get1, strlen(get1), false));
+  const char resp1[] = "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 1\r\n\r\n";
+  scoped_ptr<SpdyFrame> wrapped_get_resp1(
+      ConstructSpdyBodyFrame(1, resp1, strlen(resp1), false));
+  scoped_ptr<SpdyFrame> wrapped_body1(ConstructSpdyBodyFrame(1, "1", 1, false));
+  scoped_ptr<SpdyFrame> window_update(
+      ConstructSpdyWindowUpdate(1, wrapped_get_resp1->length()));
+
+  // CONNECT to news.google.com:443 via SPDY.
+  const char* const kConnectHeaders2[] = {
+    "method", "CONNECT",
+    "url", "news.google.com:443",
+    "host", "news.google.com",
+    "version", "HTTP/1.1",
+  };
+  scoped_ptr<SpdyFrame> connect2(
+      ConstructSpdyControlFrame(NULL,
+                                0,
+                                /*compressed*/ false,
+                                3,
+                                LOWEST,
+                                SYN_STREAM,
+                                CONTROL_FLAG_NONE,
+                                kConnectHeaders2,
+                                arraysize(kConnectHeaders2)));
+  scoped_ptr<SpdyFrame> conn_resp2(ConstructSpdyGetSynReply(NULL, 0, 3));
+
+  // Fetch https://news.google.com/ via HTTP.
+  const char get2[] = "GET / HTTP/1.1\r\n"
+      "Host: news.google.com\r\n"
+      "Connection: keep-alive\r\n\r\n";
+  scoped_ptr<SpdyFrame> wrapped_get2(
+      ConstructSpdyBodyFrame(3, get2, strlen(get2), false));
+  const char resp2[] = "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 2\r\n\r\n";
+  scoped_ptr<SpdyFrame> wrapped_get_resp2(
+      ConstructSpdyBodyFrame(3, resp2, strlen(resp2), false));
+  scoped_ptr<SpdyFrame> wrapped_body2(
+      ConstructSpdyBodyFrame(3, "22", 2, false));
+
+  MockWrite spdy_writes[] = {
+      CreateMockWrite(*connect1, 0),
+      CreateMockWrite(*wrapped_get1, 2),
+      CreateMockWrite(*connect2, 5),
+      CreateMockWrite(*wrapped_get2, 7),
+  };
+
+  MockRead spdy_reads[] = {
+    CreateMockRead(*conn_resp1, 1, ASYNC),
+    CreateMockRead(*wrapped_get_resp1, 3, ASYNC),
+    CreateMockRead(*wrapped_body1, 4, ASYNC),
+    CreateMockRead(*conn_resp2, 6, ASYNC),
+    CreateMockRead(*wrapped_get_resp2, 8, ASYNC),
+    CreateMockRead(*wrapped_body2, 9, ASYNC),
+    MockRead(ASYNC, 0, 10),
+  };
+
+  DeterministicSocketData spdy_data(
+      spdy_reads, arraysize(spdy_reads),
+      spdy_writes, arraysize(spdy_writes));
+  session_deps.deterministic_socket_factory->AddSocketDataProvider(&spdy_data);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.SetNextProto(kProtoSPDY2);
+  session_deps.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+  SSLSocketDataProvider ssl2(ASYNC, OK);
+  ssl2.was_npn_negotiated = false;
+  ssl2.protocol_negotiated = kProtoUnknown;
+  session_deps.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl2);
+  SSLSocketDataProvider ssl3(ASYNC, OK);
+  ssl3.was_npn_negotiated = false;
+  ssl3.protocol_negotiated = kProtoUnknown;
+  session_deps.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl3);
+
+  TestCompletionCallback callback;
+
+  scoped_ptr<HttpTransaction> trans(new HttpNetworkTransaction(session));
+  int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  // The first connect and request, each of their responses, and the body.
+  spdy_data.RunFor(5);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReused(load_timing_info, CONNECT_TIMING_HAS_SSL_TIMES);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response->headers != NULL);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+
+  std::string response_data;
+  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(256));
+  EXPECT_EQ(1, trans->Read(buf, 256, callback.callback()));
+
+  scoped_ptr<HttpTransaction> trans2(new HttpNetworkTransaction(session));
+  rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  // The second connect and request, each of their responses, and the body.
+  spdy_data.RunFor(5);
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  LoadTimingInfo load_timing_info2;
+  EXPECT_TRUE(trans2->GetLoadTimingInfo(&load_timing_info2));
+  // Even though the SPDY connection is reused, a new tunnelled connection has
+  // to be created, so the socket's load timing looks like a fresh connection.
+  TestLoadTimingNotReused(load_timing_info2, CONNECT_TIMING_HAS_SSL_TIMES);
+
+  // The requests should have different IDs, since they each are using their own
+  // separate stream.
+  EXPECT_NE(load_timing_info.socket_log_id, load_timing_info2.socket_log_id);
+
+  EXPECT_EQ(2, trans2->Read(buf, 256, callback.callback()));
+}
+
+// Test load timing in the case of two HTTPS (non-SPDY) requests through a SPDY
+// HTTPS Proxy to the same server.
+TEST_F(HttpNetworkTransactionSpdy2Test,
+       HttpsProxySpdyConnectHttpsLoadTimingTwoRequestsSameServer) {
+  // Configure against https proxy server "proxy:70".
+  SpdySessionDependencies session_deps(ProxyService::CreateFixed(
+      "https://proxy:70"));
+  CapturingBoundNetLog log;
+  session_deps.net_log = log.bound().net_log();
+  scoped_refptr<HttpNetworkSession> session(
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps));
+
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("https://www.google.com/");
+  request1.load_flags = 0;
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("https://www.google.com/2");
+  request2.load_flags = 0;
+
+  // CONNECT to www.google.com:443 via SPDY.
+  scoped_ptr<SpdyFrame> connect1(ConstructSpdyConnect(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> conn_resp1(ConstructSpdyGetSynReply(NULL, 0, 1));
+
+  // Fetch https://www.google.com/ via HTTP.
+  const char get1[] = "GET / HTTP/1.1\r\n"
+      "Host: www.google.com\r\n"
+      "Connection: keep-alive\r\n\r\n";
+  scoped_ptr<SpdyFrame> wrapped_get1(
+      ConstructSpdyBodyFrame(1, get1, strlen(get1), false));
+  const char resp1[] = "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 1\r\n\r\n";
+  scoped_ptr<SpdyFrame> wrapped_get_resp1(
+      ConstructSpdyBodyFrame(1, resp1, strlen(resp1), false));
+  scoped_ptr<SpdyFrame> wrapped_body1(ConstructSpdyBodyFrame(1, "1", 1, false));
+  scoped_ptr<SpdyFrame> window_update(
+      ConstructSpdyWindowUpdate(1, wrapped_get_resp1->length()));
+
+  // Fetch https://www.google.com/2 via HTTP.
+  const char get2[] = "GET /2 HTTP/1.1\r\n"
+      "Host: www.google.com\r\n"
+      "Connection: keep-alive\r\n\r\n";
+  scoped_ptr<SpdyFrame> wrapped_get2(
+      ConstructSpdyBodyFrame(1, get2, strlen(get2), false));
+  const char resp2[] = "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 2\r\n\r\n";
+  scoped_ptr<SpdyFrame> wrapped_get_resp2(
+      ConstructSpdyBodyFrame(1, resp2, strlen(resp2), false));
+  scoped_ptr<SpdyFrame> wrapped_body2(
+      ConstructSpdyBodyFrame(1, "22", 2, false));
+
+  MockWrite spdy_writes[] = {
+      CreateMockWrite(*connect1, 0),
+      CreateMockWrite(*wrapped_get1, 2),
+      CreateMockWrite(*wrapped_get2, 5),
+  };
+
+  MockRead spdy_reads[] = {
+    CreateMockRead(*conn_resp1, 1, ASYNC),
+    CreateMockRead(*wrapped_get_resp1, 3, ASYNC),
+    CreateMockRead(*wrapped_body1, 4, ASYNC),
+    CreateMockRead(*wrapped_get_resp2, 6, ASYNC),
+    CreateMockRead(*wrapped_body2, 7, ASYNC),
+    MockRead(ASYNC, 0, 8),
+  };
+
+  DeterministicSocketData spdy_data(
+      spdy_reads, arraysize(spdy_reads),
+      spdy_writes, arraysize(spdy_writes));
+  session_deps.deterministic_socket_factory->AddSocketDataProvider(&spdy_data);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.SetNextProto(kProtoSPDY2);
+  session_deps.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+  SSLSocketDataProvider ssl2(ASYNC, OK);
+  ssl2.was_npn_negotiated = false;
+  ssl2.protocol_negotiated = kProtoUnknown;
+  session_deps.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl2);
+
+  TestCompletionCallback callback;
+
+  scoped_ptr<HttpTransaction> trans(new HttpNetworkTransaction(session));
+  int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  // The first connect and request, each of their responses, and the body.
+  spdy_data.RunFor(5);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReused(load_timing_info, CONNECT_TIMING_HAS_SSL_TIMES);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response->headers != NULL);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+
+  std::string response_data;
+  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(256));
+  EXPECT_EQ(1, trans->Read(buf, 256, callback.callback()));
+  trans.reset();
+
+  scoped_ptr<HttpTransaction> trans2(new HttpNetworkTransaction(session));
+  rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  // The second request, response, and body.  There should not be a second
+  // connect.
+  spdy_data.RunFor(3);
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  LoadTimingInfo load_timing_info2;
+  EXPECT_TRUE(trans2->GetLoadTimingInfo(&load_timing_info2));
+  TestLoadTimingReused(load_timing_info2);
+
+  // The requests should have the same ID.
+  EXPECT_EQ(load_timing_info.socket_log_id, load_timing_info2.socket_log_id);
+
+  EXPECT_EQ(2, trans2->Read(buf, 256, callback.callback()));
+}
+
+// Test load timing in the case of of two HTTP requests through a SPDY HTTPS
+// Proxy to different servers.
+TEST_F(HttpNetworkTransactionSpdy2Test,
+       HttpsProxySpdyLoadTimingTwoHttpRequests) {
+  // Configure against https proxy server "proxy:70".
+  SpdySessionDependencies session_deps(ProxyService::CreateFixed(
+      "https://proxy:70"));
+  CapturingBoundNetLog log;
+  session_deps.net_log = log.bound().net_log();
+  scoped_refptr<HttpNetworkSession> session(
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps));
+
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("http://www.google.com/");
+  request1.load_flags = 0;
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("http://news.google.com/");
+  request2.load_flags = 0;
+
+  // http://www.google.com/
+  const char* const headers1[] = {
+    "method", "GET",
+    "url", "http://www.google.com/",
+    "host",  "www.google.com",
+    "scheme", "http",
+    "version", "HTTP/1.1"
+  };
+  scoped_ptr<SpdyFrame> get1(ConstructSpdyControlFrame(NULL, 0, false, 1,
+                                                       LOWEST, SYN_STREAM,
+                                                       CONTROL_FLAG_FIN,
+                                                       headers1,
+                                                       arraysize(headers1)));
+  scoped_ptr<SpdyFrame> get_resp1(ConstructSpdyGetSynReply(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> body1(ConstructSpdyBodyFrame(1, "1", 1, true));
+
+  // http://news.google.com/
+  const char* const headers2[] = {
+    "method", "GET",
+    "url", "http://news.google.com/",
+    "host",  "news.google.com",
+    "scheme", "http",
+    "version", "HTTP/1.1"
+  };
+  scoped_ptr<SpdyFrame> get2(ConstructSpdyControlFrame(NULL, 0, false, 3,
+                                                       LOWEST, SYN_STREAM,
+                                                       CONTROL_FLAG_FIN,
+                                                       headers2,
+                                                       arraysize(headers2)));
+  scoped_ptr<SpdyFrame> get_resp2(ConstructSpdyGetSynReply(NULL, 0, 3));
+  scoped_ptr<SpdyFrame> body2(ConstructSpdyBodyFrame(3, "22", 2, true));
+
+  MockWrite spdy_writes[] = {
+      CreateMockWrite(*get1, 0),
+      CreateMockWrite(*get2, 3),
+  };
+
+  MockRead spdy_reads[] = {
+    CreateMockRead(*get_resp1, 1, ASYNC),
+    CreateMockRead(*body1, 2, ASYNC),
+    CreateMockRead(*get_resp2, 4, ASYNC),
+    CreateMockRead(*body2, 5, ASYNC),
+    MockRead(ASYNC, 0, 6),
+  };
+
+  DeterministicSocketData spdy_data(
+      spdy_reads, arraysize(spdy_reads),
+      spdy_writes, arraysize(spdy_writes));
+  session_deps.deterministic_socket_factory->AddSocketDataProvider(&spdy_data);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.SetNextProto(kProtoSPDY2);
+  session_deps.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  TestCompletionCallback callback;
+
+  scoped_ptr<HttpTransaction> trans(new HttpNetworkTransaction(session));
+  int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  spdy_data.RunFor(2);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReused(load_timing_info,
+                          CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response->headers != NULL);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+
+  std::string response_data;
+  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(256));
+  EXPECT_EQ(ERR_IO_PENDING, trans->Read(buf, 256, callback.callback()));
+  spdy_data.RunFor(1);
+  EXPECT_EQ(1, callback.WaitForResult());
+  // Delete the first request, so the second one can reuse the socket.
+  trans.reset();
+
+  scoped_ptr<HttpTransaction> trans2(new HttpNetworkTransaction(session));
+  rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  spdy_data.RunFor(2);
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  LoadTimingInfo load_timing_info2;
+  EXPECT_TRUE(trans2->GetLoadTimingInfo(&load_timing_info2));
+  TestLoadTimingReused(load_timing_info2);
+
+  // The requests should have the same ID.
+  EXPECT_EQ(load_timing_info.socket_log_id, load_timing_info2.socket_log_id);
+
+  EXPECT_EQ(ERR_IO_PENDING, trans2->Read(buf, 256, callback.callback()));
+  spdy_data.RunFor(1);
+  EXPECT_EQ(2, callback.WaitForResult());
+}
+
 // Test the challenge-response-retry sequence through an HTTPS Proxy
 TEST_F(HttpNetworkTransactionSpdy2Test, HttpsProxyAuthRetry) {
   HttpRequestInfo request;
@@ -10487,8 +10889,10 @@ TEST_F(HttpNetworkTransactionSpdy2Test, DoNotUseSpdySessionForHttpOverTunnel) {
   MockConnect connect_data1(ASYNC, OK);
   data1.set_connect_data(connect_data1);
 
-  SpdySessionDependencies session_deps(ProxyService::CreateFixed(
-      "https://proxy:70"));
+  SpdySessionDependencies session_deps(
+      ProxyService::CreateFixedFromPacResult("HTTPS proxy:70"));
+  CapturingNetLog log;
+  session_deps.net_log = &log;
   SSLSocketDataProvider ssl1(ASYNC, OK);  // to the proxy
   ssl1.SetNextProto(kProtoSPDY2);
   session_deps.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl1);
@@ -10516,6 +10920,11 @@ TEST_F(HttpNetworkTransactionSpdy2Test, DoNotUseSpdySessionForHttpOverTunnel) {
   EXPECT_EQ(OK, callback1.WaitForResult());
   EXPECT_TRUE(trans1.GetResponseInfo()->was_fetched_via_spdy);
 
+  LoadTimingInfo load_timing_info1;
+  EXPECT_TRUE(trans1.GetLoadTimingInfo(&load_timing_info1));
+  TestLoadTimingNotReusedWithPac(load_timing_info1,
+                                 CONNECT_TIMING_HAS_SSL_TIMES);
+
   // Now, start the HTTP request
   HttpRequestInfo request2;
   request2.method = "GET";
@@ -10531,6 +10940,14 @@ TEST_F(HttpNetworkTransactionSpdy2Test, DoNotUseSpdySessionForHttpOverTunnel) {
 
   EXPECT_EQ(OK, callback2.WaitForResult());
   EXPECT_TRUE(trans2.GetResponseInfo()->was_fetched_via_spdy);
+
+  LoadTimingInfo load_timing_info2;
+  EXPECT_TRUE(trans2.GetLoadTimingInfo(&load_timing_info2));
+  // The established SPDY sessions is considered reused by the HTTP request.
+  TestLoadTimingReusedWithPac(load_timing_info2);
+  // HTTP requests over a SPDY session should have a different connection
+  // socket_log_id than requests over a tunnel.
+  EXPECT_NE(load_timing_info1.socket_log_id, load_timing_info2.socket_log_id);
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test, UseSpdySessionForHttpWhenForced) {

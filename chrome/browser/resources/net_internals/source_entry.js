@@ -104,6 +104,7 @@ var SourceEntry = (function() {
             this.description_ = e.params.host_and_port;
           break;
         case EventSourceType.SOCKET:
+        case EventSourceType.PROXY_CLIENT_SOCKET:
           // Use description of parent source, if any.
           if (e.params.source_dependency != undefined) {
             var parentId = e.params.source_dependency.id;

@@ -79,6 +79,17 @@ void CapturingNetLog::GetEntries(CapturedEntryList* entry_list) const {
   *entry_list = captured_entries_;
 }
 
+void CapturingNetLog::GetEntriesForSource(NetLog::Source source,
+                                          CapturedEntryList* entry_list) const {
+  base::AutoLock lock(lock_);
+  entry_list->clear();
+  for (CapturedEntryList::const_iterator entry = captured_entries_.begin();
+       entry != captured_entries_.end(); ++entry) {
+    if (entry->source.id == source.id)
+      entry_list->push_back(*entry);
+  }
+}
+
 size_t CapturingNetLog::GetSize() const {
   base::AutoLock lock(lock_);
   return captured_entries_.size();
@@ -150,6 +161,12 @@ CapturingBoundNetLog::~CapturingBoundNetLog() {}
 void CapturingBoundNetLog::GetEntries(
     CapturingNetLog::CapturedEntryList* entry_list) const {
   capturing_net_log_.GetEntries(entry_list);
+}
+
+void CapturingBoundNetLog::GetEntriesForSource(
+    NetLog::Source source,
+    CapturingNetLog::CapturedEntryList* entry_list) const {
+  capturing_net_log_.GetEntriesForSource(source, entry_list);
 }
 
 size_t CapturingBoundNetLog::GetSize() const {

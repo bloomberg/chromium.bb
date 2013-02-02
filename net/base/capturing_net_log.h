@@ -74,6 +74,10 @@ class CapturingNetLog : public NetLog {
   // Returns the list of all entries in the log.
   void GetEntries(CapturedEntryList* entry_list) const;
 
+  // Fills |entry_list| with all entries in the log from the specified Source.
+  void GetEntriesForSource(NetLog::Source source,
+                           CapturedEntryList* entry_list) const;
+
   // Returns number of entries in the log.
   size_t GetSize() const;
 
@@ -120,6 +124,11 @@ class CapturingBoundNetLog {
 
   // Fills |entry_list| with all entries in the log.
   void GetEntries(CapturingNetLog::CapturedEntryList* entry_list) const;
+
+  // Fills |entry_list| with all entries in the log from the specified Source.
+  void GetEntriesForSource(
+      NetLog::Source source,
+      CapturingNetLog::CapturedEntryList* entry_list) const;
 
   // Returns number of entries in the log.
   size_t GetSize() const;
