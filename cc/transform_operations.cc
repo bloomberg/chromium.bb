@@ -3,15 +3,22 @@
 // found in the LICENSE file.
 
 #include "cc/transform_operations.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/gfx/vector3d_f.h"
 
 namespace cc {
 
-TransformOperations::TransformOperations() {
+TransformOperations::TransformOperations()
+    : decomposed_transform_dirty_(true) {
 }
 
 TransformOperations::TransformOperations(const TransformOperations& other) {
   operations_ = other.operations_;
+  decomposed_transform_dirty_ = other.decomposed_transform_dirty_;
+  if (!decomposed_transform_dirty_) {
+    decomposed_transform_.reset(
+        new gfx::DecomposedTransform(*other.decomposed_transform_.get()));
+  }
 }
 
 TransformOperations::~TransformOperations() {
@@ -62,6 +69,7 @@ void TransformOperations::AppendTranslate(double x, double y, double z) {
   to_add.translate.y = y;
   to_add.translate.z = z;
   operations_.push_back(to_add);
+  decomposed_transform_dirty_ = true;
 }
 
 void TransformOperations::AppendRotate(double x, double y, double z,
@@ -74,6 +82,7 @@ void TransformOperations::AppendRotate(double x, double y, double z,
   to_add.rotate.axis.z = z;
   to_add.rotate.angle = degrees;
   operations_.push_back(to_add);
+  decomposed_transform_dirty_ = true;
 }
 
 void TransformOperations::AppendScale(double x, double y, double z) {
@@ -84,6 +93,7 @@ void TransformOperations::AppendScale(double x, double y, double z) {
   to_add.scale.y = y;
   to_add.scale.z = z;
   operations_.push_back(to_add);
+  decomposed_transform_dirty_ = true;
 }
 
 void TransformOperations::AppendSkew(double x, double y) {
@@ -94,6 +104,7 @@ void TransformOperations::AppendSkew(double x, double y) {
   to_add.skew.x = x;
   to_add.skew.y = y;
   operations_.push_back(to_add);
+  decomposed_transform_dirty_ = true;
 }
 
 void TransformOperations::AppendPerspective(double depth) {
@@ -102,6 +113,7 @@ void TransformOperations::AppendPerspective(double depth) {
   to_add.type = TransformOperation::TransformOperationPerspective;
   to_add.perspective_depth = depth;
   operations_.push_back(to_add);
+  decomposed_transform_dirty_ = true;
 }
 
 void TransformOperations::AppendMatrix(const gfx::Transform& matrix) {
@@ -109,6 +121,7 @@ void TransformOperations::AppendMatrix(const gfx::Transform& matrix) {
   to_add.matrix = matrix;
   to_add.type = TransformOperation::TransformOperationMatrix;
   operations_.push_back(to_add);
+  decomposed_transform_dirty_ = true;
 }
 
 void TransformOperations::AppendIdentity() {
@@ -148,9 +161,40 @@ bool TransformOperations::BlendInternal(const TransformOperations& from,
     return true;
   }
 
-  *result = Apply();
-  gfx::Transform from_transform = from.Apply();
-  return result->Blend(from_transform, progress);
+  if (progress <= 0.0) {
+    *result = from.Apply();
+    return true;
+  }
+
+  if (progress >= 1.0) {
+    *result = Apply();
+    return true;
+  }
+
+  if (!ComputeDecomposedTransform() || !from.ComputeDecomposedTransform())
+    return false;
+
+  gfx::DecomposedTransform to_return;
+  if (!gfx::BlendDecomposedTransforms(&to_return,
+                                      *decomposed_transform_.get(),
+                                      *from.decomposed_transform_.get(),
+                                      progress))
+    return false;
+
+  *result = ComposeTransform(to_return);
+  return true;
+}
+
+bool TransformOperations::ComputeDecomposedTransform() const {
+  if (decomposed_transform_dirty_) {
+    if (!decomposed_transform_)
+      decomposed_transform_.reset(new gfx::DecomposedTransform());
+    gfx::Transform transform = Apply();
+    if (!gfx::DecomposeTransform(decomposed_transform_.get(), transform))
+      return false;
+    decomposed_transform_dirty_ = false;
+  }
+  return true;
 }
 
 }  // namespace cc

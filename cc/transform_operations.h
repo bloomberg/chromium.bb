@@ -12,6 +12,10 @@
 #include "cc/transform_operation.h"
 #include "ui/gfx/transform.h"
 
+namespace gfx {
+struct DecomposedTransform;
+}
+
 namespace cc {
 
 // Transform operations are a decomposed transformation matrix. It can be
@@ -64,6 +68,12 @@ class CC_EXPORT TransformOperations {
                      gfx::Transform* result) const;
 
   std::vector<TransformOperation> operations_;
+
+  bool ComputeDecomposedTransform() const;
+
+  // For efficiency, we cache the decomposed transform.
+  mutable scoped_ptr<gfx::DecomposedTransform> decomposed_transform_;
+  mutable bool decomposed_transform_dirty_;
 };
 
 }  // namespace cc
