@@ -63,7 +63,7 @@ class PublicRefCountedThreadSafeDtorInHeader
       PublicRefCountedThreadSafeDtorInHeader>;
 };
 
-// Safe; should not have errors.
+// Unsafe; should error.
 class ProtectedRefCountedDtorInHeader
     : public base::RefCounted<ProtectedRefCountedDtorInHeader> {
  public:
@@ -75,6 +75,20 @@ class ProtectedRefCountedDtorInHeader
  private:
   friend class base::RefCounted<ProtectedRefCountedDtorInHeader>;
 };
+
+// Safe; should not have errors
+class ProtectedRefCountedVirtualDtorInHeader
+    : public base::RefCounted<ProtectedRefCountedVirtualDtorInHeader> {
+ public:
+  ProtectedRefCountedVirtualDtorInHeader() {}
+
+ protected:
+  virtual ~ProtectedRefCountedVirtualDtorInHeader() {}
+
+ private:
+  friend class base::RefCounted<ProtectedRefCountedVirtualDtorInHeader>;
+};
+
 
 // Safe; should not have errors.
 class PrivateRefCountedDtorInHeader
@@ -90,16 +104,16 @@ class PrivateRefCountedDtorInHeader
 // Unsafe; A grandchild class ends up exposing their parent and grandparent's
 // destructors.
 class DerivedProtectedToPublicInHeader
-    : public ProtectedRefCountedDtorInHeader {
+    : public ProtectedRefCountedVirtualDtorInHeader {
  public:
   DerivedProtectedToPublicInHeader() {}
-  ~DerivedProtectedToPublicInHeader() {}
+  virtual ~DerivedProtectedToPublicInHeader() {}
 };
 
 // Unsafe; A grandchild ends up implicitly exposing their parent and
 // grantparent's destructors.
 class ImplicitDerivedProtectedToPublicInHeader
-    : public ProtectedRefCountedDtorInHeader {
+    : public ProtectedRefCountedVirtualDtorInHeader {
  public:
   ImplicitDerivedProtectedToPublicInHeader() {}
 };

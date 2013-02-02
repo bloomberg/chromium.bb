@@ -10,10 +10,17 @@ namespace {
 
 // Unsafe; should error.
 class AnonymousDerivedProtectedToPublicInImpl
-    : public ProtectedRefCountedDtorInHeader {
+    : public ProtectedRefCountedVirtualDtorInHeader {
  public:
   AnonymousDerivedProtectedToPublicInImpl() {}
-  ~AnonymousDerivedProtectedToPublicInImpl() {}
+  virtual ~AnonymousDerivedProtectedToPublicInImpl() {}
+};
+
+// Unsafe; but we should only warn on the base class.
+class AnonymousDerivedProtectedOnDerived
+    : public ProtectedRefCountedDtorInHeader {
+ protected:
+  ~AnonymousDerivedProtectedOnDerived() {}
 };
 
 }  // namespace
@@ -56,7 +63,7 @@ int main() {
   PublicRefCountedDtorInHeader bad;
   PublicRefCountedDtorInImpl also_bad;
 
-  ProtectedRefCountedDtorInHeader* protected_ok = NULL;
+  ProtectedRefCountedDtorInHeader* even_badder = NULL;
   PrivateRefCountedDtorInHeader* private_ok = NULL;
 
   DerivedProtectedToPublicInHeader still_bad;

@@ -33,14 +33,19 @@ const char kNoExplicitDtor[] =
     "[chromium-style] Classes that are ref-counted should have explicit "
     "destructors that are declared protected or private.";
 const char kPublicDtor[] =
-    "[chromium-style] Classes that are ref-counted should not have "
-    "public destructors.";
+    "[chromium-style] Classes that are ref-counted should have "
+    "destructors that are declared protected or private.";
+const char kProtectedNonVirtualDtor[] =
+    "[chromium-style] Classes that are ref-counted and have non-private "
+    "destructors should declare their destructor virtual.";
 const char kNoteInheritance[] =
     "[chromium-style] %0 inherits from %1 here";
 const char kNoteImplicitDtor[] =
     "[chromium-style] No explicit destructor for %0 defined";
 const char kNotePublicDtor[] =
     "[chromium-style] Public destructor declared here";
+const char kNoteProtectedNonVirtualDtor[] =
+    "[chromium-style] Protected non-virtual destructor declared here";
 
 bool TypeHasNonTrivialDtor(const Type* type) {
   if (const CXXRecordDecl* cxx_r = type->getPointeeCXXRecordDecl())
@@ -74,6 +79,8 @@ class FindBadConstructsConsumer : public ChromeClassTester {
         getErrorLevel(), kNoExplicitDtor);
     diag_public_dtor_ = diagnostic().getCustomDiagID(
         getErrorLevel(), kPublicDtor);
+    diag_protected_non_virtual_dtor_ = diagnostic().getCustomDiagID(
+        getErrorLevel(), kProtectedNonVirtualDtor);
 
     // Registers notes to make it easier to interpret warnings.
     diag_note_inheritance_ = diagnostic().getCustomDiagID(
@@ -82,6 +89,8 @@ class FindBadConstructsConsumer : public ChromeClassTester {
         DiagnosticsEngine::Note, kNoteImplicitDtor);
     diag_note_public_dtor_ = diagnostic().getCustomDiagID(
         DiagnosticsEngine::Note, kNotePublicDtor);
+    diag_note_protected_non_virtual_dtor_ = diagnostic().getCustomDiagID(
+        DiagnosticsEngine::Note, kNoteProtectedNonVirtualDtor);
   }
 
   virtual void CheckChromeClass(SourceLocation record_location,
@@ -118,9 +127,11 @@ class FindBadConstructsConsumer : public ChromeClassTester {
 
   unsigned diag_no_explicit_dtor_;
   unsigned diag_public_dtor_;
+  unsigned diag_protected_non_virtual_dtor_;
   unsigned diag_note_inheritance_;
   unsigned diag_note_implicit_dtor_;
   unsigned diag_note_public_dtor_;
+  unsigned diag_note_protected_non_virtual_dtor_;
 
   // Prints errors if the constructor/destructor weight is too heavy.
   void CheckCtorDtorWeight(SourceLocation record_location,
@@ -459,6 +470,18 @@ class FindBadConstructsConsumer : public ChromeClassTester {
     }
   }
 
+  unsigned DiagnosticForIssue(RefcountIssue issue) {
+    switch (issue) {
+      case ImplicitDestructor:
+        return diag_no_explicit_dtor_;
+      case PublicDestructor:
+        return diag_public_dtor_;
+      case None:
+        assert(false && "Do not call DiagnosticForIssue with issue None");
+        return 0;
+    }
+  }
+
   // Check |record| to determine if it has any problematic refcounting
   // issues and, if so, print them as warnings/errors based on the current
   // value of getErrorLevel().
@@ -485,15 +508,19 @@ class FindBadConstructsConsumer : public ChromeClassTester {
     // Easy check: Check to see if the current type is problematic.
     SourceLocation loc;
     RefcountIssue issue = CheckRecordForRefcountIssue(record, loc);
-    if (issue == ImplicitDestructor) {
-      diagnostic().Report(loc, diag_no_explicit_dtor_);
+    if (issue != None) {
+      diagnostic().Report(loc, DiagnosticForIssue(issue));
       PrintInheritanceChain(refcounted_path.front());
       return;
     }
-    if (issue == PublicDestructor) {
-      diagnostic().Report(loc, diag_public_dtor_);
-      PrintInheritanceChain(refcounted_path.front());
-      return;
+    if (CXXDestructorDecl* dtor =
+        refcounted_path.begin()->back().Class->getDestructor()) {
+      if (dtor->getAccess() == AS_protected &&
+          !dtor->isVirtual()) {
+        loc = dtor->getInnerLocStart();
+        diagnostic().Report(loc, diag_protected_non_virtual_dtor_);
+        return;
+      }
     }
 
     // Long check: Check all possible base classes for problematic
