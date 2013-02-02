@@ -23,6 +23,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/win/wrapped_window_proc.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/shell.h"
@@ -306,15 +307,13 @@ void AcceleratedPresenter::Present(HDC dc) {
 void AcceleratedPresenter::AsyncCopyTo(
     const gfx::Rect& requested_src_subrect,
     const gfx::Size& dst_size,
-    void* buf,
-    const base::Callback<void(bool)>& callback) {
+    const base::Callback<void(bool, const SkBitmap&)>& callback) {
   present_thread_->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&AcceleratedPresenter::DoCopyToAndAcknowledge,
                  this,
                  requested_src_subrect,
                  dst_size,
-                 buf,
                  base::MessageLoopProxy::current(),
                  callback));
 }
@@ -322,19 +321,21 @@ void AcceleratedPresenter::AsyncCopyTo(
 void AcceleratedPresenter::DoCopyToAndAcknowledge(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    void* buf,
     scoped_refptr<base::SingleThreadTaskRunner> callback_runner,
-    const base::Callback<void(bool)>& callback) {
+    const base::Callback<void(bool, const SkBitmap&)>& callback) {
 
-  bool result = DoCopyTo(src_subrect, dst_size, buf);
+  SkBitmap target;
+  bool result = DoCopyTo(src_subrect, dst_size, &target);
+  if (!result)
+    target.reset();
   callback_runner->PostTask(
       FROM_HERE,
-      base::Bind(callback, result));
+      base::Bind(callback, result, target));
 }
 
 bool AcceleratedPresenter::DoCopyTo(const gfx::Rect& requested_src_subrect,
                                     const gfx::Size& dst_size,
-                                    void* buf) {
+                                    SkBitmap* bitmap) {
   TRACE_EVENT2(
       "gpu", "CopyTo",
       "width", dst_size.width(),
@@ -410,19 +411,19 @@ bool AcceleratedPresenter::DoCopyTo(const gfx::Rect& requested_src_subrect,
 
   {
     TRACE_EVENT0("gpu", "memcpy");
-    size_t bytesPerDstRow = 4 * dst_size.width();
-    size_t bytesPerSrcRow = locked_rect.Pitch;
-    if (bytesPerDstRow == bytesPerSrcRow) {
-      memcpy(reinterpret_cast<int8*>(buf),
-             reinterpret_cast<int8*>(locked_rect.pBits),
-             bytesPerDstRow * dst_size.height());
-    } else {
-      for (int i = 0; i < dst_size.height(); ++i) {
-        memcpy(reinterpret_cast<int8*>(buf) + bytesPerDstRow * i,
-               reinterpret_cast<int8*>(locked_rect.pBits) + bytesPerSrcRow * i,
-               bytesPerDstRow);
-      }
+
+    bitmap->setConfig(SkBitmap::kARGB_8888_Config,
+                      dst_size.width(), dst_size.height(),
+                      locked_rect.Pitch);
+    if (!bitmap->allocPixels()) {
+      final_surface->UnlockRect();
+      return false;
     }
+    bitmap->setIsOpaque(true);
+
+    memcpy(reinterpret_cast<int8*>(bitmap->getPixels()),
+           reinterpret_cast<int8*>(locked_rect.pBits),
+           locked_rect.Pitch * dst_size.height());
   }
   final_surface->UnlockRect();
 
@@ -854,9 +855,8 @@ void AcceleratedSurface::Present(HDC dc) {
 void AcceleratedSurface::AsyncCopyTo(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    void* buf,
-    const base::Callback<void(bool)>& callback) {
-  presenter_->AsyncCopyTo(src_subrect, dst_size, buf, callback);
+    const base::Callback<void(bool, const SkBitmap&)>& callback) {
+  presenter_->AsyncCopyTo(src_subrect, dst_size, callback);
 }
 
 void AcceleratedSurface::Suspend() {

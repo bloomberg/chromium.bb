@@ -66,7 +66,6 @@
 #include "media/base/bind_to_loop.h"
 #include "media/video/capture/video_capture_types.h"
 #include "skia/ext/image_operations.h"
-#include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect.h"
@@ -147,7 +146,7 @@ class BackingStoreCopier : public WebContentsObserver {
     NO_SOURCE,
   };
   typedef base::Callback<void(Result result,
-                              scoped_ptr<skia::PlatformBitmap> capture,
+                              const SkBitmap& capture,
                               const base::Time& capture_time)> DoneCB;
 
   BackingStoreCopier(int render_process_id, int render_view_id);
@@ -178,8 +177,9 @@ class BackingStoreCopier : public WebContentsObserver {
   void LookUpAndObserveWebContents();
 
   void CopyFromBackingStoreComplete(int frame_number,
-                                    scoped_ptr<skia::PlatformBitmap> capture,
-                                    const DoneCB& done_cb, bool success);
+                                    const DoneCB& done_cb,
+                                    bool success,
+                                    const SkBitmap& result);
 
   // The "starting point" to find the capture source.
   const int render_process_id_;
@@ -211,7 +211,7 @@ class VideoFrameRenderer {
   // invoke |done_cb| with a pointer to the result.  The caller must guarantee
   // Release() will be called after the result is no longer needed.
   void Render(int frame_number,
-              scoped_ptr<skia::PlatformBitmap> capture,
+              const SkBitmap& capture,
               int frame_width, int frame_height,
               const DoneCB& done_cb);
 
@@ -220,7 +220,7 @@ class VideoFrameRenderer {
 
  private:
   void RenderOnRenderThread(int frame_number,
-                            scoped_ptr<skia::PlatformBitmap> capture,
+                            const SkBitmap& capture,
                             int frame_width, int frame_height,
                             const DoneCB& done_cb);
 
@@ -338,8 +338,7 @@ void BackingStoreCopier::StartCopy(int frame_number,
     if (!web_contents()) {  // No source yet.
       LookUpAndObserveWebContents();
       if (!web_contents()) {  // No source ever.
-        done_cb.Run(NO_SOURCE,
-                    scoped_ptr<skia::PlatformBitmap>(NULL), base::Time());
+        done_cb.Run(NO_SOURCE, SkBitmap(), base::Time());
         return;
       }
     }
@@ -354,8 +353,7 @@ void BackingStoreCopier::StartCopy(int frame_number,
 
     if (!rwh) {
       // Transient failure state (e.g., a RenderView is being replaced).
-      done_cb.Run(TRANSIENT_ERROR,
-                  scoped_ptr<skia::PlatformBitmap>(NULL), base::Time());
+      done_cb.Run(TRANSIENT_ERROR, SkBitmap(), base::Time());
       return;
     }
   }
@@ -378,40 +376,32 @@ void BackingStoreCopier::StartCopy(int frame_number,
     }
   }
 
-  // TODO(miu): Look into tweaking the interface to CopyFromBackingStore, since
-  // it seems poor to have to allocate a new skia::PlatformBitmap as an output
-  // buffer for each successive frame (rather than reuse buffers).  Perhaps
-  // PlatformBitmap itself should only re-Allocate when necessary?
-  skia::PlatformBitmap* const bitmap = new skia::PlatformBitmap();
-  scoped_ptr<skia::PlatformBitmap> capture(bitmap);
   rwh->CopyFromBackingStore(
       gfx::Rect(),
       fitted_size,
       base::Bind(&BackingStoreCopier::CopyFromBackingStoreComplete,
                  base::Unretained(this),
-                 frame_number, base::Passed(&capture), done_cb),
-      bitmap);
+                 frame_number, done_cb));
 
   // TODO(miu): When a tab is not visible to the user, rendering stops.  For
   // mirroring, however, it's important that rendering continues to happen.
 }
 
 void BackingStoreCopier::CopyFromBackingStoreComplete(
-    int frame_number, scoped_ptr<skia::PlatformBitmap> capture,
-    const DoneCB& done_cb, bool success) {
+    int frame_number,
+    const DoneCB& done_cb,
+    bool success,
+    const SkBitmap& frame) {
   // Note: No restriction on which thread invokes this method but, currently,
   // it's always the UI BrowserThread.
-
   TRACE_EVENT_ASYNC_END1("mirroring", "Capture", this,
                          "frame_number", frame_number);
-
   if (success) {
-    done_cb.Run(OK, capture.Pass(), base::Time::Now());
+    done_cb.Run(OK, frame, base::Time::Now());
   } else {
     // Capture can fail due to transient issues, so just skip this frame.
     DVLOG(1) << "CopyFromBackingStore was not successful; skipping frame.";
-    done_cb.Run(TRANSIENT_ERROR,
-                scoped_ptr<skia::PlatformBitmap>(NULL), base::Time());
+    done_cb.Run(TRANSIENT_ERROR, SkBitmap(), base::Time());
   }
 }
 
@@ -423,27 +413,26 @@ VideoFrameRenderer::VideoFrameRenderer()
 }
 
 void VideoFrameRenderer::Render(int frame_number,
-                                scoped_ptr<skia::PlatformBitmap> capture,
+                                const SkBitmap& capture,
                                 int frame_width, int frame_height,
                                 const DoneCB& done_cb) {
   render_thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&VideoFrameRenderer::RenderOnRenderThread,
                  base::Unretained(this),
-                 frame_number, base::Passed(&capture),
+                 frame_number, capture,
                  frame_width, frame_height, done_cb));
 }
 
 void VideoFrameRenderer::RenderOnRenderThread(
     int frame_number,
-    scoped_ptr<skia::PlatformBitmap> capture,
+    const SkBitmap& captured_bitmap,
     int frame_width, int frame_height,
     const DoneCB& done_cb) {
   DCHECK_EQ(render_thread_.message_loop(), MessageLoop::current());
 
   TRACE_EVENT1("mirroring", "RenderFrame", "frame_number", frame_number);
 
-  const SkBitmap& captured_bitmap = capture->GetBitmap();
   gfx::Size fitted_size;
   {
     SkAutoLockPixels locker(captured_bitmap);
@@ -714,7 +703,7 @@ class CaptureMachine
   void SnapshotComplete(int frame_number,
                         const base::Time& start_time,
                         BackingStoreCopier::Result result,
-                        scoped_ptr<skia::PlatformBitmap> capture,
+                        const SkBitmap& capture,
                         const base::Time& capture_time);
   void RenderComplete(int frame_number,
                       const base::Time& capture_time,
@@ -964,7 +953,7 @@ void CaptureMachine::StartSnapshot() {
 void CaptureMachine::SnapshotComplete(int frame_number,
                                       const base::Time& start_time,
                                       BackingStoreCopier::Result result,
-                                      scoped_ptr<skia::PlatformBitmap> capture,
+                                      const SkBitmap& capture,
                                       const base::Time& capture_time) {
   DCHECK_EQ(manager_thread_.message_loop(), MessageLoop::current());
 
@@ -981,11 +970,10 @@ void CaptureMachine::SnapshotComplete(int frame_number,
                           base::Time::Now() - start_time);
       if (num_renders_pending_ <= 1) {
         ++num_renders_pending_;
-        DCHECK(capture);
         DCHECK(!capture_time.is_null());
         renderer_.Render(
             frame_number,
-            capture.Pass(),
+            capture,
             settings_.width, settings_.height,
             media::BindToLoop(manager_thread_.message_loop_proxy(),
                               base::Bind(&CaptureMachine::RenderComplete, this,

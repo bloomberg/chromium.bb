@@ -146,8 +146,7 @@ class RenderWidgetHostViewAura
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
-      const base::Callback<void(bool)>& callback,
-      skia::PlatformBitmap* output) OVERRIDE;
+      const base::Callback<void(bool, const SkBitmap&)>& callback) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void AcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params_in_pixel,
@@ -325,7 +324,8 @@ class RenderWidgetHostViewAura
   // AdjustSurfaceProtection.
   static void CopyFromCompositingSurfaceFinished(
       base::WeakPtr<RenderWidgetHostViewAura> render_widget_host_view,
-      const base::Callback<void(bool)>& callback,
+      const SkBitmap& bitmap,
+      const base::Callback<void(bool, const SkBitmap&)>& callback,
       bool result);
 
   ui::Compositor* GetCompositor();

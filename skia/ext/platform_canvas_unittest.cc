@@ -14,11 +14,13 @@
 #include <unistd.h>
 #endif
 
+#include "base/memory/scoped_ptr.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_device.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#include "SkColor.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 
 namespace skia {
 
@@ -394,5 +396,64 @@ TEST(PlatformCanvas, TranslateLayer) {
 }
 
 #endif  // #if !defined(USE_AURA)
+
+TEST(PlatformBitmapTest, PlatformBitmap) {
+  const int kWidth = 400;
+  const int kHeight = 300;
+  scoped_ptr<PlatformBitmap> platform_bitmap(new PlatformBitmap);
+
+  EXPECT_TRUE(0 == platform_bitmap->GetSurface());
+  EXPECT_TRUE(platform_bitmap->GetBitmap().empty());
+  EXPECT_TRUE(platform_bitmap->GetBitmap().isNull());
+
+  EXPECT_TRUE(platform_bitmap->Allocate(kWidth, kHeight, /*is_opaque=*/false));
+
+  EXPECT_TRUE(0 != platform_bitmap->GetSurface());
+  EXPECT_FALSE(platform_bitmap->GetBitmap().empty());
+  EXPECT_FALSE(platform_bitmap->GetBitmap().isNull());
+  EXPECT_EQ(kWidth, platform_bitmap->GetBitmap().width());
+  EXPECT_EQ(kHeight, platform_bitmap->GetBitmap().height());
+  EXPECT_LE(platform_bitmap->GetBitmap().width()*4,
+            platform_bitmap->GetBitmap().rowBytes());
+  EXPECT_EQ(SkBitmap::kARGB_8888_Config,  // Same for all platforms.
+            platform_bitmap->GetBitmap().config());
+  EXPECT_TRUE(platform_bitmap->GetBitmap().lockPixelsAreWritable());
+  EXPECT_TRUE(platform_bitmap->GetBitmap().pixelRef()->isLocked());
+  EXPECT_EQ(1, platform_bitmap->GetBitmap().pixelRef()->getRefCnt());
+
+  *(platform_bitmap->GetBitmap().getAddr32(10, 20)) = 0xDEED1020;
+  *(platform_bitmap->GetBitmap().getAddr32(20, 30)) = 0xDEED2030;
+
+  SkBitmap sk_bitmap = platform_bitmap->GetBitmap();
+  sk_bitmap.lockPixels();
+
+  EXPECT_EQ(2, platform_bitmap->GetBitmap().pixelRef()->getRefCnt());
+  EXPECT_EQ(2, sk_bitmap.pixelRef()->getRefCnt());
+
+  EXPECT_EQ(0xDEED1020, *sk_bitmap.getAddr32(10, 20));
+  EXPECT_EQ(0xDEED2030, *sk_bitmap.getAddr32(20, 30));
+
+  *(platform_bitmap->GetBitmap().getAddr32(30, 40)) = 0xDEED3040;
+
+  // The SkBitmaps derived from a PlatformBitmap must be capable of outliving
+  // the PlatformBitmap.
+  platform_bitmap.reset();
+
+  EXPECT_EQ(1, sk_bitmap.pixelRef()->getRefCnt());
+
+  EXPECT_EQ(0xDEED1020, *sk_bitmap.getAddr32(10, 20));
+  EXPECT_EQ(0xDEED2030, *sk_bitmap.getAddr32(20, 30));
+  EXPECT_EQ(0xDEED3040, *sk_bitmap.getAddr32(30, 40));
+  sk_bitmap.unlockPixels();
+
+  EXPECT_EQ(NULL, sk_bitmap.getPixels());
+
+  sk_bitmap.lockPixels();
+  EXPECT_EQ(0xDEED1020, *sk_bitmap.getAddr32(10, 20));
+  EXPECT_EQ(0xDEED2030, *sk_bitmap.getAddr32(20, 30));
+  EXPECT_EQ(0xDEED3040, *sk_bitmap.getAddr32(30, 40));
+  sk_bitmap.unlockPixels();
+}
+
 
 }  // namespace skia

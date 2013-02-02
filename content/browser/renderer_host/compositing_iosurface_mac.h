@@ -15,6 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -58,14 +59,14 @@ class CompositingIOSurfaceMac {
   // into |out|. The copied region is specified with |src_pixel_subrect| and
   // the data is transformed so that it fits in |dst_pixel_size|.
   // |src_pixel_subrect| and |dst_pixel_size| are not in DIP but in pixel.
-  // Caller must ensure that |out| is allocated with the size no less than
-  // |4 * dst_pixel_size.width() * dst_pixel_size.height()| bytes.
+  // Caller must ensure that |out| is allocated to dimensions that match
+  // dst_pixel_size, with no additional padding.
   // |callback| is invoked when the operation is completed or failed.
   // Do no call this method again before |callback| is invoked.
   void CopyTo(const gfx::Rect& src_pixel_subrect,
               const gfx::Size& dst_pixel_size,
-              void* out,
-              const base::Callback<void(bool)>& callback);
+              const SkBitmap& out,
+              const base::Callback<void(bool, const SkBitmap&)>& callback);
 
   // Unref the IOSurface and delete the associated GL texture. If the GPU
   // process is no longer referencing it, this will delete the IOSurface.
@@ -170,7 +171,7 @@ class CompositingIOSurfaceMac {
       pixel_buffer = 0;
       use_fence = false;
       fence = 0;
-      out_buf = NULL;
+      out_buf.reset();
       callback.Reset();
     }
 
@@ -183,8 +184,8 @@ class CompositingIOSurfaceMac {
     GLuint fence;
     gfx::Rect src_rect;
     gfx::Size dest_size;
-    void* out_buf;
-    base::Callback<void(bool)> callback;
+    SkBitmap out_buf;
+    base::Callback<void(bool, const SkBitmap&)> callback;
   };
 
   CompositingIOSurfaceMac(IOSurfaceSupport* io_surface_support,
@@ -221,11 +222,12 @@ class CompositingIOSurfaceMac {
   // Two implementations of CopyTo() in synchronous and asynchronous mode.
   bool SynchronousCopyTo(const gfx::Rect& src_pixel_subrect,
                          const gfx::Size& dst_pixel_size,
-                         void* out);
-  bool AsynchronousCopyTo(const gfx::Rect& src_pixel_subrect,
-                          const gfx::Size& dst_pixel_size,
-                          void* out,
-                          const base::Callback<void(bool)>& callback);
+                         const SkBitmap& out);
+  bool AsynchronousCopyTo(
+      const gfx::Rect& src_pixel_subrect,
+      const gfx::Size& dst_pixel_size,
+      const SkBitmap& out,
+      const base::Callback<void(bool, const SkBitmap&)>& callback);
   void FinishCopy();
   void CleanupResourcesForCopy();
 

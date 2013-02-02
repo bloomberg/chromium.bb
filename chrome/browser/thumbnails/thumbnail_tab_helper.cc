@@ -16,7 +16,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "skia/ext/platform_canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/screen.h"
@@ -28,6 +27,8 @@
 #endif
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ThumbnailTabHelper);
+
+class SkBitmap;
 
 // Overview
 // --------
@@ -61,15 +62,14 @@ void UpdateThumbnail(const ThumbnailingContext& context,
           << context.score.ToString();
 }
 
-void ProcessCanvas(ThumbnailingContext* context,
-                   ThumbnailingAlgorithm* algorithm,
-                   skia::PlatformBitmap* temp_bitmap,
-                   bool succeeded) {
+void ProcessCapturedBitmap(ThumbnailingContext* context,
+                           ThumbnailingAlgorithm* algorithm,
+                           bool succeeded,
+                           const SkBitmap& bitmap) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (!succeeded)
     return;
 
-  SkBitmap bitmap = temp_bitmap->GetBitmap();
   algorithm->ProcessBitmap(context, base::Bind(&UpdateThumbnail), bitmap);
 }
 
@@ -116,12 +116,10 @@ void AsyncProcessThumbnail(content::WebContents* web_contents,
       &copy_rect,
       &copy_size);
 
-  skia::PlatformBitmap* temp_bitmap = new skia::PlatformBitmap;
   render_widget_host->CopyFromBackingStore(
       copy_rect,
       copy_size,
-      base::Bind(&ProcessCanvas, context, algorithm, base::Owned(temp_bitmap)),
-      temp_bitmap);
+      base::Bind(&ProcessCapturedBitmap, context, algorithm));
 }
 
 }  // namespace

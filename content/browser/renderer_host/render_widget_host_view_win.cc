@@ -816,23 +816,19 @@ BackingStore* RenderWidgetHostViewWin::AllocBackingStore(
 void RenderWidgetHostViewWin::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    const base::Callback<void(bool)>& callback,
-    skia::PlatformBitmap* output) {
-  base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
+    const base::Callback<void(bool, const SkBitmap&)>& callback) {
+  base::ScopedClosureRunner scoped_callback_runner(
+      base::Bind(callback, false, SkBitmap()));
   if (!accelerated_surface_.get())
     return;
 
   if (dst_size.IsEmpty())
     return;
 
-  if (!output->Allocate(dst_size.width(), dst_size.height(), true))
-    return;
-
   scoped_callback_runner.Release();
   accelerated_surface_->AsyncCopyTo(
       src_subrect,
       dst_size,
-      output->GetBitmap().getPixels(),
       callback);
 }
 

@@ -44,18 +44,18 @@ class StubRenderWidgetHost : public RenderWidgetHostImpl {
   virtual void CopyFromBackingStore(
       const gfx::Rect& src_rect,
       const gfx::Size& accelerated_dst_size,
-      const base::Callback<void(bool)>& callback,
-      skia::PlatformBitmap* output) OVERRIDE {
-    DCHECK(output);
-    EXPECT_TRUE(output->Allocate(kTestWidth, kTestHeight, true));
-    SkBitmap bitmap = output->GetBitmap();
+      const base::Callback<void(bool, const SkBitmap&)>& callback) OVERRIDE {
+    // Although it's not necessary, use a PlatformBitmap here (instead of a
+    // regular SkBitmap) to exercise possible threading issues.
+    scoped_ptr<skia::PlatformBitmap> platform_bitmap(new skia::PlatformBitmap);
+    EXPECT_TRUE(platform_bitmap->Allocate(kTestWidth, kTestHeight, false));
     {
-      SkAutoLockPixels locker(bitmap);
+      SkAutoLockPixels locker(platform_bitmap->GetBitmap());
       base::AutoLock guard(lock_);
-      bitmap.eraseColor(color_);
+      platform_bitmap->GetBitmap().eraseColor(color_);
     }
 
-    callback.Run(true);
+    callback.Run(true, platform_bitmap->GetBitmap());
   }
 
  private:

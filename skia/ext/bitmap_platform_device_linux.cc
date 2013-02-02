@@ -186,27 +186,34 @@ SkCanvas* CreatePlatformCanvas(int width, int height, bool is_opaque,
 }
 
 // Port of PlatformBitmap to linux
-
 PlatformBitmap::~PlatformBitmap() {
   cairo_destroy(surface_);
 }
 
 bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
-  cairo_surface_t* surf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
-                                                     width, height);
+  // The SkBitmap allocates and owns the bitmap memory; PlatformBitmap owns the
+  // cairo drawing context tied to the bitmap. The SkBitmap's pixelRef can
+  // outlive the PlatformBitmap if additional copies are made.
+  int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
+  bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width, height, stride);
+  if (!bitmap_.allocPixels())  // Using the default allocator.
+    return false;
+  bitmap_.setIsOpaque(is_opaque);
+
+  cairo_surface_t* surf = cairo_image_surface_create_for_data(
+      reinterpret_cast<unsigned char*>(bitmap_.getPixels()),
+      CAIRO_FORMAT_ARGB32,
+      width,
+      height,
+      stride);
   if (cairo_surface_status(surf) != CAIRO_STATUS_SUCCESS) {
     cairo_surface_destroy(surf);
     return false;
   }
 
-  bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width, height,
-                    cairo_image_surface_get_stride(surf));
-  bitmap_.setPixels(cairo_image_surface_get_data(surf));
-  bitmap_.setIsOpaque(is_opaque);
-
   surface_ = cairo_create(surf);
   cairo_surface_destroy(surf);
   return true;
 }
-    
+
 }  // namespace skia

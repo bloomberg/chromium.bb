@@ -118,9 +118,8 @@ BackingStore* TestRenderWidgetHostView::AllocBackingStore(
 void TestRenderWidgetHostView::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    const base::Callback<void(bool)>& callback,
-    skia::PlatformBitmap* output) {
-  callback.Run(false);
+    const base::Callback<void(bool, const SkBitmap&)>& callback) {
+  callback.Run(false, SkBitmap());
 }
 
 void TestRenderWidgetHostView::OnAcceleratedCompositingStateChange() {

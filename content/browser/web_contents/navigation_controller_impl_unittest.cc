@@ -3030,8 +3030,10 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   NavigationControllerImpl& controller = controller_impl();
 
   // Prepare some data to use as screenshot for each navigation.
-  skia::PlatformBitmap bitmap;
-  ASSERT_TRUE(bitmap.Allocate(1, 1, false));
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
+  ASSERT_TRUE(bitmap.allocPixels());
+  bitmap.setIsOpaque(false);
   NavigationEntryImpl* entry;
 
   // Navigate enough times to make sure that some screenshots are purged.
@@ -3044,7 +3046,7 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   for (int i = 0; i < controller.GetEntryCount(); ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));
-    controller.OnScreenshotTaken(entry->GetUniqueID(), &bitmap, true);
+    controller.OnScreenshotTaken(entry->GetUniqueID(), true, bitmap);
     EXPECT_TRUE(entry->screenshot());
   }
 
@@ -3052,7 +3054,7 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   EXPECT_EQ(13, controller.GetEntryCount());
   entry = NavigationEntryImpl::FromNavigationEntry(
       controller.GetEntryAtIndex(11));
-  controller.OnScreenshotTaken(entry->GetUniqueID(), &bitmap, true);
+  controller.OnScreenshotTaken(entry->GetUniqueID(), true, bitmap);
 
   for (int i = 0; i < 2; ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
@@ -3073,14 +3075,14 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   for (int i = 0; i < controller.GetEntryCount() - 1; ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));
-    controller.OnScreenshotTaken(entry->GetUniqueID(), &bitmap, true);
+    controller.OnScreenshotTaken(entry->GetUniqueID(), true, bitmap);
   }
 
   for (int i = 10; i <= 12; ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));
     EXPECT_FALSE(entry->screenshot()) << "Screenshot " << i << " not purged";
-    controller.OnScreenshotTaken(entry->GetUniqueID(), &bitmap, true);
+    controller.OnScreenshotTaken(entry->GetUniqueID(), true, bitmap);
   }
 
   // Navigate to index 7 and assign screenshot to all entries.
@@ -3090,7 +3092,7 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   for (int i = 0; i < controller.GetEntryCount() - 1; ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));
-    controller.OnScreenshotTaken(entry->GetUniqueID(), &bitmap, true);
+    controller.OnScreenshotTaken(entry->GetUniqueID(), true, bitmap);
   }
 
   for (int i = 0; i < 2; ++i) {

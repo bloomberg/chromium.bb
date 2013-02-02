@@ -380,10 +380,9 @@ void RenderWidgetHostViewAndroid::SetBackground(const SkBitmap& background) {
 void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    const base::Callback<void(bool)>& callback,
-    skia::PlatformBitmap* output) {
+    const base::Callback<void(bool, const SkBitmap&)>& callback) {
   NOTIMPLEMENTED();
-  callback.Run(false);
+  callback.Run(false, SkBitmap());
 }
 
 void RenderWidgetHostViewAndroid::ShowDisambiguationPopup(

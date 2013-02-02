@@ -1708,23 +1708,20 @@ bool TabsCaptureVisibleTabFunction::RunImpl() {
     error_ = keys::kInternalVisibleTabCaptureError;
     return false;
   }
-  skia::PlatformBitmap* temp_bitmap = new skia::PlatformBitmap;
   render_view_host->CopyFromBackingStore(
       gfx::Rect(),
       view->GetViewBounds().size(),
       base::Bind(&TabsCaptureVisibleTabFunction::CopyFromBackingStoreComplete,
-                 this,
-                 base::Owned(temp_bitmap)),
-      temp_bitmap);
+                 this));
   return true;
 }
 
 void TabsCaptureVisibleTabFunction::CopyFromBackingStoreComplete(
-    skia::PlatformBitmap* bitmap,
-    bool succeeded) {
+    bool succeeded,
+    const SkBitmap& bitmap) {
   if (succeeded) {
     VLOG(1) << "captureVisibleTab() got image from backing store.";
-    SendResultFromBitmap(bitmap->GetBitmap());
+    SendResultFromBitmap(bitmap);
     return;
   }
 

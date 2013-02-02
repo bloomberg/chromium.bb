@@ -10,7 +10,9 @@
 #include "base/basictypes.h"
 #include "skia/ext/platform_device.h"
 #include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 
 namespace skia {
 
@@ -163,6 +165,7 @@ class SK_API ScopedPlatformPaint {
   ScopedPlatformPaint& operator=(const ScopedPlatformPaint&);
 };
 
+// PlatformBitmap holds a PlatformSurface that can also be used as an SkBitmap.
 class SK_API PlatformBitmap {
  public:
   PlatformBitmap();
@@ -176,12 +179,16 @@ class SK_API PlatformBitmap {
 
   // Return the skia bitmap, which will be empty if Allocate() did not
   // return true.
+  //
+  // The resulting SkBitmap holds a refcount on the underlying platform surface,
+  // so the surface will remain allocated so long as the SkBitmap or its copies
+  // stay around.
   const SkBitmap& GetBitmap() { return bitmap_; }
 
  private:
   SkBitmap bitmap_;
-  PlatformSurface surface_; // initialized to 0
-  intptr_t platform_extra_; // initialized to 0, specific to each platform
+  PlatformSurface surface_;  // initialized to 0
+  intptr_t platform_extra_;  // platform specific, initialized to 0
 
   DISALLOW_COPY_AND_ASSIGN(PlatformBitmap);
 };

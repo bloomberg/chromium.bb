@@ -205,8 +205,7 @@ class RenderWidgetHostViewWin
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
-      const base::Callback<void(bool)>& callback,
-      skia::PlatformBitmap* output) OVERRIDE;
+      const base::Callback<void(bool, const SkBitmap&)>& callback) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void ProcessAckedTouchEvent(const WebKit::WebTouchEvent& touch,
                                       InputEventAckState ack_result) OVERRIDE;

@@ -15,11 +15,8 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_type.h"
 
+class SkBitmap;
 struct ViewHostMsg_FrameNavigate_Params;
-
-namespace skia {
-class PlatformBitmap;
-}
 
 namespace content {
 class NavigationEntryImpl;
@@ -325,8 +322,8 @@ class CONTENT_EXPORT NavigationControllerImpl
   // The callback invoked when taking the screenshot of the page is complete.
   // This sets the screenshot on the navigation entry.
   void OnScreenshotTaken(int unique_id,
-                         skia::PlatformBitmap* bitmap,
-                         bool success);
+                         bool success,
+                         const SkBitmap& bitmap);
 
   // Removes the screenshot for the entry (and updates the count as
   // appropriate).

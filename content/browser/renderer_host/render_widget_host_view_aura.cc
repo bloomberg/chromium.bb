@@ -711,31 +711,35 @@ BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
 void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    const base::Callback<void(bool)>& callback,
-    skia::PlatformBitmap* output) {
-  base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
+    const base::Callback<void(bool, const SkBitmap&)>& callback) {
+  base::ScopedClosureRunner scoped_callback_runner(
+      base::Bind(callback, false, SkBitmap()));
 
   if (!current_surface_)
     return;
 
   gfx::Size dst_size_in_pixel = ConvertSizeToPixel(this, dst_size);
-  if (!output->Allocate(
-      dst_size_in_pixel.width(), dst_size_in_pixel.height(), true))
+
+  SkBitmap output;
+  output.setConfig(SkBitmap::kARGB_8888_Config,
+                   dst_size_in_pixel.width(), dst_size_in_pixel.height());
+  if (!output.allocPixels())
     return;
+  output.setIsOpaque(true);
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   GLHelper* gl_helper = factory->GetGLHelper();
   if (!gl_helper)
     return;
 
-  unsigned char* addr = static_cast<unsigned char*>(
-      output->GetBitmap().getPixels());
+  unsigned char* addr = static_cast<unsigned char*>(output.getPixels());
   scoped_callback_runner.Release();
   // Wrap the callback with an internal handler so that we can inject our
   // own completion handlers (where we can try to free the frontbuffer).
   base::Callback<void(bool)> wrapper_callback = base::Bind(
       &RenderWidgetHostViewAura::CopyFromCompositingSurfaceFinished,
       AsWeakPtr(),
+      output,
       callback);
   ++pending_thumbnail_tasks_;
 
@@ -1012,9 +1016,10 @@ void RenderWidgetHostViewAura::SetSurfaceNotInUseByCompositor(
 
 void RenderWidgetHostViewAura::CopyFromCompositingSurfaceFinished(
     base::WeakPtr<RenderWidgetHostViewAura> render_widget_host_view,
-    const base::Callback<void(bool)>& callback,
+    const SkBitmap& bitmap,
+    const base::Callback<void(bool, const SkBitmap&)>& callback,
     bool result) {
-  callback.Run(result);
+  callback.Run(result, bitmap);
 
   if (!render_widget_host_view.get())
     return;

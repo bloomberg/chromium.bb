@@ -17,6 +17,7 @@
 #include "ui/base/range/range.h"
 #include "ui/surface/transport_dib.h"
 
+class SkBitmap;
 class WebCursor;
 
 struct AccessibilityHostMsg_NotificationParams;
@@ -33,10 +34,6 @@ struct WebPluginGeometry;
 namespace WebKit {
 struct WebScreenInfo;
 }
-
-namespace skia {
-class PlatformBitmap;
-};
 
 namespace content {
 class BackingStore;
@@ -164,8 +161,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
-      const base::Callback<void(bool)>& callback,
-      skia::PlatformBitmap* output) = 0;
+      const base::Callback<void(bool, const SkBitmap&)>& callback) = 0;
 
   // Called when accelerated compositing state changes.
   virtual void OnAcceleratedCompositingStateChange() = 0;

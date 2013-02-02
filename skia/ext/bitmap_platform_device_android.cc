@@ -82,8 +82,9 @@ SkCanvas* CreatePlatformCanvas(int width, int height, bool is_opaque,
 }
 
 // Port of PlatformBitmap to android
-
-PlatformBitmap::~PlatformBitmap() {}
+PlatformBitmap::~PlatformBitmap() {
+  // Nothing to do.
+}
 
 bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
   bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width, height);

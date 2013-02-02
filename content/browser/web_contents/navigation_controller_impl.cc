@@ -501,20 +501,17 @@ void NavigationControllerImpl::TakeScreenshot() {
   if (!take_screenshot_callback_.is_null())
     take_screenshot_callback_.Run(render_view_host);
 
-  skia::PlatformBitmap* temp_bitmap = new skia::PlatformBitmap;
   render_view_host->CopyFromBackingStore(gfx::Rect(),
       view->GetViewBounds().size(),
       base::Bind(&NavigationControllerImpl::OnScreenshotTaken,
                  base::Unretained(this),
-                 entry->GetUniqueID(),
-                 base::Owned(temp_bitmap)),
-      temp_bitmap);
+                 entry->GetUniqueID()));
 }
 
 void NavigationControllerImpl::OnScreenshotTaken(
     int unique_id,
-    skia::PlatformBitmap* bitmap,
-    bool success) {
+    bool success,
+    const SkBitmap& bitmap) {
   NavigationEntryImpl* entry = NULL;
   for (NavigationEntries::iterator i = entries_.begin();
        i != entries_.end();
@@ -536,7 +533,7 @@ void NavigationControllerImpl::OnScreenshotTaken(
   }
 
   std::vector<unsigned char> data;
-  if (gfx::PNGCodec::EncodeBGRASkBitmap(bitmap->GetBitmap(), true, &data)) {
+  if (gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &data)) {
     if (!entry->screenshot())
       ++screenshot_count_;
     entry->SetScreenshotPNGData(data);

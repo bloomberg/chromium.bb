@@ -33,7 +33,8 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
     ui::DisableTestCompositor();
   }
 
-  void FinishCopyFromBackingStore(bool expected_result, bool result) {
+  void FinishCopyFromBackingStore(bool expected_result, bool result,
+                                  const SkBitmap& bitmap) {
     ASSERT_EQ(expected_result, result);
     finish_called_ = true;
   }
@@ -73,13 +74,11 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
     ASSERT_LT(increment, 50);
   }
 
-  skia::PlatformBitmap bitmap;
   rwh->CopyFromBackingStore(
       gfx::Rect(),
       size,
       base::Bind(&RenderWidgetHostViewBrowserTest::FinishCopyFromBackingStore,
-                 base::Unretained(this), false),
-      &bitmap);
+                 base::Unretained(this), false));
 
   // Delete the surface before the callback is run. This is synchronous until
   // we get to the copy_timer_, so we will always end up in the destructor

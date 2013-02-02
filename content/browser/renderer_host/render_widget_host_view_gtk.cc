@@ -1020,9 +1020,9 @@ BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
 void RenderWidgetHostViewGtk::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& /* dst_size */,
-    const base::Callback<void(bool)>& callback,
-    skia::PlatformBitmap* output) {
-  base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
+    const base::Callback<void(bool, const SkBitmap&)>& callback) {
+  base::ScopedClosureRunner scoped_callback_runner(
+      base::Bind(callback, false, SkBitmap()));
 
   gfx::Rect src_subrect_in_view = src_subrect;
   src_subrect_in_view.Offset(GetViewBounds().OffsetFromOrigin());
@@ -1036,10 +1036,15 @@ void RenderWidgetHostViewGtk::CopyFromCompositingSurface(
   if (!image.get())
     return;
 
-  if (!output->Allocate(src_subrect.width(), src_subrect.height(), true))
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                   image->width,
+                   image->height,
+                   image->bytes_per_line);
+  if (!bitmap.allocPixels())
     return;
+  bitmap.setIsOpaque(true);
 
-  const SkBitmap& bitmap = output->GetBitmap();
   const size_t bitmap_size = bitmap.getSize();
   DCHECK_EQ(bitmap_size,
             static_cast<size_t>(image->height * image->bytes_per_line));
@@ -1047,7 +1052,7 @@ void RenderWidgetHostViewGtk::CopyFromCompositingSurface(
   memcpy(pixels, image->data, bitmap_size);
 
   scoped_callback_runner.Release();
-  callback.Run(true);
+  callback.Run(true, bitmap);
 }
 
 void RenderWidgetHostViewGtk::AcceleratedSurfaceBuffersSwapped(

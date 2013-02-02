@@ -64,8 +64,7 @@ class SURFACE_EXPORT AcceleratedPresenter
   void Present(HDC dc);
   void AsyncCopyTo(const gfx::Rect& src_subrect,
                    const gfx::Size& dst_size,
-                   void* buf,
-                   const base::Callback<void(bool)>& callback);
+                   const base::Callback<void(bool, const SkBitmap&)>& callback);
   void Invalidate();
 
 #if defined(USE_AURA)
@@ -91,12 +90,11 @@ class SURFACE_EXPORT AcceleratedPresenter
   void DoCopyToAndAcknowledge(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
-      void* buf,
       scoped_refptr<base::SingleThreadTaskRunner> callback_runner,
-      const base::Callback<void(bool)>& callback);
+      const base::Callback<void(bool, const SkBitmap&)>& callback);
   bool DoCopyTo(const gfx::Rect& src_subrect,
                 const gfx::Size& dst_size,
-                void* buf);
+                SkBitmap* bitmap);
 
   void PresentWithGDI(HDC dc);
   gfx::Size GetWindowSize();
@@ -174,8 +172,7 @@ class SURFACE_EXPORT AcceleratedSurface {
   // |4 * dst_size.width() * dst_size.height()| bytes.
   void AsyncCopyTo(const gfx::Rect& src_subrect,
                    const gfx::Size& dst_size,
-                   void* buf,
-                   const base::Callback<void(bool)>& callback);
+                   const base::Callback<void(bool, const SkBitmap&)>& callback);
 
   // Temporarily release resources until a new surface is asynchronously
   // presented. Present will not be able to represent the last surface after

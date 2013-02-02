@@ -935,9 +935,9 @@ BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
 void RenderWidgetHostViewMac::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    const base::Callback<void(bool)>& callback,
-    skia::PlatformBitmap* output) {
-  base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
+    const base::Callback<void(bool, const SkBitmap&)>& callback) {
+  base::ScopedClosureRunner scoped_callback_runner(
+      base::Bind(callback, false, SkBitmap()));
   if (!compositing_iosurface_.get() ||
       !compositing_iosurface_->HasIOSurface())
     return;
@@ -945,9 +945,14 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
   float scale = ScaleFactor(cocoa_view_);
   gfx::Size dst_pixel_size = gfx::ToFlooredSize(
       gfx::ScaleSize(dst_size, scale));
-  if (!output->Allocate(
-      dst_pixel_size.width(), dst_pixel_size.height(), true))
+
+  SkBitmap output;
+  output.setConfig(SkBitmap::kARGB_8888_Config,
+                   dst_pixel_size.width(), dst_pixel_size.height());
+  if (!output.allocPixels())
     return;
+  output.setIsOpaque(true);
+
   scoped_callback_runner.Release();
 
   // Convert |src_subrect| from the views coordinate (upper-left origin) into
@@ -960,7 +965,7 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
   compositing_iosurface_->CopyTo(
       src_pixel_gl_subrect,
       dst_pixel_size,
-      output->GetBitmap().getPixels(),
+      output,
       callback);
 }
 

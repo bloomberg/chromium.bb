@@ -37,10 +37,6 @@ struct InjectDetails;
 }  // namespace api
 }  // namespace extensions
 
-namespace skia {
-class PlatformBitmap;
-}
-
 // Windows
 class WindowsGetFunction : public SyncExtensionFunction {
   virtual ~WindowsGetFunction() {}
@@ -201,8 +197,8 @@ class TabsCaptureVisibleTabFunction : public AsyncExtensionFunction,
   void SendResultFromBitmap(const SkBitmap& screen_capture);
 
  private:
-  void CopyFromBackingStoreComplete(skia::PlatformBitmap* bitmap,
-                                    bool succeeded);
+  void CopyFromBackingStoreComplete(bool succeeded,
+                                    const SkBitmap& bitmap);
 
   content::NotificationRegistrar registrar_;
 

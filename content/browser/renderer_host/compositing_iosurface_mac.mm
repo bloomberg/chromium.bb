@@ -301,7 +301,7 @@ CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
   // Make sure we still run the callback if we are being destroyed with an
   // active copy_timer_ that has not yet fired.
   if (copy_context_.started)
-    copy_context_.callback.Run(false);
+    copy_context_.callback.Run(false, SkBitmap());
 
   CVDisplayLinkRelease(display_link_);
   CGLSetCurrentContext(cglContext_);
@@ -435,8 +435,8 @@ void CompositingIOSurfaceMac::DrawIOSurface(NSView* view, float scale_factor) {
 void CompositingIOSurfaceMac::CopyTo(
       const gfx::Rect& src_pixel_subrect,
       const gfx::Size& dst_pixel_size,
-      void* out,
-      const base::Callback<void(bool)>& callback) {
+      const SkBitmap& out,
+      const base::Callback<void(bool, const SkBitmap&)>& callback) {
   CGLSetCurrentContext(cglContext_);
 
   // Using PBO crashes on Intel drivers but not on newer Mountain Lion
@@ -457,9 +457,9 @@ void CompositingIOSurfaceMac::CopyTo(
 
   if (async_copy) {
     if (!ret)
-      callback.Run(false);
+      callback.Run(false, SkBitmap());
   } else {
-    callback.Run(ret);
+    callback.Run(ret, out);
   }
 }
 
@@ -637,7 +637,7 @@ void CompositingIOSurfaceMac::StopDisplayLink() {
 bool CompositingIOSurfaceMac::SynchronousCopyTo(
       const gfx::Rect& src_pixel_subrect,
       const gfx::Size& dst_pixel_size,
-      void* out) {
+      const SkBitmap& out) {
   if (!MapIOSurfaceToTexture(io_surface_handle_))
     return false;
 
@@ -701,7 +701,7 @@ bool CompositingIOSurfaceMac::SynchronousCopyTo(
   CGLFlushDrawable(cglContext_);
 
   glReadPixels(0, 0, dst_pixel_size.width(), dst_pixel_size.height(),
-               GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, out);
+               GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, out.getPixels());
 
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); CHECK_GL_ERROR();
 
@@ -713,8 +713,8 @@ bool CompositingIOSurfaceMac::SynchronousCopyTo(
 bool CompositingIOSurfaceMac::AsynchronousCopyTo(
       const gfx::Rect& src_pixel_subrect,
       const gfx::Size& dst_pixel_size,
-      void* out,
-      const base::Callback<void(bool)>& callback) {
+      const SkBitmap& out,
+      const base::Callback<void(bool, const SkBitmap&)>& callback) {
   if (copy_context_.started)
     return false;
 
@@ -840,7 +840,6 @@ void CompositingIOSurfaceMac::FinishCopy() {
     }
   }
   copy_timer_.Stop();
-
   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, copy_context_.pixel_buffer);
   CHECK_GL_ERROR();
 
@@ -848,16 +847,18 @@ void CompositingIOSurfaceMac::FinishCopy() {
   CHECK_GL_ERROR();
 
   if (buf) {
-    memcpy(copy_context_.out_buf, buf, copy_context_.dest_size.GetArea() * 4);
+    SkAutoLockPixels bitmap_lock(copy_context_.out_buf);
+    memcpy(copy_context_.out_buf.getPixels(), buf,
+           copy_context_.dest_size.GetArea() * 4);
     glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB); CHECK_GL_ERROR();
   }
   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0); CHECK_GL_ERROR();
 
-  base::Callback<void(bool)> callback = copy_context_.callback;
+  base::Callback<void(bool, const SkBitmap&)> callback = copy_context_.callback;
   CleanupResourcesForCopy();
   CGLSetCurrentContext(0);
 
-  callback.Run(buf != NULL);
+  callback.Run(buf != NULL, copy_context_.out_buf);
 }
 
 void CompositingIOSurfaceMac::CleanupResourcesForCopy() {
