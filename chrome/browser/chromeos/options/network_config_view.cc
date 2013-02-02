@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/shell.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
@@ -21,6 +22,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "ui/aura/root_window.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -31,6 +33,8 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
+
+using views::Widget;
 
 namespace {
 
@@ -117,11 +121,7 @@ bool NetworkConfigView::Show(Network* network, gfx::NativeWindow parent) {
   if (GetActiveDialog() != NULL)
     return false;
   NetworkConfigView* view = new NetworkConfigView(network);
-  if (parent == NULL)
-    parent = GetDialogParent();
-  views::Widget* window = views::Widget::CreateWindowWithParent(view, parent);
-  window->SetAlwaysOnTop(true);
-  window->Show();
+  view->ShowDialog(parent);
   return true;
 }
 
@@ -131,11 +131,7 @@ bool NetworkConfigView::ShowForType(ConnectionType type,
   if (GetActiveDialog() != NULL)
     return false;
   NetworkConfigView* view = new NetworkConfigView(type);
-  if (parent == NULL)
-    parent = GetDialogParent();
-  views::Widget* window = views::Widget::CreateWindowWithParent(view, parent);
-  window->SetAlwaysOnTop(true);
-  window->Show();
+  view->ShowDialog(parent);
   return true;
 }
 
@@ -244,6 +240,18 @@ void NetworkConfigView::ViewHierarchyChanged(
   if (is_add && child == this) {
     AddChildView(child_config_view_);
   }
+}
+
+void NetworkConfigView::ShowDialog(gfx::NativeWindow parent) {
+  if (parent == NULL)
+    parent = GetDialogParent();
+  // Failed connections may result in a pop-up with no natural parent window,
+  // so provide a fallback context on the active display.
+  Widget* window = parent ?
+      Widget::CreateWindowWithParent(this, parent) :
+      Widget::CreateWindowWithContext(this, ash::Shell::GetActiveRootWindow());
+  window->SetAlwaysOnTop(true);
+  window->Show();
 }
 
 void NetworkConfigView::CreateAdvancedButton() {

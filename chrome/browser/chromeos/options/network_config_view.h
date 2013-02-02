@@ -90,6 +90,9 @@ class NetworkConfigView : public views::DialogDelegateView,
   explicit NetworkConfigView(ConnectionType type);
   virtual ~NetworkConfigView();
 
+  // Creates and shows a dialog containing this view.
+  void ShowDialog(gfx::NativeWindow parent);
+
   // Creates an "Advanced" button in the lower-left corner of the dialog.
   void CreateAdvancedButton();
 
