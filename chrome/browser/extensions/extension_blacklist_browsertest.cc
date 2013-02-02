@@ -169,7 +169,12 @@ class ExtensionBlacklistBrowserTest : public ExtensionBrowserTest {
   ExtensionBlacklistBrowserTest()
       : info_a_("install/install.crx", "ogdbpbegnmindpdjfafpmpicikegejdj"),
         info_b_("autoupdate/v1.crx",   "ogjcoiohnmldgjemafoockdghcjciccf"),
-        info_c_("hosted_app.crx",      "kbmnembihfiondgfjekmnmcbddelicoi") {}
+        info_c_("hosted_app.crx",      "kbmnembihfiondgfjekmnmcbddelicoi"),
+        // Just disable the safe browsing altogether.
+        // TODO(kalman): a different approach will be needed when the blacklist
+        // comes entirely from safe browsing.
+        scoped_blacklist_database_manager_(
+            scoped_refptr<SafeBrowsingDatabaseManager>(NULL)) {}
 
   virtual ~ExtensionBlacklistBrowserTest() {}
 
@@ -230,6 +235,8 @@ class ExtensionBlacklistBrowserTest : public ExtensionBrowserTest {
     }
     return testing::AssertionSuccess();
   }
+
+  Blacklist::ScopedDatabaseManagerForTest scoped_blacklist_database_manager_;
 };
 
 // Stage 1: blacklisting when there weren't any extensions installed when the

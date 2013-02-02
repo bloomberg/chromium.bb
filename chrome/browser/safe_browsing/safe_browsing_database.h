@@ -36,7 +36,8 @@ class SafeBrowsingDatabaseFactory {
   virtual SafeBrowsingDatabase* CreateSafeBrowsingDatabase(
       bool enable_download_protection,
       bool enable_client_side_whitelist,
-      bool enable_download_whitelist) = 0;
+      bool enable_download_whitelist,
+      bool enable_extension_blacklist) = 0;
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseFactory);
 };
@@ -66,7 +67,8 @@ class SafeBrowsingDatabase {
   // database feature.
   static SafeBrowsingDatabase* Create(bool enable_download_protection,
                                       bool enable_client_side_whitelist,
-                                      bool enable_download_whitelist);
+                                      bool enable_download_whitelist,
+                                      bool enable_extension_blacklist);
 
   // Makes the passed |factory| the factory used to instantiate
   // a SafeBrowsingDatabase. This is used for tests.
@@ -118,6 +120,14 @@ class SafeBrowsingDatabase {
   // This function could ONLY be accessed from the IO thread.
   virtual bool ContainsDownloadWhitelistedUrl(const GURL& url) = 0;
   virtual bool ContainsDownloadWhitelistedString(const std::string& str) = 0;
+
+  // Populates |prefix_hits| with any prefixes in |prefixes| that have matches
+  // in the database.
+  //
+  // This function can ONLY be accessed from the creation thread.
+  virtual bool ContainsExtensionPrefixes(
+      const std::vector<SBPrefix>& prefixes,
+      std::vector<SBPrefix>* prefix_hits) = 0;
 
   // A database transaction should look like:
   //
@@ -175,6 +185,10 @@ class SafeBrowsingDatabase {
   static FilePath DownloadWhitelistDBFilename(
       const FilePath& download_whitelist_base_filename);
 
+  // Filename for extension blacklist database.
+  static FilePath ExtensionBlacklistDBFilename(
+      const FilePath& extension_blacklist_base_filename);
+
   // Enumerate failures for histogramming purposes.  DO NOT CHANGE THE
   // ORDERING OF THESE VALUES.
   enum FailureType {
@@ -196,6 +210,9 @@ class SafeBrowsingDatabase {
     FAILURE_DATABASE_PREFIX_SET_READ,
     FAILURE_DATABASE_PREFIX_SET_WRITE,
     FAILURE_DATABASE_PREFIX_SET_DELETE,
+    FAILURE_EXTENSION_BLACKLIST_UPDATE_BEGIN,
+    FAILURE_EXTENSION_BLACKLIST_UPDATE_FINISH,
+    FAILURE_EXTENSION_BLACKLIST_DELETE,
 
     // Memory space for histograms is determined by the max.  ALWAYS
     // ADD NEW VALUES BEFORE THIS ONE.
@@ -221,7 +238,8 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   SafeBrowsingDatabaseNew(SafeBrowsingStore* browse_store,
                           SafeBrowsingStore* download_store,
                           SafeBrowsingStore* csd_whitelist_store,
-                          SafeBrowsingStore* download_whitelist_store);
+                          SafeBrowsingStore* download_whitelist_store,
+                          SafeBrowsingStore* extension_blacklist_store);
 
   // Create a database with a browse store. This is a legacy interface that
   // useds Sqlite.
@@ -244,6 +262,9 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   virtual bool ContainsDownloadWhitelistedUrl(const GURL& url) OVERRIDE;
   virtual bool ContainsDownloadWhitelistedString(
       const std::string& str) OVERRIDE;
+  virtual bool ContainsExtensionPrefixes(
+      const std::vector<SBPrefix>& prefixes,
+      std::vector<SBPrefix>* prefix_hits) OVERRIDE;
   virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists) OVERRIDE;
   virtual void InsertChunks(const std::string& list_name,
                             const SBChunkList& chunks) OVERRIDE;
@@ -309,7 +330,10 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   void InsertSubChunks(safe_browsing_util::ListType list_id,
                        const SBChunkList& chunks);
 
-  void UpdateDownloadStore();
+  // Returns the size in bytes of the store after the update.
+  int64 UpdateHashPrefixStore(const FilePath& store_filename,
+                               SafeBrowsingStore* store,
+                               FailureType failure_type);
   void UpdateBrowseStore();
   void UpdateWhitelistStore(const FilePath& store_filename,
                             SafeBrowsingStore* store,
@@ -344,8 +368,13 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   FilePath download_whitelist_filename_;
   scoped_ptr<SafeBrowsingStore> download_whitelist_store_;
 
+  // For extension IDs.
+  FilePath extension_blacklist_filename_;
+  scoped_ptr<SafeBrowsingStore> extension_blacklist_store_;
+
   SBWhitelist csd_whitelist_;
   SBWhitelist download_whitelist_;
+  SBWhitelist extension_blacklist_;
 
   // Cached browse store related full-hash items, ordered by prefix for
   // efficient scanning.

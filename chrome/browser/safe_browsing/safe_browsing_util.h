@@ -9,6 +9,7 @@
 
 #include <cstring>
 #include <deque>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -147,6 +148,9 @@ enum SBThreatType {
   // Url detected by the client-side phishing model.  Note that unlike the
   // above values, this does not correspond to a downloaded list.
   SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+
+  // The Chrome extension or app (given by its ID) is malware.
+  SB_THREAT_TYPE_EXTENSION,
 };
 
 // SBEntry ---------------------------------------------------------------------
@@ -287,6 +291,8 @@ extern const char kBinHashList[];
 extern const char kCsdWhiteList[];
 // SafeBrowsing download whitelist list name.
 extern const char kDownloadWhiteList[];
+// SafeBrowsing extension list name.
+extern const char kExtensionBlacklist[];
 
 enum ListType {
   INVALID = -1,
@@ -299,6 +305,8 @@ enum ListType {
   // available for a potential second list that we would store in the
   // csd-whitelist store file.
   DOWNLOADWHITELIST = 6,
+  // See above comment. Leave 7 available.
+  EXTENSIONBLACKLIST = 8,
 };
 
 // Maps a list name to ListType.
@@ -337,6 +345,7 @@ bool IsPhishingList(const std::string& list_name);
 bool IsMalwareList(const std::string& list_name);
 bool IsBadbinurlList(const std::string& list_name);
 bool IsBadbinhashList(const std::string& list_name);
+bool IsExtensionList(const std::string& list_name);
 
 GURL GeneratePhishingReportUrl(const std::string& report_page,
                                const std::string& url_to_report,

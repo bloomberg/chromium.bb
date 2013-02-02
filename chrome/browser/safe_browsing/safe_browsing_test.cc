@@ -247,6 +247,10 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
     command_line->AppendSwitch(
         switches::kDisableClientSidePhishingDetection);
 
+    // TODO(kalman): Generate new testing data that includes the extension
+    // blacklist.
+    command_line->AppendSwitch(switches::kSbDisableExtensionBlacklist);
+
     // Point to the testing server for all SafeBrowsing requests.
     std::string url_prefix = test_server_->GetURL("safebrowsing").spec();
     command_line->AppendSwitchASCII(switches::kSbURLPrefix, url_prefix);

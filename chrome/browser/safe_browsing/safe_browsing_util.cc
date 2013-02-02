@@ -163,6 +163,7 @@ const char kBinUrlList[] = "goog-badbinurl-shavar";
 const char kBinHashList[] = "goog-badbin-digestvar-disabled";
 const char kCsdWhiteList[] = "goog-csdwhite-sha256";
 const char kDownloadWhiteList[] = "goog-downloadwhite-digest256";
+const char kExtensionBlacklist[] = "goog-badcrxids-digestvar";
 
 ListType GetListId(const std::string& name) {
   ListType id;
@@ -178,6 +179,8 @@ ListType GetListId(const std::string& name) {
     id = CSDWHITELIST;
   } else if (name == safe_browsing_util::kDownloadWhiteList) {
     id = DOWNLOADWHITELIST;
+  } else if (name == safe_browsing_util::kExtensionBlacklist) {
+    id = EXTENSIONBLACKLIST;
   } else {
     id = INVALID;
   }
@@ -203,6 +206,9 @@ bool GetListName(ListType list_id, std::string* list) {
       break;
     case DOWNLOADWHITELIST:
       *list = safe_browsing_util::kDownloadWhiteList;
+      break;
+    case EXTENSIONBLACKLIST:
+      *list = safe_browsing_util::kExtensionBlacklist;
       break;
     default:
       return false;
@@ -467,6 +473,10 @@ bool IsBadbinurlList(const std::string& list_name) {
 
 bool IsBadbinhashList(const std::string& list_name) {
   return list_name.compare(kBinHashList) == 0;
+}
+
+bool IsExtensionList(const std::string& list_name) {
+  return list_name.compare(kExtensionBlacklist) == 0;
 }
 
 GURL GeneratePhishingReportUrl(const std::string& report_page,

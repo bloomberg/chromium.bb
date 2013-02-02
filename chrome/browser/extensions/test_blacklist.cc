@@ -31,9 +31,7 @@ bool TestBlacklist::IsBlacklisted(const std::string& extension_id) {
   std::set<std::string> blacklist_set;
   blacklist_->GetBlacklistedIDs(id_set,
                                 base::Bind(&Assign, &blacklist_set));
-  base::RunLoop run_loop;
-  MessageLoop::current()->PostTask(FROM_HERE, run_loop.QuitClosure());
-  run_loop.Run();
+  base::RunLoop().RunUntilIdle();
   return blacklist_set.count(extension_id) > 0;
 }
 

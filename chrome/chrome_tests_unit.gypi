@@ -106,6 +106,8 @@
         'browser/download/download_test_file_activity_observer.h',
         'browser/download/test_download_shelf.cc',
         'browser/download/test_download_shelf.h',
+        'browser/extensions/fake_safe_browsing_database_manager.cc',
+        'browser/extensions/fake_safe_browsing_database_manager.h',
         'browser/extensions/mock_extension_special_storage_policy.cc',
         'browser/extensions/mock_extension_special_storage_policy.h',
         'browser/extensions/test_blacklist.cc',
@@ -299,6 +301,13 @@
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../chromeos/chromeos.gyp:chromeos_test_support',
+          ],
+        }],
+        ['safe_browsing!=1', {
+          'sources/': [
+            ['exclude', '^browser/extensions/blacklist_unittest.cc'],
+            ['exclude', '^browser/extensions/fake_safe_browsing_database_manager.cc'],
+            ['exclude', '^browser/extensions/fake_safe_browsing_database_manager.h'],
           ],
         }],
         ['toolkit_uses_gtk == 1', {
@@ -1834,14 +1843,8 @@
             'FULL_SAFE_BROWSING',
           ],
         }],
-        # TODO(sgurun): enable tests.
-        ['safe_browsing==2', {
-          'sources/': [
-            ['exclude', '^browser/safe_browsing/'],
-            ['exclude', '^renderer/safe_browsing/'],
-          ],
-        }],
-        ['safe_browsing==0', {
+        # TODO(sgurun): enable tests for safe_browsing==2.
+        ['safe_browsing!=1', {
           'sources/': [
             ['exclude', '^browser/safe_browsing/'],
             ['exclude', '^renderer/safe_browsing/'],
@@ -2258,6 +2261,11 @@
         ['enable_managed_users!=1', {
           'sources/': [
             ['exclude', '^browser/managed_mode/'],
+          ],
+        }],
+        ['safe_browsing!=1', {
+          'sources/': [
+            ['exclude', '^browser/extensions/blacklist_unittest.cc'],
           ],
         }],
       ],
