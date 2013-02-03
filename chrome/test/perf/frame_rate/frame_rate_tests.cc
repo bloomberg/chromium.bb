@@ -136,6 +136,12 @@ class FrameRateTest
   }
 
   void RunTest(const std::string& name) {
+#if defined(USE_AURA)
+    if (!HasFlag(kUseGpu)) {
+      printf("Test skipped, Aura always runs with GPU\n");
+      return;
+    }
+#endif
 #if defined(OS_WIN)
     if (HasFlag(kUseGpu) && HasFlag(kIsGpuCanvasTest) &&
         base::win::OSInfo::GetInstance()->version() == base::win::VERSION_XP) {
