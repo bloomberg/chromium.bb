@@ -6,6 +6,7 @@
 
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/system_monitor/media_transfer_protocol_device_observer_linux.h"
+#include "chrome/common/chrome_switches.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 #if !defined(OS_CHROMEOS)
@@ -20,14 +21,12 @@
 #include "base/linux_util.h"
 #include "chrome/app/breakpad_linux.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/pref_names.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #endif
 
