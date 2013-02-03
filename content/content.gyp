@@ -22,6 +22,15 @@
           '../webkit/support/setup_third_party.gyp:third_party_headers',
         ],
       }],
+      # TODO(jschuh): Remove this after crbug.com/173851 gets fixed.
+      ['OS=="win" and target_arch=="x64"', {
+        'msvs_settings': {
+          'VCCLCompilerTool': {
+            'AdditionalOptions': ['/bigobj'],
+          },
+        },
+      }],
+      
     ],
   },
   'conditions': [
