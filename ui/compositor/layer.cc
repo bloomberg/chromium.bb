@@ -43,6 +43,7 @@ Layer::Layer()
       compositor_(NULL),
       parent_(NULL),
       visible_(true),
+      is_drawn_(true),
       force_render_surface_(false),
       fills_bounds_opaquely_(true),
       layer_updated_externally_(false),
@@ -70,6 +71,7 @@ Layer::Layer(LayerType type)
       compositor_(NULL),
       parent_(NULL),
       visible_(true),
+      is_drawn_(true),
       force_render_surface_(false),
       fills_bounds_opaquely_(true),
       layer_updated_externally_(false),
@@ -134,6 +136,7 @@ void Layer::Add(Layer* child) {
   children_.push_back(child);
   cc_layer_->addChild(child->cc_layer_);
   child->OnDeviceScaleFactorChanged(device_scale_factor_);
+  child->UpdateIsDrawn();
 }
 
 void Layer::Remove(Layer* child) {
@@ -367,10 +370,21 @@ bool Layer::GetTargetVisibility() const {
 }
 
 bool Layer::IsDrawn() const {
-  const Layer* layer = this;
-  while (layer && layer->visible_)
-    layer = layer->parent_;
-  return layer == NULL;
+  return is_drawn_;
+}
+
+void Layer::UpdateIsDrawn() {
+  bool updated_is_drawn = visible_ && (!parent_ || parent_->IsDrawn());
+
+  if (updated_is_drawn == is_drawn_)
+    return;
+
+  is_drawn_ = updated_is_drawn;
+  cc_layer_->setIsDrawable(is_drawn_ && type_ != LAYER_NOT_DRAWN);
+
+  for (size_t i = 0; i < children_.size(); ++i) {
+    children_[i]->UpdateIsDrawn();
+  }
 }
 
 bool Layer::ShouldDraw() const {
@@ -438,9 +452,9 @@ void Layer::SetExternalTexture(Texture* texture) {
     }
     cc_layer_->setAnchorPoint(gfx::PointF());
     cc_layer_->setContentsOpaque(fills_bounds_opaquely_);
-    cc_layer_->setOpacity(visible_ ? opacity_ : 0.f);
+    cc_layer_->setOpacity(opacity_);
     cc_layer_->setForceRenderSurface(force_render_surface_);
-    cc_layer_->setIsDrawable(true);
+    cc_layer_->setIsDrawable(IsDrawn());
     RecomputeTransform();
   }
   RecomputeDrawsContentAndUVRect();
@@ -642,13 +656,10 @@ void Layer::SetTransformImmediately(const gfx::Transform& transform) {
 }
 
 void Layer::SetOpacityImmediately(float opacity) {
-  bool schedule_draw = (opacity != opacity_ && IsDrawn());
   opacity_ = opacity;
 
-  if (visible_)
-    cc_layer_->setOpacity(opacity);
-  if (schedule_draw)
-    ScheduleDraw();
+  cc_layer_->setOpacity(opacity);
+  ScheduleDraw();
 }
 
 void Layer::SetVisibilityImmediately(bool visible) {
@@ -656,8 +667,7 @@ void Layer::SetVisibilityImmediately(bool visible) {
     return;
 
   visible_ = visible;
-  // TODO(piman): Expose a visibility flag on WebLayer.
-  cc_layer_->setOpacity(visible_ ? opacity_ : 0.f);
+  UpdateIsDrawn();
 }
 
 void Layer::SetBrightnessImmediately(float brightness) {

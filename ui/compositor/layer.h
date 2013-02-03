@@ -341,6 +341,8 @@ class COMPOSITOR_EXPORT Layer
   // Set all filters which got applied to the layer background.
   void SetLayerBackgroundFilters();
 
+  void UpdateIsDrawn();
+
   const LayerType type_;
 
   Compositor* compositor_;
@@ -358,6 +360,9 @@ class COMPOSITOR_EXPORT Layer
 
   // Visibility of this layer. See SetVisible/IsDrawn for more details.
   bool visible_;
+
+  // Computed based on the visibility of this layer and its ancestors.
+  bool is_drawn_;
 
   bool force_render_surface_;
 
