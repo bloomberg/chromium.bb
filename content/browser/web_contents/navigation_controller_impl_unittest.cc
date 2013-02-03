@@ -3103,9 +3103,9 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
 
   // Clear all screenshots.
   EXPECT_EQ(13, controller.GetEntryCount());
-  EXPECT_EQ(10, controller.screenshot_count_);
+  EXPECT_EQ(10, controller.GetScreenshotCount());
   controller.ClearAllScreenshots();
-  EXPECT_EQ(0, controller.screenshot_count_);
+  EXPECT_EQ(0, controller.GetScreenshotCount());
   for (int i = 0; i < controller.GetEntryCount(); ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));
