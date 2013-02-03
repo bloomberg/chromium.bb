@@ -49,8 +49,6 @@ void SigninManagerFactory::RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
   user_prefs->RegisterListPref(prefs::kReverseAutologinRejectedEmailList,
                                new ListValue,
                                PrefServiceSyncable::UNSYNCABLE_PREF);
-  user_prefs->RegisterBooleanPref(prefs::kIsGooglePlusUser, false,
-                                 PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 // static

@@ -48,8 +48,6 @@ namespace {
 
 const char kGetInfoDisplayEmailKey[] = "displayEmail";
 const char kGetInfoEmailKey[] = "email";
-const char kGetInfoServicesKey[] = "allServices";
-const char kGooglePlusServiceKey[] = "googleme";
 
 const char kGoogleAccountsUrl[] = "https://accounts.google.com";
 
@@ -543,7 +541,6 @@ void SigninManager::SignOut() {
   ClearTransientSigninData();
   authenticated_username_.clear();
   profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
-  profile_->GetPrefs()->ClearPref(prefs::kIsGooglePlusUser);
 
   // Erase (now) stale information from AboutSigninInternals.
   NotifyDiagnosticsObservers(USERNAME, "");
@@ -670,19 +667,6 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
     possibly_invalid_username_.clear();
     profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                     authenticated_username_);
-  }
-  UserInfoMap::const_iterator service_iter = data.find(kGetInfoServicesKey);
-  if (service_iter == data.end()) {
-    DLOG(WARNING) << "Could not retrieve services for account with email: "
-             << authenticated_username_ <<".";
-  } else {
-    DCHECK(service_iter->first == kGetInfoServicesKey);
-    std::vector<std::string> services;
-    base::SplitStringUsingSubstr(service_iter->second, ", ", &services);
-    std::vector<std::string>::const_iterator iter =
-        std::find(services.begin(), services.end(), kGooglePlusServiceKey);
-    bool isGPlusUser = (iter != services.end());
-    profile_->GetPrefs()->SetBoolean(prefs::kIsGooglePlusUser, isGPlusUser);
   }
   GoogleServiceSigninSuccessDetails details(authenticated_username_,
                                             password_);

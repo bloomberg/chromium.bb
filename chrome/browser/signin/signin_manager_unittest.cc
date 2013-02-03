@@ -291,7 +291,6 @@ TEST_F(SigninManagerTest, SignInClientLogin) {
 
   SimulateValidResponseClientLogin(true);
   EXPECT_FALSE(manager_->GetAuthenticatedUsername().empty());
-  EXPECT_TRUE(profile_->GetPrefs()->GetBoolean(prefs::kIsGooglePlusUser));
 
   // Should go into token service and stop.
   EXPECT_EQ(1U, google_login_success_.size());
@@ -439,7 +438,6 @@ TEST_F(SigninManagerTest, SignInClientLoginNoGPlus) {
 
   SimulateValidResponseClientLogin(false);
   EXPECT_FALSE(manager_->GetAuthenticatedUsername().empty());
-  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(prefs::kIsGooglePlusUser));
 }
 
 TEST_F(SigninManagerTest, ClearTransientSigninData) {
@@ -484,7 +482,6 @@ TEST_F(SigninManagerTest, SignOutClientLogin) {
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
   manager_->SignOut();
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(prefs::kIsGooglePlusUser));
   // Should not be persisted anymore
   manager_->Shutdown();
   manager_.reset(new SigninManager());

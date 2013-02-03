@@ -30,9 +30,6 @@ const char kHomePage[] = "homepage";
 // Did the user change the home page after install?
 const char kHomePageChanged[] = "homepage_changed";
 
-// Does this user have a Google+ Profile?
-const char kIsGooglePlusUser[] = "is_google_plus_user";
-
 // List of pages that are manually approved.
 const char kManagedModeWhitelist[] = "profile.managed.whitelist";
 // List of pages that are manually blocked.
