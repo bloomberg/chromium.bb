@@ -65,7 +65,7 @@
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE_P" file="win/app_window_minimize_active.png" />
       </if>
       <!-- TODO(estade): Replace these placeholder resources with real ones. -->
-      <structure type="chrome_scaled_image" name="IDR_AUTOFILL_DIALOG_MENU_BUTTON" file="autofill_dialog_menu_button_n.png" />
+      <structure type="chrome_scaled_image" name="IDR_AUTOFILL_DIALOG_MENU_BUTTON" file="autofill_dialog_menu_button_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AUTOFILL_DIALOG_MENU_BUTTON_P" file="autofill_dialog_menu_button_pressed.png" />
       <if expr="not pp_ifdef('toolkit_views') and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_BACK" file="back.png" />
@@ -126,14 +126,14 @@
         <structure type="chrome_scaled_image" name="IDR_CONFLICT_FAVICON" file="common/favicon_conflicts.png" />
         <structure type="chrome_scaled_image" name="IDR_CONFLICT_MENU" file="conflict_menu.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_BOTTOM_CENTER_V" file="constrained_bottom_center_v.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_BOTTOM_LEFT_CORNER_V" file="constrained_bottom_left_corner_v.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_BOTTOM_RIGHT_CORNER_V" file="constrained_bottom_right_corner_v.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_LEFT_SIDE_V" file="constrained_left_side_v.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_RIGHT_SIDE_V" file="constrained_right_side_v.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_TOP_CENTER_V" file="constrained_top_center_v.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_TOP_LEFT_CORNER_V" file="constrained_top_left_corner_v.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_TOP_RIGHT_CORNER_V" file="constrained_top_right_corner_v.png" />
+      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_BOTTOM_CENTER_V" file="constrained_bottom_center_vista.png" />
+      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_BOTTOM_LEFT_CORNER_V" file="constrained_bottom_left_corner_vista.png" />
+      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_BOTTOM_RIGHT_CORNER_V" file="constrained_bottom_right_corner_vista.png" />
+      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_LEFT_SIDE_V" file="constrained_left_side_vista.png" />
+      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_RIGHT_SIDE_V" file="constrained_right_side_vista.png" />
+      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_TOP_CENTER_V" file="constrained_top_center_vista.png" />
+      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_TOP_LEFT_CORNER_V" file="constrained_top_left_corner_vista.png" />
+      <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_TOP_RIGHT_CORNER_V" file="constrained_top_right_corner_vista.png" />
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_CONTACT_ACTION_CHAT" file="contact_action_chat_base.png" />
         <structure type="chrome_scaled_image" name="IDR_CONTACT_ACTION_CHAT_H" file="contact_action_chat_hover.png" />
@@ -341,34 +341,34 @@
       </if>
       <structure type="chrome_scaled_image" name="IDR_INFO" file="info_small.png" />
       <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_BOTTOM" file="infobarbutton_b_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_BOTTOM_LEFT" file="infobarbutton_bl_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_BOTTOM_RIGHT" file="infobarbutton_br_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_CENTER" file="infobarbutton_c_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_LEFT" file="infobarbutton_l_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_RIGHT" file="infobarbutton_r_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_TOP" file="infobarbutton_t_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_TOP_LEFT" file="infobarbutton_tl_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_TOP_RIGHT" file="infobarbutton_tr_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_BOTTOM" file="infobarbutton_bottom_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_BOTTOM_LEFT" file="infobarbutton_bottom_left_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_BOTTOM_RIGHT" file="infobarbutton_bottom_right_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_CENTER" file="infobarbutton_center_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_LEFT" file="infobarbutton_left_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_RIGHT" file="infobarbutton_right_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_TOP" file="infobarbutton_top_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_TOP_LEFT" file="infobarbutton_top_left_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_TOP_RIGHT" file="infobarbutton_top_right_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_MENU_DROPARROW" file="infobarbutton_menu_droparrow.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_BOTTOM" file="infobarbutton_b_n.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_BOTTOM_LEFT" file="infobarbutton_bl_n.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_BOTTOM_RIGHT" file="infobarbutton_br_n.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_CENTER" file="infobarbutton_c_n.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_LEFT" file="infobarbutton_l_n.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_RIGHT" file="infobarbutton_r_n.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_TOP" file="infobarbutton_t_n.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_TOP_LEFT" file="infobarbutton_tl_n.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_TOP_RIGHT" file="infobarbutton_tr_n.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_BOTTOM" file="infobarbutton_b_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_BOTTOM_LEFT" file="infobarbutton_bl_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_BOTTOM_RIGHT" file="infobarbutton_br_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_CENTER" file="infobarbutton_c_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_LEFT" file="infobarbutton_l_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_RIGHT" file="infobarbutton_r_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_TOP" file="infobarbutton_t_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_TOP_LEFT" file="infobarbutton_tl_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_TOP_RIGHT" file="infobarbutton_tr_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_BOTTOM" file="infobarbutton_bottom_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_BOTTOM_LEFT" file="infobarbutton_bottom_left_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_BOTTOM_RIGHT" file="infobarbutton_bottom_right_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_CENTER" file="infobarbutton_center_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_LEFT" file="infobarbutton_left_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_RIGHT" file="infobarbutton_right_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_TOP" file="infobarbutton_top_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_TOP_LEFT" file="infobarbutton_top_left_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_TOP_RIGHT" file="infobarbutton_top_right_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_BOTTOM" file="infobarbutton_bottom_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_BOTTOM_LEFT" file="infobarbutton_bottom_left_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_BOTTOM_RIGHT" file="infobarbutton_bottom_right_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_CENTER" file="infobarbutton_center_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_LEFT" file="infobarbutton_left_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_RIGHT" file="infobarbutton_right_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_TOP" file="infobarbutton_top_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_TOP_LEFT" file="infobarbutton_top_left_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_TOP_RIGHT" file="infobarbutton_top_right_pressed.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_ALT_NAV_URL" file="infobar_didyoumean.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_AUTOFILL" file="infobar_autofill.png" />
@@ -401,17 +401,17 @@
       <structure type="chrome_scaled_image" name="IDR_LAPTOP_FAVICON" file="common/favicon_laptop.png" />
       <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_HTTP" file="common/location_bar_http.png" />
       <if expr="not pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_C" file="omnibox_c.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_L" file="omnibox_l.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_C" file="omnibox_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_L" file="omnibox_left.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_C" file="common/browser_omnibox_middle.png" />
         <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_L" file="common/browser_omnibox_left.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_POPUPMODE_CENTER" file="omnibox_popup_c.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_POPUPMODE_CENTER" file="omnibox_popup_center.png" />
       <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_POPUPMODE_EDGE" file="omnibox_popup_edge.png" />
       <if expr="not pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_R" file="omnibox_r.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_R" file="omnibox_right.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_R" file="common/browser_omnibox_right.png" />
