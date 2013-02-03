@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_text_field.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 
@@ -35,6 +36,18 @@
   // field editor, which will then handle the drag itself.
   [[self window] makeFirstResponder:self];
   return NSDragOperationNone;
+}
+
+// Disable default automated replacements, see <http://crbug.com/173405>.
+- (void)textDidBeginEditing:(NSNotification*)aNotification {
+  // NSTextDidBeginEditingNotification is from NSText, but this only
+  // applies to NSTextView instances.
+  NSTextView* textView =
+      base::mac::ObjCCast<NSTextView>([aNotification object]);
+  NSTextCheckingTypes checkingTypes = [textView enabledTextCheckingTypes];
+  checkingTypes &= ~NSTextCheckingTypeReplacement;
+  checkingTypes &= ~NSTextCheckingTypeCorrection;
+  [textView setEnabledTextCheckingTypes:checkingTypes];
 }
 
 @end

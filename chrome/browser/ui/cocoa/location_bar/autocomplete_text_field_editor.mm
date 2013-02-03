@@ -55,6 +55,15 @@ BOOL ThePasteboardIsTooDamnBig() {
     dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);
 
     forbiddenCharacters_.reset([[NSCharacterSet controlCharacterSet] retain]);
+
+    // These checks seem inappropriate to the omnibox, and also
+    // unlikely to work reliably due to our autocomplete interfering.
+    //
+    // Also see <http://crbug.com/173405>.
+    NSTextCheckingTypes checkingTypes = [self enabledTextCheckingTypes];
+    checkingTypes &= ~NSTextCheckingTypeReplacement;
+    checkingTypes &= ~NSTextCheckingTypeCorrection;
+    [self setEnabledTextCheckingTypes:checkingTypes];
   }
   return self;
 }
