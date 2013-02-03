@@ -99,9 +99,6 @@ class PluginPrefs : public RefcountedProfileKeyedService {
     // |*enabled| won't be touched.
     bool Get(const FilePath& plugin, bool* enabled) const;
     void Set(const FilePath& plugin, bool enabled);
-    // It is similar to Set(), except that it does nothing if |plugin| needs to
-    // be converted to a different key.
-    void SetIgnorePseudoKey(const FilePath& plugin, bool enabled);
 
    private:
     FilePath ConvertMapKey(const FilePath& plugin) const;

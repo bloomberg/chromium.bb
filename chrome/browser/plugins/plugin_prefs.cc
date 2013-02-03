@@ -66,13 +66,6 @@ void PluginPrefs::PluginState::Set(const FilePath& plugin, bool enabled) {
   state_[ConvertMapKey(plugin)] = enabled;
 }
 
-void PluginPrefs::PluginState::SetIgnorePseudoKey(const FilePath& plugin,
-                                                  bool enabled) {
-  FilePath key = ConvertMapKey(plugin);
-  if (key == plugin)
-    state_[key] = enabled;
-}
-
 FilePath PluginPrefs::PluginState::ConvertMapKey(const FilePath& plugin) const {
   // Keep the state of component-updated and bundled Pepper Flash in sync.
   if (plugin.BaseName().value() == chrome::kPepperFlashPluginFilename) {
@@ -466,7 +459,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
               pepper_flash_node = plugin;
           }
 
-          plugin_state_.SetIgnorePseudoKey(plugin_path, enabled);
+          plugin_state_.Set(plugin_path, enabled);
         } else if (!enabled && plugin->GetString("name", &group_name)) {
           // Don't disable this group if it's for the pdf or nacl plugins and
           // we just forced it on.
