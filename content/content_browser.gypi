@@ -853,6 +853,8 @@
     'browser/tracing/trace_message_filter.h',
     'browser/tracing/trace_subscriber_stdio.cc',
     'browser/tracing/trace_subscriber_stdio.h',
+    'browser/tracing/tracing_ui.cc',
+    'browser/tracing/tracing_ui.h',
     'browser/udev_linux.cc',
     'browser/udev_linux.h',
     'browser/user_metrics.cc',
@@ -1098,6 +1100,8 @@
         'browser/geolocation/network_location_provider.h',
         'browser/geolocation/network_location_request.cc',
         'browser/geolocation/network_location_request.h',
+        'browser/tracing/tracing_ui.cc',
+        'browser/tracing/tracing_ui.h',
       ],
     }, { # OS!="android"
       'dependencies': [

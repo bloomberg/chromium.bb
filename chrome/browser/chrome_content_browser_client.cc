@@ -71,6 +71,7 @@
 #include "chrome/browser/ssl/ssl_tab_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/toolkit_extra_parts.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
@@ -1934,6 +1935,11 @@ FilePath ChromeContentBrowserClient::GetHyphenDictionaryDirectory() {
   FilePath directory;
   PathService::Get(chrome::DIR_APP_DICTIONARIES, &directory);
   return directory.Append(FILE_PATH_LITERAL("Hyphen"));
+}
+
+ui::SelectFilePolicy* ChromeContentBrowserClient::CreateSelectFilePolicy(
+    WebContents* web_contents) {
+  return new ChromeSelectFilePolicy(web_contents);
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

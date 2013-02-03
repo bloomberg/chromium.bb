@@ -10,6 +10,11 @@
   </outputs>
   <translations />
   <release seq="1">
+    <messages fallback_to_english="true">
+      <message name="IDS_TRACING_TITLE" desc="Title for the about:tracing page.">
+        Tracing
+      </message>
+    </messages>
     <includes>
       <include name="IDR_GPU_BLACKLIST" file="browser/gpu/software_rendering_list.json" type="BINDATA" />
       <include name="IDR_GPU_INTERNALS_HTML" file="browser/resources/gpu/gpu_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
@@ -25,6 +30,10 @@
         <include name="IDR_PPAPI_SANDBOX_PROFILE" file="ppapi_plugin/ppapi.sb" type="BINDATA" />
         <include name="IDR_RENDERER_SANDBOX_PROFILE" file="renderer/renderer.sb" type="BINDATA" />
         <include name="IDR_UTILITY_SANDBOX_PROFILE" file="utility/utility.sb" type="BINDATA" />
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <include name="IDR_TRACING_HTML" file="../third_party/trace-viewer/src/about_tracing.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_TRACING_JS" file="../third_party/trace-viewer/src/about_tracing.js" flattenhtml="true" type="BINDATA" />
       </if>
     </includes>
   </release>
