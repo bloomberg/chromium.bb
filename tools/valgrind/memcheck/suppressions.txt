@@ -6565,14 +6565,3 @@
    fun:_ZN3gpu5gles2*Immediate4InitE*
    fun:_ZN3gpu5gles2*GLES2ImplementationTest_*_Test8TestBodyEv
 }
-{
-   bug_173620
-   Memcheck:Uninitialized
-   fun:_ZNK3net21HttpStreamFactoryImpl30GetAlternateProtocolRequestForERK4GURLPS1_
-   fun:_ZN3net21HttpStreamFactoryImpl13RequestStreamERKNS_15HttpRequestInfoERKNS_9SSLConfigES6_PNS_17HttpStreamRequest8DelegateERKNS_11BoundNetLogE
-   fun:_ZN3net22HttpNetworkTransaction14DoCreateStreamEv
-   fun:_ZN3net22HttpNetworkTransaction6DoLoopEi
-   fun:_ZN3net22HttpNetworkTransaction5StartEPKNS_15HttpRequestInfoERKN4base8CallbackIFviEEERKNS_11BoundNetLogE
-   fun:_ZN3net12_GLOBAL__N_126GroupNameTransactionHelperERKSsRK13scoped_refptrINS_18HttpNetworkSessionEE
-   fun:_ZN3net66HttpNetworkTransactionSpdy*Test_GroupNameForDirectConnections_Test8TestBodyEv
-}

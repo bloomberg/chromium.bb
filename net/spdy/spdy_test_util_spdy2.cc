@@ -886,6 +886,7 @@ SpdySessionDependencies::SpdySessionDependencies(ProxyService* proxy_service)
       enable_ip_pooling(true),
       enable_compression(false),
       enable_ping(false),
+      enable_user_alternate_protocol_ports(false),
       time_func(&base::TimeTicks::Now),
       net_log(NULL) {}
 

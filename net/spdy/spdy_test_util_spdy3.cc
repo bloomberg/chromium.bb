@@ -929,6 +929,7 @@ SpdySessionDependencies::SpdySessionDependencies(ProxyService* proxy_service)
       enable_ip_pooling(true),
       enable_compression(false),
       enable_ping(false),
+      enable_user_alternate_protocol_ports(false),
       initial_recv_window_size(kSpdyStreamInitialWindowSize),
       time_func(&base::TimeTicks::Now),
       net_log(NULL) {}
