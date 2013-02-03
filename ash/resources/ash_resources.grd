@@ -80,16 +80,16 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK" file="cros/status/status_accessibility_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH" file="cros/status/status_bluetooth.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED" file="cros/status/status_bluetooth_disabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED_HOVER" file="cros/status/status_bluetooth_disabled_h.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED_HOVER" file="cros/status/status_bluetooth_disabled_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED" file="cros/status/status_bluetooth_enabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED_HOVER" file="cros/status/status_bluetooth_enabled_h.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED_HOVER" file="cros/status/status_bluetooth_enabled_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BRIGHTNESS" file="cros/status/status_brightness.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAPS_LOCK" file="cros/status/status_capslock.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK" file="cros/status/status_capslock_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED" file="cros/network/status_cellular_disabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER" file="cros/network/status_cellular_disabled_h.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER" file="cros/network/status_cellular_disabled_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED" file="cros/network/status_cellular_enabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED_HOVER" file="cros/network/status_cellular_enabled_h.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED_HOVER" file="cros/network/status_cellular_enabled_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DISPLAY" file="cros/status/status_display.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DISPLAY_HOVER" file="cros/status/status_display_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DISPLAY_PRESSED" file="cros/status/status_display_pressed.png" />
@@ -100,12 +100,12 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE_FAILED" file="cros/status/status_drive_item_failed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE_LIGHT" file="cros/status/status_drive_light.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_HELP" file="cros/status/status_help.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_HELP_HOVER" file="cros/status/status_help_h.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_HELP_HOVER" file="cros/status/status_help_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_IME" file="cros/status/status_ime.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LESS" file="cros/status/status_less.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCALE" file="cros/status/status_locale.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCKSCREEN" file="cros/status/status_lockscreen.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER" file="cros/status/status_lockscreen_h.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER" file="cros/status/status_lockscreen_hover.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_BOTTOM" file="cros/status/status_logout_button_hot_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_BOTTOM_LEFT" file="cros/status/status_logout_button_hot_bottom_left.png" />
@@ -139,19 +139,19 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED" file="cros/network/status_cellular_failed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_FAILED" file="cros/network/status_network_failed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_INFO" file="cros/network/status_network_info.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER" file="cros/network/status_network_info_h.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER" file="cros/network/status_network_info_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFICATION_3G" file="cros/network/notification_3g.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFICATION_LTE" file="cros/network/notification_lte.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL" file="cros/status/status_power_small_all.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL_DARK" file="cros/status/status_power_small_all_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SETTINGS" file="cros/status/status_settings.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN" file="cros/status/status_shutdown.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER" file="cros/status/status_shutdown_h.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER" file="cros/status/status_shutdown_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SMS" file="cros/status/status_sms.png" />
 
       <!-- ChromeOS specific icons -->
       <if expr="pp_ifdef('chromeos')">
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ENTERPRISE_DARK" file="cros/status/status_managed_p.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ENTERPRISE_DARK" file="cros/status/status_managed.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_1X" file="cros/network/statusbar_network_1x.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_3G_DARK" file="cros/network/statusbar_network_3g_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT" file="cros/network/statusbar_network_3g_light.png" />
@@ -193,9 +193,9 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_LEVELS" file="cros/status/status_volume_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_MUTE" file="cros/status/status_volume_mute.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED" file="cros/network/status_wifi_disabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER" file="cros/network/status_wifi_disabled_h.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER" file="cros/network/status_wifi_disabled_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED" file="cros/network/status_wifi_enabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER" file="cros/network/status_wifi_enabled_h.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER" file="cros/network/status_wifi_enabled_hover.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_NORMAL" file="common/notification/notification_button_active_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_HOVER" file="common/notification/notification_button_active_hover.png" />
