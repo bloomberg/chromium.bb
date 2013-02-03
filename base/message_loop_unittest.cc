@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
+#include "base/pending_task.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -1800,16 +1801,16 @@ class DummyTaskObserver : public MessageLoop::TaskObserver {
 
   virtual ~DummyTaskObserver() {}
 
-  virtual void WillProcessTask(TimeTicks time_posted) OVERRIDE {
+  virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {
     num_tasks_started_++;
-    EXPECT_TRUE(time_posted != TimeTicks());
+    EXPECT_TRUE(pending_task.time_posted != TimeTicks());
     EXPECT_LE(num_tasks_started_, num_tasks_);
     EXPECT_EQ(num_tasks_started_, num_tasks_processed_ + 1);
   }
 
-  virtual void DidProcessTask(TimeTicks time_posted) OVERRIDE {
+  virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {
     num_tasks_processed_++;
-    EXPECT_TRUE(time_posted != TimeTicks());
+    EXPECT_TRUE(pending_task.time_posted != TimeTicks());
     EXPECT_LE(num_tasks_started_, num_tasks_);
     EXPECT_EQ(num_tasks_started_, num_tasks_processed_);
   }

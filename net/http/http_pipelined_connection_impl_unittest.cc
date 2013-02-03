@@ -81,7 +81,7 @@ class SuddenCloseObserver : public MessageLoop::TaskObserver {
         close_before_task_(close_before_task),
         current_task_(0) { }
 
-  virtual void WillProcessTask(base::TimeTicks) OVERRIDE {
+  virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {
     ++current_task_;
     if (current_task_ == close_before_task_) {
       stream_->Close(false);
@@ -89,7 +89,7 @@ class SuddenCloseObserver : public MessageLoop::TaskObserver {
     }
   }
 
-  virtual void DidProcessTask(base::TimeTicks) OVERRIDE { }
+  virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {}
 
  private:
   HttpStream* stream_;

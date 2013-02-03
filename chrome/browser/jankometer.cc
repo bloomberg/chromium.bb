@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
+#include "base/pending_task.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/watchdog.h"
@@ -241,15 +242,15 @@ class IOJankObserver : public base::RefCountedThreadSafe<IOJankObserver>,
     helper_.EndProcessingTimers();
   }
 
-  virtual void WillProcessTask(base::TimeTicks time_posted) OVERRIDE {
+  virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {
     if (!helper_.MessageWillBeMeasured())
       return;
     base::TimeTicks now = base::TimeTicks::Now();
-    const base::TimeDelta queueing_time = now - time_posted;
+    const base::TimeDelta queueing_time = now - pending_task.time_posted;
     helper_.StartProcessingTimers(queueing_time);
   }
 
-  virtual void DidProcessTask(base::TimeTicks time_posted) OVERRIDE {
+  virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {
     helper_.EndProcessingTimers();
   }
 
@@ -289,15 +290,15 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
     MessageLoopForUI::current()->RemoveObserver(this);
   }
 
-  virtual void WillProcessTask(base::TimeTicks time_posted) OVERRIDE {
+  virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {
     if (!helper_.MessageWillBeMeasured())
       return;
     base::TimeTicks now = base::TimeTicks::Now();
-    const base::TimeDelta queueing_time = now - time_posted;
+    const base::TimeDelta queueing_time = now - pending_task.time_posted;
     helper_.StartProcessingTimers(queueing_time);
   }
 
-  virtual void DidProcessTask(base::TimeTicks time_posted) OVERRIDE {
+  virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {
     helper_.EndProcessingTimers();
   }
 

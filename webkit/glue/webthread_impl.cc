@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
+#include "base/pending_task.h"
 #include "base/threading/platform_thread.h"
 
 namespace webkit_glue {
@@ -22,11 +23,11 @@ public:
   TaskObserverAdapter(WebThread::TaskObserver* observer)
       : observer_(observer) { }
 
-  virtual void WillProcessTask(base::TimeTicks) OVERRIDE {
+  virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {
     observer_->willProcessTask();
   }
 
-  virtual void DidProcessTask(base::TimeTicks) OVERRIDE {
+  virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {
     observer_->didProcessTask();
   }
 

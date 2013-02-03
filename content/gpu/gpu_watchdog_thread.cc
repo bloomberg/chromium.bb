@@ -87,12 +87,12 @@ GpuWatchdogThread::GpuWatchdogTaskObserver::~GpuWatchdogTaskObserver() {
 }
 
 void GpuWatchdogThread::GpuWatchdogTaskObserver::WillProcessTask(
-    base::TimeTicks time_posted) {
+    const base::PendingTask& pending_task) {
   watchdog_->CheckArmed();
 }
 
 void GpuWatchdogThread::GpuWatchdogTaskObserver::DidProcessTask(
-    base::TimeTicks time_posted) {
+    const base::PendingTask& pending_task) {
   watchdog_->CheckArmed();
 }
 

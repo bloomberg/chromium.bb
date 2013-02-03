@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/pending_task.h"
 #include "base/run_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -236,9 +237,10 @@ class BrowserMainLoop::MemoryObserver : public MessageLoop::TaskObserver {
   MemoryObserver() {}
   virtual ~MemoryObserver() {}
 
-  virtual void WillProcessTask(base::TimeTicks time_posted) OVERRIDE {}
+  virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {
+  }
 
-  virtual void DidProcessTask(base::TimeTicks time_posted) OVERRIDE {
+  virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {
 #if !defined(OS_IOS)
     HISTOGRAM_MEMORY_KB("Memory.BrowserUsed", webkit_glue::MemoryUsageKB());
 #endif

@@ -44,8 +44,9 @@ class GpuWatchdogThread : public base::Thread,
     virtual ~GpuWatchdogTaskObserver();
 
     // Implements MessageLoop::TaskObserver.
-    virtual void WillProcessTask(base::TimeTicks time_posted) OVERRIDE;
-    virtual void DidProcessTask(base::TimeTicks time_posted) OVERRIDE;
+    virtual void WillProcessTask(
+        const base::PendingTask& pending_task) OVERRIDE;
+    virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE;
 
    private:
     GpuWatchdogThread* watchdog_;

@@ -16,6 +16,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
+#include "base/pending_task.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/system_monitor/system_monitor.h"
@@ -70,11 +71,11 @@ class RendererMessageLoopObserver : public MessageLoop::TaskObserver {
             1, 3600000, 50, base::Histogram::kUmaTargetedHistogramFlag)) {}
   virtual ~RendererMessageLoopObserver() {}
 
-  virtual void WillProcessTask(base::TimeTicks time_posted) {
+  virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {
     begin_process_message_ = base::TimeTicks::Now();
   }
 
-  virtual void DidProcessTask(base::TimeTicks time_posted) {
+  virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {
     if (!begin_process_message_.is_null())
       process_times_->AddTime(base::TimeTicks::Now() - begin_process_message_);
   }
@@ -91,9 +92,10 @@ class MemoryObserver : public MessageLoop::TaskObserver {
   MemoryObserver() {}
   virtual ~MemoryObserver() {}
 
-  virtual void WillProcessTask(base::TimeTicks time_posted) OVERRIDE {}
+  virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {
+  }
 
-  virtual void DidProcessTask(base::TimeTicks time_posted) OVERRIDE {
+  virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {
     HISTOGRAM_MEMORY_KB("Memory.RendererUsed", webkit_glue::MemoryUsageKB());
   }
  private:

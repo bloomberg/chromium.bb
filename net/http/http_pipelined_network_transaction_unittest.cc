@@ -749,7 +749,7 @@ class DataRunnerObserver : public MessageLoop::TaskObserver {
         run_before_task_(run_before_task),
         current_task_(0) { }
 
-  virtual void WillProcessTask(base::TimeTicks) OVERRIDE {
+  virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {
     ++current_task_;
     if (current_task_ == run_before_task_) {
       data_->Run();
@@ -757,7 +757,7 @@ class DataRunnerObserver : public MessageLoop::TaskObserver {
     }
   }
 
-  virtual void DidProcessTask(base::TimeTicks) OVERRIDE { }
+  virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {}
 
  private:
   DeterministicSocketData* data_;
