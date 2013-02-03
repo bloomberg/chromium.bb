@@ -26,10 +26,6 @@ QuicFecGroup::QuicFecGroup()
 
 QuicFecGroup::~QuicFecGroup() {}
 
-size_t QuicFecGroup::GroupSize() const {
-  return max_protected_packet_ - min_protected_packet_ + 1;
-}
-
 bool QuicFecGroup::Update(const QuicPacketHeader& header,
                           StringPiece decrypted_payload) {
   if (received_packets_.count(header.packet_sequence_number) != 0) {

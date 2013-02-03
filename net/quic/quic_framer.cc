@@ -15,6 +15,7 @@ using base::StringPiece;
 using std::make_pair;
 using std::map;
 using std::numeric_limits;
+using std::string;
 
 namespace net {
 
@@ -61,74 +62,53 @@ bool CanTruncate(const QuicFrame& frame) {
   return false;
 }
 
-QuicPacket* QuicFramer::ConstructFrameDataPacket(
-    const QuicPacketHeader& header,
-    const QuicFrames& frames) {
-  size_t num_consumed = 0;
-  QuicPacket* packet =
-      ConstructMaxFrameDataPacket(header, frames, &num_consumed);
-  DCHECK_EQ(frames.size(), num_consumed);
-  return packet;
+size_t QuicFramer::GetSerializedFrameLength(
+    const QuicFrame& frame, size_t free_bytes, bool first_frame) {
+  if (frame.type == PADDING_FRAME) {
+    // PADDING implies end of packet.
+    return free_bytes;
+  }
+  size_t frame_len = kFrameTypeSize;
+  frame_len += ComputeFramePayloadLength(frame);
+  if (frame_len > free_bytes) {
+    // Only truncate the first frame in a packet, so if subsequent ones go
+    // over, stop including more frames.
+    if (!first_frame) {
+      return 0;
+    }
+    if (CanTruncate(frame)) {
+      // Truncate the frame so the packet will not exceed kMaxPacketSize.
+      // Note that we may not use every byte of the writer in this case.
+      DLOG(INFO) << "Truncating large frame";
+      return free_bytes;
+    }
+  }
+  return frame_len;
 }
 
-QuicPacket* QuicFramer::ConstructMaxFrameDataPacket(
-    const QuicPacketHeader& header,
-    const QuicFrames& frames,
-    size_t* num_consumed) {
-  DCHECK(!frames.empty());
-  // Compute the length of the packet.  We use "magic numbers" here because
-  // sizeof(member_) is not necessarily the same as sizeof(member_wire_format).
+QuicPacket* QuicFramer::ConstructFrameDataPacket(const QuicPacketHeader& header,
+                                                 const QuicFrames& frames) {
   const size_t max_plaintext_size = GetMaxPlaintextSize(kMaxPacketSize);
-  size_t len = kPacketHeaderSize;
-  bool truncating = false;
+  size_t packet_size = kPacketHeaderSize;
   for (size_t i = 0; i < frames.size(); ++i) {
-    if (frames[i].type == PADDING_FRAME) {
-      // PADDING implies end of packet so make sure we don't have
-      // more frames on the list.
-      DCHECK_EQ(i, frames.size() - 1);
-      len = max_plaintext_size;
-      *num_consumed = i + 1;
-      break;
-    }
-    size_t frame_len = 1;  // Space for the 8 bit type.
-    frame_len += ComputeFramePayloadLength(frames[i]);
-    if (len + frame_len > max_plaintext_size) {
-      // Only truncate the first frame in a packet, so if subsequent ones go
-      // over, stop including more frames.
-      if (i > 0) {
-        break;
-      }
-      if (CanTruncate(frames[0])) {
-        // Truncate the frame so the packet will not exceed kMaxPacketSize.
-        // Note that we may not use every byte of the writer in this case.
-        len = max_plaintext_size;
-        *num_consumed = 1;
-        truncating = true;
-        DLOG(INFO) << "Truncating large frame";
-        break;
-      } else {
-        return NULL;
-      }
-    }
-    len += frame_len;
-    *num_consumed = i + 1;
+    DCHECK_LE(packet_size, max_plaintext_size);
+    const size_t frame_size = GetSerializedFrameLength(
+        frames[i], max_plaintext_size - packet_size, i == 0);
+    DCHECK(frame_size);
+    packet_size += frame_size;
   }
-  if (truncating) {
-    DCHECK_EQ(1u, *num_consumed);
-  }
+  return ConstructFrameDataPacket(header, frames, packet_size);
+}
 
-  QuicDataWriter writer(len);
-
+QuicPacket* QuicFramer::ConstructFrameDataPacket(const QuicPacketHeader& header,
+                                                 const QuicFrames& frames,
+                                                 size_t packet_size) {
+  QuicDataWriter writer(packet_size);
   if (!WritePacketHeader(header, &writer)) {
     return NULL;
   }
 
-  // frame count
-  if (*num_consumed > 256u) {
-    return NULL;
-  }
-
-  for (size_t i = 0; i < *num_consumed; ++i) {
+  for (size_t i = 0; i < frames.size(); ++i) {
     const QuicFrame& frame = frames[i];
     if (!writer.WriteUInt8(frame.type)) {
       return NULL;
@@ -171,9 +151,11 @@ QuicPacket* QuicFramer::ConstructMaxFrameDataPacket(
     }
   }
 
-  DCHECK(truncating || len == writer.length());
   // Save the length before writing, because take clears it.
-  len = writer.length();
+  const size_t len = writer.length();
+  // Less than or equal because truncated acks end up with max_plaintex_size
+  // length, even though they're typically slightly shorter.
+  DCHECK_LE(len, packet_size);
   QuicPacket* packet = QuicPacket::NewDataPacket(writer.take(), len, true);
 
   if (fec_builder_) {
@@ -231,10 +213,7 @@ QuicEncryptedPacket* QuicFramer::ConstructPublicResetPacket(
   return new QuicEncryptedPacket(writer.take(), len, true);
 }
 
-// TODO(satyamshekhar): Framer doesn't need addresses. Get rid of them.
-bool QuicFramer::ProcessPacket(const IPEndPoint& self_address,
-                               const IPEndPoint& peer_address,
-                               const QuicEncryptedPacket& packet) {
+bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   DCHECK(!reader_.get());
   reader_.reset(new QuicDataReader(packet.data(), packet.length()));
 
@@ -250,7 +229,7 @@ bool QuicFramer::ProcessPacket(const IPEndPoint& self_address,
   if (public_header.flags & PACKET_PUBLIC_FLAGS_RST) {
     rv = ProcessPublicResetPacket(public_header);
   } else {
-    rv = ProcessDataPacket(public_header, self_address, peer_address, packet);
+    rv = ProcessDataPacket(public_header, packet);
   }
 
   reader_.reset(NULL);
@@ -259,10 +238,8 @@ bool QuicFramer::ProcessPacket(const IPEndPoint& self_address,
 
 bool QuicFramer::ProcessDataPacket(
     const QuicPacketPublicHeader& public_header,
-    const IPEndPoint& self_address,
-    const IPEndPoint& peer_address,
     const QuicEncryptedPacket& packet) {
-  visitor_->OnPacket(self_address, peer_address);
+  visitor_->OnPacket();
 
   QuicPacketHeader header(public_header);
   if (!ProcessPacketHeader(&header, packet)) {
@@ -314,7 +291,6 @@ bool QuicFramer::ProcessPublicResetPacket(
     set_detailed_error("Unable to read rejected sequence number.");
     return false;
   }
-
   visitor_->OnPublicResetPacket(packet);
   return true;
 }
@@ -400,13 +376,6 @@ QuicPacketSequenceNumber QuicFramer::CalculatePacketSequenceNumberFromWire(
                              next_epoch + packet_sequence_number));
 }
 
-/* static */
-bool QuicFramer::ReadGuidFromPacket(const QuicEncryptedPacket& packet,
-                                    QuicGuid* guid) {
-  QuicDataReader reader(packet.data(), packet.length());
-  return reader.ReadUInt64(guid);
-}
-
 bool QuicFramer::ProcessPublicHeader(QuicPacketPublicHeader* public_header) {
   if (!reader_->ReadUInt64(&public_header->guid)) {
     set_detailed_error("Unable to read GUID.");
@@ -426,6 +395,13 @@ bool QuicFramer::ProcessPublicHeader(QuicPacketPublicHeader* public_header) {
 
   public_header->flags = static_cast<QuicPacketPublicFlags>(public_flags);
   return true;
+}
+
+// static
+bool QuicFramer::ReadGuidFromPacket(const QuicEncryptedPacket& packet,
+                                    QuicGuid* guid) {
+  QuicDataReader reader(packet.data(), packet.length());
+  return reader.ReadUInt64(guid);
 }
 
 bool QuicFramer::ProcessPacketHeader(
@@ -682,11 +658,12 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
       break;
     }
     case kFixRate: {
-      CongestionFeedbackMessageFixRate* fix_rate = &frame->fix_rate;
-      if (!reader_->ReadUInt32(&fix_rate->bitrate_in_bytes_per_second)) {
+      uint32 bitrate = 0;
+      if (!reader_->ReadUInt32(&bitrate)) {
         set_detailed_error("Unable to read bitrate.");
         return false;
       }
+      frame->fix_rate.bitrate = QuicBandwidth::FromBytesPerSecond(bitrate);
       break;
     }
     case kTCP: {
@@ -696,10 +673,13 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
             "Unable to read accumulated number of lost packets.");
         return false;
       }
-      if (!reader_->ReadUInt16(&tcp->receive_window)) {
+      uint16 receive_window = 0;
+      if (!reader_->ReadUInt16(&receive_window)) {
         set_detailed_error("Unable to read receive window.");
         return false;
       }
+      // Simple bit packing, don't send the 4 least significant bits.
+      tcp->receive_window = static_cast<QuicByteCount>(receive_window) << 4;
       break;
     }
     default:
@@ -1034,17 +1014,20 @@ bool QuicFramer::AppendQuicCongestionFeedbackFramePayload(
     case kFixRate: {
       const CongestionFeedbackMessageFixRate& fix_rate =
           frame.fix_rate;
-      if (!writer->WriteUInt32(fix_rate.bitrate_in_bytes_per_second)) {
+      if (!writer->WriteUInt32(fix_rate.bitrate.ToBytesPerSecond())) {
         return false;
       }
       break;
     }
     case kTCP: {
       const CongestionFeedbackMessageTCP& tcp = frame.tcp;
+      DCHECK_LE(tcp.receive_window, 1u << 20);
+      // Simple bit packing, don't send the 4 least significant bits.
+      uint16 receive_window = static_cast<uint16>(tcp.receive_window >> 4);
       if (!writer->WriteUInt16(tcp.accumulated_number_of_lost_packets)) {
         return false;
       }
-      if (!writer->WriteUInt16(tcp.receive_window)) {
+      if (!writer->WriteUInt16(receive_window)) {
         return false;
       }
       break;

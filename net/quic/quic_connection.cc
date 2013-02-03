@@ -9,8 +9,6 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/base/net_errors.h"
-#include "net/quic/congestion_control/quic_receipt_metrics_collector.h"
-#include "net/quic/congestion_control/quic_send_scheduler.h"
 #include "net/quic/quic_utils.h"
 
 using base::hash_map;
@@ -46,7 +44,7 @@ const int kMaxRetransmissionsPerAck = 10;
 // delivery.
 // TODO(ianswett): Change to match TCP's rule of retransmitting once an ack
 // at least 3 sequence numbers larger arrives.
-const int kNumberOfNacksBeforeRetransmission = 3;
+const size_t kNumberOfNacksBeforeRetransmission = 3;
 
 // The maxiumum number of packets we'd like to queue.  We may end up queueing
 // more in the case of many control frames.
@@ -57,9 +55,11 @@ const int kMaxPacketsToSerializeAtOnce = 6;
 // eventually cede.  10 is arbitrary.
 const int kMaxPacketsPerRetransmissionAlarm = 10;
 
-// Named constants for SendPacket options.
+// Named constant for WriteQueuedData().
+const bool kFlush = true;
+// Named constant for WritePacket(), SendOrQueuePacket().
 const bool kForce = true;
-const bool kShouldRetransmit = true;
+// Named constant for CanWrite().
 const bool kIsRetransmission = true;
 
 bool Near(QuicPacketSequenceNumber a, QuicPacketSequenceNumber b) {
@@ -70,14 +70,12 @@ bool Near(QuicPacketSequenceNumber a, QuicPacketSequenceNumber b) {
 }  // namespace
 
 QuicConnection::UnackedPacket::UnackedPacket(QuicFrames unacked_frames)
-    : frames(unacked_frames),
-      number_nacks(0) {
+    : frames(unacked_frames) {
 }
 
 QuicConnection::UnackedPacket::UnackedPacket(QuicFrames unacked_frames,
                                              std::string data)
     : frames(unacked_frames),
-      number_nacks(0),
       data(data) {
 }
 
@@ -166,27 +164,21 @@ void QuicConnection::DeleteEnclosedFrame(QuicFrame* frame) {
 void QuicConnection::DeleteEnclosedFrames(UnackedPacket* unacked) {
   for (QuicFrames::iterator it = unacked->frames.begin();
        it != unacked->frames.end(); ++it) {
-    DCHECK(ShouldRetransmit(*it));
     DeleteEnclosedFrame(&(*it));
   }
-}
-
-bool QuicConnection::ShouldRetransmit(const QuicFrame& frame) {
-  return frame.type != ACK_FRAME && frame.type != CONGESTION_FEEDBACK_FRAME;
 }
 
 void QuicConnection::OnError(QuicFramer* framer) {
   SendConnectionClose(framer->error());
 }
 
-void QuicConnection::OnPacket(const IPEndPoint& self_address,
-                              const IPEndPoint& peer_address) {
+void QuicConnection::OnPacket() {
   time_of_last_packet_ = clock_->Now();
   DVLOG(1) << "last packet: " << time_of_last_packet_.ToMicroseconds();
 
   // TODO(alyssar, rch) handle migration!
-  self_address_ = self_address;
-  peer_address_ = peer_address;
+  self_address_ = last_self_address_;
+  peer_address_ = last_peer_address_;
 }
 
 void QuicConnection::OnPublicResetPacket(
@@ -340,9 +332,11 @@ void QuicConnection::UpdatePacketInformationReceivedByPeer(
   // incoming_ack shows they've been seen by the peer.
   UnackedPacketMap::iterator it = unacked_packets_.begin();
   while (it != unacked_packets_.end()) {
-    if (!incoming_ack.received_info.IsAwaitingPacket(it->first)) {
+    QuicPacketSequenceNumber sequence_number = it->first;
+    UnackedPacket* unacked = it->second;
+    if (!incoming_ack.received_info.IsAwaitingPacket(sequence_number)) {
       // Packet was acked, so remove it from our unacked packet list.
-      DVLOG(1) << "Got an ack for " << it->first;
+      DVLOG(1) << "Got an ack for " << sequence_number;
       // TODO(rch): This is inefficient and should be sped up.
       // TODO(ianswett): Ensure this inner loop is applicable now that we're
       // always sending packets with new sequence numbers.  I believe it may
@@ -352,45 +346,45 @@ void QuicConnection::UpdatePacketInformationReceivedByPeer(
       // attempted).
       for (QueuedPacketList::iterator q = queued_packets_.begin();
            q != queued_packets_.end(); ++q) {
-        if (q->sequence_number == it->first) {
+        if (q->sequence_number == sequence_number) {
           queued_packets_.erase(q);
           break;
         }
       }
-      acked_packets.insert(it->first);
-      DeleteEnclosedFrames(it->second);
-      delete it->second;
+      acked_packets.insert(sequence_number);
+      DeleteEnclosedFrames(unacked);
+      delete unacked;
       UnackedPacketMap::iterator it_tmp = it;
       ++it;
       unacked_packets_.erase(it_tmp);
+      retransmission_map_.erase(sequence_number);
     } else {
       // This is a packet which we planned on retransmitting and has not been
       // seen at the time of this ack being sent out.  See if it's our new
       // lowest unacked packet.
-      DVLOG(1) << "still missing " << it->first;
-      if (it->first < lowest_unacked) {
-        lowest_unacked = it->first;
+      DVLOG(1) << "still missing " << sequence_number;
+      if (sequence_number < lowest_unacked) {
+        lowest_unacked = sequence_number;
       }
-
+      ++it;
       // Determine if this packet is being explicitly nacked and, if so, if it
       // is worth retransmitting.
-      QuicPacketSequenceNumber retransmission_number = 0;
-      if (it->first < peer_largest_observed_packet_) {
+      if (sequence_number <= peer_largest_observed_packet_) {
         // The peer got packets after this sequence number.  This is an explicit
         // nack.
-        ++(it->second->number_nacks);
-        if (it->second->number_nacks >= kNumberOfNacksBeforeRetransmission &&
+        RetransmissionMap::iterator retransmission_it =
+            retransmission_map_.find(sequence_number);
+        ++(retransmission_it->second.number_nacks);
+        if (retransmission_it->second.number_nacks >=
+                kNumberOfNacksBeforeRetransmission &&
             retransmitted_packets < kMaxRetransmissionsPerAck) {
-          retransmission_number = it->first;
+          ++retransmitted_packets;
+          DVLOG(1) << "Trying to retransmit packet " << sequence_number
+                   << " as it has been nacked 3 or more times.";
+          // TODO(satyamshekhar): save in a vector and retransmit after the
+          // loop.
+          RetransmitPacket(sequence_number);
         }
-      }
-
-      ++it;
-      if (retransmission_number > 0) {
-        ++retransmitted_packets;
-        DVLOG(1) << "Trying to retransmit packet " << retransmission_number
-                 << " as it has been nacked 3 or more times.";
-        MaybeRetransmitPacket(retransmission_number);
       }
     }
   }
@@ -461,10 +455,9 @@ void QuicConnection::OnPacketComplete() {
     DLOG(INFO) << "Got packet " << last_header_.packet_sequence_number
                << " with " << last_stream_frames_.size()
                << " stream frames for " << last_header_.public_header.guid;
-    congestion_manager_.RecordIncomingPacket(last_size_,
-                                     last_header_.packet_sequence_number,
-                                     clock_->Now(),
-                                     last_packet_revived_);
+    congestion_manager_.RecordIncomingPacket(
+        last_size_, last_header_.packet_sequence_number,
+        clock_->Now(), last_packet_revived_);
   } else {
     DLOG(INFO) << "Got revived packet with " << last_stream_frames_.size()
                << " frames.";
@@ -486,52 +479,54 @@ void QuicConnection::MaybeSendAckInResponseToPacket() {
   } else if (!last_stream_frames_.empty()) {
     // TODO(alyssar) this case should really be "if the packet contained any
     // non-ack frame", rather than "if the packet contained a stream frame"
-    helper_->SetAckAlarm(DefaultRetransmissionTime());
+    helper_->SetAckAlarm(congestion_manager_.DefaultRetransmissionTime());
   }
   send_ack_in_response_to_packet_ = !send_ack_in_response_to_packet_;
 }
 
-QuicConsumedData QuicConnection::SendStreamData(
-    QuicStreamId id,
+QuicConsumedData QuicConnection::SendStreamData(QuicStreamId id,
     StringPiece data,
     QuicStreamOffset offset,
     bool fin) {
   size_t total_bytes_consumed = 0;
   bool fin_consumed = false;
 
-  packet_creator_.MaybeStartFEC();
   while (queued_packets_.empty()) {
-    QuicFrames frames;
-    size_t bytes_consumed =
-        packet_creator_.CreateStreamFrame(id, data, offset, fin, &frames);
+    packet_creator_.MaybeStartFEC();
+    QuicFrame frame;
+    size_t bytes_consumed = packet_creator_.CreateStreamFrame(
+        id, data, offset, fin, &frame);
+    bool success = packet_creator_.AddFrame(frame);
+    DCHECK(success);
+
     total_bytes_consumed += bytes_consumed;
     offset += bytes_consumed;
     fin_consumed = fin && bytes_consumed == data.size();
     data.remove_prefix(bytes_consumed);
 
-    PacketPair pair = packet_creator_.SerializeAllFrames(frames);
+    // TODO(ianswett): Currently this does not pack stream data together,
+    // because SendStreamData does not know if there are more streams to write.
     // TODO(ianswett): Restore packet reordering.
-    SendPacket(pair.first, pair.second, kShouldRetransmit, !kForce,
-               !kIsRetransmission);
-    UnackedPacket* unacked = new UnackedPacket(
-        frames, frames[0].stream_frame->data.as_string());
-    // Ensure the string piece points to the owned copy of the data.
-    unacked->frames[0].stream_frame->data = StringPiece(unacked->data);
-    unacked_packets_.insert(make_pair(pair.first, unacked));
+    SendOrQueueCurrentPacket();
 
-    if (packet_creator_.ShouldSendFec(data.size() == 0)) {
+    if (packet_creator_.ShouldSendFec(false)) {
       PacketPair fec_pair = packet_creator_.SerializeFec();
-      // Never resend FEC packets.
-      SendPacket(fec_pair.first, fec_pair.second, !kShouldRetransmit, !kForce,
-                 !kIsRetransmission);
+      // Never retransmit FEC packets.
+      SendOrQueuePacket(fec_pair.first, fec_pair.second, !kForce);
     }
 
-    if (data.size() == 0) {
-      // We're done writing the data.   Exit the loop.
-      // We don't make this a precondition beacuse we could have 0 bytes of data
+    if (data.empty()) {
+      // We're done writing the data. Exit the loop.
+      // We don't make this a precondition because we could have 0 bytes of data
       // if we're simply writing a fin.
       break;
     }
+  }
+  // Ensure the FEC group is closed at the end of this method.
+  if (packet_creator_.ShouldSendFec(true)) {
+    PacketPair fec_pair = packet_creator_.SerializeFec();
+    // Never retransmit FEC packets.
+    SendOrQueuePacket(fec_pair.first, fec_pair.second, !kForce);
   }
   return QuicConsumedData(total_bytes_consumed, fin_consumed);
 }
@@ -543,8 +538,8 @@ void QuicConnection::SendRstStream(QuicStreamId id,
       new QuicRstStreamFrame(id, offset, error)));
 
   // Try to write immediately if possible.
-  if (CanWrite(false)) {
-    WriteData();
+  if (CanWrite(!kIsRetransmission)) {
+    WriteQueuedData(kFlush);
   }
 }
 
@@ -553,15 +548,21 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
                                       const QuicEncryptedPacket& packet) {
   last_packet_revived_ = false;
   last_size_ = packet.length();
-  framer_.ProcessPacket(self_address, peer_address, packet);
-
+  last_self_address_ = self_address;
+  last_peer_address_ = peer_address;
+  framer_.ProcessPacket(packet);
   MaybeProcessRevivedPacket();
 }
 
 bool QuicConnection::OnCanWrite() {
   write_blocked_ = false;
 
-  WriteData();
+  WriteQueuedData(!kFlush);
+
+  // Ensure there's enough room for a StreamFrame before calling the visitor.
+  if (packet_creator_.BytesFree() <= kMinStreamFrameLength) {
+    SendOrQueueCurrentPacket();
+  }
 
   // If we've sent everything we had queued and we're still not blocked, let the
   // visitor know it can write more.
@@ -580,56 +581,70 @@ bool QuicConnection::OnCanWrite() {
     }
   }
 
+  // If a write can still be performed, ensure there are no pending frames,
+  // even if they didn't fill a packet.
+  if (packet_creator_.HasPendingFrames() && CanWrite(!kIsRetransmission)) {
+    SendOrQueueCurrentPacket();
+  }
+
   return !write_blocked_;
 }
 
-bool QuicConnection::WriteData() {
-  DCHECK_EQ(false, write_blocked_);
-  // Serialize the ack and congestion frames before draining the pending queue.
-  if (should_send_ack_) {
-    queued_control_frames_.push_back(QuicFrame(&outgoing_ack_));
-  }
-  if (should_send_congestion_feedback_) {
-    queued_control_frames_.push_back(QuicFrame(&outgoing_congestion_feedback_));
-  }
-  while (!queued_control_frames_.empty()) {
-    size_t num_serialized;
-    PacketPair pair = packet_creator_.SerializeFrames(
-        queued_control_frames_, &num_serialized);
-    // If any serialized frames need to be retransmitted, add them to
-    // unacked_packets.
-    QuicFrames unacked_frames;
-    for (QuicFrames::const_iterator iter = queued_control_frames_.begin();
-         iter != queued_control_frames_.begin() + num_serialized; ++iter) {
-      if (ShouldRetransmit(*iter)) {
-        unacked_frames.push_back(*iter);
-      }
-    }
-    if (!unacked_frames.empty()) {
-      unacked_packets_.insert(make_pair(pair.first,
-                                        new UnackedPacket(unacked_frames)));
-    }
-    queued_packets_.push_back(QueuedPacket(
-        pair.first, pair.second, !unacked_frames.empty(), false));
-    queued_control_frames_.erase(
-        queued_control_frames_.begin(),
-        queued_control_frames_.begin() + num_serialized);
-  }
-  should_send_ack_ = false;
-  should_send_congestion_feedback_ = false;
+bool QuicConnection::WriteQueuedData(bool flush) {
+  DCHECK(!write_blocked_);
+  DCHECK(!packet_creator_.HasPendingFrames());
 
+  // Send all queued packets first.
   size_t num_queued_packets = queued_packets_.size() + 1;
+  QueuedPacketList::iterator packet_iterator = queued_packets_.begin();
   while (!write_blocked_ && !helper_->IsSendAlarmSet() &&
-         !queued_packets_.empty()) {
+         packet_iterator != queued_packets_.end()) {
     // Ensure that from one iteration of this loop to the next we
     // succeeded in sending a packet so we don't infinitely loop.
     // TODO(rch): clean up and close the connection if we really hit this.
     DCHECK_LT(queued_packets_.size(), num_queued_packets);
     num_queued_packets = queued_packets_.size();
-    QueuedPacket p = queued_packets_.front();
-    queued_packets_.pop_front();
-    SendPacket(p.sequence_number, p.packet, p.should_retransmit, !kForce,
-               p.is_retransmission);
+    if (WritePacket(packet_iterator->sequence_number,
+                    packet_iterator->packet, !kForce)) {
+      packet_iterator = queued_packets_.erase(packet_iterator);
+    } else {
+      // TODO(ianswett): Why not break or return false here?
+      ++packet_iterator;
+    }
+  }
+
+  if (write_blocked_) {
+    return false;
+  }
+
+  while ((!queued_control_frames_.empty() || should_send_ack_ ||
+          should_send_congestion_feedback_) && CanWrite(!kIsRetransmission)) {
+    bool full_packet = false;
+    if (!queued_control_frames_.empty()) {
+      full_packet = !packet_creator_.AddFrame(queued_control_frames_.back());
+      if (!full_packet) {
+        queued_control_frames_.pop_back();
+      }
+    } else if (should_send_ack_) {
+      full_packet = !packet_creator_.AddFrame(QuicFrame(&outgoing_ack_));
+      if (!full_packet) {
+        should_send_ack_ = false;
+      }
+    } else if (should_send_congestion_feedback_) {
+      full_packet = !packet_creator_.AddFrame(
+          QuicFrame(&outgoing_congestion_feedback_));
+      if (!full_packet) {
+        should_send_congestion_feedback_ = false;
+      }
+    }
+
+    if (full_packet) {
+      SendOrQueueCurrentPacket();
+    }
+  }
+
+  if (flush && packet_creator_.HasPendingFrames()) {
+    SendOrQueueCurrentPacket();
   }
 
   return !write_blocked_;
@@ -643,44 +658,61 @@ void QuicConnection::RecordPacketReceived(const QuicPacketHeader& header) {
 
 bool QuicConnection::MaybeRetransmitPacketForRTO(
     QuicPacketSequenceNumber sequence_number) {
+  DCHECK_EQ(ContainsKey(unacked_packets_, sequence_number),
+            ContainsKey(retransmission_map_, sequence_number));
+
+  if (!ContainsKey(unacked_packets_, sequence_number)) {
+    DVLOG(2) << "alarm fired for " << sequence_number
+             << " but it has been acked or already retransmitted with "
+             << " different sequence number.";
+    // So no extra delay is added for this packet.
+    return true;
+  }
+
   // If the packet hasn't been acked and we're getting truncated acks, ignore
   // any RTO for packets larger than the peer's largest observed packet; it may
   // have been received by the peer and just wasn't acked due to the ack frame
   // running out of space.
   if (received_truncated_ack_ &&
-      sequence_number > peer_largest_observed_packet_ &&
-      ContainsKey(unacked_packets_, sequence_number)) {
+      sequence_number > peer_largest_observed_packet_) {
     return false;
   } else {
-    MaybeRetransmitPacket(sequence_number);
+    RetransmitPacket(sequence_number);
     return true;
   }
 }
 
-void QuicConnection::MaybeRetransmitPacket(
+void QuicConnection::RetransmitPacket(
     QuicPacketSequenceNumber sequence_number) {
-  UnackedPacketMap::iterator it = unacked_packets_.find(sequence_number);
-
-  if (it != unacked_packets_.end()) {
-    UnackedPacket* unacked = it->second;
-    // TODO(ianswett): Never change the sequence number of the connect packet.
-    unacked_packets_.erase(it);
-    // Re-packetize the frames with a new sequence number for retransmission.
-    // Retransmitted data packets do not use FEC, even when it's enabled.
-    PacketPair packetpair = packet_creator_.SerializeAllFrames(unacked->frames);
-    DVLOG(1) << "Retransmitting unacked packet " << sequence_number << " as "
-             << packetpair.first;
-    unacked_packets_.insert(make_pair(packetpair.first, unacked));
-
-    // Make sure if this was our least unacked packet, that we update our
-    // outgoing ack.  If this wasn't the least unacked, this is a no-op.
-    UpdateLeastUnacked(sequence_number);
-    SendPacket(packetpair.first, packetpair.second, kShouldRetransmit,
-               !kForce, kIsRetransmission);
-  } else {
-    DVLOG(2) << "alarm fired for " << sequence_number
-             << " but it has been acked";
-  }
+  UnackedPacketMap::iterator unacked_it =
+      unacked_packets_.find(sequence_number);
+  RetransmissionMap::iterator retransmission_it =
+      retransmission_map_.find(sequence_number);
+  // There should always be an entry corresponding to |sequence_number| in
+  // both |retransmission_map_| and |unacked_packets_|. Retransmissions due to
+  // RTO for sequence numbers that are already acked or retransmitted are
+  // ignored by MaybeRetransmitPacketForRTO.
+  DCHECK(unacked_it != unacked_packets_.end());
+  DCHECK(retransmission_it != retransmission_map_.end());
+  UnackedPacket* unacked = unacked_it->second;
+  // TODO(ianswett): Never change the sequence number of the connect packet.
+  // Re-packetize the frames with a new sequence number for retransmission.
+  // Retransmitted data packets do not use FEC, even when it's enabled.
+  PacketPair packetpair = packet_creator_.SerializeAllFrames(unacked->frames);
+  RetransmissionInfo retransmission_info(packetpair.first);
+  retransmission_info.number_retransmissions =
+      retransmission_it->second.number_retransmissions + 1;
+  retransmission_map_.insert(make_pair(packetpair.first, retransmission_info));
+  // Remove info with old sequence number.
+  unacked_packets_.erase(unacked_it);
+  retransmission_map_.erase(retransmission_it);
+  DVLOG(1) << "Retransmitting unacked packet " << sequence_number << " as "
+           << packetpair.first;
+  unacked_packets_.insert(make_pair(packetpair.first, unacked));
+  // Make sure if this was our least unacked packet, that we update our
+  // outgoing ack.  If this wasn't the least unacked, this is a no-op.
+  UpdateLeastUnacked(sequence_number);
+  SendOrQueuePacket(packetpair.first, packetpair.second, !kForce);
 }
 
 bool QuicConnection::CanWrite(bool is_retransmission) {
@@ -692,81 +724,91 @@ bool QuicConnection::CanWrite(bool is_retransmission) {
   QuicTime::Delta delay = congestion_manager_.TimeUntilSend(is_retransmission);
   // If the scheduler requires a delay, then we can not send this packet now.
   if (!delay.IsZero() && !delay.IsInfinite()) {
-    // TODO(pwestin): we need to handle delay.IsInfinite() seperately.
+    // TODO(pwestin): we need to handle delay.IsInfinite() separately.
     helper_->SetSendAlarm(delay);
     return false;
   }
   return true;
 }
 
-bool QuicConnection::SendPacket(QuicPacketSequenceNumber sequence_number,
-                                QuicPacket* packet,
-                                bool should_retransmit,
-                                bool force,
-                                bool is_retransmission) {
+bool QuicConnection::IsRetransmission(
+    QuicPacketSequenceNumber sequence_number) {
+  RetransmissionMap::iterator it = retransmission_map_.find(sequence_number);
+  return it != retransmission_map_.end() &&
+      it->second.number_retransmissions > 0;
+}
+
+void QuicConnection::MaybeSetupRetransmission(
+    QuicPacketSequenceNumber sequence_number) {
+  RetransmissionMap::iterator it = retransmission_map_.find(sequence_number);
+  if (it == retransmission_map_.end()) {
+    DVLOG(1) << "Will not retransmit packet " << sequence_number;
+    return;
+  }
+
+  RetransmissionInfo retransmission_info = it->second;
+  QuicTime::Delta retransmission_delay =
+      congestion_manager_.GetRetransmissionDelay(
+          retransmission_info.number_retransmissions);
+  retransmission_info.scheduled_time = clock_->Now().Add(retransmission_delay);
+  retransmission_timeouts_.push(retransmission_info);
+
+  // Do not set the retransmisson alarm if we're already handling the
+  // retransmission alarm because the retransmission alarm will be reset when
+  // OnRetransmissionTimeout completes.
+  if (!handling_retransmission_timeout_) {
+    helper_->SetRetransmissionAlarm(retransmission_delay);
+  }
+
+  // The second case should never happen in the real world, but does here
+  // because we sometimes send out of order to validate corner cases.
+  if (outgoing_ack_.sent_info.least_unacked == 0 ||
+      sequence_number < outgoing_ack_.sent_info.least_unacked) {
+    outgoing_ack_.sent_info.least_unacked = sequence_number;
+  }
+}
+
+bool QuicConnection::WritePacket(QuicPacketSequenceNumber sequence_number,
+                                 QuicPacket* packet,
+                                 bool forced) {
   if (!connected_) {
     DLOG(INFO)
         << "Dropping packet to be sent since connection is disconnected.";
     delete packet;
+    // Returning true because we deleted the packet and the caller shouldn't
+    // delete it again.
+    return true;
+  }
+
+  bool is_retransmission = IsRetransmission(sequence_number);
+  // If we are not forced and we can't write, then simply return false;
+  if (!forced && !CanWrite(is_retransmission)) {
     return false;
   }
 
-  // If this packet is being forced, don't bother checking to see if we should
-  // write, just write.
-  if (!force) {
-    // If we can't write, then simply queue the packet.
-    if (!CanWrite(is_retransmission)) {
-      queued_packets_.push_back(
-          QueuedPacket(sequence_number, packet, should_retransmit,
-                       is_retransmission));
-      return false;
-    }
-  }
-  if (should_retransmit) {
-    // Do not set the retransmisson alarm if we're already handling the
-    // retransmission alarm because the retransmission alarm will be reset when
-    // OnRetransmissionTimeout completes.
-    if (!handling_retransmission_timeout_) {
-      helper_->SetRetransmissionAlarm(DefaultRetransmissionTime());
-    }
-    retransmission_timeouts_.push_back(
-        make_pair(sequence_number, clock_->Now().Add(
-            DefaultRetransmissionTime())));
-
-    // The second case should never happen in the real world, but does here
-    // because we sometimes send out of order to validate corner cases.
-    if (outgoing_ack_.sent_info.least_unacked == 0 ||
-        sequence_number < outgoing_ack_.sent_info.least_unacked) {
-      outgoing_ack_.sent_info.least_unacked = sequence_number;
-    }
-  }
-
   scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(*packet));
-  int error;
   DLOG(INFO) << "Sending packet : "
              << (packet->is_fec_packet() ? "FEC " :
-                 (should_retransmit ? "data bearing " : " ack only "))
+                 (ContainsKey(retransmission_map_, sequence_number) ?
+                  "data bearing " : " ack only "))
              << "packet " << sequence_number;
   DCHECK(encrypted->length() <= kMaxPacketSize)
       << "Packet " << sequence_number << " will not be read; too large: "
-      << packet->length() << " " << encrypted->length() << " " << outgoing_ack_;
+      << packet->length() << " " << encrypted->length() << " "
+      << outgoing_ack_;
 
+  int error;
   int rv = helper_->WritePacketToWire(*encrypted, &error);
-  if (rv == -1) {
-    if (error == ERR_IO_PENDING) {
-      write_blocked_ = true;
-
-      // TODO(rch): uncomment when we get non-blocking (and non-retrying)
-      // UDP sockets.
-      /*
-      queued_packets_.push_front(
-          QueuedPacket(sequence_number, packet, should_retransmit,
-                       is_retransmission));
-      */
-      return false;
-    }
-    // TODO(wtc): is it correct to fall through to return true?
+  if (rv == -1 && error == ERR_IO_PENDING) {
+    write_blocked_ = true;
+    return false;
   }
+  // TODO(wtc): Is it correct to continue if the write failed.
+
+  // Set the retransmit alarm only when we have sent the packet to the client
+  // and not when it goes to the pending queue, otherwise we will end up adding
+  // an entry to retransmission_timeout_ every time we attempt a write.
+  MaybeSetupRetransmission(sequence_number);
 
   time_of_last_packet_ = clock_->Now();
   DVLOG(1) << "last packet: " << time_of_last_packet_.ToMicroseconds();
@@ -774,6 +816,41 @@ bool QuicConnection::SendPacket(QuicPacketSequenceNumber sequence_number,
   congestion_manager_.SentPacket(sequence_number, packet->length(),
                                  is_retransmission);
   delete packet;
+  return true;
+}
+
+void QuicConnection::SendOrQueueCurrentPacket() {
+  QuicFrames retransmittable_frames;
+  PacketPair pair = packet_creator_.SerializePacket(&retransmittable_frames);
+  const bool should_retransmit = !retransmittable_frames.empty();
+  if (should_retransmit) {
+    UnackedPacket* unacked = new UnackedPacket(retransmittable_frames);
+    for (size_t i = 0; i < retransmittable_frames.size(); ++i) {
+      if (retransmittable_frames[i].type == STREAM_FRAME) {
+        DCHECK(unacked->data.empty());
+        // Make an owned copy of the StringPiece.
+        unacked->data =
+            retransmittable_frames[i].stream_frame->data.as_string();
+        // Ensure the frame's StringPiece points to the owned copy of the data.
+        retransmittable_frames[i].stream_frame->data =
+            StringPiece(unacked->data);
+      }
+    }
+    unacked_packets_.insert(make_pair(pair.first, unacked));
+    // All unacked packets might be retransmitted.
+    retransmission_map_.insert(make_pair(pair.first,
+                                         RetransmissionInfo(pair.first)));
+  }
+  SendOrQueuePacket(pair.first, pair.second, !kForce);
+}
+
+bool QuicConnection::SendOrQueuePacket(QuicPacketSequenceNumber sequence_number,
+                                       QuicPacket* packet,
+                                       bool force) {
+  if (!WritePacket(sequence_number, packet, force)) {
+    queued_packets_.push_back(QueuedPacket(sequence_number, packet));
+    return false;
+  }
   return true;
 }
 
@@ -805,8 +882,8 @@ void QuicConnection::SendAck() {
     should_send_congestion_feedback_ = true;
   }
   // Try to write immediately if possible.
-  if (CanWrite(false)) {
-    WriteData();
+  if (CanWrite(!kIsRetransmission)) {
+    WriteQueuedData(kFlush);
   }
 }
 
@@ -820,23 +897,22 @@ QuicTime QuicConnection::OnRetransmissionTimeout() {
   // want to set it to the RTO of B when we return from this function.
   handling_retransmission_timeout_ = true;
 
-  for (int i = 0; i < kMaxPacketsPerRetransmissionAlarm; ++i) {
-    if (retransmission_timeouts_.empty() ||
-        retransmission_timeouts_.front().second > clock_->Now()) {
+  for (int i = 0; i < kMaxPacketsPerRetransmissionAlarm &&
+           !retransmission_timeouts_.empty(); ++i) {
+    RetransmissionInfo retransmission_info = retransmission_timeouts_.top();
+    DCHECK(retransmission_info.scheduled_time.IsInitialized());
+    if (retransmission_info.scheduled_time > clock_->Now()) {
       break;
     }
-    if (!MaybeRetransmitPacketForRTO(retransmission_timeouts_.front().first)) {
+    retransmission_timeouts_.pop();
+    if (!MaybeRetransmitPacketForRTO(retransmission_info.sequence_number)) {
       DLOG(INFO) << "MaybeRetransmitPacketForRTO failed: "
-                 << "adding an extra delay.";
-      // This implicitly delays the RTO for all subsequent packets, since
-      // MaybeRetransmitPacketForRTO will return false for all packets with
-      // a larger sequence number anyway.
-      retransmission_timeouts_.front().second =
-          retransmission_timeouts_.front().second.Add(
-              DefaultRetransmissionTime());
-      break;
+                 << "adding an extra delay for "
+                 << retransmission_info.sequence_number;
+      retransmission_info.scheduled_time = clock_->Now().Add(
+          congestion_manager_.DefaultRetransmissionTime());
+      retransmission_timeouts_.push(retransmission_info);
     }
-    retransmission_timeouts_.pop_front();
   }
 
   handling_retransmission_timeout_ = false;
@@ -847,7 +923,7 @@ QuicTime QuicConnection::OnRetransmissionTimeout() {
 
   // We have packets remaining.  Return the absolute RTO of the oldest packet
   // on the list.
-  return retransmission_timeouts_.front().second;
+  return retransmission_timeouts_.top().scheduled_time;
 }
 
 void QuicConnection::MaybeProcessRevivedPacket() {
@@ -896,9 +972,9 @@ void QuicConnection::SendConnectionCloseWithDetails(QuicErrorCode error,
   frame.ack_frame = outgoing_ack_;
 
   PacketPair packetpair = packet_creator_.CloseConnection(&frame);
-  // There's no point in retransmitting this: we're closing the connection.
-  SendPacket(packetpair.first, packetpair.second, !kShouldRetransmit, kForce,
-             !kIsRetransmission);
+  // There's no point in retransmitting/queueing this: we're closing the
+  // connection.
+  WritePacket(packetpair.first, packetpair.second, kForce);
   CloseConnection(error, false);
 }
 

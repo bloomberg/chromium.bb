@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
-#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
@@ -39,8 +38,7 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
 
   // Called when a new packet has been received, before it
   // has been validated or processed.
-  virtual void OnPacket(const IPEndPoint& self_address,
-                        const IPEndPoint& peer_address) = 0;
+  virtual void OnPacket() = 0;
 
   // Called when a public reset packet has been parsed but has not yet
   // been validated.
@@ -135,9 +133,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // single, complete UDP packet (not a frame of a packet).  This packet
   // might be null padded past the end of the payload, which will be correctly
   // ignored.
-  bool ProcessPacket(const IPEndPoint& self_address,
-                     const IPEndPoint& peer_address,
-                     const QuicEncryptedPacket& packet);
+  bool ProcessPacket(const QuicEncryptedPacket& packet);
 
   // Pass a data packet that was revived from FEC data into the framer
   // for parsing.
@@ -146,17 +142,24 @@ class NET_EXPORT_PRIVATE QuicFramer {
   bool ProcessRevivedPacket(const QuicPacketHeader& header,
                             base::StringPiece payload);
 
+  // Returns the number of bytes added to the packet for the specified frame,
+  // and 0 if the frame doesn't fit.  Includes the header size for the first
+  // frame.
+  size_t GetSerializedFrameLength(
+      const QuicFrame& frame, size_t free_bytes, bool first_frame);
+
   // Returns a new QuicPacket, owned by the caller, populated with the fields
   // in |header| and |frames|, or NULL if the packet could not be created.
+  // TODO(ianswett): Used for testing only.
   QuicPacket* ConstructFrameDataPacket(const QuicPacketHeader& header,
                                        const QuicFrames& frames);
 
-  // Returns a new QuicPacket, owned by the caller, populated with the fields
-  // in |header| and |fec|, or NULL if the packet could not be created.  Sets
-  // num_consumed to the number of frames consumed constructing the packet.
-  QuicPacket* ConstructMaxFrameDataPacket(const QuicPacketHeader& header,
-                                          const QuicFrames& frames,
-                                          size_t* num_consumed);
+  // Returns a new QuicPacket from the first |num_frames| frames, owned by the
+  // caller or NULL if the packet could not be created.  The packet must be of
+  // size |packet_size|.
+  QuicPacket* ConstructFrameDataPacket(const QuicPacketHeader& header,
+                                       const QuicFrames& frames,
+                                       size_t packet_size);
 
   // Returns a new QuicPacket, owned by the caller, populated with the fields
   // in |header| and |fec|, or NULL if the packet could not be created.
@@ -185,8 +188,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
   friend class test::QuicFramerPeer;
 
   bool ProcessDataPacket(const QuicPacketPublicHeader& public_header,
-                         const IPEndPoint& self_address,
-                         const IPEndPoint& peer_address,
                          const QuicEncryptedPacket& packet);
 
   bool ProcessPublicResetPacket(const QuicPacketPublicHeader& public_header);

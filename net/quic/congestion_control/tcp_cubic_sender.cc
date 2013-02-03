@@ -4,15 +4,13 @@
 
 #include "net/quic/congestion_control/tcp_cubic_sender.h"
 
-#include "net/quic/congestion_control/quic_send_scheduler.h"
-
 namespace {
 // Constants based on TCP defaults.
-const size_t kHybridStartLowWindow = 16;
-const int kMaxSegmentSize = net::kMaxPacketSize;
-const int kDefaultReceiveWindow = 64000;
-const size_t kInitialCongestionWindow = 10;
-const size_t kMaxCongestionWindow = 10000;
+const int64 kHybridStartLowWindow = 16;
+const net::QuicByteCount kMaxSegmentSize = net::kMaxPacketSize;
+const net::QuicByteCount kDefaultReceiveWindow = 64000;
+const int64 kInitialCongestionWindow = 10;
+const int64 kMaxCongestionWindow = 10000;
 const int kMaxBurstLength = 3;
 };
 
@@ -23,7 +21,7 @@ TcpCubicSender::TcpCubicSender(const QuicClock* clock, bool reno)
       cubic_(clock),
       reno_(reno),
       congestion_window_count_(0),
-      receiver_congestion_window_in_bytes_(kDefaultReceiveWindow),
+      receiver_congestion_window_(kDefaultReceiveWindow),
       last_received_accumulated_number_of_lost_packets_(0),
       bytes_in_flight_(0),
       update_end_sequence_number_(true),
@@ -47,12 +45,11 @@ void TcpCubicSender::OnIncomingQuicCongestionFeedbackFrame(
       OnIncomingLoss(recovered_lost_packets);
     }
   }
-  receiver_congestion_window_in_bytes_ =
-      feedback.tcp.receive_window << 4;
+  receiver_congestion_window_ = feedback.tcp.receive_window;
 }
 
 void TcpCubicSender::OnIncomingAck(
-    QuicPacketSequenceNumber acked_sequence_number, size_t acked_bytes,
+    QuicPacketSequenceNumber acked_sequence_number, QuicByteCount acked_bytes,
     QuicTime::Delta rtt) {
   bytes_in_flight_ -= acked_bytes;
   CongestionAvoidance(acked_sequence_number);
@@ -82,7 +79,7 @@ void TcpCubicSender::OnIncomingLoss(int /*number_of_lost_packets*/) {
 }
 
 void TcpCubicSender::SentPacket(QuicPacketSequenceNumber sequence_number,
-                                size_t bytes,
+                                QuicByteCount bytes,
                                 bool is_retransmission) {
   if (!is_retransmission) {
     bytes_in_flight_ += bytes;
@@ -107,24 +104,24 @@ QuicTime::Delta TcpCubicSender::TimeUntilSend(bool is_retransmission) {
   return QuicTime::Delta::Zero();
 }
 
-size_t TcpCubicSender::AvailableCongestionWindow() {
+QuicByteCount TcpCubicSender::AvailableCongestionWindow() {
   if (bytes_in_flight_ > CongestionWindow()) {
     return 0;
   }
   return CongestionWindow() - bytes_in_flight_;
 }
 
-size_t TcpCubicSender::CongestionWindow() {
+QuicByteCount TcpCubicSender::CongestionWindow() {
   // What's the current congestion window in bytes.
-  return std::min(receiver_congestion_window_in_bytes_,
-                  static_cast<int>(congestion_window_ * kMaxSegmentSize));
+  return std::min(receiver_congestion_window_,
+                  congestion_window_ * kMaxSegmentSize);
 }
 
-int TcpCubicSender::BandwidthEstimate() {
+QuicBandwidth TcpCubicSender::BandwidthEstimate() {
   // TODO(pwestin): make a long term estimate, based on RTT and loss rate? or
   // instantaneous estimate?
   // Throughput ~= (1/RTT)*sqrt(3/2p)
-  return kNoValidEstimate;
+  return QuicBandwidth::Zero();
 }
 
 void TcpCubicSender::Reset() {
@@ -133,12 +130,13 @@ void TcpCubicSender::Reset() {
 }
 
 bool TcpCubicSender::IsCwndLimited() const {
-  const size_t congestion_window_bytes = congestion_window_ * kMaxSegmentSize;
+  const QuicByteCount congestion_window_bytes = congestion_window_ *
+      kMaxSegmentSize;
   if (bytes_in_flight_ >= congestion_window_bytes) {
     return true;
   }
-  const size_t tcp_max_burst = kMaxBurstLength * kMaxSegmentSize;
-  const size_t left = congestion_window_bytes - bytes_in_flight_;
+  const QuicByteCount tcp_max_burst = kMaxBurstLength * kMaxSegmentSize;
+  const QuicByteCount left = congestion_window_bytes - bytes_in_flight_;
   return left <= tcp_max_burst;
 }
 

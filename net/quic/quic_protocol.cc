@@ -121,7 +121,7 @@ ostream& operator<<(ostream& os,
     }
     case kFixRate: {
       os << " bitrate_in_bytes_per_second: "
-         << congestion_frame.fix_rate.bitrate_in_bytes_per_second;
+         << congestion_frame.fix_rate.bitrate.ToBytesPerSecond();
       break;
     }
     case kTCP: {
@@ -131,10 +131,6 @@ ostream& operator<<(ostream& os,
       os << " receive_window: " << tcp.receive_window;
       break;
     }
-    default: {
-      DLOG(FATAL) << "Unsupported congestion info type: "
-                  << congestion_frame.type;
-    }
   }
  return os;
 }
@@ -143,6 +139,10 @@ ostream& operator<<(ostream& os, const QuicAckFrame& ack_frame) {
   os << "sent info { " << ack_frame.sent_info << " } "
      << "received info { " << ack_frame.received_info << " }\n";
  return os;
+}
+
+CongestionFeedbackMessageFixRate::CongestionFeedbackMessageFixRate()
+    : bitrate(QuicBandwidth::Zero()) {
 }
 
 CongestionFeedbackMessageInterArrival::

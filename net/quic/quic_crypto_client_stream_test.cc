@@ -84,8 +84,7 @@ void TestMockHelper::CheckClientHelloPacket(
                          QuicEncrypter::Create(kNULL));
   TestQuicVisitor quic_visitor;
   quic_framer.set_visitor(&quic_visitor);
-  ASSERT_TRUE(quic_framer.ProcessPacket(IPEndPoint(), IPEndPoint(),
-                                        packet));
+  ASSERT_TRUE(quic_framer.ProcessPacket(packet));
   EXPECT_EQ(kCryptoStreamId, quic_visitor.frame()->stream_id);
   EXPECT_FALSE(quic_visitor.frame()->fin);
   EXPECT_EQ(0u, quic_visitor.frame()->offset);

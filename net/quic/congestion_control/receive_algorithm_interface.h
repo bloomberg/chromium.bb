@@ -33,7 +33,7 @@ class NET_EXPORT_PRIVATE ReceiveAlgorithmInterface {
   // timestamp: is the sent timestamp from the QUIC packet header.
   // revived: is set if the packet is lost and then recovered with help of FEC
   // (Forward Error Correction) packet(s).
-  virtual void RecordIncomingPacket(size_t bytes,
+  virtual void RecordIncomingPacket(QuicByteCount bytes,
                                     QuicPacketSequenceNumber sequence_number,
                                     QuicTime timestamp,
                                     bool revived) = 0;

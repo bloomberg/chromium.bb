@@ -79,6 +79,8 @@ class NET_EXPORT_PRIVATE Cubic {
 
   // Last congestion window in packets computed by cubic function.
   QuicTcpCongestionWindow last_target_congestion_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(Cubic);
 };
 
 }  // namespace net

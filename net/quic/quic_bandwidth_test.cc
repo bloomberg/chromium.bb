@@ -6,7 +6,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
-namespace testing {
+namespace test {
 
 class QuicBandwidthTest : public ::testing::Test {
 };
@@ -57,5 +57,26 @@ TEST_F(QuicBandwidthTest, TimeDelta) {
                 1000, QuicTime::Delta::FromMilliseconds(100)));
 }
 
-}  // namespace testing
+TEST_F(QuicBandwidthTest, Scale) {
+  EXPECT_EQ(QuicBandwidth::FromKBytesPerSecond(500),
+            QuicBandwidth::FromKBytesPerSecond(1000).Scale(0.5f));
+  EXPECT_EQ(QuicBandwidth::FromKBytesPerSecond(750),
+            QuicBandwidth::FromKBytesPerSecond(1000).Scale(0.75f));
+  EXPECT_EQ(QuicBandwidth::FromKBytesPerSecond(1250),
+            QuicBandwidth::FromKBytesPerSecond(1000).Scale(1.25f));
+}
+
+
+TEST_F(QuicBandwidthTest, BytesPerPeriod) {
+  EXPECT_EQ(2000u, QuicBandwidth::FromKBytesPerSecond(2000).ToBytesPerPeriod(
+      QuicTime::Delta::FromMilliseconds(1)));
+  EXPECT_EQ(2u, QuicBandwidth::FromKBytesPerSecond(2000).ToKBytesPerPeriod(
+      QuicTime::Delta::FromMilliseconds(1)));
+  EXPECT_EQ(200000u, QuicBandwidth::FromKBytesPerSecond(2000).ToBytesPerPeriod(
+      QuicTime::Delta::FromMilliseconds(100)));
+  EXPECT_EQ(200u, QuicBandwidth::FromKBytesPerSecond(2000).ToKBytesPerPeriod(
+      QuicTime::Delta::FromMilliseconds(100)));
+}
+
+}  // namespace test
 }  // namespace net

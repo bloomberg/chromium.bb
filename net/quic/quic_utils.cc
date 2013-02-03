@@ -13,10 +13,11 @@ namespace net {
 size_t QuicUtils::StreamFramePacketOverhead(int num_frames) {
   // TODO(jar): Use sizeof(some name).
   return kPacketHeaderSize +
-         (1 +  // 8 bit type
+         (kFrameTypeSize +
           kMinStreamFrameLength) * num_frames;
 }
 
+// static
 uint128 QuicUtils::FNV1a_128_Hash(const char* data, int len) {
   // The following two constants are defined as part of the hash algorithm.
   // 309485009821345068724781371
@@ -41,6 +42,7 @@ uint128 QuicUtils::FNV1a_128_Hash(const char* data, int len) {
 case x: \
 return #x;
 
+// static
 const char* QuicUtils::ErrorToString(QuicErrorCode error) {
   switch (error) {
     RETURN_STRING_LITERAL(QUIC_NO_ERROR);

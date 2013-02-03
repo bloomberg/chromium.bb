@@ -99,6 +99,10 @@ bool QuicDataWriter::WriteBytes(const void* data, size_t data_len) {
 }
 
 void QuicDataWriter::WritePadding() {
+  DCHECK_LE(length_, capacity_);
+  if (length_ > capacity_) {
+    return;
+  }
   memset(buffer_ + length_, 0x00, capacity_ - length_);
   length_ = capacity_;
 }

@@ -50,6 +50,17 @@ void FramerVisitorCapturingAcks::OnCongestionFeedbackFrame(
   feedback_.reset(new QuicCongestionFeedbackFrame(frame));
 }
 
+FramerVisitorCapturingPublicReset::FramerVisitorCapturingPublicReset() {
+}
+
+FramerVisitorCapturingPublicReset::~FramerVisitorCapturingPublicReset() {
+}
+
+void FramerVisitorCapturingPublicReset::OnPublicResetPacket(
+    const QuicPublicResetPacket& public_reset) {
+  public_reset_packet_ = public_reset;
+}
+
 MockConnectionVisitor::MockConnectionVisitor() {
 }
 
@@ -94,11 +105,10 @@ PacketSavingConnection::~PacketSavingConnection() {
   STLDeleteElements(&packets_);
 }
 
-bool PacketSavingConnection::SendPacket(QuicPacketSequenceNumber number,
-                                        QuicPacket* packet,
-                                        bool should_retransmit,
-                                        bool force,
-                                        bool is_retransmission) {
+bool PacketSavingConnection::SendOrQueuePacket(
+    QuicPacketSequenceNumber sequence_number,
+    QuicPacket* packet,
+    bool force) {
   packets_.push_back(packet);
   return true;
 }
@@ -112,11 +122,10 @@ MockSession::MockSession(QuicConnection* connection, bool is_server)
 MockSession::~MockSession() {
 }
 
-MockScheduler::MockScheduler()
-    : QuicSendScheduler(NULL, kFixRate) {
+MockSendAlgorithm::MockSendAlgorithm() {
 }
 
-MockScheduler::~MockScheduler() {
+MockSendAlgorithm::~MockSendAlgorithm() {
 }
 
 namespace {

@@ -25,12 +25,12 @@ TEST_F(QuicTcpReceiverTest, SimpleReceiver) {
   receiver_->RecordIncomingPacket(1, 1, timestamp, false);
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
   EXPECT_EQ(kTCP, feedback.type);
-  EXPECT_EQ(256000, feedback.tcp.receive_window << 4);
+  EXPECT_EQ(256000u, feedback.tcp.receive_window);
   EXPECT_EQ(0, feedback.tcp.accumulated_number_of_lost_packets);
   receiver_->RecordIncomingPacket(1, 2, timestamp, true);
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
   EXPECT_EQ(kTCP, feedback.type);
-  EXPECT_EQ(256000, feedback.tcp.receive_window << 4);
+  EXPECT_EQ(256000u, feedback.tcp.receive_window);
   EXPECT_EQ(1, feedback.tcp.accumulated_number_of_lost_packets);
 }
 

@@ -20,6 +20,7 @@
 #include "base/string_piece.h"
 #include "net/base/int128.h"
 #include "net/base/net_export.h"
+#include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_time.h"
 
 namespace net {
@@ -36,7 +37,8 @@ typedef QuicPacketSequenceNumber QuicFecGroupNumber;
 typedef uint64 QuicPublicResetNonceProof;
 
 // TODO(rch): Consider Quic specific names for these constants.
-const size_t kMaxPacketSize = 1200;  // Maximum size in bytes of a QUIC packet.
+// Maximum size in bytes of a QUIC packet.
+const QuicByteCount kMaxPacketSize = 1200;
 
 // Maximum number of open streams per connection.
 const size_t kDefaultMaxStreamsPerConnection = 100;
@@ -53,6 +55,8 @@ const size_t kPrivateFlagsSize = 1;
 const size_t kFecGroupSize = 1;
 // Number of bytes reserved for the nonce proof in public reset packet.
 const size_t kPublicResetNonceSize = 8;
+// Number of bytes reserved for the frame type preceding each frame.
+const size_t kFrameTypeSize = 1;
 
 // Size in bytes of the data or fec packet header.
 const size_t kPacketHeaderSize = kQuicGuidSize + kPublicFlagsSize +
@@ -318,7 +322,7 @@ enum CongestionFeedbackType {
 
 struct NET_EXPORT_PRIVATE CongestionFeedbackMessageTCP {
   uint16 accumulated_number_of_lost_packets;
-  uint16 receive_window;  // Number of bytes >> 4.
+  QuicByteCount receive_window;
 };
 
 struct NET_EXPORT_PRIVATE CongestionFeedbackMessageInterArrival {
@@ -331,7 +335,8 @@ struct NET_EXPORT_PRIVATE CongestionFeedbackMessageInterArrival {
 };
 
 struct NET_EXPORT_PRIVATE CongestionFeedbackMessageFixRate {
-  uint32 bitrate_in_bytes_per_second;
+  CongestionFeedbackMessageFixRate();
+  QuicBandwidth bitrate;
 };
 
 struct NET_EXPORT_PRIVATE QuicCongestionFeedbackFrame {
@@ -418,7 +423,6 @@ struct NET_EXPORT_PRIVATE QuicFecData {
   // FEC protected packet.  The last protected packet's sequence number will
   // be one less than the sequence number of the FEC packet.
   QuicFecGroupNumber fec_group;
-  QuicPacketSequenceNumber min_protected_packet_sequence_number;
   // The last protected packet's sequence number will be one
   // less than the sequence number of the FEC packet.
   base::StringPiece redundancy;

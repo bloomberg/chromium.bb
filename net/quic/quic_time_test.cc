@@ -7,7 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
-namespace testing {
+namespace test {
 
 class QuicTimeDeltaTest : public ::testing::Test {
  protected:
@@ -112,5 +112,5 @@ TEST_F(QuicTimeTest, MockClock) {
   EXPECT_EQ(now, time);
 }
 
-}  // namespace testing
+}  // namespace test
 }  // namespace net

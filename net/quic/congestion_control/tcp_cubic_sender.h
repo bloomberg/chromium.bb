@@ -14,10 +14,16 @@
 #include "net/quic/congestion_control/cubic.h"
 #include "net/quic/congestion_control/hybrid_slow_start.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
+#include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_clock.h"
+#include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
 
 namespace net {
+
+namespace test {
+class TcpCubicSenderPeer;
+}  // namespace test
 
 class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
  public:
@@ -29,21 +35,21 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
       const QuicCongestionFeedbackFrame& feedback,
       const SentPacketsMap& sent_packets) OVERRIDE;
   virtual void OnIncomingAck(QuicPacketSequenceNumber acked_sequence_number,
-                             size_t acked_bytes,
+                             QuicByteCount acked_bytes,
                              QuicTime::Delta rtt) OVERRIDE;
   virtual void OnIncomingLoss(int number_of_lost_packets) OVERRIDE;
   virtual void SentPacket(QuicPacketSequenceNumber sequence_number,
-                          size_t bytes,
+                          QuicByteCount bytes,
                           bool is_retransmission) OVERRIDE;
   virtual QuicTime::Delta TimeUntilSend(bool is_retransmission) OVERRIDE;
-  virtual size_t AvailableCongestionWindow() OVERRIDE;
-  virtual int BandwidthEstimate() OVERRIDE;
+  virtual QuicBandwidth BandwidthEstimate() OVERRIDE;
   // End implementation of SendAlgorithmInterface.
 
-  // Visible for testing.
-  size_t CongestionWindow();
-
  private:
+  friend class test::TcpCubicSenderPeer;
+
+  QuicByteCount AvailableCongestionWindow();
+  QuicByteCount CongestionWindow();
   void Reset();
   void AckAccounting(QuicTime::Delta rtt);
   void CongestionAvoidance(QuicPacketSequenceNumber ack);
@@ -57,16 +63,16 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   const bool reno_;
 
   // ACK counter for the Reno implementation.
-  size_t congestion_window_count_;
+  int64 congestion_window_count_;
 
   // Receiver side advertised window.
-  int receiver_congestion_window_in_bytes_;
+  QuicByteCount receiver_congestion_window_;
 
   // Receiver side advertised packet loss.
   int last_received_accumulated_number_of_lost_packets_;
 
   // Bytes in flight, aka bytes on the wire.
-  size_t bytes_in_flight_;
+  QuicByteCount bytes_in_flight_;
 
   // We need to keep track of the end sequence number of each RTT "burst".
   bool update_end_sequence_number_;
@@ -80,6 +86,8 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
 
   // Min RTT during this session.
   QuicTime::Delta delay_min_;
+
+  DISALLOW_COPY_AND_ASSIGN(TcpCubicSender);
 };
 
 }  // namespace net

@@ -8,11 +8,11 @@
 namespace net {
 
 // Originally 64K bytes for TCP, setting it to 256K to support higher bitrates.
-const size_t kReceiveWindowTCP = 256000;
+const QuicByteCount kReceiveWindowTCP = 256000;
 
 TcpReceiver::TcpReceiver()
     : accumulated_number_of_recoverd_lost_packets_(0),
-      receive_window_in_bytes_(kReceiveWindowTCP) {
+      receive_window_(kReceiveWindowTCP) {
 }
 
 bool TcpReceiver::GenerateCongestionFeedback(
@@ -20,11 +20,11 @@ bool TcpReceiver::GenerateCongestionFeedback(
   feedback->type = kTCP;
   feedback->tcp.accumulated_number_of_lost_packets =
       accumulated_number_of_recoverd_lost_packets_;
-  feedback->tcp.receive_window = receive_window_in_bytes_ >> 4;
+  feedback->tcp.receive_window = receive_window_;
   return true;
 }
 
-void TcpReceiver::RecordIncomingPacket(size_t bytes,
+void TcpReceiver::RecordIncomingPacket(QuicByteCount bytes,
                                        QuicPacketSequenceNumber sequence_number,
                                        QuicTime timestamp,
                                        bool revived) {

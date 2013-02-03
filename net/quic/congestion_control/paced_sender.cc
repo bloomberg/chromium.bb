@@ -4,28 +4,27 @@
 
 #include "net/quic/congestion_control/paced_sender.h"
 
-#include "base/time.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
 
 // To prevent too aggressive pacing we allow the following packet burst size.
-const size_t kMinPacketBurstSize = 2;
+const int64 kMinPacketBurstSize = 2;
 // Max estimated time between calls to TimeUntilSend and
 // AvailableCongestionWindow.
 const int64 kMaxSchedulingDelayUs = 2000;
 
-PacedSender::PacedSender(const QuicClock* clock, int bytes_per_s)
-    : leaky_bucket_(clock, bytes_per_s),
-      pace_in_bytes_per_s_(bytes_per_s) {
+PacedSender::PacedSender(const QuicClock* clock, QuicBandwidth estimate)
+    : leaky_bucket_(clock, estimate),
+      pace_(estimate) {
 }
 
-void PacedSender::UpdateBandwidthEstimate(int bytes_per_s) {
-  leaky_bucket_.SetDrainingRate(bytes_per_s);
-  pace_in_bytes_per_s_ = bytes_per_s;
+void PacedSender::UpdateBandwidthEstimate(QuicBandwidth estimate) {
+  leaky_bucket_.SetDrainingRate(estimate);
+  pace_ = estimate;
 }
 
-void PacedSender::SentPacket(size_t bytes) {
+void PacedSender::SentPacket(QuicByteCount bytes) {
   leaky_bucket_.Add(bytes);
 }
 
@@ -34,9 +33,9 @@ QuicTime::Delta PacedSender::TimeUntilSend(QuicTime::Delta time_until_send) {
     return time_until_send;
   }
   // Pace the data.
-  size_t pacing_window = kMaxSchedulingDelayUs * pace_in_bytes_per_s_ /
-      base::Time::kMicrosecondsPerSecond;
-  size_t min_window_size = kMinPacketBurstSize *  kMaxPacketSize;
+  QuicByteCount pacing_window = pace_.ToBytesPerPeriod(
+      QuicTime::Delta::FromMicroseconds(kMaxSchedulingDelayUs));
+  QuicByteCount min_window_size = kMinPacketBurstSize *  kMaxPacketSize;
   pacing_window = std::max(pacing_window, min_window_size);
 
   if (pacing_window > leaky_bucket_.BytesPending()) {
@@ -46,10 +45,11 @@ QuicTime::Delta PacedSender::TimeUntilSend(QuicTime::Delta time_until_send) {
   return leaky_bucket_.TimeRemaining();
 }
 
-size_t PacedSender::AvailableWindow(size_t available_congestion_window) {
-  size_t accuracy_window = (kMaxSchedulingDelayUs * pace_in_bytes_per_s_) /
-      base::Time::kMicrosecondsPerSecond;
-  size_t min_burst_window = kMinPacketBurstSize * kMaxPacketSize;
+QuicByteCount PacedSender::AvailableWindow(
+    QuicByteCount available_congestion_window) {
+  QuicByteCount accuracy_window = pace_.ToBytesPerPeriod(
+      QuicTime::Delta::FromMicroseconds(kMaxSchedulingDelayUs));
+  QuicByteCount min_burst_window = kMinPacketBurstSize * kMaxPacketSize;
   DLOG(INFO) << "Available congestion window:" << available_congestion_window
       << " accuracy window:" << accuracy_window
       << " min burst window:" << min_burst_window;
@@ -61,7 +61,7 @@ size_t PacedSender::AvailableWindow(size_t available_congestion_window) {
     // burst we also consider our timing accuracy. An accuracy of 1 ms will
     // allow us to send up to 19.2Mbit/s with 2 packets per burst.
     available_congestion_window = std::max(min_burst_window, accuracy_window);
-    size_t bytes_pending = leaky_bucket_.BytesPending();
+    QuicByteCount bytes_pending = leaky_bucket_.BytesPending();
     if (bytes_pending > available_congestion_window) {
       return 0;
     }

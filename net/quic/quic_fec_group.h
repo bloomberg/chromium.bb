@@ -21,12 +21,6 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
   QuicFecGroup();
   ~QuicFecGroup();
 
-  QuicPacketSequenceNumber min_protected_packet() const {
-    return min_protected_packet_;
-  }
-
-  size_t GroupSize() const;
-
   // Updates the FEC group based on the delivery of a data packet.
   // Returns false if this packet has already been seen, true otherwise.
   bool Update(const QuicPacketHeader& header,
@@ -59,6 +53,14 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
 
   const base::StringPiece parity() const {
     return base::StringPiece(parity_, parity_len_);
+  }
+
+  QuicPacketSequenceNumber min_protected_packet() const {
+    return min_protected_packet_;
+  }
+
+  size_t NumReceivedPackets() const {
+    return received_packets_.size();
   }
 
  private:

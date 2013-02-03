@@ -67,7 +67,7 @@ class NET_EXPORT_PRIVATE QuicTime {
   explicit QuicTime(base::TimeTicks ticks);
 
   // Creates a new QuicTime with an internal value of 0.  IsInitialized()
-  // will return true for these times.
+  // will return false for these times.
   static QuicTime Zero();
 
   // Create a new QuicTime holding the time_ms.

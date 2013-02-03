@@ -24,7 +24,7 @@ class NET_EXPORT_PRIVATE TcpReceiver : public ReceiveAlgorithmInterface {
   virtual bool GenerateCongestionFeedback(
       QuicCongestionFeedbackFrame* feedback) OVERRIDE;
 
-  virtual void RecordIncomingPacket(size_t bytes,
+  virtual void RecordIncomingPacket(QuicByteCount bytes,
                                     QuicPacketSequenceNumber sequence_number,
                                     QuicTime timestamp,
                                     bool revived) OVERRIDE;
@@ -32,9 +32,10 @@ class NET_EXPORT_PRIVATE TcpReceiver : public ReceiveAlgorithmInterface {
  private:
   // We need to keep track of FEC recovered packets.
   int accumulated_number_of_recoverd_lost_packets_;
-  uint32 receive_window_in_bytes_;
+  QuicByteCount receive_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(TcpReceiver);
 };
 
 }  // namespace net
-
 #endif  // NET_QUIC_CONGESTION_CONTROL_TCP_RECEIVER_H_

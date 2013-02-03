@@ -7,7 +7,6 @@
 #include <math.h>
 
 #include "base/logging.h"
-#include "base/time.h"
 #include "net/quic/quic_protocol.h"
 
 namespace {
@@ -18,10 +17,10 @@ namespace {
 namespace net {
 
 FixRateSender::FixRateSender(const QuicClock* clock)
-    : bitrate_in_bytes_per_s_(kInitialBitrate),
-      fix_rate_leaky_bucket_(clock, kInitialBitrate),
-      paced_sender_(clock, kInitialBitrate),
-      bytes_in_flight_(0) {
+    : bitrate_(QuicBandwidth::FromBytesPerSecond(kInitialBitrate)),
+      fix_rate_leaky_bucket_(clock, bitrate_),
+      paced_sender_(clock, bitrate_),
+      data_in_flight_(0) {
   DLOG(INFO) << "FixRateSender";
 }
 
@@ -31,19 +30,18 @@ void FixRateSender::OnIncomingQuicCongestionFeedbackFrame(
   DCHECK(feedback.type == kFixRate) <<
       "Invalid incoming CongestionFeedbackType:" << feedback.type;
   if (feedback.type == kFixRate) {
-    bitrate_in_bytes_per_s_ =
-        feedback.fix_rate.bitrate_in_bytes_per_second;
-    fix_rate_leaky_bucket_.SetDrainingRate(bitrate_in_bytes_per_s_);
-    paced_sender_.UpdateBandwidthEstimate(bitrate_in_bytes_per_s_);
+    bitrate_ = feedback.fix_rate.bitrate;
+    fix_rate_leaky_bucket_.SetDrainingRate(bitrate_);
+    paced_sender_.UpdateBandwidthEstimate(bitrate_);
   }
   // Silently ignore invalid messages in release mode.
 }
 
 void FixRateSender::OnIncomingAck(
     QuicPacketSequenceNumber /*acked_sequence_number*/,
-    size_t bytes_acked,
+    QuicByteCount bytes_acked,
     QuicTime::Delta /*rtt*/) {
-  bytes_in_flight_ -= bytes_acked;
+  data_in_flight_ -= bytes_acked;
 }
 
 void FixRateSender::OnIncomingLoss(int /*number_of_lost_packets*/) {
@@ -51,23 +49,22 @@ void FixRateSender::OnIncomingLoss(int /*number_of_lost_packets*/) {
 }
 
 void FixRateSender::SentPacket(QuicPacketSequenceNumber /*sequence_number*/,
-                               size_t bytes,
+                               QuicByteCount bytes,
                                bool is_retransmission) {
   fix_rate_leaky_bucket_.Add(bytes);
   paced_sender_.SentPacket(bytes);
   if (!is_retransmission) {
-    bytes_in_flight_ += bytes;
+    data_in_flight_ += bytes;
   }
 }
 
 QuicTime::Delta FixRateSender::TimeUntilSend(bool /*is_retransmission*/) {
   if (CongestionWindow() > fix_rate_leaky_bucket_.BytesPending()) {
-    if (CongestionWindow() <= bytes_in_flight_) {
+    if (CongestionWindow() <= data_in_flight_) {
       // We need an ack before we send more.
       return QuicTime::Delta::Infinite();
     }
-    QuicTime::Delta zero_time(QuicTime::Delta::Zero());
-    return paced_sender_.TimeUntilSend(zero_time);
+    return paced_sender_.TimeUntilSend(QuicTime::Delta::Zero());
   }
   QuicTime::Delta time_remaining = fix_rate_leaky_bucket_.TimeRemaining();
   if (time_remaining.IsZero()) {
@@ -77,24 +74,25 @@ QuicTime::Delta FixRateSender::TimeUntilSend(bool /*is_retransmission*/) {
   return paced_sender_.TimeUntilSend(time_remaining);
 }
 
-size_t FixRateSender::CongestionWindow() {
-  size_t window_size = bitrate_in_bytes_per_s_ * kWindowSizeUs /
-      base::Time::kMicrosecondsPerSecond;
+QuicByteCount FixRateSender::CongestionWindow() {
+  QuicByteCount window_size_bytes = bitrate_.ToBytesPerPeriod(
+      QuicTime::Delta::FromMicroseconds(kWindowSizeUs));
   // Make sure window size is not less than a packet.
-  return std::max(kMaxPacketSize, window_size);
+  return std::max(kMaxPacketSize, window_size_bytes);
 }
 
-size_t FixRateSender::AvailableCongestionWindow() {
-  size_t congestion_window = CongestionWindow();
-  if (bytes_in_flight_ >= congestion_window) {
+QuicByteCount FixRateSender::AvailableCongestionWindow() {
+  QuicByteCount congestion_window = CongestionWindow();
+  if (data_in_flight_ >= congestion_window) {
     return 0;
   }
-  size_t available_congestion_window = congestion_window - bytes_in_flight_;
+  QuicByteCount available_congestion_window = congestion_window -
+      data_in_flight_;
   return paced_sender_.AvailableWindow(available_congestion_window);
 }
 
-int FixRateSender::BandwidthEstimate() {
-  return bitrate_in_bytes_per_s_;
+QuicBandwidth FixRateSender::BandwidthEstimate() {
+  return bitrate_;
 }
 
 }  // namespace net

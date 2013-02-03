@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 //
 // This is the interface from the QuicConnection into the QUIC
-// congestion control code.  It wraps the QuicSendScheduler and
-// QuicReceiptMetricsCollector and provides a single interface
+// congestion control code.  It wraps the SendAlgorithmInterface and
+// ReceiveAlgorithmInterface and provides a single interface
 // for consumers.
 
 #ifndef NET_QUIC_CONGESTION_CONTROL_QUIC_CONGESTION_MANAGER_H_
@@ -12,17 +12,19 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/quic/congestion_control/send_algorithm_interface.h"
+#include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
 
 namespace test {
 class QuicConnectionPeer;
+class QuicCongestionManagerPeer;
 }  // namespace test
 
 class QuicClock;
-class QuicReceiptMetricsCollector;
-class QuicSendScheduler;
+class ReceiveAlgorithmInterface;
 
 class QuicCongestionManager {
  public:
@@ -40,7 +42,7 @@ class QuicCongestionManager {
   // Called when we have sent bytes to the peer.  This informs the manager both
   // the number of bytes sent and if they were retransmitted.
   virtual void SentPacket(QuicPacketSequenceNumber sequence_number,
-                          size_t bytes,
+                          QuicByteCount bytes,
                           bool is_retransmission);
 
   // Calculate the time until we can send the next packet to the wire.
@@ -63,16 +65,34 @@ class QuicCongestionManager {
   // timestamp: the arrival time of the packet.
   // revived: true if the packet was lost and then recovered with help of a
   // FEC packet.
-  virtual void RecordIncomingPacket(size_t bytes,
+  virtual void RecordIncomingPacket(QuicByteCount bytes,
                                     QuicPacketSequenceNumber sequence_number,
                                     QuicTime timestamp,
                                     bool revived);
 
+  const QuicTime::Delta DefaultRetransmissionTime();
+
+  const QuicTime::Delta GetRetransmissionDelay(
+      size_t number_retransmissions);
+
  private:
   friend class test::QuicConnectionPeer;
+  friend class test::QuicCongestionManagerPeer;
+  typedef std::map<QuicPacketSequenceNumber, size_t> PendingPacketsMap;
 
-  scoped_ptr<QuicReceiptMetricsCollector> collector_;
-  scoped_ptr<QuicSendScheduler> scheduler_;
+  // TODO(pwestin): Currently only used for testing. How do we surface this?
+  QuicBandwidth SentBandwidth() const;
+  // TODO(pwestin): Currently only used for testing. How do we surface this?
+  QuicBandwidth BandwidthEstimate();
+  void CleanupPacketHistory();
+
+  const QuicClock* clock_;
+  scoped_ptr<ReceiveAlgorithmInterface> receive_algorithm_;
+  scoped_ptr<SendAlgorithmInterface> send_algorithm_;
+  SendAlgorithmInterface::SentPacketsMap packet_history_map_;
+  PendingPacketsMap pending_packets_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicCongestionManager);
 };
 
 }  // namespace net

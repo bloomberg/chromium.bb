@@ -7,7 +7,7 @@
 #ifndef NET_QUIC_TEST_TOOLS_QUIC_TEST_UTILS_H_
 #define NET_QUIC_TEST_TOOLS_QUIC_TEST_UTILS_H_
 
-#include "net/quic/congestion_control/quic_send_scheduler.h"
+#include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_session.h"
@@ -49,8 +49,7 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
   ~MockFramerVisitor();
 
   MOCK_METHOD1(OnError, void(QuicFramer* framer));
-  MOCK_METHOD2(OnPacket, void(const IPEndPoint& self_address,
-                              const IPEndPoint& peer_address));
+  MOCK_METHOD0(OnPacket, void());
   MOCK_METHOD1(OnPublicResetPacket, void(const QuicPublicResetPacket& header));
   MOCK_METHOD0(OnRevivedPacket, void());
   // The constructor set this up to return true by default.
@@ -75,8 +74,7 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   NoOpFramerVisitor() {}
 
   virtual void OnError(QuicFramer* framer) OVERRIDE {}
-  virtual void OnPacket(const IPEndPoint& self_address,
-                        const IPEndPoint& peer_address) OVERRIDE {}
+  virtual void OnPacket() OVERRIDE {}
   virtual void OnPublicResetPacket(
       const QuicPublicResetPacket& packet) OVERRIDE {}
   virtual void OnRevivedPacket() OVERRIDE {}
@@ -118,6 +116,22 @@ class FramerVisitorCapturingAcks : public NoOpFramerVisitor {
   scoped_ptr<QuicCongestionFeedbackFrame> feedback_;
 
   DISALLOW_COPY_AND_ASSIGN(FramerVisitorCapturingAcks);
+};
+
+class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
+ public:
+  FramerVisitorCapturingPublicReset();
+  virtual ~FramerVisitorCapturingPublicReset();
+
+  virtual void OnPublicResetPacket(
+      const QuicPublicResetPacket& packet) OVERRIDE;
+
+  const QuicPublicResetPacket public_reset_packet() {
+    return public_reset_packet_;
+  }
+
+ private:
+  QuicPublicResetPacket public_reset_packet_;
 };
 
 class MockConnectionVisitor : public QuicConnectionVisitorInterface {
@@ -190,11 +204,9 @@ class PacketSavingConnection : public MockConnection {
   PacketSavingConnection(QuicGuid guid, IPEndPoint address);
   virtual ~PacketSavingConnection();
 
-  virtual bool SendPacket(QuicPacketSequenceNumber number,
-                          QuicPacket* packet,
-                          bool should_retransmit,
-                          bool force,
-                          bool is_retransmission) OVERRIDE;
+  virtual bool SendOrQueuePacket(QuicPacketSequenceNumber sequence_number,
+                                 QuicPacket* packet,
+                                 bool force) OVERRIDE;
 
   std::vector<QuicPacket*> packets_;
 
@@ -226,17 +238,22 @@ class MockSession : public QuicSession {
   DISALLOW_COPY_AND_ASSIGN(MockSession);
 };
 
-class MockScheduler : public QuicSendScheduler {
+class MockSendAlgorithm : public SendAlgorithmInterface {
  public:
-  MockScheduler();
-  virtual ~MockScheduler();
+  MockSendAlgorithm();
+  virtual ~MockSendAlgorithm();
 
+  MOCK_METHOD2(OnIncomingQuicCongestionFeedbackFrame,
+               void(const QuicCongestionFeedbackFrame&, const SentPacketsMap&));
+  MOCK_METHOD3(OnIncomingAck,
+               void(QuicPacketSequenceNumber, QuicByteCount, QuicTime::Delta));
+  MOCK_METHOD1(OnIncomingLoss, void(int number_of_lost_packets));
+  MOCK_METHOD3(SentPacket, void(QuicPacketSequenceNumber, QuicByteCount, bool));
   MOCK_METHOD1(TimeUntilSend, QuicTime::Delta(bool));
-  MOCK_METHOD1(OnIncomingAckFrame, void(const QuicAckFrame&));
-  MOCK_METHOD3(SentPacket, void(QuicPacketSequenceNumber, size_t, bool));
+  MOCK_METHOD0(BandwidthEstimate, QuicBandwidth(void));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockScheduler);
+  DISALLOW_COPY_AND_ASSIGN(MockSendAlgorithm);
 };
 
 }  // namespace test

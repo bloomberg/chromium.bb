@@ -184,7 +184,7 @@ void QuicSession::OnCryptoHandshakeComplete(QuicErrorCode error) {
 }
 
 void QuicSession::ActivateStream(ReliableQuicStream* stream) {
-  LOG(INFO) << "num_streams: " << stream_map_.size()
+  DLOG(INFO) << "num_streams: " << stream_map_.size()
             << ". activating " << stream->id();
   DCHECK(stream_map_.count(stream->id()) == 0);
   stream_map_[stream->id()] = stream;

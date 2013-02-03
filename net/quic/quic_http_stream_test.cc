@@ -11,6 +11,8 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
+#include "net/quic/congestion_control/receive_algorithm_interface.h"
+#include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_client_session.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_connection_helper.h"
@@ -42,20 +44,19 @@ class TestQuicConnection : public QuicConnection {
       : QuicConnection(guid, address, helper) {
   }
 
-  void SetScheduler(QuicSendScheduler* scheduler) {
-    QuicConnectionPeer::SetScheduler(this, scheduler);
+  void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm) {
+    QuicConnectionPeer::SetSendAlgorithm(this, send_algorithm);
   }
 
-  void SetCollector(QuicReceiptMetricsCollector* collector) {
-    QuicConnectionPeer::SetCollector(this, collector);
+  void SetReceiveAlgorithm(ReceiveAlgorithmInterface* receive_algorithm) {
+    QuicConnectionPeer::SetReceiveAlgorithm(this, receive_algorithm);
   }
 };
 
-class TestCollector : public QuicReceiptMetricsCollector {
+class TestReceiveAlgorithm : public ReceiveAlgorithmInterface {
  public:
-  explicit TestCollector(QuicCongestionFeedbackFrame* feedback)
-      : QuicReceiptMetricsCollector(&clock_, kFixRate),
-        feedback_(feedback) {
+  explicit TestReceiveAlgorithm(QuicCongestionFeedbackFrame* feedback)
+      : feedback_(feedback) {
   }
 
   bool GenerateCongestionFeedback(
@@ -68,13 +69,13 @@ class TestCollector : public QuicReceiptMetricsCollector {
   }
 
   MOCK_METHOD4(RecordIncomingPacket,
-               void(size_t, QuicPacketSequenceNumber, QuicTime, bool));
+               void(QuicByteCount, QuicPacketSequenceNumber, QuicTime, bool));
 
  private:
   MockClock clock_;
   QuicCongestionFeedbackFrame* feedback_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestCollector);
+  DISALLOW_COPY_AND_ASSIGN(TestReceiveAlgorithm);
 };
 
 // Subclass of QuicHttpStream that closes itself when the first piece of data
@@ -162,16 +163,16 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
                                                           net_log_.net_log());
     socket->Connect(peer_addr_);
     runner_ = new TestTaskRunner(&clock_);
-    scheduler_ = new MockScheduler();
-    collector_ = new TestCollector(NULL);
-    EXPECT_CALL(*scheduler_, TimeUntilSend(_)).
+    send_algorithm_ = new MockSendAlgorithm();
+    receive_algorithm_ = new TestReceiveAlgorithm(NULL);
+    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_)).
         WillRepeatedly(testing::Return(QuicTime::Delta::Zero()));
     helper_ = new QuicConnectionHelper(runner_.get(), &clock_,
                                        &random_generator_, socket);
     connection_ = new TestQuicConnection(guid_, peer_addr_, helper_);
     connection_->set_visitor(&visitor_);
-    connection_->SetScheduler(scheduler_);
-    connection_->SetCollector(collector_);
+    connection_->SetSendAlgorithm(send_algorithm_);
+    connection_->SetReceiveAlgorithm(receive_algorithm_);
     session_.reset(new QuicClientSession(connection_, helper_, NULL,
                                          "www.google.com"));
     CryptoHandshakeMessage message;
@@ -255,8 +256,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
 
   BoundNetLog net_log_;
   bool use_closing_stream_;
-  MockScheduler* scheduler_;
-  TestCollector* collector_;
+  MockSendAlgorithm* send_algorithm_;
+  TestReceiveAlgorithm* receive_algorithm_;
   scoped_refptr<TestTaskRunner> runner_;
   scoped_array<MockWrite> mock_writes_;
   MockClock clock_;

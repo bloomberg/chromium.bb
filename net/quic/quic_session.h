@@ -104,7 +104,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   virtual QuicCryptoStream* GetCryptoStream() = 0;
 
   // Adds 'stream' to the active stream map.
-  void ActivateStream(ReliableQuicStream* stream);
+  virtual void ActivateStream(ReliableQuicStream* stream);
 
   // Returns the stream id for a new stream.
   QuicStreamId GetNextStreamId();

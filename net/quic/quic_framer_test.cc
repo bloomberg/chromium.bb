@@ -103,11 +103,7 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     error_count_++;
   }
 
-  virtual void OnPacket(const IPEndPoint& self_address,
-                        const IPEndPoint& peer_address) {
-    self_address_ = self_address;
-    peer_address_ = peer_address;
-  }
+  virtual void OnPacket() {}
 
   virtual void OnPublicResetPacket(const QuicPublicResetPacket& packet) {
     public_reset_packet_.reset(new QuicPublicResetPacket(packet));
@@ -171,8 +167,6 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
   int revived_packets_;
   bool accept_packet_;
 
-  IPEndPoint self_address_;
-  IPEndPoint peer_address_;
   scoped_ptr<QuicPacketHeader> header_;
   scoped_ptr<QuicPublicResetPacket> public_reset_packet_;
   vector<QuicStreamFrame*> stream_frames_;
@@ -189,9 +183,7 @@ class QuicFramerTest : public ::testing::Test {
   QuicFramerTest()
       : encrypter_(new test::TestEncrypter()),
         decrypter_(new test::TestDecrypter()),
-        framer_(decrypter_, encrypter_),
-        self_address_(IPAddressNumber(), 1),
-        peer_address_(IPAddressNumber(), 2) {
+        framer_(decrypter_, encrypter_) {
     framer_.set_visitor(&visitor_);
   }
 
@@ -244,8 +236,7 @@ class QuicFramerTest : public ::testing::Test {
                             string expected_error,
                             QuicErrorCode error_code) {
     QuicEncryptedPacket encrypted(AsChars(packet), len, false);
-    EXPECT_FALSE(framer_.ProcessPacket(self_address_, peer_address_,
-                                       encrypted)) << "len: " << len;
+    EXPECT_FALSE(framer_.ProcessPacket(encrypted)) << "len: " << len;
     EXPECT_EQ(expected_error, framer_.detailed_error()) << "len: " << len;
     EXPECT_EQ(error_code, framer_.error()) << "len: " << len;
   }
@@ -274,8 +265,6 @@ class QuicFramerTest : public ::testing::Test {
   test::TestDecrypter* decrypter_;
   QuicFramer framer_;
   test::TestQuicVisitor visitor_;
-  IPEndPoint self_address_;
-  IPEndPoint peer_address_;
 };
 
 TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearEpochStart) {
@@ -380,7 +369,7 @@ TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearNextMax) {
 TEST_F(QuicFramerTest, EmptyPacket) {
   char packet[] = { 0x00 };
   QuicEncryptedPacket encrypted(packet, 0, false);
-  EXPECT_FALSE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted));
   EXPECT_EQ(QUIC_INVALID_PACKET_HEADER, framer_.error());
 }
 
@@ -403,7 +392,7 @@ TEST_F(QuicFramerTest, LargePacket) {
   memset(packet + kPacketHeaderSize, 0, kMaxPacketSize - kPacketHeaderSize + 1);
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_FALSE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted));
 
   ASSERT_TRUE(visitor_.header_.get());
   // Make sure we've parsed the packet header, so we can send an error.
@@ -430,7 +419,7 @@ TEST_F(QuicFramerTest, PacketHeader) {
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_FALSE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted));
   EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
@@ -567,12 +556,10 @@ TEST_F(QuicFramerTest, PaddingFrame) {
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
   EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  ASSERT_EQ(peer_address_, visitor_.peer_address_);
-  ASSERT_EQ(self_address_, visitor_.self_address_);
 
   ASSERT_EQ(0u, visitor_.stream_frames_.size());
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
@@ -621,13 +608,11 @@ TEST_F(QuicFramerTest, StreamFrame) {
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
 
   EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  ASSERT_EQ(peer_address_, visitor_.peer_address_);
-  ASSERT_EQ(self_address_, visitor_.self_address_);
 
   ASSERT_EQ(1u, visitor_.stream_frames_.size());
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
@@ -692,12 +677,11 @@ TEST_F(QuicFramerTest, RejectPacket) {
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
 
   EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  ASSERT_EQ(peer_address_, visitor_.peer_address_);
 
   ASSERT_EQ(0u, visitor_.stream_frames_.size());
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
@@ -787,7 +771,7 @@ TEST_F(QuicFramerTest, StreamFrameInFecGroup) {
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
 
   EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
@@ -797,7 +781,6 @@ TEST_F(QuicFramerTest, StreamFrameInFecGroup) {
   EXPECT_EQ(string(AsChars(packet) + kStartOfFecProtectedData,
                    arraysize(packet) - kStartOfFecProtectedData),
             visitor_.fec_protected_payload_);
-  ASSERT_EQ(peer_address_, visitor_.peer_address_);
 
   ASSERT_EQ(1u, visitor_.stream_frames_.size());
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
@@ -839,7 +822,7 @@ TEST_F(QuicFramerTest, AckFrame) {
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
 
   EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
@@ -899,7 +882,7 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameTCP) {
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
 
   EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
@@ -912,7 +895,7 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameTCP) {
   ASSERT_EQ(kTCP, frame.type);
   EXPECT_EQ(0x0201,
             frame.tcp.accumulated_number_of_lost_packets);
-  EXPECT_EQ(0x0403, frame.tcp.receive_window);
+  EXPECT_EQ(0x4030u, frame.tcp.receive_window);
 
   // Now test framing boundaries
   for (size_t i = 0; i < 6; ++i) {
@@ -971,7 +954,7 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
 
   EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
@@ -1052,7 +1035,7 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameFixRate) {
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
 
   EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
@@ -1064,7 +1047,7 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameFixRate) {
       *visitor_.congestion_feedback_frames_[0];
   ASSERT_EQ(kFixRate, frame.type);
   EXPECT_EQ(static_cast<uint32>(0x04030201),
-            frame.fix_rate.bitrate_in_bytes_per_second);
+            frame.fix_rate.bitrate.ToBytesPerSecond());
 
   // Now test framing boundaries
   for (size_t i = 0; i < 6; ++i) {
@@ -1104,7 +1087,7 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInvalidFeedback) {
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_FALSE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted));
   EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
   EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
 }
@@ -1144,12 +1127,11 @@ TEST_F(QuicFramerTest, RstStreamFrame) {
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
 
   EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  ASSERT_EQ(peer_address_, visitor_.peer_address_);
 
   EXPECT_EQ(GG_UINT64_C(0x01020304), visitor_.rst_stream_frame_.stream_id);
   EXPECT_EQ(0x05060708, visitor_.rst_stream_frame_.error_code);
@@ -1217,7 +1199,7 @@ TEST_F(QuicFramerTest, ConnectionCloseFrame) {
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
 
   EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
@@ -1266,7 +1248,7 @@ TEST_F(QuicFramerTest, PublicResetPacket) {
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.public_reset_packet_.get());
   EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
@@ -1317,7 +1299,7 @@ TEST_F(QuicFramerTest, FecPacket) {
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
 
   EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
@@ -1495,7 +1477,7 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketTCP) {
   QuicCongestionFeedbackFrame congestion_feedback_frame;
   congestion_feedback_frame.type = kTCP;
   congestion_feedback_frame.tcp.accumulated_number_of_lost_packets = 0x0201;
-  congestion_feedback_frame.tcp.receive_window = 0x0403;
+  congestion_feedback_frame.tcp.receive_window = 0x4030;
 
   QuicFrames frames;
   frames.push_back(QuicFrame(&congestion_feedback_frame));
@@ -1611,8 +1593,8 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketFixRate) {
 
   QuicCongestionFeedbackFrame congestion_feedback_frame;
   congestion_feedback_frame.type = kFixRate;
-  congestion_feedback_frame.fix_rate.bitrate_in_bytes_per_second
-      = 0x04030201;
+  congestion_feedback_frame.fix_rate.bitrate
+      = QuicBandwidth::FromBytesPerSecond(0x04030201);
 
   QuicFrames frames;
   frames.push_back(QuicFrame(&congestion_feedback_frame));
@@ -1927,6 +1909,7 @@ TEST_F(QuicFramerTest, DISABLED_Truncation) {
   close_frame.error_code = static_cast<QuicErrorCode>(0x05060708);
   close_frame.error_details = "because I can";
   ack_frame->received_info.largest_observed = 201;
+  ack_frame->sent_info.least_unacked = 0;
   for (uint64 i = 1; i < ack_frame->received_info.largest_observed; ++i) {
     ack_frame->received_info.missing_packets.insert(i);
   }
@@ -1959,11 +1942,10 @@ TEST_F(QuicFramerTest, DISABLED_Truncation) {
       framer_.EncryptPacket(*raw_close_packet));
 
   // Now make sure we can turn our ack packet back into an ack frame
-  ASSERT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, *ack_packet));
+  ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));
 
   // And do the same for the close frame.
-  ASSERT_TRUE(framer_.ProcessPacket(self_address_, peer_address_,
-                                    *close_packet));
+  ASSERT_TRUE(framer_.ProcessPacket(*close_packet));
 }
 
 TEST_F(QuicFramerTest, CleanTruncation) {
@@ -2012,11 +1994,10 @@ TEST_F(QuicFramerTest, CleanTruncation) {
       framer_.EncryptPacket(*raw_close_packet));
 
   // Now make sure we can turn our ack packet back into an ack frame
-  ASSERT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, *ack_packet));
+  ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));
 
   // And do the same for the close frame.
-  ASSERT_TRUE(framer_.ProcessPacket(self_address_, peer_address_,
-                                    *close_packet));
+  ASSERT_TRUE(framer_.ProcessPacket(*close_packet));
 
   // Test for clean truncation of the ack by comparing the length of the
   // original packets to the re-serialized packets.

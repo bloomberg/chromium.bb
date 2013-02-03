@@ -41,10 +41,11 @@ QuicBandwidth QuicBandwidth::FromKBytesPerSecond(int64 k_bytes_per_second) {
 }
 
 // static
-QuicBandwidth QuicBandwidth::FromBytesAndTimeDelta(int64 bytes,
+QuicBandwidth QuicBandwidth::FromBytesAndTimeDelta(QuicByteCount bytes,
                                                    QuicTime::Delta delta) {
   DCHECK_LT(bytes,
-            kQuicInfiniteBandwidth / (8 * base::Time::kMicrosecondsPerSecond));
+            static_cast<uint64>(kQuicInfiniteBandwidth /
+                                (8 * base::Time::kMicrosecondsPerSecond)));
   int64 bytes_per_second = (bytes * base::Time::kMicrosecondsPerSecond) /
       delta.ToMicroseconds();
   return QuicBandwidth(bytes_per_second * 8);
@@ -71,6 +72,17 @@ int64 QuicBandwidth::ToKBytesPerSecond() const {
   return bits_per_second_ / 8000;
 }
 
+QuicByteCount QuicBandwidth::ToBytesPerPeriod(
+    QuicTime::Delta time_period) const {
+  return ToBytesPerSecond() * time_period.ToMicroseconds() /
+      base::Time::kMicrosecondsPerSecond;
+}
+
+int64 QuicBandwidth::ToKBytesPerPeriod(QuicTime::Delta time_period) const {
+  return ToKBytesPerSecond() * time_period.ToMicroseconds() /
+      base::Time::kMicrosecondsPerSecond;
+}
+
 bool QuicBandwidth::IsZero() const {
   return (bits_per_second_ == 0);
 }
@@ -81,6 +93,10 @@ QuicBandwidth QuicBandwidth::Add(const QuicBandwidth& delta) const {
 
 QuicBandwidth QuicBandwidth::Subtract(const QuicBandwidth& delta) const {
   return QuicBandwidth(bits_per_second_ - delta.bits_per_second_);
+}
+
+QuicBandwidth QuicBandwidth::Scale(float scale_factor) const {
+  return QuicBandwidth(bits_per_second_ * scale_factor);
 }
 
 }  // namespace net

@@ -12,7 +12,9 @@
 
 #include "base/basictypes.h"
 #include "net/base/net_export.h"
+#include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_clock.h"
+#include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
 
 namespace net {
@@ -20,27 +22,29 @@ namespace net {
 class NET_EXPORT_PRIVATE LeakyBucket {
  public:
   // clock is not owned by this class.
-  LeakyBucket(const QuicClock* clock, int bytes_per_second);
+  LeakyBucket(const QuicClock* clock, QuicBandwidth draining_rate);
 
   // Set the rate at which the bytes leave the buffer.
-  void SetDrainingRate(int bytes_per_second);
+  void SetDrainingRate(QuicBandwidth draining_rate);
 
   // Add data to the buffer.
-  void Add(size_t bytes);
+  void Add(QuicByteCount bytes);
 
   // Time until the buffer is empty in us.
   QuicTime::Delta TimeRemaining();
 
   // Number of bytes in the buffer.
-  size_t BytesPending();
+  QuicByteCount BytesPending();
 
  private:
   void Update();
 
   const QuicClock* clock_;
-  size_t bytes_;
+  QuicByteCount bytes_;
   QuicTime time_last_updated_;
-  int draining_rate_bytes_per_s_;
+  QuicBandwidth draining_rate_;
+
+  DISALLOW_COPY_AND_ASSIGN(LeakyBucket);
 };
 
 }  // namespace net

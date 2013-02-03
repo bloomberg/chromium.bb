@@ -9,8 +9,6 @@
 #include "base/task_runner.h"
 #include "base/time.h"
 #include "net/base/io_buffer.h"
-#include "net/quic/congestion_control/quic_receipt_metrics_collector.h"
-#include "net/quic/congestion_control/quic_send_scheduler.h"
 #include "net/quic/quic_utils.h"
 
 namespace net {
