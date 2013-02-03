@@ -107,15 +107,15 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCKSCREEN" file="cros/status/status_lockscreen.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER" file="cros/status/status_lockscreen_hover.png" />
 
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_BOTTOM" file="cros/status/status_logout_button_hot_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_BOTTOM_LEFT" file="cros/status/status_logout_button_hot_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_BOTTOM_RIGHT" file="cros/status/status_logout_button_hot_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_CENTER" file="cros/status/status_logout_button_hot_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_LEFT" file="cros/status/status_logout_button_hot_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_RIGHT" file="cros/status/status_logout_button_hot_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_TOP" file="cros/status/status_logout_button_hot_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_TOP_LEFT" file="cros/status/status_logout_button_hot_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_TOP_RIGHT" file="cros/status/status_logout_button_hot_top_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_BOTTOM" file="cros/status/status_logout_button_hover_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_BOTTOM_LEFT" file="cros/status/status_logout_button_hover_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_BOTTOM_RIGHT" file="cros/status/status_logout_button_hover_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_CENTER" file="cros/status/status_logout_button_hover_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_LEFT" file="cros/status/status_logout_button_hover_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_RIGHT" file="cros/status/status_logout_button_hover_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_TOP" file="cros/status/status_logout_button_hover_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_TOP_LEFT" file="cros/status/status_logout_button_hover_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_TOP_RIGHT" file="cros/status/status_logout_button_hover_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM" file="cros/status/status_logout_button_pushed_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM_LEFT" file="cros/status/status_logout_button_pushed_bottom_left.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM_RIGHT" file="cros/status/status_logout_button_pushed_bottom_right.png" />
