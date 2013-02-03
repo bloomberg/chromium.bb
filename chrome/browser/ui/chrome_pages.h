@@ -55,7 +55,9 @@ void ShowPasswordManager(Browser* browser);
 void ShowImportDialog(Browser* browser);
 void ShowAboutChrome(Browser* browser);
 void ShowSearchEngineSettings(Browser* browser);
-void ShowSyncSetup(Browser* browser, SyncPromoUI::Source source);
+// If the user is already signed in, shows the "Signin" portion of Settings,
+// otherwise initiates signin.
+void ShowBrowserSignin(Browser* browser, SyncPromoUI::Source source);
 
 // Open a tab to sign into GAIA.
 void ShowGaiaSignin(Browser* browser,

@@ -136,7 +136,7 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
 #if !defined(OS_ANDROID)
     // The user isn't signed in, show the sync promo.
     if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
-      chrome::ShowSyncSetup(browser, SyncPromoUI::SOURCE_NTP_LINK);
+      chrome::ShowBrowserSignin(browser, SyncPromoUI::SOURCE_NTP_LINK);
       RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
     }
 #endif
@@ -187,7 +187,7 @@ void NTPLoginHandler::HandleShowAdvancedLoginUI(const ListValue* args) {
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (browser)
-    chrome::ShowSyncSetup(browser, SyncPromoUI::SOURCE_NTP_LINK);
+    chrome::ShowBrowserSignin(browser, SyncPromoUI::SOURCE_NTP_LINK);
 }
 
 void NTPLoginHandler::UpdateLogin() {
@@ -250,10 +250,7 @@ bool NTPLoginHandler::ShouldShow(Profile* profile) {
   // UI and the avatar menu don't exist on that platform.
   return false;
 #else
-  if (profile->IsOffTheRecord())
-    return false;
-
-  return profile->GetOriginalProfile()->IsSyncAccessible();
+  return !profile->IsOffTheRecord();
 #endif
 }
 

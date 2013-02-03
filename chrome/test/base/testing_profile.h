@@ -84,6 +84,9 @@ class TestingProfile : public Profile {
     // Sets the PrefService to be used by this profile.
     void SetPrefService(scoped_ptr<PrefServiceSyncable> prefs);
 
+    // Sets the TestingProfile to be off-the-record by default.
+    void SetOffTheRecord();
+
     // Creates the TestingProfile using previously-set settings.
     scoped_ptr<TestingProfile> Build();
 
@@ -96,6 +99,7 @@ class TestingProfile : public Profile {
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy_;
     FilePath path_;
     Delegate* delegate_;
+    bool off_the_record_;
 
     DISALLOW_COPY_AND_ASSIGN(Builder);
   };
@@ -118,7 +122,8 @@ class TestingProfile : public Profile {
   TestingProfile(const FilePath& path,
                  Delegate* delegate,
                  scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
-                 scoped_ptr<PrefServiceSyncable> prefs);
+                 scoped_ptr<PrefServiceSyncable> prefs,
+                 bool off_the_record);
 
   virtual ~TestingProfile();
 

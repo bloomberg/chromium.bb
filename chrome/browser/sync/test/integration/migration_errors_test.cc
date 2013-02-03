@@ -74,6 +74,9 @@ class MigrationTest : public SyncTest {
   enum TriggerMethod { MODIFY_PREF, MODIFY_BOOKMARK, TRIGGER_NOTIFICATION };
 
   syncer::ModelTypeSet GetPreferredDataTypes() {
+    // ProfileSyncService must already have been created before we can call
+    // GetPreferredDataTypes().
+    DCHECK(GetClient(0)->IsSyncAlreadySetup());
     const syncer::ModelTypeSet preferred_data_types =
         GetClient(0)->service()->GetPreferredDataTypes();
     // Make sure all clients have the same preferred data types.

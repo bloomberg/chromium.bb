@@ -348,11 +348,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "SyncDisabled": true },
     "pref_mappings": [
-      { "pref": "sync.managed",
-        "indicator_tests": [
-          { "policy": { "SyncDisabled": true } }
-        ]
-      }
+      { "pref": "sync.managed" }
     ]
   },
 

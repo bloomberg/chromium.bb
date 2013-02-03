@@ -16,6 +16,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
@@ -119,25 +121,17 @@ bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
   // There's no need to show the sync promo on cros since cros users are logged
   // into sync already.
   return false;
-#endif
+#else
 
   // Don't bother if we don't have any kind of network connection.
   if (net::NetworkChangeNotifier::IsOffline())
     return false;
 
-  // Honor the sync policies.
-  if (!profile->GetOriginalProfile()->IsSyncAccessible())
-    return false;
-
-  // If the user is already signed into sync then don't show the promo.
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          profile->GetOriginalProfile());
-  if (!service || service->HasSyncSetupCompleted())
-    return false;
-
-  // Default to allow the promo.
-  return true;
+  // Display the signin promo if the user is not signed in.
+  SigninManager* signin = SigninManagerFactory::GetForProfile(
+      profile->GetOriginalProfile());
+  return signin->GetAuthenticatedUsername().empty();
+#endif
 }
 
 // static

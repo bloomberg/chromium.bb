@@ -129,8 +129,8 @@ void SigninTracker::HandleServiceStateChange() {
     return;
   }
 
-  if (SigninManagerFactory::GetForProfile(profile_)->
-      GetAuthenticatedUsername().empty()) {
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
+  if (signin->GetAuthenticatedUsername().empty()) {
     // User is signed out, trigger a signin failure.
     state_ = WAITING_FOR_GAIA_VALIDATION;
     observer_->SigninFailed(
@@ -142,11 +142,9 @@ void SigninTracker::HandleServiceStateChange() {
   // Long term, we should separate out service auth failures from the signin
   // process, but for the current UI flow we'll validate service signin status
   // also.
-  // TODO(atwilson): Move the code to wait for app notification oauth tokens out
-  // of ProfileSyncService and over to here (http://crbug.com/114209).
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (service->waiting_for_auth()) {
+  ProfileSyncService* service = profile_->IsSyncAccessible() ?
+      ProfileSyncServiceFactory::GetForProfile(profile_) : NULL;
+  if (service && service->waiting_for_auth()) {
     // Still waiting for an auth token to come in so stay in the INITIALIZING
     // state (we do this to avoid triggering an early signin error in the case
     // where there's a previous auth error in the sync service that hasn't
@@ -161,8 +159,8 @@ void SigninTracker::HandleServiceStateChange() {
     return;
   if (!AreServicesSignedIn(profile_)) {
     state_ = WAITING_FOR_GAIA_VALIDATION;
-    observer_->SigninFailed(service->GetAuthError());
-  } else if (service->sync_initialized()) {
+    observer_->SigninFailed(signin->signin_global_error()->GetLastAuthError());
+  } else if (!service || service->sync_initialized()) {
     state_ = SIGNIN_COMPLETE;
     observer_->SigninSuccess();
   }
@@ -185,6 +183,9 @@ bool SigninTracker::AreServiceTokensLoaded(Profile* profile) {
 bool SigninTracker::AreServicesSignedIn(Profile* profile) {
   if (!AreServiceTokensLoaded(profile))
     return false;
+  // Don't care about the sync state if sync is disabled by policy.
+  if (!profile->IsSyncAccessible())
+    return true;
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   return (service->IsSyncEnabledAndLoggedIn() &&

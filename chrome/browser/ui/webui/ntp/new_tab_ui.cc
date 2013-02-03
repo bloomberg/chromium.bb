@@ -116,8 +116,7 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
     if (NewTabUI::IsDiscoveryInNTPEnabled())
       web_ui->AddMessageHandler(new SuggestionsHandler());
     // Android doesn't have a sync promo/username on NTP.
-    if (GetProfile()->IsSyncAccessible())
-      web_ui->AddMessageHandler(new NewTabPageSyncHandler());
+    web_ui->AddMessageHandler(new NewTabPageSyncHandler());
 
     // Or apps.
     if (ShouldShowApps()) {

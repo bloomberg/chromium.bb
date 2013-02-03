@@ -404,7 +404,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Returns whether sync is managed, i.e. controlled by configuration
   // management. If so, the user is not allowed to configure sync.
-  bool IsManaged() const;
+  virtual bool IsManaged() const;
 
   // SigninGlobalError::AuthStatusProvider implementation.
   virtual GoogleServiceAuthError GetAuthStatus() const OVERRIDE;

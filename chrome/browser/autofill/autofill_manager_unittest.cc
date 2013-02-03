@@ -624,7 +624,7 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   virtual void SetUp() OVERRIDE {
-    Profile* profile = new TestingProfile();
+    Profile* profile = CreateProfile();
     browser_context_.reset(profile);
     PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
         profile, TestPersonalDataManager::Build);
@@ -648,6 +648,10 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     autofill_manager_ = NULL;
     file_thread_.Stop();
     ChromeRenderViewHostTestHarness::TearDown();
+  }
+
+  virtual TestingProfile* CreateProfile() {
+    return new TestingProfile();
   }
 
   void UpdatePasswordGenerationState(bool new_renderer) {
@@ -756,6 +760,19 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillManagerTest);
+};
+
+class IncognitoAutofillManagerTest : public AutofillManagerTest {
+ public:
+  IncognitoAutofillManagerTest() {}
+  virtual ~IncognitoAutofillManagerTest() {}
+
+  virtual TestingProfile* CreateProfile() OVERRIDE {
+    // Create an incognito profile.
+    TestingProfile::Builder builder;
+    builder.SetOffTheRecord();
+    return builder.Build().release();
+  }
 };
 
 class TestFormStructure : public FormStructure {
@@ -3077,19 +3094,34 @@ TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
   EXPECT_FALSE(autofill_manager_->GetSentStates()[0]);
   autofill_manager_->ClearSentStates();
 
-  // Disable password manager by going incognito, and re-enable syncing. The
-  // feature should still be disabled, and nothing will be sent.
-  sync_service->SetSyncSetupCompleted();
-  profile()->set_incognito(true);
-  UpdatePasswordGenerationState(false);
-  EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
-
   // When a new render_view is created, we send the state even if it's the
   // same.
   UpdatePasswordGenerationState(true);
   EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
   EXPECT_FALSE(autofill_manager_->GetSentStates()[0]);
   autofill_manager_->ClearSentStates();
+}
+
+TEST_F(IncognitoAutofillManagerTest, UpdatePasswordSyncStateIncognito) {
+  // Disable password manager by going incognito, and enable syncing. The
+  // feature should still be disabled, and nothing will be sent.
+  PasswordManagerDelegateImpl::CreateForWebContents(web_contents());
+  PasswordManager::CreateForWebContentsAndDelegate(
+      web_contents(),
+      PasswordManagerDelegateImpl::FromWebContents(web_contents()));
+
+  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile());
+
+  // Allow this test to control what should get synced.
+  prefs->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
+  // Always set password generation enabled check box so we can test the
+  // behavior of password sync.
+  prefs->SetBoolean(prefs::kPasswordGenerationEnabled, true);
+
+  browser_sync::SyncPrefs sync_prefs(profile()->GetPrefs());
+  sync_prefs.SetSyncSetupCompleted();
+  UpdatePasswordGenerationState(false);
+  EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
 }
 
 TEST_F(AutofillManagerTest, UpdatePasswordGenerationState) {

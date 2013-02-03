@@ -10,9 +10,10 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
-FakeSigninManager::FakeSigninManager(Profile* profile) {
+FakeSigninManager::FakeSigninManager(Profile* profile)
+    : auth_in_progress_(false) {
   profile_ = profile;
-  signin_global_error_.reset(new SigninGlobalError(profile));
+  signin_global_error_.reset(new SigninGlobalError(this, profile));
   GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
       signin_global_error_.get());
 }
@@ -50,6 +51,10 @@ void FakeSigninManager::SignOut() {
       chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
       content::Source<Profile>(profile_),
       content::NotificationService::NoDetails());
+}
+
+bool FakeSigninManager::AuthInProgress() const {
+  return auth_in_progress_;
 }
 
 // static

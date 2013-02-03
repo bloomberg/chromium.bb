@@ -1046,6 +1046,8 @@
         'browser/sessions/session_types_unittest.cc',
         'browser/shell_integration_unittest.cc',
         'browser/shell_integration_win_unittest.cc',
+        'browser/signin/fake_auth_status_provider.cc',
+        'browser/signin/fake_auth_status_provider.h',
         'browser/signin/oauth2_token_service_request_unittest.cc',
         'browser/signin/oauth2_token_service_unittest.cc',
         'browser/signin/signin_global_error_unittest.cc',

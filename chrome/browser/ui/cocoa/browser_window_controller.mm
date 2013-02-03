@@ -22,12 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/sync_global_error.h"
-#include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -247,36 +242,8 @@ enum {
     }
   }
 
-  // Figure out what string to display in the signin menu item - depending on
-  // the state of the signed-in services, this will be one of:
-  //   "Sign in to <product name>"
-  //   "Signed in as <username>"
-  //   "Signin Error"
-  ProfileSyncService* syncService = profile->IsSyncAccessible() ?
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          profile->GetOriginalProfile()) : NULL;
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
-  std::string userName = signin->GetAuthenticatedUsername();
-  NSString* title = NULL;
-  if (userName.empty() || signin->AuthInProgress() ||
-      (syncService && !syncService->HasSyncSetupCompleted())) {
-    // Not signed in yet - display the default string.
-    title = GetNSStringFWithFixup(IDS_SYNC_MENU_PRE_SYNCED_LABEL,
-                                  GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
-  } else if (signin->signin_global_error()->HasBadge()) {
-    // TODO(atwilson): Change this string to a generic signin error instead of
-    // a "Sync error" string once we allow signin without sync.
-    title = GetNSStringWithFixup(IDS_SYNC_MENU_SYNC_ERROR_LABEL);
-  } else if (syncService && syncService->sync_global_error() &&
-             syncService->sync_global_error()->HasBadge()) {
-    title = GetNSStringWithFixup(IDS_SYNC_MENU_SYNC_ERROR_LABEL);
-  } else {
-    // Signed in.
-    title = GetNSStringFWithFixup(IDS_SYNC_MENU_SYNCED_LABEL,
-                                  UTF8ToUTF16(userName));
-  }
-
-  [signinMenuItem setTitle:title];
+  string16 label = signin_ui_util::GetSigninMenuLabel(profile);
+  [signinMenuItem setTitle:l10n_util::FixUpWindowsStyleLabel(label)];
   [signinMenuItem setHidden:!showSigninMenuItem];
   [followingSeparator setHidden:!showSigninMenuItem];
 }
@@ -1123,7 +1090,6 @@ enum {
         case IDC_SHOW_SIGNIN: {
           Profile* original_profile =
               browser_->profile()->GetOriginalProfile();
-          enable &= original_profile->IsSyncAccessible();
           [BrowserWindowController updateSigninItem:item
                                          shouldShow:enable
                                      currentProfile:original_profile];

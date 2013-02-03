@@ -1829,6 +1829,8 @@
         'browser/signin/signin_names_io_thread.h',
         'browser/signin/signin_tracker.cc',
         'browser/signin/signin_tracker.h',
+        'browser/signin/signin_ui_util.cc',
+        'browser/signin/signin_ui_util.h',
         'browser/signin/token_service.cc',
         'browser/signin/token_service.h',
         'browser/signin/token_service_factory.cc',

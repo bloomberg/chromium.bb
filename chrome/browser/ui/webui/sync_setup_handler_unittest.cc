@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/signin/fake_auth_status_provider.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_fake.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -406,6 +407,7 @@ class SyncSetupHandlerTest : public testing::TestWithParam<bool> {
   void SetupInitializedProfileSyncService() {
     // An initialized ProfileSyncService will have already completed sync setup
     // and will have an initialized sync backend.
+    mock_signin_->SetAuthenticatedUsername(kTestUser);
     EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
@@ -524,6 +526,7 @@ TEST_P(SyncSetupHandlerTest, DisplayForceLogin) {
 TEST_P(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
+  mock_signin_->SetAuthenticatedUsername(kTestUser);
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -539,10 +542,7 @@ TEST_P(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
   // spinner is showing.
   handler_->OpenSyncSetup(false);
 
-  // When the SigninTracker is initialized here, a signin failure is triggered
-  // due to sync_initialized() returning false, causing the current login UI to
-  // be dismissed.
-  EXPECT_EQ(NULL,
+  EXPECT_EQ(handler_.get(),
             LoginUIServiceFactory::GetForProfile(
                 profile_.get())->current_login_ui());
 
@@ -568,6 +568,7 @@ TEST_P(SyncSetupHandlerTest,
        DisplayConfigureWithBackendDisabledAndSigninSuccess) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
+  mock_signin_->SetAuthenticatedUsername(kTestUser);
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -576,8 +577,7 @@ TEST_P(SyncSetupHandlerTest,
   EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
   // Sync backend is stopped initially, and will start up.
   EXPECT_CALL(*mock_pss_, sync_initialized())
-      .WillOnce(Return(false))
-      .WillRepeatedly(Return(true));
+      .WillRepeatedly(Return(false));
   SetDefaultExpectationsForConfigPage();
 
   handler_->OpenSyncSetup(false);
@@ -591,13 +591,13 @@ TEST_P(SyncSetupHandlerTest,
   std::string page;
   ASSERT_TRUE(data0.arg1->GetAsString(&page));
   EXPECT_EQ(page, "spinner");
-  handler_->SigninSuccess();
 
-  // On signin success, the dialog will proceed from spinner to configure sync
-  // everything. There is no login UI once signin is successful.
-  EXPECT_EQ(NULL,
-            LoginUIServiceFactory::GetForProfile(
-                profile_.get())->current_login_ui());
+  Mock::VerifyAndClearExpectations(mock_pss_);
+  // Now, act as if the ProfileSyncService has started up.
+  SetDefaultExpectationsForConfigPage();
+  EXPECT_CALL(*mock_pss_, sync_initialized())
+      .WillRepeatedly(Return(true));
+  handler_->SigninSuccess();
 
   // We expect a second call to SyncSetupOverlay.showSyncSetupPage. Some
   // variations of this test also include a call to OptionsPage.closeOverlay,
@@ -625,6 +625,7 @@ TEST_P(SyncSetupHandlerTest,
        DisplayConfigureWithBackendDisabledAndCancelAfterSigninSuccess) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
+  mock_signin_->SetAuthenticatedUsername(kTestUser);
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -654,6 +655,7 @@ TEST_P(SyncSetupHandlerTest,
        DisplayConfigureWithBackendDisabledAndSigninFalied) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
+  mock_signin_->SetAuthenticatedUsername(kTestUser);
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -1053,8 +1055,11 @@ TEST_P(SyncSetupHandlerTest, ShowSyncSetupWithAuthError) {
   // Initialize the system to a signed in state, but with an auth error.
   error_ = GoogleServiceAuthError(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+
   SetupInitializedProfileSyncService();
   mock_signin_->SetAuthenticatedUsername(kTestUser);
+  FakeAuthStatusProvider provider(mock_signin_->signin_global_error());
+  provider.SetAuthError(error_);
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())

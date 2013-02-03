@@ -91,7 +91,7 @@ class SigninManager : public GaiaAuthConsumer,
   // If a user has previously established a username and SignOut has not been
   // called, this will return the username.
   // Otherwise, it will return an empty string.
-  const std::string& GetAuthenticatedUsername();
+  const std::string& GetAuthenticatedUsername() const;
 
   // Sets the user name.  Note: |username| should be already authenticated as
   // this is a sticky operation (in contrast to StartSignIn).
@@ -168,6 +168,10 @@ class SigninManager : public GaiaAuthConsumer,
                        const content::NotificationDetails& details) OVERRIDE;
 
   SigninGlobalError* signin_global_error() {
+    return signin_global_error_.get();
+  }
+
+  const SigninGlobalError* signin_global_error() const {
     return signin_global_error_.get();
   }
 
@@ -273,7 +277,7 @@ class SigninManager : public GaiaAuthConsumer,
   ClientOAuthResult temp_oauth_login_tokens_;
 
   // The list of SigninDiagnosticObservers.
-  ObserverList<signin_internals_util::SigninDiagnosticsObserver>
+  ObserverList<signin_internals_util::SigninDiagnosticsObserver, true>
       signin_diagnostics_observers_;
 
   base::WeakPtrFactory<SigninManager> weak_pointer_factory_;

@@ -22,7 +22,7 @@ cr.define('options', function() {
     __proto__: options.OptionsPage.prototype,
 
     // State variables.
-    syncSetupCompleted: false,
+    signedIn: false,
 
     /**
      * Keeps track of whether |onShowHomeButtonChanged_| has been called. See
@@ -80,7 +80,7 @@ cr.define('options', function() {
       this.updateSyncState_(loadTimeData.getValue('syncData'));
 
       $('start-stop-sync').onclick = function(event) {
-        if (self.syncSetupCompleted)
+        if (self.signedIn)
           SyncSetupOverlay.showStopSyncingUI();
         else if (cr.isChromeOS)
           SyncSetupOverlay.showSetupUIWithoutLogin();
@@ -664,16 +664,17 @@ cr.define('options', function() {
       }
 
       $('sync-section').hidden = false;
-      this.syncSetupCompleted = syncData.setupCompleted;
-      $('customize-sync').hidden = !syncData.setupCompleted;
+      this.signedIn = syncData.signedIn;
+      // Display the "setup sync" button if we're signed in and sync is not
+      // managed.
+      $('customize-sync').hidden = !(syncData.signedIn && !syncData.managed);
 
       var startStopButton = $('start-stop-sync');
-      startStopButton.disabled = syncData.managed ||
-          syncData.setupInProgress;
+      startStopButton.disabled = syncData.setupInProgress;
       startStopButton.hidden =
           syncData.setupCompleted && cr.isChromeOS;
       startStopButton.textContent =
-          syncData.setupCompleted ?
+          syncData.signedIn ?
               loadTimeData.getString('syncButtonTextStop') :
           syncData.setupInProgress ?
               loadTimeData.getString('syncButtonTextInProgress') :

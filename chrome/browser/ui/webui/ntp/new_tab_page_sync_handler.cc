@@ -68,7 +68,6 @@ void NewTabPageSyncHandler::RegisterMessages() {
   sync_service_ = ProfileSyncServiceFactory::GetInstance()->GetForProfile(
       Profile::FromWebUI(web_ui()));
   DCHECK(sync_service_);  // This shouldn't get called by an incognito NTP.
-  DCHECK(!sync_service_->IsManaged());  // And neither if sync is managed.
   sync_service_->AddObserver(this);
 
   web_ui()->RegisterMessageCallback("GetSyncMessage",
@@ -131,7 +130,7 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (!browser || browser->IsAttemptingToCloseBrowser())
     return;
-  chrome::ShowSyncSetup(browser, SyncPromoUI::SOURCE_NTP_LINK);
+  chrome::ShowBrowserSignin(browser, SyncPromoUI::SOURCE_NTP_LINK);
 
   if (sync_service_->HasSyncSetupCompleted()) {
     string16 user = UTF8ToUTF16(SigninManagerFactory::GetForProfile(

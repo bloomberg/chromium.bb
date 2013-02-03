@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/fake_auth_status_provider.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_fake.h"
@@ -28,6 +29,8 @@ using ::testing::AnyNumber;
 using ::testing::Mock;
 using ::testing::Return;
 using ::testing::ReturnRef;
+
+namespace {
 
 class MockTokenService : public TokenService {
  public:
@@ -50,6 +53,8 @@ class MockObserver : public SigninTracker::Observer {
   MOCK_METHOD1(SigninFailed, void(const GoogleServiceAuthError&));
   MOCK_METHOD0(SigninSuccess, void(void));
 };
+
+}  // namespace
 
 class SigninTrackerTest : public testing::Test {
  public:
@@ -291,8 +296,9 @@ TEST_F(SigninTrackerTest, SyncSigninError) {
   // auth, but still have no credentials).
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error));
-  EXPECT_CALL(*mock_pss_, waiting_for_auth()).WillOnce(Return(false));
+  FakeAuthStatusProvider provider(mock_signin_manager_->signin_global_error());
+  provider.SetAuthError(error);
+  EXPECT_CALL(*mock_pss_, waiting_for_auth()).WillRepeatedly(Return(false));
   EXPECT_CALL(observer_, SigninFailed(error));
   tracker_->OnStateChanged();
 }
@@ -343,6 +349,8 @@ TEST_F(SigninTrackerTest, SigninFailedGoogleServiceAuthError) {
                                                    "password");
   // Inject authentication error.
   GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+  FakeAuthStatusProvider provider(mock_signin_manager_->signin_global_error());
+  provider.SetAuthError(error);
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn()).WillRepeatedly(
       Return(true));
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable()).WillRepeatedly(

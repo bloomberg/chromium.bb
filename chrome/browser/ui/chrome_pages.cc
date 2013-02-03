@@ -9,6 +9,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -181,12 +182,13 @@ void ShowSearchEngineSettings(Browser* browser) {
   ShowSettingsSubPage(browser, kSearchEnginesSubPage);
 }
 
-void ShowSyncSetup(Browser* browser, SyncPromoUI::Source source) {
+void ShowBrowserSignin(Browser* browser, SyncPromoUI::Source source) {
   Profile* original_profile = browser->profile()->GetOriginalProfile();
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(
           original_profile);
-  if (service->HasSyncSetupCompleted()) {
+  // If we're signed in, just show settings.
+  if (!service->signin()->GetAuthenticatedUsername().empty()) {
     ShowSettings(browser);
   } else {
     // If the browser's profile is an incognito profile, make sure to use

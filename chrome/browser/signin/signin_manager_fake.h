@@ -31,8 +31,16 @@ class FakeSigninManager : public SigninManager {
                                     const std::string& password) OVERRIDE;
   virtual void SignOut() OVERRIDE;
 
+  virtual bool AuthInProgress() const OVERRIDE;
+  void set_auth_in_progress(bool in_progress) {
+    auth_in_progress_ = in_progress;
+  }
+
   // Helper function to be used with ProfileKeyedService::SetTestingFactory().
   static ProfileKeyedService* Build(Profile* profile);
+
+ private:
+  bool auth_in_progress_;
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_FAKE_H_

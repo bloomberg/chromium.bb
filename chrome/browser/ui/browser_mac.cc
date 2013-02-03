@@ -42,7 +42,7 @@ void OpenOptionsWindow(Profile* profile) {
 
 void OpenSyncSetupWindow(Profile* profile, SyncPromoUI::Source source) {
   Browser* browser = new Browser(Browser::CreateParams(profile));
-  ShowSyncSetup(browser, source);
+  ShowBrowserSignin(browser, source);
   browser->window()->Show();
 }
 

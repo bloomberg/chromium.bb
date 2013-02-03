@@ -210,19 +210,9 @@ BrowserCommandController::BrowserCommandController(
     tab_restore_service->AddObserver(this);
     TabRestoreServiceChanged(tab_restore_service);
   }
-
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
-  if (service)
-    service->AddObserver(this);
 }
 
 BrowserCommandController::~BrowserCommandController() {
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
-  if (service)
-    service->RemoveObserver(this);
-
   // TabRestoreService may have been shutdown by the time we get here. Don't
   // trigger creating it.
   TabRestoreService* tab_restore_service =
@@ -690,8 +680,8 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_HELP_PAGE_VIA_MENU:
       ShowHelp(browser_, HELP_SOURCE_MENU);
       break;
-    case IDC_SHOW_SYNC_SETUP:
-      ShowSyncSetup(browser_, SyncPromoUI::SOURCE_MENU);
+    case IDC_SHOW_SIGNIN:
+      ShowBrowserSignin(browser_, SyncPromoUI::SOURCE_MENU);
       break;
     case IDC_TOGGLE_SPEECH_INPUT:
       ToggleSpeechInput(browser_);
@@ -749,20 +739,6 @@ void BrowserCommandController::OnProfileNameChanged(
 
 void BrowserCommandController::OnProfileAvatarChanged(
     const FilePath& profile_path) {
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserCommandController, ProfileSyncServiceObserver implementation:
-
-void BrowserCommandController::OnStateChanged() {
-  DCHECK(ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
-      profile()));
-  // For unit tests, we don't have a window.
-  if (!window())
-    return;
-  const bool show_main_ui = IsShowingMainUI(window()->IsFullscreen());
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_SYNC_SETUP,
-      show_main_ui && profile()->GetOriginalProfile()->IsSyncAccessible());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -905,8 +881,7 @@ void BrowserCommandController::InitCommandState() {
                                         !profile()->IsGuestSession() &&
                                         !profile()->IsOffTheRecord());
 
-  command_updater_.UpdateCommandEnabled(
-      IDC_SHOW_SYNC_SETUP, profile()->GetOriginalProfile()->IsSyncAccessible());
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_SIGNIN, true);
 
   // Initialize other commands based on the window type.
   bool normal_window = browser_->is_type_tabbed();
@@ -1141,8 +1116,6 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode(
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_FEEDBACK, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_SYNC_SETUP,
-      show_main_ui && profile()->GetOriginalProfile()->IsSyncAccessible());
 
   // Settings page/subpages are forced to open in normal mode. We disable these
   // commands when incognito is forced.

@@ -99,6 +99,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD0(OnConfigureStart, void());
 
   MOCK_METHOD0(IsSyncEnabledAndLoggedIn, bool());
+  MOCK_CONST_METHOD0(IsManaged, bool());
   MOCK_METHOD0(IsSyncTokenAvailable, bool());
 
   MOCK_CONST_METHOD0(IsPassphraseRequired, bool());

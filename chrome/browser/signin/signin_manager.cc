@@ -201,7 +201,7 @@ void SigninManager::Initialize(Profile* profile) {
   // Should never call Initialize() twice.
   DCHECK(!IsInitialized());
   profile_ = profile;
-  signin_global_error_.reset(new SigninGlobalError(profile));
+  signin_global_error_.reset(new SigninGlobalError(this, profile));
   GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
       signin_global_error_.get());
   PrefService* local_state = g_browser_process->local_state();
@@ -274,7 +274,7 @@ void SigninManager::CleanupNotificationRegistration() {
 #endif
 }
 
-const std::string& SigninManager::GetAuthenticatedUsername() {
+const std::string& SigninManager::GetAuthenticatedUsername() const {
   return authenticated_username_;
 }
 

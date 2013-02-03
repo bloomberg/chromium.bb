@@ -206,11 +206,12 @@ TestingProfile::TestingProfile(
     const FilePath& path,
     Delegate* delegate,
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
-    scoped_ptr<PrefServiceSyncable> prefs)
+    scoped_ptr<PrefServiceSyncable> prefs,
+    bool off_the_record)
     : start_time_(Time::Now()),
       prefs_(prefs.release()),
       testing_prefs_(NULL),
-      incognito_(false),
+      incognito_(off_the_record),
       last_session_exited_cleanly_(true),
       extension_special_storage_policy_(extension_policy),
       profile_path_(path),
@@ -761,7 +762,8 @@ Profile::ExitType TestingProfile::GetLastSessionExitType() {
 
 TestingProfile::Builder::Builder()
     : build_called_(false),
-      delegate_(NULL) {
+      delegate_(NULL),
+      off_the_record_(false) {
 }
 
 TestingProfile::Builder::~Builder() {
@@ -785,6 +787,10 @@ void TestingProfile::Builder::SetPrefService(
   pref_service_ = prefs.Pass();
 }
 
+void TestingProfile::Builder::SetOffTheRecord() {
+  off_the_record_ = true;
+}
+
 scoped_ptr<TestingProfile> TestingProfile::Builder::Build() {
   DCHECK(!build_called_);
   build_called_ = true;
@@ -792,5 +798,6 @@ scoped_ptr<TestingProfile> TestingProfile::Builder::Build() {
       path_,
       delegate_,
       extension_policy_,
-      pref_service_.Pass()));
+      pref_service_.Pass(),
+      off_the_record_));
 }

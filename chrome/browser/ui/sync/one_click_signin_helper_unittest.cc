@@ -537,7 +537,8 @@ TEST_F(OneClickSigninHelperTest, CanOfferDisabledByPolicy) {
   profile_->GetTestingPrefService()->SetManagedPref(
       prefs::kSyncManaged, base::Value::CreateBooleanValue(true));
 
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+  // Should still offer even if sync is disabled by policy.
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(
       web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
       "user@gmail.com", NULL));
 }
@@ -690,9 +691,10 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadDisabledByPolicy) {
                 valid_gaia_url_, "", &request_, io_data.get()));
 
   // Simulate a policy disabling sync by writing kSyncManaged directly.
+  // We should still offer to sign in the browser.
   profile_->GetTestingPrefService()->SetManagedPref(
       prefs::kSyncManaged, base::Value::CreateBooleanValue(true));
-  EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
+  EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
                 valid_gaia_url_, "", &request_, io_data.get()));
 }

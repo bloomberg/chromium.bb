@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/signin/fake_auth_status_provider.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_fake.h"
@@ -35,24 +36,6 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using ::testing::Return;
-
-namespace {
-class FakeAuthStatusProvider : public SigninGlobalError::AuthStatusProvider {
- public:
-  FakeAuthStatusProvider() : auth_error_(GoogleServiceAuthError::None()) {}
-
-  // AuthStatusProvider implementation.
-  GoogleServiceAuthError GetAuthStatus() const OVERRIDE { return auth_error_; }
-
-  void set_auth_error(const GoogleServiceAuthError& error) {
-    auth_error_ = error;
-  }
-
- private:
-  GoogleServiceAuthError auth_error_;
-};
-
-}  // namespace
 
 @interface BrowserWindowController (JustForTesting)
 // Already defined in BWC.
@@ -719,20 +702,18 @@ TEST_F(BrowserWindowControllerTest, TestSigninMenuItemAuthError) {
     ProfileSyncServiceFactory::GetForProfile(profile());
   sync->SetSyncSetupCompleted();
   // Force an auth error.
-  FakeAuthStatusProvider provider;
+  FakeAuthStatusProvider provider(signin->signin_global_error());
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  provider.set_auth_error(error);
-  signin->signin_global_error()->AddProvider(&provider);
+  provider.SetAuthError(error);
   [BrowserWindowController updateSigninItem:syncMenuItem
                                  shouldShow:YES
                              currentProfile:profile()];
   NSString* authError =
-    l10n_util::GetNSStringWithFixup(IDS_SYNC_MENU_SYNC_ERROR_LABEL);
+    l10n_util::GetNSStringWithFixup(IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM);
   EXPECT_TRUE([[syncMenuItem title] isEqualTo:authError]);
   EXPECT_FALSE([syncMenuItem isHidden]);
 
-  signin->signin_global_error()->RemoveProvider(&provider);
 }
 
 // If there's a separator after the signin menu item, make sure it is hidden/

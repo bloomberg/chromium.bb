@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
@@ -67,6 +68,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(WebDataServiceFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(BookmarkModelFactory::GetInstance());
+  DependsOn(AboutSigninInternalsFactory::GetInstance());
 
   // The following have not been converted to ProfileKeyedServices yet, and for
   // now they are explicitly destroyed after the ProfileDependencyManager is
@@ -86,6 +88,10 @@ ProfileKeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
                                         : ProfileSyncService::MANUAL_START;
 
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+
+  // TODO(atwilson): Change AboutSigninInternalsFactory to load on startup
+  // once http://crbug.com/171406 has been fixed.
+  AboutSigninInternalsFactory::GetForProfile(profile);
 
   // TODO(tim): Currently, AUTO/MANUAL settings refer to the *first* time sync
   // is set up and *not* a browser restart for a manual-start platform (where

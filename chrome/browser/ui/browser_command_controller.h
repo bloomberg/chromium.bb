@@ -30,7 +30,6 @@ namespace chrome {
 class BrowserCommandController : public CommandUpdaterDelegate,
                                  public content::NotificationObserver,
                                  public ProfileInfoCacheObserver,
-                                 public ProfileSyncServiceObserver,
                                  public TabStripModelObserver,
                                  public TabRestoreServiceObserver {
  public:
@@ -110,9 +109,6 @@ class BrowserCommandController : public CommandUpdaterDelegate,
   virtual void OnProfileNameChanged(const base::FilePath& profile_path,
                                     const string16& old_profile_name) OVERRIDE;
   virtual void OnProfileAvatarChanged(const base::FilePath& profile_path) OVERRIDE;
-
-  // Overridden from ProfileSyncServiceObserver:
-  virtual void OnStateChanged() OVERRIDE;
 
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(content::WebContents* contents,

@@ -880,6 +880,13 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForStoragePartition(
 }
 
 net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
+  // If ssl_config_service_manager_ is null, this typically means that some
+  // ProfileKeyedService is trying to create a RequestContext at startup, but
+  // SSLConfigServiceManager is not initialized until DoFinalInit() which is
+  // invoked after all ProfileKeyedServices have been initialized (see
+  // http://crbug.com/171406).
+  DCHECK(ssl_config_service_manager_.get()) <<
+      "SSLConfigServiceManager is not initialized yet";
   return ssl_config_service_manager_->Get();
 }
 

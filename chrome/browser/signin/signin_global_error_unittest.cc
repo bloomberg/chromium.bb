@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/signin_global_error.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/signin/fake_auth_status_provider.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_fake.h"
@@ -13,21 +14,6 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-class FakeAuthStatusProvider : public SigninGlobalError::AuthStatusProvider {
- public:
-  FakeAuthStatusProvider() : auth_error_(GoogleServiceAuthError::None()) {}
-
-  // AuthStatusProvider implementation.
-  GoogleServiceAuthError GetAuthStatus() const OVERRIDE { return auth_error_; }
-
-  void set_auth_error(const GoogleServiceAuthError& error) {
-    auth_error_ = error;
-  }
-
- private:
-  GoogleServiceAuthError auth_error_;
-};
 
 class SigninGlobalErrorTest : public testing::Test {
  public:
@@ -52,55 +38,50 @@ TEST_F(SigninGlobalErrorTest, NoAuthStatusProviders) {
 }
 
 TEST_F(SigninGlobalErrorTest, NoErrorAuthStatusProviders) {
-  FakeAuthStatusProvider provider;
-  global_error_->AddProvider(&provider);
-  ASSERT_FALSE(global_error_->HasBadge());
-  global_error_->RemoveProvider(&provider);
+  {
+    // Add a provider (removes itself on exiting this scope).
+    FakeAuthStatusProvider provider(global_error_);
+    ASSERT_FALSE(global_error_->HasBadge());
+  }
   ASSERT_FALSE(global_error_->HasBadge());
 }
 
 TEST_F(SigninGlobalErrorTest, ErrorAuthStatusProvider) {
-  FakeAuthStatusProvider provider;
-  FakeAuthStatusProvider error_provider;
-  error_provider.set_auth_error(GoogleServiceAuthError(
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-  global_error_->AddProvider(&provider);
-  ASSERT_FALSE(global_error_->HasBadge());
-  global_error_->AddProvider(&error_provider);
-  ASSERT_TRUE(global_error_->HasBadge());
-  global_error_->RemoveProvider(&error_provider);
-  ASSERT_FALSE(global_error_->HasBadge());
-  global_error_->RemoveProvider(&provider);
+  {
+    FakeAuthStatusProvider provider(global_error_);
+    ASSERT_FALSE(global_error_->HasBadge());
+    {
+      FakeAuthStatusProvider error_provider(global_error_);
+      error_provider.SetAuthError(GoogleServiceAuthError(
+          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+      ASSERT_TRUE(global_error_->HasBadge());
+    }
+    // error_provider is removed now that we've left that scope.
+    ASSERT_FALSE(global_error_->HasBadge());
+  }
+  // All providers should be removed now.
   ASSERT_FALSE(global_error_->HasBadge());
 }
 
 TEST_F(SigninGlobalErrorTest, AuthStatusProviderErrorTransition) {
-  FakeAuthStatusProvider provider0;
-  FakeAuthStatusProvider provider1;
-  global_error_->AddProvider(&provider0);
-  global_error_->AddProvider(&provider1);
-  ASSERT_FALSE(global_error_->HasBadge());
-  provider0.set_auth_error(
-      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-  ASSERT_FALSE(global_error_->HasBadge());
-  global_error_->AuthStatusChanged();
-  ASSERT_TRUE(global_error_->HasBadge());
-  provider1.set_auth_error(
-      GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED));
-  global_error_->AuthStatusChanged();
-  ASSERT_TRUE(global_error_->HasBadge());
+  {
+    FakeAuthStatusProvider provider0(global_error_);
+    FakeAuthStatusProvider provider1(global_error_);
+    ASSERT_FALSE(global_error_->HasBadge());
+    provider0.SetAuthError(
+        GoogleServiceAuthError(
+            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+    ASSERT_TRUE(global_error_->HasBadge());
+    provider1.SetAuthError(
+        GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED));
+    ASSERT_TRUE(global_error_->HasBadge());
 
-  // Now resolve the auth errors - badge should go away.
-  provider0.set_auth_error(GoogleServiceAuthError::None());
-  global_error_->AuthStatusChanged();
-  ASSERT_TRUE(global_error_->HasBadge());
-  provider1.set_auth_error(GoogleServiceAuthError::None());
-  global_error_->AuthStatusChanged();
-  ASSERT_FALSE(global_error_->HasBadge());
-
-  global_error_->RemoveProvider(&provider0);
-  ASSERT_FALSE(global_error_->HasBadge());
-  global_error_->RemoveProvider(&provider1);
+    // Now resolve the auth errors - badge should go away.
+    provider0.SetAuthError(GoogleServiceAuthError::None());
+    ASSERT_TRUE(global_error_->HasBadge());
+    provider1.SetAuthError(GoogleServiceAuthError::None());
+    ASSERT_FALSE(global_error_->HasBadge());
+  }
   ASSERT_FALSE(global_error_->HasBadge());
 }
 
@@ -128,11 +109,10 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
       kTable_size_does_not_match_number_of_auth_error_types);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(table); ++i) {
-    FakeAuthStatusProvider provider;
-    provider.set_auth_error(GoogleServiceAuthError(table[i].error_state));
+    FakeAuthStatusProvider provider(global_error_);
+    provider.SetAuthError(GoogleServiceAuthError(table[i].error_state));
     GlobalErrorService* service =
         GlobalErrorServiceFactory::GetForProfile(profile_.get());
-    global_error_->AddProvider(&provider);
     EXPECT_EQ(global_error_->HasBadge(), table[i].is_error);
     // Should badge the wrench menu if there's an error.
     EXPECT_EQ(service->GetFirstBadgeResourceID() != 0, table[i].is_error);
@@ -150,6 +130,5 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
     EXPECT_FALSE(global_error_->GetBubbleViewTitle().empty());
     EXPECT_FALSE(global_error_->GetBubbleViewAcceptButtonLabel().empty());
     EXPECT_TRUE(global_error_->GetBubbleViewCancelButtonLabel().empty());
-    global_error_->RemoveProvider(&provider);
   }
 }

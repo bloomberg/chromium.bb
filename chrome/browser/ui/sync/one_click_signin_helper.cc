@@ -393,9 +393,6 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
   if (!profile)
     return false;
 
-  if (!profile->IsSyncAccessible())
-    return false;
-
   if (can_offer_for == CAN_OFFER_FOR_INTERSTITAL_ONLY &&
       !profile->GetPrefs()->GetBoolean(prefs::kReverseAutologinEnabled))
     return false;
@@ -500,9 +497,6 @@ OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
   // Check for incognito before other parts of the io_data, since those
   // members may not be initalized.
   if (io_data->is_incognito())
-    return DONT_OFFER;
-
-  if (!browser_sync::SyncPrefs::IsSyncAccessibleOnIOThread(io_data))
     return DONT_OFFER;
 
   if (!io_data->reverse_autologin_enabled()->GetValue())

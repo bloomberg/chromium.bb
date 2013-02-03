@@ -631,13 +631,6 @@ void ProfileSyncService::DisableForUser() {
   invalidator_storage_.Clear();
   ClearUnrecoverableError();
   ShutdownImpl(true);
-
-  // TODO(atwilson): Don't call SignOut() on *any* platform - move this into
-  // the UI layer if needed (sync activity should never result in the user
-  // being logged out of all chrome services).
-  if (!auto_start_enabled_ && !signin_->GetAuthenticatedUsername().empty())
-    signin_->SignOut();
-
   NotifyObservers();
 }
 
@@ -942,10 +935,12 @@ void ProfileSyncService::UpdateAuthErrorState(const AuthError& error) {
   is_auth_in_progress_ = false;
   last_auth_error_ = error;
 
-  // Fan the notification out to interested UI-thread components.
-  NotifyObservers();
+  // Fan the notification out to interested UI-thread components. Notify the
+  // SigninGlobalError first so it reflects the latest auth state before we
+  // notify observers.
   if (signin())
     signin()->signin_global_error()->AuthStatusChanged();
+  NotifyObservers();
 }
 
 namespace {

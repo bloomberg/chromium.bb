@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -19,8 +18,9 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-SigninGlobalError::SigninGlobalError(Profile* profile)
+SigninGlobalError::SigninGlobalError(SigninManager* manager, Profile* profile)
     : auth_error_(GoogleServiceAuthError::None()),
+      signin_manager_(manager),
       profile_(profile) {
 }
 
@@ -96,8 +96,7 @@ int SigninGlobalError::MenuItemCommandID() {
 }
 
 string16 SigninGlobalError::MenuItemLabel() {
-  if (SigninManagerFactory::GetForProfile(profile_)->
-          GetAuthenticatedUsername().empty() ||
+  if (signin_manager_->GetAuthenticatedUsername().empty() ||
       auth_error_.state() == GoogleServiceAuthError::NONE ||
       auth_error_.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
     // If the user isn't signed in, or there's no auth error worth elevating to
@@ -141,8 +140,7 @@ string16 SigninGlobalError::GetBubbleViewTitle() {
 
 string16 SigninGlobalError::GetBubbleViewMessage() {
   // If the user isn't signed in, no need to display an error bubble.
-  if (SigninManagerFactory::GetForProfile(profile_)->
-          GetAuthenticatedUsername().empty()) {
+  if (signin_manager_->GetAuthenticatedUsername().empty()) {
     return string16();
   }
 

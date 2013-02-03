@@ -301,6 +301,11 @@ void SyncTest::InitializeInstance(int index) {
   EXPECT_FALSE(GetBrowser(index) == NULL) << "Could not create Browser "
                                           << index << ".";
 
+  // Make sure the ProfileSyncService has been created before creating the
+  // ProfileSyncServiceHarness - some tests expect the ProfileSyncService to
+  // already exist.
+  ProfileSyncServiceFactory::GetForProfile(GetProfile(index));
+
   clients_[index] = new ProfileSyncServiceHarness(GetProfile(index),
                                                   username_,
                                                   password_);
