@@ -103,7 +103,7 @@ bool HungWindowDetector::CheckChildWindow(HWND child_window) {
       child_window_message_timeout = message_response_timeout_;
     }
 
-    DWORD result = 0;
+    DWORD_PTR result = 0;
     if (0 == SendMessageTimeout(child_window,
                                 WM_NULL,
                                 0,
