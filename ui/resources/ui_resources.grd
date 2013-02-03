@@ -44,26 +44,26 @@
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_CENTER" file="browser_action_badge_center.png" />
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_LEFT" file="browser_action_badge_left.png" />
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_RIGHT" file="browser_action_badge_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_B" file="bubble_b.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_BL" file="bubble_bl.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_BR" file="bubble_br.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_B_ARROW" file="bubble_pointer_b.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_L" file="bubble_l.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_L_ARROW" file="bubble_pointer_l.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_R" file="bubble_r.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_R_ARROW" file="bubble_pointer_r.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_B" file="bubble_shadow_b.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_BL" file="bubble_shadow_bl.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_BR" file="bubble_shadow_br.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_L" file="bubble_shadow_l.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_R" file="bubble_shadow_r.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_T" file="bubble_shadow_t.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_TL" file="bubble_shadow_tl.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_TR" file="bubble_shadow_tr.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_T" file="bubble_t.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_TL" file="bubble_tl.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_TR" file="bubble_tr.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_T_ARROW" file="bubble_pointer_t.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_B" file="bubble_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_BL" file="bubble_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_BR" file="bubble_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_B_ARROW" file="bubble_pointer_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_L" file="bubble_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_L_ARROW" file="bubble_pointer_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_R" file="bubble_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_R_ARROW" file="bubble_pointer_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_B" file="bubble_shadow_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_BL" file="bubble_shadow_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_BR" file="bubble_shadow_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_L" file="bubble_shadow_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_R" file="bubble_shadow_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_T" file="bubble_shadow_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_TL" file="bubble_shadow_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_TR" file="bubble_shadow_top_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_T" file="bubble_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_TL" file="bubble_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_TR" file="bubble_top_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_T_ARROW" file="bubble_pointer_top.png" />
       <if expr="is_posix and not is_macosx and not pp_ifdef('use_aura')">
         <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_INDETERMINATE" file="linux/linux-checkbox-disabled-indeterminate.png" />
         <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_OFF" file="linux/linux-checkbox-disabled-off.png" />
