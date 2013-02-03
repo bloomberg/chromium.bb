@@ -272,7 +272,14 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, Backgrounding) {
 }
 #endif
 
-IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, SLOW_ProcessOverflow) {
+// TODO(nasko): crbug.com/173137
+#if defined(OS_WIN)
+#define MAYBE_ProcessOverflow DISABLED_ProcessOverflow
+#else
+#define MAYBE_ProcessOverflow ProcessOverflow
+#endif
+
+IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_ProcessOverflow) {
   // Set max renderers to 1 to force running out of processes.
   content::RenderProcessHost::SetMaxRendererProcessCount(1);
   TestProcessOverflow();

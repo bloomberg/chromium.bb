@@ -38,10 +38,18 @@ class ProcessManagementTest : public ExtensionBrowserTest {
 
 }  // namespace
 
+
+// TODO(nasko): crbug.com/173137
+#if defined(OS_WIN)
+#define MAYBE_ProcessOverflow DISABLED_ProcessOverflow
+#else
+#define MAYBE_ProcessOverflow ProcessOverflow
+#endif
+
 // Ensure that an isolated app never shares a process with WebUIs, non-isolated
 // extensions, and normal webpages.  None of these should ever comingle
 // RenderProcessHosts even if we hit the process limit.
-IN_PROC_BROWSER_TEST_F(ProcessManagementTest, SLOW_ProcessOverflow) {
+IN_PROC_BROWSER_TEST_F(ProcessManagementTest, MAYBE_ProcessOverflow) {
   // Set max renderers to 1 to force running out of processes.
   content::RenderProcessHost::SetMaxRendererProcessCount(1);
 
