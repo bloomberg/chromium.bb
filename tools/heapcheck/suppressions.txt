@@ -1804,22 +1804,3 @@
    ...
    fun:chromeos::MagnificationManagerTest_MagnificationObserver_Test::TestBody
 }
-{
-   bug_173597_a
-   Heapcheck:Leak
-   fun:g_realloc
-   fun:gfx::RenderTextTest_PangoAttributes_Test::TestBody
-}
-{
-   bug_173597_b
-   Heapcheck:Leak
-   fun:??
-   fun:gfx::RenderTextTest_PangoAttributes_Test::TestBody
-}
-{
-   bug_173597_c
-   Heapcheck:Leak
-   fun:FcConfigEvaluate
-   fun:gfx::RenderTextLinux::EnsureLayout
-   fun:gfx::RenderTextTest_PangoAttributes_Test::TestBody
-}

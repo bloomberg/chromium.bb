@@ -189,15 +189,18 @@ TEST_F(RenderTextTest, PangoAttributes) {
     EXPECT_EQ(cases[i].end, end);
     PangoFontDescription* font = pango_font_description_new();
     pango_attr_iterator_get_font(iter, font, NULL, NULL);
-    const string16 desc = ASCIIToUTF16(pango_font_description_to_string(font));
+    char* description_string = pango_font_description_to_string(font);
+    const string16 desc = ASCIIToUTF16(description_string);
     const bool bold = desc.find(ASCIIToUTF16("Bold")) != std::string::npos;
     EXPECT_EQ(cases[i].bold, bold);
     const bool italic = desc.find(ASCIIToUTF16("Italic")) != std::string::npos;
     EXPECT_EQ(cases[i].italic, italic);
     pango_attr_iterator_next(iter);
     pango_font_description_free(font);
+    g_free(description_string);
   }
   EXPECT_FALSE(pango_attr_iterator_next(iter));
+  pango_attr_iterator_destroy(iter);
 }
 #endif
 
