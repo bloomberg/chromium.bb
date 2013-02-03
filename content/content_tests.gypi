@@ -753,6 +753,8 @@
             'renderer/render_widget_browsertest.cc',
             'renderer/renderer_accessibility_browsertest.cc',
             'renderer/web_intents_host_browsertest.cc',
+            'test/browser_test_message_pump_android.cc',
+            'test/browser_test_message_pump_android.h',
             'test/content_browser_test.h',
             'test/content_browser_test.cc',
             'test/content_browser_test_utils.cc',

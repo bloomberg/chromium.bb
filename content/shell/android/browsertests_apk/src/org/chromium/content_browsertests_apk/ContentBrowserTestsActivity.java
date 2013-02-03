@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import org.chromium.content.app.LibraryLoader;
+import org.chromium.content.browser.AndroidBrowserProcess;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.ui.gfx.ActivityNativeWindow;
 import org.chromium.content_shell.ShellManager;
@@ -29,6 +30,7 @@ public class ContentBrowserTestsActivity extends Activity {
         } catch (ProcessInitException e) {
             Log.i(TAG, "Cannot load content_browsertests:" +  e);
         }
+        AndroidBrowserProcess.initChromiumBrowserProcessForTests();
 
         setContentView(R.layout.test_activity);
         mShellManager = (ShellManager) findViewById(R.id.shell_container);
@@ -36,6 +38,8 @@ public class ContentBrowserTestsActivity extends Activity {
         mShellManager.setWindow(mActivityNativeWindow);
 
         runTests();
+        Log.i(TAG, "Tests finished.");
+        finish();
     }
 
     private void runTests() {

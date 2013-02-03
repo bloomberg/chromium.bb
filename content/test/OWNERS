@@ -6,3 +6,4 @@ sky@chromium.org
 tommi@chromium.org
 
 per-file layout*=jochen@chromium.org
+per-file browser_test_message_pump_android.*=nileshagrawal@chromium.org

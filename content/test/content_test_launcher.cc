@@ -19,7 +19,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/message_loop.h"
-#include "base/message_pump_android.h"
+#include "content/test/browser_test_message_pump_android.h"
 #endif
 
 #if defined(OS_WIN)
@@ -59,7 +59,7 @@ class ContentShellTestSuiteInitializer
 
 #if defined(OS_ANDROID)
 base::MessagePump* CreateMessagePumpForUI() {
-  return new base::MessagePumpForUI();
+  return new BrowserTestMessagePumpAndroid();
 };
 #endif
 

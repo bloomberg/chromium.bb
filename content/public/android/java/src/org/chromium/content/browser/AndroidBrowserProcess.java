@@ -141,6 +141,15 @@ public class AndroidBrowserProcess {
         return true;
     }
 
+    /**
+     * Initialization needed for tests. Mainly used by content browsertests.
+     */
+    public static void initChromiumBrowserProcessForTests() {
+        // Having a single renderer should be sufficient for tests.
+        // We can't have more than MAX_RENDERERS_LIMIT.
+        nativeSetCommandLineFlags(1 /* maxRenderers */);
+    }
+
     private static native void nativeSetCommandLineFlags(
         int maxRenderProcesses);
 

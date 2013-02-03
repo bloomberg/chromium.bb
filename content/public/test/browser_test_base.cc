@@ -16,6 +16,10 @@
 #include "base/system_monitor/system_monitor.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "content/public/browser/browser_main_runner.h"
+#endif
+
 namespace {
 
 #if defined(OS_POSIX)
@@ -73,7 +77,11 @@ void BrowserTestBase::SetUp() {
           base::Bind(&BrowserTestBase::ProxyRunTestOnMainThreadLoop, this));
 
   SetUpInProcessBrowserTestFixture();
+#if defined(OS_ANDROID)
+  BrowserMainRunner::Create()->Initialize(params);
+#else
   BrowserMain(params);
+#endif
   TearDownInProcessBrowserTestFixture();
 }
 
