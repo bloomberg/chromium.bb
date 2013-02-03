@@ -23,6 +23,8 @@ ContentRulesRegistry::ContentRulesRegistry(Profile* profile, Delegate* delegate)
 
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 void ContentRulesRegistry::Observe(
@@ -30,12 +32,22 @@ void ContentRulesRegistry::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_CREATED:
+    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       content::RenderProcessHost* process =
           content::Source<content::RenderProcessHost>(source).ptr();
       if (process->GetBrowserContext() == profile_)
         InstructRenderProcess(process);
       break;
+    }
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
+      content::WebContents* tab =
+          content::Source<content::WebContents>(source).ptr();
+      // GetTabId() returns -1 for non-tab WebContents, which won't be
+      // in the map.  Similarly, tabs from other profiles won't be in
+      // the map.
+      active_rules_.erase(ExtensionTabUtil::GetTabId(tab));
+      break;
+    }
   }
 }
 
@@ -48,6 +60,9 @@ void ContentRulesRegistry::Apply(
   renderer_data.css_selectors.insert(matching_css_selectors.begin(),
                                      matching_css_selectors.end());
   std::set<ContentRule*> matching_rules = GetMatches(renderer_data);
+  if (matching_rules.empty() && !ContainsKey(active_rules_, tab_id))
+    return;
+
   std::set<ContentRule*>& prev_matching_rules = active_rules_[tab_id];
   ContentAction::ApplyInfo apply_info = {
     profile_, contents
@@ -62,7 +77,11 @@ void ContentRulesRegistry::Apply(
     if (!ContainsKey(matching_rules, *it))
       (*it)->actions().Revert((*it)->extension_id(), base::Time(), &apply_info);
   }
-  swap(matching_rules, prev_matching_rules);
+
+  if (matching_rules.empty())
+    active_rules_.erase(tab_id);
+  else
+    swap(matching_rules, prev_matching_rules);
 }
 
 void ContentRulesRegistry::DidNavigateMainFrame(

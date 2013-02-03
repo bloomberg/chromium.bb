@@ -676,6 +676,7 @@
         'browser/extensions/api/declarative/rules_registry_with_cache_unittest.cc',
         'browser/extensions/api/declarative_content/content_action_unittest.cc',
         'browser/extensions/api/declarative_content/content_condition_unittest.cc',
+        'browser/extensions/api/declarative_content/content_rules_registry_unittest.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_action_unittest.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_condition_attribute_unittest.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_condition_unittest.cc',

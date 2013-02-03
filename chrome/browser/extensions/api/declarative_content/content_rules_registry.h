@@ -100,6 +100,8 @@ class ContentRulesRegistry : public RulesRegistryWithCache,
       const std::string& extension_id) const;
 
  private:
+  friend class DeclarativeContentRulesRegistryTest;
+
   std::set<ContentRule*>
   GetMatches(const RendererContentMatchData& renderer_data) const;
 
