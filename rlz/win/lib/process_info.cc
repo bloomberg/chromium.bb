@@ -16,7 +16,6 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "rlz/lib/assert.h"
-#include "rlz/win/lib/vista_winnt.h"
 
 namespace {
 

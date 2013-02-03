@@ -71,7 +71,6 @@
         'win/lib/rlz_lib_win.cc',
         'win/lib/rlz_value_store_registry.cc',
         'win/lib/rlz_value_store_registry.h',
-        'win/lib/vista_winnt.h',
       ],
       'conditions': [
         ['rlz_use_chrome_net==1', {
