@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <bluetooth/bluetooth.h>
+
 #include <string>
 
 #include "base/base_paths.h"
@@ -14,7 +16,7 @@
 
 namespace {
 
-static const char* kAddress = "01:02:03:04:05:06";
+static const char* kAddress = "01:02:03:0A:10:A0";
 static const char* kCustomUuid = "01234567-89ab-cdef-0123-456789abcdef";
 static const char* kSerialUuid = "00001101-0000-1000-8000-00805f9b34fb";
 
@@ -73,6 +75,18 @@ TEST_F(BluetoothServiceRecordChromeOSTest, CleanUuid) {
       &xml_data);
   BluetoothServiceRecordChromeOS invalid_service_record(kAddress, xml_data);
   EXPECT_EQ("", invalid_service_record.uuid());
+}
+
+TEST_F(BluetoothServiceRecordChromeOSTest, BluetoothAddress) {
+  BluetoothServiceRecordChromeOS service_record(kAddress, "");
+  bdaddr_t bluetooth_address;
+  service_record.GetBluetoothAddress(&bluetooth_address);
+  EXPECT_EQ(1, bluetooth_address.b[5]);
+  EXPECT_EQ(2, bluetooth_address.b[4]);
+  EXPECT_EQ(3, bluetooth_address.b[3]);
+  EXPECT_EQ(10, bluetooth_address.b[2]);
+  EXPECT_EQ(16, bluetooth_address.b[1]);
+  EXPECT_EQ(160, bluetooth_address.b[0]);
 }
 
 }  // namespace chromeos

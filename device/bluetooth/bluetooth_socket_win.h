@@ -5,8 +5,11 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_WIN_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_WIN_H_
 
+#include <WinSock2.h>
+
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "device/bluetooth/bluetooth_socket.h"
 
 namespace net {
@@ -18,18 +21,30 @@ class GrowableIOBuffer;
 
 namespace device {
 
+class BluetoothServiceRecord;
+
+// This class is an implementation of BluetoothSocket class for Windows
+// platform.
 class BluetoothSocketWin : public BluetoothSocket {
  public:
-  // BluetoothSocket override
-  virtual int fd() const OVERRIDE;
+  static scoped_refptr<BluetoothSocket> CreateBluetoothSocket(
+      const BluetoothServiceRecord& service_record);
 
+  // BluetoothSocket override
   virtual bool Receive(net::GrowableIOBuffer* buffer) OVERRIDE;
   virtual bool Send(net::DrainableIOBuffer* buffer) OVERRIDE;
   virtual std::string GetLastErrorMessage() const OVERRIDE;
 
- private:
-  BluetoothSocketWin();
+ protected:
   virtual ~BluetoothSocketWin();
+
+ private:
+  BluetoothSocketWin(SOCKET fd);
+
+  const SOCKET fd_;
+  std::string error_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketWin);
 };
 
 }  // namespace device

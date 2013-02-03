@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "device/bluetooth/bluetooth_init_win.h"
 #include "device/bluetooth/bluetooth_utils.h"
@@ -95,6 +96,25 @@ void ExtractUuid(const SDP_ELEMENT_DATA& uuid_data, std::string* uuid) {
   }
 }
 
+BTH_ADDR ConvertToBthAddr(const std::string& address) {
+  BTH_ADDR bth_addr = 0;
+  std::string numbers_only;
+  for (int i = 0; i < 6; ++i) {
+    numbers_only += address.substr(i * 3, 2);
+  }
+
+  std::vector<uint8> address_bytes;
+  base::HexStringToBytes(numbers_only, &address_bytes);
+  int byte_position = 0;
+  for (std::vector<uint8>::reverse_iterator iter = address_bytes.rbegin();
+      iter != address_bytes.rend();
+      ++iter) {
+    bth_addr += *iter * pow(256.0, byte_position);
+    byte_position++;
+  }
+  return bth_addr;
+}
+
 }  // namespace
 
 namespace device {
@@ -103,7 +123,7 @@ BluetoothServiceRecordWin::BluetoothServiceRecordWin(
     const std::string& name,
     const std::string& address,
     uint64 blob_size,
-    uint8* blob_data) {
+    uint8* blob_data) : bth_addr_(ConvertToBthAddr(address)) {
   name_ = name;
   address_ = address;
   supports_rfcomm_ = false;

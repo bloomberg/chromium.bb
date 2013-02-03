@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_SERVICE_RECORD_CHROMEOS_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_SERVICE_RECORD_CHROMEOS_H_
 
+#include <bluetooth/bluetooth.h>
+
 #include <string>
 
 #include "base/basictypes.h"
@@ -20,6 +22,8 @@ class BluetoothServiceRecordChromeOS : public device::BluetoothServiceRecord {
  public:
   BluetoothServiceRecordChromeOS(const std::string& address,
                                  const std::string& xml_data);
+
+  void GetBluetoothAddress(bdaddr_t* out_address) const;
 
  private:
   void ExtractChannels(XmlReader* reader);

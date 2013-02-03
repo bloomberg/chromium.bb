@@ -33,7 +33,6 @@ class BluetoothSocketChromeOS : public device::BluetoothSocket {
       const device::BluetoothServiceRecord& service_record);
 
   // BluetoothSocket override
-  virtual int fd() const OVERRIDE;
   virtual bool Receive(net::GrowableIOBuffer* buffer) OVERRIDE;
   virtual bool Send(net::DrainableIOBuffer* buffer) OVERRIDE;
   virtual std::string GetLastErrorMessage() const OVERRIDE;
@@ -42,9 +41,8 @@ class BluetoothSocketChromeOS : public device::BluetoothSocket {
   virtual ~BluetoothSocketChromeOS();
 
  private:
-  BluetoothSocketChromeOS(const std::string& address, int fd);
+  BluetoothSocketChromeOS(int fd);
 
-  const std::string address_;
   const int fd_;
   std::string error_message_;
 

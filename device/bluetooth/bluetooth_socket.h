@@ -24,11 +24,6 @@ namespace device {
 // creation.
 class BluetoothSocket : public base::RefCounted<BluetoothSocket> {
  public:
-  // TODO(youngki): Replace this with an opaque id when read/write calls are
-  // added. This interface is platform-independent and file descriptor is
-  // linux-specific hence this method has to be renamed.
-  virtual int fd() const = 0;
-
   // Receives data from the socket and stores it in |buffer|. It returns whether
   // the reception has been successful. If it fails, the caller can get the
   // error message through |GetLastErrorMessage()|.

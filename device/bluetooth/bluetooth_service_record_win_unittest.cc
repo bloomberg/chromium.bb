@@ -63,4 +63,14 @@ TEST_F(BluetoothServiceRecordWinTest, RfcommSdp) {
   EXPECT_EQ(kTestRfcommChannel, service_record.rfcomm_channel());
 }
 
+TEST_F(BluetoothServiceRecordWinTest, BthAddr) {
+  uint8 sdp_bytes_array[kTestRfcommSdpBytesSize];
+  ConvertSdpBytes(kTestRfcommSdpBytes, sdp_bytes_array);
+  BluetoothServiceRecordWin service_record("Sdp",
+                                           "01:02:03:0A:10:A0",
+                                           kTestRfcommSdpBytesSize,
+                                           sdp_bytes_array);
+  EXPECT_EQ(1108152553632, service_record.bth_addr());
+}
+
 }  // namespace device

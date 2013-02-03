@@ -121,7 +121,6 @@ static void CallConnectToServiceCallback(
     const BluetoothDevice::SocketCallback& callback) {
   scoped_refptr<device::MockBluetoothSocket> socket =
       new device::MockBluetoothSocket();
-  EXPECT_CALL(*socket, fd()).WillRepeatedly(testing::Return(1));
   callback.Run(socket);
 }
 

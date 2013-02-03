@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "device/bluetooth/bluetooth_init_win.h"
 #include "device/bluetooth/bluetooth_service_record.h"
 
 namespace device {
@@ -18,6 +19,13 @@ class BluetoothServiceRecordWin : public BluetoothServiceRecord {
                             const std::string& address,
                             uint64 blob_size,
                             uint8* blob_data);
+
+  BTH_ADDR bth_addr() const {
+    return bth_addr_;
+  }
+
+ private:
+  BTH_ADDR bth_addr_;
 };
 
 }  // namespace device

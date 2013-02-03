@@ -22,7 +22,6 @@ namespace device {
 class MockBluetoothSocket : public BluetoothSocket {
  public:
   MockBluetoothSocket();
-  MOCK_CONST_METHOD0(fd, int());
   MOCK_METHOD1(Receive, bool(net::GrowableIOBuffer*));
   MOCK_METHOD1(Send, bool(net::DrainableIOBuffer*));
   MOCK_CONST_METHOD0(GetLastErrorMessage, std::string());

@@ -17,7 +17,7 @@
 
 #include "base/logging.h"
 #include "base/safe_strerror_posix.h"
-#include "device/bluetooth/bluetooth_service_record.h"
+#include "device/bluetooth/bluetooth_service_record_chromeos.h"
 #include "device/bluetooth/bluetooth_utils.h"
 #include "net/base/io_buffer.h"
 
@@ -26,10 +26,7 @@ using device::BluetoothSocket;
 
 namespace chromeos {
 
-BluetoothSocketChromeOS::BluetoothSocketChromeOS(
-    const std::string& address, int fd)
-  : address_(address),
-    fd_(fd) {
+BluetoothSocketChromeOS::BluetoothSocketChromeOS(int fd) : fd_(fd) {
 }
 
 BluetoothSocketChromeOS::~BluetoothSocketChromeOS() {
@@ -46,15 +43,15 @@ scoped_refptr<BluetoothSocket> BluetoothSocketChromeOS::CreateBluetoothSocket(
     struct sockaddr_rc socket_address = { 0 };
     socket_address.rc_family = AF_BLUETOOTH;
     socket_address.rc_channel = service_record.rfcomm_channel();
-    device::bluetooth_utils::str2ba(service_record.address(),
-        &socket_address.rc_bdaddr);
+    const BluetoothServiceRecordChromeOS* service_record_chromeos =
+        static_cast<const BluetoothServiceRecordChromeOS*>(&service_record);
+    service_record_chromeos->GetBluetoothAddress(&socket_address.rc_bdaddr);
 
     int status = connect(socket_fd, (struct sockaddr *)&socket_address,
         sizeof(socket_address));
     int errsv = errno;
     if (status == 0 || errno == EINPROGRESS) {
-      bluetooth_socket = new BluetoothSocketChromeOS(service_record.address(),
-          socket_fd);
+      bluetooth_socket = new BluetoothSocketChromeOS(socket_fd);
     } else {
       LOG(ERROR) << "Failed to connect bluetooth socket "
           << "(" << service_record.address() << "): "
@@ -65,10 +62,6 @@ scoped_refptr<BluetoothSocket> BluetoothSocketChromeOS::CreateBluetoothSocket(
   // TODO(bryeung): add support for L2CAP sockets as well.
 
   return scoped_refptr<BluetoothSocketChromeOS>(bluetooth_socket);
-}
-
-int BluetoothSocketChromeOS::fd() const {
-  return fd_;
 }
 
 bool BluetoothSocketChromeOS::Receive(net::GrowableIOBuffer* buffer) {

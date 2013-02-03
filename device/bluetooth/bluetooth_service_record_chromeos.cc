@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/bluetooth_service_record_chromeos.h"
 
+#include <bluetooth/bluetooth.h>
+
 #include <string>
 #include <vector>
 
@@ -74,6 +76,18 @@ BluetoothServiceRecordChromeOS::BluetoothServiceRecordChromeOS(
     // We don't care about anything else here, so find the closing tag
     AdvanceToTag(&reader, kAttributeNode);
   }
+}
+
+void BluetoothServiceRecordChromeOS::GetBluetoothAddress(
+    bdaddr_t* out_address) const {
+  std::string numbers_only;
+  for (int i = 0; i < 6; ++i)
+    numbers_only += address_.substr(i * 3, 2);
+
+  std::vector<uint8> address_bytes;
+  base::HexStringToBytes(numbers_only, &address_bytes);
+  for (int i = 0; i < 6; ++i)
+    out_address->b[5 - i] = address_bytes[i];
 }
 
 void BluetoothServiceRecordChromeOS::ExtractChannels(XmlReader* reader) {

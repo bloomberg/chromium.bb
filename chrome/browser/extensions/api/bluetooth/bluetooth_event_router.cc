@@ -73,9 +73,8 @@ int ExtensionBluetoothEventRouter::RegisterSocket(
   // If there is a socket registered with the same fd, just return it's id
   for (SocketMap::const_iterator i = socket_map_.begin();
       i != socket_map_.end(); ++i) {
-    if (i->second->fd() == socket->fd()) {
+    if (i->second.get() == socket.get())
       return i->first;
-    }
   }
   int return_id = next_socket_id_++;
   socket_map_[return_id] = socket;

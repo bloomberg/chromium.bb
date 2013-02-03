@@ -6,12 +6,8 @@
 
 #include <vector>
 
-#if defined(OS_CHROMEOS)
-#include <bluetooth/bluetooth.h>
-#endif
-
+#include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 
 namespace {
@@ -22,35 +18,6 @@ static const int kUuidSize = 36;
 
 namespace device {
 namespace bluetooth_utils {
-
-#if defined(OS_CHROMEOS)
-bool str2ba(const std::string& in_address, bdaddr_t* out_address) {
-  if (!out_address)
-    return false;
-
-  memset(out_address, 0, sizeof(*out_address));
-
-  if (in_address.size() != 17)
-    return false;
-
-  std::string numbers_only;
-  for (int i = 0; i < 6; ++i) {
-    numbers_only += in_address.substr(i * 3, 2);
-  }
-
-  std::vector<uint8> address_bytes;
-  if (base::HexStringToBytes(numbers_only, &address_bytes)) {
-    if (address_bytes.size() == 6) {
-      for (int i = 0; i < 6; ++i) {
-        out_address->b[5 - i] = address_bytes[i];
-      }
-      return true;
-    }
-  }
-
-  return false;
-}
-#endif
 
 std::string CanonicalUuid(std::string uuid) {
   if (uuid.empty())
