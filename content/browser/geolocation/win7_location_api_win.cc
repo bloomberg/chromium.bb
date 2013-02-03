@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/win/scoped_propvariant.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/geoposition.h"
 
@@ -141,18 +142,16 @@ bool Win7LocationApi::GetPositionIfFixed(Geoposition* position) {
   result_type = lat_long_report->GetAltitudeError(&temp_dbl);
   if (SUCCEEDED(result_type))
     position->altitude_accuracy = temp_dbl;
-  PROPVARIANT heading;
-  PropVariantInit(&heading);
+  base::win::ScopedPropVariant propvariant;
   result_type = lat_long_report->GetValue(
-      SENSOR_DATA_TYPE_TRUE_HEADING_DEGREES, &heading);
+      SENSOR_DATA_TYPE_TRUE_HEADING_DEGREES, propvariant.Receive());
   if (SUCCEEDED(result_type))
-    PropVariantToDouble_function_(heading, &position->heading);
-  PROPVARIANT speed;
-  PropVariantInit(&speed);
+    PropVariantToDouble_function_(propvariant.get(), &position->heading);
+  propvariant.Reset();
   result_type = lat_long_report->GetValue(
-      SENSOR_DATA_TYPE_SPEED_KNOTS, &speed);
+      SENSOR_DATA_TYPE_SPEED_KNOTS, propvariant.Receive());
   if (SUCCEEDED(result_type)) {
-    PropVariantToDouble_function_(speed, &position->speed);
+    PropVariantToDouble_function_(propvariant.get(), &position->speed);
     ConvertKnotsToMetresPerSecond(&position->speed);
   }
   position->timestamp = base::Time::Now();

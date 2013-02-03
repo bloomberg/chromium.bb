@@ -21,6 +21,7 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -140,40 +141,6 @@ const CLSID CLSID_EnumerableObjectCollection = {
 
 namespace {
 
-// Represents a class which encapsulates a PROPVARIANT object containing a
-// string for AddShellLink().
-// This class automatically deletes all the resources attached to the
-// PROPVARIANT object in its destructor.
-class PropVariantString {
- public:
-  PropVariantString() {
-    property_.vt = VT_EMPTY;
-  }
-
-  HRESULT Init(const std::wstring& value) {
-    // Call InitPropVariantFromString() to initialize this PROPVARIANT object.
-    // To read <propvarutil.h>, it seems InitPropVariantFromString() is an
-    // inline function that initialize a PROPVARIANT object and calls
-    // SHStrDupW() to set a copy of its input string.
-    // So, we just calls it without creating a copy.
-    return InitPropVariantFromString(value.c_str(), &property_);
-  }
-
-  ~PropVariantString() {
-    if (property_.vt != VT_EMPTY)
-      PropVariantClear(&property_);
-  }
-
-  const PROPVARIANT& Get() {
-    return property_;
-  }
-
- private:
-  PROPVARIANT property_;
-
-  DISALLOW_COPY_AND_ASSIGN(PropVariantString);
-};
-
 // Creates an IShellLink object.
 // An IShellLink object is almost the same as an application shortcut, and it
 // requires three items: the absolute path to an application, an argument
@@ -233,12 +200,18 @@ HRESULT AddShellLink(base::win::ScopedComPtr<IObjectCollection> collection,
   if (FAILED(result))
     return result;
 
-  PropVariantString property_title;
-  result = property_title.Init(item->title());
+  base::win::ScopedPropVariant property_title;
+  // Call InitPropVariantFromString() to initialize |property_title|. Reading
+  // <propvarutil.h>, it seems InitPropVariantFromString() is an inline function
+  // that initializes a PROPVARIANT object and calls SHStrDupW() to set a copy
+  // of its input string. It is thus safe to call it without first creating a
+  // copy here.
+  result = InitPropVariantFromString(item->title().c_str(),
+                                     property_title.Receive());
   if (FAILED(result))
     return result;
 
-  result = property_store->SetValue(PKEY_Title, property_title.Get());
+  result = property_store->SetValue(PKEY_Title, property_title.get());
   if (FAILED(result))
     return result;
 

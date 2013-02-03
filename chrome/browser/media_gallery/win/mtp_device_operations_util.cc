@@ -16,6 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/win/scoped_co_mem.h"
+#include "base/win/scoped_propvariant.h"
 #include "chrome/browser/system_monitor/removable_device_constants.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -160,24 +161,23 @@ bool GetLastModifiedTime(IPortableDeviceValues* properties_values,
                          base::Time* last_modified_time) {
   DCHECK(properties_values);
   DCHECK(last_modified_time);
-  PROPVARIANT last_modified_date = {0};
-  PropVariantInit(&last_modified_date);
+  base::win::ScopedPropVariant last_modified_date;
   HRESULT hr = properties_values->GetValue(WPD_OBJECT_DATE_MODIFIED,
-                                           &last_modified_date);
+                                           last_modified_date.Receive());
   if (FAILED(hr))
     return false;
 
-  bool last_modified_time_set = (last_modified_date.vt == VT_DATE);
+  bool last_modified_time_set = (last_modified_date.get().vt == VT_DATE);
   if (last_modified_time_set) {
     SYSTEMTIME system_time;
     FILETIME file_time;
-    if (VariantTimeToSystemTime(last_modified_date.date, &system_time) &&
-        SystemTimeToFileTime(&system_time, &file_time))
+    if (VariantTimeToSystemTime(last_modified_date.get().date, &system_time) &&
+        SystemTimeToFileTime(&system_time, &file_time)) {
       *last_modified_time = base::Time::FromFileTime(file_time);
-    else
+    } else {
       last_modified_time_set = false;
+    }
   }
-  PropVariantClear(&last_modified_date);
   return last_modified_time_set;
 }
 

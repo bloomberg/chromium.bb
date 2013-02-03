@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
 #include "media/base/media_switches.h"
 
@@ -74,39 +75,6 @@ bool LoadAudiosesDll() {
   ExpandEnvironmentStringsW(kAudiosesDLL, path, arraysize(path));
   return (LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH) != NULL);
 }
-
-// Scoped PROPVARIANT class for automatically freeing a COM PROPVARIANT
-// structure at the end of a scope.
-class ScopedPropertyVariant {
- public:
-  ScopedPropertyVariant() {
-    PropVariantInit(&propvar_);
-  }
-  ~ScopedPropertyVariant() {
-    PropVariantClear(&propvar_);
-  }
-
-  // Retrieves the pointer address.
-  // Used to receive a PROPVARIANT as an out argument (and take ownership).
-  PROPVARIANT* Receive() {
-    DCHECK_EQ(propvar_.vt, VT_EMPTY);
-    return &propvar_;
-  }
-
-  VARTYPE type() const {
-    return propvar_.vt;
-  }
-
-  LPWSTR as_wide_string() const {
-    DCHECK_EQ(type(), VT_LPWSTR);
-    return propvar_.pwszVal;
-  }
-
- private:
-  PROPVARIANT propvar_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedPropertyVariant);
-};
 
 bool CoreAudioUtil::IsSupported() {
   // Microsoft does not plan to make the Core Audio APIs available for use
@@ -253,13 +221,13 @@ HRESULT CoreAudioUtil::GetDeviceName(IMMDevice* device, AudioDeviceName* name) {
   hr = device->OpenPropertyStore(STGM_READ, properties.Receive());
   if (FAILED(hr))
     return hr;
-  ScopedPropertyVariant friendly_name;
+  base::win::ScopedPropVariant friendly_name;
   hr = properties->GetValue(PKEY_Device_FriendlyName, friendly_name.Receive());
   if (FAILED(hr))
     return hr;
-  if (friendly_name.as_wide_string()) {
-    WideToUTF8(friendly_name.as_wide_string(),
-               wcslen(friendly_name.as_wide_string()),
+  if (friendly_name.get().vt == VT_LPWSTR && friendly_name.get().pwszVal) {
+    WideToUTF8(friendly_name.get().pwszVal,
+               wcslen(friendly_name.get().pwszVal),
                &device_name.device_name);
   }
 

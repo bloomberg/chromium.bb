@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/scoped_propvariant.h"
 
 using media::AudioDeviceNames;
 using base::win::ScopedComPtr;
@@ -76,16 +77,15 @@ bool GetInputDeviceNamesWin(AudioDeviceNames* device_names) {
     ScopedComPtr<IPropertyStore> properties;
     hr = audio_device->OpenPropertyStore(STGM_READ, properties.Receive());
     if (SUCCEEDED(hr)) {
-      PROPVARIANT friendly_name;
-      PropVariantInit(&friendly_name);
-      hr = properties->GetValue(PKEY_Device_FriendlyName, &friendly_name);
+      base::win::ScopedPropVariant friendly_name;
+      hr = properties->GetValue(PKEY_Device_FriendlyName,
+                                friendly_name.Receive());
 
       // Store the user-friendly name.
       if (SUCCEEDED(hr) &&
-          friendly_name.vt == VT_LPWSTR && friendly_name.pwszVal) {
-        device.device_name = WideToUTF8(friendly_name.pwszVal);
+          friendly_name.get().vt == VT_LPWSTR && friendly_name.get().pwszVal) {
+        device.device_name = WideToUTF8(friendly_name.get().pwszVal);
       }
-      PropVariantClear(&friendly_name);
     }
 
     // Add combination of user-friendly and unique name to the output list.

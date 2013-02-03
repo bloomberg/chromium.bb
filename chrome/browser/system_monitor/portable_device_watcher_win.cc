@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/scoped_propvariant.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
 #include "chrome/browser/system_monitor/removable_device_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -282,14 +283,12 @@ bool GetRemovableStorageObjectIds(
     return false;
 
   for (DWORD index = 0; index < num_storage_obj_ids; ++index) {
-    PROPVARIANT object_id = {0};
-    PropVariantInit(&object_id);
-    hr = storage_ids->GetAt(index, &object_id);
-    if (SUCCEEDED(hr) && (object_id.pwszVal != NULL) &&
-        (object_id.vt == VT_LPWSTR)) {
-      storage_object_ids->push_back(object_id.pwszVal);
+    base::win::ScopedPropVariant object_id;
+    hr = storage_ids->GetAt(index, object_id.Receive());
+    if (SUCCEEDED(hr) && object_id.get().vt == VT_LPWSTR &&
+        object_id.get().pwszVal != NULL) {
+      storage_object_ids->push_back(object_id.get().pwszVal);
     }
-    PropVariantClear(&object_id);
   }
   return true;
 }

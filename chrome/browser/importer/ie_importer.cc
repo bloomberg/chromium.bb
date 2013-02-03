@@ -26,11 +26,12 @@
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/importer/pstore_declarations.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_util.h"
+#include "chrome/browser/importer/pstore_declarations.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
@@ -310,13 +311,16 @@ GURL ReadFaviconURLFromInternetShortcut(IUniformResourceLocator* url_locator) {
   }
 
   PROPSPEC properties[] = {{PRSPEC_PROPID, PID_IS_ICONFILE}};
-  PROPVARIANT output[1];
+  // ReadMultiple takes a non-const array of PROPVARIANTs, but since this code
+  // only needs an array of size 1: a non-const pointer to |output| is
+  // equivalent.
+  base::win::ScopedPropVariant output;
   // ReadMultiple can return S_FALSE (FAILED(S_FALSE) is false) when the
   // property is not found, in which case output[0].vt is set to VT_EMPTY.
-  if (FAILED(property_storage->ReadMultiple(1, properties, output)) ||
-      (output[0].vt != VT_LPWSTR))
+  if (FAILED(property_storage->ReadMultiple(1, properties, output.Receive())) ||
+      output.get().vt != VT_LPWSTR)
     return GURL();
-  return GURL(WideToUTF16(output[0].pwszVal));
+  return GURL(WideToUTF16(output.get().pwszVal));
 }
 
 // Reads the favicon imaga data in an NTFS alternate data stream. This is where

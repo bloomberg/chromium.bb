@@ -18,29 +18,27 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/win/registry.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
 
 namespace {
 
 // Sets the value of |property_key| to |property_value| in |property_store|.
-// Clears the PropVariant contained in |property_value|.
 bool SetPropVariantValueForPropertyStore(
     IPropertyStore* property_store,
     const PROPERTYKEY& property_key,
-    PROPVARIANT* property_value) {
+    const base::win::ScopedPropVariant& property_value) {
   DCHECK(property_store);
 
-  HRESULT result = property_store->SetValue(property_key, *property_value);
+  HRESULT result = property_store->SetValue(property_key, property_value.get());
   if (result == S_OK)
     result = property_store->Commit();
-
-  PropVariantClear(property_value);
   return SUCCEEDED(result);
 }
 
@@ -136,25 +134,29 @@ bool UserAccountControlIsEnabled() {
 bool SetBooleanValueForPropertyStore(IPropertyStore* property_store,
                                      const PROPERTYKEY& property_key,
                                      bool property_bool_value) {
-  PROPVARIANT property_value;
-  if (FAILED(InitPropVariantFromBoolean(property_bool_value, &property_value)))
+  ScopedPropVariant property_value;
+  if (FAILED(InitPropVariantFromBoolean(property_bool_value,
+                                        property_value.Receive()))) {
     return false;
+  }
 
   return SetPropVariantValueForPropertyStore(property_store,
                                              property_key,
-                                             &property_value);
+                                             property_value);
 }
 
 bool SetStringValueForPropertyStore(IPropertyStore* property_store,
                                     const PROPERTYKEY& property_key,
                                     const wchar_t* property_string_value) {
-  PROPVARIANT property_value;
-  if (FAILED(InitPropVariantFromString(property_string_value, &property_value)))
+  ScopedPropVariant property_value;
+  if (FAILED(InitPropVariantFromString(property_string_value,
+                                       property_value.Receive()))) {
     return false;
+  }
 
   return SetPropVariantValueForPropertyStore(property_store,
                                              property_key,
-                                             &property_value);
+                                             property_value);
 }
 
 bool SetAppIdForPropertyStore(IPropertyStore* property_store,

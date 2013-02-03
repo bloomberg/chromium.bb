@@ -11,6 +11,7 @@
 #include <shlguid.h>
 #include <urlhist.h>
 #include <shlobj.h>
+#include <propvarutil.h>
 
 #include <algorithm>
 #include <vector>
@@ -26,14 +27,15 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/importer/ie_importer.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/importer_unittest_utils.h"
-#include "chrome/browser/importer/ie_importer.h"
 #include "chrome/browser/importer/pstore_declarations.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -189,10 +191,14 @@ bool CreateUrlFileWithFavicon(const FilePath& file,
       return false;
     }
     PROPSPEC properties[] = {{PRSPEC_PROPID, PID_IS_ICONFILE}};
-    PROPVARIANT values[] = {{VT_LPWSTR}};
-    values[0].pwszVal = const_cast<wchar_t*>(favicon_url.c_str());
-    if (FAILED(property_storage->WriteMultiple(1, properties, values, 0)))
+    // WriteMultiple takes an array of PROPVARIANTs, but since this code only
+    // needs an array of size 1: a pointer to |pv_icon| is equivalent.
+    base::win::ScopedPropVariant pv_icon;
+    if (FAILED(InitPropVariantFromString(favicon_url.c_str(),
+                                         pv_icon.Receive())) ||
+        FAILED(property_storage->WriteMultiple(1, properties, &pv_icon, 0))) {
       return false;
+    }
   }
 
   // Save the .url file.

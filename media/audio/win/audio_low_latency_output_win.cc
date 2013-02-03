@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_propvariant.h"
 #include "media/audio/audio_util.h"
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/avrt_wrapper_win.h"
@@ -940,14 +941,13 @@ std::string WASAPIAudioOutputStream::GetDeviceName(LPCWSTR device_id) const {
     ScopedComPtr<IPropertyStore> properties;
     hr = audio_device->OpenPropertyStore(STGM_READ, properties.Receive());
     if (SUCCEEDED(hr)) {
-      PROPVARIANT friendly_name;
-      PropVariantInit(&friendly_name);
-      hr = properties->GetValue(PKEY_Device_FriendlyName, &friendly_name);
-      if (SUCCEEDED(hr) && friendly_name.vt == VT_LPWSTR) {
-        if (friendly_name.pwszVal)
-          name = WideToUTF8(friendly_name.pwszVal);
+      base::win::ScopedPropVariant friendly_name;
+      hr = properties->GetValue(PKEY_Device_FriendlyName,
+                                friendly_name.Receive());
+      if (SUCCEEDED(hr) && friendly_name.get().vt == VT_LPWSTR) {
+        if (friendly_name.get().pwszVal)
+          name = WideToUTF8(friendly_name.get().pwszVal);
       }
-      PropVariantClear(&friendly_name);
     }
   }
   return name;
