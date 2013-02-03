@@ -66,8 +66,9 @@ class DownloadTestObserver : public DownloadManager::Observer,
   // Action an observer should take if a dangerous download is encountered.
   enum DangerousDownloadAction {
     ON_DANGEROUS_DOWNLOAD_ACCEPT,  // Accept the download
-    ON_DANGEROUS_DOWNLOAD_DENY,  // Deny the download
-    ON_DANGEROUS_DOWNLOAD_FAIL  // Fail if a dangerous download is seen
+    ON_DANGEROUS_DOWNLOAD_DENY,    // Deny the download
+    ON_DANGEROUS_DOWNLOAD_FAIL,    // Fail if a dangerous download is seen
+    ON_DANGEROUS_DOWNLOAD_IGNORE   // Make it the callers problem.
   };
 
   // Create an object that will be considered finished when |wait_count|

@@ -69,13 +69,16 @@ class MockDownloadItemImpl : public DownloadItemImpl {
           delegate,
           content::DownloadId(),
           FilePath(),
-          GURL(),
+          FilePath(),
+          std::vector<GURL>(),
           GURL(),
           base::Time(),
           base::Time(),
           0,
           0,
           DownloadItem::IN_PROGRESS,
+          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+          DOWNLOAD_INTERRUPT_REASON_NONE,
           false,
           net::BoundNetLog()) {}
   virtual ~MockDownloadItemImpl() {}
@@ -222,14 +225,17 @@ class MockDownloadItemFactory
   virtual DownloadItemImpl* CreatePersistedItem(
       DownloadItemImplDelegate* delegate,
       DownloadId download_id,
-      const FilePath& path,
-      const GURL& url,
+      const FilePath& current_path,
+      const FilePath& target_path,
+      const std::vector<GURL>& url_chain,
       const GURL& referrer_url,
       const base::Time& start_time,
       const base::Time& end_time,
       int64 received_bytes,
       int64 total_bytes,
       DownloadItem::DownloadState state,
+      DownloadDangerType danger_type,
+      DownloadInterruptReason interrupt_reason,
       bool opened,
       const net::BoundNetLog& bound_net_log) OVERRIDE;
   virtual DownloadItemImpl* CreateActiveItem(
@@ -280,14 +286,17 @@ void MockDownloadItemFactory::RemoveItem(int id) {
 DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
     DownloadItemImplDelegate* delegate,
     DownloadId download_id,
-    const FilePath& path,
-    const GURL& url,
+    const FilePath& current_path,
+    const FilePath& target_path,
+    const std::vector<GURL>& url_chain,
     const GURL& referrer_url,
     const base::Time& start_time,
     const base::Time& end_time,
     int64 received_bytes,
     int64 total_bytes,
     DownloadItem::DownloadState state,
+    DownloadDangerType danger_type,
+    DownloadInterruptReason interrupt_reason,
     bool opened,
     const net::BoundNetLog& bound_net_log) {
   int local_id = download_id.local();

@@ -53,14 +53,17 @@ class CONTENT_EXPORT DownloadItemImpl
   // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
                    DownloadId download_id,
-                   const FilePath& path,
-                   const GURL& url,
+                   const FilePath& current_path,
+                   const FilePath& target_path,
+                   const std::vector<GURL>& url_chain,
                    const GURL& referrer_url,
                    const base::Time& start_time,
                    const base::Time& end_time,
                    int64 received_bytes,
                    int64 total_bytes,
                    DownloadItem::DownloadState state,
+                   DownloadDangerType danger_type,
+                   DownloadInterruptReason interrupt_reason,
                    bool opened,
                    const net::BoundNetLog& bound_net_log);
 

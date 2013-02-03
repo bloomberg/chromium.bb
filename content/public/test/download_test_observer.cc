@@ -188,6 +188,9 @@ void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
         ADD_FAILURE() << "Unexpected dangerous download item.";
         break;
 
+      case ON_DANGEROUS_DOWNLOAD_IGNORE:
+        break;
+
       default:
         NOTREACHED();
     }

@@ -29,14 +29,21 @@ namespace {
 
 void CheckInfoEqual(const history::DownloadRow& left,
                     const history::DownloadRow& right) {
-  EXPECT_EQ(left.path.value(), right.path.value());
-  EXPECT_EQ(left.url.spec(), right.url.spec());
+  EXPECT_EQ(left.current_path.value(), right.current_path.value());
+  EXPECT_EQ(left.target_path.value(), right.target_path.value());
+  EXPECT_EQ(left.url_chain.size(), right.url_chain.size());
+  for (unsigned int i = 0;
+       i < left.url_chain.size() && i < right.url_chain.size();
+       ++i) {
+    EXPECT_EQ(left.url_chain[i].spec(), right.url_chain[i].spec());
+  }
   EXPECT_EQ(left.referrer_url.spec(), right.referrer_url.spec());
   EXPECT_EQ(left.start_time.ToTimeT(), right.start_time.ToTimeT());
   EXPECT_EQ(left.end_time.ToTimeT(), right.end_time.ToTimeT());
   EXPECT_EQ(left.received_bytes, right.received_bytes);
   EXPECT_EQ(left.total_bytes, right.total_bytes);
   EXPECT_EQ(left.state, right.state);
+  EXPECT_EQ(left.danger_type, right.danger_type);
   EXPECT_EQ(left.db_handle, right.db_handle);
   EXPECT_EQ(left.opened, right.opened);
 }
@@ -218,6 +225,8 @@ class DownloadHistoryTest : public testing::Test {
   content::DownloadManager::Observer* manager_observer() {
     return manager_observer_;
   }
+
+  // Relies on the same object observing all download items.
   void SetItemObserver(
       content::DownloadItem::Observer* item_observer) {
     item_observer_ = item_observer;
@@ -234,16 +243,20 @@ class DownloadHistoryTest : public testing::Test {
     EXPECT_CALL(manager(), RemoveObserver(_));
     download_created_index_ = 0;
     for (size_t index = 0; index < infos->size(); ++index) {
-      EXPECT_CALL(manager(), CreateDownloadItem(
-          infos->at(index).path,
-          infos->at(index).url,
+      content::MockDownloadManager::CreateDownloadItemAdapter adapter(
+          infos->at(index).current_path,
+          infos->at(index).target_path,
+          infos->at(index).url_chain,
           infos->at(index).referrer_url,
           infos->at(index).start_time,
           infos->at(index).end_time,
           infos->at(index).received_bytes,
           infos->at(index).total_bytes,
           infos->at(index).state,
-          infos->at(index).opened))
+          infos->at(index).danger_type,
+          infos->at(index).interrupt_reason,
+          infos->at(index).opened);
+      EXPECT_CALL(manager(), MockCreateDownloadItem(adapter))
         .WillOnce(DoAll(
             InvokeWithoutArgs(
                 this, &DownloadHistoryTest::CallOnDownloadCreatedInOrder),
@@ -317,16 +330,22 @@ class DownloadHistoryTest : public testing::Test {
     history_->ExpectDownloadsRemoved(handles);
   }
 
+  // Caller is responsibile for making sure reference arguments lifetime is
+  // greater than the lifetime of the NiceMockDownloadItem() created by this
+  // routine.
   void InitItem(
       int32 id,
-      const FilePath& path,
-      const GURL& url,
+      const FilePath& current_path,
+      const FilePath& target_path,
+      const std::vector<GURL>& url_chain,
       const GURL& referrer,
       const base::Time& start_time,
       const base::Time& end_time,
       int64 received_bytes,
       int64 total_bytes,
       content::DownloadItem::DownloadState state,
+      content::DownloadDangerType danger_type,
+      content::DownloadInterruptReason interrupt_reason,
       int64 db_handle,
       bool opened,
       history::DownloadRow* info) {
@@ -335,20 +354,29 @@ class DownloadHistoryTest : public testing::Test {
     NiceMockDownloadItem* mock_item = new NiceMockDownloadItem();
     items_.push_back(mock_item);
 
-    info->path = path;
-    info->url = url;
+    info->current_path = current_path;
+    info->target_path = target_path;
+    info->url_chain = url_chain;
     info->referrer_url = referrer;
     info->start_time = start_time;
     info->end_time = end_time;
     info->received_bytes = received_bytes;
     info->total_bytes = total_bytes;
     info->state = state;
+    info->danger_type = danger_type;
+    info->interrupt_reason = interrupt_reason;
     info->db_handle = db_handle;
     info->opened = opened;
 
     EXPECT_CALL(item(index), GetId()).WillRepeatedly(Return(id));
-    EXPECT_CALL(item(index), GetFullPath()).WillRepeatedly(ReturnRef(path));
-    EXPECT_CALL(item(index), GetURL()).WillRepeatedly(ReturnRef(url));
+    EXPECT_CALL(item(index),
+                GetFullPath()).WillRepeatedly(ReturnRef(current_path));
+    EXPECT_CALL(item(index),
+                GetTargetFilePath()).WillRepeatedly(ReturnRef(target_path));
+    DCHECK_LE(1u, url_chain.size());
+    EXPECT_CALL(item(index), GetURL()).WillRepeatedly(ReturnRef(url_chain[0]));
+    EXPECT_CALL(item(index),
+                GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
     EXPECT_CALL(item(index), GetMimeType()).WillRepeatedly(Return(
         "application/octet-stream"));
     EXPECT_CALL(item(index), GetReferrerUrl()).WillRepeatedly(ReturnRef(
@@ -360,6 +388,10 @@ class DownloadHistoryTest : public testing::Test {
     EXPECT_CALL(item(index), GetTotalBytes()).WillRepeatedly(Return(
         total_bytes));
     EXPECT_CALL(item(index), GetState()).WillRepeatedly(Return(state));
+    EXPECT_CALL(item(index), GetDangerType())
+        .WillRepeatedly(Return(danger_type));
+    EXPECT_CALL(item(index), GetLastReason()).WillRepeatedly(
+        Return(interrupt_reason));
     EXPECT_CALL(item(index), GetOpened()).WillRepeatedly(Return(opened));
     EXPECT_CALL(item(index), GetTargetDisposition()).WillRepeatedly(Return(
           content::DownloadItem::TARGET_DISPOSITION_OVERWRITE));
@@ -402,15 +434,20 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Load) {
   FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
   GURL url("http://example.com/bar.pdf");
   GURL referrer("http://example.com/referrer.html");
+  std::vector<GURL> url_chain;
+  url_chain.push_back(url);
   InitItem(base::RandInt(0, 1 << 20),
            path,
-           url,
+           path,
+           url_chain,
            referrer,
            (base::Time::Now() - base::TimeDelta::FromMinutes(10)),
            (base::Time::Now() - base::TimeDelta::FromMinutes(1)),
            100,
            100,
            content::DownloadItem::COMPLETE,
+           content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+           content::DOWNLOAD_INTERRUPT_REASON_NONE,
            base::RandInt(0, 1 << 20),
            false,
            &info);
@@ -447,15 +484,20 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Create) {
   FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
   GURL url("http://example.com/bar.pdf");
   GURL referrer("http://example.com/referrer.html");
+  std::vector<GURL> url_chain;
+  url_chain.push_back(url);
   InitItem(base::RandInt(0, 1 << 20),
            path,
-           url,
+           path,
+           url_chain,
            referrer,
            (base::Time::Now() - base::TimeDelta::FromMinutes(10)),
            (base::Time::Now() - base::TimeDelta::FromMinutes(1)),
            100,
            100,
            content::DownloadItem::COMPLETE,
+           content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+           content::DOWNLOAD_INTERRUPT_REASON_NONE,
            -1,
            false,
            &info);
@@ -494,15 +536,20 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Temporary) {
   FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
   GURL url("http://example.com/bar.pdf");
   GURL referrer("http://example.com/referrer.html");
+  std::vector<GURL> url_chain;
+  url_chain.push_back(url);
   InitItem(base::RandInt(0, 1 << 20),
            path,
-           url,
+           path,
+           url_chain,
            referrer,
            (base::Time::Now() - base::TimeDelta::FromMinutes(10)),
            (base::Time::Now() - base::TimeDelta::FromMinutes(1)),
            100,
            100,
            content::DownloadItem::COMPLETE,
+           content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+           content::DOWNLOAD_INTERRUPT_REASON_NONE,
            -1,
            false,
            &info);
@@ -555,15 +602,20 @@ TEST_F(DownloadHistoryTest,
   FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
   GURL url("http://example.com/bar.pdf");
   GURL referrer("http://example.com/referrer.html");
+  std::vector<GURL> url_chain;
+  url_chain.push_back(url);
   InitItem(base::RandInt(0, 1 << 20),
            path,
-           url,
+           path,
+           url_chain,
            referrer,
            (base::Time::Now() - base::TimeDelta::FromMinutes(10)),
            (base::Time::Now() - base::TimeDelta::FromMinutes(1)),
            100,
            100,
            content::DownloadItem::COMPLETE,
+           content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+           content::DOWNLOAD_INTERRUPT_REASON_NONE,
            -1,
            false,
            &info);
@@ -606,30 +658,40 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Multiple) {
   FilePath path0(FILE_PATH_LITERAL("/foo/bar.pdf"));
   GURL url0("http://example.com/bar.pdf");
   GURL referrer0("http://example.com/referrer.html");
+  std::vector<GURL> url0_chain;
+  url0_chain.push_back(url0);
   InitItem(base::RandInt(0, 1 << 10),
            path0,
-           url0,
+           path0,
+           url0_chain,
            referrer0,
            (base::Time::Now() - base::TimeDelta::FromMinutes(11)),
            (base::Time::Now() - base::TimeDelta::FromMinutes(2)),
            100,
            100,
            content::DownloadItem::COMPLETE,
+           content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+           content::DOWNLOAD_INTERRUPT_REASON_NONE,
            base::RandInt(0, 1 << 10),
            false,
            &info0);
   FilePath path1(FILE_PATH_LITERAL("/foo/qux.pdf"));
   GURL url1("http://example.com/qux.pdf");
   GURL referrer1("http://example.com/referrer.html");
+  std::vector<GURL> url1_chain;
+  url1_chain.push_back(url0);
   InitItem(item(0).GetId() + base::RandInt(1, 1 << 10),
            path1,
-           url1,
+           path1,
+           url1_chain,
            referrer1,
            (base::Time::Now() - base::TimeDelta::FromMinutes(10)),
            (base::Time::Now() - base::TimeDelta::FromMinutes(1)),
            200,
            200,
            content::DownloadItem::COMPLETE,
+           content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+           content::DOWNLOAD_INTERRUPT_REASON_NONE,
            info0.db_handle + base::RandInt(1, 1 << 10),
            false,
            &info1);
@@ -664,15 +726,20 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_CreateFailed) {
   FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
   GURL url("http://example.com/bar.pdf");
   GURL referrer("http://example.com/referrer.html");
+  std::vector<GURL> url_chain;
+  url_chain.push_back(url);
   InitItem(base::RandInt(0, 1 << 20),
            path,
-           url,
+           path,
+           url_chain,
            referrer,
            (base::Time::Now() - base::TimeDelta::FromMinutes(10)),
            (base::Time::Now() - base::TimeDelta::FromMinutes(1)),
            100,
            100,
            content::DownloadItem::COMPLETE,
+           content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+           content::DOWNLOAD_INTERRUPT_REASON_NONE,
            -1,
            false,
            &info);
@@ -702,15 +769,20 @@ TEST_F(DownloadHistoryTest,
   FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
   GURL url("http://example.com/bar.pdf");
   GURL referrer("http://example.com/referrer.html");
+  std::vector<GURL> url_chain;
+  url_chain.push_back(url);
   InitItem(base::RandInt(0, 1 << 20),
            path,
-           url,
+           path,
+           url_chain,
            referrer,
            (base::Time::Now() - base::TimeDelta::FromMinutes(10)),
            (base::Time::Now() - base::TimeDelta::FromMinutes(1)),
            100,
            100,
            content::DownloadItem::COMPLETE,
+           content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+           content::DOWNLOAD_INTERRUPT_REASON_NONE,
            -1,
            false,
            &info);

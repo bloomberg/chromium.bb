@@ -150,13 +150,18 @@ bool DownloadStoredProperly(
   // This function may be called multiple times for a given test. Returning
   // false doesn't necessarily mean that the test has failed or will fail, it
   // might just mean that the test hasn't passed yet.
-  if (info.path != expected_path) {
-    VLOG(20) << __FUNCTION__ << " " << info.path.value()
+  if (info.target_path != expected_path) {
+    VLOG(20) << __FUNCTION__ << " " << info.target_path.value()
              << " != " << expected_path.value();
     return false;
   }
-  if (info.url != expected_url) {
-    VLOG(20) << __FUNCTION__ << " " << info.url.spec()
+  if (info.url_chain.size() != 1u) {
+    VLOG(20) << __FUNCTION__ << " " << info.url_chain.size()
+             << " != 1";
+    return false;
+  }
+  if (info.url_chain[0] != expected_url) {
+    VLOG(20) << __FUNCTION__ << " " << info.url_chain[0].spec()
              << " != " << expected_url.spec();
     return false;
   }

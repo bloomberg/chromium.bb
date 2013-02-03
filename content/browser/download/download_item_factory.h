@@ -10,6 +10,7 @@
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_FACTORY_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/download_id.h"
@@ -40,14 +41,17 @@ public:
   virtual DownloadItemImpl* CreatePersistedItem(
       DownloadItemImplDelegate* delegate,
       DownloadId download_id,
-      const base::FilePath& path,
-      const GURL& url,
+      const base::FilePath& current_path,
+      const base::FilePath& target_path,
+      const std::vector<GURL>& url_chain,
       const GURL& referrer_url,
       const base::Time& start_time,
       const base::Time& end_time,
       int64 received_bytes,
       int64 total_bytes,
-      content::DownloadItem::DownloadState state,
+      DownloadItem::DownloadState state,
+      DownloadDangerType danger_type,
+      DownloadInterruptReason interrupt_reason,
       bool opened,
       const net::BoundNetLog& bound_net_log) = 0;
 

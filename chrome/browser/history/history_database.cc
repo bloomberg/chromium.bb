@@ -27,7 +27,7 @@ namespace {
 // Current version number. We write databases at the "current" version number,
 // but any previous version that can read the "compatible" one can make do with
 // or database without *too* many bad effects.
-static const int kCurrentVersionNumber = 23;
+static const int kCurrentVersionNumber = 24;
 static const int kCompatibleVersionNumber = 16;
 static const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 
@@ -392,6 +392,16 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
   if (cur_version == 22) {
     if (!MigrateDownloadsState()) {
       LOG(WARNING) << "Unable to fix invalid downloads state values";
+      // Invalid state values may cause crashes.
+      return sql::INIT_FAILURE;
+    }
+    cur_version++;
+    meta_table_.SetVersionNumber(cur_version);
+  }
+
+  if (cur_version == 23) {
+    if (!MigrateDownloadsReasonPathsAndDangerType()) {
+      LOG(WARNING) << "Unable to upgrade download interrupt reason and paths";
       // Invalid state values may cause crashes.
       return sql::INIT_FAILURE;
     }

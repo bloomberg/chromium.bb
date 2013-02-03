@@ -59,6 +59,7 @@
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
@@ -73,6 +74,7 @@
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/plugins/npapi/mock_plugin_list.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -93,6 +95,44 @@ const FilePath kGoodCrxPath(FILE_PATH_LITERAL("extensions/good.crx"));
 
 const char kLargeThemeCrxId[] = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
 const FilePath kLargeThemePath(FILE_PATH_LITERAL("extensions/theme2.crx"));
+
+// Get History Information.
+class DownloadsHistoryDataCollector {
+ public:
+  explicit DownloadsHistoryDataCollector(Profile* profile)
+      : profile_(profile), result_valid_(false) {}
+
+  bool WaitForDownloadInfo(
+      scoped_ptr<std::vector<history::DownloadRow> >* results) {
+    HistoryService* hs = HistoryServiceFactory::GetForProfile(
+        profile_, Profile::EXPLICIT_ACCESS);
+    DCHECK(hs);
+    hs->QueryDownloads(
+        base::Bind(&DownloadsHistoryDataCollector::OnQueryDownloadsComplete,
+                   base::Unretained(this)));
+
+    content::RunMessageLoop();
+    if (result_valid_) {
+      *results = results_.Pass();
+    }
+    return result_valid_;
+  }
+
+ private:
+  void OnQueryDownloadsComplete(
+      scoped_ptr<std::vector<history::DownloadRow> > entries) {
+    result_valid_ = true;
+    results_ = entries.Pass();
+    MessageLoopForUI::current()->Quit();
+  }
+
+  Profile* profile_;
+  scoped_ptr<std::vector<history::DownloadRow> > results_;
+  bool result_valid_;
+  CancelableRequestConsumer callback_consumer_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadsHistoryDataCollector);
+};
 
 // Mock that simulates a permissions dialog where the user denies
 // permission to install.  TODO(skerner): This could be shared with
@@ -165,10 +205,17 @@ void SetHiddenDownloadCallback(DownloadItem* item, net::Error error) {
   DownloadItemModel(item).SetShouldShowInShelf(false);
 }
 
+// Callback for HistoryObserver; used in DownloadHistoryCheck
+bool HasDataAndName(const history::DownloadRow& row) {
+  return row.received_bytes > 0 && !row.target_path.empty();
+}
+
 }  // namespace
 
 class HistoryObserver : public DownloadHistory::Observer {
  public:
+  typedef base::Callback<bool(const history::DownloadRow&)> FilterCallback;
+
   explicit HistoryObserver(Profile* profile)
       : profile_(profile),
         waiting_(false),
@@ -183,9 +230,16 @@ class HistoryObserver : public DownloadHistory::Observer {
       service->GetDownloadHistory()->RemoveObserver(this);
   }
 
+  void SetFilterCallback(const FilterCallback& callback) {
+    callback_ = callback;
+  }
+
   virtual void OnDownloadStored(
       content::DownloadItem* item,
       const history::DownloadRow& info) OVERRIDE {
+    if (!callback_.is_null() && (!callback_.Run(info)))
+        return;
+
     seen_stored_ = true;
     if (waiting_)
       MessageLoopForUI::current()->Quit();
@@ -208,6 +262,7 @@ class HistoryObserver : public DownloadHistory::Observer {
   Profile* profile_;
   bool waiting_;
   bool seen_stored_;
+  FilterCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryObserver);
 };
@@ -297,7 +352,7 @@ class DownloadTest : public InProcessBrowserTest {
 
   // Location of the file destination (place to which it is downloaded).
   FilePath DestinationFile(Browser* browser, FilePath file) {
-    return GetDownloadDirectory(browser).Append(file);
+    return GetDownloadDirectory(browser).Append(file.BaseName());
   }
 
   // Must be called after browser creation.  Creates a temporary
@@ -1381,11 +1436,147 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
-  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
-  GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));
+  GURL download_url(URLRequestSlowDownloadJob::kKnownSizeUrl);
+  FilePath file(net::GenerateFileName(download_url, "", "", "", "", ""));
+
+  // We use the server so that we can get a redirect and test url_chain
+  // persistence.
+  ASSERT_TRUE(test_server()->Start());
+  GURL redirect_url = test_server()->GetURL(
+      "server-redirect?" + download_url.spec());
+
+  // Download the url and wait until the object has been stored.
+  base::Time start(base::Time::Now());
   HistoryObserver observer(browser()->profile());
-  DownloadAndWait(browser(), download_url);
+  observer.SetFilterCallback(base::Bind(&HasDataAndName));
+  ui_test_utils::NavigateToURL(browser(), redirect_url);
   observer.WaitForStored();
+
+  // Get the details on what was stored into the history.
+  scoped_ptr<std::vector<history::DownloadRow> > downloads_in_database;
+  ASSERT_TRUE(DownloadsHistoryDataCollector(
+      browser()->profile()).WaitForDownloadInfo(&downloads_in_database));
+  ASSERT_EQ(1u, downloads_in_database->size());
+
+  // Confirm history storage is what you expect for a partially completed
+  // slow download job.
+  history::DownloadRow& row(downloads_in_database->at(0));
+  EXPECT_EQ(DestinationFile(browser(), file), row.target_path);
+  EXPECT_EQ(download_util::GetCrDownloadPath(DestinationFile(browser(), file)),
+            row.current_path);
+  ASSERT_EQ(2u, row.url_chain.size());
+  EXPECT_EQ(redirect_url.spec(), row.url_chain[0].spec());
+  EXPECT_EQ(download_url.spec(), row.url_chain[1].spec());
+  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, row.danger_type);
+  EXPECT_LE(start, row.start_time);
+  EXPECT_EQ(URLRequestSlowDownloadJob::kFirstDownloadSize, row.received_bytes);
+  EXPECT_EQ(URLRequestSlowDownloadJob::kFirstDownloadSize
+            + URLRequestSlowDownloadJob::kSecondDownloadSize, row.total_bytes);
+  EXPECT_EQ(content::DownloadItem::IN_PROGRESS, row.state);
+  EXPECT_FALSE(row.opened);
+
+  // Finish the download.  We're ok relying on the history to be flushed
+  // at this point as our queries will be behind the history updates
+  // invoked by completion.
+  scoped_ptr<content::DownloadTestObserver> download_observer(
+      CreateWaiter(browser(), 1));
+  ui_test_utils::NavigateToURL(browser(),
+      GURL(URLRequestSlowDownloadJob::kErrorDownloadUrl));
+  download_observer->WaitForFinished();
+  EXPECT_EQ(1u, download_observer->NumDownloadsSeenInState(
+      DownloadItem::INTERRUPTED));
+  base::Time end(base::Time::Now());
+
+  // Get what was stored in the history.
+  ASSERT_TRUE(DownloadsHistoryDataCollector(
+      browser()->profile()).WaitForDownloadInfo(&downloads_in_database));
+  ASSERT_EQ(1u, downloads_in_database->size());
+
+  // Confirm history storage is what you expect for a completed
+  // slow download job.
+  history::DownloadRow& row1(downloads_in_database->at(0));
+  EXPECT_EQ(DestinationFile(browser(), file), row1.target_path);
+  EXPECT_EQ(download_util::GetCrDownloadPath(DestinationFile(browser(), file)),
+            row1.current_path);
+  ASSERT_EQ(2u, row1.url_chain.size());
+  EXPECT_EQ(redirect_url.spec(), row1.url_chain[0].spec());
+  EXPECT_EQ(download_url.spec(), row1.url_chain[1].spec());
+  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, row1.danger_type);
+  EXPECT_LE(start, row1.start_time);
+  EXPECT_GE(end, row1.end_time);
+  EXPECT_EQ(URLRequestSlowDownloadJob::kFirstDownloadSize,
+            row1.received_bytes);
+  EXPECT_EQ(URLRequestSlowDownloadJob::kFirstDownloadSize
+            + URLRequestSlowDownloadJob::kSecondDownloadSize, row1.total_bytes);
+  EXPECT_EQ(content::DownloadItem::INTERRUPTED, row1.state);
+  EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
+            row1.interrupt_reason);
+  EXPECT_FALSE(row1.opened);
+}
+
+// Make sure a dangerous file shows up properly in the history.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryDangerCheck) {
+  // .swf file so that it's dangerous on all platforms (including CrOS).
+  FilePath file(FILE_PATH_LITERAL("downloads/dangerous/dangerous.swf"));
+  GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));
+
+  // Null out plugins so that flash plugin won't interfere with testing.
+#if defined(ENABLE_PLUGINS)
+  webkit::npapi::MockPluginList plugin_list;
+  content::PluginService::GetInstance()->SetPluginListForTesting(&plugin_list);
+#endif
+
+  // Download the url and wait until the object has been stored.
+  scoped_ptr<content::DownloadTestObserver> download_observer(
+      new content::DownloadTestObserverTerminal(
+          DownloadManagerForBrowser(browser()), 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_IGNORE));
+  base::Time start(base::Time::Now());
+  HistoryObserver observer(browser()->profile());
+  observer.SetFilterCallback(base::Bind(&HasDataAndName));
+  ui_test_utils::NavigateToURL(browser(), download_url);
+  observer.WaitForStored();
+
+  // Get the details on what was stored into the history.
+  scoped_ptr<std::vector<history::DownloadRow> > downloads_in_database;
+  ASSERT_TRUE(DownloadsHistoryDataCollector(
+      browser()->profile()).WaitForDownloadInfo(&downloads_in_database));
+  ASSERT_EQ(1u, downloads_in_database->size());
+
+  // Confirm history storage is what you expect for an unvalidated
+  // dangerous file.
+  history::DownloadRow& row(downloads_in_database->at(0));
+  EXPECT_EQ(DestinationFile(browser(), file), row.target_path);
+  EXPECT_NE(download_util::GetCrDownloadPath(DestinationFile(browser(), file)),
+            row.current_path);
+  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE, row.danger_type);
+  EXPECT_LE(start, row.start_time);
+  EXPECT_EQ(content::DownloadItem::IN_PROGRESS, row.state);
+  EXPECT_FALSE(row.opened);
+
+  // Validate the download and wait for it to finish.
+  std::vector<DownloadItem*> downloads;
+  DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+  downloads[0]->DangerousDownloadValidated();
+  download_observer->WaitForFinished();
+
+  // Get history details and confirm it's what you expect.
+  downloads_in_database->clear();
+  ASSERT_TRUE(DownloadsHistoryDataCollector(
+      browser()->profile()).WaitForDownloadInfo(&downloads_in_database));
+  ASSERT_EQ(1u, downloads_in_database->size());
+  history::DownloadRow& row1(downloads_in_database->at(0));
+  EXPECT_EQ(DestinationFile(browser(), file), row1.target_path);
+  EXPECT_EQ(DestinationFile(browser(), file), row1.current_path);
+  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED, row1.danger_type);
+  EXPECT_LE(start, row1.start_time);
+  EXPECT_EQ(content::DownloadItem::COMPLETE, row1.state);
+  EXPECT_FALSE(row1.opened);
+  // Not checking file size--not relevant to the point of the test, and
+  // the file size is actually different on Windows and other platforms,
+  // because for source control simplicity it's actually a text file, and
+  // there are CRLF transformations for those files.
 }
 
 // Test for crbug.com/14505. This tests that chrome:// urls are still functional

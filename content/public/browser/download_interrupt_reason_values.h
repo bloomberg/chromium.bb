@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Note that the embedder is welcome to persist these values across
+// invocations of the browser, and possibly across browser versions.
+// Thus individual errors may be deprecated and new errors added, but
+// the values of particular errors should not be changed.
 
 // File errors.
 

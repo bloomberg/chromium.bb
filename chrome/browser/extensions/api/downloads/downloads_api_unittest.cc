@@ -351,13 +351,18 @@ class DownloadExtensionTest : public ExtensionApiTest {
     items->clear();
     GetOnRecordManager()->GetAllDownloads(items);
     CHECK_EQ(0, static_cast<int>(items->size()));
+    std::vector<GURL> url_chain;
+    url_chain.push_back(GURL());
     for (size_t i = 0; i < count; ++i) {
       DownloadItem* item = GetOnRecordManager()->CreateDownloadItem(
           downloads_directory().Append(history_info[i].filename),
-          GURL(), GURL(),    // URL, referrer
+          downloads_directory().Append(history_info[i].filename),
+          url_chain, GURL(),    // URL Chain, referrer
           current, current,  // start_time, end_time
           1, 1,              // received_bytes, total_bytes
           history_info[i].state,  // state
+          content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+          content::DOWNLOAD_INTERRUPT_REASON_NONE,
           false);                 // opened
       items->push_back(item);
     }

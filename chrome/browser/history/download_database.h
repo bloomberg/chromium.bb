@@ -67,6 +67,10 @@ class DownloadDatabase {
   // database. See http://crbug.com/140687
   bool MigrateDownloadsState();
 
+  // Returns true if able to successfully add the last interrupt reason and the
+  // two target paths to downloads.
+  bool MigrateDownloadsReasonPathsAndDangerType();
+
   // Creates the downloads table if needed.
   bool InitDownloadTable();
 

@@ -68,14 +68,17 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual content::DownloadItem* CreateDownloadItem(
-      const FilePath& path,
-      const GURL& url,
+      const FilePath& current_path,
+      const FilePath& target_path,
+      const std::vector<GURL>& url_chain,
       const GURL& referrer_url,
       const base::Time& start_time,
       const base::Time& end_time,
       int64 received_bytes,
       int64 total_bytes,
       content::DownloadItem::DownloadState state,
+      DownloadDangerType danger_type,
+      DownloadInterruptReason interrupt_reason,
       bool opened) OVERRIDE;
   virtual int InProgressCount() const OVERRIDE;
   virtual BrowserContext* GetBrowserContext() const OVERRIDE;
@@ -103,8 +106,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   virtual ~DownloadManagerImpl();
 
   // Retrieves the download item corresponding to the passed
-  // DownloadCreateInfo.  This will create the download item
-  // if this is a new download (common case) or retrieve an
+  // DownloadCreateInfo (generated on the IO thread).  This will create
+  // the download item if this is a new download (common case) or retrieve an
   // existing download item if this is a resuming download.
   virtual DownloadItemImpl* GetOrCreateDownloadItem(DownloadCreateInfo* info);
 

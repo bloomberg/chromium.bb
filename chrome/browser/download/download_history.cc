@@ -107,13 +107,16 @@ history::DownloadRow GetDownloadRow(
   DownloadHistoryData* data = DownloadHistoryData::Get(item);
   return history::DownloadRow(
       item->GetFullPath(),
-      item->GetURL(),
+      item->GetTargetFilePath(),
+      item->GetUrlChain(),
       item->GetReferrerUrl(),
       item->GetStartTime(),
       item->GetEndTime(),
       item->GetReceivedBytes(),
       item->GetTotalBytes(),
       item->GetState(),
+      item->GetDangerType(),
+      item->GetLastReason(),
       ((data != NULL) ? data->db_handle()
        : history::DownloadDatabase::kUninitializedHandle),
       item->GetOpened());
@@ -123,11 +126,14 @@ bool ShouldUpdateHistory(const history::DownloadRow* previous,
                          const history::DownloadRow& current) {
   // Ignore url, referrer, start_time, db_handle, which don't change.
   return ((previous == NULL) ||
-          (previous->path != current.path) ||
+          (previous->current_path != current.current_path) ||
+          (previous->target_path != current.target_path) ||
           (previous->end_time != current.end_time) ||
           (previous->received_bytes != current.received_bytes) ||
           (previous->total_bytes != current.total_bytes) ||
           (previous->state != current.state) ||
+          (previous->danger_type != current.danger_type) ||
+          (previous->interrupt_reason != current.interrupt_reason) ||
           (previous->opened != current.opened));
 }
 
@@ -218,14 +224,17 @@ void DownloadHistory::QueryCallback(scoped_ptr<InfoVector> infos) {
     loading_db_handle_ = it->db_handle;
     content::DownloadItem* download_item =
       notifier_.GetManager()->CreateDownloadItem(
-        it->path,
-        it->url,
+        it->current_path,
+        it->target_path,
+        it->url_chain,
         it->referrer_url,
         it->start_time,
         it->end_time,
         it->received_bytes,
         it->total_bytes,
         it->state,
+        it->danger_type,
+        it->interrupt_reason,
         it->opened);
     DownloadHistoryData* data = DownloadHistoryData::Get(download_item);
 

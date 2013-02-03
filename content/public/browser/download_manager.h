@@ -144,14 +144,17 @@ class CONTENT_EXPORT DownloadManager
   // Called by the embedder, after creating the download manager, to let it know
   // about downloads from previous runs of the browser.
   virtual DownloadItem* CreateDownloadItem(
-      const FilePath& path,
-      const GURL& url,
+      const FilePath& current_path,
+      const FilePath& target_path,
+      const std::vector<GURL>& url_chain,
       const GURL& referrer_url,
       const base::Time& start_time,
       const base::Time& end_time,
       int64 received_bytes,
       int64 total_bytes,
       DownloadItem::DownloadState state,
+      DownloadDangerType danger_type,
+      DownloadInterruptReason interrupt_reason,
       bool opened) = 0;
 
   // The number of in progress (including paused) downloads.

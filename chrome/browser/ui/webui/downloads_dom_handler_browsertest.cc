@@ -140,16 +140,21 @@ IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest,
   MockDownloadsDOMHandler mddh(download_manager());
 
   GURL url = test_server()->GetURL("files/downloads/image.jpg");
+  std::vector<GURL> url_chain;
+  url_chain.push_back(url);
   base::Time current(base::Time::Now());
   download_manager()->CreateDownloadItem(
       FilePath(FILE_PATH_LITERAL("/path/to/file")),
-      url,
+      FilePath(FILE_PATH_LITERAL("/path/to/file")),
+      url_chain,
       GURL(""),
       current,
       current,
       128,
       128,
       content::DownloadItem::COMPLETE,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      content::DOWNLOAD_INTERRUPT_REASON_NONE,
       false);
 
   mddh.WaitForDownloadsList();
