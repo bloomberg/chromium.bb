@@ -94,7 +94,7 @@ remoting.WcsLoader.prototype.start = function(token, onReady, onError) {
       // suggest that fix.
       onValidateError(remoting.Error.AUTHENTICATION_FAILED);
     }
-    remoting.oauth2.validateToken(token, onValidateOk, onValidateError);
+    that.validateToken(token, onValidateOk, onValidateError);
   }
   node.addEventListener('load', onLoad, false);
   node.addEventListener('error', onLoadError, false);
@@ -112,4 +112,45 @@ remoting.WcsLoader.prototype.start = function(token, onReady, onError) {
 remoting.WcsLoader.prototype.constructWcs_ = function(token, onReady) {
   remoting.wcs = new remoting.Wcs(
       remoting.wcsLoader.wcsIqClient, token, onReady);
+};
+
+/** @private */
+remoting.WcsLoader.prototype.OAUTH2_VALIDATE_TOKEN_ENDPOINT_ =
+    'https://www.googleapis.com/oauth2/v1/tokeninfo';
+
+/**
+ * Validates an OAuth2 access token.
+ *
+ * @param {string} token The access token.
+ * @param {function():void} onOk Callback to invoke if the token is valid.
+ * @param {function(remoting.Error):void} onError Function to invoke with an
+ *     error code on failure.
+ * @return {void} Nothing.
+ */
+remoting.WcsLoader.prototype.validateToken = function(token, onOk, onError) {
+  /** @type {XMLHttpRequest} */
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState != 4) {
+      return;
+    }
+    if (xhr.status == 200) {
+      onOk();
+    } else {
+      var error = remoting.Error.AUTHENTICATION_FAILED;
+      switch (xhr.status) {
+        case 0:
+          error = remoting.Error.NETWORK_FAILURE;
+          break;
+        case 502: // No break
+        case 503:
+          error = remoting.Error.SERVICE_UNAVAILABLE;
+          break;
+      }
+      onError(error);
+    }
+  };
+  var parameters = '?access_token=' + encodeURIComponent(token);
+  xhr.open('GET', this.OAUTH2_VALIDATE_TOKEN_ENDPOINT_ + parameters, true);
+  xhr.send(null);
 };

@@ -50,9 +50,6 @@ remoting.OAuth2.prototype.SCOPE_ =
 remoting.OAuth2.prototype.OAUTH2_TOKEN_ENDPOINT_ =
     'https://accounts.google.com/o/oauth2/token';
 /** @private */
-remoting.OAuth2.prototype.OAUTH2_VALIDATE_TOKEN_ENDPOINT_ =
-    'https://www.googleapis.com/oauth2/v1/tokeninfo';
-/** @private */
 remoting.OAuth2.prototype.OAUTH2_REVOKE_TOKEN_ENDPOINT_ =
     'https://accounts.google.com/o/oauth2/revoke';
 
@@ -346,77 +343,6 @@ remoting.OAuth2.prototype.interpretUnexpectedXhrStatus_ = function(xhrStatus) {
     console.warn('Unexpected authentication response code: ' + xhrStatus);
   }
   return error;
-};
-
-/**
- * Asynchronously validates an access token.
- *
- * @param {string} token The access token.
- * @param {function():void} onOk Callback to invoke if the token is valid.
- * @param {function(remoting.Error):void} onError Function to invoke with an
- *     error code on failure.
- * @return {void} Nothing.
- */
-remoting.OAuth2.prototype.validateToken = function(token, onOk, onError) {
-  var parameters = {
-    'access_token': token
-  };
-  remoting.xhr.get(this.OAUTH2_VALIDATE_TOKEN_ENDPOINT_,
-                   this.processValidateTokenResponse_.bind(this, onOk, onError),
-                   parameters);
-};
-
-/**
- * Sorts the URLs in an OAuth2 scope string.
- *
- * @private
- * @param {string} scope The scope to be sorted (URLs separated by spaces).
- * @return {string} A string with the URLs in {@code scope} sorted.
- */
-remoting.OAuth2.prototype.sortScope_ = function(scope) {
-  return (/** @type {[string]} */ (scope.split(' ').sort()).join(' '));
-};
-
-/**
- * Processes token validation results and notifies caller.
- *
- * @private
- * @param {function():void} onOk Callback to invoke if the token is valid.
- * @param {function(remoting.Error):void} onError Function to invoke with an
- *     error code on failure.
- * @param {XMLHttpRequest} xhr The XHR object for this request.
- * @return {void} Nothing.
- */
-remoting.OAuth2.prototype.processValidateTokenResponse_ = function(
-    onOk, onError, xhr) {
-  /** @type {remoting.Error} */
-  var error = remoting.Error.UNEXPECTED;
-  if (xhr.status == 200) {
-    var result = jsonParseSafe(xhr.responseText);
-    // Double check that the token is valid for what we requested.
-    if (result && result['audience'] == this.CLIENT_ID_ &&
-        // Compare the (unordered) set of URLs in each scope.
-        this.sortScope_(result['scope']) == this.sortScope_(this.SCOPE_)) {
-      onOk();
-      return;
-    } else {
-      console.warn('Token is valid, but has unexpected audience or scope: ' +
-                   xhr.responseText);
-      error = remoting.Error.AUTHENTICATION_FAILED;
-    }
-  } else if (xhr.status == 400) {
-    var result =
-        /** @type {{error: string}} */ (jsonParseSafe(xhr.responseText));
-    if (result && result.error == 'invalid_token') {
-      error = remoting.Error.AUTHENTICATION_FAILED;
-    }
-  } else {
-    error = this.interpretUnexpectedXhrStatus_(xhr.status);
-  }
-  // Note that AUTHENTICATION_FAILED will force a new sign-in if bubbled all the
-  // way up. The code protects against trying to use expired access tokens, so
-  // if they're invalid, we can assume that simply refreshing won't work.
-  onError(error);
 };
 
 /**

@@ -30,6 +30,7 @@ AllJsLoadTest.prototype = {
                                  // give a compilation error when declared in
                                  // browser_globals for some reason. Since this
                                  // file's days are numbered, skip it for now.
+    'error.js',
     'event_handlers.js',
     //'format_iq.js',  // Already covered by format_iq.gtestjs
     'host_controller.js',
