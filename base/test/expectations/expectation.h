@@ -10,6 +10,7 @@
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "base/string_piece.h"
 
 namespace test_expectations {
 
@@ -33,7 +34,7 @@ enum Result {
 
 // Converts a text string form of a |result| to its enum value, written to
 // |out_result|. Returns true on success and false on error.
-bool ResultFromString(const std::string& result,
+bool ResultFromString(const base::StringPiece& result,
                       Result* out_result) WARN_UNUSED_RESULT;
 
 // A Platform stores information about the OS environment.
@@ -48,7 +49,7 @@ struct Platform {
 
 // Converts a text string |modifier| to a Platform struct, written to
 // |out_platform|. Returns true on success and false on failure.
-bool PlatformFromString(const std::string& modifier,
+bool PlatformFromString(const base::StringPiece& modifier,
                         Platform* out_platform) WARN_UNUSED_RESULT;
 
 // The build configuration.
@@ -60,7 +61,7 @@ enum Configuration {
 
 // Converts the |modifier| to a Configuration constant, writing the value to
 // |out_configuration|. Returns true on success or false on failure.
-bool ConfigurationFromString(const std::string& modifier,
+bool ConfigurationFromString(const base::StringPiece& modifier,
     Configuration* out_configuration) WARN_UNUSED_RESULT;
 
 // An Expectation is records what the result for a given test name should be on

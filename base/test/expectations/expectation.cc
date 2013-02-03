@@ -6,7 +6,7 @@
 
 namespace test_expectations {
 
-bool ResultFromString(const std::string& result, Result* out_result) {
+bool ResultFromString(const base::StringPiece& result, Result* out_result) {
   if (result == "Failure")
     *out_result = RESULT_FAILURE;
   else if (result == "Timeout")
@@ -61,20 +61,21 @@ static bool IsValidPlatform(const Platform* platform) {
   return true;
 }
 
-bool PlatformFromString(const std::string& modifier, Platform* out_platform) {
+bool PlatformFromString(const base::StringPiece& modifier,
+                        Platform* out_platform) {
   size_t sep = modifier.find('-');
   if (sep == std::string::npos) {
-    out_platform->name = modifier;
+    out_platform->name = modifier.as_string();
     out_platform->variant.clear();
   } else {
-    out_platform->name = modifier.substr(0, sep);
-    out_platform->variant = modifier.substr(sep + 1);
+    out_platform->name = modifier.substr(0, sep).as_string();
+    out_platform->variant = modifier.substr(sep + 1).as_string();
   }
 
   return IsValidPlatform(out_platform);
 }
 
-bool ConfigurationFromString(const std::string& modifier,
+bool ConfigurationFromString(const base::StringPiece& modifier,
                              Configuration* out_configuration) {
   if (modifier == "Debug")
     *out_configuration = CONFIGURATION_DEBUG;
