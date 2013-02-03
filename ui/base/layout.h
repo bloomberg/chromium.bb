@@ -14,10 +14,6 @@
 namespace ui {
 
 enum DisplayLayout {
-  // Layout optimized for ASH.  This enum value should go away as soon as
-  // LAYOUT_DESKTOP and LAYOUT_ASH are the same.
-  LAYOUT_ASH,
-
   // The typical layout for e.g. Windows, Mac and Linux.
   LAYOUT_DESKTOP,
 
@@ -28,6 +24,8 @@ enum DisplayLayout {
 // Returns the display layout that should be used.  This could be used
 // e.g. to tweak hard-coded padding that's layout specific, or choose
 // the .pak file of theme resources to load.
+// WARNING: this is deprecated and will be nuked as soon as aura is the default
+// on windows.
 UI_EXPORT DisplayLayout GetDisplayLayout();
 
 // Supported UI scale factors for the platform. This is used as an index

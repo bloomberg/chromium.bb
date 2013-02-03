@@ -136,19 +136,12 @@ std::vector<ScaleFactor>& GetSupportedScaleFactorsInternal() {
 
 }  // namespace
 
-// Note that this function should be extended to select
-// LAYOUT_TOUCH when appropriate on more platforms than just
-// Windows.
 DisplayLayout GetDisplayLayout() {
-#if defined(USE_ASH)
-  return LAYOUT_ASH;
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   if (UseTouchOptimizedUI())
     return LAYOUT_TOUCH;
-  return LAYOUT_DESKTOP;
-#else
-  return LAYOUT_DESKTOP;
 #endif
+  return LAYOUT_DESKTOP;
 }
 
 ScaleFactor GetScaleFactorFromScale(float scale) {

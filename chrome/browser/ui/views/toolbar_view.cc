@@ -109,7 +109,6 @@ int location_bar_vert_spacing() {
   static int value = -1;
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_ASH:
       case ui::LAYOUT_DESKTOP:
         value = ToolbarView::kVertSpacing;
         break;

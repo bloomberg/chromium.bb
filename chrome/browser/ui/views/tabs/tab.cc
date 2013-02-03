@@ -59,7 +59,6 @@ int left_padding() {
   static int value = -1;
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_ASH:
       case ui::LAYOUT_DESKTOP:
         value = 22;
         break;
@@ -77,7 +76,6 @@ int top_padding() {
   static int value = -1;
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_ASH:
       case ui::LAYOUT_DESKTOP:
         value = 7;
         break;
@@ -95,7 +93,6 @@ int right_padding() {
   static int value = -1;
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_ASH:
       case ui::LAYOUT_DESKTOP:
         value = 19;
         break;
@@ -113,7 +110,6 @@ int bottom_padding() {
   static int value = -1;
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_ASH:
       case ui::LAYOUT_DESKTOP:
         value = 5;
         break;
@@ -132,7 +128,6 @@ int drop_shadow_height() {
   static int value = -1;
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_ASH:
       case ui::LAYOUT_DESKTOP:
         value = 4;
         break;
@@ -151,7 +146,6 @@ int tab_icon_size() {
   static int value = -1;
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_ASH:
       case ui::LAYOUT_DESKTOP:
         value = gfx::kFaviconSize;
         break;
