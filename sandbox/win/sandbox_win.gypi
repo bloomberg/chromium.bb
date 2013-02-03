@@ -209,6 +209,7 @@
       'sources': [
         'src/app_container_test.cc',
         'src/file_policy_test.cc',
+        'src/handle_inheritance_test.cc',
         'src/handle_policy_test.cc',
         'tests/integration_tests/integration_tests_test.cc',
         'src/handle_closer_test.cc',

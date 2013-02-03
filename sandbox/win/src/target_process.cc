@@ -110,6 +110,7 @@ TargetProcess::~TargetProcess() {
 // object.
 DWORD TargetProcess::Create(const wchar_t* exe_path,
                             const wchar_t* command_line,
+                            bool inherit_handles,
                             const base::win::StartupInformation& startup_info,
                             base::win::ScopedProcessInformation* target_info) {
   exe_name_.reset(_wcsdup(exe_path));
@@ -137,7 +138,7 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
                               cmd_line.get(),
                               NULL,   // No security attribute.
                               NULL,   // No thread attribute.
-                              FALSE,  // Do not inherit handles.
+                              inherit_handles,
                               flags,
                               NULL,   // Use the environment of the caller.
                               NULL,   // Use current directory of the caller.

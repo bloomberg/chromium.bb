@@ -33,6 +33,7 @@
 #include "sandbox/win/src/window.h"
 
 namespace {
+
 // The standard windows size for one memory page.
 const size_t kOneMemPage = 4096;
 // The IPC and Policy shared memory sizes.
@@ -49,6 +50,19 @@ sandbox::PolicyGlobal* MakeBrokerPolicyMemory() {
   policy->data_size = kTotalPolicySz - sizeof(sandbox::PolicyGlobal);
   return policy;
 }
+
+bool IsInheritableHandle(HANDLE handle) {
+  if (!handle)
+    return false;
+  if (handle == INVALID_HANDLE_VALUE)
+    return false;
+  // File handles (FILE_TYPE_DISK) and pipe handles are known to be
+  // inheritable.  Console handles (FILE_TYPE_CHAR) are not
+  // inheritable via PROC_THREAD_ATTRIBUTE_HANDLE_LIST.
+  DWORD handle_type = GetFileType(handle);
+  return handle_type == FILE_TYPE_DISK || handle_type == FILE_TYPE_PIPE;
+}
+
 }
 
 namespace sandbox {
@@ -70,6 +84,8 @@ PolicyBase::PolicyBase()
       use_alternate_winstation_(false),
       file_system_init_(false),
       relaxed_interceptions_(true),
+      stdout_handle_(INVALID_HANDLE_VALUE),
+      stderr_handle_(INVALID_HANDLE_VALUE),
       integrity_level_(INTEGRITY_LEVEL_LAST),
       delayed_integrity_level_(INTEGRITY_LEVEL_LAST),
       mitigations_(0),
@@ -306,6 +322,20 @@ MitigationFlags PolicyBase::GetDelayedProcessMitigations() {
 
 void PolicyBase::SetStrictInterceptions() {
   relaxed_interceptions_ = false;
+}
+
+ResultCode PolicyBase::SetStdoutHandle(HANDLE handle) {
+  if (!IsInheritableHandle(handle))
+    return SBOX_ERROR_BAD_PARAMS;
+  stdout_handle_ = handle;
+  return SBOX_ALL_OK;
+}
+
+ResultCode PolicyBase::SetStderrHandle(HANDLE handle) {
+  if (!IsInheritableHandle(handle))
+    return SBOX_ERROR_BAD_PARAMS;
+  stderr_handle_ = handle;
+  return SBOX_ALL_OK;
 }
 
 ResultCode PolicyBase::AddRule(SubSystem subsystem, Semantics semantics,
@@ -565,6 +595,14 @@ EvalResult PolicyBase::EvalPolicy(int service,
   }
 
   return DENY_ACCESS;
+}
+
+HANDLE PolicyBase::GetStdoutHandle() {
+  return stdout_handle_;
+}
+
+HANDLE PolicyBase::GetStderrHandle() {
+  return stderr_handle_;
 }
 
 // We service IPC_PING_TAG message which is a way to test a round trip of the

@@ -58,6 +58,8 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
       MitigationFlags flags) OVERRIDE;
   virtual MitigationFlags GetDelayedProcessMitigations() OVERRIDE;
   virtual void SetStrictInterceptions() OVERRIDE;
+  virtual ResultCode SetStdoutHandle(HANDLE handle) OVERRIDE;
+  virtual ResultCode SetStderrHandle(HANDLE handle) OVERRIDE;
   virtual ResultCode AddRule(SubSystem subsystem, Semantics semantics,
                              const wchar_t* pattern) OVERRIDE;
   virtual ResultCode AddDllToUnload(const wchar_t* dll_name);
@@ -89,6 +91,9 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   bool OnJobEmpty(HANDLE job);
 
   EvalResult EvalPolicy(int service, CountedParameterSetBase* params);
+
+  HANDLE GetStdoutHandle();
+  HANDLE GetStderrHandle();
 
  private:
   ~PolicyBase();
@@ -123,6 +128,8 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   // Helps the file system policy initialization.
   bool file_system_init_;
   bool relaxed_interceptions_;
+  HANDLE stdout_handle_;
+  HANDLE stderr_handle_;
   IntegrityLevel integrity_level_;
   IntegrityLevel delayed_integrity_level_;
   MitigationFlags mitigations_;

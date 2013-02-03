@@ -187,6 +187,14 @@ class TargetPolicy {
   // refuse to perform the interception.
   virtual void SetStrictInterceptions() = 0;
 
+  // Set the handles the target process should inherit for stdout and
+  // stderr.  The handles the caller passes must remain valid for the
+  // lifetime of the policy object.  This only has an effect on
+  // Windows Vista and later versions.  These methods accept pipe and
+  // file handles, but not console handles.
+  virtual ResultCode SetStdoutHandle(HANDLE handle) = 0;
+  virtual ResultCode SetStderrHandle(HANDLE handle) = 0;
+
   // Adds a policy rule effective for processes spawned using this policy.
   // subsystem: One of the above enumerated windows subsystems.
   // semantics: One of the above enumerated FileSemantics.

@@ -47,6 +47,7 @@ class TargetProcess {
   // Creates the new target process. The process is created suspended.
   DWORD Create(const wchar_t* exe_path,
                const wchar_t* command_line,
+               bool inherit_handles,
                const base::win::StartupInformation& startup_info,
                base::win::ScopedProcessInformation* target_info);
 

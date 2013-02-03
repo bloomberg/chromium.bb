@@ -823,6 +823,13 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     return 0;
   }
 
+  if (browser_command_line.HasSwitch(switches::kEnableLogging)) {
+    // If stdout/stderr point to a Windows console, these calls will
+    // have no effect.
+    policy->SetStdoutHandle(GetStdHandle(STD_OUTPUT_HANDLE));
+    policy->SetStderrHandle(GetStdHandle(STD_ERROR_HANDLE));
+  }
+
   TRACE_EVENT_BEGIN_ETW("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
 
   result = g_broker_services->SpawnTarget(
