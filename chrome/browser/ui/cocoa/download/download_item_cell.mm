@@ -80,11 +80,28 @@ using content::DownloadItem;
 
 // This is a helper class to animate the fading out of the status text.
 @interface DownloadItemCellAnimation : NSAnimation {
+ @private
   DownloadItemCell* cell_;
 }
 - (id)initWithDownloadItemCell:(DownloadItemCell*)cell
                       duration:(NSTimeInterval)duration
                 animationCurve:(NSAnimationCurve)animationCurve;
+
+@end
+
+// Timer used to animate indeterminate progress. An NSTimer retains its target.
+// This means that the target must explicitly invalidate the timer before it
+// can be deleted. This class keeps a weak reference to the target so the
+// timer can be invalidated from the destructor.
+@interface IndeterminateProgressTimer : NSObject {
+ @private
+  DownloadItemCell* cell_;
+  scoped_nsobject<NSTimer> timer_;
+}
+
+- (id)initWithDownloadItemCell:(DownloadItemCell*)cell;
+- (void)invalidate;
+
 @end
 
 @interface DownloadItemCell(Private)
@@ -94,6 +111,8 @@ using content::DownloadItem;
 - (void)hideSecondaryTitle;
 - (void)animation:(NSAnimation*)animation
        progressed:(NSAnimationProgress)progress;
+- (void)updateIndeterminateDownload;
+- (void)stopIndeterminateAnimation;
 - (NSString*)elideTitle:(int)availableWidth;
 - (NSString*)elideStatus:(int)availableWidth;
 - (ui::ThemeProvider*)backgroundThemeWrappingProvider:
@@ -101,6 +120,7 @@ using content::DownloadItem;
 - (BOOL)pressedWithDefaultThemeOnPart:(DownloadItemMousePosition)part;
 - (NSColor*)titleColorForPart:(DownloadItemMousePosition)part;
 - (void)drawSecondaryTitleInRect:(NSRect)innerFrame;
+- (BOOL)isDefaultTheme;
 @end
 
 @implementation DownloadItemCell
@@ -112,6 +132,7 @@ using content::DownloadItem;
   isStatusTextVisible_ = NO;
   titleY_ = kPrimaryTextPosTop;
   statusAlpha_ = 0.0;
+  indeterminateProgressAngle_ = download_util::kStartAngleDegrees;
 
   [self setFont:[NSFont systemFontOfSize:
       [NSFont systemFontSizeForControlSize:NSSmallControlSize]]];
@@ -156,6 +177,7 @@ using content::DownloadItem;
     [[self controlView] removeTrackingArea:trackingAreaDropdown_];
     trackingAreaDropdown_.reset();
   }
+  [self stopIndeterminateAnimation];
   [secondaryTitle_ release];
   [secondaryFont_ release];
   [super dealloc];
@@ -191,9 +213,11 @@ using content::DownloadItem;
       [completionAnimation_.get() setDelegate:self];
       [completionAnimation_.get() startAnimation];
       percentDone_ = -1;
+      [self stopIndeterminateAnimation];
       break;
     case DownloadItem::CANCELLED:
       percentDone_ = -1;
+      [self stopIndeterminateAnimation];
       break;
     case DownloadItem::INTERRUPTED:
       // Small downloads may start in an interrupted state due to asynchronous
@@ -209,10 +233,22 @@ using content::DownloadItem;
       [completionAnimation_.get() setDelegate:self];
       [completionAnimation_.get() startAnimation];
       percentDone_ = -2;
+      [self stopIndeterminateAnimation];
       break;
     case DownloadItem::IN_PROGRESS:
-      percentDone_ = downloadModel->download()->IsPaused() ?
-          -1 : downloadModel->PercentComplete();
+      if (downloadModel->download()->IsPaused()) {
+        percentDone_ = -1;
+        [self stopIndeterminateAnimation];
+      } else if (downloadModel->PercentComplete() == -1) {
+        percentDone_ = -1;
+        if (!indeterminateProgressTimer_) {
+          indeterminateProgressTimer_.reset([[IndeterminateProgressTimer alloc]
+              initWithDownloadItemCell:self]);
+        }
+      } else {
+        percentDone_ = downloadModel->PercentComplete();
+        [self stopIndeterminateAnimation];
+      }
       break;
     default:
       NOTREACHED();
@@ -367,22 +403,17 @@ using content::DownloadItem;
 
 // Returns if |part| was pressed while the default theme was active.
 - (BOOL)pressedWithDefaultThemeOnPart:(DownloadItemMousePosition)part {
-  ui::ThemeProvider* themeProvider =
-      [[[self controlView] window] themeProvider];
-  bool isDefaultTheme =
-      !themeProvider->HasCustomImage(IDR_THEME_BUTTON_BACKGROUND);
-  return isDefaultTheme && [self isHighlighted] && mousePosition_ == part;
+  return [self isDefaultTheme] && [self isHighlighted] &&
+          mousePosition_ == part;
 }
 
 // Returns the text color that should be used to draw text on |part|.
 - (NSColor*)titleColorForPart:(DownloadItemMousePosition)part {
   ui::ThemeProvider* themeProvider =
       [[[self controlView] window] themeProvider];
-  NSColor* themeTextColor =
-      themeProvider->GetNSColor(ThemeService::COLOR_BOOKMARK_TEXT,
-                                true);
-  return [self pressedWithDefaultThemeOnPart:part]
-      ? [NSColor alternateSelectedControlTextColor] : themeTextColor;
+  if ([self pressedWithDefaultThemeOnPart:part] || !themeProvider)
+    return [NSColor alternateSelectedControlTextColor];
+  return themeProvider->GetNSColor(ThemeService::COLOR_BOOKMARK_TEXT, true);
 }
 
 - (void)drawSecondaryTitleInRect:(NSRect)innerFrame {
@@ -417,6 +448,14 @@ using content::DownloadItem;
               withAttributes:secondaryTextAttributes];
 }
 
+- (BOOL)isDefaultTheme {
+  ui::ThemeProvider* themeProvider =
+      [[[self controlView] window] themeProvider];
+  if (!themeProvider)
+    return YES;
+  return !themeProvider->HasCustomImage(IDR_THEME_BUTTON_BACKGROUND);
+}
+
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   NSRect drawFrame = NSInsetRect(cellFrame, 1.5, 1.5);
   NSRect innerFrame = NSInsetRect(cellFrame, 2, 2);
@@ -432,11 +471,9 @@ using content::DownloadItem;
   // the superclass into drawing what we want.
   ui::ThemeProvider* themeProvider =
       [[[self controlView] window] themeProvider];
-  bool isDefaultTheme =
-      !themeProvider->HasCustomImage(IDR_THEME_BUTTON_BACKGROUND);
 
   NSGradient* bgGradient = nil;
-  if (!isDefaultTheme) {
+  if (![self isDefaultTheme]) {
     themeProvider = [self backgroundThemeWrappingProvider:themeProvider];
     bgGradient = themeProvider->GetNSGradient(
         active ? ThemeService::GRADIENT_TOOLBAR_BUTTON :
@@ -540,12 +577,13 @@ using content::DownloadItem;
               download_util::SMALL);
         }
       }
-    } else if (percentDone_ >= 0) {
+    } else if (percentDone_ >= 0 || indeterminateProgressTimer_) {
       download_util::PaintDownloadProgress(&canvas,
-          x, y,
-          download_util::kStartAngleDegrees,  // TODO(thakis): Animate
-          percentDone_,
-          download_util::SMALL);
+                                           x,
+                                           y,
+                                           indeterminateProgressAngle_,
+                                           percentDone_,
+                                           download_util::SMALL);
     }
   }
 
@@ -635,6 +673,10 @@ using content::DownloadItem;
   [self setupToggleStatusVisibilityAnimation];
 }
 
+- (IndeterminateProgressTimer*)indeterminateProgressTimer {
+  return indeterminateProgressTimer_;
+}
+
 - (void)animation:(NSAnimation*)animation
    progressed:(NSAnimationProgress)progress {
   if (animation == toggleStatusVisibilityAnimation_) {
@@ -650,6 +692,18 @@ using content::DownloadItem;
   } else if (animation == completionAnimation_) {
     [[self controlView] setNeedsDisplay:YES];
   }
+}
+
+- (void)updateIndeterminateDownload {
+  indeterminateProgressAngle_ =
+      (indeterminateProgressAngle_ + download_util::kUnknownIncrementDegrees) %
+      download_util::kMaxDegrees;
+  [[self controlView] setNeedsDisplay:YES];
+}
+
+- (void)stopIndeterminateAnimation {
+  [indeterminateProgressTimer_ invalidate];
+  indeterminateProgressTimer_.reset();
 }
 
 - (void)animationDidEnd:(NSAnimation *)animation {
@@ -690,6 +744,31 @@ using content::DownloadItem;
 - (void)setCurrentProgress:(NSAnimationProgress)progress {
   [super setCurrentProgress:progress];
   [cell_ animation:self progressed:progress];
+}
+
+@end
+
+@implementation IndeterminateProgressTimer
+
+- (id)initWithDownloadItemCell:(DownloadItemCell*)cell {
+  if ((self = [super init])) {
+    cell_ = cell;
+    timer_.reset([[NSTimer
+        scheduledTimerWithTimeInterval:download_util::kProgressRateMs / 1000.0
+                                target:self
+                              selector:@selector(onTimer:)
+                              userInfo:nil
+                               repeats:YES] retain]);
+  }
+  return self;
+}
+
+- (void)invalidate {
+  [timer_ invalidate];
+}
+
+- (void)onTimer:(NSTimer*)timer {
+  [cell_ updateIndeterminateDownload];
 }
 
 @end
