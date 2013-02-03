@@ -21,8 +21,9 @@ message DeviceRegisterRequest {
   // register with type DEVICE in order to retrieve device policies.
   enum Type {
     TT   = 0;       // Register for TT release.
-    USER = 1;       // Register for user polices.
+    USER = 1;       // Register for Chrome OS user polices.
     DEVICE = 2;     // Register for device policies.
+    BROWSER = 3;    // Register for Chrome user policies.
   }
   // NOTE: we also use this field to detect client version.  If this
   // field is missing, then the request comes from TT.  We will remove

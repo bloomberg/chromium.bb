@@ -630,8 +630,8 @@ class TestServer(object):
       dmtoken_chars.append(random.choice('0123456789abcdef'))
     dmtoken = ''.join(dmtoken_chars)
     allowed_policy_types = {
-      dm.DeviceRegisterRequest.USER: ['google/chromeos/user',
-                                      'google/chrome/user'],
+      dm.DeviceRegisterRequest.BROWSER: ['google/chrome/user'],
+      dm.DeviceRegisterRequest.USER: ['google/chromeos/user'],
       dm.DeviceRegisterRequest.DEVICE: [
           'google/chromeos/device',
           'google/chromeos/publicaccount'
