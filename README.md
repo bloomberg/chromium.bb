@@ -114,14 +114,17 @@ using `git cl upload` from
 
 ### Testing
 
-Unfortunately, LSS has no automated test suite.
+Tests are found in the [tests/](./tests/) subdirectory.  It does not (yet) offer
+100% coverage, but should grow over time.
 
-You can test LSS by patching it into Chromium, building Chromium, and running
-Chromium's tests.
+New commits that update/change/add syscall wrappers should include tests for
+them too.  Consult the [test documentation](./tests/README.md) for more details.
 
-You can compile-test LSS by running:
+To run, just run `make` inside the tests directory.  It will compile & execute
+the tests locally.
 
-    gcc -Wall -Wextra -Wstrict-prototypes -c linux_syscall_support.h
+There is some limited cross-compile coverage available if you run `make cross`.
+It only compiles things (does not execute at all).
 
 ### Rolling into Chromium
 
