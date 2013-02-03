@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/time.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -23,6 +24,8 @@ const int kTestWidth = 1280;
 const int kTestHeight = 720;
 const int kBytesPerPixel = 4;
 const int kTestFramesPerSecond = 8;
+const base::TimeDelta kWaitTimeout =
+    base::TimeDelta::FromMilliseconds(2000);
 const SkColor kNothingYet = 0xdeadbeef;
 const SkColor kNotInterested = ~kNothingYet;
 }
@@ -34,13 +37,29 @@ class StubRenderWidgetHost : public RenderWidgetHostImpl {
  public:
   StubRenderWidgetHost(RenderProcessHost* process, int routing_id)
       : RenderWidgetHostImpl(&delegate_, process, routing_id),
-        color_(kNothingYet) {}
+        color_(kNothingYet),
+        copy_result_size_(kTestWidth, kTestHeight),
+        copy_event_(false, false) {}
 
   void SetSolidColor(SkColor color) {
     base::AutoLock guard(lock_);
     color_ = color;
   }
 
+  void SetCopyResultSize(int width, int height) {
+    base::AutoLock guard(lock_);
+    copy_result_size_ = gfx::Size(width, height);
+  }
+
+  bool WaitForNextBackingStoreCopy() {
+    if (!copy_event_.TimedWait(kWaitTimeout)) {
+      ADD_FAILURE() << "WaitForNextBackingStoreCopy: wait deadline exceeded";
+      return false;
+    }
+    return true;
+  }
+
+  // RenderWidgetHostImpl overrides.
   virtual void CopyFromBackingStore(
       const gfx::Rect& src_rect,
       const gfx::Size& accelerated_dst_size,
@@ -48,7 +67,8 @@ class StubRenderWidgetHost : public RenderWidgetHostImpl {
     // Although it's not necessary, use a PlatformBitmap here (instead of a
     // regular SkBitmap) to exercise possible threading issues.
     scoped_ptr<skia::PlatformBitmap> platform_bitmap(new skia::PlatformBitmap);
-    EXPECT_TRUE(platform_bitmap->Allocate(kTestWidth, kTestHeight, false));
+    EXPECT_TRUE(platform_bitmap->Allocate(
+        copy_result_size_.width(), copy_result_size_.height(), false));
     {
       SkAutoLockPixels locker(platform_bitmap->GetBitmap());
       base::AutoLock guard(lock_);
@@ -56,6 +76,7 @@ class StubRenderWidgetHost : public RenderWidgetHostImpl {
     }
 
     callback.Run(true, platform_bitmap->GetBitmap());
+    copy_event_.Signal();
   }
 
  private:
@@ -71,6 +92,8 @@ class StubRenderWidgetHost : public RenderWidgetHostImpl {
   StubRenderWidgetHostDelegate delegate_;
   base::Lock lock_;  // Guards changes to color_.
   SkColor color_;
+  gfx::Size copy_result_size_;
+  base::WaitableEvent copy_event_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StubRenderWidgetHost);
 };
@@ -86,9 +109,14 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
 
   // Returns false if an error was encountered.
   bool WaitForNextColorOrError(SkColor expected_color) {
+    base::TimeTicks deadline = base::TimeTicks::Now() + kWaitTimeout;
     base::AutoLock guard(lock_);
     while (picture_color_ != expected_color && !error_encountered_) {
-      output_changed_.Wait();
+      output_changed_.TimedWait(kWaitTimeout);
+      if (base::TimeTicks::Now() >= deadline) {
+        ADD_FAILURE() << "WaitForNextColorOrError: wait deadline exceeded";
+        return false;
+      }
     }
     if (!error_encountered_) {
       EXPECT_EQ(expected_color, picture_color_);
@@ -229,6 +257,33 @@ TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
 TEST_F(WebContentsVideoCaptureDeviceTest, RejectsInvalidAllocateParams) {
   device()->Allocate(1280, 720, -2, consumer());
   EXPECT_FALSE(consumer()->WaitForNextColorOrError(kNotInterested));
+}
+
+TEST_F(WebContentsVideoCaptureDeviceTest, BadFramesGoodFrames) {
+  device()->Allocate(kTestWidth, kTestHeight, kTestFramesPerSecond,
+                     consumer());
+
+
+  // 1x1 is too small to process; we intend for this to result in an error.
+  source()->SetCopyResultSize(1, 1);
+  source()->SetSolidColor(SK_ColorRED);
+  device()->Start();
+
+  // These frames ought to be dropped during the Render stage. Let
+  // several captures to happen.
+  ASSERT_TRUE(source()->WaitForNextBackingStoreCopy());
+  ASSERT_TRUE(source()->WaitForNextBackingStoreCopy());
+  ASSERT_TRUE(source()->WaitForNextBackingStoreCopy());
+  ASSERT_TRUE(source()->WaitForNextBackingStoreCopy());
+  ASSERT_TRUE(source()->WaitForNextBackingStoreCopy());
+
+  // Now push some good frames through; they should be processed normally.
+  source()->SetCopyResultSize(kTestWidth, kTestHeight);
+  source()->SetSolidColor(SK_ColorGREEN);
+  EXPECT_TRUE(consumer()->WaitForNextColorOrError(SK_ColorGREEN));
+  source()->SetSolidColor(SK_ColorRED);
+  EXPECT_TRUE(consumer()->WaitForNextColorOrError(SK_ColorRED));
+  device()->DeAllocate();
 }
 
 }  // namespace content

@@ -433,6 +433,9 @@ void VideoFrameRenderer::RenderOnRenderThread(
 
   TRACE_EVENT1("mirroring", "RenderFrame", "frame_number", frame_number);
 
+  base::ScopedClosureRunner failure_handler(
+      base::Bind(done_cb, static_cast<const SkBitmap*>(NULL)));
+
   gfx::Size fitted_size;
   {
     SkAutoLockPixels locker(captured_bitmap);
@@ -521,6 +524,7 @@ void VideoFrameRenderer::RenderOnRenderThread(
   }
 
   // The result is now ready.
+  failure_handler.Release();
   {
     base::AutoLock guard(lock_);
     out->in_use = true;
@@ -1000,7 +1004,7 @@ void CaptureMachine::RenderComplete(int frame_number,
   --num_renders_pending_;
   DCHECK_LE(0, num_renders_pending_);
 
-  if (state_ != kCapturing) {
+  if (state_ != kCapturing || !frame_buffer) {
     return;
   }
 
