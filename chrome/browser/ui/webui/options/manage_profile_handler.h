@@ -74,6 +74,13 @@ class ManageProfileHandler : public OptionsPageUIHandler {
   // |args| is of the form: [ {string} profileFilePath ]
   void DeleteProfile(const base::ListValue* args);
 
+#if defined(ENABLE_SETTINGS_APP)
+  // Callback for the "switchAppListProfile" message. Asks the
+  // app_list_controller to change the profile registered for the AppList.
+  // |args| is of the form: [ {string} profileFilePath ]
+  void SwitchAppListProfile(const base::ListValue* args);
+#endif
+
   // Callback for the 'profileIconSelectionChanged' message. Used to update the
   // name in the manager profile dialog based on the selected icon.
   void ProfileIconSelectionChanged(const base::ListValue* args);
