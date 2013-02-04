@@ -70,6 +70,8 @@ AC_PROG_MAKE_SET
 PKG_PROG_PKG_CONFIG
 m4_ifdef([PKG_INSTALLDIR], [PKG_INSTALLDIR], AC_SUBST([pkgconfigdir], ${libdir}/pkgconfig))
 
+AM_MISSING_PROG([GPERF], [gperf])
+
 AC_MSG_CHECKING([for RM macro])
 _predefined_rm=`make -p -f /dev/null 2>/dev/null|grep '^RM ='|sed -e 's/^RM = //'`
 if test "x$_predefined_rm" = "x"; then

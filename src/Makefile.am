@@ -116,7 +116,7 @@ fcobjshash.gperf: fcobjshash.gperf.h fcobjs.h
 	mv -f $@.tmp $@ || ( $(RM) $@.tmp && false )
 
 fcobjshash.h: fcobjshash.gperf
-	$(AM_V_GEN) $(top_srcdir)/missing --run gperf -m 100 $< > $@.tmp && \
+	$(AM_V_GEN) $(GPERF) -m 100 $< > $@.tmp && \
 	mv -f $@.tmp $@ || ( $(RM) $@.tmp && false )
 
 EXTRA_DIST += \
