@@ -229,7 +229,7 @@ void ShowExtensionInstallDialogImpl(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 #if defined(OS_WIN)
   if (BrowserDistribution::GetDistribution()->AppHostIsSupported() &&
-      prompt.extension()->is_platform_app()) {
+      prompt.extension() && prompt.extension()->is_platform_app()) {
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE,
         FROM_HERE,
