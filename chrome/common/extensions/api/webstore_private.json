@@ -211,6 +211,20 @@
             ]
           }
         ]
+      },
+      {
+        "name": "getIsLauncherEnabled",
+        "description": "Returns whether the apps launcher is enabled or not.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              { "name": "is_enabled", "type": "boolean" }
+            ]
+          }
+        ]
       }
     ]
   }

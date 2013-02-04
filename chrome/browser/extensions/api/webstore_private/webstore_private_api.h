@@ -234,6 +234,23 @@ class GetWebGLStatusFunction : public AsyncExtensionFunction {
   scoped_refptr<GPUFeatureChecker> feature_checker_;
 };
 
+class GetIsLauncherEnabledFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.getIsLauncherEnabled",
+                             WEBSTOREPRIVATE_GETISLAUNCHERENABLED)
+
+  GetIsLauncherEnabledFunction() {}
+
+ protected:
+  virtual ~GetIsLauncherEnabledFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void OnIsLauncherCheckCompleted(bool is_enabled);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEBSTORE_PRIVATE_WEBSTORE_PRIVATE_API_H_

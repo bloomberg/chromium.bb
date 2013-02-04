@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/app_launcher.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -539,6 +540,17 @@ bool GetWebGLStatusFunction::RunImpl() {
 
 void GetWebGLStatusFunction::OnFeatureCheck(bool feature_allowed) {
   CreateResult(feature_allowed);
+  SendResponse(true);
+}
+
+bool GetIsLauncherEnabledFunction::RunImpl() {
+  UpdateIsAppLauncherEnabled(base::Bind(
+      &GetIsLauncherEnabledFunction::OnIsLauncherCheckCompleted, this));
+  return true;
+}
+
+void GetIsLauncherEnabledFunction::OnIsLauncherCheckCompleted(bool is_enabled) {
+  SetResult(Value::CreateBooleanValue(is_enabled));
   SendResponse(true);
 }
 
