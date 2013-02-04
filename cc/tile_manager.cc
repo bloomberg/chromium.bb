@@ -10,6 +10,7 @@
 #include "base/debug/trace_event.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "cc/platform_color.h"
 #include "cc/raster_worker_pool.h"
 #include "cc/resource_pool.h"
@@ -762,7 +763,23 @@ void TileManager::RunRasterTask(uint8* buffer,
   bitmap.setPixels(buffer);
   SkDevice device(bitmap);
   SkCanvas canvas(&device);
+
+  base::TimeTicks begin_time;
+  if (stats)
+    begin_time = base::TimeTicks::Now();
+
   picture_pile->Raster(&canvas, rect, contents_scale, stats);
+
+  if (stats) {
+    base::TimeTicks end_time = base::TimeTicks::Now();
+    base::TimeDelta duration = end_time - begin_time;
+    stats->totalRasterizeTime += duration;
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Renderer4.PictureRasterTimeMS",
+      duration.InMilliseconds(),
+      0, 10, 10
+    );
+  }
 }
 
 // static

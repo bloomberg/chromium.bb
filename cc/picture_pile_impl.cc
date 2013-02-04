@@ -65,10 +65,6 @@ void PicturePileImpl::Raster(
 
   DCHECK(contents_scale >= min_contents_scale_);
 
-  base::TimeTicks rasterize_begin_time;
-  if (stats)
-    rasterize_begin_time = base::TimeTicks::Now();
-
   canvas->save();
   canvas->translate(-content_rect.x(), -content_rect.y());
   canvas->clipRect(gfx::RectToSkRect(content_rect));
@@ -120,9 +116,6 @@ void PicturePileImpl::Raster(
     }
   }
   canvas->restore();
-
-  if (stats)
-    stats->totalRasterizeTime += base::TimeTicks::Now() - rasterize_begin_time;
 }
 
 void PicturePileImpl::GatherPixelRefs(
