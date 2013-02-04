@@ -632,7 +632,7 @@ void DriveFeedLoader::SaveFileSystem() {
     blocking_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SaveProtoOnBlockingPool, path,
-                   base::Passed(serialized_proto.Pass())));
+                   base::Passed(&serialized_proto)));
   }
 }
 

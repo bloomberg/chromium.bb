@@ -97,9 +97,9 @@ void ContactDatabase::SaveContacts(scoped_ptr<ContactPointers> contacts_to_save,
       FROM_HERE,
       base::Bind(&ContactDatabase::SaveContactsFromTaskRunner,
                  base::Unretained(this),
-                 base::Passed(contacts_to_save.Pass()),
-                 base::Passed(contact_ids_to_delete.Pass()),
-                 base::Passed(metadata.Pass()),
+                 base::Passed(&contacts_to_save),
+                 base::Passed(&contact_ids_to_delete),
+                 base::Passed(&metadata),
                  is_full_update,
                  success),
       base::Bind(&ContactDatabase::RunSaveCallback,
@@ -130,8 +130,8 @@ void ContactDatabase::LoadContacts(LoadCallback callback) {
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  base::Owned(success),
-                 base::Passed(contacts.Pass()),
-                 base::Passed(metadata.Pass())));
+                 base::Passed(&contacts),
+                 base::Passed(&metadata)));
 }
 
 ContactDatabase::~ContactDatabase() {

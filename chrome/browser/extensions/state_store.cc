@@ -111,7 +111,7 @@ void StateStore::SetExtensionValue(
     scoped_ptr<base::Value> value) {
   task_queue_->InvokeWhenReady(
       base::Bind(&ValueStoreFrontend::Set, base::Unretained(&store_),
-                 GetFullKey(extension_id, key), base::Passed(value.Pass())));
+                 GetFullKey(extension_id, key), base::Passed(&value)));
 }
 
 void StateStore::RemoveExtensionValue(const std::string& extension_id,

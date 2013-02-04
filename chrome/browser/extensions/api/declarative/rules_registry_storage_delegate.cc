@@ -258,8 +258,8 @@ void RulesRegistryStorageDelegate::Inner::ReadFromStorageCallback(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   content::BrowserThread::PostTask(
       rules_registry_thread_, FROM_HERE,
-      base::Bind(&Inner::ReadFromStorageOnRegistryThread, this,
-                 extension_id, base::Passed(value.Pass())));
+      base::Bind(&Inner::ReadFromStorageOnRegistryThread, this, extension_id,
+                 base::Passed(&value)));
 
   waiting_for_extensions_.erase(extension_id);
   CheckIfReady();

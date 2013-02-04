@@ -395,6 +395,6 @@ void ExtensionAction::RunIconAnimation(int tab_id) {
   // destroyed.
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&DestroyIconAnimation, base::Passed(icon_animation.Pass())),
+      base::Bind(&DestroyIconAnimation, base::Passed(&icon_animation)),
       base::TimeDelta::FromMilliseconds(kIconFadeInDurationMs * 2));
 }

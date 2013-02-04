@@ -72,8 +72,8 @@ void EventRouterForwarder::HandleEvent(const std::string& extension_id,
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&EventRouterForwarder::HandleEvent, this,
-                   extension_id, event_name, Passed(&event_args), profile_ptr,
-                   use_profile_to_restrict_events, event_url));
+                   extension_id, event_name, base::Passed(&event_args),
+                   profile_ptr, use_profile_to_restrict_events, event_url));
     return;
   }
 

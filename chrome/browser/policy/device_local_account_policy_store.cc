@@ -138,7 +138,7 @@ void DeviceLocalAccountPolicyStore::CheckKeyAndValidate(
   device_settings_service_->GetOwnershipStatusAsync(
       base::Bind(&DeviceLocalAccountPolicyStore::Validate,
                  weak_factory_.GetWeakPtr(),
-                 base::Passed(policy.Pass()),
+                 base::Passed(&policy),
                  callback));
 }
 

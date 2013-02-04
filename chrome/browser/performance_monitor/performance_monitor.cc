@@ -290,7 +290,7 @@ void PerformanceMonitor::AddEvent(scoped_ptr<Event> event) {
       FROM_HERE,
       base::Bind(&PerformanceMonitor::AddEventOnBackgroundThread,
                  base::Unretained(this),
-                 base::Passed(event.Pass())));
+                 base::Passed(&event)));
 }
 
 void PerformanceMonitor::AddEventOnBackgroundThread(scoped_ptr<Event> event) {
@@ -406,7 +406,7 @@ void PerformanceMonitor::UpdateLiveProfiles() {
       FROM_HERE,
       base::Bind(&PerformanceMonitor::UpdateLiveProfilesHelper,
                  base::Unretained(this),
-                 base::Passed(active_profiles.Pass()),
+                 base::Passed(&active_profiles),
                  time));
 }
 

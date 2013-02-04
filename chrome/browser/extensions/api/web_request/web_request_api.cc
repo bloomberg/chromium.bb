@@ -1493,7 +1493,7 @@ void ExtensionWebRequestEventRouter::SendMessages(
           base::Bind(&SendOnMessageEventOnUI,
                      profile,
                      (*delta)->extension_id,
-                     base::Passed(argument.Pass())));
+                     base::Passed(&argument)));
     }
   }
 }

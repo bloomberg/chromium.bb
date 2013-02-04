@@ -502,7 +502,7 @@ void DownloadManagerImpl::ResumeInterruptedDownload(
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&BeginDownload, base::Passed(params.Pass()), id));
+      base::Bind(&BeginDownload, base::Passed(&params), id));
 }
 
 void DownloadManagerImpl::SetDownloadItemFactoryForTesting(

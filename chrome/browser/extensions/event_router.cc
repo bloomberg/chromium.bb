@@ -98,7 +98,7 @@ void EventRouter::LogExtensionEventMessage(void* profile_id,
                                        profile_id,
                                        extension_id,
                                        event_name,
-                                       Passed(event_args.Pass())));
+                                       base::Passed(&event_args)));
   } else {
     Profile* profile = reinterpret_cast<Profile*>(profile_id);
     if (!g_browser_process->profile_manager()->IsValidProfile(profile))

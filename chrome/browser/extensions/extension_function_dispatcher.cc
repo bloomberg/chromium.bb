@@ -58,7 +58,7 @@ void LogSuccess(const Extension* extension,
                             base::Bind(&LogSuccess,
                                        extension,
                                        api_name,
-                                       Passed(args.Pass()),
+                                       base::Passed(&args),
                                        profile));
   } else {
     extensions::ActivityLog* activity_log =
@@ -80,7 +80,7 @@ void LogFailure(const Extension* extension,
                             base::Bind(&LogFailure,
                                        extension,
                                        api_name,
-                                       Passed(args.Pass()),
+                                       base::Passed(&args),
                                        reason,
                                        profile));
   } else {

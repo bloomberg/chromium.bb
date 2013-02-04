@@ -49,7 +49,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
     scoped_ptr<base::Value> passed_value(value);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&ValueStoreFrontend::Backend::RunCallback,
-                   this, callback, base::Passed(passed_value.Pass())));
+                   this, callback, base::Passed(&passed_value)));
   }
 
   void Set(const std::string& key, scoped_ptr<base::Value> value) {
@@ -131,7 +131,7 @@ void ValueStoreFrontend::Set(const std::string& key,
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&ValueStoreFrontend::Backend::Set,
-                 backend_, key, base::Passed(value.Pass())));
+                 backend_, key, base::Passed(&value)));
 }
 
 void ValueStoreFrontend::Remove(const std::string& key) {
