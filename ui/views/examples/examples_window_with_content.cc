@@ -213,6 +213,7 @@ void ShowExamplesWindowWithContent(Operation operation,
     Widget::InitParams params;
     params.delegate = new ExamplesWindowContents(operation, browser_context);
     params.bounds = gfx::Rect(0, 0, 850, 300);
+    params.top_level = true;
     widget->Init(params);
     widget->Show();
   }
