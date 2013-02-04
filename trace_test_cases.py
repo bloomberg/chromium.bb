@@ -86,9 +86,19 @@ def trace_test_cases(cmd, cwd_dir, test_cases, jobs, logname):
   api = trace_inputs.get_api()
   api.clean_trace(logname)
 
-  threads = jobs or multiprocessing.cpu_count()
+  jobs = jobs or multiprocessing.cpu_count()
+  # Try to do black magic here by guessing a few of the run_test_cases.py
+  # flags. It's cheezy but it works.
+  for i, v in enumerate(cmd):
+    if v.endswith('run_test_cases.py'):
+      # Found it. Process the arguments here.
+      _, options, _ = run_test_cases.process_args(cmd[i:])
+      # Always override with the lowest value.
+      jobs = min(options.jobs, jobs)
+      break
+
   progress = run_test_cases.Progress(len(test_cases))
-  with run_test_cases.ThreadPool(progress, threads, threads,
+  with run_test_cases.ThreadPool(progress, jobs, jobs,
                                  len(test_cases)) as pool:
     with api.get_tracer(logname) as tracer:
       function = Tracer(tracer, cmd, cwd_dir, progress).map

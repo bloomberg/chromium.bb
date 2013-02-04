@@ -1083,8 +1083,7 @@ class OptionParserTestCases(OptionParserWithTestShardingAndFiltering):
         help='Timeout for a single test case, in seconds default:%default')
 
 
-def main(argv):
-  """CLI frontend to validate arguments."""
+def process_args(argv):
   parser = OptionParserTestCases(
       usage='%prog <options> [gtest]',
       verbose=int(os.environ.get('ISOLATE_DEBUG', 0)))
@@ -1133,8 +1132,12 @@ def main(argv):
 
   if options.run_all and options.max_failures is not None:
     parser.error('Use only one of --run-all or --max-failures')
+  return parser, options, fix_python_path(args)
 
-  cmd = fix_python_path(args)
+
+def main(argv):
+  """CLI frontend to validate arguments."""
+  parser, options, cmd = process_args(argv)
 
   if options.gtest_list_tests:
     # Special case, return the output of the target unmodified.
@@ -1150,7 +1153,12 @@ def main(argv):
   if options.no_dump:
     result_file = None
   else:
-    result_file = options.result or '%s.run_test_cases' % args[-1]
+    result_file = options.result
+    if not result_file:
+      if cmd[0] == sys.executable:
+        result_file = '%s.run_test_cases' % cmd[1]
+      else:
+        result_file = '%s.run_test_cases' % cmd[0]
 
   return run_test_cases(
       cmd,
