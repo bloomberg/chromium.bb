@@ -212,6 +212,8 @@ base::DictionaryValue* GlobalIdDirectiveToValue(
     const sync_pb::GlobalIdDirective& proto) {
   DictionaryValue* value = new DictionaryValue();
   SET_INT64_REP(global_id);
+  SET_INT64(start_time_usec);
+  SET_INT64(end_time_usec);
   return value;
 }
 
