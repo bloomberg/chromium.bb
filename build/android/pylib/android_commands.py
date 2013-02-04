@@ -808,14 +808,12 @@ class AndroidCommands(object):
     assert build_type
     return build_type
 
-  def StartMonitoringLogcat(self, clear=True, timeout=10, logfile=None,
-                            filters=None):
+  def StartMonitoringLogcat(self, clear=True, logfile=None, filters=None):
     """Starts monitoring the output of logcat, for use with WaitForLogMatch.
 
     Args:
       clear: If True the existing logcat output will be cleared, to avoiding
              matching historical output lurking in the log.
-      timeout: Deprecated, will be removed soon.
       filters: A list of logcat filters to be used.
     """
     if clear:
@@ -834,8 +832,7 @@ class AndroidCommands(object):
 
     # Spawn logcat and syncronize with it.
     for _ in range(4):
-      self._logcat = pexpect.spawn('adb', args, timeout=timeout,
-                                   logfile=logfile)
+      self._logcat = pexpect.spawn('adb', args, timeout=10, logfile=logfile)
       self.RunShellCommand('log startup_sync')
       if self._logcat.expect(['startup_sync', pexpect.EOF,
                               pexpect.TIMEOUT]) == 0:
@@ -874,7 +871,7 @@ class AndroidCommands(object):
     t0 = time.time()
     while True:
       if not self._logcat:
-        self.StartMonitoringLogcat(clear, timeout=timeout)
+        self.StartMonitoringLogcat(clear)
       try:
         while True:
           # Note this will block for upto the timeout _per log line_, so we need
