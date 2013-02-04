@@ -335,6 +335,12 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED" desc="The label used in the tray popup to notify that bluetooth is disabled.">
         Bluetooth disabled
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTING" desc="Shows a connecting bluetooth device in the bluetooth list.">
+        <ph name="BLUETOOTH">$1<ex>Apple Magic Mouse</ex></ph>: Connecting...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCONNECTING" desc="Shows a disconnecting bluetooth device in the bluetooth list.">
+        <ph name="BLUETOOTH">$1<ex>Apple Magic Mouse</ex></ph>: Disconnecting...
+      </message>      
       <message name="IDS_ASH_STATUS_TRAY_BRIGHTNESS" desc="The accessible text for the brightness slider.">
         Brightness
       </message>

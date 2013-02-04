@@ -249,6 +249,41 @@ class BluetoothDetailedView : public TrayDetailsView,
     add_device_ = container;
   }
 
+  // Returns true if the device with |device_id| is found in |device_list|,
+  // and the display_name of the device will be returned in |display_name|.
+  bool FoundDevice(const std::string& device_id,
+                   const BluetoothDeviceList& device_list,
+                   string16* display_name) {
+    for (size_t i = 0; i < device_list.size(); ++i) {
+      if (device_list[i].address == device_id) {
+        *display_name = device_list[i].display_name;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Updates UI of the clicked bluetooth device to show it is being connected
+  // or disconnected if such an operation is going to be performed underway.
+  void UpdateClickedDevice(std::string device_id, views::View* item_container) {
+    string16 display_name;
+    if (FoundDevice(device_id, connected_devices_, &display_name)) {
+      display_name = l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCONNECTING, display_name);
+    } else if (FoundDevice(device_id, paired_not_connected_devices_,
+                           &display_name)) {
+      display_name = l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTING, display_name);
+    }
+    if (display_name.length() > 0) {
+      item_container->RemoveAllChildViews(true);
+      static_cast<HoverHighlightView*>(item_container)->
+          AddCheckableLabel(display_name, gfx::Font::BOLD, false);
+      scroll_content()->SizeToPreferredSize();
+      static_cast<views::View*>(scroller())->Layout();
+    }
+  }
+
   // Overridden from ViewClickListener.
   virtual void ClickedOn(views::View* sender) OVERRIDE {
     ash::SystemTrayDelegate* delegate =
@@ -266,6 +301,7 @@ class BluetoothDetailedView : public TrayDetailsView,
       find = device_map_.find(sender);
       if (find != device_map_.end()) {
         std::string device_id = find->second;
+        UpdateClickedDevice(device_id, sender);
         delegate->ToggleBluetoothConnection(device_id);
       }
     }
