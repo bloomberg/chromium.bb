@@ -33,11 +33,11 @@ DevToolsTracingHandler::DevToolsTracingHandler()
     : DevToolsBrowserTarget::DomainHandler(kTracingDomain),
       is_running_(false) {
   RegisterCommandHandler(kTracingStartCommand,
-                         Bind(&DevToolsTracingHandler::OnStart,
-                              base::Unretained(this)));
+                         base::Bind(&DevToolsTracingHandler::OnStart,
+                                    base::Unretained(this)));
   RegisterCommandHandler(kTracingEndCommand,
-                         Bind(&DevToolsTracingHandler::OnEnd,
-                              base::Unretained(this)));
+                         base::Bind(&DevToolsTracingHandler::OnEnd,
+                                    base::Unretained(this)));
 }
 
 DevToolsTracingHandler::~DevToolsTracingHandler() {
@@ -45,7 +45,7 @@ DevToolsTracingHandler::~DevToolsTracingHandler() {
 
 void DevToolsTracingHandler::OnEndTracingComplete() {
   is_running_ = false;
-  SendNotification(kTracingCompleteNotification, NULL, NULL);
+  SendNotification(kTracingCompleteNotification, NULL);
 }
 
 void DevToolsTracingHandler::OnTraceDataCollected(
@@ -53,26 +53,26 @@ void DevToolsTracingHandler::OnTraceDataCollected(
   if (is_running_) {
     base::DictionaryValue* params = new base::DictionaryValue();
     params->SetString("value", trace_fragment->data());
-    SendNotification(kTracingDataCollected, params, NULL);
+    SendNotification(kTracingDataCollected, params);
   }
 }
 
-base::DictionaryValue* DevToolsTracingHandler::OnStart(
-    const base::DictionaryValue* params,
-    base::Value** error_out) {
+scoped_ptr<DevToolsProtocol::Response>
+DevToolsTracingHandler::OnStart(DevToolsProtocol::Command* command) {
   std::string categories;
+  base::DictionaryValue* params = command->params();
   if (params && params->HasKey(kCategoriesParam))
     params->GetString(kCategoriesParam, &categories);
   TraceController::GetInstance()->BeginTracing(this, categories);
   is_running_ = true;
-  return NULL;
+  return command->SuccessResponse(NULL);
 }
 
-base::DictionaryValue* DevToolsTracingHandler::OnEnd(
-    const base::DictionaryValue* params,
-    base::Value** error_out) {
+
+scoped_ptr<DevToolsProtocol::Response>
+DevToolsTracingHandler::OnEnd(DevToolsProtocol::Command* command) {
   TraceController::GetInstance()->EndTracingAsync(this);
-  return NULL;
+  return command->SuccessResponse(NULL);
 }
 
 }  // namespace content

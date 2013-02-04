@@ -27,10 +27,10 @@ class DevToolsTracingHandler
       const scoped_refptr<base::RefCountedString>& trace_fragment) OVERRIDE;
 
  private:
-  base::DictionaryValue* OnStart(const base::DictionaryValue* params,
-                                 base::Value** error_out);
-  base::DictionaryValue* OnEnd(const base::DictionaryValue* params,
-                               base::Value** error_out);
+  scoped_ptr<DevToolsProtocol::Response> OnStart(
+      DevToolsProtocol::Command* command);
+  scoped_ptr<DevToolsProtocol::Response> OnEnd(
+      DevToolsProtocol::Command* command);
 
   bool is_running_;
 

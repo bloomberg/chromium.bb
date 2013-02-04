@@ -291,6 +291,8 @@
     'browser/devtools/devtools_manager_impl.h',
     'browser/devtools/devtools_netlog_observer.cc',
     'browser/devtools/devtools_netlog_observer.h',
+    'browser/devtools/devtools_protocol.cc',
+    'browser/devtools/devtools_protocol.h',
     'browser/devtools/devtools_tracing_handler.h',
     'browser/devtools/devtools_tracing_handler.cc',
     'browser/devtools/render_view_devtools_agent_host.cc',

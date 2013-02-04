@@ -5,25 +5,13 @@
 #include "content/browser/devtools/devtools_browser_target.h"
 
 #include "base/bind.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/values.h"
+#include "content/browser/devtools/devtools_protocol.h"
 #include "net/server/http_server.h"
-
-namespace {
-
-base::Value* CreateErrorObject(int error_code, const std::string& message) {
-  base::DictionaryValue* error_object = new base::DictionaryValue();
-  error_object->SetInteger("code", error_code);
-  error_object->SetString("message", message);
-  return error_object;
-}
-
-}  // namespace
 
 namespace content {
 
@@ -40,23 +28,20 @@ DevToolsBrowserTarget::DomainHandler::DomainHandler(const std::string& domain)
     : domain_(domain) {
 }
 
-base::DictionaryValue* DevToolsBrowserTarget::DomainHandler::HandleCommand(
-    const std::string& command,
-    const base::DictionaryValue* params,
-    base::Value** error_out) {
-  CommandHandlers::iterator it = command_handlers_.find(command);
+scoped_ptr<DevToolsProtocol::Response>
+DevToolsBrowserTarget::DomainHandler::HandleCommand(
+    DevToolsProtocol::Command* command) {
+  CommandHandlers::iterator it = command_handlers_.find(command->method());
   if (it == command_handlers_.end()) {
-    *error_out = CreateErrorObject(-1, "Invalid method");
-    return NULL;
+    return command->NoSuchMethodErrorResponse();
   }
-  return (it->second).Run(params, error_out);
+  return (it->second).Run(command);
 }
 
 void DevToolsBrowserTarget::DomainHandler::SendNotification(
     const std::string& method,
-    base::DictionaryValue* params,
-    base::Value* error) {
-  notifier_.Run(method, params, error);
+    base::DictionaryValue* params) {
+  notifier_.Run(method, params);
 }
 
 DevToolsBrowserTarget::DevToolsBrowserTarget(
@@ -84,95 +69,33 @@ void DevToolsBrowserTarget::RegisterDomainHandler(DomainHandler* handler) {
 }
 
 std::string DevToolsBrowserTarget::HandleMessage(const std::string& data) {
-  int error_code;
-  std::string error_message;
-  scoped_ptr<base::Value> command(
-      base::JSONReader::ReadAndReturnError(
-          data, 0, &error_code, &error_message));
+  std::string error_response;
+  scoped_ptr<DevToolsProtocol::Command> command(
+      DevToolsProtocol::ParseCommand(data, &error_response));
+  if (!command.get())
+    return error_response;
 
-  if (!command || !command->IsType(base::Value::TYPE_DICTIONARY))
-    return SerializeErrorResponse(
-        -1, CreateErrorObject(error_code, error_message));
+  if (handlers_.find(command->domain()) == handlers_.end()) {
+    scoped_ptr<DevToolsProtocol::Response> response(
+        command->NoSuchMethodErrorResponse());
+    return response->Serialize();
+  }
 
-  int request_id;
-  std::string domain;
-  std::string method;
-  base::DictionaryValue* command_dict = NULL;
-  bool ok = true;
-  ok &= command->GetAsDictionary(&command_dict);
-  ok &= command_dict->GetInteger("id", &request_id);
-  ok &= command_dict->GetString("method", &method);
-  if (!ok)
-    return SerializeErrorResponse(
-        request_id, CreateErrorObject(-1, "Malformed request"));
+  scoped_ptr<DevToolsProtocol::Response> response(
+      handlers_[command->domain()]->HandleCommand(command.get()));
 
-  base::DictionaryValue* params = NULL;
-  command_dict->GetDictionary("params", &params);
-
-  size_t pos = method.find(".");
-  if (pos == std::string::npos)
-    return SerializeErrorResponse(
-        request_id, CreateErrorObject(-1, "Method unsupported"));
-
-  domain = method.substr(0, pos);
-  if (domain.empty() || handlers_.find(domain) == handlers_.end())
-    return SerializeErrorResponse(
-        request_id, CreateErrorObject(-1, "Domain unsupported"));
-
-  base::Value* error_object = NULL;
-  base::DictionaryValue* domain_result = handlers_[domain]->HandleCommand(
-      method, params, &error_object);
-
-  if (error_object)
-    return SerializeErrorResponse(request_id, error_object);
-
-  return SerializeResponse(request_id, domain_result);
+  return response->Serialize();
 }
 
 void DevToolsBrowserTarget::SendNotification(const std::string& method,
-                                             DictionaryValue* params,
-                                             Value* error) {
-  scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
-  response->SetString("method", method);
-  if (error)
-    response->Set("error", error);
-  else if (params)
-    response->Set("params", params);
-
-  // Serialize response.
-  std::string json_response;
-  base::JSONWriter::Write(response.get(), &json_response);
-
+                                             DictionaryValue* params) {
+  DevToolsProtocol::Notification notification(method, params);
   message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&net::HttpServer::SendOverWebSocket,
                  http_server_,
                  connection_id_,
-                 json_response));
-}
-
-std::string DevToolsBrowserTarget::SerializeErrorResponse(
-    int request_id, base::Value* error_object) {
-  scoped_ptr<base::DictionaryValue> error_response(new base::DictionaryValue());
-  error_response->SetInteger("id", request_id);
-  error_response->Set("error", error_object);
-  // Serialize response.
-  std::string json_response;
-  base::JSONWriter::Write(error_response.get(), &json_response);
-  return json_response;
-}
-
-std::string DevToolsBrowserTarget::SerializeResponse(
-    int request_id, base::DictionaryValue* result) {
-  scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
-  response->SetInteger("id", request_id);
-  if (result)
-    response->Set("result", result);
-
-  // Serialize response.
-  std::string json_response;
-  base::JSONWriter::Write(response.get(), &json_response);
-  return json_response;
+                 notification.Serialize()));
 }
 
 }  // namespace content

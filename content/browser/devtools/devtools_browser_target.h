@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/devtools/devtools_protocol.h"
 
 namespace base {
 
@@ -32,14 +33,12 @@ namespace content {
 class DevToolsBrowserTarget {
  public:
   typedef base::Callback<void(const std::string& method,
-                              base::DictionaryValue* params,
-                              base::Value* error)> Notifier;
+                              base::DictionaryValue* params)> Notifier;
 
   class DomainHandler {
    public:
-    typedef base::Callback<base::DictionaryValue*(
-        const base::DictionaryValue* params,
-        base::Value** error_out)> CommandHandler;
+    typedef base::Callback<scoped_ptr<DevToolsProtocol::Response>(
+        DevToolsProtocol::Command* command)> CommandHandler;
     virtual ~DomainHandler();
 
     // Returns the domain name for this handler.
@@ -53,16 +52,12 @@ class DevToolsBrowserTarget {
 
     // |params| and |error_out| ownership is transferred to the
     // caller.
-    virtual base::DictionaryValue* HandleCommand(
-        const std::string& method,
-        const base::DictionaryValue* params,
-        base::Value** error_out);
+    virtual scoped_ptr<DevToolsProtocol::Response> HandleCommand(
+        DevToolsProtocol::Command* command);
 
-    // Sends notification to the client. Passes ownership of |params| and
-    // |error|.
+    // Sends notification to the client. Takes ownership of |params|.
     void SendNotification(const std::string& method,
-                          base::DictionaryValue* params,
-                          base::Value* error);
+                          base::DictionaryValue* params);
 
    private:
     friend class DevToolsBrowserTarget;
@@ -89,16 +84,9 @@ class DevToolsBrowserTarget {
   std::string HandleMessage(const std::string& data);
 
  private:
-  // Sends notification to the client. Passes ownership of |params| and
-  // |error|.
+  // Sends notification to the client. Passes ownership of |params|.
   void SendNotification(const std::string& method,
-                        base::DictionaryValue* params,
-                        base::Value* error);
-
-  // Takes ownership of |error_object|.
-  std::string SerializeErrorResponse(int request_id, base::Value* error_object);
-
-  std::string SerializeResponse(int request_id, base::DictionaryValue* result);
+                        base::DictionaryValue* params);
 
   base::MessageLoopProxy* const message_loop_proxy_;
   net::HttpServer* const http_server_;
