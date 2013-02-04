@@ -2350,3 +2350,17 @@
    fun:_ZN3net12_GLOBAL__N_120URLRequestFtpJobTest9AddSocketEPNS_13MockReadWriteILNS_17MockReadWriteTypeE0EEEmPNS2_ILS3_1EEEm
    ...
 }
+{
+   bug_173779
+   Memcheck:Uninitialized
+   ...
+   fun:img_data_lock
+   fun:CGSImageDataLock
+   fun:ripc_AcquireImage
+   fun:ripc_DrawImages
+   fun:CGContextDrawImages
+   fun:_ZN11CUIRenderer10Draw9PieceElPK13CUIDescriptorm
+   fun:_ZN11CUIRenderer4DrawE6CGRectP9CGContextPK14__CFDictionaryPS5_
+   fun:-[NSButtonCell drawBezelWithFrame:inView:]
+   ...
+}
