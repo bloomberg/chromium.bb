@@ -81,6 +81,7 @@ class NET_EXPORT URLFetcher {
     DELETE_REQUEST,   // DELETE is already taken on Windows.
                       // <winnt.h> defines a DELETE macro.
     PUT,
+    PATCH,
   };
 
   // Used by SetURLRequestUserData.  The callback should make a fresh
