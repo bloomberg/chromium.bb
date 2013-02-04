@@ -137,7 +137,7 @@ void DriveDownloadHandler::SetDownloadParams(const FilePath& drive_path,
     // /drive, and the user has now changed the download target to a local
     // folder.
     download->SetUserData(&kDrivePathKey, NULL);
-    download->SetDisplayName(drive_path);
+    download->SetDisplayName(FilePath());
     // TODO(achuith): This is not quite right.
     download->SetIsTemporary(false);
   }
