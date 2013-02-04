@@ -26,7 +26,7 @@ public class JSUtils {
             final InstrumentationTestCase testCase,
             final AwContents awContents,
             final OnEvaluateJavaScriptResultHelper onEvaluateJavaScriptResultHelper,
-            final String linkId) throws Throwable {
+            final String linkId) throws Exception {
 
         Assert.assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
@@ -61,7 +61,7 @@ public class JSUtils {
             InstrumentationTestCase testCase,
             final AwContents awContents,
             final OnEvaluateJavaScriptResultHelper onEvaluateJavaScriptResultHelper,
-            final String code) throws Throwable {
+            final String code) throws Exception {
         testCase.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
