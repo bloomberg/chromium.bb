@@ -849,14 +849,6 @@
    fun:MakeRequest
 }
 {
-   bug_90271
-   Heapcheck:Leak
-   ...
-   fun:::CreateLocaleDefaultValue
-   fun:PrefService::RegisterLocalizedStringPref
-   fun:TabContentsWrapper::RegisterUserPrefs
-}
-{
    bug_90369_a
    Heapcheck:Leak
    fun:std::string::_Rep::_S_create
@@ -1514,14 +1506,6 @@
    fun:GeolocationInfoBarQueueControllerTests_OneObservationPerInfoBarCancelled_Test::TestBody
 }
 {
-   bug_155530_b
-   Heapcheck:Leak
-   ...
-   fun:::CreateLocaleDefaultValue
-   ...
-   fun:GeolocationInfoBarQueueControllerTests::SetUp
-}
-{
    bug_157885
    Heapcheck:Leak
    ...
@@ -1749,27 +1733,6 @@
    Heapcheck:Leak
    fun:MessageLoop::MessageLoop
    fun:ManagedUserServiceTest_ExtensionManagementPolicyProvider_Test::TestBody
-}
-{
-   bug_171571_a
-   Heapcheck:Leak
-   fun:std::basic_string::_Rep::_S_create
-   fun:base::PrepareForUTF8Output
-   fun:UTF16ToUTF8
-   fun:UTF16ToUTF8
-   fun:l10n_util::GetStringUTF8
-   fun:::CreateLocaleDefaultValue
-   fun:PrefServiceSyncable::RegisterLocalizedStringPref
-   fun:PrefsTabHelper::RegisterUserPrefs
-   fun:chrome::RegisterUserPrefs
-   fun:TestingProfile::CreateTestingPrefService
-   fun:TestingProfile::GetPrefs
-   fun:ProfileKeyedBaseFactory::RegisterUserPrefsOnProfile
-   fun:ProfileDependencyManager::CreateProfileServices
-   fun:TestingProfile::Init
-   fun:TestingProfile::TestingProfile
-   fun:ChromeRenderViewHostTestHarness::SetUp
-   fun:GeolocationPermissionContextTests::SetUp
 }
 {
    bug_172077

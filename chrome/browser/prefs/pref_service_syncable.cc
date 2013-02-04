@@ -25,7 +25,7 @@ namespace {
 // type.
 Value* CreateLocaleDefaultValue(base::Value::Type type,
                                 int message_id) {
-  const std::string& resource_string = l10n_util::GetStringUTF8(message_id);
+  const std::string resource_string = l10n_util::GetStringUTF8(message_id);
   DCHECK(!resource_string.empty());
   switch (type) {
     case Value::TYPE_BOOLEAN: {
