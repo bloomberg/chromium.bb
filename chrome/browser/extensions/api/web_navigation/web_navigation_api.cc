@@ -321,9 +321,7 @@ void WebNavigationTabObserver::Observe(
       if (render_view_host == render_view_host_) {
         render_view_host_ = NULL;
         if (pending_render_view_host_) {
-          SendErrorEvents(web_contents(),
-                          pending_render_view_host_,
-                          FrameNavigationState::FrameID());
+          render_view_host_ = pending_render_view_host_;
           pending_render_view_host_ = NULL;
         }
       } else if (render_view_host == pending_render_view_host_) {

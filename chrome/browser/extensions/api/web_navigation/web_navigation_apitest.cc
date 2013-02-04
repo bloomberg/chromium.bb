@@ -34,6 +34,7 @@
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
@@ -694,6 +695,33 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessHistory) {
   ASSERT_TRUE(RunPageTest(
       extension->GetResourceURL("test_crossProcessHistory.html").spec()))
           << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Crash) {
+  // Wait for the extension to set itself up and return control to us.
+  ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_crash.html"))
+      << message_;
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  content::WaitForLoadStop(tab);
+
+  ResultCatcher catcher;
+
+  GURL url(base::StringPrintf(
+      "http://www.a.com:%d/"
+          "files/extensions/api_test/webnavigation/crash/a.html",
+      test_server()->host_port_pair().port()));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUICrashURL));
+
+  url = GURL(base::StringPrintf(
+      "http://www.a.com:%d/"
+          "files/extensions/api_test/webnavigation/crash/b.html",
+      test_server()->host_port_pair().port()));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 }  // namespace extensions
