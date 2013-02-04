@@ -68,5 +68,8 @@ const char kTraceOverdraw[] = "trace-overdraw";
 // complete, such as --slow-down-raster-scale-factor=25.
 const char kSlowDownRasterScaleFactor[] = "slow-down-raster-scale-factor";
 
+// Schedule rasterization jobs according to their estimated processing cost.
+const char kUseCheapnessEstimator[] = "use-cheapness-estimator";
+
 }  // namespace switches
 }  // namespace cc

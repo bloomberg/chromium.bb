@@ -33,6 +33,7 @@ class CC_EXPORT LayerTreeSettings {
   bool useLinearFadeScrollbarAnimator;
   bool calculateTopControlsPosition;
   bool recordRenderingStats;
+  bool useCheapnessEstimator;
   float minimumContentsScale;
   float lowResContentsScaleFactor;
   float topControlsHeight;
