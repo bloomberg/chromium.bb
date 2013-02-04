@@ -29,12 +29,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 
+using chromeos::DBusThreadManager;
 using chromeos::disks::DiskMountManager;
 using content::BrowserThread;
 using drive::DriveSystemService;
@@ -96,6 +99,65 @@ void RelayFileWatcherCallbackToUIThread(
       BrowserThread::UI, FROM_HERE,
       base::Bind(callback, local_path, got_error));
 }
+
+// Observes PowerManager and updates its state when the system suspends and
+// resumes. After the system resumes it will stay in "is_resuming" state for 5
+// seconds. This is to give DiskManager time to process device removed/added
+// events (events for the devices that were present before suspend should not
+// trigger any new notifications or file manager windows).
+class SuspendStateDelegateImpl
+    : public chromeos::PowerManagerClient::Observer,
+      public FileBrowserEventRouter::SuspendStateDelegate {
+ public:
+  SuspendStateDelegateImpl()
+      : is_resuming_(false),
+        weak_factory_(this) {
+    DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  }
+
+  virtual ~SuspendStateDelegateImpl() {
+    DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  }
+
+  // chromeos::PowerManagerClient::Observer implementation.
+  virtual void SuspendImminent() OVERRIDE {
+    is_resuming_ = false;
+    weak_factory_.InvalidateWeakPtrs();
+  }
+
+  // chromeos::PowerManagerClient::Observer implementation.
+  virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE {
+    is_resuming_ = true;
+    base::MessageLoopProxy::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&SuspendStateDelegateImpl::Reset,
+                   weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(5));
+  }
+
+  // FileBrowserEventRouter::SuspendStateDelegate implementation.
+  virtual bool SystemIsResuming() const OVERRIDE {
+    return is_resuming_;
+  }
+
+  // FileBrowserEventRouter::SuspendStateDelegate implementation.
+  virtual bool DiskWasPresentBeforeSuspend(
+      const chromeos::disks::DiskMountManager::Disk& disk) const OVERRIDE {
+    // TODO(tbarzic): Implement this. Blocked on http://crbug.com/153338.
+    return false;
+  }
+
+ private:
+  void Reset() {
+    is_resuming_ = false;
+  }
+
+  bool is_resuming_;
+
+  base::WeakPtrFactory<SuspendStateDelegateImpl> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SuspendStateDelegateImpl);
+};
 
 }  // namespace
 
@@ -182,6 +244,8 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
     if (network_library)
      network_library->AddNetworkManagerObserver(this);
   }
+
+  suspend_state_delegate_.reset(new SuspendStateDelegateImpl());
 
   pref_change_registrar_->Init(profile_->GetPrefs());
 
@@ -344,6 +408,12 @@ void FileBrowserEventRouter::OnMountEvent(
     chromeos::MountError error_code,
     const DiskMountManager::MountPointInfo& mount_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // profile_ is NULL if ShutdownOnUIThread() is called earlier. This can
+  // happen at shutdown.
+  if (!profile_)
+    return;
+
+  DCHECK(mount_info.mount_type != chromeos::MOUNT_TYPE_INVALID);
 
   DispatchMountEvent(event, error_code, mount_info);
 
@@ -352,13 +422,20 @@ void FileBrowserEventRouter::OnMountEvent(
     DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
     const DiskMountManager::Disk* disk =
         disk_mount_manager->FindDiskBySourcePath(mount_info.source_path);
-    if (!disk)
+    // TODO(tbarzic): DiskWasPresentBeforeSuspend is not yet functional. It
+    // always returns false.
+    if (!disk || suspend_state_delegate_->DiskWasPresentBeforeSuspend(*disk))
       return;
 
     notifications_->ManageNotificationsOnMountCompleted(
         disk->system_path_prefix(), disk->drive_label(), disk->is_parent(),
         error_code == chromeos::MOUNT_ERROR_NONE,
         error_code == chromeos::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM);
+
+    // If a new device was mounted, a new File manager window may need to be
+    // opened.
+    if (error_code == chromeos::MOUNT_ERROR_NONE)
+      ShowRemovableDeviceInFileManager(mount_info.mount_path);
   } else if (mount_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
     // Clear the "mounted" state for archive files in gdata cache
     // when mounting failed or unmounting succeeded.
@@ -554,16 +631,6 @@ void FileBrowserEventRouter::DispatchMountEvent(
     DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
     const DiskMountManager::MountPointInfo& mount_info) {
-  // profile_ is NULL if ShutdownOnUIThread() is called earlier. This can
-  // happen at shutdown.
-  if (!profile_)
-    return;
-
-  if (mount_info.mount_type == chromeos::MOUNT_TYPE_INVALID) {
-    NOTREACHED();
-    return;
-  }
-
   scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* mount_info_value = new DictionaryValue();
   args->Append(mount_info_value);
@@ -578,9 +645,8 @@ void FileBrowserEventRouter::DispatchMountEvent(
   mount_info_value->SetString("sourcePath", mount_info.source_path);
 
   FilePath relative_mount_path;
-  bool relative_mount_path_set = false;
 
-  // If there were no error or some special conditions occured, add mountPath
+  // If there were no error or some special conditions occurred, add mountPath
   // to the event.
   if (event == DiskMountManager::UNMOUNTING ||
       error_code == chromeos::MOUNT_ERROR_NONE ||
@@ -594,7 +660,6 @@ void FileBrowserEventRouter::DispatchMountEvent(
             &relative_mount_path)) {
       mount_info_value->SetString("mountPath",
                                   "/" + relative_mount_path.value());
-      relative_mount_path_set = true;
     } else {
       LOG(ERROR) << "Mount path is not accessible: " << mount_info.mount_path;
       mount_info_value->SetString("status",
@@ -606,21 +671,19 @@ void FileBrowserEventRouter::DispatchMountEvent(
       extensions::event_names::kOnFileBrowserMountCompleted, args.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
       BroadcastEvent(extension_event.Pass());
+}
 
+void FileBrowserEventRouter::ShowRemovableDeviceInFileManager(
+    const std::string& mount_path) {
   // Do not attempt to open File Manager while the login is in progress or
   // the screen is locked.
   if (chromeos::BaseLoginDisplayHost::default_host() ||
       chromeos::ScreenLocker::default_screen_locker())
     return;
 
-  if (relative_mount_path_set &&
-      mount_info.mount_type == chromeos::MOUNT_TYPE_DEVICE &&
-      !mount_info.mount_condition &&
-      event == DiskMountManager::MOUNTING) {
-    // To enable Photo Import call file_manager_util::OpenActionChoiceDialog
-    // instead.
-    file_manager_util::ViewRemovableDrive(FilePath(mount_info.mount_path));
-  }
+  // To enable Photo Import call file_manager_util::OpenActionChoiceDialog
+  // instead.
+  file_manager_util::ViewRemovableDrive(FilePath(mount_path));
 }
 
 void FileBrowserEventRouter::OnDiskAdded(
@@ -658,6 +721,11 @@ void FileBrowserEventRouter::OnDiskRemoved(
   VLOG(1) << "Disk removed: " << disk->device_path();
 
   if (!disk->mount_path().empty()) {
+    if (!suspend_state_delegate_->SystemIsResuming()) {
+      notifications_->ShowNotification(
+          FileBrowserNotifications::DEVICE_HARD_UNPLUG,
+          disk->system_path_prefix());
+    }
     DiskMountManager::GetInstance()->UnmountPath(
         disk->mount_path(), chromeos::UNMOUNT_OPTIONS_LAZY);
   }

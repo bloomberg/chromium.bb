@@ -39,6 +39,22 @@ class FileBrowserEventRouter
       public drive::DriveFileSystemObserver,
       public google_apis::DriveServiceObserver {
  public:
+  // Interface that should keep track of the system state in regards to system
+  // suspend and resume events.
+  // When the |IsResuming()| returns true, it should be able to check if a
+  // removable device was present before the was system suspended.
+  class SuspendStateDelegate {
+   public:
+    virtual ~SuspendStateDelegate() {}
+
+    // Returns true if the system has recently woken up.
+    virtual bool SystemIsResuming() const = 0;
+    // If system is resuming, returns true if the disk was present before the
+    // system suspend. Should return false if the system is not resuming.
+    virtual bool DiskWasPresentBeforeSuspend(
+        const chromeos::disks::DiskMountManager::Disk& disk) const = 0;
+  };
+
   void Shutdown();
 
   // Starts observing file system change events.
@@ -159,6 +175,10 @@ class FileBrowserEventRouter
       chromeos::MountError error_code,
       const chromeos::disks::DiskMountManager::MountPointInfo& mount_info);
 
+  // If needed, opens a file manager window for the removable device mounted at
+  // |mount_path|.
+  void ShowRemovableDeviceInFileManager(const std::string& mount_path);
+
   // Returns the DriveFileSystem for the current profile.
   drive::DriveFileSystemInterface* GetRemoteFileSystem() const;
 
@@ -174,11 +194,9 @@ class FileBrowserEventRouter
   WatcherMap file_watchers_;
   scoped_ptr<FileBrowserNotifications> notifications_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  scoped_ptr<SuspendStateDelegate> suspend_state_delegate_;
   Profile* profile_;
   base::Lock lock_;
-
-  bool current_gdata_operation_failed_;
-  int last_active_gdata_operation_count_;
 
   // Number of active update requests on the remote file system.
   int num_remote_update_requests_;
