@@ -140,6 +140,9 @@ class BrowsingDataRemover : public content::NotificationObserver,
   static BrowsingDataRemover* CreateForPeriod(Profile* profile,
                                               TimePeriod period);
 
+  // Calculate the begin time for the deletion range specified by |time_period|.
+  static base::Time CalculateBeginDeleteTime(TimePeriod time_period);
+
   // Quota managed data uses a different bitmask for types than
   // BrowsingDataRemover uses. This method generates that mask.
   static int GenerateQuotaClientMask(int remove_mask);
@@ -182,9 +185,6 @@ class BrowsingDataRemover : public content::NotificationObserver,
     STATE_DELETE_EXPERIMENT,
     STATE_DONE
   };
-
-  // Calculate the begin time for the deletion range specified by |time_period|.
-  static base::Time CalculateBeginDeleteTime(TimePeriod time_period);
 
   // Setter for |is_removing_|; DCHECKs that we can only start removing if we're
   // not already removing, and vice-versa.

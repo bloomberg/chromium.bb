@@ -39,9 +39,107 @@
             }
           }
         }
+      },
+      {
+        "id": "DataTypes",
+        "type": "object",
+        "description": "An object whose properties specify which browsing data types are selected to be cleared.",
+        "properties": {
+          "appcache": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Should websites' appcaches be cleared?"
+          },
+          "cache": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Should the browser's cache be cleared? Note: this clears the <em>entire</em> cache: it is not limited to the range you specify."
+          },
+          "cookies": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Should the browser's cookies be cleared?"
+          },
+          "downloads": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Should the browser's download list be cleared?"
+          },
+          "fileSystems": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Should websites' file systems be cleared?"
+          },
+          "formData": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Should the browser's stored form data be cleared?"
+          },
+          "history": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Should the browser's history be cleared?"
+          },
+          "indexedDB": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Should websites' IndexedDB data be cleared?"
+          },
+          "localStorage": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Should websites' local storage data be cleared?"
+          },
+          "serverBoundCertificates": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Should server-bound certificates be removed?"
+          },
+          "pluginData": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Should plugins' data be cleared?"
+          },
+          "passwords": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Should the stored passwords be cleared?"
+          },
+          "webSQL": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Should websites' WebSQL data be cleared?"
+          }
+        }
       }
     ],
     "functions": [
+      {
+        "name": "settings",
+        "description": "Reports which types of data are currently selected in the 'Clear browsing data' settings UI.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "object",
+                "properties": {
+                  "options": {
+                    "$ref": "RemovalOptions"
+                  },
+                  "dataToRemove": {
+                    "$ref": "DataTypes",
+                    "description": "All of the types will be present in the result, set to true or false. Some of the data types included in this API are not available in the settings UI, and some UI settings control more than one data type listed here."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
       {
         "name": "remove",
         "description": "Clears various types of browsing data stored in a user's profile.",
@@ -53,75 +151,8 @@
           },
           {
             "name": "dataToRemove",
-            "type": "object",
-            "description": "An object whose properties specify which browsing data types ought to be cleared. You may set as many or as few as you like in a single call, each is optional (defaulting to <code>false</code>).",
-            "properties": {
-              "appcache": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should websites' appcaches be cleared?"
-              },
-              "cache": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should the browser's cache be cleared? Note: this clears the <em>entire</em> cache: it is not limited to the range you specify."
-              },
-              "cookies": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should the browser's cookies be cleared?"
-              },
-              "downloads": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should the browser's download list be cleared?"
-              },
-              "fileSystems": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should websites' file systems be cleared?"
-              },
-              "formData": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should the browser's stored form data be cleared?"
-              },
-              "history": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should the browser's history be cleared?"
-              },
-              "indexedDB": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should websites' IndexedDB data be cleared?"
-              },
-              "localStorage": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should websites' local storage data be cleared?"
-              },
-              "serverBoundCertificates": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should server-bound certificates be removed?"
-              },
-              "pluginData": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should plugins' data be cleared?"
-              },
-              "passwords": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should the stored passwords be cleared?"
-              },
-              "webSQL": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Should websites' WebSQL data be cleared?"
-              }
-            }
+            "$ref": "DataTypes",
+            "description": "You may set as many or as few as you like in a single call; each is optional (defaulting to <code>false</code>)."
           },
           {
             "name": "callback",

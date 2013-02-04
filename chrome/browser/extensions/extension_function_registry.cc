@@ -53,6 +53,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   // Register all functions here.
 
   // Browsing Data.
+  RegisterFunction<BrowsingDataSettingsFunction>();
   RegisterFunction<RemoveBrowsingDataFunction>();
   RegisterFunction<RemoveAppCacheFunction>();
   RegisterFunction<RemoveCacheFunction>();
