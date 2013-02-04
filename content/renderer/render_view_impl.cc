@@ -2094,6 +2094,10 @@ bool RenderViewImpl::isSelectTrailingWhitespaceEnabled() {
 #endif
 }
 
+void RenderViewImpl::didCancelCompositionOnSelectionChange() {
+  Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
+}
+
 void RenderViewImpl::didChangeSelection(bool is_empty_selection) {
   if (!handling_input_event_ && !handling_select_range_)
       return;
