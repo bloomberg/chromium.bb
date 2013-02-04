@@ -7,8 +7,7 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
-#include "chrome/common/extensions/matcher/url_matcher.h"
-#include "chrome/common/extensions/matcher/url_matcher_factory.h"
+#include "extensions/common/matcher/url_matcher_factory.h"
 
 namespace keys = extensions::declarative_content_constants;
 

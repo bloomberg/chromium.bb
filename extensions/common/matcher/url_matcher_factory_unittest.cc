@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/matcher/url_matcher_factory.h"
+#include "extensions/common/matcher/url_matcher_factory.h"
 
 #include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/common/extensions/matcher/url_matcher_constants.h"
+#include "extensions/common/matcher/url_matcher_constants.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

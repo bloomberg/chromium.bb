@@ -5,13 +5,13 @@
 #ifndef CHROME_COMMON_EXTENSIONS_EVENT_FILTER_H_
 #define CHROME_COMMON_EXTENSIONS_EVENT_FILTER_H_
 
-#include "base/memory/linked_ptr.h"
-#include "chrome/common/extensions/event_matcher.h"
-#include "chrome/common/extensions/event_filtering_info.h"
-#include "chrome/common/extensions/matcher/url_matcher.h"
-
 #include <map>
 #include <set>
+
+#include "base/memory/linked_ptr.h"
+#include "chrome/common/extensions/event_filtering_info.h"
+#include "chrome/common/extensions/event_matcher.h"
+#include "extensions/common/matcher/url_matcher.h"
 
 namespace extensions {
 

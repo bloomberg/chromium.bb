@@ -20,7 +20,7 @@
 #include "base/stl_util.h"
 #include "base/time.h"
 #include "chrome/common/extensions/api/events.h"
-#include "chrome/common/extensions/matcher/url_matcher.h"
+#include "extensions/common/matcher/url_matcher.h"
 
 namespace base {
 class Time;

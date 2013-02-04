@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/matcher/url_matcher_factory.h"
+#include "extensions/common/matcher/url_matcher_factory.h"
 
 #include <algorithm>
 #include <cctype>
@@ -11,9 +11,9 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/common/extensions/matcher/url_matcher_constants.h"
-#include "chrome/common/extensions/matcher/url_matcher_helpers.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/matcher/url_matcher_constants.h"
+#include "extensions/common/matcher/url_matcher_helpers.h"
 #include "third_party/re2/re2/re2.h"
 
 namespace helpers = extensions::url_matcher_helpers;

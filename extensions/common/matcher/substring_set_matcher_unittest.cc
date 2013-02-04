@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/matcher/substring_set_matcher.h"
+#include "extensions/common/matcher/substring_set_matcher.h"
 
 #include <set>
 #include <string>

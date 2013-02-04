@@ -10,8 +10,8 @@
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
-#include "chrome/common/extensions/matcher/url_matcher_constants.h"
 #include "content/public/browser/resource_request_info.h"
+#include "extensions/common/matcher/url_matcher_constants.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

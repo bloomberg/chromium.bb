@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/event_filter.h"
 
-#include "chrome/common/extensions/matcher/url_matcher_factory.h"
+#include "extensions/common/matcher/url_matcher_factory.h"
 
 namespace extensions {
 

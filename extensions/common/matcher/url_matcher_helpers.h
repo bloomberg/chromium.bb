@@ -4,8 +4,8 @@
 
 // Helper functions used for URLMatcher and Declarative APIs.
 
-#ifndef CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_HELPERS_H_
-#define CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_HELPERS_H_
+#ifndef EXTENSIONS_COMMON_MATCHER_URL_MATCHER_HELPERS_H_
+#define EXTENSIONS_COMMON_MATCHER_URL_MATCHER_HELPERS_H_
 
 #include <string>
 #include <vector>
@@ -24,4 +24,4 @@ bool GetAsStringVector(const base::Value* value, std::vector<std::string>* out);
 }  // namespace declarative_helpers
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_HELPERS_H_
+#endif  // EXTENSIONS_COMMON_MATCHER_URL_MATCHER_HELPERS_H_

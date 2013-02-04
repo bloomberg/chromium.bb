@@ -5,7 +5,7 @@
 #include <set>
 
 #include "base/stl_util.h"
-#include "chrome/common/extensions/matcher/regex_set_matcher.h"
+#include "extensions/common/matcher/regex_set_matcher.h"
 #include "googleurl/src/gurl.h"
 
 #include "testing/gtest/include/gtest/gtest.h"

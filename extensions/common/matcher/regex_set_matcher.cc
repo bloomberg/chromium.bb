@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/matcher/regex_set_matcher.h"
+#include "extensions/common/matcher/regex_set_matcher.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
 #include "base/stl_util.h"
-#include "chrome/common/extensions/matcher/substring_set_matcher.h"
+#include "base/string_util.h"
+#include "extensions/common/matcher/substring_set_matcher.h"
 #include "third_party/re2/re2/filtered_re2.h"
 #include "third_party/re2/re2/re2.h"
 

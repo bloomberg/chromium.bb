@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative/declarative_rule.h"
-#include "chrome/common/extensions/matcher/url_matcher.h"
+#include "extensions/common/matcher/url_matcher.h"
 #include "googleurl/src/gurl.h"
 
 namespace extensions {

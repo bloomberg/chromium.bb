@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_H_
-#define CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_H_
+#ifndef EXTENSIONS_COMMON_MATCHER_URL_MATCHER_H_
+#define EXTENSIONS_COMMON_MATCHER_URL_MATCHER_H_
 
 #include <set>
 #include <vector>
@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/common/extensions/matcher/regex_set_matcher.h"
-#include "chrome/common/extensions/matcher/substring_set_matcher.h"
+#include "extensions/common/matcher/regex_set_matcher.h"
+#include "extensions/common/matcher/substring_set_matcher.h"
 
 class GURL;
 
@@ -340,4 +340,4 @@ class URLMatcher {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_H_
+#endif  // EXTENSIONS_COMMON_MATCHER_URL_MATCHER_H_

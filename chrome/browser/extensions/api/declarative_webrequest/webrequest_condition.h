@@ -14,7 +14,7 @@
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/api/declarative/declarative_rule.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
-#include "chrome/common/extensions/matcher/url_matcher.h"
+#include "extensions/common/matcher/url_matcher.h"
 #include "net/http/http_response_headers.h"
 
 namespace extensions {

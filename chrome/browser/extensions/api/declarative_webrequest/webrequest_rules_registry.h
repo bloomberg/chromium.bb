@@ -20,7 +20,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_action.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/common/extensions/matcher/url_matcher.h"
+#include "extensions/common/matcher/url_matcher.h"
 
 class Profile;
 class WebRequestPermissions;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_MATCHER_STRING_PATTERN_H_
-#define CHROME_COMMON_EXTENSIONS_MATCHER_STRING_PATTERN_H_
+#ifndef EXTENSIONS_COMMON_MATCHER_STRING_PATTERN_H_
+#define EXTENSIONS_COMMON_MATCHER_STRING_PATTERN_H_
 
 #include <string>
 #include <vector>
@@ -39,4 +39,4 @@ class StringPattern {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_MATCHER_STRING_PATTERN_H_
+#endif  // EXTENSIONS_COMMON_MATCHER_STRING_PATTERN_H_

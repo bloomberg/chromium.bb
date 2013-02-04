@@ -12,8 +12,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
-#include "chrome/common/extensions/matcher/url_matcher.h"
-#include "chrome/common/extensions/matcher/url_matcher_factory.h"
+#include "extensions/common/matcher/url_matcher_factory.h"
 #include "net/url_request/url_request.h"
 
 namespace keys = extensions::declarative_webrequest_constants;

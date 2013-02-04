@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
-#include "chrome/common/extensions/matcher/url_matcher_constants.h"
+#include "extensions/common/matcher/url_matcher_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

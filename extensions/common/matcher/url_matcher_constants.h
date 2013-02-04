@@ -4,8 +4,8 @@
 
 // Constants used for the URLMatcher component of the Declarative API.
 
-#ifndef CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_CONSTANTS_H_
-#define CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_CONSTANTS_H_
+#ifndef EXTENSIONS_COMMON_MATCHER_URL_MATCHER_CONSTANTS_H_
+#define EXTENSIONS_COMMON_MATCHER_URL_MATCHER_CONSTANTS_H_
 
 namespace extensions {
 namespace url_matcher_constants {
@@ -35,4 +35,4 @@ extern const char kURLSuffixKey[];
 }  // namespace url_matcher_constants
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_CONSTANTS_H_
+#endif  // EXTENSIONS_COMMON_MATCHER_URL_MATCHER_CONSTANTS_H_
