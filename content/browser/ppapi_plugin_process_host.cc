@@ -298,11 +298,13 @@ void PpapiPluginProcessHost::RequestPluginChannel(Client* client) {
   int renderer_child_id;
   client->GetPpapiChannelInfo(&process_handle, &renderer_child_id);
 
+  base::ProcessId process_id = (process_handle == base::kNullProcessHandle) ?
+      0 : base::GetProcId(process_handle);
+
   // We can't send any sync messages from the browser because it might lead to
   // a hang. See the similar code in PluginProcessHost for more description.
   PpapiMsg_CreateChannel* msg = new PpapiMsg_CreateChannel(
-      base::GetProcId(process_handle), renderer_child_id,
-      client->OffTheRecord());
+      process_id, renderer_child_id, client->OffTheRecord());
   msg->set_unblock(true);
   if (Send(msg)) {
     sent_requests_.push(client);
