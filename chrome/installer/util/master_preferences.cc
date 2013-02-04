@@ -104,12 +104,11 @@ MasterPreferences::MasterPreferences(const FilePath& prefs_path)
       multi_install_(false) {
   std::string json_data;
   // Failure to read the file is ignored as |json_data| will be the empty string
-  // and the remainder of this MasterPreferences objet should still be
+  // and the remainder of this MasterPreferences object should still be
   // initialized as best as possible.
-  if (!file_util::ReadFileToString(prefs_path, &json_data)) {
-    LOG(ERROR) << "Failed to read master_preferences file at "
-               << prefs_path.value()
-               << ". Falling back to default preferences.";
+  if (file_util::PathExists(prefs_path) &&
+      !file_util::ReadFileToString(prefs_path, &json_data)) {
+    LOG(ERROR) << "Failed to read preferences from " << prefs_path.value();
   }
   if (InitializeFromString(json_data))
     preferences_read_from_file_ = true;
@@ -219,9 +218,10 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
 }
 
 bool MasterPreferences::InitializeFromString(const std::string& json_data) {
-  bool data_is_valid = true;
-  master_dictionary_.reset(ParseDistributionPreferences(json_data));
+  if (!json_data.empty())
+    master_dictionary_.reset(ParseDistributionPreferences(json_data));
 
+  bool data_is_valid = true;
   if (!master_dictionary_.get()) {
     master_dictionary_.reset(new DictionaryValue());
     data_is_valid = false;
