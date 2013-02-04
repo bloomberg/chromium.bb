@@ -139,7 +139,9 @@ bool StartupHelper::InstallFromWebstore(const CommandLine& cmd_line,
           web_contents.get(),
           id,
           WebstoreStandaloneInstaller::DO_NOT_REQUIRE_VERIFIED_SITE,
-          WebstoreStandaloneInstaller::STANDARD_PROMPT,
+          cmd_line.HasSwitch(switches::kForceAppMode) ?
+              WebstoreStandaloneInstaller::SKIP_PROMPT :
+              WebstoreStandaloneInstaller::STANDARD_PROMPT ,
           GURL(),
           callback));
   installer->set_skip_post_install_ui(true);

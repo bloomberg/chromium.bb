@@ -327,6 +327,9 @@ Press any key to continue exploring.
   <message name="IDS_DISABLED_ADD_USER_TOOLTIP_ENTERPRISE" desc="Tooltip over disabled Add user button">
     The administrator of this device has disabled new users from being added
   </message>
+  <message name="IDS_APP_START_MESSAGE" desc="Message displayed while installing and/or launching web application in kiosk mode.">
+    Installing application...
+  </message>
   <message name="IDS_KIOSK_MODE_LOGIN_MESSAGE">
     Click to start
   </message>

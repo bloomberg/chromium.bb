@@ -80,6 +80,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/chromeos/app_launch_ui.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_ui.h"
 #include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/cryptohome_ui.h"
@@ -302,6 +303,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<CertificateViewerUI>;
 #endif
 #if defined(OS_CHROMEOS)
+  if (url.host() == chrome::kChromeUIAppLaunchHost)
+    return &NewWebUI<chromeos::AppLaunchUI>;
   if (url.host() == chrome::kChromeUIBluetoothPairingHost)
     return &NewWebUI<chromeos::BluetoothPairingUI>;
   if (url.host() == chrome::kChromeUIChooseMobileNetworkHost)

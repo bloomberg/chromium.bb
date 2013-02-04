@@ -49,7 +49,8 @@ class WebstoreStandaloneInstaller
 
   enum PromptType {
     STANDARD_PROMPT,
-    INLINE_PROMPT
+    INLINE_PROMPT,
+    SKIP_PROMPT
   };
 
   // A callback for when the install process completes successfully or not. If
@@ -129,7 +130,7 @@ class WebstoreStandaloneInstaller
 
   std::string id_;
   bool require_verified_site_;
-  bool use_inline_prompt_;
+  PromptType prompt_type_;
   GURL requestor_url_;
   Callback callback_;
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
