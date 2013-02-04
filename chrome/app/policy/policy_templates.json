@@ -3688,14 +3688,13 @@
       },
       'example_value': False,
       'id': 160,
-      'caption': '''Allow capturing audio''',
-      'desc': '''Allow capturing audio.
+      'caption': '''Allow or deny audio capture''',
+      'desc': '''Allow or deny audio capture.
 
-      When this policy is set to false, audio capturing will not be available on the device while the user is logged in.
+      When this policy is disabled, audio capture will not be available.  If enabled, audio capture will always be allowed.
+      If the policy is not configured (default), the user will be prompted for audio capture device access.
 
-      This policy affects all types of audio inputs and not only the built-in microphone.
-
-      If this setting is set to true or not configured then users can use all supported audio inputs on their device.''',
+      This policy affects all types of audio inputs and not only the built-in microphone.''',
     },
     {
       'name': 'VideoCaptureAllowed',
@@ -3708,14 +3707,13 @@
       },
       'example_value': False,
       'id': 167,
-      'caption': '''Allow capturing video''',
-      'desc': '''Allow capturing video.
+      'caption': '''Allow or deny video capture''',
+      'desc': '''Allow or deny video capture.
 
-      When this policy is set to false, video capturing will not be available on the device while the user is logged in.
+      When this policy is disabled, video capture devices will not be available.  If enabled, video capture will always be allowed.
+      If the policy is not configured (default), the user will be prompted for video device access.
 
-      This policy affects all types of video inputs and not only the built-in camera.
-
-      If this setting is set to true or not configured then users can use all supported video inputs on their device.''',
+      This policy affects all types of video inputs and not only the built-in camera.''',
     },
     {
       'name': 'DisableScreenshots',

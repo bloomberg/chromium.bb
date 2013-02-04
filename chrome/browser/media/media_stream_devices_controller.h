@@ -38,11 +38,15 @@ class MediaStreamDevicesController {
   void Deny(bool update_content_setting);
 
  private:
-  // Returns true if audio capture is disabled by policy.
-  bool IsAudioDeviceBlockedByPolicy() const;
+  enum DevicePolicy {
+    POLICY_NOT_SET,
+    ALWAYS_DENY,
+    ALWAYS_ALLOW,
+  };
 
-  // Returns true if video capture is disabled by policy.
-  bool IsVideoDeviceBlockedByPolicy() const;
+  // Called by GetAudioDevicePolicy and GetVideoDevicePolicy to check
+  // the currently set capture device policy.
+  DevicePolicy GetDevicePolicy(const char* policy_name) const;
 
   // Returns true if the origin of the request has been granted the media
   // access before, otherwise returns false.

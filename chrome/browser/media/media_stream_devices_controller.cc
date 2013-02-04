@@ -43,10 +43,15 @@ MediaStreamDevicesController::MediaStreamDevicesController(
       content_settings_(content_settings),
       request_(request),
       callback_(callback),
-      has_audio_(content::IsAudioMediaType(request.audio_type) &&
-                 !IsAudioDeviceBlockedByPolicy()),
-      has_video_(content::IsVideoMediaType(request.video_type) &&
-                 !IsVideoDeviceBlockedByPolicy()) {
+      has_audio_(content::IsAudioMediaType(request.audio_type)),
+      has_video_(content::IsVideoMediaType(request.video_type)) {
+  // Don't call GetDevicePolicy from the initializer list since the
+  // implementation depends on member variables.
+  if (has_audio_ && GetDevicePolicy(prefs::kAudioCaptureAllowed) == ALWAYS_DENY)
+    has_audio_ = false;
+
+  if (has_video_ && GetDevicePolicy(prefs::kVideoCaptureAllowed) == ALWAYS_DENY)
+    has_video_ = false;
 }
 
 MediaStreamDevicesController::~MediaStreamDevicesController() {}
@@ -144,7 +149,7 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
         break;
     }
 
-  if (update_content_setting && IsSchemeSecure() && !devices.empty())
+    if (update_content_setting && IsSchemeSecure() && !devices.empty())
       SetPermission(true);
   }
 
@@ -163,18 +168,15 @@ void MediaStreamDevicesController::Deny(bool update_content_setting) {
   callback_.Run(content::MediaStreamDevices());
 }
 
-bool MediaStreamDevicesController::IsAudioDeviceBlockedByPolicy() const {
+MediaStreamDevicesController::DevicePolicy
+MediaStreamDevicesController::GetDevicePolicy(const char* policy_name) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return (!profile_->GetPrefs()->GetBoolean(prefs::kAudioCaptureAllowed) &&
-          profile_->GetPrefs()->IsManagedPreference(
-              prefs::kAudioCaptureAllowed));
-}
 
-bool MediaStreamDevicesController::IsVideoDeviceBlockedByPolicy() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return (!profile_->GetPrefs()->GetBoolean(prefs::kVideoCaptureAllowed) &&
-          profile_->GetPrefs()->IsManagedPreference(
-              prefs::kVideoCaptureAllowed));
+  PrefServiceSyncable* pref = profile_->GetPrefs();
+  if (!pref->IsManagedPreference(policy_name))
+    return POLICY_NOT_SET;
+
+  return pref->GetBoolean(policy_name) ? ALWAYS_ALLOW : ALWAYS_DENY;
 }
 
 bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
@@ -182,22 +184,32 @@ bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
   if (ShouldAlwaysAllowOrigin())
     return true;
 
-  if (has_audio_ &&
-      profile_->GetHostContentSettingsMap()->GetContentSetting(
-          request_.security_origin,
-          request_.security_origin,
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-          NO_RESOURCE_IDENTIFIER) != CONTENT_SETTING_ALLOW) {
-    return false;
-  }
+  struct {
+    bool has_capability;
+    const char* policy_name;
+    ContentSettingsType settings_type;
+  } device_checks[] = {
+    { has_audio_, prefs::kAudioCaptureAllowed,
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC },
+    { has_video_, prefs::kVideoCaptureAllowed,
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA },
+  };
 
-  if (has_video_ &&
-      profile_->GetHostContentSettingsMap()->GetContentSetting(
-          request_.security_origin,
-          request_.security_origin,
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-          NO_RESOURCE_IDENTIFIER) != CONTENT_SETTING_ALLOW) {
-    return false;
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(device_checks); ++i) {
+    if (!device_checks[i].has_capability)
+      continue;
+
+    DevicePolicy policy = GetDevicePolicy(device_checks[i].policy_name);
+    if (policy == ALWAYS_DENY ||
+        (policy == POLICY_NOT_SET &&
+         profile_->GetHostContentSettingsMap()->GetContentSetting(
+            request_.security_origin, request_.security_origin,
+            device_checks[i].settings_type, NO_RESOURCE_IDENTIFIER) !=
+         CONTENT_SETTING_ALLOW)) {
+      return false;
+    }
+    // If we get here, then either policy is set to ALWAYS_ALLOW or the content
+    // settings allow the request by default.
   }
 
   return true;
