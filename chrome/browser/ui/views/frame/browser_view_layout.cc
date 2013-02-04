@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
+#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
@@ -22,6 +23,7 @@
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/single_split_view.h"
+#include "ui/views/controls/webview/webview.h"
 
 namespace {
 
@@ -257,6 +259,24 @@ void BrowserViewLayout::ViewRemoved(views::View* host, views::View* view) {
 }
 
 void BrowserViewLayout::Layout(views::View* host) {
+  // Showing instant extended suggestions causes us to temporarily hide any
+  // visible bookmark bar and infobars.  In turn, this hiding would normally
+  // cause the content below the suggestions to shift upwards, which looks
+  // surprising (since from the user's perspective, we're "covering" rather than
+  // "removing" the bookmark bar/infobars).  To prevent this, we save off the
+  // content origin here, then once we finish laying things out, force the
+  // contents to continue to display from that origin.
+  const chrome::search::Mode& mode = browser()->search_model()->mode();
+  views::WebView* contents = browser_view_->contents_container_;
+  int preview_height = contents_container_->preview_height();
+  gfx::Point old_contents_origin;
+  if (preview_height > 0 && mode.is_search_suggestions() &&
+      mode.is_origin_default()) {
+    old_contents_origin = contents->bounds().origin();
+    views::View::ConvertPointToTarget(contents->parent(), browser_view_,
+                                      &old_contents_origin);
+  }
+
   vertical_layout_rect_ = browser_view_->GetLocalBounds();
   int top = LayoutTabStripRegion();
   if (browser_view_->IsTabStripVisible()) {
@@ -280,6 +300,23 @@ void BrowserViewLayout::Layout(views::View* host) {
   top -= active_top_margin;
   contents_container_->SetActiveTopMargin(active_top_margin);
   LayoutTabContents(top, bottom);
+
+  // Now set the contents to display at their previous origin if we just hid the
+  // bookmark and/or infobars.
+  if (active_top_margin == 0 && !old_contents_origin.IsOrigin()) {
+    gfx::Point new_contents_origin(contents->bounds().origin());
+    views::View::ConvertPointToTarget(contents->parent(), browser_view_,
+                                      &new_contents_origin);
+    active_top_margin = old_contents_origin.y() - new_contents_origin.y();
+    // Special case: While normally the suggestions appear to "cover" any
+    // bookmark/infobars, if the suggestions are very short, they might not
+    // fully cover that gap, and leaving the contents at their original height
+    // would leave an odd-looking blank space.  In this case, we allow the
+    // contents to go ahead and shift upward.
+    if (active_top_margin > 0 && active_top_margin < preview_height)
+      contents_container_->SetActiveTopMargin(active_top_margin);
+  }
+
   // This must be done _after_ we lay out the WebContents since this
   // code calls back into us to find the bounding box the find bar
   // must be laid out within, and that code depends on the
@@ -320,7 +357,7 @@ int BrowserViewLayout::LayoutTabStripRegion() {
       browser_view_->frame()->GetBoundsForTabStrip(tabstrip));
   gfx::Point tabstrip_origin(tabstrip_bounds.origin());
   views::View::ConvertPointToTarget(browser_view_->parent(), browser_view_,
-                                  &tabstrip_origin);
+                                    &tabstrip_origin);
   tabstrip_bounds.set_origin(tabstrip_origin);
 
   tabstrip->SetVisible(true);

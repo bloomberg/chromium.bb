@@ -1239,12 +1239,8 @@ void Browser::MaybeUpdateBookmarkBarStateForInstantPreview(
   // |InstantPreviewController| to update bookmark bar state according to
   // instant preview state.
   // ModeChanged() updates bookmark bar state for all mode transitions except
-  // when transitioning from |NTP| to |SEARCH_SUGGESTIONS|, because that needs
-  // to be done when the suggestions are ready.
-  // If |mode| is |SEARCH_SUGGESTIONS| and bookmark bar is still showing
-  // attached, the previous mode is definitely NTP; it won't be |DEFAULT|
-  // because ModeChanged() would have handled that transition by hiding the
-  // bookmark bar.
+  // when new mode is |SEARCH_SUGGESTIONS|, because that needs to be done when
+  // the suggestions are ready.
   if (mode.is_search_suggestions() &&
       bookmark_bar_state_ == BookmarkBar::SHOW) {
     UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
@@ -1910,12 +1906,16 @@ void Browser::Observe(int type,
 
 void Browser::ModeChanged(const chrome::search::Mode& old_mode,
                           const chrome::search::Mode& new_mode) {
-  // If mode is transitioning from |NTP| to |SEARCH_SUGGESTIONS|, don't update
-  // bookmark bar state now; wait till the instant preview is ready to show
-  // suggestions before starting the animation to hide the bookmark bar (in
-  // MaybeUpdateBookmarkBarStateForInstantPreview()).
+  // If new mode is |SEARCH_SUGGESTIONS|, don't update bookmark bar state now;
+  // wait till the instant preview is ready to show suggestions before hiding
+  // the bookmark bar (in MaybeUpdateBookmarkBarStateForInstantPreview()).
+  // TODO(kuan): but for now, only delay updating bookmark bar state if origin
+  // is |DEFAULT|; other origins require more complex logic to be implemented
+  // to prevent jankiness caused by hiding bookmark bar, so just hide the
+  // bookmark bar immediately and tolerate the jankiness for a while.
   // For other mode transitions, update bookmark bar state accordingly.
-  if (old_mode.is_ntp() && new_mode.is_search_suggestions() &&
+  if (new_mode.is_search_suggestions() &&
+      new_mode.is_origin_default() &&
       bookmark_bar_state_ == BookmarkBar::SHOW) {
     return;
   }

@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/search_types.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views/view.h"
 
 namespace content {
@@ -19,10 +20,6 @@ class WebContents;
 
 namespace gfx {
 class Rect;
-}
-
-namespace views {
-class WebView;
 }
 
 // ContentsContainer is responsible for managing the WebContents views.
@@ -56,7 +53,13 @@ class ContentsContainer : public views::View {
     return preview_web_contents_;
   }
 
-  // Sets the active top margin.
+  int preview_height() const {
+    return preview_ ? preview_->bounds().height() : 0;
+  }
+
+  // Sets the active top margin; the active WebView's y origin would be
+  // positioned at this |margin|, causing the active WebView to be pushed down
+  // vertically by |margin| pixels in the |ContentsContainer|.
   void SetActiveTopMargin(int margin);
 
   // Returns the bounds the preview would be shown at.

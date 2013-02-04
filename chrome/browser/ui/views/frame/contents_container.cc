@@ -8,7 +8,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/views/controls/webview/webview.h"
 
 // static
 const char ContentsContainer::kViewClassName[] =

@@ -161,6 +161,9 @@ class BrowserView : public BrowserWindow,
   // Accessor for the Toolbar.
   ToolbarView* toolbar() { return toolbar_; }
 
+  // Accessor for the InfobarContainer.
+  InfoBarContainerView* infobar_container() { return infobar_container_; }
+
   // Returns true if various window components are visible.
   virtual bool IsTabStripVisible() const;
 

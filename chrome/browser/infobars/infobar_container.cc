@@ -15,6 +15,7 @@
 #include "chrome/browser/api/infobars/infobar_delegate.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/instant/instant_model.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
@@ -164,11 +165,27 @@ void InfoBarContainer::ModeChanged(const chrome::search::Mode& old_mode,
                                    const chrome::search::Mode& new_mode) {
   // Hide infobars when showing Instant Extended suggestions.
   if (new_mode.is_search_suggestions()) {
+    // If suggestions are being shown on a |DEFAULT| page, delay the hiding
+    // until notification that instant preview is ready is received via
+    // PreviewStateChanged(); this prevents jankiness caused by infobars hiding
+    // followed by suggestions appearing.
+    if (new_mode.is_origin_default())
+      return;
     HideAllInfoBars();
     OnInfoBarStateChanged(false);
   } else {
     ChangeInfoBarService(infobar_service_);
     infobars_shown_time_ = base::TimeTicks::Now();
+  }
+}
+
+void InfoBarContainer::PreviewStateChanged(const InstantModel& model) {
+  // If suggestions are being shown on a |DEFAULT| page, hide the infobars now.
+  // See comments for ModeChanged() for explanation.
+  if (model.mode().is_search_suggestions() &&
+      model.mode().is_origin_default()) {
+    HideAllInfoBars();
+    OnInfoBarStateChanged(false);
   }
 }
 

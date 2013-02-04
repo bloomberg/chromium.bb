@@ -460,7 +460,7 @@ class Browser : public TabStripModelObserver,
 
   // If necessary, update the bookmark bar state according to the instant
   // preview state: when instant preview shows suggestions and bookmark bar is
-  // still showing attached, start the animation to hide it.
+  // still showing attached, hide it.
   void MaybeUpdateBookmarkBarStateForInstantPreview(
       const chrome::search::Mode& mode);
 
