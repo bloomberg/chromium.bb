@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/message_loop.h"
 #include "base/port.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -110,6 +111,8 @@ class TestMetricsLog : public MetricsLog {
 }  // namespace
 
 class MetricsLogTest : public testing::Test {
+ public:
+  MetricsLogTest() : message_loop_(MessageLoop::TYPE_IO) {}
  protected:
   void TestRecordEnvironment(bool proto_only) {
     TestMetricsLog log(kClientId, kSessionId);
@@ -143,6 +146,10 @@ class MetricsLogTest : public testing::Test {
     // TODO(isherman): Verify other data written into the protobuf as a result
     // of this call.
   }
+ private:
+  // This is necessary because eventually some tests call base::RepeatingTimer
+  // functions and a message loop is required for that.
+  MessageLoop message_loop_;
 };
 
 TEST_F(MetricsLogTest, RecordEnvironment) {

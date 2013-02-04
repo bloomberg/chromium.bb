@@ -687,6 +687,7 @@
         'common/metrics/proto/chrome_user_metrics_extension.proto',
         'common/metrics/proto/histogram_event.proto',
         'common/metrics/proto/omnibox_event.proto',
+        'common/metrics/proto/perf_data.proto',
         'common/metrics/proto/profiler_event.proto',
         'common/metrics/proto/system_profile.proto',
         'common/metrics/proto/user_action_event.proto',

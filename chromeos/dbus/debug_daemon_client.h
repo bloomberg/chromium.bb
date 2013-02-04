@@ -17,6 +17,10 @@ namespace dbus {
 class Bus;
 }  // namespace dbus
 
+namespace metrics {
+class PerfDataProto;
+}
+
 namespace chromeos {
 
 // DebugDaemonClient is used to communicate with the debug daemon.
@@ -74,6 +78,15 @@ class CHROMEOS_EXPORT DebugDaemonClient {
   // Gets information about network interfaces as json.
   virtual void GetNetworkInterfaces(
       const GetNetworkInterfacesCallback& callback) = 0;
+
+  // Called once GetPerfData() is complete only if the the data is successfully
+  // obtained from debugd.
+  typedef base::Callback<void(const std::vector<uint8>& data)>
+      GetPerfDataCallback;
+
+  // Runs perf for |duration| seconds and returns data collected.
+  virtual void GetPerfData(uint32_t duration,
+                           const GetPerfDataCallback& callback) = 0;
 
   // Callback type for GetAllLogs() or GetUserLogFiles().
   typedef base::Callback<void(bool succeeded,

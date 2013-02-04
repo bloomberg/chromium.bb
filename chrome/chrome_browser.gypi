@@ -1091,6 +1091,8 @@
         'browser/metrics/metrics_reporting_scheduler.h',
         'browser/metrics/metrics_service.cc',
         'browser/metrics/metrics_service.h',
+        'browser/metrics/perf_provider_chromeos.cc',
+        'browser/metrics/perf_provider_chromeos.h',
         'browser/metrics/thread_watcher.cc',
         'browser/metrics/thread_watcher.h',
         'browser/metrics/tracking_synchronizer.cc',

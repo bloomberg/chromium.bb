@@ -1,0 +1,223 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package metrics;
+
+// Stores information from a perf session generated via running:
+// "perf record"
+//
+// See $kernel/tools/perf/design.txt for more details.
+
+message PerfDataProto {
+
+  // Perf event attribute. Stores the event description.
+  // This data structure is defined in the linux kernel:
+  // $kernel/tools/perf/util/event.h.
+  message PerfEventAttr {
+    // Type of the event. Type is an enumeration and can be:
+    // IP: an instruction-pointer was stored in the event.
+    // MMAP: a DLL was loaded.
+    // FORK: a process was forked.
+    // etc.
+    optional uint32 type = 1;
+
+    // Size of the event data in bytes.
+    optional uint32 size = 2;
+
+    // The config stores the CPU-specific counter information.
+    optional uint64 config = 3;
+
+    // Sample period of the event. Indicates how often the event is
+    // triggered in terms of # of events. After |sample_period| events, an event
+    // will be recorded and stored.
+    optional uint64 sample_period = 4;
+
+    // Sample frequency of the event. Indicates how often the event is
+    // triggered in terms of # per second. The kernel will try to record
+    // |sample_freq| events per second.
+    optional uint64 sample_freq = 5;
+
+    // Sample type is a bitfield that records attributes of the sample. Example,
+    // whether an entire callchain was recorded, etc.
+    optional uint64 sample_type = 6;
+
+    // Bitfield that indicates whether reads on the counter will return the
+    // total time enabled and total time running.
+    optional uint64 read_format = 7;
+
+    // Indicates whether the counter starts off disabled.
+    optional bool disabled = 8;
+
+    // Indicates whether child processes inherit the counter.
+    optional bool inherit = 9;
+
+    // Indicates whether the counter is pinned to a particular CPU.
+    optional bool pinned = 10;
+
+    // Indicates whether this counter's group has exclusive access to the CPU's
+    // counters.
+    optional bool exclusive = 11;
+
+    // The following bits restrict events to be counted when the CPU is in user,
+    // kernel, hypervisor or idle modes.
+    optional bool exclude_user = 12;
+    optional bool exclude_kernel = 13;
+    optional bool exclude_hv = 14;
+    optional bool exclude_idle = 15;
+
+    // Indicates whether mmap events should be recorded.
+    optional bool mmap = 16;
+
+    // Indicates whether process comm information should be recorded upon
+    // process creation.
+    optional bool comm = 17;
+
+    // Indicates that we are in frequency mode, not period mode.
+    optional bool freq = 18;
+
+    // Indicates whether we have per-task counts.
+    optional bool inherit_stat = 19;
+
+    // Indicates whether we enable perf events after an exec() function call.
+    optional bool enable_on_exec = 20;
+
+    // Indicates whether we trace fork/exit.
+    optional bool task = 21;
+
+    // Indicates whether we are using a watermark to wake up.
+    optional bool watermark = 22;
+
+    // CPUs often "skid" when recording events. That means the instruction
+    // pointer may not be the same as the one that caused the counter overflow.
+    // Indicates the capabilities of the CPU in terms of recording precise
+    // instruction pointer.
+    optional uint32 precise_ip = 23;
+
+    // Indicates whether we have non-exec mmap data.
+    optional bool mmap_data = 24;
+
+    // If set, all the event types will have the same sample_type.
+    optional bool sample_id_all = 25;
+
+    // Indicates whether we are counting events from the host (when running a
+    // VM).
+    optional bool exclude_host = 26;
+
+    // Exclude events that happen on a guest OS.
+    optional bool exclude_guest = 27;
+
+    // Contains the number of events after which we wake up.
+    optional uint32 wakeup_events = 28;
+
+    // Contains the number of bytes after which we wake up.
+    optional uint32 wakeup_watermark = 29;
+
+    // Information about the type of the breakpoint.
+    optional uint32 bp_type = 30;
+
+    // Contains the breakpoint address.
+    optional uint64 bp_addr = 31;
+
+    // This is an extension of config (see above).
+    optional uint64 config1 = 32;
+
+    // The length of the breakpoint data in bytes.
+    optional uint64 bp_len = 33;
+
+    // This is an extension of config (see above).
+    optional uint64 config2 = 34;
+
+    // Contains the type of branch, example: user, kernel, call, return, etc.
+    optional uint64 branch_sample_type = 35;
+  }
+
+  // Describes a perf.data file attribute.
+  message PerfFileAttr {
+    optional PerfEventAttr attr = 1;
+
+    // List of perf file attribute ids. Each id describes an event.
+    repeated uint64 ids = 2;
+  }
+
+  message CommEvent {
+    // Process id.
+    optional uint32 pid = 1;
+    // Thread id.
+    optional uint32 tid = 2;
+    // Comm string's md5 prefix.
+    // The comm string was field 3 and has been intentionally left out.
+    optional uint64 comm_md5_prefix = 4;
+  }
+
+  message MMapEvent {
+    // Process id.
+    optional uint32 pid = 1;
+    // Thread id.
+    optional uint32 tid = 2;
+    // Start address.
+    optional uint64 start = 3;
+    // Length.
+    optional uint64 len = 4;
+    // PG Offset.
+    optional uint64 pgoff = 5;
+    // Filename's md5 prefix.
+    // The filename was field 6 and has been intentionally left out.
+    optional uint64 filename_md5_prefix = 7;
+  }
+
+  message SampleEvent {
+    // Instruction pointer.
+    optional uint64 ip = 1;
+
+    // Process id.
+    optional uint32 pid = 2;
+
+    // Thread id.
+    optional uint32 tid = 3;
+
+    // The time at which the sample was recorded.
+    optional uint64 time = 4;
+
+    // The address of the sample.
+    optional uint64 addr = 5;
+
+    // The id of the sample.
+    optional uint64 id = 6;
+
+    // The stream id of the sample.
+    optional uint64 stream_id = 7;
+
+    // The period of the sample.
+    optional uint64 period = 8;
+
+    // The CPU where the event was recorded.
+    optional uint32 cpu = 9;
+
+    // The raw size of the event in bytes.
+    optional uint32 raw_size = 10;
+  }
+
+  message EventHeader {
+    // Type of event.
+    optional uint32 type = 1;
+    optional uint32 misc = 2;
+    // Size of event.
+    optional uint32 size = 3;
+  }
+
+  message PerfEvent {
+    optional EventHeader header = 1;
+
+    optional MMapEvent mmap_event = 2;
+    optional SampleEvent sample_event = 3;
+    optional CommEvent comm_event = 4;
+  }
+
+  repeated PerfFileAttr file_attrs = 1;
+  repeated PerfEvent events = 2;
+}

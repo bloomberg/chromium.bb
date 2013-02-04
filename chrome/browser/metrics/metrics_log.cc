@@ -63,6 +63,7 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 using content::GpuDataManager;
 using metrics::OmniboxEventProto;
+using metrics::PerfDataProto;
 using metrics::ProfilerEventProto;
 using metrics::SystemProfileProto;
 using tracked_objects::ProcessDataSnapshot;
@@ -929,6 +930,12 @@ void MetricsLog::RecordEnvironmentProto(
   std::vector<ActiveGroupId> field_trial_ids;
   GetFieldTrialIds(&field_trial_ids);
   WriteFieldTrials(field_trial_ids, system_profile);
+
+#if defined(OS_CHROMEOS)
+  PerfDataProto perf_data_proto;
+  if (perf_provider_.GetPerfData(&perf_data_proto))
+    uma_proto()->add_perf_data()->Swap(&perf_data_proto);
+#endif
 }
 
 void MetricsLog::RecordProfilerData(

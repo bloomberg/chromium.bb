@@ -17,6 +17,10 @@
 #include "content/public/common/process_type.h"
 #include "ui/gfx/size.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/metrics/perf_provider_chromeos.h"
+#endif
+
 struct AutocompleteLog;
 class PrefService;
 class PrefServiceSimple;
@@ -189,6 +193,9 @@ class MetricsLog : public MetricsLogBase {
   // Registers as observer with net::NetworkChangeNotifier and keeps track of
   // the network environment.
   scoped_ptr<NetworkObserver> network_observer_;
+#if defined(OS_CHROMEOS)
+  metrics::PerfProvider perf_provider_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(MetricsLog);
 };

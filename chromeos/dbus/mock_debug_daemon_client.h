@@ -23,6 +23,7 @@ class MockDebugDaemonClient : public DebugDaemonClient {
   MOCK_METHOD1(GetNetworkStatus, void(const GetNetworkStatusCallback&));
   MOCK_METHOD1(GetModemStatus, void(const GetModemStatusCallback&));
   MOCK_METHOD1(GetNetworkInterfaces, void(const GetNetworkInterfacesCallback&));
+  MOCK_METHOD2(GetPerfData, void(uint32_t, const GetPerfDataCallback&));
   MOCK_METHOD1(GetAllLogs, void(const GetLogsCallback&));
   MOCK_METHOD1(GetUserLogFiles, void(const GetLogsCallback&));
   MOCK_METHOD1(RequestStopSystemTracing,

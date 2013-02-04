@@ -15,6 +15,7 @@ import "omnibox_event.proto";
 import "profiler_event.proto";
 import "system_profile.proto";
 import "user_action_event.proto";
+import "perf_data.proto";
 
 // Next tag: 8
 message ChromeUserMetricsExtension {
@@ -42,4 +43,6 @@ message ChromeUserMetricsExtension {
   repeated OmniboxEventProto omnibox_event = 5;
   repeated HistogramEventProto histogram_event = 6;
   repeated ProfilerEventProto profiler_event = 7;
+
+  repeated PerfDataProto perf_data = 8;
 }

@@ -245,6 +245,21 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    callback));
   }
 
+  virtual void GetPerfData(uint32_t duration,
+                           const GetPerfDataCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kGetPerfData);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint32(duration);
+
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnGetPerfData,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
   virtual void GetAllLogs(const GetLogsCallback& callback)
       OVERRIDE {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
@@ -423,6 +438,28 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       callback.Run(false, "");
   }
 
+  void OnGetPerfData(const GetPerfDataCallback& callback,
+                     dbus::Response* response) {
+    std::vector<uint8> data;
+
+    if (!response) {
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    uint8* buffer = NULL;
+    size_t buf_size = 0;
+    if (!reader.PopArrayOfBytes(reinterpret_cast<uint8**>(
+        &buffer), &buf_size)) {
+      return;
+    }
+
+    // TODO(asharif): Figure out a way to avoid this copy.
+    data.insert(data.end(), buffer, buffer + buf_size);
+
+    callback.Run(data);
+  }
+
   void OnGetAllLogs(const GetLogsCallback& callback,
                     dbus::Response* response) {
     std::map<std::string, std::string> logs;
@@ -555,6 +592,11 @@ class DebugDaemonClientStubImpl : public DebugDaemonClient {
       const GetNetworkInterfacesCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback, false, ""));
+  }
+  virtual void GetPerfData(uint32_t duration,
+                           const GetPerfDataCallback& callback) OVERRIDE {
+    std::vector<uint8> data;
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, data));
   }
   virtual void GetAllLogs(const GetLogsCallback& callback) OVERRIDE {
     std::map<std::string, std::string> empty;
