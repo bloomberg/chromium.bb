@@ -42,6 +42,7 @@ cr.define('options', function() {
       };
 
       $('managed-user-settings-confirm').onclick = function() {
+        chrome.send('confirmManagedUserSettings');
         OptionsPage.closeOverlay();
       };
 

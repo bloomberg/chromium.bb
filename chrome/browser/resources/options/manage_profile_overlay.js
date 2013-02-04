@@ -52,8 +52,6 @@ cr.define('options', function() {
         $('create-profile-managed-container').hidden = false;
         $('managed-user-settings-button').onclick = function(event) {
           OptionsPage.navigateToPage('managedUser');
-          chrome.send('coreOptionsUserMetricsAction',
-                      ['Options_ManagedUserPassphraseOverlay']);
         };
       }
       $('manage-profile-cancel').onclick =

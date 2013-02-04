@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_MANAGED_USER_SETTINGS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_MANAGED_USER_SETTINGS_HANDLER_H_
 
+#include "base/time.h"
+#include "base/values.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace options {
@@ -18,7 +20,16 @@ class ManagedUserSettingsHandler : public OptionsPageUIHandler {
   virtual void GetLocalizedValues(
       base::DictionaryValue* localized_strings) OVERRIDE;
 
+  virtual void InitializePage() OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
+
  private:
+  // Save user metrics. Called from WebUI.
+  void SaveMetrics(const base::ListValue* args);
+
+  // For tracking how long the user spends on this page.
+  base::TimeTicks start_time_;
+
   DISALLOW_COPY_AND_ASSIGN(ManagedUserSettingsHandler);
 };
 

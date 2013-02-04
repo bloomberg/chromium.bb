@@ -4,12 +4,20 @@
 
 #include "chrome/browser/ui/webui/options/managed_user_settings_handler.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
+#include "base/time.h"
 #include "base/values.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+
+using content::UserMetricsAction;
 
 namespace options {
 
@@ -17,6 +25,11 @@ ManagedUserSettingsHandler::ManagedUserSettingsHandler() {
 }
 
 ManagedUserSettingsHandler::~ManagedUserSettingsHandler() {
+}
+
+void ManagedUserSettingsHandler::InitializePage() {
+  start_time_ = base::TimeTicks::Now();
+  content::RecordAction(UserMetricsAction("ManagedMode_OpenSettings"));
 }
 
 void ManagedUserSettingsHandler::GetLocalizedValues(
@@ -50,6 +63,23 @@ void ManagedUserSettingsHandler::GetLocalizedValues(
       "managedUsersEnabled",
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableManagedUsers));
+}
+
+void ManagedUserSettingsHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback(
+      "confirmManagedUserSettings",
+      base::Bind(&ManagedUserSettingsHandler::SaveMetrics,
+                 base::Unretained(this)));
+}
+
+void ManagedUserSettingsHandler::SaveMetrics(const ListValue* args) {
+  if (first_run::IsChromeFirstRun()) {
+    UMA_HISTOGRAM_LONG_TIMES("ManagedMode.UserSettingsFirstRunTime",
+                             base::TimeTicks::Now() - start_time_);
+  } else {
+    UMA_HISTOGRAM_LONG_TIMES("ManagedMode.UserSettingsModifyTime",
+                             base::TimeTicks::Now() - start_time_);
+  }
 }
 
 }  // namespace options
