@@ -62,6 +62,8 @@ bool DevToolsFrontendHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DispatchOnInspectorBackend,
                         OnDispatchOnInspectorBackend)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_ActivateWindow, OnActivateWindow)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ChangeAttachedWindowHeight,
+                        OnChangeAttachedWindowHeight)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_CloseWindow, OnCloseWindow)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_MoveWindow, OnMoveWindow)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestSetDockSide,
@@ -86,6 +88,10 @@ void DevToolsFrontendHost::OnDispatchOnInspectorBackend(
 
 void DevToolsFrontendHost::OnActivateWindow() {
   delegate_->ActivateWindow();
+}
+
+void DevToolsFrontendHost::OnChangeAttachedWindowHeight(unsigned height) {
+  delegate_->ChangeAttachedWindowHeight(height);
 }
 
 void DevToolsFrontendHost::OnCloseWindow() {

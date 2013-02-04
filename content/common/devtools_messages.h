@@ -110,6 +110,10 @@ IPC_MESSAGE_ROUTED0(DevToolsMsg_SetupDevToolsClient)
 // Activates (brings to the front) corresponding dev tools window.
 IPC_MESSAGE_ROUTED0(DevToolsHostMsg_ActivateWindow)
 
+// Sets the height of corresponding dev tools window.
+IPC_MESSAGE_ROUTED1(DevToolsHostMsg_ChangeAttachedWindowHeight,
+                    unsigned /* height */)
+
 // Closes dev tools window that is inspecting current render_view_host.
 IPC_MESSAGE_ROUTED0(DevToolsHostMsg_CloseWindow)
 

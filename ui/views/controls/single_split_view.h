@@ -56,6 +56,8 @@ class VIEWS_EXPORT SingleSplitView : public View {
   }
   int divider_offset() const { return divider_offset_; }
 
+  int GetDividerSize() const;
+
   // Sets whether the leading component is resized when the split views size
   // changes. The default is true. A value of false results in the trailing
   // component resizing on a bounds change.

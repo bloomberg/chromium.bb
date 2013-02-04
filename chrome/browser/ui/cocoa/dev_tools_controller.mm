@@ -90,6 +90,8 @@ using content::WebContents;
   if (devToolsWindow_ == newDevToolsWindow) {
     if (!newDevToolsWindow ||
         (newDevToolsWindow->dock_side() == dockSide_)) {
+      if (newDevToolsWindow)
+        [self updateDevToolsSplitPosition];
       return;
     }
   }

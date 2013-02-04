@@ -40,6 +40,7 @@ class DevToolsFrontendHost : public DevToolsClientHost,
 
   void OnDispatchOnInspectorBackend(const std::string& message);
   void OnActivateWindow();
+  void OnChangeAttachedWindowHeight(unsigned height);
   void OnCloseWindow();
   void OnMoveWindow(int x, int y);
   void OnRequestSetDockSide(const std::string& side);

@@ -753,6 +753,17 @@ void DevToolsWindow::ActivateWindow() {
   }
 }
 
+void DevToolsWindow::ChangeAttachedWindowHeight(unsigned height) {
+  if (dock_side_ != DEVTOOLS_DOCK_SIDE_BOTTOM)
+    return;
+
+  SetHeight(height);
+  // Update inspected window to adjust heights.
+  BrowserWindow* inspected_window = GetInspectedBrowserWindow();
+  if (inspected_window)
+    inspected_window->UpdateDevTools();
+}
+
 void DevToolsWindow::CloseWindow() {
   DCHECK(IsDocked());
   DevToolsManager::GetInstance()->ClientHostClosing(frontend_host_.get());

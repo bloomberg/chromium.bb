@@ -175,6 +175,7 @@ class DevToolsWindow : private content::NotificationObserver,
 
   // content::DevToolsFrontendHostDelegate overrides.
   virtual void ActivateWindow() OVERRIDE;
+  virtual void ChangeAttachedWindowHeight(unsigned height) OVERRIDE;
   virtual void CloseWindow() OVERRIDE;
   virtual void MoveWindow(int x, int y) OVERRIDE;
   virtual void SetDockSide(const std::string& side) OVERRIDE;

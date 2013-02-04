@@ -103,6 +103,12 @@ gfx::NativeCursor SingleSplitView::GetCursor(const ui::MouseEvent& event) {
 #endif
 }
 
+int SingleSplitView::GetDividerSize() const {
+  bool both_visible = child_count() > 1 && child_at(0)->visible() &&
+      child_at(1)->visible();
+  return both_visible ? kDividerSize : 0;
+}
+
 void SingleSplitView::CalculateChildrenBounds(
     const gfx::Rect& bounds,
     gfx::Rect* leading_bounds,
@@ -128,8 +134,7 @@ void SingleSplitView::CalculateChildrenBounds(
     divider_at = NormalizeDividerOffset(divider_at, bounds);
   }
 
-  int divider_size =
-      !is_leading_visible || !is_trailing_visible ? 0 : kDividerSize;
+  int divider_size = GetDividerSize();
 
   if (is_horizontal_) {
     *leading_bounds = gfx::Rect(0, 0, divider_at, bounds.height());

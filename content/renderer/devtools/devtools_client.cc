@@ -62,6 +62,10 @@ void DevToolsClient::activateWindow() {
   Send(new DevToolsHostMsg_ActivateWindow(routing_id()));
 }
 
+void DevToolsClient::changeAttachedWindowHeight(unsigned height) {
+  Send(new DevToolsHostMsg_ChangeAttachedWindowHeight(routing_id(), height));
+}
+
 void DevToolsClient::closeWindow() {
   Send(new DevToolsHostMsg_CloseWindow(routing_id()));
 }

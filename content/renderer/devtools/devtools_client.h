@@ -43,6 +43,7 @@ class CONTENT_EXPORT DevToolsClient
   virtual void sendMessageToBackend(const WebKit::WebString&) OVERRIDE;
 
   virtual void activateWindow() OVERRIDE;
+  virtual void changeAttachedWindowHeight(unsigned height) OVERRIDE;
   virtual void closeWindow() OVERRIDE;
   virtual void moveWindowBy(const WebKit::WebFloatPoint& offset) OVERRIDE;
   virtual void requestSetDockSide(const WebKit::WebString& side) OVERRIDE;

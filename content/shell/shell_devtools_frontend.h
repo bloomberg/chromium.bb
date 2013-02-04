@@ -37,6 +37,7 @@ class ShellDevToolsFrontend : public WebContentsObserver,
 
   // DevToolsFrontendHostDelegate implementation
   virtual void ActivateWindow() OVERRIDE {}
+  virtual void ChangeAttachedWindowHeight(unsigned height) OVERRIDE {}
   virtual void CloseWindow() OVERRIDE {}
   virtual void MoveWindow(int x, int y) OVERRIDE {}
   virtual void SetDockSide(const std::string& side) OVERRIDE {}

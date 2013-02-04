@@ -2287,8 +2287,11 @@ void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
 
   // Fast return in case of the same window having same orientation.
   if (devtools_window_ == new_devtools_window && (!new_devtools_window ||
-        new_devtools_window->dock_side() == devtools_dock_side_))
+        new_devtools_window->dock_side() == devtools_dock_side_)) {
+    if (new_devtools_window)
+      UpdateDevToolsSplitPosition();
     return;
+  }
 
   // Replace tab contents.
   if (devtools_window_ != new_devtools_window) {
@@ -2361,14 +2364,17 @@ void BrowserWindowGtk::UpdateDevToolsSplitPosition() {
     return;
   GtkAllocation contents_rect;
   gtk_widget_get_allocation(contents_vsplit_, &contents_rect);
+  int split_size;
 
   if (devtools_window_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT) {
+    gtk_widget_style_get(contents_hsplit_, "handle-size", &split_size, NULL);
     int split_offset = contents_rect.width -
-        devtools_window_->GetWidth(contents_rect.width);
+        devtools_window_->GetWidth(contents_rect.width) - split_size;
     gtk_paned_set_position(GTK_PANED(contents_hsplit_), split_offset);
   } else {
+    gtk_widget_style_get(contents_vsplit_, "handle-size", &split_size, NULL);
     int split_offset = contents_rect.height -
-        devtools_window_->GetHeight(contents_rect.height);
+        devtools_window_->GetHeight(contents_rect.height) - split_size;
     gtk_paned_set_position(GTK_PANED(contents_vsplit_), split_offset);
   }
 }

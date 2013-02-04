@@ -19,10 +19,13 @@ class DevToolsFrontendHostDelegate {
   // Should bring DevTools window to front.
   virtual void ActivateWindow() = 0;
 
+  // Changes the height of attached DevTools window.
+  virtual void ChangeAttachedWindowHeight(unsigned height) = 0;
+
   // Closes DevTools front-end window.
   virtual void CloseWindow() = 0;
 
-  // Moves DevTols front-end windo.
+  // Moves DevTools front-end window.
   virtual void MoveWindow(int x, int y) = 0;
 
   // Specifies side for devtools to dock to.
