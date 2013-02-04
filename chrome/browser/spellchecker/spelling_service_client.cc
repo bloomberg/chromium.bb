@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -26,6 +27,12 @@
 #ifndef SPELLING_SERVICE_URL
 #define SPELLING_SERVICE_URL "https://www.googleapis.com/rpc"
 #endif
+
+namespace {
+// Constants for the spellcheck field trial.
+const char kSpellcheckFieldTrialName[] = "Spellcheck";
+const char kSpellcheckFieldTrialSuggestionsGroupName[] = "Suggestions";
+}  // namespace
 
 SpellingServiceClient::SpellingServiceClient() {
 }
@@ -128,8 +135,15 @@ bool SpellingServiceClient::IsAvailable(Profile* profile, ServiceType type) {
   // all languages SPELLCHECK covers.
   bool language_available = !locale.compare(0, 2, "en");
   if (language_available) {
-    // Either SUGGEST or SPELLCHECK are allowed.
-    return true;
+    // Either SUGGEST or SPELLCHECK are normally allowed.
+    // Run the field trial for users who would normally have the service
+    // available.
+    if (base::FieldTrialList::FindFullName(kSpellcheckFieldTrialName) ==
+        kSpellcheckFieldTrialSuggestionsGroupName) {
+      return type == SUGGEST;
+    } else {
+      return type == SPELLCHECK;
+    }
   } else {
     // Only SUGGEST is allowed.
     return type == SUGGEST;

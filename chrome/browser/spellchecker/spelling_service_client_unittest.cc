@@ -353,11 +353,11 @@ TEST_F(SpellingServiceClientTest, AvailableServices) {
     "en-AU", "en-CA", "en-GB", "en-US",
 #endif
   };
-  // TODO(rlp): We are currently allowing suggest for languages even if
-  // spellcheck is also available.
+  // If spellcheck is allowed, then suggest is not since spellcheck is a
+  // superset of suggest.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kSupported); ++i) {
     pref->SetString(prefs::kSpellCheckDictionary, kSupported[i]);
-    EXPECT_TRUE(client_.IsAvailable(&profile_, kSuggest));
+    EXPECT_FALSE(client_.IsAvailable(&profile_, kSuggest));
     EXPECT_TRUE(client_.IsAvailable(&profile_, kSpellcheck));
   }
 
