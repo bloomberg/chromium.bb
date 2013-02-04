@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabled) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // http://crbug.com/104438.
 #define MAYBE_IncognitoPopup DISABLED_IncognitoPopup
 #else
