@@ -783,6 +783,14 @@ void AutofillManager::RemoveAutocompleteEntry(const string16& name,
   autocomplete_history_manager_.OnRemoveAutocompleteEntry(name, value);
 }
 
+content::WebContents* AutofillManager::GetWebContents() const {
+  return web_contents();
+}
+
+const std::vector<FormStructure*>& AutofillManager::GetFormStructures() {
+  return form_structures_.get();
+}
+
 void AutofillManager::ShowRequestAutocompleteDialog(
     const FormData& form,
     const GURL& source_url,

@@ -112,8 +112,14 @@ class AutofillManager : public content::WebContentsObserver,
   // Remove the specified Autocomplete entry.
   void RemoveAutocompleteEntry(const string16& name, const string16& value);
 
+  // Returns the present web_contents state.
+  content::WebContents* GetWebContents() const;
+
+  // Returns the present form structures seen by Autofill manager.
+  const std::vector<FormStructure*>& GetFormStructures();
+
   // Causes the dialog for request autocomplete feature to be shown.
-  void ShowRequestAutocompleteDialog(
+  virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,
       const content::SSLStatus& ssl_status,
