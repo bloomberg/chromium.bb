@@ -231,6 +231,10 @@
         'SK_IGNORE_CLIP_BUG_FIX',
         'SK_IGNORE_CONVEX_QUAD_OPT',
         'SK_IGNORE_SETLINE_FIX',
+
+        # Disable this check because it is too strict for some Chromium-specific
+        # subclasses of SkPixelRef. See bug: crbug.com/171776.
+        'SK_DISABLE_PIXELREF_LOCKCOUNT_BALANCE_CHECK',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
