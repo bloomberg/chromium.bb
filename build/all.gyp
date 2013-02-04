@@ -365,10 +365,15 @@
           ],
         },  # target_name: chromium_builder_perf_av
         {
+          # This target contains everything we need to run tests on the special
+          # device-equipped WebRTC bots. We have device-requiring tests in
+          # PyAuto, browser_tests and content_browsertests.
           'target_name': 'chromium_builder_webrtc',
           'type': 'none',
           'dependencies': [
             'chromium_builder_qa',  # needed for perf pyauto tests
+            '../chrome/chrome.gyp:browser_tests',
+            '../content/content.gyp:content_browsertests',
             '../third_party/libjingle/libjingle.gyp:peerconnection_server',
             '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
             '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
