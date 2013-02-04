@@ -701,7 +701,7 @@ class TestGypOnMSToolchain(TestGypBase):
     assert not proc.returncode
     return output
 
-class TestGypNinja(TestGypBase):
+class TestGypNinja(TestGypOnMSToolchain):
   """
   Subclass for testing the GYP Ninja generator.
   """
@@ -762,18 +762,6 @@ class TestGypNinja(TestGypBase):
         self.report_not_up_to_date()
         self.fail_test()
     return result
-
-  def run_dumpbin(self, *dumpbin_args):
-    """Run the dumpbin tool with the specified arguments, and capturing and
-    returning stdout."""
-    assert sys.platform in ('win32', 'cygwin')
-    cmd = os.environ.get('COMSPEC', 'cmd.exe')
-    arguments = [cmd, '/c', 'dumpbin']
-    arguments.extend(dumpbin_args)
-    proc = subprocess.Popen(arguments, stdout=subprocess.PIPE)
-    output = proc.communicate()[0]
-    assert not proc.returncode
-    return output
 
 
 class TestGypMSVS(TestGypOnMSToolchain):
