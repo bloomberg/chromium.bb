@@ -34,10 +34,6 @@ const char kServiceScopeGetUserInfo[] =
 // The key under which the hosted-domain value is stored in the UserInfo
 // response.
 const char kGetHostedDomainKey[] = "hd";
-
-// How long to delay before starting device policy network requests. Set to 10
-// seconds to alleviate contention during initial startup.
-const int64 kPolicyServiceInitializationDelayMilliseconds = 10000;
 }  // namespace
 
 namespace policy {
@@ -74,15 +70,6 @@ UserPolicySigninService::UserPolicySigninService(
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_ADDED,
                  content::Source<Profile>(profile));
-
-  // Make sure we've initialized the DeviceManagementService. It's OK to
-  // call this multiple times so we do it every time we create an instance of
-  // this class (every time a new profile is loaded).
-  // TODO(atwilson): Move this to BrowserPolicyConnector::Init()
-  // (http://crbug.com/165468).
-  g_browser_process->browser_policy_connector()->
-      ScheduleServiceInitialization(
-          kPolicyServiceInitializationDelayMilliseconds);
 }
 
 UserPolicySigninService::~UserPolicySigninService() {}

@@ -116,6 +116,8 @@ void BrowserPolicyConnector::Init() {
   if (!device_management_service_.get()) {
     device_management_service_.reset(
         new DeviceManagementService(GetDeviceManagementUrl()));
+    device_management_service_->ScheduleInitialization(
+        kServiceInitializationStartupDelay);
   }
 
 #if defined(OS_CHROMEOS)
@@ -246,9 +248,6 @@ void BrowserPolicyConnector::InitializeUserPolicy(
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-  int64 startup_delay =
-      wait_for_policy_fetch ? 0 : kServiceInitializationStartupDelay;
-
   FilePath profile_dir;
   PathService::Get(chrome::DIR_USER_DATA, &profile_dir);
   profile_dir = profile_dir.Append(
@@ -257,7 +256,8 @@ void BrowserPolicyConnector::InitializeUserPolicy(
   const FilePath policy_cache_file = policy_dir.Append(kPolicyCacheFile);
   const FilePath token_cache_file = policy_dir.Append(kTokenCacheFile);
 
-  device_management_service_->ScheduleInitialization(startup_delay);
+  if (wait_for_policy_fetch)
+    device_management_service_->ScheduleInitialization(0);
   if (is_public_account && device_local_account_policy_service_.get()) {
     device_local_account_policy_provider_.reset(
         new DeviceLocalAccountPolicyProvider(
