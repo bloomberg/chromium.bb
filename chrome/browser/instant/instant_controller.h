@@ -176,6 +176,11 @@ class InstantController {
   // Invoked by InstantLoader when the instant page is about to navigate.
   void InstantLoaderAboutToNavigateMainFrame(const GURL& url);
 
+  // Invoked by InstantLoader when it's underlying RenderView is created.
+  // TODO(shishir): We assume that the WebContent's current RenderViewHost is
+  // the RenderViewHost being created which is not always true. Fix this.
+  void InstantLoaderRenderViewCreated();
+
   // Invoked by the InstantLoader when the instant page wants to navigate to
   // the speicfied URL.
   void NavigateToURL(const GURL& url, content::PageTransition transition);
@@ -216,6 +221,11 @@ class InstantController {
   // omnibox doesn't have focus, and the preview isn't showing, the |loader_| is
   // deleted and recreated. Else the refresh is skipped.
   void OnStaleLoader();
+
+  // If the |loader_| being used is in fallback mode, it will be switched back
+  // to the remote loader if the loader is not showing and the omnibox does not
+  // have focus.
+  void MaybeSwitchToRemoteLoader();
 
   // If the active tab is an Instant search results page, sets |instant_tab_| to
   // point to it. Else, deletes any existing |instant_tab_|.

@@ -47,6 +47,16 @@ void InstantClient::SetMarginSize(const int start, const int end) {
   Send(new ChromeViewMsg_SearchBoxMarginChange(routing_id(), start, end));
 }
 
+void InstantClient::InitializeFonts() {
+  const gfx::Font& omnibox_font =
+      ui::ResourceBundle::GetSharedInstance().GetFont(
+          ui::ResourceBundle::MediumFont);
+  string16 omnibox_font_name = UTF8ToUTF16(omnibox_font.GetFontName());
+  size_t omnibox_font_size = omnibox_font.GetFontSize();
+  Send(new ChromeViewMsg_SearchBoxFontInformation(
+      routing_id(), omnibox_font_name, omnibox_font_size));
+}
+
 void InstantClient::DetermineIfPageSupportsInstant() {
   Send(new ChromeViewMsg_DetermineIfPageSupportsInstant(routing_id()));
 }
@@ -81,6 +91,11 @@ void InstantClient::SetDisplayInstantResults(bool display_instant_results) {
 void InstantClient::KeyCaptureChanged(bool is_key_capture_enabled) {
   Send(new ChromeViewMsg_SearchBoxKeyCaptureChanged(routing_id(),
                is_key_capture_enabled));
+}
+
+void InstantClient::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
+  delegate_->RenderViewCreated();
 }
 
 void InstantClient::DidFinishLoad(
@@ -134,17 +149,6 @@ void InstantClient::SetSuggestions(
 }
 
 void InstantClient::InstantSupportDetermined(int page_id, bool result) {
-  if (result) {
-    // Inform the renderer process of the Omnibox's font information.
-    const gfx::Font& omnibox_font =
-        ui::ResourceBundle::GetSharedInstance().GetFont(
-            ui::ResourceBundle::MediumFont);
-    string16 omnibox_font_name = UTF8ToUTF16(omnibox_font.GetFontName());
-    size_t omnibox_font_size = omnibox_font.GetFontSize();
-
-    Send(new ChromeViewMsg_SearchBoxFontInformation(
-        routing_id(), omnibox_font_name, omnibox_font_size));
-  }
   if (web_contents()->IsActiveEntry(page_id))
     delegate_->InstantSupportDetermined(result);
 }

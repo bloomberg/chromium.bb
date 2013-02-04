@@ -145,12 +145,6 @@ function updateSelectedSuggestion(increment) {
  * chrome.searchBox.onnativesuggestions implementation.
  */
 function handleNativeSuggestions() {
-  // This can't be done in setUpApi(), because apiHandle.font/fontSize
-  // isn't available yet.
-  var suggestionStyleNode = $('suggestionStyle');
-  if (!suggestionStyleNode)
-    appendSuggestionStyles();
-
   var apiHandle = getApiObjectHandle();
 
   // Used to workaround repeated undesired asynchronous onnativesuggestions
@@ -234,6 +228,10 @@ function setUpApi() {
   apiHandle.onnativesuggestions = handleNativeSuggestions;
   apiHandle.onkeypress = handleKeyPress;
   apiHandle.onsubmit = onSubmit;
+  appendSuggestionStyles();
+
+  if (apiHandle.nativeSuggestions.length)
+    handleNativeSuggestions();
 }
 
 document.addEventListener('DOMContentLoaded', setUpApi);

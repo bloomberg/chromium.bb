@@ -99,6 +99,7 @@ class InstantLoader : public InstantClient::Delegate,
   void Cancel(const string16& text);
   void SetPopupBounds(const gfx::Rect& bounds);
   void SetMarginSize(int start, int end);
+  void InitializeFonts();
   void SendAutocompleteResults(
       const std::vector<InstantAutocompleteResult>& results);
   void UpOrDownKeyPressed(int count);
@@ -124,6 +125,7 @@ class InstantLoader : public InstantClient::Delegate,
   virtual void AboutToNavigateMainFrame(const GURL& url) OVERRIDE;
   virtual void NavigateToURL(const GURL& url,
                              content::PageTransition transition) OVERRIDE;
+  virtual void RenderViewCreated() OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

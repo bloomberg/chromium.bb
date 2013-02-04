@@ -261,8 +261,10 @@ bool InstantController::Update(const AutocompleteMatch& match,
     return false;
   }
 
-  // If we have an |instant_tab_| use it, else ensure we have a loader.
-  if (!instant_tab_ && !EnsureLoaderIsCurrent()) {
+  // If we have an |instant_tab_| use it, else ensure we have a loader that is
+  // current or is using local preview.
+  if (!instant_tab_ && !(loader_ && loader_->IsUsingLocalPreview()) &&
+      !EnsureLoaderIsCurrent()) {
     HideLoader();
     return false;
   }
@@ -383,6 +385,14 @@ bool InstantController::Update(const AutocompleteMatch& match,
     if (first_interaction_time_.is_null())
       first_interaction_time_ = base::Time::Now();
     allow_preview_to_show_search_suggestions_ = true;
+
+    // For extended mode, if the loader is not ready at this point, switch over
+    // to a backup loader.
+    if (extended_enabled_ && !loader_->supports_instant() &&
+        !loader_->IsUsingLocalPreview() && browser_->GetActiveWebContents()) {
+      CreateLoader(kLocalOmniboxPopupURL, browser_->GetActiveWebContents());
+    }
+
     loader_->Update(extended_enabled_ ? user_text : full_text,
                     selection_start, selection_end, verbatim);
   }
@@ -943,6 +953,18 @@ void InstantController::InstantLoaderAboutToNavigateMainFrame(const GURL& url) {
   }
 }
 
+void InstantController::InstantLoaderRenderViewCreated() {
+  if (!extended_enabled_)
+    return;
+
+  // Ensure the searchbox API has the correct initial state.
+  loader_->SetDisplayInstantResults(instant_enabled_);
+  loader_->SearchModeChanged(search_mode_);
+  loader_->KeyCaptureChanged(omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE);
+  loader_->SetMarginSize(start_margin_, end_margin_);
+  loader_->InitializeFonts();
+}
+
 void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
   // If the preview is showing custom NTP content, don't hide it, commit it
   // (no matter where the user clicked) or try to recreate it.
@@ -952,6 +974,7 @@ void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
   // If the preview is not showing at all, recreate it if it's stale.
   if (model_.mode().is_default()) {
     OnStaleLoader();
+    MaybeSwitchToRemoteLoader();
     return;
   }
 
@@ -1018,20 +1041,15 @@ bool InstantController::EnsureLoaderIsCurrent() {
 
 void InstantController::CreateLoader(const std::string& instant_url,
                                      const content::WebContents* active_tab) {
+  // Update theme info so that the loader picks up the correct fonts.
+  if (extended_enabled_)
+    browser_->UpdateThemeInfoForPreview();
+
   HideInternal();
   loader_.reset(new InstantLoader(this, instant_url));
   loader_->InitContents(active_tab);
   LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
       "CreateLoader: instant_url='%s'", instant_url.c_str()));
-
-  // Ensure the searchbox API has the correct initial state.
-  if (extended_enabled_) {
-    browser_->UpdateThemeInfoForPreview();
-    loader_->SetDisplayInstantResults(instant_enabled_);
-    loader_->SearchModeChanged(search_mode_);
-    loader_->KeyCaptureChanged(omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE);
-    loader_->SetMarginSize(start_margin_, end_margin_);
-  }
 
   // Restart the stale loader timer.
   stale_loader_timer_.Start(FROM_HERE,
@@ -1055,6 +1073,15 @@ void InstantController::OnStaleLoader() {
   }
 }
 
+void InstantController::MaybeSwitchToRemoteLoader() {
+  if (!loader_ || omnibox_focus_state_ != OMNIBOX_FOCUS_NONE ||
+      !model_.mode().is_default()) {
+    return;
+  }
+
+  EnsureLoaderIsCurrent();
+}
+
 void InstantController::ResetInstantTab() {
   // Do not wire up the InstantTab if instant should only use local previews, to
   // prevent it from sending data to the page.
@@ -1065,6 +1092,7 @@ void InstantController::ResetInstantTab() {
       instant_tab_->Init();
       instant_tab_->SetDisplayInstantResults(instant_enabled_);
       instant_tab_->SetMarginSize(start_margin_, end_margin_);
+      instant_tab_->InitializeFonts();
     }
 
     // Hide the |loader_| since we are now using |instant_tab_| instead.
@@ -1077,6 +1105,7 @@ void InstantController::ResetInstantTab() {
 void InstantController::HideLoader() {
   HideInternal();
   OnStaleLoader();
+  MaybeSwitchToRemoteLoader();
 }
 
 void InstantController::HideInternal() {

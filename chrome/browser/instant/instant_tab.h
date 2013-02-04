@@ -45,6 +45,7 @@ class InstantTab : public InstantClient::Delegate {
   void SetDisplayInstantResults(bool display_instant_results);
   void UpOrDownKeyPressed(int count);
   void SetMarginSize(int start, int end);
+  void InitializeFonts();
 
  private:
   // Overridden from InstantClient::Delegate:
@@ -60,6 +61,7 @@ class InstantTab : public InstantClient::Delegate {
   virtual void AboutToNavigateMainFrame(const GURL& url) OVERRIDE;
   virtual void NavigateToURL(const GURL& url,
                              content::PageTransition transition) OVERRIDE;
+  virtual void RenderViewCreated() OVERRIDE;
 
   InstantClient client_;
   InstantController* const controller_;

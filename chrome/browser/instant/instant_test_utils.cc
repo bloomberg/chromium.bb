@@ -57,6 +57,10 @@ void InstantTestBase::SetupInstant() {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kInstantURL, instant_url_.spec());
   SetupInstantUsingTemplateURL();
+
+  // TODO(shishir): Fix this ugly hack.
+  instant()->SetInstantEnabled(false);
+  instant()->SetInstantEnabled(true);
 }
 
 void InstantTestBase::SetupInstantUsingTemplateURL() {

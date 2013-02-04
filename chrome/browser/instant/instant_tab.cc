@@ -50,6 +50,10 @@ void InstantTab::SetMarginSize(int start, int end) {
   client_.SetMarginSize(start, end);
 }
 
+void InstantTab::InitializeFonts() {
+  client_.InitializeFonts();
+}
+
 void InstantTab::SetSuggestions(
     const std::vector<InstantSuggestion>& suggestions) {
   InstantSupportDetermined(true);
@@ -95,4 +99,7 @@ void InstantTab::AboutToNavigateMainFrame(const GURL& url) {
 void InstantTab::NavigateToURL(const GURL& url,
                                content::PageTransition transition) {
   controller_->NavigateToURL(url, transition);
+}
+
+void InstantTab::RenderViewCreated() {
 }

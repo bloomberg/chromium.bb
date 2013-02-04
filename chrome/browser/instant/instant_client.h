@@ -68,6 +68,9 @@ class InstantClient : public content::WebContentsObserver {
     virtual void NavigateToURL(const GURL& url,
                                content::PageTransition transition) = 0;
 
+    // Called when a RenderView is created, so that state can be initialized.
+    virtual void RenderViewCreated() = 0;
+
    protected:
     virtual ~Delegate();
   };
@@ -104,6 +107,9 @@ class InstantClient : public content::WebContentsObserver {
   // Tells the page what size start and end margins to use.
   void SetMarginSize(const int start, const int end);
 
+  // Tells the page about the font information.
+  void InitializeFonts();
+
   // Tells the renderer to determine if the page supports the Instant API, which
   // results in a call to InstantSupportDetermined() when the reply is received.
   void DetermineIfPageSupportsInstant();
@@ -133,6 +139,8 @@ class InstantClient : public content::WebContentsObserver {
 
  private:
   // Overridden from content::WebContentsObserver:
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidFinishLoad(
       int64 frame_id,
       const GURL& validated_url,

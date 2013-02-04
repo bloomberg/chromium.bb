@@ -248,6 +248,10 @@ void InstantLoader::SetMarginSize(int start, int end) {
   client_.SetMarginSize(start, end);
 }
 
+void InstantLoader::InitializeFonts() {
+  client_.InitializeFonts();
+}
+
 void InstantLoader::SendAutocompleteResults(
     const std::vector<InstantAutocompleteResult>& results) {
   client_.SendAutocompleteResults(results);
@@ -322,6 +326,10 @@ void InstantLoader::NavigateToURL(const GURL& url,
                                   content::PageTransition transition) {
   InstantSupportDetermined(true);
   controller_->NavigateToURL(url, transition);
+}
+
+void InstantLoader::RenderViewCreated() {
+  controller_->InstantLoaderRenderViewCreated();
 }
 
 void InstantLoader::Observe(int type,
