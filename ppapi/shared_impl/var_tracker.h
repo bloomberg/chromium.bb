@@ -73,6 +73,12 @@ class PPAPI_SHARED_EXPORT VarTracker
   // Same as above, but copy the contents of |data| in to the new array buffer.
   PP_Var MakeArrayBufferPPVar(uint32 size_in_bytes, const void* data);
 
+  // Create an ArrayBuffer and copy the contents of |data| in to it. The
+  // returned object has 0 reference count in the tracker, and like all
+  // RefCounted objects, has a 0 initial internal reference count. (You should
+  // usually immediately put this in a scoped_refptr).
+  ArrayBufferVar* MakeArrayBufferVar(uint32 size_in_bytes, const void* data);
+
   // Return a vector containing all PP_Vars that are in the tracker. This is
   // to help implement PPB_Testing_Dev.GetLiveVars and should generally not be
   // used in production code. The PP_Vars are returned in no particular order,

@@ -464,6 +464,7 @@ std::string TestWebSocket::TestValidConnect() {
   PP_Var extensions = websocket_interface_->GetExtensions(ws);
   ASSERT_TRUE(AreEqualWithString(extensions, ""));
   core_interface_->ReleaseResource(ws);
+  ReleaseVar(extensions);
 
   PASS();
 }

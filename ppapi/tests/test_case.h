@@ -315,6 +315,8 @@ class TestCaseFactory {
           "reference leak check"); \
     instance_->LogTest(#name, error_message); \
   }
+// TODO(dmichael): Add CheckResourcesAndVars above when Windows tests pass
+//                 cleanly. crbug.com/173503
 
 // Helper macros for checking values in tests, and returning a location
 // description of the test fails.
