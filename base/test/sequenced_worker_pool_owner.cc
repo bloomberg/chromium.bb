@@ -51,7 +51,7 @@ void SequencedWorkerPoolOwner::WillWaitForShutdown() {
 void SequencedWorkerPoolOwner::OnDestruct() {
   constructor_message_loop_->PostTask(
       FROM_HERE,
-      constructor_message_loop_->QuitClosure());
+      constructor_message_loop_->QuitWhenIdleClosure());
 }
 
 }  // namespace base

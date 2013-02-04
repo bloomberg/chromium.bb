@@ -165,17 +165,15 @@ TEST(CancelableCallbackTest, PostTask) {
                                            base::Unretained(&count)));
 
   MessageLoop::current()->PostTask(FROM_HERE, cancelable.callback());
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  MessageLoop::current()->Run();
+  MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(1, count);
 
   MessageLoop::current()->PostTask(FROM_HERE, cancelable.callback());
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 
   // Cancel before running the message loop.
   cancelable.Cancel();
-  MessageLoop::current()->Run();
+  MessageLoop::current()->RunUntilIdle();
 
   // Callback never ran due to cancellation; count is the same.
   EXPECT_EQ(1, count);

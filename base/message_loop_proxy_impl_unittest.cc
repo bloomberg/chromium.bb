@@ -21,7 +21,7 @@ class MessageLoopProxyImplTest : public testing::Test {
   }
 
   void Quit() const {
-    loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    loop_.PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
   }
 
   void AssertOnIOThread() const {

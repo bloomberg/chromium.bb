@@ -151,7 +151,7 @@ class AddRemoveThread : public PlatformThread::Delegate,
   }
 
   void Quit() {
-    loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    loop_->PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
   }
 
   virtual void Observe(int x) OVERRIDE {

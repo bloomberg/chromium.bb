@@ -189,13 +189,12 @@ TEST_F(MessagePumpGLibTest, TestQuit) {
   // Checks that Quit works and that the basic infrastructure is working.
 
   // Quit from a task
-  loop()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  loop()->Run();
+  loop()->RunUntilIdle();
   EXPECT_EQ(0, injector()->processed_events());
 
   injector()->Reset();
   // Quit from an event
-  injector()->AddEvent(0, MessageLoop::QuitClosure());
+  injector()->AddEvent(0, MessageLoop::QuitWhenIdleClosure());
   loop()->Run();
   EXPECT_EQ(1, injector()->processed_events());
 }
@@ -215,7 +214,7 @@ TEST_F(MessagePumpGLibTest, TestEventTaskInterleave) {
       base::Bind(&PostMessageLoopTask, FROM_HERE, check_task);
   injector()->AddEventAsTask(0, posted_task);
   injector()->AddEventAsTask(0, base::Bind(&base::DoNothing));
-  injector()->AddEvent(0, MessageLoop::QuitClosure());
+  injector()->AddEvent(0, MessageLoop::QuitWhenIdleClosure());
   loop()->Run();
   EXPECT_EQ(4, injector()->processed_events());
 
@@ -226,7 +225,7 @@ TEST_F(MessagePumpGLibTest, TestEventTaskInterleave) {
   posted_task = base::Bind(&PostMessageLoopTask, FROM_HERE, check_task);
   injector()->AddEventAsTask(0, posted_task);
   injector()->AddEventAsTask(10, base::Bind(&base::DoNothing));
-  injector()->AddEvent(0, MessageLoop::QuitClosure());
+  injector()->AddEvent(0, MessageLoop::QuitWhenIdleClosure());
   loop()->Run();
   EXPECT_EQ(4, injector()->processed_events());
 }
@@ -243,7 +242,7 @@ TEST_F(MessagePumpGLibTest, TestWorkWhileWaitingForEvents) {
   loop()->PostTask(
       FROM_HERE,
       base::Bind(&EventInjector::AddEvent, base::Unretained(injector()), 0,
-                 MessageLoop::QuitClosure()));
+                 MessageLoop::QuitWhenIdleClosure()));
   loop()->Run();
   ASSERT_EQ(10, task_count);
   EXPECT_EQ(1, injector()->processed_events());
@@ -264,7 +263,7 @@ TEST_F(MessagePumpGLibTest, TestWorkWhileWaitingForEvents) {
   loop()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&EventInjector::AddEvent, base::Unretained(injector()), 10,
-                 MessageLoop::QuitClosure()),
+                 MessageLoop::QuitWhenIdleClosure()),
       base::TimeDelta::FromMilliseconds(150));
   loop()->Run();
   ASSERT_EQ(10, task_count);
@@ -287,7 +286,7 @@ TEST_F(MessagePumpGLibTest, TestEventsWhileWaitingForWork) {
   injector()->AddEventAsTask(10, posted_task);
 
   // And then quit (relies on the condition tested by TestEventTaskInterleave).
-  injector()->AddEvent(10, MessageLoop::QuitClosure());
+  injector()->AddEvent(10, MessageLoop::QuitWhenIdleClosure());
   loop()->Run();
 
   EXPECT_EQ(12, injector()->processed_events());
@@ -381,7 +380,7 @@ void AddEventsAndDrainGLib(EventInjector* injector) {
   injector->AddDummyEvent(0);
   injector->AddDummyEvent(0);
   // Then add an event that will quit the main loop.
-  injector->AddEvent(0, MessageLoop::QuitClosure());
+  injector->AddEvent(0, MessageLoop::QuitWhenIdleClosure());
 
   // Post a couple of dummy tasks
   MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&base::DoNothing));
@@ -414,7 +413,7 @@ void AddEventsAndDrainGtk(EventInjector* injector) {
   injector->AddDummyEvent(0);
   injector->AddDummyEvent(0);
   // Then add an event that will quit the main loop.
-  injector->AddEvent(0, MessageLoop::QuitClosure());
+  injector->AddEvent(0, MessageLoop::QuitWhenIdleClosure());
 
   // Post a couple of dummy tasks
   MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&base::DoNothing));
