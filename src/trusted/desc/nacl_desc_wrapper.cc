@@ -225,31 +225,19 @@ DescWrapper* DescWrapperFactory::MakeShm(size_t size) {
 
 DescWrapper* DescWrapperFactory::ImportShmHandle(NaClHandle handle,
                                                  size_t size) {
-  struct NaClDescImcShm* desc =
-    reinterpret_cast<NaClDescImcShm*>(calloc(1, sizeof *desc));
-  if (NULL == desc) {
+  struct NaClDesc *desc = NaClDescImcShmMake(handle, size);
+  if (desc == NULL) {
     return NULL;
   }
-  if (!NaClDescImcShmCtor(desc, handle, size)) {
-    free(desc);
-    return NULL;
-  }
-
-  return MakeGenericCleanup(reinterpret_cast<struct NaClDesc*>(desc));
+  return MakeGenericCleanup(desc);
 }
 
 DescWrapper* DescWrapperFactory::ImportSyncSocketHandle(NaClHandle handle) {
-  struct NaClDescSyncSocket* desc =
-    static_cast<NaClDescSyncSocket*>(calloc(1, sizeof *desc));
-  if (NULL == desc) {
+  struct NaClDesc *desc = NaClDescSyncSocketMake(handle);
+  if (desc == NULL) {
     return NULL;
   }
-  if (!NaClDescSyncSocketCtor(desc, handle)) {
-    free(desc);
-    return NULL;
-  }
-
-  return MakeGenericCleanup(reinterpret_cast<struct NaClDesc*>(desc));
+  return MakeGenericCleanup(desc);
 }
 
 #if NACL_LINUX && !NACL_ANDROID

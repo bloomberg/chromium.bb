@@ -53,6 +53,18 @@ int NaClDescSyncSocketCtor(struct NaClDescSyncSocket  *self,
   return retval;
 }
 
+struct NaClDesc *NaClDescSyncSocketMake(NaClHandle handle) {
+  struct NaClDescSyncSocket *desc = malloc(sizeof(*desc));
+  if (NULL == desc) {
+    return NULL;
+  }
+  if (!NaClDescSyncSocketCtor(desc, handle)) {
+    free(desc);
+    return NULL;
+  }
+  return &desc->base;
+}
+
 static void NaClDescSyncSocketDtor(struct NaClRefCount *vself) {
   struct NaClDescSyncSocket  *self = ((struct NaClDescSyncSocket *) vself);
 

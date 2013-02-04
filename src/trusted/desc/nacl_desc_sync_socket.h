@@ -46,6 +46,8 @@ int NaClDescSyncSocketCtor(struct NaClDescSyncSocket  *self,
                            NaClHandle                 h)
     NACL_WUR;
 
+struct NaClDesc *NaClDescSyncSocketMake(NaClHandle handle);
+
 EXTERN_C_END
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_SYNC_SOCKET_H_

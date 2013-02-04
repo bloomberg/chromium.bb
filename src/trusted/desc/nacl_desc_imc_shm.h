@@ -64,7 +64,7 @@ int NaClDescImcShmAllocCtor(struct NaClDescImcShm  *self,
                             int                    executable)
     NACL_WUR;
 
-struct NaClDescImcShm *NaClDescImcShmMake(struct NaClHostDesc *nhdp)
+struct NaClDesc *NaClDescImcShmMake(NaClHandle handle, nacl_off64_t size)
     NACL_WUR;
 
 EXTERN_C_END

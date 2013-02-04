@@ -92,6 +92,18 @@ int NaClDescImcShmAllocCtor(struct NaClDescImcShm  *self,
   return rv;
 }
 
+struct NaClDesc *NaClDescImcShmMake(NaClHandle handle, nacl_off64_t size) {
+  struct NaClDescImcShm *desc = malloc(sizeof(*desc));
+  if (NULL == desc) {
+    return NULL;
+  }
+  if (!NaClDescImcShmCtor(desc, handle, size)) {
+    free(desc);
+    return NULL;
+  }
+  return &desc->base;
+}
+
 static void NaClDescImcShmDtor(struct NaClRefCount *vself) {
   struct NaClDescImcShm  *self = (struct NaClDescImcShm *) vself;
 
