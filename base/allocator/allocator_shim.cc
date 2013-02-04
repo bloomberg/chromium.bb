@@ -45,8 +45,12 @@ typedef enum {
 // See SetupSubprocessAllocator() to specify a default secondary (subprocess)
 // allocator.
 // TODO(jar): Switch to using TCMALLOC for the renderer as well.
+#if (defined(ADDRESS_SANITIZER) && defined(OS_WIN))
+// The Windows implementation of Asan requires the use of "WINHEAP".
+static Allocator allocator = WINHEAP;
+#else
 static Allocator allocator = TCMALLOC;
-
+#endif
 // The names of the environment variables that can optionally control the
 // selection of the allocator.  The primary may be used to control overall
 // allocator selection, and the secondary can be used to specify an allocator
@@ -266,6 +270,9 @@ static void release_free_memory_thunk() {
 // The CRT heap initialization stub.
 extern "C" int _heap_init() {
 #ifdef ENABLE_DYNAMIC_ALLOCATOR_SWITCHING
+// Don't use the environment variable if ADDRESS_SANITIZER is defined on
+// Windows, as the implementation requires Winheap to be the allocator.
+#if !(defined(ADDRESS_SANITIZER) && defined(OS_WIN))
   const char* environment_value = GetenvBeforeMain(primary_name);
   if (environment_value) {
     if (!stricmp(environment_value, "jemalloc"))
@@ -277,6 +284,7 @@ extern "C" int _heap_init() {
     else if (!stricmp(environment_value, "tcmalloc"))
       allocator = TCMALLOC;
   }
+#endif
 
   switch (allocator) {
     case JEMALLOC:
@@ -407,8 +415,14 @@ void SetupSubprocessAllocator() {
   buffer[sizeof(buffer) - 1] = '\0';
 
   if (secondary_length || !primary_length) {
+    // Don't use the environment variable if ADDRESS_SANITIZER is defined on
+    // Windows, as the implementation require Winheap to be the allocator.
+#if !(defined(ADDRESS_SANITIZER) && defined(OS_WIN))
     const char* secondary_value = secondary_length ? buffer : "TCMALLOC";
     // Force renderer (or other subprocesses) to use secondary_value.
+#else
+    const char* secondary_value = "WINHEAP";
+#endif
     int ret_val = _putenv_s(primary_name, secondary_value);
     DCHECK_EQ(0, ret_val);
   }
