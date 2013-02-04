@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/scoped_native_library.h"
@@ -18,10 +19,12 @@
 #include "base/win/windows_version.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
+#include "remoting/host/basic_desktop_environment.h"
 #include "remoting/host/desktop_process.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
 #include "remoting/host/usage_stats_consent.h"
+#include "remoting/host/win/session_desktop_environment.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -94,7 +97,20 @@ int main(int argc, char** argv) {
                                          quit_ui_task_runner);
 
   remoting::DesktopProcess desktop_process(ui_task_runner, channel_name);
-  if (!desktop_process.Start())
+
+  // Create a platform-dependent environment factory.
+  scoped_ptr<remoting::DesktopEnvironmentFactory> desktop_environment_factory;
+#if defined(OS_WIN)
+  desktop_environment_factory.reset(
+      new remoting::SessionDesktopEnvironmentFactory(
+          base::Bind(&remoting::DesktopProcess::InjectSas,
+                     desktop_process.AsWeakPtr())));
+#else  // !defined(OS_WIN)
+  desktop_environment_factory.reset(
+      new remoting::BasicDesktopEnvironmentFactory(true));
+#endif  // !defined(OS_WIN)
+
+  if (!desktop_process.Start(desktop_environment_factory.Pass()))
     return remoting::kInitializationFailed;
 
   // Run the UI message loop.

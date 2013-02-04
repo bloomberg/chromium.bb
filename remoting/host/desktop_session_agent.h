@@ -33,6 +33,7 @@ namespace remoting {
 class AudioCapturer;
 class AudioPacket;
 class AutoThreadTaskRunner;
+class DesktopEnvironmentFactory;
 class DisconnectWindow;
 class EventExecutor;
 class LocalInputMonitor;
@@ -54,12 +55,12 @@ class DesktopSessionAgent
    public:
     virtual ~Delegate();
 
+    // Returns an instance of desktop environment factory used.
+    virtual DesktopEnvironmentFactory& desktop_environment_factory() = 0;
+
     // Notifies the delegate that the network-to-desktop channel has been
     // disconnected.
     virtual void OnNetworkProcessDisconnected() = 0;
-
-    // Request the delegate to inject Secure Attention Sequence.
-    virtual void InjectSas() = 0;
   };
 
   static scoped_refptr<DesktopSessionAgent> Create(
@@ -119,9 +120,6 @@ class DesktopSessionAgent
   virtual bool CreateChannelForNetworkProcess(
       IPC::PlatformFileForTransit* client_out,
       scoped_ptr<IPC::ChannelProxy>* server_out) = 0;
-
-  // Creates an event executor specific to the platform.
-  virtual scoped_ptr<EventExecutor> CreateEventExecutor() = 0;
 
   // Handles StartSessionAgent request from the client.
   void OnStartSessionAgent(const std::string& authenticated_jid);

@@ -14,6 +14,7 @@
 #include "remoting/base/util.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_messages.h"
+#include "remoting/host/desktop_environment.h"
 #include "remoting/host/disconnect_window.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/local_input_monitor.h"
@@ -176,11 +177,23 @@ void DesktopSessionAgent::OnStartSessionAgent(
     const std::string& authenticated_jid) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
   DCHECK(!started_);
+  DCHECK(!audio_capturer_);
+  DCHECK(!event_executor_);
+  DCHECK(!video_capturer_);
 
   started_ = true;
 
+  // Create a desktop environment for the new session.
+  base::Closure disconnect_session =
+      base::Bind(&DesktopSessionAgent::DisconnectSession, this);
+  scoped_ptr<DesktopEnvironment> desktop_environment =
+      delegate_->desktop_environment_factory().Create(authenticated_jid,
+                                                      disconnect_session);
+
   // Create the event executor.
-  event_executor_ = CreateEventExecutor();
+  event_executor_ =
+      desktop_environment->CreateEventExecutor(input_task_runner(),
+                                               caller_task_runner());
 
   // Hook up the input filter
   input_tracker_.reset(new protocol::InputEventTracker(event_executor_.get()));
@@ -190,9 +203,6 @@ void DesktopSessionAgent::OnStartSessionAgent(
   scoped_ptr<protocol::ClipboardStub> clipboard_stub(
       new DesktopSesssionClipboardStub(this));
   event_executor_->Start(clipboard_stub.Pass());
-
-  base::Closure disconnect_session =
-      base::Bind(&DesktopSessionAgent::DisconnectSession, this);
 
   // Create the disconnect window.
   disconnect_window_ = DisconnectWindow::Create(&ui_strings_);
@@ -205,10 +215,16 @@ void DesktopSessionAgent::OnStartSessionAgent(
   local_input_monitor_->Start(this, disconnect_session);
 
   // Start the audio capturer.
-  audio_capture_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DesktopSessionAgent::StartAudioCapturer, this));
+  if (delegate_->desktop_environment_factory().SupportsAudioCapture()) {
+    audio_capturer_ = desktop_environment->CreateAudioCapturer(
+        audio_capture_task_runner());
+    audio_capture_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&DesktopSessionAgent::StartAudioCapturer, this));
+  }
 
   // Start the video capturer.
+  video_capturer_ = desktop_environment->CreateVideoCapturer(
+      video_capture_task_runner(), caller_task_runner());
   video_capture_task_runner()->PostTask(
       FROM_HERE, base::Bind(&DesktopSessionAgent::StartVideoCapturer, this));
 }
@@ -470,7 +486,6 @@ void DesktopSessionAgent::SendToNetwork(IPC::Message* message) {
 void DesktopSessionAgent::StartAudioCapturer() {
   DCHECK(audio_capture_task_runner()->BelongsToCurrentThread());
 
-  audio_capturer_ = AudioCapturer::Create();
   if (audio_capturer_) {
     audio_capturer_->Start(base::Bind(&DesktopSessionAgent::ProcessAudioPacket,
                                       this));
@@ -486,7 +501,6 @@ void DesktopSessionAgent::StopAudioCapturer() {
 void DesktopSessionAgent::StartVideoCapturer() {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
 
-  video_capturer_ = media::ScreenCapturer::Create();
   if (video_capturer_)
     video_capturer_->Start(this);
 }

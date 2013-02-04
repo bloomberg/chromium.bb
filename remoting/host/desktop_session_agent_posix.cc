@@ -14,7 +14,6 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/host/event_executor.h"
 
 namespace remoting {
 
@@ -35,7 +34,6 @@ class DesktopSessionAgentPosix : public DesktopSessionAgent {
   virtual bool CreateChannelForNetworkProcess(
       IPC::PlatformFileForTransit* client_out,
       scoped_ptr<IPC::ChannelProxy>* server_out) OVERRIDE;
-  virtual scoped_ptr<EventExecutor> CreateEventExecutor() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionAgentPosix);
@@ -91,13 +89,6 @@ bool DesktopSessionAgentPosix::CreateChannelForNetworkProcess(
 
   *client_out = base::FileDescriptor(pipe_fds[1], false);
   return true;
-}
-
-scoped_ptr<EventExecutor> DesktopSessionAgentPosix::CreateEventExecutor() {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
-
-  return EventExecutor::Create(input_task_runner(),
-                               caller_task_runner()).Pass();
 }
 
 // static

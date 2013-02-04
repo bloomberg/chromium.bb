@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -22,28 +23,34 @@ class ChannelProxy;
 namespace remoting {
 
 class AutoThreadTaskRunner;
+class DesktopEnvironment;
+class DesktopEnvironmentFactory;
 class DesktopSessionAgent;
 
 class DesktopProcess : public DesktopSessionAgent::Delegate,
                        public IPC::Listener,
                        public base::SupportsWeakPtr<DesktopProcess> {
  public:
-  DesktopProcess(scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
-                 const std::string& daemon_channel_name);
+  DesktopProcess(
+      scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+      const std::string& daemon_channel_name);
   virtual ~DesktopProcess();
 
   // DesktopSessionAgent::Delegate implementation.
+  virtual DesktopEnvironmentFactory& desktop_environment_factory() OVERRIDE;
   virtual void OnNetworkProcessDisconnected() OVERRIDE;
-  virtual void InjectSas() OVERRIDE;
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
+  // Injects Secure Attention Sequence.
+  void InjectSas();
+
   // Creates the desktop agent and required threads and IPC channels. Returns
   // true on success.
-  bool Start();
+  bool Start(scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory);
 
  private:
   // Crashes the process in response to a daemon's request. The daemon passes
@@ -55,6 +62,9 @@ class DesktopProcess : public DesktopSessionAgent::Delegate,
 
   // Task runner on which public methods of this class should be called.
   scoped_refptr<AutoThreadTaskRunner> caller_task_runner_;
+
+  // Factory used to create integration components for use by |desktop_agent_|.
+  scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
 
   // Name of the IPC channel connecting the desktop process with the daemon
   // process.

@@ -15,11 +15,14 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
+#include "media/video/capture/screen/screen_capturer_fake.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_process.h"
 #include "remoting/host/host_exit_codes.h"
+#include "remoting/host/host_mock_objects.h"
+#include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,6 +30,7 @@
 using testing::_;
 using testing::AnyNumber;
 using testing::InSequence;
+using testing::Return;
 
 namespace remoting {
 
@@ -97,6 +101,18 @@ class DesktopProcessTest : public testing::Test {
   // MockDaemonListener mocks
   void ConnectNetworkChannel(IPC::PlatformFileForTransit desktop_process);
   void OnDesktopAttached(IPC::PlatformFileForTransit desktop_process);
+
+  // Creates a DesktopEnvironment with a fake media::ScreenCapturer, to mock
+  // DesktopEnvironmentFactory::Create().
+  DesktopEnvironment* CreateDesktopEnvironment();
+
+  // Creates a dummy EventExecutor, to mock
+  // DesktopEnvironment::CreateEventExecutor().
+  EventExecutor* CreateEventExecutor();
+
+  // Creates a fake media::ScreenCapturer, to mock
+  // DesktopEnvironment::CreateVideoCapturer().
+  media::ScreenCapturer* CreateVideoCapturer();
 
   // Disconnects the daemon-to-desktop channel causing the desktop process to
   // exit.
@@ -169,6 +185,31 @@ void DesktopProcessTest::OnDesktopAttached(
 #endif  // defined(OS_POSIX)
 }
 
+DesktopEnvironment* DesktopProcessTest::CreateDesktopEnvironment() {
+  MockDesktopEnvironment* desktop_environment = new MockDesktopEnvironment();
+  EXPECT_CALL(*desktop_environment, CreateAudioCapturerPtr(_))
+      .Times(0);
+  EXPECT_CALL(*desktop_environment, CreateEventExecutorPtr(_, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(
+          InvokeWithoutArgs(this, &DesktopProcessTest::CreateEventExecutor));
+  EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr(_, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(
+          InvokeWithoutArgs(this, &DesktopProcessTest::CreateVideoCapturer));
+  return desktop_environment;
+}
+
+EventExecutor* DesktopProcessTest::CreateEventExecutor() {
+  MockEventExecutor* event_executor = new MockEventExecutor();
+  EXPECT_CALL(*event_executor, StartPtr(_));
+  return event_executor;
+}
+
+media::ScreenCapturer* DesktopProcessTest::CreateVideoCapturer() {
+  return new media::ScreenCapturerFake();
+}
+
 void DesktopProcessTest::DisconnectChannels() {
   daemon_channel_.reset();
   network_channel_.reset();
@@ -194,8 +235,19 @@ void DesktopProcessTest::RunDesktopProcess() {
       &daemon_listener_,
       io_task_runner_));
 
+  scoped_ptr<MockDesktopEnvironmentFactory> desktop_environment_factory(
+      new MockDesktopEnvironmentFactory());
+  EXPECT_CALL(*desktop_environment_factory, CreatePtr())
+      .Times(AnyNumber())
+      .WillRepeatedly(Invoke(this,
+                             &DesktopProcessTest::CreateDesktopEnvironment));
+  EXPECT_CALL(*desktop_environment_factory, SupportsAudioCapture())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(false));
+
   DesktopProcess desktop_process(ui_task_runner, channel_name);
-  EXPECT_TRUE(desktop_process.Start());
+  EXPECT_TRUE(desktop_process.Start(
+      desktop_environment_factory.PassAs<DesktopEnvironmentFactory>()));
 
   ui_task_runner = NULL;
   run_loop.Run();
