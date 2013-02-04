@@ -6,7 +6,6 @@
 
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
 #include "chrome/browser/system_monitor/removable_storage_notifications.h"
@@ -77,14 +76,6 @@ TEST_F(MediaStorageUtilTest, CanCreateFileSystemForImageCapture) {
 
 TEST_F(MediaStorageUtilTest, DetectDeviceFiltered) {
   MessageLoop loop;
-#if defined(OS_MACOSX)
-  // This needs to happen before SystemMonitor's ctor.
-  base::SystemMonitor::AllocateSystemIOPorts();
-#endif
-  // Installs global. Required MessageLoop.
-  // On Mac, requires AllocateSystemIOPorts.
-  base::SystemMonitor monitor;
-
   content::TestBrowserThread file_thread(content::BrowserThread::FILE, &loop);
 
   MediaStorageUtil::DeviceIdSet devices;
