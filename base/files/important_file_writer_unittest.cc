@@ -79,7 +79,7 @@ TEST_F(ImportantFileWriterTest, ScheduleWrite) {
   EXPECT_TRUE(writer.HasPendingWrite());
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      MessageLoop::QuitWhenIdleClosure(),
+      MessageLoop::QuitClosure(),
       TimeDelta::FromMilliseconds(100));
   MessageLoop::current()->Run();
   EXPECT_FALSE(writer.HasPendingWrite());
@@ -97,7 +97,7 @@ TEST_F(ImportantFileWriterTest, DoScheduledWrite) {
   writer.DoScheduledWrite();
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      MessageLoop::QuitWhenIdleClosure(),
+      MessageLoop::QuitClosure(),
       TimeDelta::FromMilliseconds(100));
   MessageLoop::current()->Run();
   EXPECT_FALSE(writer.HasPendingWrite());
@@ -115,7 +115,7 @@ TEST_F(ImportantFileWriterTest, BatchingWrites) {
   writer.ScheduleWrite(&baz);
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      MessageLoop::QuitWhenIdleClosure(),
+      MessageLoop::QuitClosure(),
       TimeDelta::FromMilliseconds(100));
   MessageLoop::current()->Run();
   ASSERT_TRUE(file_util::PathExists(writer.path()));

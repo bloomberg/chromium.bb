@@ -21,8 +21,7 @@ class LibDispatchTaskRunnerTest : public testing::Test {
   // all non-delayed tasks are run on the LibDispatchTaskRunner.
   void DispatchLastTask() {
     dispatch_async(task_runner_->GetDispatchQueue(), ^{
-        (&message_loop_)->PostTask(FROM_HERE,
-                                   MessageLoop::QuitWhenIdleClosure());
+        (&message_loop_)->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     });
     message_loop_.Run();
     task_runner_->Shutdown();
@@ -157,8 +156,7 @@ TEST_F(LibDispatchTaskRunnerTest, NonNestable) {
       TaskOrderMarker marker(this, "First");
       task_runner_->PostNonNestableTask(FROM_HERE, base::BindBlock(^{
           TaskOrderMarker marker(this, "Second NonNestable");
-          (&message_loop_)->PostTask(FROM_HERE,
-                                     MessageLoop::QuitWhenIdleClosure());
+          (&message_loop_)->PostTask(FROM_HERE, MessageLoop::QuitClosure());
       }));
   }));
   message_loop_.Run();
@@ -183,7 +181,7 @@ TEST_F(LibDispatchTaskRunnerTest, PostDelayed) {
   task_runner_->PostDelayedTask(FROM_HERE, base::BindBlock(^{
       TaskOrderMarker marker(this, "Timed");
       run_time = base::TimeTicks::Now();
-      (&message_loop_)->PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
+      (&message_loop_)->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }), delta);
   task_runner_->PostTask(FROM_HERE, BoundRecordTaskOrder(this, "Second"));
   message_loop_.Run();

@@ -75,7 +75,7 @@ class NotificationCollector
 
     // Check whether all delegates have been signaled.
     if (signaled_ == delegates_)
-      loop_->PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
+      loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   // Set of registered delegates.
@@ -147,7 +147,7 @@ void QuitLoopWatchCallback(MessageLoop* loop,
   *flag = true;
   EXPECT_EQ(expected_path, path);
   EXPECT_EQ(expected_error, error);
-  loop->PostTask(FROM_HERE, loop->QuitWhenIdleClosure());
+  loop->PostTask(FROM_HERE, loop->QuitClosure());
 }
 
 class FilePathWatcherTest : public testing::Test {
@@ -290,7 +290,7 @@ class Deleter : public TestDelegateBase {
 
   virtual void OnFileChanged(const FilePath&, bool) OVERRIDE {
     watcher_.reset();
-    loop_->PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
+    loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   FilePathWatcher* watcher() const { return watcher_.get(); }
@@ -895,7 +895,7 @@ TEST_F(FilePathWatcherTest, DirAttributesChanged) {
   // to access the file.
   ASSERT_TRUE(ChangeFilePermissions(test_dir1, Read, false));
   loop_.PostDelayedTask(FROM_HERE,
-                        MessageLoop::QuitWhenIdleClosure(),
+                        MessageLoop::QuitClosure(),
                         TestTimeouts::tiny_timeout());
   ASSERT_FALSE(WaitForEvents());
   ASSERT_TRUE(ChangeFilePermissions(test_dir1, Read, true));
