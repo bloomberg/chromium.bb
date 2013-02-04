@@ -22,19 +22,6 @@ enum NotificationType {
   // Not valid when posting a notification.
   NOTIFICATION_ALL = NOTIFICATION_CONTENT_START,
 
-  // The app is done processing user actions, now is a good time to do
-  // some background work.
-  NOTIFICATION_IDLE,
-
-  // Means that the app has just started doing something in response to a
-  // user action, and that background processes shouldn't run if avoidable.
-  NOTIFICATION_BUSY,
-
-  // This is sent when the user does a gesture resulting in a noteworthy
-  // action taking place. This is typically used for logging. The source is
-  // the browser context, and the details is a string identifying the action.
-  NOTIFICATION_USER_ACTION,
-
   // NavigationController ----------------------------------------------------
 
   // A new pending navigation has been created. Pending entries are created

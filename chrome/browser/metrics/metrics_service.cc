@@ -629,6 +629,10 @@ void MetricsService::EnableRecording() {
     OpenNewLog();
 
   SetUpNotifications(&registrar_, this);
+  content::RemoveActionCallback(action_callback_);
+  action_callback_ = base::Bind(&MetricsService::OnUserAction,
+                                base::Unretained(this));
+  content::AddActionCallback(action_callback_);
 }
 
 void MetricsService::DisableRecording() {
@@ -638,6 +642,7 @@ void MetricsService::DisableRecording() {
     return;
   recording_active_ = false;
 
+  content::RemoveActionCallback(action_callback_);
   registrar_.RemoveAll();
   PushPendingLogsToPersistentStorage();
   DCHECK(!log_manager_.has_staged_log());
@@ -660,8 +665,6 @@ void MetricsService::SetUpNotifications(
   registrar->Add(observer, chrome::NOTIFICATION_BROWSER_OPENED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar->Add(observer, chrome::NOTIFICATION_BROWSER_CLOSED,
-                 content::NotificationService::AllSources());
-  registrar->Add(observer, content::NOTIFICATION_USER_ACTION,
                  content::NotificationService::AllSources());
   registrar->Add(observer, chrome::NOTIFICATION_TAB_PARENTED,
                  content::NotificationService::AllSources());
@@ -693,15 +696,10 @@ void MetricsService::Observe(int type,
   DCHECK(log_manager_.current_log());
   DCHECK(IsSingleThreaded());
 
-  if (!CanLogNotification(type, source, details))
+  if (!CanLogNotification())
     return;
 
   switch (type) {
-    case content::NOTIFICATION_USER_ACTION:
-         log_manager_.current_log()->RecordUserAction(
-             *content::Details<const char*>(details).ptr());
-      break;
-
     case chrome::NOTIFICATION_BROWSER_OPENED:
     case chrome::NOTIFICATION_BROWSER_CLOSED: {
       Browser* browser = content::Source<Browser>(source).ptr();
@@ -1033,6 +1031,14 @@ void MetricsService::OnInitTaskGotGoogleUpdateData(
   // call into |FinishedReceivingProfilerData()| when the task completes.
   chrome_browser_metrics::TrackingSynchronizer::FetchProfilerDataAsynchronously(
       self_ptr_factory_.GetWeakPtr());
+}
+
+void MetricsService::OnUserAction(const std::string& action) {
+  if (!CanLogNotification())
+    return;
+
+  log_manager_.current_log()->RecordUserAction(action.c_str());
+  HandleIdleSinceLastTransmission(false);
 }
 
 void MetricsService::ReceivedProfilerData(
@@ -1892,10 +1898,7 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
   child_process_stats_buffer_.clear();
 }
 
-bool MetricsService::CanLogNotification(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+bool MetricsService::CanLogNotification() {
   // We simply don't log anything to UMA if there is a single incognito
   // session visible. The problem is that we always notify using the orginal
   // profile in order to simplify notification processing.

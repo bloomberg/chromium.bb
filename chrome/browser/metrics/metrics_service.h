@@ -24,6 +24,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/user_metrics.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 #if defined(OS_CHROMEOS)
@@ -234,6 +235,8 @@ class MetricsService
   void OnInitTaskGotGoogleUpdateData(
       const GoogleUpdateMetrics& google_update_metrics);
 
+  void OnUserAction(const std::string& action);
+
   // TrackingSynchronizerObserver:
   virtual void ReceivedProfilerData(
       const tracked_objects::ProcessDataSnapshot& process_data,
@@ -386,9 +389,7 @@ class MetricsService
                        const content::NotificationDetails& details);
 
   // Checks whether a notification can be logged.
-  bool CanLogNotification(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details);
+  bool CanLogNotification();
 
   // Sets the value of the specified path in prefs and schedules a save.
   void RecordBooleanPrefValue(const char* path, bool value);
@@ -396,6 +397,8 @@ class MetricsService
   // Returns true if process of type |type| should be counted as a plugin
   // process, and false otherwise.
   static bool IsPluginProcess(content::ProcessType type);
+
+  content::ActionCallback action_callback_;
 
   content::NotificationRegistrar registrar_;
 

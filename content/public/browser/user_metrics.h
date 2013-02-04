@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -49,6 +50,13 @@ CONTENT_EXPORT void RecordAction(const UserMetricsAction& action);
 // you need to also update the rules for extracting known actions in
 // chrome/tools/extract_actions.py.
 CONTENT_EXPORT void RecordComputedAction(const std::string& action);
+
+// Called with the action string.
+typedef base::Callback<void(const std::string&)> ActionCallback;
+
+// Add/remove action callbacks (see above).
+CONTENT_EXPORT void AddActionCallback(const ActionCallback& callback);
+CONTENT_EXPORT void RemoveActionCallback(const ActionCallback& callback);
 
 }  // namespace content
 

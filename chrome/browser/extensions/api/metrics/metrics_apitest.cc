@@ -7,8 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 
 namespace {
 
@@ -46,18 +45,17 @@ struct RecordedHistogram {
 
 // This class observes and collects user action notifications that are sent
 // by the tests, so that they can be examined afterwards for correctness.
-class UserActionObserver : public content::NotificationObserver {
+class UserActionObserver {
  public:
   UserActionObserver();
+  ~UserActionObserver();
 
   void ValidateUserActions(const RecordedUserAction* recorded, int count);
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
-
  private:
   typedef std::map<std::string, int> UserActionCountMap;
+
+  void OnUserAction(const std::string& action);
 
   int num_metrics() const {
     return count_map_.size();
@@ -68,20 +66,25 @@ class UserActionObserver : public content::NotificationObserver {
     return i == count_map_.end() ? -1 : i->second;
   }
 
-  content::NotificationRegistrar registrar_;
   UserActionCountMap count_map_;
+
+  content::ActionCallback action_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserActionObserver);
 };
 
-UserActionObserver::UserActionObserver() {
-  registrar_.Add(this, content::NOTIFICATION_USER_ACTION,
-                 content::NotificationService::AllSources());
+UserActionObserver::UserActionObserver()
+    : action_callback_(base::Bind(&UserActionObserver::OnUserAction,
+                                  base::Unretained(this))) {
+  content::AddActionCallback(action_callback_);
 }
 
-void UserActionObserver::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  const char* name = *content::Details<const char*>(details).ptr();
-  ++(count_map_[name]);
+UserActionObserver::~UserActionObserver() {
+  content::RemoveActionCallback(action_callback_);
+}
+
+void UserActionObserver::OnUserAction(const std::string& action) {
+  ++(count_map_[action]);
 }
 
 void UserActionObserver::ValidateUserActions(const RecordedUserAction* recorded,
