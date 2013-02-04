@@ -138,7 +138,7 @@ HRESULT FillCapabilities(IMFSourceReader* source,
     type.Release();
   }
 
-  if (SUCCEEDED(hr) && capabilities->empty())
+  if (capabilities->empty() && (SUCCEEDED(hr) || hr == MF_E_NO_MORE_TYPES))
     hr = HRESULT_FROM_WIN32(ERROR_EMPTY);
 
   return (hr == MF_E_NO_MORE_TYPES) ? S_OK : hr;
