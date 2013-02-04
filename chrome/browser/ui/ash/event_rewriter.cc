@@ -397,6 +397,10 @@ void EventRewriter::GetRemappedModifierMasks(
   if (!pref_service)
     return;
 
+  // When a diamond key is not available, a Mod2Mask should not treated as a
+  // configurable modifier because Mod2Mask may be worked as NumLock mask.
+  // (cf. http://crbug.com/173956)
+  const bool skip_mod2 = !HasDiamondKey();
   // When a Chrome OS keyboard is available, the configuration UI for Caps Lock
   // is not shown. Therefore, ignore the kLanguageRemapCapsLockKeyTo syncable
   // pref. If Mod3 is in use, don't check the pref either.
@@ -404,8 +408,8 @@ void EventRewriter::GetRemappedModifierMasks(
     HasChromeOSKeyboard() || IsMod3UsedByCurrentInputMethod();
 
   for (size_t i = 0; i < arraysize(kModifierFlagToPrefName); ++i) {
-    if (skip_mod3 &&
-        (kModifierFlagToPrefName[i].native_modifier == Mod3Mask)) {
+    if ((skip_mod2 && kModifierFlagToPrefName[i].native_modifier == Mod2Mask) ||
+        (skip_mod3 && kModifierFlagToPrefName[i].native_modifier == Mod3Mask)) {
       continue;
     }
     if (original_native_modifiers &
@@ -432,7 +436,9 @@ void EventRewriter::GetRemappedModifierMasks(
       (original_flags & ~(ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)) |
       *remapped_flags;
 
-  unsigned int native_mask = Mod4Mask | ControlMask | Mod1Mask | Mod2Mask;
+  unsigned int native_mask = Mod4Mask | ControlMask | Mod1Mask;
+  if (!skip_mod2)
+    native_mask |= Mod2Mask;
   if (!skip_mod3)
     native_mask |= Mod3Mask;
   *remapped_native_modifiers =
