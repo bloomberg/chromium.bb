@@ -60,17 +60,9 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketSplitSegments) {
   EXPECT_TRUE(EqualsASCII(result, "PASS"));
 }
 
-#if defined(USE_OPENSSL)
-// TODO(toyoshim): Enable this test for OpenSSL once http://crbug.com/160033
-// is fixed against OpenSSL.
-#define MAYBE_SecureWebSocketSplitRecords DISABLED_SecureWebSocketSplitRecords
-#else
-#define MAYBE_SecureWebSocketSplitRecords SecureWebSocketSplitRecords
-#endif
 // Test that the browser can handle a WebSocket frame split into multiple SSL
 // records.
-IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest,
-                       MAYBE_SecureWebSocketSplitRecords) {
+IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SecureWebSocketSplitRecords) {
   // Launch a secure WebSocket server.
   ASSERT_TRUE(wss_server_.Start());
 

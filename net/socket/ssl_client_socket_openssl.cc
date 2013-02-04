@@ -12,6 +12,7 @@
 #include <openssl/opensslv.h>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
@@ -696,21 +697,17 @@ SSLClientSocketOpenSSL::GetServerBoundCertService() const {
 void SSLClientSocketOpenSSL::DoReadCallback(int rv) {
   // Since Run may result in Read being called, clear |user_read_callback_|
   // up front.
-  CompletionCallback c = user_read_callback_;
-  user_read_callback_.Reset();
   user_read_buf_ = NULL;
   user_read_buf_len_ = 0;
-  c.Run(rv);
+  base::ResetAndReturn(&user_read_callback_).Run(rv);
 }
 
 void SSLClientSocketOpenSSL::DoWriteCallback(int rv) {
   // Since Run may result in Write being called, clear |user_write_callback_|
   // up front.
-  CompletionCallback c = user_write_callback_;
-  user_write_callback_.Reset();
   user_write_buf_ = NULL;
   user_write_buf_len_ = 0;
-  c.Run(rv);
+  base::ResetAndReturn(&user_write_callback_).Run(rv);
 }
 
 // StreamSocket implementation.
@@ -1182,13 +1179,31 @@ void SSLClientSocketOpenSSL::OnRecvComplete(int result) {
 }
 
 bool SSLClientSocketOpenSSL::IsConnected() const {
-  bool ret = completed_handshake_ && transport_->socket()->IsConnected();
-  return ret;
+  // If the handshake has not yet completed.
+  if (!completed_handshake_)
+    return false;
+  // If an asynchronous operation is still pending.
+  if (user_read_buf_ || user_write_buf_)
+    return true;
+
+  return transport_->socket()->IsConnected();
 }
 
 bool SSLClientSocketOpenSSL::IsConnectedAndIdle() const {
-  bool ret = completed_handshake_ && transport_->socket()->IsConnectedAndIdle();
-  return ret;
+  // If the handshake has not yet completed.
+  if (!completed_handshake_)
+    return false;
+  // If an asynchronous operation is still pending.
+  if (user_read_buf_ || user_write_buf_)
+    return false;
+  // If there is data waiting to be sent, or data read from the network that
+  // has not yet been consumed.
+  if (BIO_ctrl_pending(transport_bio_) > 0 ||
+      BIO_ctrl_wpending(transport_bio_) > 0) {
+    return false;
+  }
+
+  return transport_->socket()->IsConnectedAndIdle();
 }
 
 int SSLClientSocketOpenSSL::GetPeerAddress(IPEndPoint* addressList) const {
