@@ -6,8 +6,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <limits>
@@ -210,43 +212,59 @@ void PrintProcSelfMaps() {
   fprintf(stdout, "%s\n", buffer);
 }
 
+// Check if ptr1 and ptr2 are separated by less than size chars.
+bool ArePointersToSameArea(void* ptr1, void* ptr2, size_t size) {
+  ptrdiff_t ptr_diff = reinterpret_cast<char*>(std::max(ptr1, ptr2)) -
+                       reinterpret_cast<char*>(std::min(ptr1, ptr2));
+  return static_cast<size_t>(ptr_diff) <= size;
+}
+
 // Check if TCMalloc uses an underlying random memory allocator.
 TEST(SecurityTest, ALLOC_TEST(RandomMemoryAllocations)) {
   if (IsTcMallocBypassed())
     return;
-  // Two successsive calls to mmap() have roughly one chance out of 2^6 to
-  // have the same two high order nibbles, which is what we are looking at in
-  // this test. (In the implementation, we mask these two nibbles with 0x3f,
-  // hence the 6 bits).
-  // With 32 allocations, we see ~16 that end-up in different buckets (i.e.
-  // zones mapped via mmap(), so the chances of this test flaking is roughly
-  // 2^-(6*15).
-  const int kAllocNumber = 32;
-  // Make kAllocNumber successive allocations of growing size and compare the
-  // successive pointers to detect adjacent mappings. We grow the size because
-  // TCMalloc can sometimes over-allocate.
-  scoped_ptr<char, base::FreeDeleter> ptr[kAllocNumber];
-  for (int i = 0; i < kAllocNumber; ++i) {
-    // Grow the Malloc size slightly sub-exponentially.
-    const size_t kMallocSize = 1 << (12 + (i>>1));
-    ptr[i].reset(static_cast<char*>(malloc(kMallocSize)));
-    ASSERT_TRUE(ptr[i] != NULL);
-    if (i > 0) {
-      // Without mmap randomization, the two high order nibbles
-      // of a 47 bits userland address address will be identical.
-      // We're only watching the 6 bits that we actually do touch
-      // in our implementation.
-      const uintptr_t kHighOrderMask = 0x3f0000000000ULL;
-      bool pointer_have_same_high_order =
-          (reinterpret_cast<size_t>(ptr[i].get()) & kHighOrderMask) ==
-          (reinterpret_cast<size_t>(ptr[i - 1].get()) & kHighOrderMask);
-      if (!pointer_have_same_high_order) {
-        // PrintProcSelfMaps();
-        return;  // Test passes.
-      }
-    }
-  }
-  ASSERT_TRUE(false);  // NOTREACHED();
+  size_t kPageSize = 4096;  // We support x86_64 only.
+  // Check that malloc() returns an address that is neither the kernel's
+  // un-hinted mmap area, nor the current brk() area. The first malloc() may
+  // not be at a random address because TCMalloc will first exhaust any memory
+  // that it has allocated early on, before starting the sophisticated
+  // allocators.
+  void* default_mmap_heap_address =
+      mmap(0, kPageSize, PROT_READ|PROT_WRITE,
+           MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+  ASSERT_NE(default_mmap_heap_address,
+            static_cast<void*>(MAP_FAILED));
+  ASSERT_EQ(munmap(default_mmap_heap_address, kPageSize), 0);
+  void* brk_heap_address = sbrk(0);
+  ASSERT_NE(brk_heap_address, reinterpret_cast<void*>(-1));
+  ASSERT_TRUE(brk_heap_address != NULL);
+  // 1 MB should get us past what TCMalloc pre-allocated before initializing
+  // the sophisticated allocators.
+  size_t kAllocSize = 1<<20;
+  scoped_ptr<char, base::FreeDeleter> ptr(
+      static_cast<char*>(malloc(kAllocSize)));
+  ASSERT_TRUE(ptr != NULL);
+  // If two pointers are separated by less than 512MB, they are considered
+  // to be in the same area.
+  // Our random pointer could be anywhere within 0x3fffffffffff (46bits),
+  // and we are checking that it's not withing 1GB (30 bits) from two
+  // addresses (brk and mmap heap). We have roughly one chance out of
+  // 2^15 to flake.
+  const size_t kAreaRadius = 1<<29;
+  bool in_default_mmap_heap = ArePointersToSameArea(
+      ptr.get(), default_mmap_heap_address, kAreaRadius);
+  EXPECT_FALSE(in_default_mmap_heap);
+
+  bool in_default_brk_heap = ArePointersToSameArea(
+      ptr.get(), brk_heap_address, kAreaRadius);
+  EXPECT_FALSE(in_default_brk_heap);
+
+  // In the implementation, we always mask our random addresses with
+  // kRandomMask, so we use it as an additional detection mechanism.
+  const uintptr_t kRandomMask = 0x3fffffffffffULL;
+  bool impossible_random_address =
+      reinterpret_cast<uintptr_t>(ptr.get()) & ~kRandomMask;
+  EXPECT_FALSE(impossible_random_address);
 }
 
 #endif  // (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(__x86_64__)

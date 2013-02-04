@@ -137,6 +137,18 @@ void raninit(ranctx* x, u4 seed) {
   }
 }
 
+// If the kernel cannot honor the hint in arch_get_unmapped_area_topdown, it
+// will simply ignore it. So we give a hint that has a good chance of
+// working.
+// The mmap top-down allocator will normally allocate below TASK_SIZE - gap,
+// with a gap that depends on the max stack size. See x86/mm/mmap.c. We
+// should make allocations that are below this area, which would be
+// 0x7ffbf8000000.
+// We use 0x3ffffffff000 as the mask so that we only "pollute" half of the
+// address space. In the unlikely case where fragmentation would become an
+// issue, the kernel will still have another half to use.
+const uint64_t kRandomAddressMask = 0x3ffffffff000ULL;
+
 #endif  // defined(ASLR_IS_SUPPORTED)
 
 // Give a random "hint" that is suitable for use with mmap(). This cannot make
@@ -177,20 +189,49 @@ void* GetRandomAddrHint() {
   }
   uint64_t random_address = (static_cast<uint64_t>(ranval(&ctx)) << 32) |
                             ranval(&ctx);
-  // If the kernel cannot honor the hint in arch_get_unmapped_area_topdown, it
-  // will simply ignore it. So we give a hint that has a good chance of
-  // working.
-  // The mmap top-down allocator will normally allocate below TASK_SIZE - gap,
-  // with a gap that depends on the max stack size. See x86/mm/mmap.c. We
-  // should make allocations that are below this area, which would be
-  // 0x7ffbf8000000.
-  // We use 0x3ffffffff000 as the mask so that we only "pollute" half of the
-  // address space. In the unlikely case where fragmentation would become an
-  // issue, the kernel will still have another half to use.
   // A a bit-wise "and" won't bias our random distribution.
-  random_address &= 0x3ffffffff000ULL;
+  random_address &= kRandomAddressMask;
   return reinterpret_cast<void*>(random_address);
 #endif  // ASLR_IS_SUPPORTED
+}
+
+// Allocate |length| bytes of memory using mmap(). The memory will be
+// readable and writeable, but not executable.
+// Like mmap(), we will return MAP_FAILED on failure.
+// |is_aslr_enabled| controls address space layout randomization. When true, we
+// will put the first mapping at a random address and will then try to grow it.
+// If it's not possible to grow an existing mapping, a new one will be created.
+void* AllocWithMmap(size_t length, bool is_aslr_enabled) {
+  // Note: we are protected by the general TCMalloc_SystemAlloc spinlock.
+  static void* address_hint = NULL;
+#if defined(ASLR_IS_SUPPORTED)
+  if (is_aslr_enabled &&
+      (!address_hint ||
+       reinterpret_cast<uint64_t>(address_hint) & ~kRandomAddressMask)) {
+    address_hint = GetRandomAddrHint();
+  }
+#endif  // ASLR_IS_SUPPORTED
+
+  // address_hint is likely to make us grow an existing mapping.
+  void* result = mmap(address_hint, length, PROT_READ|PROT_WRITE,
+                      MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+#if defined(ASLR_IS_SUPPORTED)
+  if (result == address_hint) {
+    // If mmap() succeeded at a address_hint, our next mmap() will try to grow
+    // the current mapping as long as it's compatible with our ASLR mask.
+    // This has been done for performance reasons, see crbug.com/173371.
+    // It should be possible to strike a better balance between performance
+    // and security but will be done at a later date.
+    // If this overflows, it could only set address_hint to NULL, which is
+    // what we want (and can't happen on the currently supported architecture).
+    address_hint = static_cast<char*>(result) + length;
+  } else {
+    // mmap failed or a collision prevented the kernel from honoring the hint,
+    // reset the hint.
+    address_hint = NULL;
+  }
+#endif  // ASLR_IS_SUPPORTED
+  return result;
 }
 
 }  // Anonymous namespace to avoid name conflicts on "CheckAddressBits".
@@ -405,14 +446,7 @@ void* MmapSysAllocator::Alloc(size_t size, size_t *actual_size,
   //            size + alignment < (1<<NBITS).
   // and        extra <= alignment
   // therefore  size + extra < (1<<NBITS)
-  void* address_hint = NULL;
-  if (FLAGS_malloc_random_allocator) {
-    address_hint = GetRandomAddrHint();
-  }
-  void* result = mmap(address_hint, size + extra,
-                      PROT_READ|PROT_WRITE,
-                      MAP_PRIVATE|MAP_ANONYMOUS,
-                      -1, 0);
+  void* result = AllocWithMmap(size + extra, FLAGS_malloc_random_allocator);
   if (result == reinterpret_cast<void*>(MAP_FAILED)) {
     return NULL;
   }
