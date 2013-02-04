@@ -159,6 +159,8 @@ int NaClSignalContextIsUntrustedForCurrentThread(
  */
 int NaClSignalContextIsUntrusted(struct NaClAppThread *natp,
                                  const struct NaClSignalContext *sig_ctx) {
+  uint32_t prog_ctr;
+
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   /*
    * Note that we do not check "sig_ctx != NaClGetGlobalCs()".  On Mac
@@ -166,14 +168,20 @@ int NaClSignalContextIsUntrusted(struct NaClAppThread *natp,
    * thread_get_state() returns cs=0x7 rather than cs=0x17 (the normal
    * cs value for trusted code).
    */
-  return sig_ctx->cs == natp->user.cs;
+  if (sig_ctx->cs != natp->user.cs)
+    return 0;
 #elif (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64) || \
       NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm || \
       NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
-  return NaClIsUserAddr(natp->nap, sig_ctx->prog_ctr);
+  if (!NaClIsUserAddr(natp->nap, sig_ctx->prog_ctr))
+    return 0;
 #else
 # error Unsupported architecture
 #endif
+
+  prog_ctr = (uint32_t) sig_ctx->prog_ctr;
+  return (prog_ctr < NACL_TRAMPOLINE_START ||
+          prog_ctr >= NACL_TRAMPOLINE_END);
 }
 
 enum NaClSignalResult NaClSignalHandleNone(int signal, void *ctx) {
