@@ -175,6 +175,14 @@ bool FakeDriveService::HasRefreshToken() const {
   return true;
 }
 
+void FakeDriveService::ClearAccessToken() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+void FakeDriveService::ClearRefreshToken() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 std::string FakeDriveService::GetRootResourceId() const {
   return "fake_root";
 }

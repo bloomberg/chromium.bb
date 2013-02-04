@@ -246,6 +246,9 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Called when the page requests periodic update.
   void OnPeriodicUpdate(const base::ListValue* args);
 
+  void ClearAccessToken(const base::ListValue* args);
+  void ClearRefreshToken(const base::ListValue* args);
+
   // The number of pending ReadDirectoryByPath() calls.
   int num_pending_reads_;
   // The last event sent to the JavaScript side.
@@ -296,6 +299,14 @@ void DriveInternalsWebUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "periodicUpdate",
       base::Bind(&DriveInternalsWebUIHandler::OnPeriodicUpdate,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "clearAccessToken",
+      base::Bind(&DriveInternalsWebUIHandler::ClearAccessToken,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "clearRefreshToken",
+      base::Bind(&DriveInternalsWebUIHandler::ClearRefreshToken,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -427,6 +438,17 @@ void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForLocal(
   local_metadata.SetBoolean("account-metadata-loaded", metadata.loaded);
   local_metadata.SetBoolean("account-metadata-refreshing", metadata.refreshing);
   web_ui()->CallJavascriptFunction("updateLocalMetadata", local_metadata);
+}
+
+void DriveInternalsWebUIHandler::ClearAccessToken(const base::ListValue* args) {
+  drive::DriveSystemService* system_service = GetSystemService();
+  system_service->drive_service()->ClearAccessToken();
+}
+
+void DriveInternalsWebUIHandler::ClearRefreshToken(
+    const base::ListValue* args) {
+  drive::DriveSystemService* system_service = GetSystemService();
+  system_service->drive_service()->ClearRefreshToken();
 }
 
 void DriveInternalsWebUIHandler::UpdateDeltaUpdateStatusSection() {

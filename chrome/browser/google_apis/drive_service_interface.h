@@ -105,6 +105,12 @@ class DriveServiceInterface {
   // True if OAuth2 refresh token is present.
   virtual bool HasRefreshToken() const = 0;
 
+  // Clears OAuth2 access token.
+  virtual void ClearAccessToken() = 0;
+
+  // Clears OAuth2 refresh token.
+  virtual void ClearRefreshToken() = 0;
+
   // Document access:
 
   // Returns the resource id for the root directory.

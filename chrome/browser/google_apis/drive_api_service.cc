@@ -473,6 +473,16 @@ bool DriveAPIService::HasRefreshToken() const {
   return runner_->auth_service()->HasRefreshToken();
 }
 
+void DriveAPIService::ClearAccessToken() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return runner_->auth_service()->ClearAccessToken();
+}
+
+void DriveAPIService::ClearRefreshToken() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return runner_->auth_service()->ClearRefreshToken();
+}
+
 OperationRegistry* DriveAPIService::operation_registry() const {
   return runner_->operation_registry();
 }

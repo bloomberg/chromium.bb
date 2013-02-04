@@ -240,6 +240,14 @@ document.addEventListener('DOMContentLoaded', function() {
     toc.appendChild(li);
   }
 
+  $('button-clear-access-token').addEventListener('click', function() {
+    chrome.send('clearAccessToken');
+  });
+
+  $('button-clear-refresh-token').addEventListener('click', function() {
+    chrome.send('clearRefreshToken');
+  });
+
   window.setInterval(function() {
       chrome.send('periodicUpdate');
     }, 1000);

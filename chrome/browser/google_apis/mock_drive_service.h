@@ -93,6 +93,8 @@ class MockDriveService : public DriveServiceInterface {
           const AuthorizeAppCallback& callback));
   MOCK_CONST_METHOD0(HasAccessToken, bool());
   MOCK_CONST_METHOD0(HasRefreshToken, bool());
+  MOCK_METHOD0(ClearAccessToken, void());
+  MOCK_METHOD0(ClearRefreshToken, void());
 
   void set_file_data(std::string* file_data) {
     file_data_.reset(file_data);

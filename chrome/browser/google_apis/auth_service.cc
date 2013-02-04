@@ -217,6 +217,14 @@ void AuthService::ClearAccessToken() {
   access_token_.clear();
 }
 
+void AuthService::ClearRefreshToken() {
+  refresh_token_.clear();
+
+  FOR_EACH_OBSERVER(AuthServiceObserver,
+                    observers_,
+                    OnOAuth2RefreshTokenChanged());
+}
+
 void AuthService::OnAuthCompleted(const AuthStatusCallback& callback,
                                   GDataErrorCode error,
                                   const std::string& access_token) {

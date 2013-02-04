@@ -32,6 +32,10 @@ bool DummyDriveService::HasAccessToken() const { return true; }
 
 bool DummyDriveService::HasRefreshToken() const { return true; }
 
+void DummyDriveService::ClearAccessToken() { }
+
+void DummyDriveService::ClearRefreshToken() { }
+
 std::string DummyDriveService::GetRootResourceId() const {
   return "dummy_root";
 }

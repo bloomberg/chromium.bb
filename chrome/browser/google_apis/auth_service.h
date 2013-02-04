@@ -52,6 +52,7 @@ class AuthService : public AuthServiceInterface,
   virtual bool HasRefreshToken() const OVERRIDE;
   virtual const std::string& access_token() const OVERRIDE;
   virtual void ClearAccessToken() OVERRIDE;
+  virtual void ClearRefreshToken() OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

@@ -55,6 +55,9 @@ class AuthServiceInterface {
 
   // Clears OAuth2 access token.
   virtual void ClearAccessToken() = 0;
+
+  // Clears OAuth2 refresh token.
+  virtual void ClearRefreshToken() = 0;
 };
 
 }  // namespace google_apis
