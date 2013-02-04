@@ -469,6 +469,19 @@ void GetMimeTypesForFileURLs(const std::vector<FilePath>& file_paths,
   }
 }
 
+// Retrieves the maximum file name length of the file system of |path|.
+// Returns 0 if it could not be queried.
+size_t GetFileNameMaxLengthOnBlockingPool(const std::string& path) {
+  struct statvfs stat = {};
+  if (statvfs(path.c_str(), &stat) != 0) {
+    // The filesystem seems not supporting statvfs(). Assume it to be a commonly
+    // used bound 255, and log the failure.
+    LOG(ERROR) << "Cannot statvfs() the name length limit for: " << path;
+    return 255;
+  }
+  return stat.f_namemax;
+}
+
 }  // namespace
 
 class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
@@ -613,6 +626,7 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<RequestDirectoryRefreshFunction>();
   registry->RegisterFunction<SetLastModifiedFunction>();
   registry->RegisterFunction<ZipSelectionFunction>();
+  registry->RegisterFunction<ValidatePathNameLengthFunction>();
 
   event_router_->ObserveFileSystemEvents();
 }
@@ -1978,6 +1992,7 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, ERROR_HIDDEN_NAME);
   SET_STRING(IDS_FILE_BROWSER, ERROR_WHITESPACE_NAME);
   SET_STRING(IDS_FILE_BROWSER, ERROR_NEW_FOLDER_EMPTY_NAME);
+  SET_STRING(IDS_FILE_BROWSER, ERROR_LONG_NAME);
   SET_STRING(IDS_FILE_BROWSER, NEW_FOLDER_BUTTON_LABEL);
   SET_STRING(IDS_FILE_BROWSER, FILENAME_LABEL);
   SET_STRING(IDS_FILE_BROWSER, PREPARING_LABEL);
@@ -2730,7 +2745,6 @@ bool GetFileTransfersFunction::RunImpl() {
   return true;
 }
 
-
 CancelFileTransfersFunction::CancelFileTransfersFunction() {}
 
 CancelFileTransfersFunction::~CancelFileTransfersFunction() {}
@@ -3148,4 +3162,50 @@ void ZipSelectionFunction::OnZipDone(bool success) {
   SetResult(new base::FundamentalValue(success));
   SendResponse(true);
   Release();
+}
+
+ValidatePathNameLengthFunction::ValidatePathNameLengthFunction() {}
+
+ValidatePathNameLengthFunction::~ValidatePathNameLengthFunction() {}
+
+bool ValidatePathNameLengthFunction::RunImpl() {
+  std::string parent_url;
+  if (!args_->GetString(0, &parent_url))
+    return false;
+
+  std::string name;
+  if (!args_->GetString(1, &name))
+    return false;
+
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+  fileapi::FileSystemURL filesystem_url(
+      file_system_context->CrackURL(GURL(parent_url)));
+  if (!chromeos::CrosMountPointProvider::CanHandleURL(filesystem_url))
+    return false;
+
+  // No explicit limit on the length of Drive file names.
+  if (filesystem_url.type() == fileapi::kFileSystemTypeDrive) {
+    SetResult(new base::FundamentalValue(true));
+    SendResponse(true);
+    return true;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&GetFileNameMaxLengthOnBlockingPool,
+                 filesystem_url.path().AsUTF8Unsafe()),
+      base::Bind(&ValidatePathNameLengthFunction::OnFilePathLimitRetrieved,
+                 this, name.size()));
+  return true;
+}
+
+void ValidatePathNameLengthFunction::OnFilePathLimitRetrieved(
+    size_t current_length,
+    size_t max_length) {
+  SetResult(new base::FundamentalValue(current_length <= max_length));
+  SendResponse(true);
 }

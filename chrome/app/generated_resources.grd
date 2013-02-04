@@ -12673,6 +12673,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_ERROR_NEW_FOLDER_EMPTY_NAME" desc="Warning displayed when user trys to enter empty name for the new folder.">
         Please specify a folder name
       </message>
+      <message name="IDS_FILE_BROWSER_ERROR_LONG_NAME" desc="Error message displayed when user trys to enter too long name for a file or a folder.">
+        This name is too long
+      </message>
       <message name="IDS_FILE_BROWSER_NEW_FOLDER_BUTTON_LABEL" desc="Label on the 'New folder' button.">
         New folder
       </message>

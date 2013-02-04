@@ -2067,36 +2067,40 @@ DialogType.isModal = function(type) {
                    querySelector('.filename-label');
 
     input.validation_ = true;
-    function validationDone() {
+    var validationDone = function(valid) {
       input.validation_ = false;
       // Alert dialog restores focus unless the item removed from DOM.
       if (this.document_.activeElement != input)
         this.cancelRename_();
-    }
+      if (!valid)
+        return;
 
-    if (!this.validateFileName_(newName, validationDone.bind(this)))
-      return;
+      // Validation succeeded. Do renaming.
 
-    function onError(err) {
-      this.alert.show(strf('ERROR_RENAMING', entry.name,
-                      util.getFileErrorString(err.code)));
-    }
+      this.cancelRename_();
+      // Optimistically apply new name immediately to avoid flickering in
+      // case of success.
+      nameNode.textContent = newName;
 
-    this.cancelRename_();
-    // Optimistically apply new name immediately to avoid flickering in
-    // case of success.
-    nameNode.textContent = newName;
+      this.directoryModel_.doesExist(entry, newName, function(exists, isFile) {
+        if (!exists) {
+          var onError = function(err) {
+            this.alert.show(strf('ERROR_RENAMING', entry.name,
+                                 util.getFileErrorString(err.code)));
+          };
+          this.directoryModel_.renameEntry(entry, newName, onError.bind(this));
+        } else {
+          nameNode.textContent = entry.name;
+          var message = isFile ? 'FILE_ALREADY_EXISTS' :
+                                 'DIRECTORY_ALREADY_EXISTS';
+          this.alert.show(strf(message, newName));
+        }
+      }.bind(this));
+    };
 
-    this.directoryModel_.doesExist(entry, newName, function(exists, isFile) {
-      if (!exists) {
-        this.directoryModel_.renameEntry(entry, newName, onError.bind(this));
-      } else {
-        nameNode.textContent = entry.name;
-        var message = isFile ? 'FILE_ALREADY_EXISTS' :
-                               'DIRECTORY_ALREADY_EXISTS';
-        this.alert.show(strf(message, newName));
-      }
-    }.bind(this));
+    this.validateFileName_(this.getCurrentDirectoryURL(),
+                           newName,
+                           validationDone.bind(this));
   };
 
   FileManager.prototype.cancelRename_ = function() {
@@ -2584,7 +2588,6 @@ DialogType.isModal = function(type) {
    * @param {Event} event The click event.
    */
   FileManager.prototype.onOk_ = function(event) {
-    var self = this;
     if (this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
       var currentDirUrl = this.getCurrentDirectoryURL();
 
@@ -2596,36 +2599,41 @@ DialogType.isModal = function(type) {
       var filename = this.filenameInput_.value;
       if (!filename)
         throw new Error('Missing filename!');
-      if (!this.validateFileName_(filename))
-        return;
 
-      var singleSelection = {
-        urls: [currentDirUrl + encodeURIComponent(filename)],
-        multiple: false,
-        filterIndex: self.getSelectedFilterIndex_(filename)
-      };
+      var self = this;
+      var checkOverwriteAndFinish = function(valid) {
+        if (!valid)
+          return;
 
-      function resolveCallback(victim) {
-        if (victim instanceof FileError) {
+        var singleSelection = {
+          urls: [currentDirUrl + encodeURIComponent(filename)],
+          multiple: false,
+          filterIndex: self.getSelectedFilterIndex_(filename)
+        };
+
+        var resolveErrorCallback = function(error) {
           // File does not exist.
           self.selectFilesAndClose_(singleSelection);
-          return;
-        }
+        };
 
-        if (victim.isDirectory) {
-          // Do not allow to overwrite directory.
-          self.alert.show(strf('DIRECTORY_ALREADY_EXISTS', filename));
-        } else {
-          self.confirm.show(strf('CONFIRM_OVERWRITE_FILE', filename),
-                            function() {
-                              // User selected Ok from the confirm dialog.
-                              self.selectFilesAndClose_(singleSelection);
-                            });
-        }
-      }
+        var resolveSuccessCallback = function(victim) {
+          if (victim.isDirectory) {
+            // Do not allow to overwrite directory.
+            self.alert.show(strf('DIRECTORY_ALREADY_EXISTS', filename));
+          } else {
+            self.confirm.show(strf('CONFIRM_OVERWRITE_FILE', filename),
+                              function() {
+                                // User selected Ok from the confirm dialog.
+                                self.selectFilesAndClose_(singleSelection);
+                              });
+          }
+        };
 
-      this.resolvePath(this.getCurrentDirectory() + '/' + filename,
-          resolveCallback, resolveCallback);
+        self.resolvePath(self.getCurrentDirectory() + '/' + filename,
+                         resolveSuccessCallback, resolveErrorCallback);
+      };
+
+      this.validateFileName_(currentDirUrl, filename, checkOverwriteAndFinish);
       return;
     }
 
@@ -2701,13 +2709,15 @@ DialogType.isModal = function(type) {
    * http://dev.w3.org/2009/dap/file-system/file-dir-sys.html, 8.3) and going to
    * be fixed. Shows message box if the name is invalid.
    *
-   * @param {name} name New file or folder name.
-   * @param {function} opt_onDone Function to invoke when user closes the
-   *    warning box or immediatelly if file name is correct.
-   * @return {boolean} True if name is vaild.
+   * It also verifies if the name length is in the limit of the filesystem.
+   *
+   * @param {string} parentUrl The URL of the parent directory entry.
+   * @param {string} name New file or folder name.
+   * @param {function} onDone Function to invoke when user closes the
+   *    warning box or immediatelly if file name is correct. If the name was
+   *    valid it is passed true, and false otherwise.
    */
-  FileManager.prototype.validateFileName_ = function(name, opt_onDone) {
-    var onDone = opt_onDone || function() {};
+  FileManager.prototype.validateFileName_ = function(parentUrl, name, onDone) {
     var msg;
     var testResult = /[\/\\\<\>\:\?\*\"\|]/.exec(name);
     if (testResult) {
@@ -2721,12 +2731,22 @@ DialogType.isModal = function(type) {
     }
 
     if (msg) {
-      this.alert.show(msg, onDone);
-      return false;
+      this.alert.show(msg, function() {
+        onDone(false);
+      });
+      return;
     }
 
-    onDone();
-    return true;
+    var self = this;
+    chrome.fileBrowserPrivate.validatePathNameLength(
+        parentUrl, name, function(valid) {
+          if (!valid) {
+            self.alert.show(str('ERROR_LONG_NAME'),
+                            function() { onDone(false); });
+          } else {
+            onDone(true);
+          }
+        });
   };
 
   /**

@@ -838,4 +838,21 @@ class ZipSelectionFunction : public FileBrowserFunction,
   scoped_refptr<extensions::ZipFileCreator> zip_file_creator_;
 };
 
+// Implements the chrome.fileBrowserPrivate.validatePathNameLength method.
+class ValidatePathNameLengthFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.validatePathNameLength",
+                             FILEBROWSERPRIVATE_VALIDATEPATHNAMELENGTH)
+
+  ValidatePathNameLengthFunction();
+
+ protected:
+  virtual ~ValidatePathNameLengthFunction();
+
+  void OnFilePathLimitRetrieved(size_t current_length, size_t max_length);
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+};
+
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_PRIVATE_API_H_

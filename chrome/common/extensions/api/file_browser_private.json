@@ -1114,6 +1114,34 @@
             "description": "URL of the target directory"
           }
         ]
+      },
+      {
+        "name": "validatePathNameLength",
+        "description": "Checks whether the path name length fits in the limit of the filesystem.",
+        "parameters": [
+          {
+            "name": "parent_directory_url",
+            "type": "string",
+            "description": "The URL of the parent directory entry."
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "description": "The name of the file."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called back when the check is finished.", 
+            "parameters": [
+              {
+                "name": "result",
+                "type": "boolean",
+                "description": "true if the length is in the valid range, false otherwise."
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [
