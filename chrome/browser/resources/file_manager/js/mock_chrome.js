@@ -237,11 +237,6 @@ chrome.fileBrowserPrivate = {
         taskId, {entries: urlList.map(createEntry)});
   },
 
-  /**
-   * Event fired on mount and unmount operations.
-   */
-  onDiskChanged: new MockEventSource(),
-
   mountPoints_: [
     {
       mountPath: 'removable/disk1-usb',

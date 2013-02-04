@@ -1146,18 +1146,6 @@
     ],
     "events": [
       {
-        "name": "onDiskChanged",
-        "type": "function",
-        "description": "Fired when disk mount/unmount event is detected.",
-        "parameters": [
-          {
-            "$ref": "MountEvent",
-            "name": "event",
-            "description": "Mount event information."
-          }
-        ]
-      },
-      {
         "name": "onMountCompleted",
         "type": "function",
         "description": "Fired when mount event is detected.",

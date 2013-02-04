@@ -42,9 +42,6 @@ using drive::DriveSystemServiceFactory;
 
 namespace {
 
-const char kDiskAddedEventType[] = "added";
-const char kDiskRemovedEventType[] = "removed";
-
 const char kPathChanged[] = "changed";
 const char kPathWatchError[] = "error";
 
@@ -553,28 +550,6 @@ void FileBrowserEventRouter::DispatchDirectoryChangeEvent(
   }
 }
 
-// TODO(tbarzic): This is not used anymore. Remove it.
-void FileBrowserEventRouter::DispatchDiskEvent(
-    const DiskMountManager::Disk* disk, bool added) {
-  if (!profile_) {
-    NOTREACHED();
-    return;
-  }
-
-  scoped_ptr<ListValue> args(new ListValue());
-  DictionaryValue* mount_info = new DictionaryValue();
-  args->Append(mount_info);
-  mount_info->SetString("eventType",
-                        added ? kDiskAddedEventType : kDiskRemovedEventType);
-  DictionaryValue* disk_info = DiskToDictionaryValue(disk);
-  mount_info->Set("volumeInfo", disk_info);
-
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::event_names::kOnFileBrowserDiskChanged, args.Pass()));
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      BroadcastEvent(event.Pass());
-}
-
 void FileBrowserEventRouter::DispatchMountEvent(
     DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
@@ -674,7 +649,6 @@ void FileBrowserEventRouter::OnDiskAdded(
     notifications_->HideNotification(FileBrowserNotifications::DEVICE,
                                      disk->system_path_prefix());
   }
-  DispatchDiskEvent(disk, true);
 }
 
 void FileBrowserEventRouter::OnDiskRemoved(
@@ -687,7 +661,6 @@ void FileBrowserEventRouter::OnDiskRemoved(
     DiskMountManager::GetInstance()->UnmountPath(
         disk->mount_path(), chromeos::UNMOUNT_OPTIONS_LAZY);
   }
-  DispatchDiskEvent(disk, false);
 }
 
 void FileBrowserEventRouter::OnDeviceAdded(

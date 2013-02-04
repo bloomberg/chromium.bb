@@ -30,7 +30,6 @@ const char kOnExtensionUninstalled[] = "management.onUninstalled";
 const char kOnExtensionEnabled[] = "management.onEnabled";
 const char kOnExtensionDisabled[] = "management.onDisabled";
 
-const char kOnFileBrowserDiskChanged[] = "fileBrowserPrivate.onDiskChanged";
 const char kOnDirectoryChanged[] = "fileBrowserPrivate.onDirectoryChanged";
 const char kOnFileBrowserMountCompleted[] =
     "fileBrowserPrivate.onMountCompleted";

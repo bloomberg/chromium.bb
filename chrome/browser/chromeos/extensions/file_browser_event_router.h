@@ -154,22 +154,10 @@ class FileBrowserEventRouter
   void DispatchDirectoryChangeEvent(const FilePath& path, bool error,
                                     const ExtensionUsageRegistry& extensions);
 
-  // Sends filesystem changed extension message to all renderers.
-  void DispatchDiskEvent(const chromeos::disks::DiskMountManager::Disk* disk,
-                         bool added);
-
   void DispatchMountEvent(
       chromeos::disks::DiskMountManager::MountEvent event,
       chromeos::MountError error_code,
       const chromeos::disks::DiskMountManager::MountPointInfo& mount_info);
-
-  void RemoveBrowserFromVector(const std::string& path);
-
-  // Used to create a window of a standard size, and add it to a list
-  // of tracked browser windows in case that device goes away.
-  void OpenFileBrowse(const std::string& url,
-                      const std::string& device_path,
-                      bool small);
 
   // Returns the DriveFileSystem for the current profile.
   drive::DriveFileSystemInterface* GetRemoteFileSystem() const;
