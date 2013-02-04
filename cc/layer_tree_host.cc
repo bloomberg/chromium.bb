@@ -259,11 +259,11 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     bool newImplTreeHasNoEvictedResources = !m_contentsTextureManager->linkedEvictedBackingsExist();
 
     m_contentsTextureManager->updateBackingsInDrawingImplTree();
-    m_contentsTextureManager->reduceMemory(hostImpl->resourceProvider());
 
     // In impl-side painting, synchronize to the pending tree so that it has
     // time to raster before being displayed.  If no pending tree is needed,
-    // synchronization can happen directly to the active tree.
+    // synchronization can happen directly to the active tree and
+    // unlinked contents resources can be reclaimed immediately.
     LayerTreeImpl* syncTree;
     if (m_settings.implSidePainting) {
         // Commits should not occur while there is already a pending tree.
@@ -271,6 +271,7 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
         hostImpl->createPendingTree();
         syncTree = hostImpl->pendingTree();
     } else {
+        m_contentsTextureManager->reduceMemory(hostImpl->resourceProvider());
         syncTree = hostImpl->activeTree();
     }
 

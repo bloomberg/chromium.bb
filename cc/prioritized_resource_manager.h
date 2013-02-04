@@ -97,6 +97,7 @@ public:
 
     bool requestLate(PrioritizedResource*);
 
+    void reduceWastedMemory(ResourceProvider*);
     void reduceMemory(ResourceProvider*);
     void clearAllMemory(ResourceProvider*);
 

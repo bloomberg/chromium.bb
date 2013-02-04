@@ -278,16 +278,8 @@ bool PrioritizedResourceManager::evictBackingsToReduceMemory(size_t limitBytes,
     return true;
 }
 
-void PrioritizedResourceManager::reduceMemory(ResourceProvider* resourceProvider)
+void PrioritizedResourceManager::reduceWastedMemory(ResourceProvider* resourceProvider)
 {
-    DCHECK(m_proxy->isImplThread() && m_proxy->isMainThreadBlocked());
-    evictBackingsToReduceMemory(m_memoryAvailableBytes,
-                                PriorityCalculator::allowEverythingCutoff(),
-                                EvictAnything,
-                                UnlinkBackings,
-                                resourceProvider);
-    DCHECK(memoryUseBytes() <= m_memoryAvailableBytes);
-
     // We currently collect backings from deleted textures for later recycling.
     // However, if we do that forever we will always use the max limit even if
     // we really need very little memory. This should probably be solved by reducing the
@@ -304,8 +296,21 @@ void PrioritizedResourceManager::reduceMemory(ResourceProvider* resourceProvider
         evictBackingsToReduceMemory(memoryUseBytes() - (wastedMemory - tenPercentOfMemory),
                                     PriorityCalculator::allowEverythingCutoff(),
                                     EvictOnlyRecyclable,
-                                    UnlinkBackings,
+                                    DoNotUnlinkBackings,
                                     resourceProvider);
+}
+
+void PrioritizedResourceManager::reduceMemory(ResourceProvider* resourceProvider)
+{
+    DCHECK(m_proxy->isImplThread() && m_proxy->isMainThreadBlocked());
+    evictBackingsToReduceMemory(m_memoryAvailableBytes,
+                                PriorityCalculator::allowEverythingCutoff(),
+                                EvictAnything,
+                                UnlinkBackings,
+                                resourceProvider);
+    DCHECK(memoryUseBytes() <= m_memoryAvailableBytes);
+
+    reduceWastedMemory(resourceProvider);
 }
 
 void PrioritizedResourceManager::clearAllMemory(ResourceProvider* resourceProvider)
@@ -330,11 +335,15 @@ bool PrioritizedResourceManager::reduceMemoryOnImplThread(size_t limitBytes, int
     // the list are not sorted by priority. Sort them before doing the eviction.
     if (m_backingsTailNotSorted)
         sortBackings();
-    return evictBackingsToReduceMemory(limitBytes,
-                                       priorityCutoff,
-                                       EvictAnything,
-                                       DoNotUnlinkBackings,
-                                       resourceProvider);
+    if (evictBackingsToReduceMemory(limitBytes,
+                                    priorityCutoff,
+                                    EvictAnything,
+                                    DoNotUnlinkBackings,
+                                    resourceProvider))
+      return true;
+
+    reduceWastedMemory(resourceProvider);
+    return false;
 }
 
 void PrioritizedResourceManager::unlinkAndClearEvictedBackings()
