@@ -273,6 +273,10 @@ void RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
   ManagedUserService::RegisterUserPrefs(user_prefs);
 #endif
 
+#if defined(ENABLE_NOTIFICATIONS)
+  DesktopNotificationService::RegisterUserPrefs(user_prefs);
+#endif
+
 #if defined(ENABLE_WEB_INTENTS)
   web_intents::RegisterUserPrefs(user_prefs);
 #endif

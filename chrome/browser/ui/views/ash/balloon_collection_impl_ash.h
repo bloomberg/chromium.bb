@@ -44,7 +44,9 @@ class BalloonCollectionImplAsh
   virtual void GetNotifierList(
       std::vector<message_center::NotifierSettingsView::Notifier>* notifiers)
       OVERRIDE;
-  virtual void SetNotifierEnabled(const std::string& id, bool enabled) OVERRIDE;
+  virtual void SetNotifierEnabled(
+      const message_center::NotifierSettingsView::Notifier& notifier,
+      bool enabled) OVERRIDE;
   virtual void OnNotifierSettingsClosing(
       message_center::NotifierSettingsView* view) OVERRIDE;
 

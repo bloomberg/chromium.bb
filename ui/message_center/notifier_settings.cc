@@ -80,6 +80,10 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
     return notifier_.id;
   }
 
+  const NotifierSettingsView::Notifier& notifier() const {
+    return notifier_;
+  }
+
  private:
   // views::ButtonListener overrides:
   void ButtonPressed(views::Button* button, const ui::Event& event) {
@@ -187,7 +191,7 @@ void NotifierSettingsView::ButtonPressed(views::Button* sender,
   DCHECK(iter != buttons_.end());
 
   (*iter)->SetChecked(!(*iter)->checked());
-  delegate_->SetNotifierEnabled((*iter)->id(), (*iter)->checked());
+  delegate_->SetNotifierEnabled((*iter)->notifier(), (*iter)->checked());
 }
 
 }  // namespace message_center

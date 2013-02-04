@@ -56,7 +56,7 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
 
     // Called when the |enabled| for the |id| has been changed by user
     // operation.
-    virtual void SetNotifierEnabled(const std::string& id, bool enabled) = 0;
+    virtual void SetNotifierEnabled(const Notifier& notifier, bool enabled) = 0;
 
     // Called when the settings window is closed.
     virtual void OnNotifierSettingsClosing(NotifierSettingsView* view) = 0;

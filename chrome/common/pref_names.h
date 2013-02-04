@@ -402,6 +402,8 @@ extern const char kPrintPreviewDisabled[];
 
 extern const char kDefaultManagedModeFilteringBehavior[];
 
+extern const char kMessageCenterDisabledExtensionIds[];
+
 // Local state prefs. Please add Profile prefs above instead.
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kSSLVersionMin[];

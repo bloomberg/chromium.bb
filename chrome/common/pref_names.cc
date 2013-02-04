@@ -1163,6 +1163,11 @@ const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
 const char kDefaultManagedModeFilteringBehavior[] =
     "profile.managed.default_filtering_behavior";
 
+// List pref containing the extension ids which are not allowed to send
+// notifications to the message center.
+const char kMessageCenterDisabledExtensionIds[] =
+    "message_center.disabled_extension_ids";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

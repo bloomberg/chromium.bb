@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -46,6 +47,8 @@ void BalloonCollectionImplAsh::Add(const Notification& notification,
     return;  // HTML notifications are not supported in Ash.
   if (notification.title().empty() && notification.body().empty())
     return;  // Empty notification, don't show.
+  // TODO(mukai): add a filter if the source extension is disabled or not.
+  // The availability can be checked from DesktopNotificationService.
   return BalloonCollectionImpl::Add(notification, profile);
 }
 
@@ -115,6 +118,8 @@ void BalloonCollectionImplAsh::GetNotifierList(
     std::vector<NotifierSettingsView::Notifier>* notifiers) {
   DCHECK(notifiers);
   Profile* profile = ProfileManager::GetDefaultProfile();
+  DesktopNotificationService* notification_service =
+      DesktopNotificationServiceFactory::GetForProfile(profile);
 
   app_icon_loader_.reset(new ash::AppIconLoaderImpl(
       profile, extension_misc::EXTENSION_ICON_BITTY, this));
@@ -135,11 +140,10 @@ void BalloonCollectionImplAsh::GetNotifierList(
         NotifierSettingsView::Notifier::APPLICATION,
         UTF8ToUTF16(extension->name())));
     app_icon_loader_->FetchImage(extension->id());
-    // TODO(mukai): restore the availability of notification from prefs.
+    notifiers->back().enabled =
+        notification_service->IsExtensionEnabled(extension->id());
   }
 
-  DesktopNotificationService* notification_service =
-      DesktopNotificationServiceFactory::GetForProfile(profile);
   ContentSettingsForOneType settings;
   notification_service->GetNotificationsSettings(&settings);
   for (ContentSettingsForOneType::const_iterator iter = settings.begin();
@@ -156,12 +160,50 @@ void BalloonCollectionImplAsh::GetNotifierList(
         NotifierSettingsView::Notifier::URL_PATTERN,
         UTF8ToUTF16(url_pattern)));
     // TODO(mukai): add favicon loader here.
+    GURL url(url_pattern);
+    notifiers->back().enabled =
+        notification_service->GetContentSetting(url) == CONTENT_SETTING_ALLOW;
   }
 }
 
-void BalloonCollectionImplAsh::SetNotifierEnabled(const std::string& id,
-                                                  bool enabled) {
-  // TODO(mukai): save the availability to profile.
+void BalloonCollectionImplAsh::SetNotifierEnabled(
+    const NotifierSettingsView::Notifier& notifier, bool enabled) {
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  DesktopNotificationService* notification_service =
+      DesktopNotificationServiceFactory::GetForProfile(profile);
+
+  switch (notifier.type) {
+    case NotifierSettingsView::Notifier::APPLICATION:
+      notification_service->SetExtensionEnabled(notifier.id, enabled);
+      break;
+    case NotifierSettingsView::Notifier::URL_PATTERN: {
+      ContentSetting default_setting =
+          notification_service->GetDefaultContentSetting(NULL);
+      DCHECK(default_setting == CONTENT_SETTING_ALLOW ||
+             default_setting == CONTENT_SETTING_BLOCK ||
+             default_setting == CONTENT_SETTING_ASK);
+      if ((enabled && default_setting != CONTENT_SETTING_ALLOW) ||
+          (!enabled && default_setting == CONTENT_SETTING_ALLOW)) {
+        GURL url(notifier.id);
+        if (url.is_valid()) {
+          if (enabled)
+            notification_service->GrantPermission(url);
+          else
+            notification_service->DenyPermission(url);
+        } else {
+          LOG(ERROR) << "Invalid url pattern: " << notifier.id;
+        }
+      } else {
+        ContentSettingsPattern pattern =
+            ContentSettingsPattern::FromString(notifier.id);
+        if (pattern.IsValid())
+          notification_service->ClearSetting(pattern);
+        else
+          LOG(ERROR) << "Invalid url pattern: " << notifier.id;
+      }
+      break;
+    }
+  }
 }
 
 void BalloonCollectionImplAsh::OnNotifierSettingsClosing(

@@ -192,6 +192,14 @@ bool NotificationPermissionInfoBarDelegate::Cancel() {
 // DesktopNotificationService -------------------------------------------------
 
 // static
+void DesktopNotificationService::RegisterUserPrefs(PrefServiceSyncable* prefs) {
+#if defined(OS_CHROMEOS) || defined(ENABLE_MESSAGE_CENTER)
+  prefs->RegisterListPref(prefs::kMessageCenterDisabledExtensionIds,
+                          PrefServiceSyncable::SYNCABLE_PREF);
+#endif
+}
+
+// static
 string16 DesktopNotificationService::CreateDataUrl(
     const GURL& icon_url, const string16& title, const string16& body,
     WebTextDirection dir) {
@@ -319,10 +327,22 @@ void DesktopNotificationService::StartObserving() {
   }
   notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::Source<Profile>(profile_));
+#if defined(ENABLE_MESSAGE_CENTER)
+  OnDisabledExtensionIdsChanged();
+  disabled_extension_id_pref_.Init(
+      prefs::kMessageCenterDisabledExtensionIds,
+      profile_->GetPrefs(),
+      base::Bind(
+          &DesktopNotificationService::OnDisabledExtensionIdsChanged,
+          base::Unretained(this)));
+#endif
 }
 
 void DesktopNotificationService::StopObserving() {
   notification_registrar_.RemoveAll();
+#if defined(ENABLE_MESSAGE_CENTER)
+  disabled_extension_id_pref_.Destroy();
+#endif
 }
 
 void DesktopNotificationService::GrantPermission(const GURL& origin) {
@@ -529,6 +549,43 @@ NotificationUIManager* DesktopNotificationService::GetUIManager() {
   if (!ui_manager_)
     ui_manager_ = g_browser_process->notification_ui_manager();
   return ui_manager_;
+}
+
+bool DesktopNotificationService::IsExtensionEnabled(const std::string& id) {
+  return disabled_extension_ids_.find(id) == disabled_extension_ids_.end();
+}
+
+void DesktopNotificationService::SetExtensionEnabled(
+    const std::string& id, bool enabled) {
+  // Do not touch |disabled_extension_ids_|. It will be updated at
+  // OnDisabledExtensionIdsChanged() which will be called when the pref changes.
+  ListPrefUpdate update(profile_->GetPrefs(),
+                        prefs::kMessageCenterDisabledExtensionIds);
+  base::ListValue* disabled_extension_ids = update.Get();
+  if (enabled) {
+    base::StringValue removed_value(id);
+    disabled_extension_ids->Remove(removed_value, NULL);
+  } else {
+    // AppendIfNotPresent will delete |adding_value| when the same value
+    // already exists.
+    base::StringValue* adding_value = new base::StringValue(id);
+    disabled_extension_ids->AppendIfNotPresent(adding_value);
+  }
+}
+
+void DesktopNotificationService::OnDisabledExtensionIdsChanged() {
+  disabled_extension_ids_.clear();
+  const base::ListValue* pref_list = profile_->GetPrefs()->GetList(
+      prefs::kMessageCenterDisabledExtensionIds);
+  for (size_t i = 0; i < pref_list->GetSize(); ++i) {
+    std::string disabled_id;
+    if (!pref_list->GetString(i, &disabled_id) && disabled_id.empty()) {
+      LOG(WARNING) << i << "-th element is not a string for "
+                   << prefs::kMessageCenterDisabledExtensionIds;
+      continue;
+    }
+    disabled_extension_ids_.insert(disabled_id);
+  }
 }
 
 WebKit::WebNotificationPresenter::Permission
