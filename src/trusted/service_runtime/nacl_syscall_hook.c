@@ -116,9 +116,6 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
 
   nap = natp->nap;
 
-  NaClLog(4, "Entered NaClSyscallCSegHook\n");
-  NaClLog(4, "user sp %"NACL_PRIxPTR"\n", sp_user);
-
   NaClCopyInTakeLock(nap);
   /*
    * held until syscall args are copied, which occurs in the generated
@@ -128,7 +125,9 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   sysnum = (tramp_ret - (nap->mem_start + NACL_SYSCALL_START_ADDR))
       >> NACL_SYSCALL_BLOCK_SHIFT;
 
-  NaClLog(4, "system call %"NACL_PRIuS"\n", sysnum);
+  NaClLog(4, "Entering syscall %"NACL_PRIuS
+          ": return address 0x%08"NACL_PRIxNACL_REG"\n",
+          sysnum, natp->user.new_prog_ctr);
 
   /*
    * usr_syscall_args is used by Decoder functions in
@@ -150,21 +149,14 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
     sysret = -NACL_ABI_EINVAL;
     NaClCopyInDropLock(nap);
   } else {
-    NaClLog(4, "making system call %"NACL_PRIdS", "
-            "handler 0x%08"NACL_PRIxPTR"\n",
-            sysnum, (uintptr_t) nap->syscall_table[sysnum].handler);
     sysret = (*(nap->syscall_table[sysnum].handler))(natp);
     /* Implicitly drops lock */
   }
   NaClLog(4,
-          ("returning from system call %"NACL_PRIdS", return value %"NACL_PRId32
+          ("Returning from syscall %"NACL_PRIdS": return value %"NACL_PRId32
            " (0x%"NACL_PRIx32")\n"),
           sysnum, sysret, sysret);
   natp->user.sysret = sysret;
-
-  NaClLog(4, "return target 0x%08"NACL_PRIxNACL_REG"\n",
-          natp->user.new_prog_ctr);
-  NaClLog(4, "user sp %"NACL_PRIxPTR"\n", sp_user);
 
   /*
    * After this NaClAppThreadSetSuspendState() call, we should not
