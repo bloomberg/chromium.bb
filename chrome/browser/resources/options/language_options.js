@@ -133,6 +133,20 @@ cr.define('options', function() {
         $('language-options-extension-ime-button').addEventListener(
             'click',
             this.handleExtensionImeButtonClick_.bind(this));
+
+        // Check if there is an Extension IME.
+        var hasExtensionIme = false;
+        var inputMethods = ($('language-options-input-method-list')
+            .querySelectorAll('.input-method'));
+        for (var i = 0, inputMethod; inputMethod = inputMethods[i]; ++i) {
+          if (inputMethod.querySelector('input')
+              .inputMethodId.match(/^_ext_ime_/)) {
+            hasExtensionIme = true;
+            break;
+          }
+        }
+        // Show the Extension IME button only if available.
+        $('language-options-extension-ime-button').hidden = !hasExtensionIme;
       } else {
         // Listen to add language dialog ok button.
         var addLanguageOkButton = $('add-language-overlay-ok-button');
@@ -208,9 +222,9 @@ cr.define('options', function() {
         var element = inputMethodPrototype.cloneNode(true);
         element.id = '';
         element.languageCodeSet = inputMethod.languageCodeSet;
-        var input = element.querySelectorAll('input')[0];
+        var input = element.querySelector('input');
         input.inputMethodId = inputMethod.id;
-        var span = element.querySelectorAll('span')[0];
+        var span = element.querySelector('span');
         span.textContent = inputMethod.displayName;
 
         // Listen to user clicks.
@@ -234,9 +248,9 @@ cr.define('options', function() {
         var element = inputMethodPrototype.cloneNode(true);
         element.id = '';
         element.languageCodeSet = {};
-        var input = element.querySelectorAll('input')[0];
+        var input = element.querySelector('input');
         input.inputMethodId = inputMethod.id;
-        var span = element.querySelectorAll('span')[0];
+        var span = element.querySelector('span');
         span.textContent = inputMethod.displayName;
 
         input.addEventListener('click',
@@ -559,7 +573,7 @@ cr.define('options', function() {
         var method = methods[i];
         if (languageCode in method.languageCodeSet) {
           method.hidden = false;
-          var input = method.querySelectorAll('input')[0];
+          var input = method.querySelector('input');
           // Give it focus if the ID matches.
           if (input.inputMethodId == focusInputMethodId) {
             input.focus();
@@ -713,7 +727,7 @@ cr.define('options', function() {
       var methods = inputMethodList.querySelectorAll('.input-method');
       for (var i = 0; i < methods.length; i++) {
         var method = methods[i];
-        var input = method.querySelectorAll('input')[0];
+        var input = method.querySelector('input');
         // Give it focus if the ID matches.
         if (input.inputMethodId.match(/^_ext_ime_/))
           method.hidden = false;
