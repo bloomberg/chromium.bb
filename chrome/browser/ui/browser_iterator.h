@@ -27,7 +27,7 @@ class BrowserIterator {
  public:
   BrowserIterator();
 
-  // Returns true if we are past the last Browser.
+  // Returns true if this iterator is past the last Browser.
   bool done() const {
     // |current_iterator_| is never at the end of a list unless it is done (it
     // immediately moves to the next browser list upon hitting the end of the

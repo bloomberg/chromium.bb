@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -129,12 +130,13 @@ void CloseAllBrowsers() {
   chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker(
       "StartedClosingWindows", false);
 #endif
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end();) {
-    Browser* browser = *i;
+  for (scoped_ptr<chrome::BrowserIterator> it_ptr(
+           new chrome::BrowserIterator());
+       !it_ptr->done();) {
+    Browser* browser = **it_ptr;
     browser->window()->Close();
     if (!session_ending) {
-      ++i;
+      it_ptr->Next();
     } else {
       // This path is hit during logoff/power-down. In this case we won't get
       // a final message and so we force the browser to be deleted.
@@ -146,8 +148,8 @@ void CloseAllBrowsers() {
       while (browser->tab_strip_model()->count())
         delete browser->tab_strip_model()->GetWebContentsAt(0);
       browser->window()->DestroyBrowser();
-      i = BrowserList::begin();
-      if (i != BrowserList::end() && browser == *i) {
+      it_ptr.reset(new chrome::BrowserIterator());
+      if (!it_ptr->done() && browser == **it_ptr) {
         // Destroying the browser should have removed it from the browser list.
         // We should never get here.
         NOTREACHED();
