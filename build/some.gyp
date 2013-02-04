@@ -18,6 +18,7 @@
         #
         # Example:
         # '../chrome/chrome.gyp:chrome',
+        '../remoting/remoting.gyp:remoting_host_installation',
       ],
     },
   ],

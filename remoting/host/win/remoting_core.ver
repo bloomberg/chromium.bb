@@ -1,0 +1,4 @@
+BINARY=BINARY_CORE
+FILE_TYPE=VFT_DLL
+INTERNAL_NAME=remoting_core.dll
+ORIGINAL_FILENAME=remoting_core.dll
