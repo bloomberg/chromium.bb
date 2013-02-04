@@ -33,11 +33,11 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
 
   // And the overridden calls just forward to the new mock methods:
   virtual void RegisterPolicyNamespace(const PolicyNamespace& ns) OVERRIDE {
-    RegisterPolicyNamespace(ns.first, ns.second);
+    RegisterPolicyNamespace(ns.domain, ns.component_id);
   }
 
   virtual void UnregisterPolicyNamespace(const PolicyNamespace& ns) OVERRIDE {
-    UnregisterPolicyNamespace(ns.first, ns.second);
+    UnregisterPolicyNamespace(ns.domain, ns.component_id);
   }
 
   // Make public for tests.

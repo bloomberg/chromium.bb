@@ -89,8 +89,8 @@ void ConfigurationPolicyProvider::UpdatePolicy(
     policy_bundle_.Swap(bundle.get());
   else
     policy_bundle_.Clear();
-  FixDeprecatedPolicies(
-      &policy_bundle_.Get(POLICY_DOMAIN_CHROME, std::string()));
+  FixDeprecatedPolicies(&policy_bundle_.Get(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())));
   FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
                     observer_list_,
                     OnUpdatePolicy(this));

@@ -504,7 +504,8 @@ scoped_ptr<PolicyService>
   }
 
   scoped_ptr<PolicyService> service(new PolicyServiceImpl(providers));
-  service->RegisterPolicyNamespace(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
+  service->RegisterPolicyNamespace(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   return service.Pass();
 }
 

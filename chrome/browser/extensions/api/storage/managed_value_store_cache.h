@@ -66,8 +66,7 @@ class ManagedValueStoreCache : public ValueStoreCache,
   virtual void DeleteStorageSoon(const std::string& extension_id) OVERRIDE;
 
   // PolicyService::Observer implementation:
-  virtual void OnPolicyUpdated(policy::PolicyDomain domain,
-                               const std::string& component_id,
+  virtual void OnPolicyUpdated(const policy::PolicyNamespace& ns,
                                const policy::PolicyMap& previous,
                                const policy::PolicyMap& current) OVERRIDE;
 

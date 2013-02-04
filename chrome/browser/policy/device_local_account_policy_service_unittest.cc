@@ -435,8 +435,8 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
   Mock::VerifyAndClearExpectations(&provider_observer_);
 
   PolicyBundle expected_policy_bundle;
-  expected_policy_bundle.Get(POLICY_DOMAIN_CHROME, "").CopyFrom(
-      expected_policy_map_);
+  expected_policy_bundle.Get(PolicyNamespace(
+      POLICY_DOMAIN_CHROME, std::string())).CopyFrom(expected_policy_map_);
   EXPECT_TRUE(expected_policy_bundle.Equals(provider_.policies()));
 
   // Policy change should be reported.
@@ -453,9 +453,12 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&provider_observer_);
 
-  expected_policy_bundle.Get(POLICY_DOMAIN_CHROME, "").Set(
-      key::kDisableSpdy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      Value::CreateBooleanValue(false));
+  expected_policy_bundle.Get(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+      .Set(key::kDisableSpdy,
+           POLICY_LEVEL_MANDATORY,
+           POLICY_SCOPE_USER,
+           Value::CreateBooleanValue(false));
   EXPECT_TRUE(expected_policy_bundle.Equals(provider_.policies()));
 
   // Any values set for the |ShelfAutoHideBehavior|, |ShowLogoutButtonInTray|

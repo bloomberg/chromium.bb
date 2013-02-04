@@ -24,10 +24,9 @@ class PolicyBundle {
   PolicyBundle();
   virtual ~PolicyBundle();
 
-  // Returns the PolicyMap for namespace (domain, component_id).
-  PolicyMap& Get(PolicyDomain domain, const std::string& component_id);
-  const PolicyMap& Get(PolicyDomain domain,
-                       const std::string& component_id) const;
+  // Returns the PolicyMap for namespace |ns|.
+  PolicyMap& Get(const PolicyNamespace& ns);
+  const PolicyMap& Get(const PolicyNamespace& ns) const;
 
   // Swaps the internal representation of |this| with |other|.
   void Swap(PolicyBundle* other);

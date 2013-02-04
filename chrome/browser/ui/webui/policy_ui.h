@@ -40,8 +40,7 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   // policy::PolicyService::Observer implementation.
-  virtual void OnPolicyUpdated(policy::PolicyDomain domain,
-                               const std::string& component_id,
+  virtual void OnPolicyUpdated(const policy::PolicyNamespace& ns,
                                const policy::PolicyMap& previous,
                                const policy::PolicyMap& current) OVERRIDE;
 

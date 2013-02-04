@@ -76,9 +76,10 @@ class PolicyStatisticsCollectorTest : public testing::Test {
     ASSERT_TRUE(test_policy_id2_ != -1);
 
     // Set up default function behaviour.
-    EXPECT_CALL(policy_service_, GetPolicies(POLICY_DOMAIN_CHROME,
-                                             std::string())).
-        WillRepeatedly(ReturnRef(policy_map_));
+    EXPECT_CALL(policy_service_,
+                GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME,
+                                            std::string())))
+        .WillRepeatedly(ReturnRef(policy_map_));
 
     // Arbitrary negative value (so it'll be different from |update_delay_|).
     last_delay_ = base::TimeDelta::FromDays(-1);

@@ -68,22 +68,25 @@ TEST(PolicyBundleTest, Get) {
   PolicyBundle bundle;
   EXPECT_TRUE(IsEmpty(bundle));
 
-  AddTestPolicies(&bundle.Get(POLICY_DOMAIN_CHROME, std::string()));
+  AddTestPolicies(&bundle.Get(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())));
   EXPECT_FALSE(IsEmpty(bundle));
 
   PolicyMap policy;
   AddTestPolicies(&policy);
-  EXPECT_TRUE(bundle.Get(POLICY_DOMAIN_CHROME, std::string()).Equals(policy));
+  EXPECT_TRUE(bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME,
+                                         std::string())).Equals(policy));
 
   PolicyBundle::const_iterator it = bundle.begin();
   ASSERT_NE(it, bundle.end());
-  EXPECT_EQ(POLICY_DOMAIN_CHROME, it->first.first);
-  EXPECT_EQ("", it->first.second);
+  EXPECT_EQ(POLICY_DOMAIN_CHROME, it->first.domain);
+  EXPECT_EQ("", it->first.component_id);
   ASSERT_TRUE(it->second);
   EXPECT_TRUE(it->second->Equals(policy));
   ++it;
   EXPECT_EQ(bundle.end(), it);
-  EXPECT_TRUE(bundle.Get(POLICY_DOMAIN_EXTENSIONS, kExtension0).empty());
+  EXPECT_TRUE(bundle.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                                         kExtension0)).empty());
 
   EXPECT_FALSE(IsEmpty(bundle));
   bundle.Clear();
@@ -94,31 +97,36 @@ TEST(PolicyBundleTest, SwapAndCopy) {
   PolicyBundle bundle0;
   PolicyBundle bundle1;
 
-  AddTestPolicies(&bundle0.Get(POLICY_DOMAIN_CHROME, std::string()));
-  AddTestPolicies(&bundle0.Get(POLICY_DOMAIN_EXTENSIONS, kExtension0));
+  AddTestPolicies(&bundle0.Get(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())));
+  AddTestPolicies(&bundle0.Get(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension0)));
   EXPECT_FALSE(IsEmpty(bundle0));
   EXPECT_TRUE(IsEmpty(bundle1));
 
   PolicyMap policy;
   AddTestPolicies(&policy);
-  EXPECT_TRUE(bundle0.Get(POLICY_DOMAIN_CHROME, std::string()).Equals(policy));
-  EXPECT_TRUE(
-      bundle0.Get(POLICY_DOMAIN_EXTENSIONS, kExtension0).Equals(policy));
+  EXPECT_TRUE(bundle0.Get(PolicyNamespace(POLICY_DOMAIN_CHROME,
+                                          std::string())).Equals(policy));
+  EXPECT_TRUE(bundle0.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                                          kExtension0)).Equals(policy));
 
   bundle0.Swap(&bundle1);
   EXPECT_TRUE(IsEmpty(bundle0));
   EXPECT_FALSE(IsEmpty(bundle1));
 
-  EXPECT_TRUE(bundle1.Get(POLICY_DOMAIN_CHROME, std::string()).Equals(policy));
-  EXPECT_TRUE(
-      bundle1.Get(POLICY_DOMAIN_EXTENSIONS, kExtension0).Equals(policy));
+  EXPECT_TRUE(bundle1.Get(PolicyNamespace(POLICY_DOMAIN_CHROME,
+                                          std::string())).Equals(policy));
+  EXPECT_TRUE(bundle1.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                                          kExtension0)).Equals(policy));
 
   bundle0.CopyFrom(bundle1);
   EXPECT_FALSE(IsEmpty(bundle0));
   EXPECT_FALSE(IsEmpty(bundle1));
-  EXPECT_TRUE(bundle0.Get(POLICY_DOMAIN_CHROME, std::string()).Equals(policy));
-  EXPECT_TRUE(
-      bundle0.Get(POLICY_DOMAIN_EXTENSIONS, kExtension0).Equals(policy));
+  EXPECT_TRUE(bundle0.Get(PolicyNamespace(POLICY_DOMAIN_CHROME,
+                                          std::string())).Equals(policy));
+  EXPECT_TRUE(bundle0.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                                          kExtension0)).Equals(policy));
 }
 
 TEST(PolicyBundleTest, MergeFrom) {
@@ -132,23 +140,32 @@ TEST(PolicyBundleTest, MergeFrom) {
   PolicyMap policy0;
   AddTestPoliciesWithParams(
       &policy0, kPolicy0, 0u, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER);
-  bundle0.Get(POLICY_DOMAIN_CHROME, std::string()).CopyFrom(policy0);
-  bundle0.Get(POLICY_DOMAIN_EXTENSIONS, kExtension0).CopyFrom(policy0);
-  bundle0.Get(POLICY_DOMAIN_EXTENSIONS, kExtension3).CopyFrom(policy0);
+  bundle0.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+      .CopyFrom(policy0);
+  bundle0.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension0))
+      .CopyFrom(policy0);
+  bundle0.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension3))
+      .CopyFrom(policy0);
 
   PolicyMap policy1;
   AddTestPoliciesWithParams(
       &policy1, kPolicy1, 1u, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
-  bundle1.Get(POLICY_DOMAIN_CHROME, std::string()).CopyFrom(policy1);
-  bundle1.Get(POLICY_DOMAIN_EXTENSIONS, kExtension1).CopyFrom(policy1);
-  bundle1.Get(POLICY_DOMAIN_EXTENSIONS, kExtension3).CopyFrom(policy1);
+  bundle1.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+      .CopyFrom(policy1);
+  bundle1.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension1))
+      .CopyFrom(policy1);
+  bundle1.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension3))
+      .CopyFrom(policy1);
 
   PolicyMap policy2;
   AddTestPoliciesWithParams(
       &policy2, kPolicy2, 2u, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
-  bundle2.Get(POLICY_DOMAIN_CHROME, std::string()).CopyFrom(policy2);
-  bundle2.Get(POLICY_DOMAIN_EXTENSIONS, kExtension2).CopyFrom(policy2);
-  bundle2.Get(POLICY_DOMAIN_EXTENSIONS, kExtension3).CopyFrom(policy2);
+  bundle2.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+      .CopyFrom(policy2);
+  bundle2.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension2))
+      .CopyFrom(policy2);
+  bundle2.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension3))
+      .CopyFrom(policy2);
 
   // Merge in order of decreasing priority.
   PolicyBundle merged;
@@ -174,53 +191,63 @@ TEST(PolicyBundleTest, MergeFrom) {
                base::Value::CreateIntegerValue(1));
   expected.Set(kPolicy2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                base::Value::CreateIntegerValue(2));
-  EXPECT_TRUE(merged.Get(POLICY_DOMAIN_CHROME, std::string()).Equals(expected));
-  EXPECT_TRUE(
-      merged.Get(POLICY_DOMAIN_EXTENSIONS, kExtension3).Equals(expected));
+  EXPECT_TRUE(merged.Get(PolicyNamespace(POLICY_DOMAIN_CHROME,
+                                         std::string())).Equals(expected));
+  EXPECT_TRUE(merged.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                                         kExtension3)).Equals(expected));
   // extension0 comes only from bundle0.
-  EXPECT_TRUE(
-      merged.Get(POLICY_DOMAIN_EXTENSIONS, kExtension0).Equals(policy0));
+  EXPECT_TRUE(merged.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                                         kExtension0)).Equals(policy0));
   // extension1 comes only from bundle1.
-  EXPECT_TRUE(
-      merged.Get(POLICY_DOMAIN_EXTENSIONS, kExtension1).Equals(policy1));
+  EXPECT_TRUE(merged.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                                         kExtension1)).Equals(policy1));
   // extension2 comes only from bundle2.
-  EXPECT_TRUE(
-      merged.Get(POLICY_DOMAIN_EXTENSIONS, kExtension2).Equals(policy2));
+  EXPECT_TRUE(merged.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                                         kExtension2)).Equals(policy2));
 }
 
 TEST(PolicyBundleTest, Equals) {
   PolicyBundle bundle;
-  AddTestPolicies(&bundle.Get(POLICY_DOMAIN_CHROME, std::string()));
-  AddTestPolicies(&bundle.Get(POLICY_DOMAIN_EXTENSIONS, kExtension0));
+  AddTestPolicies(&bundle.Get(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())));
+  AddTestPolicies(&bundle.Get(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension0)));
 
   PolicyBundle other;
   EXPECT_FALSE(bundle.Equals(other));
   other.CopyFrom(bundle);
   EXPECT_TRUE(bundle.Equals(other));
 
-  AddTestPolicies(&bundle.Get(POLICY_DOMAIN_EXTENSIONS, kExtension1));
+  AddTestPolicies(&bundle.Get(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension1)));
   EXPECT_FALSE(bundle.Equals(other));
   other.CopyFrom(bundle);
   EXPECT_TRUE(bundle.Equals(other));
-  AddTestPolicies(&other.Get(POLICY_DOMAIN_EXTENSIONS, kExtension2));
+  AddTestPolicies(&other.Get(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension2)));
   EXPECT_FALSE(bundle.Equals(other));
 
   other.CopyFrom(bundle);
-  bundle.Get(POLICY_DOMAIN_CHROME, std::string())
-      .Set(kPolicy0, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+  bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+      .Set(kPolicy0,
+           POLICY_LEVEL_MANDATORY,
+           POLICY_SCOPE_USER,
            base::Value::CreateIntegerValue(123));
   EXPECT_FALSE(bundle.Equals(other));
   other.CopyFrom(bundle);
   EXPECT_TRUE(bundle.Equals(other));
-  bundle.Get(POLICY_DOMAIN_CHROME, std::string())
-      .Set(kPolicy0, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+  bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+      .Set(kPolicy0,
+           POLICY_LEVEL_MANDATORY,
+           POLICY_SCOPE_MACHINE,
            base::Value::CreateIntegerValue(123));
   EXPECT_FALSE(bundle.Equals(other));
 
   // Test non-const Get().
   bundle.Clear();
   other.Clear();
-  PolicyMap& policy_map = bundle.Get(POLICY_DOMAIN_CHROME, "");
+  PolicyMap& policy_map =
+      bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   EXPECT_TRUE(bundle.Equals(other));
   policy_map.Set(kPolicy0, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  base::Value::CreateIntegerValue(123));

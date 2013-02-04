@@ -74,8 +74,8 @@ void PolicyStatisticsCollector::RecordPolicyUse(int id) {
 void PolicyStatisticsCollector::CollectStatistics() {
   const policy::PolicyDefinitionList* policy_list =
       policy::GetChromePolicyDefinitionList();
-  const PolicyMap& policies = policy_service_->GetPolicies(POLICY_DOMAIN_CHROME,
-                                                           std::string());
+  const PolicyMap& policies = policy_service_->GetPolicies(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
 
   // Collect statistics.
   for (const policy::PolicyDefinitionList::Entry* policy = policy_list->begin;

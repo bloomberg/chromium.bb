@@ -141,7 +141,7 @@ class CloudPolicyTest : public InProcessBrowserTest {
     // setting up the cloud connection. Other policies configured in the test
     // machine will interfere with these tests.
     const PolicyMap& map = g_browser_process->policy_service()->GetPolicies(
-        POLICY_DOMAIN_CHROME, "");
+        PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
     if (!map.empty()) {
       base::DictionaryValue dict;
       for (PolicyMap::const_iterator it = map.begin(); it != map.end(); ++it)
@@ -209,8 +209,8 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicy) {
   }
 
   PolicyMap empty;
-  EXPECT_TRUE(
-      empty.Equals(policy_service->GetPolicies(POLICY_DOMAIN_CHROME, "")));
+  EXPECT_TRUE(empty.Equals(policy_service->GetPolicies(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))));
 
   ASSERT_NO_FATAL_FAILURE(SetServerPolicy(GetTestPolicy()));
   PolicyMap expected;
@@ -232,8 +232,8 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicy) {
     policy_service->RefreshPolicies(run_loop.QuitClosure());
     run_loop.Run();
   }
-  EXPECT_TRUE(
-      expected.Equals(policy_service->GetPolicies(POLICY_DOMAIN_CHROME, "")));
+  EXPECT_TRUE(expected.Equals(policy_service->GetPolicies(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))));
 }
 
 TEST(CloudPolicyProtoTest, VerifyProtobufEquivalence) {

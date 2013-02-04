@@ -447,7 +447,7 @@ TEST_F(PolicyLoaderWinTest, HKLMOverHKCU) {
                       UTF8ToUTF16("hkcu").c_str());
 
   PolicyBundle expected;
-  expected.Get(POLICY_DOMAIN_CHROME, "")
+  expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set(test_policy_definitions::kKeyString,
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_MACHINE,
@@ -472,9 +472,11 @@ TEST_F(PolicyLoaderWinTest, Load3rdPartyWithoutSchema) {
                            kRegistryMandatorySubKey, kThirdParty));
 
   PolicyBundle expected;
-  expected.Get(POLICY_DOMAIN_EXTENSIONS, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+  expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                               "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"))
       .LoadFrom(&dict, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
-  expected.Get(POLICY_DOMAIN_EXTENSIONS, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+  expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                               "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"))
       .LoadFrom(&dict, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
   EXPECT_TRUE(Matches(expected));
 }
@@ -512,7 +514,8 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
                            kPathSuffix, kRecommended));
 
   PolicyBundle expected;
-  PolicyMap& expected_policy = expected.Get(POLICY_DOMAIN_EXTENSIONS, "merge");
+  PolicyMap& expected_policy =
+      expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "merge"));
   expected_policy.Set("a", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                       base::Value::CreateStringValue(kMachineMandatory));
   expected_policy.Set("b", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -561,7 +564,7 @@ TEST_F(PolicyLoaderWinTest, LoadStringEncodedValues) {
       InstallValue(encoded_policy, HKEY_CURRENT_USER, kPathSuffix, kMandatory));
 
   PolicyBundle expected;
-  expected.Get(POLICY_DOMAIN_EXTENSIONS, "string")
+  expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "string"))
       .LoadFrom(&policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
   EXPECT_TRUE(Matches(expected));
 }
@@ -584,7 +587,7 @@ TEST_F(PolicyLoaderWinTest, LoadIntegerEncodedValues) {
       InstallValue(encoded_policy, HKEY_CURRENT_USER, kPathSuffix, kMandatory));
 
   PolicyBundle expected;
-  expected.Get(POLICY_DOMAIN_EXTENSIONS, "int")
+  expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "int"))
       .LoadFrom(&policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
   EXPECT_TRUE(Matches(expected));
 }
@@ -624,7 +627,7 @@ TEST_F(PolicyLoaderWinTest, DefaultPropertySchemaType) {
   expected_policy.SetDouble("double1", 789.0);
   expected_policy.SetDouble("double2", 123.456e7);
   PolicyBundle expected;
-  expected.Get(POLICY_DOMAIN_EXTENSIONS, "test")
+  expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "test"))
       .LoadFrom(&expected_policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
   EXPECT_TRUE(Matches(expected));
 }

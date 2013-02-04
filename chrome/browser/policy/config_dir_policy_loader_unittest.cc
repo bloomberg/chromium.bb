@@ -220,7 +220,7 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
   scoped_ptr<PolicyBundle> bundle(loader.Load());
   ASSERT_TRUE(bundle.get());
   PolicyBundle expected_bundle;
-  expected_bundle.Get(POLICY_DOMAIN_CHROME, "")
+  expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .LoadFrom(&test_dict_foo, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
   EXPECT_TRUE(bundle->Equals(expected_bundle));
 }

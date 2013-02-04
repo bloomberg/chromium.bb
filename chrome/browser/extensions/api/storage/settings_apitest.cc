@@ -147,8 +147,8 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
 #if defined(ENABLE_CONFIGURATION_POLICY)
   void SetPolicies(const base::DictionaryValue& policies) {
     scoped_ptr<policy::PolicyBundle> bundle(new policy::PolicyBundle());
-    policy::PolicyMap& policy_map = bundle->Get(
-        policy::POLICY_DOMAIN_EXTENSIONS, kManagedStorageExtensionId);
+    policy::PolicyMap& policy_map = bundle->Get(policy::PolicyNamespace(
+        policy::POLICY_DOMAIN_EXTENSIONS, kManagedStorageExtensionId));
     policy_map.LoadFrom(
         &policies, policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER);
     policy_provider_.UpdatePolicy(bundle.Pass());

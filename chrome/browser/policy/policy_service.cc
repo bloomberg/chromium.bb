@@ -8,30 +8,59 @@
 
 namespace policy {
 
+PolicyNamespace::PolicyNamespace() {}
+
+PolicyNamespace::PolicyNamespace(PolicyDomain domain,
+                                 const std::string& component_id)
+    : domain(domain),
+      component_id(component_id) {}
+
+PolicyNamespace::PolicyNamespace(const PolicyNamespace& other)
+    : domain(other.domain),
+      component_id(other.component_id) {}
+
+PolicyNamespace::~PolicyNamespace() {}
+
+PolicyNamespace& PolicyNamespace::operator=(const PolicyNamespace& other) {
+  domain = other.domain;
+  component_id = other.component_id;
+  return *this;
+}
+
+bool PolicyNamespace::operator<(const PolicyNamespace& other) const {
+  return domain < other.domain ||
+         (domain == other.domain && component_id < other.component_id);
+}
+
+bool PolicyNamespace::operator==(const PolicyNamespace& other) const {
+  return domain == other.domain && component_id == other.component_id;
+}
+
+bool PolicyNamespace::operator!=(const PolicyNamespace& other) const {
+  return !(*this == other);
+}
+
 PolicyChangeRegistrar::PolicyChangeRegistrar(PolicyService* policy_service,
-                                             PolicyDomain domain,
-                                             const std::string& component_id)
+                                             const PolicyNamespace& ns)
     : policy_service_(policy_service),
-      domain_(domain),
-      component_id_(component_id) {}
+      ns_(ns) {}
 
 PolicyChangeRegistrar::~PolicyChangeRegistrar() {
   if (!callback_map_.empty())
-    policy_service_->RemoveObserver(domain_, this);
+    policy_service_->RemoveObserver(ns_.domain, this);
 }
 
 void PolicyChangeRegistrar::Observe(const std::string& policy_name,
                                     const UpdateCallback& callback) {
   if (callback_map_.empty())
-    policy_service_->AddObserver(domain_, this);
+    policy_service_->AddObserver(ns_.domain, this);
   callback_map_[policy_name] = callback;
 }
 
-void PolicyChangeRegistrar::OnPolicyUpdated(PolicyDomain domain,
-                                            const std::string& component_id,
+void PolicyChangeRegistrar::OnPolicyUpdated(const PolicyNamespace& ns,
                                             const PolicyMap& previous,
                                             const PolicyMap& current) {
-  if (component_id != component_id_)
+  if (ns != ns_)
     return;
   for (CallbackMap::iterator it = callback_map_.begin();
        it != callback_map_.end(); ++it) {

@@ -106,8 +106,7 @@ void ManagedValueStoreCache::DeleteStorageSoon(
   }
 }
 
-void ManagedValueStoreCache::OnPolicyUpdated(policy::PolicyDomain domain,
-                                             const std::string& component_id,
+void ManagedValueStoreCache::OnPolicyUpdated(const policy::PolicyNamespace& ns,
                                              const policy::PolicyMap& previous,
                                              const policy::PolicyMap& current) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -115,7 +114,7 @@ void ManagedValueStoreCache::OnPolicyUpdated(policy::PolicyDomain domain,
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&ManagedValueStoreCache::UpdatePolicyOnFILE,
                  base::Unretained(this),
-                 std::string(component_id),
+                 ns.component_id,
                  base::Passed(current.DeepCopy())));
 }
 
@@ -200,7 +199,7 @@ void ManagedValueStoreCache::GetInitialPolicy(
     const base::Closure& continuation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const policy::PolicyMap& policy = policy_service_->GetPolicies(
-      policy::POLICY_DOMAIN_EXTENSIONS, extension_id);
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_EXTENSIONS, extension_id));
   // Now post back to FILE to create the database.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,

@@ -30,15 +30,14 @@ class MockPolicyService : public PolicyService {
 
   // And the overridden calls just forward to the new mock methods:
   virtual void RegisterPolicyNamespace(const PolicyNamespace& ns) OVERRIDE {
-    RegisterPolicyNamespace(ns.first, ns.second);
+    RegisterPolicyNamespace(ns.domain, ns.component_id);
   }
 
   virtual void UnregisterPolicyNamespace(const PolicyNamespace& ns) OVERRIDE {
-    UnregisterPolicyNamespace(ns.first, ns.second);
+    UnregisterPolicyNamespace(ns.domain, ns.component_id);
   }
 
-  MOCK_CONST_METHOD2(GetPolicies, const PolicyMap&(PolicyDomain,
-                                                   const std::string&));
+  MOCK_CONST_METHOD1(GetPolicies, const PolicyMap&(const PolicyNamespace&));
   MOCK_CONST_METHOD1(IsInitializationComplete, bool(PolicyDomain domain));
   MOCK_METHOD1(RefreshPolicies, void(const base::Closure&));
 };

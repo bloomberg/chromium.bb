@@ -278,9 +278,11 @@ TEST_F(PolicyLoaderMacTest, TestNonForcedValue) {
   provider_.RefreshPolicies();
   loop_.RunUntilIdle();
   PolicyBundle expected_bundle;
-  expected_bundle.Get(POLICY_DOMAIN_CHROME, "")
-      .Set(test_policy_definitions::kKeyString, POLICY_LEVEL_RECOMMENDED,
-           POLICY_SCOPE_USER, base::Value::CreateStringValue("string value"));
+  expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+      .Set(test_policy_definitions::kKeyString,
+           POLICY_LEVEL_RECOMMENDED,
+           POLICY_SCOPE_USER,
+           base::Value::CreateStringValue("string value"));
   EXPECT_TRUE(provider_.policies().Equals(expected_bundle));
 }
 

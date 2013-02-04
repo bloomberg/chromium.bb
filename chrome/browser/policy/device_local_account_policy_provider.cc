@@ -72,8 +72,8 @@ void DeviceLocalAccountPolicyProvider::UpdateFromBroker() {
     store_initialized_ |= broker->core()->store()->is_initialized();
     if (!waiting_for_policy_refresh_) {
       // Copy policy from the broker.
-      bundle->Get(POLICY_DOMAIN_CHROME, std::string()).CopyFrom(
-          broker->core()->store()->policy_map());
+      bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+          .CopyFrom(broker->core()->store()->policy_map());
     } else {
       // Wait for the refresh to finish.
       return;

@@ -410,8 +410,8 @@ IOThread::IOThread(
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   is_spdy_disabled_by_policy_ = policy_service->GetPolicies(
-      policy::POLICY_DOMAIN_CHROME,
-      std::string()).Get(policy::key::kDisableSpdy) != NULL;
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string())).Get(
+          policy::key::kDisableSpdy) != NULL;
 #endif  // ENABLE_CONFIGURATION_POLICY
 
   BrowserThread::SetDelegate(BrowserThread::IO, this);

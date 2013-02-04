@@ -29,8 +29,7 @@ class PolicyServiceStub : public PolicyService {
   virtual void UnregisterPolicyNamespace(const PolicyNamespace& ns) OVERRIDE;
 
   virtual const PolicyMap& GetPolicies(
-      PolicyDomain domain,
-      const std::string& component_id) const OVERRIDE;
+      const PolicyNamespace& ns) const OVERRIDE;
 
   virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
 

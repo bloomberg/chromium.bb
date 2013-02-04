@@ -77,12 +77,11 @@ bool ConfigurationPolicyPrefStore::GetValue(const std::string& key,
 }
 
 void ConfigurationPolicyPrefStore::OnPolicyUpdated(
-    PolicyDomain domain,
-    const std::string& component_id,
+    const PolicyNamespace& ns,
     const PolicyMap& previous,
     const PolicyMap& current) {
-  DCHECK_EQ(POLICY_DOMAIN_CHROME, domain);
-  DCHECK_EQ("", component_id);
+  DCHECK_EQ(POLICY_DOMAIN_CHROME, ns.domain);
+  DCHECK(ns.component_id.empty());
   Refresh();
 }
 
@@ -132,8 +131,8 @@ void ConfigurationPolicyPrefStore::Refresh() {
 PrefValueMap* ConfigurationPolicyPrefStore::CreatePreferencesFromPolicies() {
   scoped_ptr<PrefValueMap> prefs(new PrefValueMap);
   PolicyMap filtered_policies;
-  filtered_policies.CopyFrom(
-      policy_service_->GetPolicies(POLICY_DOMAIN_CHROME, ""));
+  filtered_policies.CopyFrom(policy_service_->GetPolicies(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())));
   filtered_policies.FilterLevel(level_);
 
   scoped_ptr<PolicyErrorMap> errors(new PolicyErrorMap);

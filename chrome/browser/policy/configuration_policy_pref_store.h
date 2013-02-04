@@ -39,8 +39,7 @@ class ConfigurationPolicyPrefStore
                         const Value** result) const OVERRIDE;
 
   // PolicyService::Observer methods:
-  virtual void OnPolicyUpdated(PolicyDomain domain,
-                               const std::string& component_id,
+  virtual void OnPolicyUpdated(const PolicyNamespace& ns,
                                const PolicyMap& previous,
                                const PolicyMap& current) OVERRIDE;
   virtual void OnPolicyServiceInitialized(PolicyDomain domain) OVERRIDE;

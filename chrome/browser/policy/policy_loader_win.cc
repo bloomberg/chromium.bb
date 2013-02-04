@@ -416,7 +416,8 @@ void PolicyLoaderWin::InitOnFile() {
 
 scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
   scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
-  LoadChromePolicy(&bundle->Get(POLICY_DOMAIN_CHROME, std::string()));
+  LoadChromePolicy(
+      &bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())));
   Load3rdPartyPolicies(bundle.get());
   return bundle.Pass();
 }
@@ -552,7 +553,8 @@ void PolicyLoaderWin::Load3rdPartyPolicies(PolicyBundle* bundle) {
             // LoadFrom() overwrites any existing values. Use a temporary map
             // and then use MergeFrom(), that only overwrites values with lower
             // priority.
-            bundle->Get(kDomains[d].domain, UTF16ToUTF8(component))
+            bundle->Get(PolicyNamespace(kDomains[d].domain,
+                                        UTF16ToUTF8(component)))
                 .MergeFrom(policies);
           }
         }

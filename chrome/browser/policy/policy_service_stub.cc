@@ -23,8 +23,7 @@ void PolicyServiceStub::RegisterPolicyNamespace(const PolicyNamespace& ns) {}
 void PolicyServiceStub::UnregisterPolicyNamespace(const PolicyNamespace& ns) {}
 
 const PolicyMap& PolicyServiceStub::GetPolicies(
-    PolicyDomain domain,
-    const std::string& component_id) const {
+    const PolicyNamespace& ns) const {
   return kEmpty_;
 };
 

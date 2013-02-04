@@ -18,7 +18,8 @@ MockConfigurationPolicyProvider::~MockConfigurationPolicyProvider() {}
 void MockConfigurationPolicyProvider::UpdateChromePolicy(
     const PolicyMap& policy) {
   scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
-  bundle->Get(POLICY_DOMAIN_CHROME, std::string()).CopyFrom(policy);
+  bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+      .CopyFrom(policy);
   UpdatePolicy(bundle.Pass());
 }
 

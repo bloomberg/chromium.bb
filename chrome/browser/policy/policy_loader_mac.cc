@@ -96,7 +96,8 @@ void PolicyLoaderMac::InitOnFile() {
 scoped_ptr<PolicyBundle> PolicyLoaderMac::Load() {
   preferences_->AppSynchronize(kCFPreferencesCurrentApplication);
   scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
-  PolicyMap& chrome_policy = bundle->Get(POLICY_DOMAIN_CHROME, std::string());
+  PolicyMap& chrome_policy =
+      bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
 
   const PolicyDefinitionList::Entry* current;
   for (current = policy_list_->begin; current != policy_list_->end; ++current) {

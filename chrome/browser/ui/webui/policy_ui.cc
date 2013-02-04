@@ -405,12 +405,11 @@ void PolicyUIHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void PolicyUIHandler::OnPolicyUpdated(policy::PolicyDomain domain,
-                                      const std::string& component_id,
+void PolicyUIHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
                                       const policy::PolicyMap& previous,
                                       const policy::PolicyMap& current) {
-  DCHECK(domain == policy::POLICY_DOMAIN_CHROME);
-  DCHECK(component_id.empty());
+  DCHECK_EQ(policy::POLICY_DOMAIN_CHROME, ns.domain);
+  DCHECK(ns.component_id.empty());
   SendDataToUI();
 }
 
@@ -488,9 +487,9 @@ void PolicyUIHandler::SendDataToUI() {
   policy::PolicyService* service = GetPolicyService();
   bool any_policies_set = false;
   base::ListValue* list =
-      GetPolicyStatusList(
-          service->GetPolicies(policy::POLICY_DOMAIN_CHROME, std::string()),
-          &any_policies_set).release();
+      GetPolicyStatusList(service->GetPolicies(policy::PolicyNamespace(
+                              policy::POLICY_DOMAIN_CHROME, std::string())),
+                          &any_policies_set).release();
   base::DictionaryValue results;
   results.Set("policies", list);
   results.SetBoolean("anyPoliciesSet", any_policies_set);

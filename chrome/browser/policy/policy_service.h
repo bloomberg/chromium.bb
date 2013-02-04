@@ -31,8 +31,22 @@ enum PolicyDomain {
 };
 
 // Groups a policy domain and a component ID in a single object representing
-// a policy namespace.
-typedef std::pair<PolicyDomain, std::string> PolicyNamespace;
+// a policy namespace. Objects of this class can be used as keys in std::maps.
+struct PolicyNamespace {
+ public:
+  PolicyNamespace();
+  PolicyNamespace(PolicyDomain domain, const std::string& component_id);
+  PolicyNamespace(const PolicyNamespace& other);
+  ~PolicyNamespace();
+
+  PolicyNamespace& operator=(const PolicyNamespace& other);
+  bool operator<(const PolicyNamespace& other) const;
+  bool operator==(const PolicyNamespace& other) const;
+  bool operator!=(const PolicyNamespace& other) const;
+
+  PolicyDomain domain;
+  std::string component_id;
+};
 
 // The PolicyService merges policies from all available sources, taking into
 // account their priorities. Policy clients can retrieve policy for their domain
@@ -45,12 +59,11 @@ class PolicyService {
  public:
   class Observer {
    public:
-    // Invoked whenever policies for the |domain|, |component_id| namespace are
-    // modified. This is only invoked for changes that happen after AddObserver
-    // is called. |previous| contains the values of the policies before the
-    // update, and |current| contains the current values.
-    virtual void OnPolicyUpdated(PolicyDomain domain,
-                                 const std::string& component_id,
+    // Invoked whenever policies for the given |ns| namespace are modified.
+    // This is only invoked for changes that happen after AddObserver is called.
+    // |previous| contains the values of the policies before the update,
+    // and |current| contains the current values.
+    virtual void OnPolicyUpdated(const PolicyNamespace& ns,
                                  const PolicyMap& previous,
                                  const PolicyMap& current) = 0;
 
@@ -81,9 +94,7 @@ class PolicyService {
 
   virtual void UnregisterPolicyNamespace(const PolicyNamespace& ns) = 0;
 
-  virtual const PolicyMap& GetPolicies(
-      PolicyDomain domain,
-      const std::string& component_id) const = 0;
+  virtual const PolicyMap& GetPolicies(const PolicyNamespace& ns) const = 0;
 
   // The PolicyService loads policy from several sources, and some require
   // asynchronous loads. IsInitializationComplete() returns true once all
@@ -116,8 +127,7 @@ class PolicyChangeRegistrar : public PolicyService::Observer {
   // policy keys changes. Both the |policy_service| and the |observer| must
   // outlive |this|.
   PolicyChangeRegistrar(PolicyService* policy_service,
-                        PolicyDomain domain,
-                        const std::string& component_id);
+                        const PolicyNamespace& ns);
 
   virtual ~PolicyChangeRegistrar();
 
@@ -128,8 +138,7 @@ class PolicyChangeRegistrar : public PolicyService::Observer {
   void Observe(const std::string& policy_name, const UpdateCallback& callback);
 
   // Implementation of PolicyService::Observer:
-  virtual void OnPolicyUpdated(PolicyDomain domain,
-                               const std::string& component_id,
+  virtual void OnPolicyUpdated(const PolicyNamespace& ns,
                                const PolicyMap& previous,
                                const PolicyMap& current) OVERRIDE;
 
@@ -137,8 +146,7 @@ class PolicyChangeRegistrar : public PolicyService::Observer {
   typedef std::map<std::string, UpdateCallback> CallbackMap;
 
   PolicyService* policy_service_;
-  PolicyDomain domain_;
-  std::string component_id_;
+  PolicyNamespace ns_;
   CallbackMap callback_map_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyChangeRegistrar);

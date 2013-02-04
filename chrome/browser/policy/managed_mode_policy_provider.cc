@@ -102,7 +102,7 @@ base::DictionaryValue* ManagedModePolicyProvider::GetCachedPolicy() const {
 void ManagedModePolicyProvider::UpdatePolicyFromCache() {
   scoped_ptr<PolicyBundle> policy_bundle(new PolicyBundle);
   PolicyMap* policy_map =
-      &policy_bundle->Get(POLICY_DOMAIN_CHROME, std::string());
+      &policy_bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   policy_map->LoadFrom(GetCachedPolicy(),
                        POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
   UpdatePolicy(policy_bundle.Pass());

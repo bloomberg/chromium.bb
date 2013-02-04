@@ -26,8 +26,10 @@ namespace {
 void SetPolicy(PolicyBundle* bundle,
                const std::string& name,
                const std::string& value) {
-  bundle->Get(POLICY_DOMAIN_CHROME, "")
-      .Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+  bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+      .Set(name,
+           POLICY_LEVEL_MANDATORY,
+           POLICY_SCOPE_USER,
            base::Value::CreateStringValue(value));
 }
 

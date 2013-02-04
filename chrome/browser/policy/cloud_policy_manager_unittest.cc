@@ -159,8 +159,8 @@ class CloudPolicyManagerTest : public testing::Test {
     // Set up a policy map for testing.
     policy_map_.Set("key", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                     base::Value::CreateStringValue("value"));
-    expected_bundle_.Get(POLICY_DOMAIN_CHROME, std::string()).CopyFrom(
-        policy_map_);
+    expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+        .CopyFrom(policy_map_);
 
     policy_.payload().mutable_homepagelocation()->set_value(
         "http://www.example.com");

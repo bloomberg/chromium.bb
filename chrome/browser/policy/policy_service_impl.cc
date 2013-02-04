@@ -85,9 +85,8 @@ void PolicyServiceImpl::UnregisterPolicyNamespace(const PolicyNamespace& ns) {
 }
 
 const PolicyMap& PolicyServiceImpl::GetPolicies(
-    PolicyDomain domain,
-    const std::string& component_id) const {
-  return policy_bundle_.Get(domain, component_id);
+    const PolicyNamespace& ns) const {
+  return policy_bundle_.Get(ns);
 }
 
 bool PolicyServiceImpl::IsInitializationComplete(PolicyDomain domain) const {
@@ -129,7 +128,7 @@ void PolicyServiceImpl::NotifyNamespaceUpdated(
 
   // Don't queue up a task if we have no observers - that way Observers added
   // later don't get notified of changes that happened during construction time.
-  if (observers_.find(ns.first) == observers_.end())
+  if (observers_.find(ns.domain) == observers_.end())
     return;
 
   // Notify Observers via a queued task, so Observers can't trigger a re-entrant
@@ -146,13 +145,12 @@ void PolicyServiceImpl::NotifyNamespaceUpdated(
 void PolicyServiceImpl::NotifyNamespaceUpdatedTask(
     scoped_ptr<PolicyChangeInfo> changes) {
   ObserverMap::iterator iterator = observers_.find(
-      changes->policy_namespace_.first);
+      changes->policy_namespace_.domain);
   if (iterator != observers_.end()) {
     FOR_EACH_OBSERVER(
         PolicyService::Observer,
         *iterator->second,
-        OnPolicyUpdated(changes->policy_namespace_.first,
-                        changes->policy_namespace_.second,
+        OnPolicyUpdated(changes->policy_namespace_,
                         changes->previous_,
                         changes->current_));
   }
@@ -179,7 +177,7 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
       // A new namespace is available.
       NotifyNamespaceUpdated(it_new->first, kEmpty, *it_new->second);
       ++it_new;
-    } else if (it_new->first > it_old->first) {
+    } else if (it_old->first < it_new->first) {
       // A previously available namespace is now gone.
       NotifyNamespaceUpdated(it_old->first, *it_old->second, kEmpty);
       ++it_old;

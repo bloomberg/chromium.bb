@@ -90,9 +90,11 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
   EXPECT_TRUE(manager_.IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
   PolicyBundle bundle;
-  bundle.Get(POLICY_DOMAIN_CHROME, std::string()).Set(
-      key::kDeviceMetricsReportingEnabled, POLICY_LEVEL_MANDATORY,
-      POLICY_SCOPE_MACHINE, Value::CreateBooleanValue(false));
+  bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+      .Set(key::kDeviceMetricsReportingEnabled,
+           POLICY_LEVEL_MANDATORY,
+           POLICY_SCOPE_MACHINE,
+           Value::CreateBooleanValue(false));
   EXPECT_TRUE(manager_.policies().Equals(bundle));
 
   manager_.Connect(&local_state_, &device_management_service_,
@@ -181,9 +183,11 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     EXPECT_TRUE(manager_.core()->client()->is_registered());
 
     PolicyBundle bundle;
-    bundle.Get(POLICY_DOMAIN_CHROME, std::string()).Set(
-        key::kDeviceMetricsReportingEnabled, POLICY_LEVEL_MANDATORY,
-        POLICY_SCOPE_MACHINE, Value::CreateBooleanValue(false));
+    bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+        .Set(key::kDeviceMetricsReportingEnabled,
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_MACHINE,
+             Value::CreateBooleanValue(false));
     EXPECT_TRUE(manager_.policies().Equals(bundle));
   }
 

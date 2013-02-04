@@ -41,8 +41,7 @@ class PolicyServiceImpl : public PolicyService,
   virtual void RegisterPolicyNamespace(const PolicyNamespace& ns) OVERRIDE;
   virtual void UnregisterPolicyNamespace(const PolicyNamespace& ns) OVERRIDE;
   virtual const PolicyMap& GetPolicies(
-      PolicyDomain domain,
-      const std::string& component_id) const OVERRIDE;
+      const PolicyNamespace& ns) const OVERRIDE;
   virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
   virtual void RefreshPolicies(const base::Closure& callback) OVERRIDE;
 

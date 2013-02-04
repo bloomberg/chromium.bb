@@ -16,19 +16,16 @@ PolicyBundle::~PolicyBundle() {
   Clear();
 }
 
-PolicyMap& PolicyBundle::Get(PolicyDomain domain,
-                             const std::string& component_id) {
-  DCHECK(domain != POLICY_DOMAIN_CHROME || component_id.empty());
-  PolicyMap*& policy = policy_bundle_[PolicyNamespace(domain, component_id)];
+PolicyMap& PolicyBundle::Get(const PolicyNamespace& ns) {
+  DCHECK(ns.domain != POLICY_DOMAIN_CHROME || ns.component_id.empty());
+  PolicyMap*& policy = policy_bundle_[ns];
   if (!policy)
     policy = new PolicyMap();
   return *policy;
 }
 
-const PolicyMap& PolicyBundle::Get(PolicyDomain domain,
-                                   const std::string& component_id) const {
-  DCHECK(domain != POLICY_DOMAIN_CHROME || component_id.empty());
-  PolicyNamespace ns(domain, component_id);
+const PolicyMap& PolicyBundle::Get(const PolicyNamespace& ns) const {
+  DCHECK(ns.domain != POLICY_DOMAIN_CHROME || ns.component_id.empty());
   const_iterator it = policy_bundle_.find(ns);
   return it == end() ? kEmpty_ : *it->second;
 }
@@ -62,7 +59,7 @@ void PolicyBundle::MergeFrom(const PolicyBundle& other) {
     } else if (it_this->first < it_other->first) {
       // |this| has a PolicyMap that |other| doesn't; skip it.
       ++it_this;
-    } else if (it_this->first > it_other->first) {
+    } else if (it_other->first < it_this->first) {
       // |other| has a PolicyMap that |this| doesn't; copy it.
       PolicyMap*& policy = policy_bundle_[it_other->first];
       DCHECK(!policy);

@@ -20,7 +20,7 @@ NetworkConfigurationUpdater::NetworkConfigurationUpdater(
     PolicyService* policy_service,
     chromeos::NetworkLibrary* network_library)
     : policy_change_registrar_(
-          policy_service, POLICY_DOMAIN_CHROME, std::string()),
+          policy_service, PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())),
       network_library_(network_library),
       user_policy_initialized_(false),
       allow_web_trust_(false),
@@ -81,8 +81,8 @@ void NetworkConfigurationUpdater::ApplyNetworkConfiguration(
     chromeos::onc::ONCSource onc_source) {
   VLOG(1) << "Apply policy for ONC source "
           << chromeos::onc::GetSourceAsString(onc_source);
-  const PolicyMap& policies = policy_service_->GetPolicies(POLICY_DOMAIN_CHROME,
-                                                           std::string());
+  const PolicyMap& policies = policy_service_->GetPolicies(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   const base::Value* policy_value = policies.GetValue(policy_key);
 
   std::string new_network_config;
