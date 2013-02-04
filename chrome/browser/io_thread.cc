@@ -70,7 +70,7 @@
 #include "net/ocsp/nss_ocsp.h"
 #endif
 
-#if !defined(OS_IOS)
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
 #include "net/proxy/proxy_resolver_v8.h"
 #endif
 
@@ -373,7 +373,7 @@ IOThread::IOThread(
       sdch_manager_(NULL),
       is_spdy_disabled_by_policy_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
-#if !defined(OS_IOS)
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
   net::ProxyResolverV8::RememberDefaultIsolate();
 #endif
   // We call RegisterPrefs() here (instead of inside browser_prefs.cc) to make
