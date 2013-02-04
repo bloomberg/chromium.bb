@@ -227,6 +227,12 @@ net::URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
   // explicitly.
   to_return->SetLoadFlags(load_flags);
 
+  // Fetchers are sometimes cancelled because a network change was detected,
+  // especially at startup and after sign-in on ChromeOS. Retrying once should
+  // be enough in those cases; let the fetcher retry up to 3 times just in case.
+  // http://crbug.com/163710
+  to_return->SetAutomaticallyRetryOnNetworkChanges(3);
+
   if (!headers.empty())
     to_return->SetExtraRequestHeaders(headers);
 

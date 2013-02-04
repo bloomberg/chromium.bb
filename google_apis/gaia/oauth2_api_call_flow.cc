@@ -159,6 +159,11 @@ URLFetcher* OAuth2ApiCallFlow::CreateURLFetcher() {
   result->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                        net::LOAD_DO_NOT_SAVE_COOKIES);
   result->AddExtraRequestHeader(MakeAuthorizationHeader(access_token_));
+  // Fetchers are sometimes cancelled because a network change was detected,
+  // especially at startup and after sign-in on ChromeOS. Retrying once should
+  // be enough in those cases; let the fetcher retry up to 3 times just in case.
+  // http://crbug.com/163710
+  result->SetAutomaticallyRetryOnNetworkChanges(3);
 
   if (!empty_body)
     result->SetUploadData("application/x-www-form-urlencoded", body);
