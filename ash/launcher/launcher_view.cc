@@ -67,7 +67,31 @@ const float kReservedNonPanelIconProportion = 0.67f;
 // This is the command id of the menu item which contains the name of the menu.
 const int kCommandIdOfMenuName = 0;
 
+// This is the command id of the active menu item.
+const int kCommandIdOfActiveName = 1;
+
+// The background color of the active item in the list.
+const SkColor kActiveListItemBackgroundColor = SkColorSetRGB(203 , 219, 241);
+
+// The background color ot the active & hovered item in the list.
+const SkColor kFocusedActiveListItemBackgroundColor =
+    SkColorSetRGB(193, 211, 236);
+
 namespace {
+
+// An object which turns slow animations on during its lifetime.
+class ScopedAnimationSetter {
+ public:
+  explicit ScopedAnimationSetter() {
+    ui::LayerAnimator::set_slow_animation_mode(true);
+  }
+  ~ScopedAnimationSetter() {
+    ui::LayerAnimator::set_slow_animation_mode(false);
+  }
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedAnimationSetter);
+};
 
 // The MenuModelAdapter gets slightly changed to adapt the menu appearance to
 // our requirements.
@@ -82,7 +106,9 @@ class LauncherMenuModelAdapter
                                         int icon_size,
                                         int* left_margin,
                                         int* right_margin) const OVERRIDE;
-
+  virtual bool GetBackgroundColor(int command_id,
+                                  bool is_hovered,
+                                  SkColor* override_color) const OVERRIDE;
  private:
 
   DISALLOW_COPY_AND_ASSIGN(LauncherMenuModelAdapter);
@@ -99,6 +125,18 @@ const gfx::Font* LauncherMenuModelAdapter::GetLabelFont(
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return &rb.GetFont(ui::ResourceBundle::BoldFont);
+}
+
+bool LauncherMenuModelAdapter::GetBackgroundColor(
+    int command_id,
+    bool is_hovered,
+    SkColor *override_color) const {
+  if (command_id != kCommandIdOfActiveName)
+    return false;
+
+  *override_color = is_hovered ? kFocusedActiveListItemBackgroundColor :
+                                 kActiveListItemBackgroundColor;
+  return true;
 }
 
 void LauncherMenuModelAdapter::GetHorizontalIconMargins(
@@ -1189,71 +1227,41 @@ void LauncherView::ButtonPressed(views::Button* sender,
 
   tooltip_->Close();
 
+  {
+    // Slow down activation animations if shift key is pressed.
+    scoped_ptr<ScopedAnimationSetter> slowing_animations;
+    if (event.IsShiftDown())
+      slowing_animations.reset(new ScopedAnimationSetter());
+
   // Collect usage statistics before we decide what to do with the click.
   switch (model_->items()[view_index].type) {
     case TYPE_APP_SHORTCUT:
     case TYPE_PLATFORM_APP:
       Shell::GetInstance()->delegate()->RecordUserMetricsAction(
           UMA_LAUNCHER_CLICK_ON_APP);
-      break;
-
-    case TYPE_APP_LIST:
-      Shell::GetInstance()->delegate()->RecordUserMetricsAction(
-          UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
-      break;
-
-    case TYPE_BROWSER_SHORTCUT:
-      // Click on browser icon is counted in app clicks.
-      Shell::GetInstance()->delegate()->RecordUserMetricsAction(
-          UMA_LAUNCHER_CLICK_ON_APP);
-      break;
-
+      // Fallthrough
     case TYPE_TABBED:
     case TYPE_APP_PANEL:
+      delegate_->ItemClicked(model_->items()[view_index], event);
       break;
-  }
 
-  // If the item is already active we show a menu - otherwise we activate
-  // the item dependent on its type.
-  // Note that the old launcher has no menu and falls back automatically to
-  // the click action.
-  bool call_object_handler = model_->items()[view_index].type == TYPE_APP_LIST;
-  if (!call_object_handler) {
-    call_object_handler =
-        model_->items()[view_index].status != ash::STATUS_ACTIVE;
-    if (!call_object_handler) {
-      // ShowListMenuForView only returns true if the menu was shown.
-      if (ShowListMenuForView(model_->items()[view_index],
-                              sender)) {
-        // When the menu was shown it is possible that this got deleted.
-        return;
-      }
-      call_object_handler = true;
-    }
-  }
-
-  if (call_object_handler) {
-    if (event.IsShiftDown())
-      ui::LayerAnimator::set_slow_animation_mode(true);
-    // The menu was not shown and the objects click handler should be called.
-    switch (model_->items()[view_index].type) {
-      case TYPE_TABBED:
-      case TYPE_APP_PANEL:
-      case TYPE_APP_SHORTCUT:
-      case TYPE_PLATFORM_APP:
-        delegate_->ItemClicked(model_->items()[view_index], event);
-        break;
       case TYPE_APP_LIST:
+        Shell::GetInstance()->delegate()->RecordUserMetricsAction(
+            UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
         Shell::GetInstance()->ToggleAppList(GetWidget()->GetNativeView());
         break;
+
       case TYPE_BROWSER_SHORTCUT:
+        // Click on browser icon is counted in app clicks.
+        Shell::GetInstance()->delegate()->RecordUserMetricsAction(
+            UMA_LAUNCHER_CLICK_ON_APP);
         delegate_->OnBrowserShortcutClicked(event.flags());
         break;
     }
-    if (event.IsShiftDown())
-      ui::LayerAnimator::set_slow_animation_mode(false);
   }
 
+  if (model_->items()[view_index].type != TYPE_APP_LIST)
+    ShowListMenuForView(model_->items()[view_index], sender);
 }
 
 bool LauncherView::ShowListMenuForView(const LauncherItem& item,
@@ -1261,9 +1269,9 @@ bool LauncherView::ShowListMenuForView(const LauncherItem& item,
   scoped_ptr<ui::MenuModel> menu_model;
   menu_model.reset(delegate_->CreateApplicationMenu(item));
 
-  // Make sure we have a menu and it has at least one item in addition to the
-  // application title.
-  if (!menu_model.get() || menu_model->GetItemCount() <= 1)
+  // Make sure we have a menu and it has at least two items in addition to the
+  // application title and the 2 spacing separators.
+  if (!menu_model.get() || menu_model->GetItemCount() <= 4)
     return false;
 
   ShowMenu(menu_model.get(), source, gfx::Point(), false);

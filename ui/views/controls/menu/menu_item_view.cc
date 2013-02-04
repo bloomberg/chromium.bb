@@ -776,7 +776,13 @@ void MenuItemView::PaintButtonCommon(gfx::Canvas* canvas,
   // only need the background when we want it to look different, as when we're
   // selected.
   ui::NativeTheme* native_theme = GetNativeTheme();
-  if (render_selection) {
+  SkColor override_color;
+  if (GetDelegate() &&
+      GetDelegate()->GetBackgroundColor(GetCommand(),
+                                        render_selection,
+                                        &override_color)) {
+    canvas->DrawColor(override_color);
+  } else if (render_selection) {
     if (ui::NativeTheme::IsNewMenuStyleEnabled()) {
       gfx::Rect item_bounds(0, 0, width(), height());
       AdjustBoundsForRTLUI(&item_bounds);
