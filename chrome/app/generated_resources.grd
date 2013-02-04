@@ -6796,11 +6796,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_MEMORY_MONITOR_DESCRIPTION" desc="Title for the flag to enable advanced gestures.">
         Enables visual memory monitor in status area.
       </message>
-      <message name="IDS_FLAGS_ENABLE_NEW_NETWORK_HANDLERS_NAME" desc="Title for the flag to enable using the new network handlers.">
-        Enable new network handlers
+      <message name="IDS_FLAGS_ASH_ENABLE_NEW_NETWORK_STATUS_AREA_NAME" desc="Title for the flag to enable using the new network handlers.">
+        Enable new network handlers in the status area
       </message>
-      <message name="IDS_FLAGS_ENABLE_NEW_NETWORK_HANDLERS_DESCRIPTION" desc="Title for the flag to enable using the new Network State Handler.">
-        Enables the new network handlers which handle Shill communication without using NetworkLibrary.
+      <message name="IDS_FLAGS_ASH_ENABLE_NEW_NETWORK_STATUS_AREA_DESCRIPTION" desc="Title for the flag to enable using the new Network State Handler.">
+        Enables the new network handlers which handle Shill communication without using NetworkLibrary for the status area.
       </message>
       <message name="IDS_FLAGS_ENABLE_NETWORK_STATE_HANDLER_NAME" desc="Title for the flag to enable using the new Network State Handler.">
         Enable New Network State Handler

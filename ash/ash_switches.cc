@@ -60,6 +60,10 @@ const char kAshEnableWorkspaceScrubbing[] = "ash-enable-workspace-scrubbing";
 const char kAshEnableMemoryMonitor[] = "ash-enable-memory-monitor";
 #endif
 
+// Enable new network handlers in the status area.
+const char kAshEnableNewNetworkStatusArea[] =
+    "ash-enable-new-network-status-area";
+
 // Disable the per application grouping version of the launcher.
 const char kAshDisablePerAppLauncher[] = "ash-disable-per-app-launcher";
 

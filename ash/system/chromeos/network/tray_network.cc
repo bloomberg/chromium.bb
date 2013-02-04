@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/network/tray_network.h"
 
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_list_detailed_view.h"
 #include "ash/system/chromeos/network/network_list_detailed_view_base.h"
@@ -17,7 +18,6 @@
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "base/command_line.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -51,6 +51,11 @@ int GetMessageIcon(
   }
   NOTREACHED();
   return 0;
+}
+
+bool UseNewNetworkHandlers() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      ash::switches::kAshEnableNewNetworkStatusArea);
 }
 
 }  // namespace
@@ -341,10 +346,8 @@ TrayNetwork::TrayNetwork(SystemTray* system_tray)
       notification_(NULL),
       messages_(new tray::NetworkMessages()),
       request_wifi_view_(false) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableNewNetworkHandlers)) {
+  if (UseNewNetworkHandlers())
     network_state_observer_.reset(new TrayNetworkStateObserver(this));
-  }
   Shell::GetInstance()->system_tray_notifier()->AddNetworkObserver(this);
 }
 
@@ -377,8 +380,7 @@ views::View* TrayNetwork::CreateDetailedView(user::LoginStatus status) {
                                                   !delegate->GetWifiEnabled());
     request_wifi_view_ = false;
   } else {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kEnableNewNetworkHandlers)) {
+    if (UseNewNetworkHandlers()) {
       detailed_ = new tray::NetworkStateListDetailedView(this, status);
     } else {
       detailed_ = new tray::NetworkListDetailedView(
@@ -456,10 +458,8 @@ void TrayNetwork::ClearNetworkMessage(MessageType message_type) {
 }
 
 void TrayNetwork::OnWillToggleWifi() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableNewNetworkHandlers)) {
+  if (UseNewNetworkHandlers())
     return;  // Handled in TrayNetworkStateObserver::NetworkManagerChanged()
-  }
   if (!detailed_ ||
       detailed_->GetViewType() == tray::NetworkDetailedView::WIFI_VIEW) {
     request_wifi_view_ = true;

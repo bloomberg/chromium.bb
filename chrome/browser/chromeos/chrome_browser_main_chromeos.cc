@@ -92,7 +92,6 @@
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
 #include "chromeos/network/network_configuration_handler.h"
-#include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/power/power_state_override.h"
@@ -236,11 +235,8 @@ namespace internal {
 // destructor will get called if and only if this has been instantiated.
 class DBusServices {
  public:
-  DBusServices(const content::MainFunctionParams& parameters,
-               bool use_new_network_change_notifier)
-      : use_new_network_change_notifier_(use_new_network_change_notifier),
-        cros_initialized_(false),
-        network_handlers_initialized_(false) {
+  explicit DBusServices(const content::MainFunctionParams& parameters)
+      : cros_initialized_(false) {
     // Initialize CrosLibrary only for the browser, unless running tests
     // (which do their own CrosLibrary setup).
     if (!parameters.ui_task) {
@@ -259,11 +255,22 @@ class DBusServices {
     disks::DiskMountManager::Initialize();
     cryptohome::AsyncMethodCaller::Initialize();
 
+    // Always initialize these handlers which should not conflict with
+    // NetworkLibrary.
+    chromeos::network_event_log::Initialize();
+    chromeos::GeolocationHandler::Initialize();
+    chromeos::NetworkStateHandler::Initialize();
+    chromeos::NetworkConfigurationHandler::Initialize();
+
     // Initialize the network change notifier for Chrome OS. The network
     // change notifier starts to monitor changes from the power manager and
     // the network manager.
-    if (!use_new_network_change_notifier_)
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kEnableNewNetworkChangeNotifier)) {
+      NetworkChangeNotifierFactoryChromeos::GetInstance()->Initialize();
+    } else {
       CrosNetworkChangeNotifierFactory::GetInstance()->Init();
+    }
 
     // Likewise, initialize the upgrade detector for Chrome OS. The upgrade
     // detector starts to monitor changes from the update engine.
@@ -282,29 +289,6 @@ class DBusServices {
         OwnerKeyUtil::Create());
   }
 
-  // TODO(stevenjb): Move this into DBusServices() once the switch is no
-  // longer required. (Switch is set in about_flags.cc and not applied until
-  // after DBusServices() is called).
-  void InitializeNetworkHandlers() {
-    network_handlers_initialized_ = true;
-
-    // Always initialize these handlers which should not conflict with
-    // NetworkLibrary.
-    chromeos::network_event_log::Initialize();
-    chromeos::GeolocationHandler::Initialize();
-
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kEnableNewNetworkHandlers)) {
-      chromeos::NetworkDeviceHandler::Initialize();
-      chromeos::NetworkStateHandler::Initialize();
-      chromeos::NetworkConfigurationHandler::Initialize();
-      // TODO(gauravsh): This needs re-factoring. NetworkChangeNotifier choice
-      // needs to be made before about:flags are processed.
-      if (use_new_network_change_notifier_)
-        NetworkChangeNotifierFactoryChromeos::GetInstance()->Initialize();
-    }
-  }
-
   ~DBusServices() {
     // CrosLibrary is shut down before DBusThreadManager even though it
     // is initialized first becuase some of its libraries depend on DBus
@@ -315,17 +299,10 @@ class DBusServices {
       CrosLibrary::Shutdown();
 
     chromeos::ConnectivityStateHelper::Shutdown();
-    if (network_handlers_initialized_) {
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              chromeos::switches::kEnableNewNetworkHandlers)) {
-        chromeos::NetworkDeviceHandler::Shutdown();
-        chromeos::NetworkStateHandler::Shutdown();
-        chromeos::NetworkConfigurationHandler::Shutdown();
-      }
-
-      chromeos::GeolocationHandler::Shutdown();
-      chromeos::network_event_log::Shutdown();
-    }
+    chromeos::NetworkStateHandler::Shutdown();
+    chromeos::NetworkConfigurationHandler::Shutdown();
+    chromeos::GeolocationHandler::Shutdown();
+    chromeos::network_event_log::Shutdown();
 
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();
@@ -336,9 +313,7 @@ class DBusServices {
   }
 
  private:
-  bool use_new_network_change_notifier_;
   bool cros_initialized_;
-  bool network_handlers_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };
@@ -349,8 +324,7 @@ class DBusServices {
 
 ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
     const content::MainFunctionParams& parameters)
-    : ChromeBrowserMainPartsLinux(parameters),
-      use_new_network_change_notifier_(false) {
+    : ChromeBrowserMainPartsLinux(parameters) {
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
@@ -411,13 +385,12 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
   // Note: At the time this is called, we have not processed about:flags
   // so this requires that the network handler flag was passed in at the command
   // line.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableNewNetworkHandlers)) {
-    network_change_factory = new CrosNetworkChangeNotifierFactory();
-  } else {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableNewNetworkChangeNotifier)) {
     LOG(WARNING) << "Using new connection change notifier.";
     network_change_factory = new NetworkChangeNotifierFactoryChromeos();
-    use_new_network_change_notifier_ = true;
+  } else {
+    network_change_factory = new CrosNetworkChangeNotifierFactory();
   }
   net::NetworkChangeNotifier::SetFactory(network_change_factory);
   ChromeBrowserMainPartsLinux::PreMainMessageLoopStart();
@@ -427,8 +400,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   MessageLoopForUI* message_loop = MessageLoopForUI::current();
   message_loop->AddObserver(g_message_loop_observer.Pointer());
 
-  dbus_services_.reset(new internal::DBusServices(
-      parameters(), use_new_network_change_notifier_));
+  dbus_services_.reset(new internal::DBusServices(parameters()));
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
 }
@@ -437,7 +409,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   // Must be called after about_flags settings are applied (see note above).
-  dbus_services_->InitializeNetworkHandlers();
   chromeos::ConnectivityStateHelper::Initialize();
 
   AudioHandler::Initialize();

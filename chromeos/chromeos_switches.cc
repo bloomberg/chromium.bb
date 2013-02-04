@@ -13,8 +13,9 @@ const char kChromeOSReleaseBoard[] = "chromeos-release-board";
 // Forces the stub implementation of dbus clients.
 const char kDbusStub[] = "dbus-stub";
 
-// Enables the new NetworkStateHandler class.
-const char kEnableNewNetworkHandlers[] = "enable-new-network-handlers";
+// Enables the new NetworkChangeNotifier using the NetworkStateHandler class.
+const char kEnableNewNetworkChangeNotifier[] =
+    "enable-new-network-change-notifier";
 
 // Enables screensaver extensions.
 const char kEnableScreensaverExtensions[] = "enable-screensaver-extensions";

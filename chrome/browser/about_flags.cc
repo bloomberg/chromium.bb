@@ -1124,11 +1124,11 @@ const Experiment kExperiments[] = {
 #endif
 #endif
 #if defined(OS_CHROMEOS)
-  { "enable-new-network-handlers",
-    IDS_FLAGS_ENABLE_NEW_NETWORK_HANDLERS_NAME,
-    IDS_FLAGS_ENABLE_NEW_NETWORK_HANDLERS_DESCRIPTION,
+  { "ash-enable-new-network-status-area",
+    IDS_FLAGS_ASH_ENABLE_NEW_NETWORK_STATUS_AREA_NAME,
+    IDS_FLAGS_ASH_ENABLE_NEW_NETWORK_STATUS_AREA_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kEnableNewNetworkHandlers),
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnableNewNetworkStatusArea),
   },
   {
     "enable-carrier-switching",

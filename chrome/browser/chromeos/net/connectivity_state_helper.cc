@@ -52,7 +52,7 @@ class ConnectivityStateHelperNetworkLibrary
 void ConnectivityStateHelper::Initialize() {
   CHECK(!g_connectivity_state_helper);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableNewNetworkHandlers)) {
+          chromeos::switches::kEnableNewNetworkChangeNotifier)) {
     g_connectivity_state_helper = new ConnectivityStateHelperImpl();
   } else {
     g_connectivity_state_helper =

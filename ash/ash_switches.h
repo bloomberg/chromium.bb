@@ -34,6 +34,7 @@ ASH_EXPORT extern const char kAshEnableBrightnessControl[];
 #if defined(OS_LINUX)
 ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
 #endif
+ASH_EXPORT extern const char kAshEnableNewNetworkStatusArea[];
 ASH_EXPORT extern const char kAshEnableOak[];
 ASH_EXPORT extern const char kAshEnableTrayDragging[];
 ASH_EXPORT extern const char kAshEnableWorkspaceScrubbing[];
