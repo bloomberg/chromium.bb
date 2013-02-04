@@ -147,6 +147,9 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
                                       const gfx::Rect& end_rect,
                                       WebKit::WebTextDirection end_direction) {}
 
+  // Notifies the view that the scroll offset has changed.
+  virtual void ScrollOffsetChanged() {}
+
   // Allocate a backing store for this view.
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) = 0;
 

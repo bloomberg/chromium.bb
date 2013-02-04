@@ -1032,6 +1032,16 @@ void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
   window_->layer()->SetFillsBoundsOpaquely(background.isOpaque());
 }
 
+void RenderWidgetHostViewAura::ScrollOffsetChanged() {
+  aura::RootWindow* root = window_->GetRootWindow();
+  if (!root)
+    return;
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(root);
+  if (cursor_client && !cursor_client->IsCursorVisible())
+    cursor_client->DisableMouseEvents();
+}
+
 void RenderWidgetHostViewAura::GetScreenInfo(WebScreenInfo* results) {
   GetScreenInfoForWindow(results, window_->GetRootWindow() ? window_ : NULL);
 }
@@ -1091,7 +1101,7 @@ bool RenderWidgetHostViewAura::LockMouse() {
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
   if (cursor_client)
-    cursor_client->DisableMouseEvents();
+    cursor_client->HideCursor();
   synthetic_move_sent_ = true;
   window_->MoveCursorTo(gfx::Rect(window_->bounds().size()).CenterPoint());
   if (aura::client::GetTooltipClient(root_window))
@@ -1111,7 +1121,7 @@ void RenderWidgetHostViewAura::UnlockMouse() {
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
   if (cursor_client)
-    cursor_client->EnableMouseEvents();
+    cursor_client->ShowCursor();
   if (aura::client::GetTooltipClient(root_window))
     aura::client::GetTooltipClient(root_window)->SetTooltipsEnabled(true);
 

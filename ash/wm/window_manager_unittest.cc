@@ -642,56 +642,78 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
 // We should show and hide the cursor in response to mouse and touch events as
 // requested.
 TEST_F(WindowManagerTest, UpdateCursorVisibility) {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
-  root_window->SetBounds(gfx::Rect(0, 0, 500, 500));
-  scoped_ptr<aura::Window> window(CreateTestWindowInShell(
-      SK_ColorWHITE, -1, gfx::Rect(0, 0, 500, 500)));
-
+  aura::test::EventGenerator& generator = GetEventGenerator();
   ash::CursorManager* cursor_manager =
       ash::Shell::GetInstance()->cursor_manager();
 
-  ui::MouseEvent mouse_moved(
-      ui::ET_MOUSE_MOVED, gfx::Point(0, 0), gfx::Point(0, 0), 0x0);
-  ui::TouchEvent touch_pressed1(
-      ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, getTime());
-  ui::TouchEvent touch_pressed2(
-      ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 1, getTime());
-  ui::TouchEvent touch_released1(
-      ui::ET_TOUCH_RELEASED, gfx::Point(0, 0), 0, getTime());
-  ui::TouchEvent touch_released2(
-      ui::ET_TOUCH_RELEASED, gfx::Point(0, 0), 1, getTime());
-
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
+  generator.MoveMouseTo(gfx::Point(0, 0));
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
-  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_pressed1);
+  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
+  generator.PressTouch();
   EXPECT_FALSE(cursor_manager->IsCursorVisible());
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
+  EXPECT_FALSE(cursor_manager->IsMouseEventsEnabled());
+  generator.MoveMouseTo(gfx::Point(0, 0));
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
-  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_released1);
+  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
+  generator.ReleaseTouch();
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
+  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
 
   // If someone else made cursor invisible keep it invisible even after it
   // received mouse events.
-  cursor_manager->DisableMouseEvents();
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
+  cursor_manager->EnableMouseEvents();
+  cursor_manager->HideCursor();
+  generator.MoveMouseTo(gfx::Point(0, 0));
   EXPECT_FALSE(cursor_manager->IsCursorVisible());
-  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_pressed2);
+  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
+  generator.PressTouch();
   EXPECT_FALSE(cursor_manager->IsCursorVisible());
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
+  EXPECT_FALSE(cursor_manager->IsMouseEventsEnabled());
+  generator.MoveMouseTo(gfx::Point(0, 0));
   EXPECT_FALSE(cursor_manager->IsCursorVisible());
-  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_released2);
+  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
+  generator.ReleaseTouch();
   EXPECT_FALSE(cursor_manager->IsCursorVisible());
+  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
 
   // Back to normal.
   cursor_manager->EnableMouseEvents();
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
+  cursor_manager->ShowCursor();
+  generator.MoveMouseTo(gfx::Point(0, 0));
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
-  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_pressed2);
+  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
+  generator.PressTouch();
   EXPECT_FALSE(cursor_manager->IsCursorVisible());
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
+  EXPECT_FALSE(cursor_manager->IsMouseEventsEnabled());
+  generator.MoveMouseTo(gfx::Point(0, 0));
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
-  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_released2);
+  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
+  generator.ReleaseTouch();
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
+  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
+}
+
+TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
+  aura::test::EventGenerator& generator = GetEventGenerator();
+  ash::CursorManager* cursor_manager =
+      ash::Shell::GetInstance()->cursor_manager();
+
+  // Pressing a key hides the cursor but does not disable mouse events.
+  generator.PressKey(ui::VKEY_A, ui::EF_NONE);
+  EXPECT_FALSE(cursor_manager->IsCursorVisible());
+  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
+  // Moving mouse shows the cursor.
+  generator.MoveMouseTo(gfx::Point(0, 0));
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
+  // Releasing a key also hides the cursor but does not disable mouse events.
+  generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  EXPECT_FALSE(cursor_manager->IsCursorVisible());
+  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
+  // Moving mouse shows the cursor again.
+  generator.MoveMouseTo(gfx::Point(0, 0));
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
 }
 
 }  // namespace ash

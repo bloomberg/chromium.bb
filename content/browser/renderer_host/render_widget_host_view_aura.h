@@ -105,6 +105,7 @@ class RenderWidgetHostViewAura
   virtual bool IsShowing() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
+  virtual void ScrollOffsetChanged() OVERRIDE;
 
   // Overridden from RenderWidgetHostViewPort:
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,

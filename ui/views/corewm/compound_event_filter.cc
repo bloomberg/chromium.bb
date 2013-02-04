@@ -169,20 +169,36 @@ void CompoundEventFilter::FilterTouchEvent(ui::TouchEvent* event) {
 void CompoundEventFilter::SetCursorVisibilityOnEvent(aura::Window* target,
                                                      ui::Event* event,
                                                      bool show) {
-  if (!(event->flags() & ui::EF_IS_SYNTHESIZED)) {
-    aura::client::CursorClient* client =
-        aura::client::GetCursorClient(target->GetRootWindow());
-    if (client) {
-      if (show && cursor_hidden_by_filter_) {
-        cursor_hidden_by_filter_ = false;
-        client->EnableMouseEvents();
-      } else if (client->IsCursorVisible() && !show &&
-                 !cursor_hidden_by_filter_) {
-        cursor_hidden_by_filter_ = true;
-        client->DisableMouseEvents();
-      }
-    }
+  if (event->flags() & ui::EF_IS_SYNTHESIZED)
+    return;
+  aura::client::CursorClient* client =
+      aura::client::GetCursorClient(target->GetRootWindow());
+  if (!client)
+    return;
+
+  if (show && cursor_hidden_by_filter_) {
+    cursor_hidden_by_filter_ = false;
+    client->ShowCursor();
+  } else if (!show && !cursor_hidden_by_filter_) {
+    cursor_hidden_by_filter_ = true;
+    client->HideCursor();
   }
+}
+
+void CompoundEventFilter::SetMouseEventsEnableStateOnEvent(aura::Window* target,
+                                                           ui::Event* event,
+                                                           bool enable) {
+  if (event->flags() & ui::EF_IS_SYNTHESIZED)
+    return;
+  aura::client::CursorClient* client =
+      aura::client::GetCursorClient(target->GetRootWindow());
+  if (!client)
+    return;
+
+  if (enable)
+    client->EnableMouseEvents();
+  else
+    client->DisableMouseEvents();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -214,6 +230,7 @@ void CompoundEventFilter::OnMouseEvent(ui::MouseEvent* event) {
       event->type() == ui::ET_MOUSE_MOVED ||
       event->type() == ui::ET_MOUSE_PRESSED ||
       event->type() == ui::ET_MOUSEWHEEL) {
+    SetMouseEventsEnableStateOnEvent(window, event, true);
     SetCursorVisibilityOnEvent(window, event, true);
     UpdateCursor(window, event);
   }
@@ -227,7 +244,7 @@ void CompoundEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
 void CompoundEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   FilterTouchEvent(event);
   if (!event->handled() && event->type() == ui::ET_TOUCH_PRESSED) {
-    SetCursorVisibilityOnEvent(
+    SetMouseEventsEnableStateOnEvent(
         static_cast<aura::Window*>(event->target()), event, false);
   }
 }

@@ -1825,6 +1825,12 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_OpenURL, ViewHostMsg_OpenURL_Params)
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,
                     gfx::Size /* pref_size */)
 
+// Notifies that the scroll offset changed.
+// This is different from ViewHostMsg_UpdateRect in that ViewHostMsg_UpdateRect
+// is not sent at all when threaded compositing is enabled while
+// ViewHostMsg_DidChangeScrollOffset works properly in this case.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_DidChangeScrollOffset)
+
 // Notifies that the scrollbars-visible state of the content changed.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_DidChangeScrollOffsetPinningForMainFrame,
                     bool /* has_horizontal_scrollbar */,

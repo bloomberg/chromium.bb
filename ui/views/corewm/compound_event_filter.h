@@ -77,6 +77,11 @@ class VIEWS_EXPORT CompoundEventFilter : public ui::EventHandler {
                                   ui::Event* event,
                                   bool show);
 
+  // Enables or disables mouse events if the event is not synthesized.
+  void SetMouseEventsEnableStateOnEvent(aura::Window* target,
+                                        ui::Event* event,
+                                        bool enable);
+
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;

@@ -582,12 +582,14 @@ void Shell::Init() {
   user_wallpaper_delegate_->InitializeWallpaper();
 
   if (initially_hide_cursor_)
-    cursor_manager_.DisableMouseEvents();
+    cursor_manager_.HideCursor();
   cursor_manager_.SetCursor(ui::kCursorPointer);
 
-  // Cursor might have been hidden by somethign other than chrome.
-  // Let the first mouse event show the cursor.
-  env_filter_->set_cursor_hidden_by_filter(true);
+  if (!cursor_manager_.IsCursorVisible()) {
+    // Cursor might have been hidden by something other than chrome.
+    // Let the first mouse event show the cursor.
+    env_filter_->set_cursor_hidden_by_filter(true);
+  }
 }
 
 void Shell::ShowContextMenu(const gfx::Point& location_in_screen) {

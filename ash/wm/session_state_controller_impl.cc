@@ -52,7 +52,7 @@ void SessionStateControllerImpl::OnAppTerminating() {
     shutting_down_ = true;
     Shell* shell = ash::Shell::GetInstance();
     shell->env_filter()->set_cursor_hidden_by_filter(false);
-    shell->cursor_manager()->DisableMouseEvents();
+    shell->cursor_manager()->HideCursor();
     animator_->StartAnimation(
         internal::SessionStateAnimator::kAllContainersMask,
         internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY,
@@ -219,7 +219,7 @@ void SessionStateControllerImpl::RequestShutdownImpl() {
 
   Shell* shell = ash::Shell::GetInstance();
   shell->env_filter()->set_cursor_hidden_by_filter(false);
-  shell->cursor_manager()->DisableMouseEvents();
+  shell->cursor_manager()->HideCursor();
 
   if (login_status_ != user::LOGGED_IN_NONE) {
     // Hide the other containers before starting the animation.
