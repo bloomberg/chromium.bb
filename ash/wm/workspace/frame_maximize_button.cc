@@ -254,7 +254,8 @@ void FrameMaximizeButton::OnGestureEvent(ui::GestureEvent* event) {
   }
 
   if (event->type() == ui::ET_GESTURE_TAP ||
-      event->type() == ui::ET_GESTURE_SCROLL_END) {
+      event->type() == ui::ET_GESTURE_SCROLL_END ||
+      event->type() == ui::ET_SCROLL_FLING_START) {
     // The position of the event may have changed from the previous event (both
     // for TAP and SCROLL_END). So it is necessary to update the snap-state for
     // the current event.
