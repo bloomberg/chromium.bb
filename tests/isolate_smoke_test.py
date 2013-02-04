@@ -34,6 +34,7 @@ EXPECTED_MODES = (
   'merge',
   'read',
   'remap',
+  'rewrite',
   'run',
   'trace',
 )
@@ -414,9 +415,15 @@ class Isolate(unittest.TestCase):
 
     # modes read and trace are tested together.
     modes_to_check = list(EXPECTED_MODES)
+    # Tested with test_help_modes.
     modes_to_check.remove('help')
+    # Tested with trace_read_merge.
     modes_to_check.remove('merge')
+    # Tested with trace_read_merge.
     modes_to_check.remove('read')
+    # Tested in isolate_test.py.
+    modes_to_check.remove('rewrite')
+    # Tested with trace_read_merge.
     modes_to_check.remove('trace')
     modes_to_check.append('trace_read_merge')
     for mode in modes_to_check:

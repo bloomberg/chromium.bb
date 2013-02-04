@@ -1239,6 +1239,35 @@ class IsolateLoad(IsolateBase):
         sorted(os.listdir(self.directory)))
 
 
+class IsolateCommand(IsolateBase):
+  def setUp(self):
+    super(IsolateCommand, self).setUp()
+    self._old_get_command_handler = isolate.trace_inputs.get_command_handler
+    isolate.trace_inputs.get_command_handler = (
+        lambda name: getattr(isolate, 'CMD%s' % name, None))
+
+  def tearDown(self):
+    isolate.trace_inputs.get_command_handler = self._old_get_command_handler
+    super(IsolateCommand, self).tearDown()
+
+  def test_CMDrewrite(self):
+    isolate_file = os.path.join(self.cwd, 'x.isolate')
+    data = (
+      '# Foo',
+      '{',
+      '}',
+    )
+    with open(isolate_file, 'wb') as f:
+      f.write('\n'.join(data))
+
+    self.assertEqual(0, isolate.CMDrewrite(['-i', isolate_file]))
+    with open(isolate_file, 'rb') as f:
+      actual = f.read()
+
+    expected = "# Foo\n{\n  'variables': {\n  },\n}\n"
+    self.assertEqual(expected, actual)
+
+
 if __name__ == '__main__':
   logging.basicConfig(
       level=logging.DEBUG if '-v' in sys.argv else logging.ERROR,

@@ -1714,6 +1714,39 @@ def CMDremap(args):
   return 0
 
 
+def CMDrewrite(args):
+  """Rewrites a .isolate file into the canonical format."""
+  parser = OptionParserIsolate(command='rewrite', require_isolated=False)
+  options, args = parser.parse_args(args)
+  if args:
+    parser.error('Unsupported argument: %s' % args)
+
+  if options.isolated:
+    # Load the previous state if it was present. Namely, "foo.isolated.state".
+    complete_state = CompleteState.load_files(options.isolated)
+  else:
+    # Constructs a dummy object that cannot be saved. Useful for temporary
+    # commands like 'run'.
+    complete_state = CompleteState(None, SavedState())
+  isolate = options.isolate or complete_state.saved_state.isolate_file
+  if not isolate:
+    raise ExecutionError('A .isolate file is required.')
+  with open(isolate, 'r') as f:
+    content = f.read()
+  config = load_isolate_as_config(
+      os.path.dirname(os.path.abspath(isolate)),
+      eval_content(content),
+      extract_comment(content),
+      DEFAULT_OSES)
+  # pylint: disable=E1103
+  data = convert_map_to_isolate_dict(
+      *reduce_inputs(*invert_map(config.flatten())))
+  print('Updating %s' % isolate)
+  with open(isolate, 'wb') as f:
+    print_all(config.file_comment, data, f)
+  return 0
+
+
 def CMDrun(args):
   """Runs the test executable in an isolated (temporary) directory.
 
