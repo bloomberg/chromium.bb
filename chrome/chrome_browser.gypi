@@ -1851,8 +1851,6 @@
         'browser/speech/speech_recognition_bubble.h',
         'browser/speech/speech_recognition_bubble_controller.cc',
         'browser/speech/speech_recognition_bubble_controller.h',
-        'browser/speech/speech_recognition_tray_icon_controller.cc',
-        'browser/speech/speech_recognition_tray_icon_controller.h',
         'browser/speech/tts_chromeos.cc',
         'browser/speech/tts_controller.cc',
         'browser/speech/tts_controller.h',

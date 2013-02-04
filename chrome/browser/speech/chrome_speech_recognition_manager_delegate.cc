@@ -16,7 +16,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
-#include "chrome/browser/speech/speech_recognition_tray_icon_controller.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/pref_names.h"
@@ -230,8 +229,6 @@ ChromeSpeechRecognitionManagerDelegate
 
 ChromeSpeechRecognitionManagerDelegate
 ::~ChromeSpeechRecognitionManagerDelegate() {
-  if (tray_icon_controller_.get())
-    tray_icon_controller_->Hide();
   if (bubble_controller_.get())
     bubble_controller_->CloseBubble();
 }
@@ -339,16 +336,6 @@ void ChromeSpeechRecognitionManagerDelegate::OnAudioStart(int session_id) {
   if (RequiresBubble(session_id)) {
     DCHECK_EQ(session_id, GetBubbleController()->GetActiveSessionID());
     GetBubbleController()->SetBubbleRecordingMode();
-  } else if (RequiresTrayIcon(session_id)) {
-    // We post the action to the UI thread for sessions requiring a tray icon.
-    const content::SpeechRecognitionSessionContext& context =
-        SpeechRecognitionManager::GetInstance()->GetSessionContext(session_id);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-        &ChromeSpeechRecognitionManagerDelegate::ShowTrayIconOnUIThread,
-        context.context_name,
-        context.render_process_id,
-        scoped_refptr<SpeechRecognitionTrayIconController>(
-            GetTrayIconController())));
   }
 }
 
@@ -368,8 +355,6 @@ void ChromeSpeechRecognitionManagerDelegate::OnAudioEnd(int session_id) {
   if (GetBubbleController()->GetActiveSessionID() == session_id) {
     DCHECK(RequiresBubble(session_id));
     GetBubbleController()->SetBubbleRecognizingMode();
-  } else if (RequiresTrayIcon(session_id)) {
-    GetTrayIconController()->Hide();
   }
 }
 
@@ -425,8 +410,6 @@ void ChromeSpeechRecognitionManagerDelegate::OnAudioLevelsChange(
   if (GetBubbleController()->GetActiveSessionID() == session_id) {
     DCHECK(RequiresBubble(session_id));
     GetBubbleController()->SetBubbleInputVolume(volume, noise_volume);
-  } else if (RequiresTrayIcon(session_id)) {
-    GetTrayIconController()->SetVUMeterVolume(volume);
   }
 }
 
@@ -489,41 +472,6 @@ ChromeSpeechRecognitionManagerDelegate::GetEventListener() {
   return this;
 }
 
-void ChromeSpeechRecognitionManagerDelegate::ShowTrayIconOnUIThread(
-    const std::string& context_name,
-    int render_process_id,
-    scoped_refptr<SpeechRecognitionTrayIconController> tray_icon_controller) {
-  content::RenderProcessHost* render_process_host =
-      content::RenderProcessHost::FromID(render_process_id);
-  DCHECK(render_process_host);
-  content::BrowserContext* browser_context =
-      render_process_host->GetBrowserContext();
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  scoped_refptr<ChromeSpeechRecognitionPreferences> pref =
-      ChromeSpeechRecognitionPreferences::GetForProfile(profile);
-  // TODO(xians): clean up the code since we don't need to show the balloon
-  // bubble any more.
-  bool show_notification = pref->ShouldShowSecurityNotification(context_name);
-  if (show_notification)
-    pref->SetHasShownSecurityNotification(context_name);
-
-  // Speech recognitions initiated by JS APIs within an extension (so NOT by
-  // extension API) will come with a context_name like "chrome-extension://id"
-  // (that is, their origin as injected by WebKit). In such cases we try to
-  // lookup the extension name, in order to show a more user-friendly balloon.
-  string16 initiator_name = UTF8ToUTF16(context_name);
-  if (context_name.find(kExtensionPrefix) == 0) {
-    const std::string extension_id =
-        context_name.substr(sizeof(kExtensionPrefix) - 1);
-    const extensions::Extension* extension =
-          profile->GetExtensionService()->GetExtensionById(extension_id, true);
-    DCHECK(extension);
-    initiator_name = UTF8ToUTF16(extension->name());
-  }
-
-  tray_icon_controller->Show(initiator_name);
-}
-
 void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
     base::Callback<void(bool ask_user, bool is_allowed)> callback,
     int render_process_id,
@@ -580,13 +528,5 @@ ChromeSpeechRecognitionManagerDelegate::GetBubbleController() {
     bubble_controller_ = new SpeechRecognitionBubbleController(this);
   return bubble_controller_.get();
 }
-
-SpeechRecognitionTrayIconController*
-ChromeSpeechRecognitionManagerDelegate::GetTrayIconController() {
-  if (!tray_icon_controller_.get())
-    tray_icon_controller_ = new SpeechRecognitionTrayIconController();
-  return tray_icon_controller_.get();
-}
-
 
 }  // namespace speech
