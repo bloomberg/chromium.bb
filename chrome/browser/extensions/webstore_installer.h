@@ -105,6 +105,9 @@ class WebstoreInstaller :public content::NotificationObserver,
     // Whether we should record an oauth2 grant for the extensions.
     bool record_oauth2_grant;
 
+    // Whether we should enable the launcher before installing the app.
+    bool enable_launcher;
+
     // Used to show the install dialog.
     ExtensionInstallPrompt::ShowDialogCallback show_dialog_callback;
 

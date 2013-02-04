@@ -135,6 +135,7 @@ class BeginInstallWithManifestFunction
   std::string icon_data_;
   std::string localized_name_;
   bool use_app_installed_bubble_;
+  bool enable_launcher_;
 
   // The results of parsing manifest_ and icon_data_ go into these two.
   scoped_ptr<base::DictionaryValue> parsed_manifest_;
@@ -155,17 +156,25 @@ class CompleteInstallFunction
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.completeInstall",
                              WEBSTOREPRIVATE_COMPLETEINSTALL)
 
+  CompleteInstallFunction();
+
   // WebstoreInstaller::Delegate:
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
   virtual void OnExtensionInstallFailure(
       const std::string& id,
       const std::string& error,
       WebstoreInstaller::FailureReason reason) OVERRIDE;
+
  protected:
-  virtual ~CompleteInstallFunction() {}
+  virtual ~CompleteInstallFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void AfterMaybeInstallAppLauncher(bool ok);
+
+  scoped_ptr<WebstoreInstaller::Approval> approval_;
 };
 
 class GetBrowserLoginFunction : public SyncExtensionFunction {

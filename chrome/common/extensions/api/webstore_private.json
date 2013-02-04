@@ -105,6 +105,11 @@
                 "type": "boolean",
                 "optional": true,
                 "description": "A flag to change the UI we show when an app is installed - a value of true means to show a bubble pointing at the new tab button (instead of the default behavior of opening the new tab page and animating the app icon)."
+              },
+              "enableLauncher": {
+                "type": "boolean",
+                "optional": true,
+                "description": "A flag to cause the app launcher to be installed before installing the extension, if it isn't installed already."
               }
             },
             "additionalProperties": { "type": "any" }
