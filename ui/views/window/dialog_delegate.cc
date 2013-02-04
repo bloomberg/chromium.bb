@@ -7,11 +7,12 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/views/bubble/bubble_border.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
-#include "ui/views/window/dialog_frame_view.h"
 
 namespace views {
 
@@ -132,8 +133,21 @@ ClientView* DialogDelegate::CreateClientView(Widget* widget) {
 }
 
 NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
-  return UseNewStyle() ? new DialogFrameView(GetWindowTitle()) :
-      WidgetDelegate::CreateNonClientFrameView(widget);
+  return UseNewStyle() ? CreateNewStyleFrameView(widget) :
+                         WidgetDelegate::CreateNonClientFrameView(widget);
+}
+
+// static
+NonClientFrameView* DialogDelegate::CreateNewStyleFrameView(Widget* widget) {
+  BubbleFrameView* frame = new BubbleFrameView(gfx::Insets(20, 20, 20, 20));
+  const SkColor color = widget->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_DialogBackground);
+  frame->SetBubbleBorder(
+      new BubbleBorder(BubbleBorder::FLOAT, BubbleBorder::SMALL_SHADOW, color));
+  frame->SetTitle(widget->widget_delegate()->GetWindowTitle());
+  frame->SetShowCloseButton(true);
+  frame->set_can_drag(true);
+  return frame;
 }
 
 const DialogClientView* DialogDelegate::GetDialogClientView() const {

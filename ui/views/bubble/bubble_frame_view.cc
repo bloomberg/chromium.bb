@@ -6,8 +6,12 @@
 
 #include <algorithm>
 
+#include "grit/ui_resources.h"
+#include "ui/base/hit_test.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_border.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 
@@ -41,15 +45,33 @@ namespace views {
 
 BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
     : bubble_border_(NULL),
-      content_margins_(content_margins) {
+      content_margins_(content_margins),
+      title_(NULL),
+      close_(NULL),
+      can_drag_(false) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  title_ = new Label(string16(), rb.GetFont(ui::ResourceBundle::MediumFont));
+  title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(title_);
+
+  close_ = new LabelButton(this, string16());
+  close_->SetImage(CustomButton::STATE_NORMAL,
+                   *rb.GetImageNamed(IDR_CLOSE_DIALOG).ToImageSkia());
+  close_->SetImage(CustomButton::STATE_HOVERED,
+                   *rb.GetImageNamed(IDR_CLOSE_DIALOG_H).ToImageSkia());
+  close_->SetImage(CustomButton::STATE_PRESSED,
+                   *rb.GetImageNamed(IDR_CLOSE_DIALOG_P).ToImageSkia());
+  close_->SetSize(close_->GetPreferredSize());
+  close_->set_border(NULL);
+  close_->SetVisible(false);
+  AddChildView(close_);
 }
 
 BubbleFrameView::~BubbleFrameView() {}
 
 gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
   gfx::Rect client_bounds = GetLocalBounds();
-  client_bounds.Inset(border()->GetInsets());
-  client_bounds.Inset(content_margins());
+  client_bounds.Inset(GetInsets());
   return client_bounds;
 }
 
@@ -60,12 +82,55 @@ gfx::Rect BubbleFrameView::GetWindowBoundsForClientBounds(
 }
 
 int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
+  if (close_->visible() && close_->GetMirroredBounds().Contains(point))
+    return HTCLOSE;
+  if (can_drag_ && point.y() < GetInsets().top())
+    return HTCAPTION;
   return GetWidget()->client_view()->NonClientHitTest(point);
+}
+
+void BubbleFrameView::GetWindowMask(const gfx::Size& size,
+                                    gfx::Path* window_mask) {}
+
+void BubbleFrameView::ResetWindowControls() {}
+
+void BubbleFrameView::UpdateWindowIcon() {}
+
+void BubbleFrameView::UpdateWindowTitle() {}
+
+gfx::Insets BubbleFrameView::GetInsets() const {
+  gfx::Insets insets = border()->GetInsets();
+  insets += content_margins_;
+  insets += gfx::Insets(std::max(title_->text().empty() ? 0 : title_->height(),
+                                 close_->visible() ? close_->height() : 0),
+                        0, 0, 0);
+  return insets;
 }
 
 gfx::Size BubbleFrameView::GetPreferredSize() {
   gfx::Size client_size(GetWidget()->client_view()->GetPreferredSize());
   return GetUpdatedWindowBounds(gfx::Rect(), client_size, false).size();
+}
+
+void BubbleFrameView::Layout() {
+  gfx::Rect bounds = GetLocalBounds();
+  bounds.Inset(border()->GetInsets());
+  // Small additional insets yield the desired 10px visual close button insets.
+  bounds.Inset(0, 2, close_->width() + 1, 0);
+  close_->SetPosition(gfx::Point(bounds.right(), bounds.y()));
+  // Small additional insets yield the desired 20px visual title label insets.
+  bounds.Inset(19, 10, 0, 0);
+  bounds.set_height(title_->font().GetHeight());
+  title_->SetBoundsRect(bounds);
+}
+
+std::string BubbleFrameView::GetClassName() const {
+  return "ui/views/BubbleFrameView";
+}
+
+void BubbleFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
+  if (sender == close_)
+    GetWidget()->Close();
 }
 
 void BubbleFrameView::SetBubbleBorder(BubbleBorder* border) {
@@ -74,6 +139,14 @@ void BubbleFrameView::SetBubbleBorder(BubbleBorder* border) {
 
   // Update the background, which relies on the border.
   set_background(new views::BubbleBackground(border));
+}
+
+void BubbleFrameView::SetTitle(const string16& title) {
+  title_->SetText(title);
+}
+
+void BubbleFrameView::SetShowCloseButton(bool show) {
+  close_->SetVisible(show);
 }
 
 gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,

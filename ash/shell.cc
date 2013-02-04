@@ -94,7 +94,7 @@
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_frame_view.h"
+#include "ui/views/window/dialog_delegate.h"
 
 #if !defined(OS_MACOSX)
 #include "ash/accelerators/accelerator_controller.h"
@@ -657,10 +657,8 @@ bool Shell::IsSystemModalWindowOpen() const {
 
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
     views::Widget* widget) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableNewDialogStyle)) {
-    return new views::DialogFrameView(string16());
-  }
+  if (views::DialogDelegate::UseNewStyle())
+    return views::DialogDelegate::CreateNewStyleFrameView(widget);
   // Use translucent-style window frames for dialogs.
   CustomFrameViewAsh* frame_view = new CustomFrameViewAsh;
   frame_view->Init(widget);

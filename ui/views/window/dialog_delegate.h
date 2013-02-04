@@ -97,6 +97,9 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   virtual ClientView* CreateClientView(Widget* widget) OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView(Widget* widget) OVERRIDE;
 
+  // Create a frame view using the new dialog style.
+  static NonClientFrameView* CreateNewStyleFrameView(Widget* widget);
+
   // Called when the window has been closed.
   virtual void OnClose() {}
 
