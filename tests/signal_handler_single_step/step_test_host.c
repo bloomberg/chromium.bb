@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include <stdarg.h>
 #include <signal.h>
 
 #include "native_client/src/shared/gio/gio.h"
@@ -45,6 +46,20 @@ static int g_call_count = 0;
 static int g_in_untrusted_code = 0;
 static int g_context_switch_count = 0;
 
+static int g_instruction_count = 0;
+static int g_jump_count = 0;
+static nacl_reg_t g_last_prog_ctr = 0;
+
+
+static void SignalSafePrintf(const char *format, ...) {
+  va_list args;
+  char buf[200];
+  int len;
+  va_start(args, format);
+  len = vsnprintf(buf, sizeof(buf), format, args);
+  va_end(args);
+  SignalSafeWrite(buf, len);
+}
 
 /*
  * We use a custom NaCl syscall here partly because we need to avoid
@@ -74,10 +89,35 @@ static enum NaClSignalResult TrapSignalHandler(int signal, void *ucontext) {
     int is_untrusted;
 
     NaClSignalContextFromHandler(&context, ucontext);
+
+    g_instruction_count++;
+    /*
+     * This is a heuristic for detecting jumps, based on the maximum
+     * length of an x86 instruction being 15 bytes.  We would miss
+     * short forward jumps.
+     */
+    if (context.prog_ctr - g_last_prog_ctr > 15) {
+      g_jump_count++;
+    }
+    g_last_prog_ctr = context.prog_ctr;
+
     is_untrusted = NaClSignalContextIsUntrustedForCurrentThread(&context);
     if (g_in_untrusted_code != is_untrusted) {
       g_context_switch_count++;
       g_in_untrusted_code = is_untrusted;
+
+      SignalSafePrintf("Switching to %s: "
+                       "since previous switch: %i instructions, %i jumps\n",
+                       is_untrusted ? "untrusted" : "trusted",
+                       g_instruction_count, g_jump_count);
+      if (is_untrusted && g_call_count == kNumberOfCallsToTest - 1) {
+        SignalSafePrintf("RESULT InstructionsPerSyscall: value= "
+                         "%i instructions\n", g_instruction_count);
+        SignalSafePrintf("RESULT JumpsPerSyscall: value= "
+                         "%i jumps\n", g_jump_count);
+      }
+      g_instruction_count = 0;
+      g_jump_count = 0;
     }
     return NACL_SIGNAL_RETURN;
   } else {

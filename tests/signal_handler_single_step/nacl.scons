@@ -42,7 +42,10 @@ step_test_host = trusted_env.ComponentProgram(
 #  * avoiding nacl_bootstrap means that we are testing that the
 #    software-under-test works with a non-zero sandbox base.
 node = env.CommandTest('signal_handler_single_step.out',
-                       [step_test_host, step_test_guest])
+                       [step_test_host, step_test_guest],
+                       # Don't hide output: This test reports a
+                       # "RESULTS" line for Buildbot to record.
+                       capture_output=False)
 env.AddNodeToTestSuite(node, ['small_tests'],
                        'run_signal_handler_single_step_test',
                        is_broken=not env.Bit('nacl_static_link'))
