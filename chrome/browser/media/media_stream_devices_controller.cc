@@ -122,7 +122,8 @@ const std::string& MediaStreamDevicesController::GetSecurityOriginSpec() const {
 }
 
 void MediaStreamDevicesController::Accept(bool update_content_setting) {
-  content_settings_->OnMediaStreamAccessed();
+  if (content_settings_)
+    content_settings_->OnMediaStreamAccessed();
 
   // Get the default devices for the request.
   content::MediaStreamDevices devices;
@@ -160,8 +161,11 @@ void MediaStreamDevicesController::Deny(bool update_content_setting) {
   // TODO(markusheintz): Replace CONTENT_SETTINGS_TYPE_MEDIA_STREAM with the
   // appropriate new CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC and
   // CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA.
-  content_settings_->OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM,
-                                      std::string());
+  if (content_settings_) {
+    content_settings_->OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM,
+                                        std::string());
+  }
+
   if (update_content_setting)
     SetPermission(false);
 
