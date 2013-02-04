@@ -193,7 +193,7 @@ NaClErrorCode NaClAppLoadFileAslr(struct Gio        *gp,
                                   struct NaClApp    *nap,
                                   enum NaClAslrMode aslr_mode) {
   NaClErrorCode       ret = LOAD_INTERNAL;
-  NaClErrorCode       subret;
+  NaClErrorCode       subret = LOAD_INTERNAL;
   uintptr_t           rodata_end;
   uintptr_t           data_end;
   uintptr_t           max_vaddr;
@@ -213,13 +213,7 @@ NaClErrorCode NaClAppLoadFileAslr(struct Gio        *gp,
 
   /* temporay object will be deleted at end of function */
   image = NaClElfImageNew(gp, &subret);
-  if (NULL == image) {
-    ret = subret;
-    goto done;
-  }
-
-  subret = NaClElfImageValidateElfHeader(image);
-  if (LOAD_OK != subret) {
+  if (NULL == image || LOAD_OK != subret) {
     ret = subret;
     goto done;
   }
@@ -422,11 +416,7 @@ NaClErrorCode NaClAppLoadFileDynamically(struct NaClApp *nap,
   NaClErrorCode ret = LOAD_INTERNAL;
 
   image = NaClElfImageNew((struct Gio *) gio_file, &ret);
-  if (NULL == image) {
-    goto done;
-  }
-  ret = NaClElfImageValidateElfHeader(image);
-  if (LOAD_OK != ret) {
+  if (NULL == image || LOAD_OK != ret) {
     goto done;
   }
   ret = NaClElfImageLoadDynamically(image, nap, gio_file);
