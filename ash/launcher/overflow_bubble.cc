@@ -9,8 +9,8 @@
 #include "ash/launcher/launcher_types.h"
 #include "ash/launcher/launcher_view.h"
 #include "ash/root_window_controller.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/insets.h"
@@ -42,11 +42,7 @@ class OverflowBubbleView : public views::BubbleDelegateView {
   OverflowBubbleView();
   virtual ~OverflowBubbleView();
 
-  void InitOverflowBubble(LauncherDelegate* delegate,
-                          LauncherModel* model,
-                          views::View* anchor,
-                          int overflow_start_index,
-                          int overflow_end_index);
+  void InitOverflowBubble(views::View* anchor, LauncherView* launcher_view);
 
  private:
   bool IsHorizontalAlignment() const {
@@ -99,11 +95,8 @@ OverflowBubbleView::OverflowBubbleView()
 OverflowBubbleView::~OverflowBubbleView() {
 }
 
-void OverflowBubbleView::InitOverflowBubble(LauncherDelegate* delegate,
-                                            LauncherModel* model,
-                                            views::View* anchor,
-                                            int overflow_start_index,
-                                            int overflow_end_index) {
+void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
+                                            LauncherView* launcher_view) {
   // set_anchor_view needs to be called before GetShelfLayoutManagerForLauncher
   // can be called.
   set_anchor_view(anchor);
@@ -118,14 +111,7 @@ void OverflowBubbleView::InitOverflowBubble(LauncherDelegate* delegate,
   SetFillsBoundsOpaquely(false);
   layer()->SetMasksToBounds(true);
 
-  launcher_view_ = new LauncherView(model,
-                                    delegate,
-                                    GetShelfLayoutManagerForLauncher());
-  launcher_view_->set_first_visible_index(overflow_start_index);
-  launcher_view_->set_last_visible_index(overflow_end_index - 1);
-  launcher_view_->set_leading_inset(kLauncherViewLeadingInset);
-  launcher_view_->Init();
-  launcher_view_->OnShelfAlignmentChanged();
+  launcher_view_ = launcher_view;
   AddChildView(launcher_view_);
 
   views::BubbleDelegateView::CreateBubble(this);
@@ -250,26 +236,20 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
 }  // namespace
 
 OverflowBubble::OverflowBubble()
-    : bubble_(NULL) {
+    : bubble_(NULL),
+      launcher_view_(NULL) {
 }
 
 OverflowBubble::~OverflowBubble() {
   Hide();
 }
 
-void OverflowBubble::Show(LauncherDelegate* delegate,
-                          LauncherModel* model,
-                          views::View* anchor,
-                          int overflow_start_index,
-                          int overflow_end_index) {
+void OverflowBubble::Show(views::View* anchor, LauncherView* launcher_view) {
   Hide();
 
   OverflowBubbleView* bubble_view = new OverflowBubbleView();
-  bubble_view->InitOverflowBubble(delegate,
-                                  model,
-                                  anchor,
-                                  overflow_start_index,
-                                  overflow_end_index);
+  bubble_view->InitOverflowBubble(anchor, launcher_view);
+  launcher_view_ = launcher_view;
 
   bubble_ = bubble_view;
   RootWindowController::ForWindow(anchor->GetWidget()->GetNativeView())->
@@ -285,11 +265,13 @@ void OverflowBubble::Hide() {
   bubble_->GetWidget()->RemoveObserver(this);
   bubble_->GetWidget()->Close();
   bubble_ = NULL;
+  launcher_view_ = NULL;
 }
 
 void OverflowBubble::OnWidgetClosing(views::Widget* widget) {
   DCHECK(widget == bubble_->GetWidget());
   bubble_ = NULL;
+  launcher_view_ = NULL;
 }
 
 }  // namespace internal

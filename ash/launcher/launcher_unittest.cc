@@ -92,9 +92,9 @@ TEST_F(LauncherTest, ShowOverflowBubble) {
 
   LauncherView* launcher_view = launcher->GetLauncherViewForTest();
   test::LauncherViewTestAPI test(launcher_view);
-  test.SetAnimationDuration(1);  // Speeds up animation for test.
 
   LauncherModel* model = launcher_view->model();
+  LauncherID first_item_id = model->next_id();
 
   // Add tabbed browser until overflow.
   int items_added = 0;
@@ -111,6 +111,13 @@ TEST_F(LauncherTest, ShowOverflowBubble) {
   // Shows overflow bubble.
   test.ShowOverflowBubble();
   EXPECT_TRUE(launcher->IsShowingOverflowBubble());
+
+  // Removes the first item in main launcher view.
+  model->RemoveItemAt(model->ItemIndexByID(first_item_id));
+  EXPECT_FALSE(launcher->IsShowingOverflowBubble());
+
+  // Waits for all transitions to finish and there should be no crash.
+  test.RunMessageLoopUntilAnimationsDone();
 }
 
 // Launcher can't be activated on mouse click, but it is activable from

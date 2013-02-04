@@ -90,14 +90,6 @@ class ASH_EXPORT LauncherView : public views::View,
   // of the buttons area.
   bool ShouldHideTooltip(const gfx::Point& cursor_location);
 
-  void set_first_visible_index(int first_visible_index) {
-    first_visible_index_ = first_visible_index;
-  }
-
-  void set_last_visible_index(int last_visible_index) {
-    last_visible_index_ = last_visible_index;
-  }
-
   int leading_inset() const { return leading_inset_; }
   void set_leading_inset(int leading_inset) { leading_inset_ = leading_inset; }
 
@@ -179,6 +171,9 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // Invoked after the fading out animation for item deletion is ended.
   void OnFadeOutAnimationEnded();
+
+  // Updates the visible range of overflow items in |overflow_view|.
+  void UpdateOverflowRange(LauncherView* overflow_view);
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;

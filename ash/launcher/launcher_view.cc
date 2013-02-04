@@ -22,8 +22,8 @@
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/auto_reset.h"
 #include "base/memory/scoped_ptr.h"
-#include "grit/ash_strings.h"
 #include "grit/ash_resources.h"
+#include "grit/ash_strings.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -110,7 +110,6 @@ class LauncherMenuModelAdapter
                                   bool is_hovered,
                                   SkColor* override_color) const OVERRIDE;
  private:
-
   DISALLOW_COPY_AND_ASSIGN(LauncherMenuModelAdapter);
 };
 
@@ -526,6 +525,7 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   }
 
   if (is_overflow_mode()) {
+    DCHECK_LT(last_visible_index_, view_model_->view_size());
     for (int i = 0; i < view_model_->view_size(); ++i) {
       view_model_->view_at(i)->SetVisible(
           i >= first_visible_index_ &&
@@ -614,6 +614,9 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     app_list_bounds.set_x(x);
     app_list_bounds.set_y(y);
     view_model_->set_ideal_bounds(app_list_index, app_list_bounds);
+
+    if (overflow_bubble_.get() && overflow_bubble_->IsShowing())
+      UpdateOverflowRange(overflow_bubble_->launcher_view());
   } else {
     if (overflow_bubble_.get())
       overflow_bubble_->Hide();
@@ -850,10 +853,6 @@ void LauncherView::ConfigureChildView(views::View* view) {
 }
 
 void LauncherView::ToggleOverflowBubble() {
-  int first_overflow_index = last_visible_index_ + 1;
-  DCHECK_LE(first_overflow_index, last_hidden_index_);
-  DCHECK_LT(last_hidden_index_, view_model_->view_size());
-
   if (IsShowingOverflowBubble()) {
     overflow_bubble_->Hide();
     return;
@@ -862,11 +861,13 @@ void LauncherView::ToggleOverflowBubble() {
   if (!overflow_bubble_.get())
     overflow_bubble_.reset(new OverflowBubble());
 
-  overflow_bubble_->Show(delegate_,
-                         model_,
-                         overflow_button_,
-                         first_overflow_index,
-                         last_hidden_index_ + 1);
+  LauncherView* overflow_view = new LauncherView(
+      model_, delegate_, tooltip_->shelf_layout_manager());
+  overflow_view->Init();
+  overflow_view->OnShelfAlignmentChanged();
+  UpdateOverflowRange(overflow_view);
+
+  overflow_bubble_->Show(overflow_button_, overflow_view);
 
   Shell::GetInstance()->UpdateShelfVisibility();
 }
@@ -899,6 +900,16 @@ void LauncherView::OnFadeOutAnimationEnded() {
         new LauncherView::StartFadeAnimationDelegate(this, last_visible_view),
         true);
   }
+}
+
+void LauncherView::UpdateOverflowRange(LauncherView* overflow_view) {
+  const int first_overflow_index = last_visible_index_ + 1;
+  const int last_overflow_index = last_hidden_index_;
+  DCHECK_LE(first_overflow_index, last_overflow_index);
+  DCHECK_LT(last_overflow_index, view_model_->view_size());
+
+  overflow_view->first_visible_index_ = first_overflow_index;
+  overflow_view->last_visible_index_ = last_overflow_index;
 }
 
 bool LauncherView::ShouldHideTooltip(const gfx::Point& cursor_location) {
@@ -1037,6 +1048,12 @@ void LauncherView::LauncherItemRemoved(int model_index, LauncherID id) {
   bounds_animator_->AnimateViewTo(view, view->bounds());
   bounds_animator_->SetAnimationDelegate(
       view, new FadeOutAnimationDelegate(this, view), true);
+
+  // If overflow bubble is visible, calculate bounds and update overflow range.
+  if (overflow_bubble_ && overflow_bubble_->IsShowing()) {
+    IdealBounds ideal_bounds;
+    CalculateIdealBounds(&ideal_bounds);
+  }
 }
 
 void LauncherView::LauncherItemChanged(int model_index,
