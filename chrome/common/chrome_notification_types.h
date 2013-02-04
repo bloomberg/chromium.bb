@@ -1027,8 +1027,8 @@ enum NotificationType {
   // Sent when proxy dialog is closed.
   NOTIFICATION_LOGIN_PROXY_CHANGED,
 
-  // Sent when the user list has changed due to a policy change.
-  NOTIFICATION_POLICY_USER_LIST_CHANGED,
+  // Sent when the user list has changed.
+  NOTIFICATION_USER_LIST_CHANGED,
 
   // Sent when a panel state changed.
   NOTIFICATION_PANEL_STATE_CHANGED,

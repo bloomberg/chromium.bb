@@ -168,6 +168,9 @@ class UserManagerImpl
   // associated with that username.
   void UpdatePublicAccountDisplayName(const std::string& username);
 
+  // Notifies the UI about a change to the user list.
+  void NotifyUserListChanged();
+
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;
 
