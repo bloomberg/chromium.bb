@@ -22,8 +22,8 @@
 #include "content/renderer/media/webrtc_local_audio_renderer.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamTrack.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -94,7 +94,7 @@ void CreateWebKitSourceVector(
 }
 
 webrtc::MediaStreamInterface* GetNativeMediaStream(
-    const WebKit::WebMediaStreamDescriptor& descriptor) {
+    const WebKit::WebMediaStream& descriptor) {
   content::MediaStreamExtraData* extra_data =
       static_cast<content::MediaStreamExtraData*>(descriptor.extraData());
   if (!extra_data)
@@ -200,7 +200,7 @@ void MediaStreamImpl::cancelUserMediaRequest(
   }
 }
 
-WebKit::WebMediaStreamDescriptor MediaStreamImpl::GetMediaStream(
+WebKit::WebMediaStream MediaStreamImpl::GetMediaStream(
     const GURL& url) {
   return WebKit::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url);
 }
@@ -211,7 +211,7 @@ bool MediaStreamImpl::IsMediaStream(const GURL& url) {
 
 // static
 bool MediaStreamImpl::CheckMediaStream(const GURL& url) {
-  WebKit::WebMediaStreamDescriptor descriptor(
+  WebKit::WebMediaStream descriptor(
       WebKit::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
 
   if (descriptor.isNull() || !descriptor.extraData())
@@ -229,7 +229,7 @@ MediaStreamImpl::GetVideoFrameProvider(
     const base::Closure& error_cb,
     const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb) {
   DCHECK(CalledOnValidThread());
-  WebKit::WebMediaStreamDescriptor descriptor(GetMediaStream(url));
+  WebKit::WebMediaStream descriptor(GetMediaStream(url));
 
   if (descriptor.isNull() || !descriptor.extraData())
     return NULL;  // This is not a valid stream.
@@ -248,7 +248,7 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::GetVideoDecoder(
     const GURL& url,
     const scoped_refptr<base::MessageLoopProxy>& message_loop) {
   DCHECK(CalledOnValidThread());
-  WebKit::WebMediaStreamDescriptor descriptor(GetMediaStream(url));
+  WebKit::WebMediaStream descriptor(GetMediaStream(url));
 
   if (descriptor.isNull() || !descriptor.extraData())
     return NULL;  // This is not a valid stream.
@@ -266,7 +266,7 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::GetVideoDecoder(
 scoped_refptr<webkit_media::MediaStreamAudioRenderer>
 MediaStreamImpl::GetAudioRenderer(const GURL& url) {
   DCHECK(CalledOnValidThread());
-  WebKit::WebMediaStreamDescriptor descriptor(GetMediaStream(url));
+  WebKit::WebMediaStream descriptor(GetMediaStream(url));
 
   if (descriptor.isNull() || !descriptor.extraData())
     return NULL;  // This is not a valid stream.
@@ -334,7 +334,7 @@ void MediaStreamImpl::OnStreamGenerated(
 
   WebKit::WebUserMediaRequest* request = &(request_info->request);
   WebKit::WebString webkit_label = UTF8ToUTF16(label);
-  WebKit::WebMediaStreamDescriptor* description = &(request_info->descriptor);
+  WebKit::WebMediaStream* description = &(request_info->descriptor);
 
   description->initialize(webkit_label, audio_source_vector,
                           video_source_vector);
@@ -373,7 +373,7 @@ void MediaStreamImpl::OnStreamGenerationFailed(int request_id) {
 // Callback from MediaStreamDependencyFactory when the sources in |description|
 // have been generated.
 void MediaStreamImpl::OnCreateNativeSourcesComplete(
-    WebKit::WebMediaStreamDescriptor* description,
+    WebKit::WebMediaStream* description,
     bool request_succeeded) {
   DVLOG(1) << "MediaStreamImpl::OnCreateNativeSourcesComplete stream:"
            << UTF16ToUTF8(description->label());
@@ -428,7 +428,7 @@ void MediaStreamImpl::OnDeviceOpenFailed(int request_id) {
 }
 
 void MediaStreamImpl::CompleteGetUserMediaRequest(
-    const WebKit::WebMediaStreamDescriptor& stream,
+    const WebKit::WebMediaStream& stream,
     WebKit::WebUserMediaRequest* request_info,
     bool request_succeeded) {
   if (request_succeeded) {
@@ -471,7 +471,7 @@ MediaStreamImpl::FindUserMediaRequestInfo(const std::string& label) {
 
 MediaStreamImpl::UserMediaRequestInfo*
 MediaStreamImpl::FindUserMediaRequestInfo(
-    WebKit::WebMediaStreamDescriptor* descriptor) {
+    WebKit::WebMediaStream* descriptor) {
   UserMediaRequests::iterator it = user_media_requests_.begin();
   for (; it != user_media_requests_.end(); ++it) {
     if (&((*it)->descriptor) == descriptor)

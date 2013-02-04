@@ -18,10 +18,10 @@
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
-#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaClient.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaRequest.h"
+#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "webkit/media/media_stream_client.h"
 
 namespace base{
@@ -118,20 +118,20 @@ class CONTENT_EXPORT MediaStreamImpl
   // UserMediaRequests::description for which the underlying sources have been
   // created.
   void OnCreateNativeSourcesComplete(
-      WebKit::WebMediaStreamDescriptor* description,
+      WebKit::WebMediaStream* description,
       bool request_succeeded);
 
   // This function is virtual for test purposes. A test can override this to
   // test requesting local media streams. The function notifies WebKit that the
   // |request| have completed and generated the MediaStream |stream|.
   virtual void CompleteGetUserMediaRequest(
-      const WebKit::WebMediaStreamDescriptor& stream,
+      const WebKit::WebMediaStream& stream,
       WebKit::WebUserMediaRequest* request_info,
       bool request_succeeded);
 
   // Returns the WebKit representation of a MediaStream given an URL.
   // This is virtual for test purposes.
-  virtual WebKit::WebMediaStreamDescriptor GetMediaStream(const GURL& url);
+  virtual WebKit::WebMediaStream GetMediaStream(const GURL& url);
 
  private:
   // Structure for storing information about a WebKit request to create a
@@ -151,14 +151,14 @@ class CONTENT_EXPORT MediaStreamImpl
     // OnStreamGenerated.
     bool generated;
     WebKit::WebFrame* frame;  // WebFrame that requested the MediaStream.
-    WebKit::WebMediaStreamDescriptor descriptor;
+    WebKit::WebMediaStream descriptor;
     WebKit::WebUserMediaRequest request;
   };
   typedef ScopedVector<UserMediaRequestInfo> UserMediaRequests;
 
   UserMediaRequestInfo* FindUserMediaRequestInfo(int request_id);
   UserMediaRequestInfo* FindUserMediaRequestInfo(
-      WebKit::WebMediaStreamDescriptor* descriptor);
+      WebKit::WebMediaStream* descriptor);
   UserMediaRequestInfo* FindUserMediaRequestInfo(
       const WebKit::WebUserMediaRequest& request);
   UserMediaRequestInfo* FindUserMediaRequestInfo(const std::string& label);

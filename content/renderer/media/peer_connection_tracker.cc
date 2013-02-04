@@ -8,9 +8,9 @@
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/render_thread_impl.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamTrack.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCICECandidate.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -63,16 +63,16 @@ static string SerializeMediaConstraints(
 }
 
 static string SerializeMediaStreamComponent(
-    const WebKit::WebMediaStreamComponent component) {
+    const WebKit::WebMediaStreamTrack component) {
   string id = UTF16ToUTF8(component.source().id());
   return id;
 }
 
 static string SerializeMediaDescriptor(
-    const WebKit::WebMediaStreamDescriptor& stream) {
+    const WebKit::WebMediaStream& stream) {
   string label = UTF16ToUTF8(stream.label());
   string result = "label: " + label;
-  WebKit::WebVector<WebKit::WebMediaStreamComponent> sources;
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> sources;
   stream.audioSources(sources);
   if (!sources.isEmpty()) {
     result += ", audio: [";
@@ -236,7 +236,7 @@ void PeerConnectionTracker::TrackAddIceCandidate(
 
 void PeerConnectionTracker::TrackAddStream(
     RTCPeerConnectionHandler* pc_handler,
-    const WebKit::WebMediaStreamDescriptor& stream,
+    const WebKit::WebMediaStream& stream,
     Source source){
   SendPeerConnectionUpdate(
       pc_handler, source == SOURCE_LOCAL ? "addStream" : "onAddStream",
@@ -245,7 +245,7 @@ void PeerConnectionTracker::TrackAddStream(
 
 void PeerConnectionTracker::TrackRemoveStream(
     RTCPeerConnectionHandler* pc_handler,
-    const WebKit::WebMediaStreamDescriptor& stream,
+    const WebKit::WebMediaStream& stream,
     Source source){
   SendPeerConnectionUpdate(
       pc_handler, source == SOURCE_LOCAL ? "removeStream" : "onRemoveStream",

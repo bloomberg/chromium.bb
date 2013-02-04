@@ -8,7 +8,7 @@
 #include <map>
 
 #include "content/public/renderer/render_process_observer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandlerClient.h"
 #include "third_party/libjingle/source/talk/app/webrtc/jsep.h"
 
@@ -96,12 +96,12 @@ class PeerConnectionTracker : public RenderProcessObserver{
   // Sends an update when a media stream is added.
   void TrackAddStream(
       RTCPeerConnectionHandler* pc_handler,
-      const WebKit::WebMediaStreamDescriptor& stream, Source source);
+      const WebKit::WebMediaStream& stream, Source source);
 
   // Sends an update when a media stream is removed.
   void TrackRemoveStream(
       RTCPeerConnectionHandler* pc_handler,
-      const WebKit::WebMediaStreamDescriptor& stream, Source source);
+      const WebKit::WebMediaStream& stream, Source source);
 
   // Sends an update when OnIceComplete is called.
   void TrackOnIceComplete(RTCPeerConnectionHandler* pc_handler);

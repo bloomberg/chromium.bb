@@ -7,8 +7,8 @@
 #include "googleurl/src/gurl.h"
 #include "media/base/pipeline.h"
 #include "media/filters/video_frame_generator.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamTrack.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaStreamRegistry.h"
 #include "webkit/media/media_stream_audio_renderer.h"
@@ -23,11 +23,11 @@ static const int kVideoCaptureHeight = 288;
 static const int kVideoCaptureFrameDurationMs = 33;
 
 bool IsMockMediaStreamWithVideo(const WebURL& url) {
-  WebMediaStreamDescriptor descriptor(
+  WebMediaStream descriptor(
       WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
   if (descriptor.isNull())
     return false;
-  WebVector<WebMediaStreamComponent> videoSources;
+  WebVector<WebMediaStreamTrack> videoSources;
   descriptor.videoSources(videoSources);
   return videoSources.size() > 0;
 }

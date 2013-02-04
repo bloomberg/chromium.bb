@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCICECandidate.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandlerClient.h"
 
@@ -28,9 +28,9 @@ class MockWebRTCPeerConnectionHandlerClient
   virtual void didChangeSignalingState(SignalingState) OVERRIDE;
   virtual void didChangeICEState(ICEState) OVERRIDE;
   virtual void didAddRemoteStream(
-      const WebKit::WebMediaStreamDescriptor& stream_descriptor) OVERRIDE;
+      const WebKit::WebMediaStream& stream_descriptor) OVERRIDE;
   virtual void didRemoveRemoteStream(
-      const WebKit::WebMediaStreamDescriptor& stream_descriptor) OVERRIDE;
+      const WebKit::WebMediaStream& stream_descriptor) OVERRIDE;
 
   bool renegotiate() const { return renegotiate_; }
 

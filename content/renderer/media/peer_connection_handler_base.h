@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamTrack.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastream.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 
@@ -31,15 +31,15 @@ class CONTENT_EXPORT PeerConnectionHandlerBase
  protected:
   virtual ~PeerConnectionHandlerBase();
 
-  void AddStream(const WebKit::WebMediaStreamDescriptor& stream);
-  bool AddStream(const WebKit::WebMediaStreamDescriptor& stream,
+  void AddStream(const WebKit::WebMediaStream& stream);
+  bool AddStream(const WebKit::WebMediaStream& stream,
                  const webrtc::MediaConstraintsInterface* constraints);
-  void RemoveStream(const WebKit::WebMediaStreamDescriptor& stream);
-  WebKit::WebMediaStreamDescriptor CreateWebKitStreamDescriptor(
+  void RemoveStream(const WebKit::WebMediaStream& stream);
+  WebKit::WebMediaStream CreateWebKitStreamDescriptor(
       webrtc::MediaStreamInterface* stream);
   webrtc::MediaStreamTrackInterface* GetLocalNativeMediaStreamTrack(
-      const WebKit::WebMediaStreamDescriptor& stream,
-      const WebKit::WebMediaStreamComponent& component);
+      const WebKit::WebMediaStream& stream,
+      const WebKit::WebMediaStreamTrack& component);
 
   // dependency_factory_ is a raw pointer, and is valid for the lifetime of
   // MediaStreamImpl.
@@ -50,7 +50,7 @@ class CONTENT_EXPORT PeerConnectionHandlerBase
   scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
 
   typedef std::map<webrtc::MediaStreamInterface*,
-                   WebKit::WebMediaStreamDescriptor> RemoteStreamMap;
+                   WebKit::WebMediaStream> RemoteStreamMap;
   RemoteStreamMap remote_streams_;
 
   // The message loop we are created on and on which to make calls to WebKit.

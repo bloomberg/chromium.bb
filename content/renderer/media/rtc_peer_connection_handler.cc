@@ -18,7 +18,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
 // TODO(hta): Move the following include to WebRTCStatsRequest.h file.
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamTrack.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCConfiguration.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCICECandidate.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandlerClient.h"
@@ -271,11 +271,11 @@ bool LocalRTCStatsRequest::hasSelector() const {
   return impl_.hasSelector();
 }
 
-WebKit::WebMediaStreamDescriptor LocalRTCStatsRequest::stream() const {
+WebKit::WebMediaStream LocalRTCStatsRequest::stream() const {
   return impl_.stream();
 }
 
-WebKit::WebMediaStreamComponent LocalRTCStatsRequest::component() const {
+WebKit::WebMediaStreamTrack LocalRTCStatsRequest::component() const {
   return impl_.component();
 }
 
@@ -497,7 +497,7 @@ bool RTCPeerConnectionHandler::addICECandidate(
 }
 
 bool RTCPeerConnectionHandler::addStream(
-    const WebKit::WebMediaStreamDescriptor& stream,
+    const WebKit::WebMediaStream& stream,
     const WebKit::WebMediaConstraints& options) {
   RTCMediaConstraints constraints(options);
 
@@ -508,7 +508,7 @@ bool RTCPeerConnectionHandler::addStream(
 }
 
 void RTCPeerConnectionHandler::removeStream(
-    const WebKit::WebMediaStreamDescriptor& stream) {
+    const WebKit::WebMediaStream& stream) {
   RemoveStream(stream);
   if (GetPeerConnectionTracker())
     GetPeerConnectionTracker()->TrackRemoveStream(
@@ -616,37 +616,37 @@ void RTCPeerConnectionHandler::OnStateChange(StateType state_changed) {
 }
 
 void RTCPeerConnectionHandler::OnAddStream(
-    webrtc::MediaStreamInterface* stream) {
-  DCHECK(stream);
-  DCHECK(remote_streams_.find(stream) == remote_streams_.end());
-  WebKit::WebMediaStreamDescriptor descriptor =
-      CreateWebKitStreamDescriptor(stream);
+    webrtc::MediaStreamInterface* stream_interface) {
+  DCHECK(stream_interface);
+  DCHECK(remote_streams_.find(stream_interface) == remote_streams_.end());
+  WebKit::WebMediaStream stream =
+      CreateWebKitStreamDescriptor(stream_interface);
   remote_streams_.insert(
       std::pair<webrtc::MediaStreamInterface*,
-                WebKit::WebMediaStreamDescriptor>(stream, descriptor));
-  client_->didAddRemoteStream(descriptor);
+                WebKit::WebMediaStream>(stream_interface, stream));
+  client_->didAddRemoteStream(stream);
 
   if (GetPeerConnectionTracker())
     GetPeerConnectionTracker()->TrackAddStream(
-        this, descriptor, PeerConnectionTracker::SOURCE_REMOTE);
+        this, stream, PeerConnectionTracker::SOURCE_REMOTE);
 }
 
 void RTCPeerConnectionHandler::OnRemoveStream(
-    webrtc::MediaStreamInterface* stream) {
-  DCHECK(stream);
-  RemoteStreamMap::iterator it = remote_streams_.find(stream);
+    webrtc::MediaStreamInterface* stream_interface) {
+  DCHECK(stream_interface);
+  RemoteStreamMap::iterator it = remote_streams_.find(stream_interface);
   if (it == remote_streams_.end()) {
     NOTREACHED() << "Stream not found";
     return;
   }
-  WebKit::WebMediaStreamDescriptor descriptor = it->second;
-  DCHECK(!descriptor.isNull());
+  WebKit::WebMediaStream stream = it->second;
+  DCHECK(!stream.isNull());
   remote_streams_.erase(it);
-  client_->didRemoveRemoteStream(descriptor);
+  client_->didRemoveRemoteStream(stream);
 
   if (GetPeerConnectionTracker())
     GetPeerConnectionTracker()->TrackRemoveStream(
-        this, descriptor, PeerConnectionTracker::SOURCE_REMOTE);
+        this, stream, PeerConnectionTracker::SOURCE_REMOTE);
 }
 
 void RTCPeerConnectionHandler::OnIceCandidate(

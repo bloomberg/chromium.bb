@@ -52,8 +52,8 @@ class CONTENT_EXPORT LocalRTCStatsRequest
   LocalRTCStatsRequest();
 
   virtual bool hasSelector() const;
-  virtual WebKit::WebMediaStreamDescriptor stream() const;
-  virtual WebKit::WebMediaStreamComponent component() const;
+  virtual WebKit::WebMediaStream stream() const;
+  virtual WebKit::WebMediaStreamTrack component() const;
   virtual void requestSucceeded(const LocalRTCStatsResponse* response);
   virtual scoped_refptr<LocalRTCStatsResponse> createResponse();
 
@@ -117,10 +117,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const WebKit::WebRTCICECandidate& candidate) OVERRIDE;
 
   virtual bool addStream(
-      const WebKit::WebMediaStreamDescriptor& stream,
+      const WebKit::WebMediaStream& stream,
       const WebKit::WebMediaConstraints& options) OVERRIDE;
   virtual void removeStream(
-      const WebKit::WebMediaStreamDescriptor& stream) OVERRIDE;
+      const WebKit::WebMediaStream& stream) OVERRIDE;
   virtual void getStats(
       const WebKit::WebRTCStatsRequest& request) OVERRIDE;
   virtual WebKit::WebRTCDataChannelHandler* createDataChannel(

@@ -20,9 +20,9 @@
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/p2p/port_allocator.h"
 #include "jingle/glue/thread_wrapper.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamTrack.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
 #if !defined(USE_OPENSSL)
@@ -85,7 +85,7 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
 // transition of webrtc media sources such as a camera or microphone.
 // An instance of the object deletes itself after use.
 // Usage:
-// 1. Create an instance of the object with the WebKit::WebMediaStreamDescriptor
+// 1. Create an instance of the object with the WebKit::WebMediaStream
 //    the observed sources belongs to a callback.
 // 2. Add the sources to the observer using AddSource.
 // 3. Call StartObserving()
@@ -95,7 +95,7 @@ class SourceStateObserver : public webrtc::ObserverInterface,
                             public base::NonThreadSafe {
  public:
   SourceStateObserver(
-      WebKit::WebMediaStreamDescriptor* description,
+      WebKit::WebMediaStream* description,
       const MediaStreamDependencyFactory::MediaSourcesCreatedCallback& callback)
      : description_(description),
        ready_callback_(callback),
@@ -149,7 +149,7 @@ class SourceStateObserver : public webrtc::ObserverInterface,
     }
   }
 
-  WebKit::WebMediaStreamDescriptor* description_;
+  WebKit::WebMediaStream* description_;
   MediaStreamDependencyFactory::MediaSourcesCreatedCallback ready_callback_;
   bool live_;
   typedef std::vector<scoped_refptr<webrtc::MediaSourceInterface> >
@@ -189,7 +189,7 @@ MediaStreamDependencyFactory::CreateRTCPeerConnectionHandler(
 void MediaStreamDependencyFactory::CreateNativeMediaSources(
     const WebKit::WebMediaConstraints& audio_constraints,
     const WebKit::WebMediaConstraints& video_constraints,
-    WebKit::WebMediaStreamDescriptor* description,
+    WebKit::WebMediaStream* description,
     const MediaSourcesCreatedCallback& sources_created) {
   DVLOG(1) << "MediaStreamDependencyFactory::CreateNativeMediaSources()";
   if (!EnsurePeerConnectionFactory()) {
@@ -204,7 +204,7 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
 
   // Create local video sources.
   RTCMediaConstraints native_video_constraints(video_constraints);
-  WebKit::WebVector<WebKit::WebMediaStreamComponent> video_components;
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> video_components;
   description->videoSources(video_components);
   for (size_t i = 0; i < video_components.size(); ++i) {
     const WebKit::WebMediaStreamSource& source = video_components[i].source();
@@ -227,7 +227,7 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
   // Do additional source initialization if the audio source is a valid
   // microphone or tab audio.
   RTCMediaConstraints native_audio_constraints(audio_constraints);
-  WebKit::WebVector<WebKit::WebMediaStreamComponent> audio_components;
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_components;
   description->audioSources(audio_components);
   for (size_t i = 0; i < audio_components.size(); ++i) {
     const WebKit::WebMediaStreamSource& source = audio_components[i].source();
@@ -258,7 +258,7 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
 }
 
 void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
-    WebKit::WebMediaStreamDescriptor* description) {
+    WebKit::WebMediaStream* description) {
   DVLOG(1) << "MediaStreamDependencyFactory::CreateNativeLocalMediaStream()";
   if (!EnsurePeerConnectionFactory()) {
       DVLOG(1) << "EnsurePeerConnectionFactory() failed!";
@@ -270,7 +270,7 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
       CreateLocalMediaStream(label);
 
   // Add audio tracks.
-  WebKit::WebVector<WebKit::WebMediaStreamComponent> audio_components;
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_components;
   description->audioSources(audio_components);
 
   for (size_t i = 0; i < audio_components.size(); ++i) {
@@ -313,7 +313,7 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
   }
 
   // Add video tracks.
-  WebKit::WebVector<WebKit::WebMediaStreamComponent> video_components;
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> video_components;
   description->videoSources(video_components);
   for (size_t i = 0; i < video_components.size(); ++i) {
     const WebKit::WebMediaStreamSource& source = video_components[i].source();
@@ -338,7 +338,7 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
 }
 
 void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
-    WebKit::WebMediaStreamDescriptor* description,
+    WebKit::WebMediaStream* description,
     const MediaStreamExtraData::StreamStopCallback& stream_stop) {
   CreateNativeLocalMediaStream(description);
 

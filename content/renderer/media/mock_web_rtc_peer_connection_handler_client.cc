@@ -5,7 +5,7 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 
 namespace content {
@@ -48,12 +48,12 @@ void MockWebRTCPeerConnectionHandlerClient::didChangeICEState(ICEState state) {
 }
 
 void MockWebRTCPeerConnectionHandlerClient::didAddRemoteStream(
-    const WebKit::WebMediaStreamDescriptor& stream_descriptor) {
+    const WebKit::WebMediaStream& stream_descriptor) {
   stream_label_ = UTF16ToUTF8(stream_descriptor.label());
 }
 
 void MockWebRTCPeerConnectionHandlerClient::didRemoveRemoteStream(
-    const WebKit::WebMediaStreamDescriptor& stream_descriptor) {
+    const WebKit::WebMediaStream& stream_descriptor) {
   DCHECK(stream_label_ == UTF16ToUTF8(stream_descriptor.label()));
   stream_label_.clear();
 }

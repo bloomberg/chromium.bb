@@ -12,11 +12,10 @@
 #include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamTrack.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCConfiguration.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCDataChannelHandler.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCICECandidate.h"
@@ -26,6 +25,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCStatsRequest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCVoidRequest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
+#include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 
 static const char kDummySdp[] = "dummy sdp";
 static const char kDummySdpType[] = "dummy type";
@@ -74,10 +74,10 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
   virtual bool hasSelector() const OVERRIDE {
     return has_selector_;
   }
-  virtual WebKit::WebMediaStreamDescriptor stream() const OVERRIDE {
+  virtual WebKit::WebMediaStream stream() const OVERRIDE {
     return stream_;
   }
-  virtual WebKit::WebMediaStreamComponent component() const OVERRIDE {
+  virtual WebKit::WebMediaStreamTrack component() const OVERRIDE {
     return component_;
   }
   virtual scoped_refptr<LocalRTCStatsResponse> createResponse() OVERRIDE {
@@ -93,8 +93,8 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
   }
 
   // Function for setting whether or not a selector is available.
-  void setSelector(const WebKit::WebMediaStreamDescriptor& stream,
-                   const WebKit::WebMediaStreamComponent& component) {
+  void setSelector(const WebKit::WebMediaStream& stream,
+                   const WebKit::WebMediaStreamTrack& component) {
     has_selector_ = true;
     stream_ = stream;
     component_ = component;
@@ -111,8 +111,8 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
 
  private:
   bool has_selector_;
-  WebKit::WebMediaStreamDescriptor stream_;
-  WebKit::WebMediaStreamComponent component_;
+  WebKit::WebMediaStream stream_;
+  WebKit::WebMediaStreamTrack component_;
   scoped_refptr<MockRTCStatsResponse> response_;
   bool request_succeeded_called_;
 };
@@ -152,7 +152,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   }
 
   // Creates a WebKit local MediaStream.
-  WebKit::WebMediaStreamDescriptor CreateLocalMediaStream(
+  WebKit::WebMediaStream CreateLocalMediaStream(
       const std::string& stream_label) {
     std::string video_track_label("video-label");
     std::string audio_track_label("audio-label");
@@ -178,7 +178,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     video_sources[0].initialize(WebKit::WebString::fromUTF8(video_track_label),
                                 WebKit::WebMediaStreamSource::TypeVideo,
                                 WebKit::WebString::fromUTF8("video_track"));
-    WebKit::WebMediaStreamDescriptor local_stream;
+    WebKit::WebMediaStream local_stream;
     local_stream.initialize(UTF8ToUTF16(stream_label), audio_sources,
                             video_sources);
     local_stream.setExtraData(new MediaStreamExtraData(native_stream));
@@ -292,7 +292,7 @@ TEST_F(RTCPeerConnectionHandlerTest, addICECandidate) {
 
 TEST_F(RTCPeerConnectionHandlerTest, addAndRemoveStream) {
   std::string stream_label = "local_stream";
-  WebKit::WebMediaStreamDescriptor local_stream(
+  WebKit::WebMediaStream local_stream(
       CreateLocalMediaStream(stream_label));
   WebKit::WebMediaConstraints constraints;
 
@@ -318,11 +318,11 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsNoSelector) {
 
 TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithSelector) {
   std::string stream_label = "local_stream";
-  WebKit::WebMediaStreamDescriptor local_stream(
+  WebKit::WebMediaStream local_stream(
       CreateLocalMediaStream(stream_label));
   WebKit::WebMediaConstraints constraints;
   pc_handler_->addStream(local_stream, constraints);
-  WebKit::WebVector<WebKit::WebMediaStreamComponent> components;
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> components;
   local_stream.audioSources(components);
   ASSERT_LE(1ul, components.size());
 
@@ -348,12 +348,12 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
   // The setup is the same as above, but the stream is not added to the
   // PeerConnection.
   std::string stream_label = "local_stream_2";
-  WebKit::WebMediaStreamDescriptor local_stream(
+  WebKit::WebMediaStream local_stream(
       CreateLocalMediaStream(stream_label));
   WebKit::WebMediaConstraints constraints;
-  WebKit::WebVector<WebKit::WebMediaStreamComponent> components;
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> components;
   local_stream.audioSources(components);
-  WebKit::WebMediaStreamComponent component = components[0];
+  WebKit::WebMediaStreamTrack component = components[0];
   EXPECT_EQ(0u, mock_peer_connection_->local_streams()->count());
 
   scoped_refptr<MockRTCStatsRequest> request(

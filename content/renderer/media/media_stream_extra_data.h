@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
 
 namespace webrtc {
 class MediaStreamInterface;
@@ -19,7 +19,7 @@ class LocalMediaStreamInterface;
 namespace content {
 
 class CONTENT_EXPORT MediaStreamExtraData
-    : NON_EXPORTED_BASE(public WebKit::WebMediaStreamDescriptor::ExtraData) {
+    : NON_EXPORTED_BASE(public WebKit::WebMediaStream::ExtraData) {
  public:
   typedef base::Callback<void(const std::string& label)> StreamStopCallback;
 

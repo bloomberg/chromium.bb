@@ -33,9 +33,7 @@ class PeerConnection;
 namespace WebKit {
 class WebFrame;
 class WebMediaConstraints;
-class WebMediaStreamDescriptor;
-class WebPeerConnection00Handler;
-class WebPeerConnection00HandlerClient;
+class WebMediaStream;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 }
@@ -53,17 +51,12 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
     : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   // MediaSourcesCreatedCallback is used in CreateNativeMediaSources.
-  typedef base::Callback<void(WebKit::WebMediaStreamDescriptor* description,
+  typedef base::Callback<void(WebKit::WebMediaStream* description,
                               bool live)> MediaSourcesCreatedCallback;
   MediaStreamDependencyFactory(
       VideoCaptureImplManager* vc_manager,
       P2PSocketDispatcher* p2p_socket_dispatcher);
   virtual ~MediaStreamDependencyFactory();
-
-  // Create a PeerConnectionHandlerJsep object that implements the
-  // WebKit WebPeerConnection00Handler interface.
-  WebKit::WebPeerConnection00Handler* CreatePeerConnectionHandlerJsep(
-      WebKit::WebPeerConnection00HandlerClient* client);
 
   // Create a RTCPeerConnectionHandler object that implements the
   // WebKit WebRTCPeerConnectionHandler interface.
@@ -80,20 +73,20 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   void CreateNativeMediaSources(
       const WebKit::WebMediaConstraints& audio_constraints,
       const WebKit::WebMediaConstraints& video_constraints,
-      WebKit::WebMediaStreamDescriptor* description,
+      WebKit::WebMediaStream* description,
       const MediaSourcesCreatedCallback& sources_created);
 
   // Creates a libjingle representation of a MediaStream and stores
   // it in the extra data field of |description|.
   void CreateNativeLocalMediaStream(
-      WebKit::WebMediaStreamDescriptor* description);
+      WebKit::WebMediaStream* description);
 
   // Creates a libjingle representation of a MediaStream and stores
   // it in the extra data field of |description|.
   // |stream_stopped| is a callback that is run when a MediaStream have been
   // stopped.
   void CreateNativeLocalMediaStream(
-      WebKit::WebMediaStreamDescriptor* description,
+      WebKit::WebMediaStream* description,
       const MediaStreamExtraData::StreamStopCallback& stream_stop);
 
   // Asks the libjingle PeerConnection factory to create a libjingle

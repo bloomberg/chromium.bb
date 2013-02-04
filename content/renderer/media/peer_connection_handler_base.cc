@@ -8,16 +8,16 @@
 #include "base/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_extra_data.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamTrack.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 
 namespace content {
 
 // TODO(hta): Unify implementations of these functions from MediaStreamCenter
 static webrtc::LocalMediaStreamInterface* GetLocalNativeMediaStream(
-    const WebKit::WebMediaStreamDescriptor& stream) {
+    const WebKit::WebMediaStream& stream) {
   MediaStreamExtraData* extra_data =
       static_cast<MediaStreamExtraData*>(stream.extraData());
   if (extra_data)
@@ -46,7 +46,7 @@ PeerConnectionHandlerBase::~PeerConnectionHandlerBase() {
 }
 
 bool PeerConnectionHandlerBase::AddStream(
-    const WebKit::WebMediaStreamDescriptor& stream,
+    const WebKit::WebMediaStream& stream,
     const webrtc::MediaConstraintsInterface* constraints) {
   webrtc::LocalMediaStreamInterface* native_stream =
       GetLocalNativeMediaStream(stream);
@@ -56,7 +56,7 @@ bool PeerConnectionHandlerBase::AddStream(
 }
 
 void PeerConnectionHandlerBase::RemoveStream(
-    const WebKit::WebMediaStreamDescriptor& stream) {
+    const WebKit::WebMediaStream& stream) {
   webrtc::LocalMediaStreamInterface* native_stream =
       GetLocalNativeMediaStream(stream);
   if (native_stream)
@@ -64,7 +64,7 @@ void PeerConnectionHandlerBase::RemoveStream(
   DCHECK(native_stream);
 }
 
-WebKit::WebMediaStreamDescriptor
+WebKit::WebMediaStream
 PeerConnectionHandlerBase::CreateWebKitStreamDescriptor(
     webrtc::MediaStreamInterface* stream) {
   webrtc::AudioTracks* audio_tracks = stream->audio_tracks();
@@ -94,7 +94,7 @@ PeerConnectionHandlerBase::CreateWebKitStreamDescriptor(
         WebKit::WebMediaStreamSource::TypeVideo,
         UTF8ToUTF16(video_track->id()));
   }
-  WebKit::WebMediaStreamDescriptor descriptor;
+  WebKit::WebMediaStream descriptor;
   descriptor.initialize(UTF8ToUTF16(stream->label()),
                         audio_source_vector, video_source_vector);
   descriptor.setExtraData(new MediaStreamExtraData(stream));
@@ -103,8 +103,8 @@ PeerConnectionHandlerBase::CreateWebKitStreamDescriptor(
 
 webrtc::MediaStreamTrackInterface*
 PeerConnectionHandlerBase::GetLocalNativeMediaStreamTrack(
-      const WebKit::WebMediaStreamDescriptor& stream,
-      const WebKit::WebMediaStreamComponent& component) {
+      const WebKit::WebMediaStream& stream,
+      const WebKit::WebMediaStreamTrack& component) {
   std::string source_id = UTF16ToUTF8(component.source().id());
   webrtc::MediaStreamInterface* native_stream
       = GetLocalNativeMediaStream(stream);
