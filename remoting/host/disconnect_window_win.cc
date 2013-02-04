@@ -14,8 +14,8 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
+#include "remoting/host/host_ui_resource.h"
 #include "remoting/host/ui_strings.h"
-#include "remoting/host/win/core_resource.h"
 
 // TODO(garykac): Lots of duplicated code in this file and
 // continue_window_win.cc. If we need to expand this then we should

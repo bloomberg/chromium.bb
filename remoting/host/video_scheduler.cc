@@ -165,7 +165,7 @@ VideoScheduler::~VideoScheduler() {
 void VideoScheduler::StartOnCaptureThread() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
-  // Start the capturer and let it notify us if cursor shape changes.
+  // Start the capturer and let it notify us of cursor shape changes.
   capturer_->Start(this);
 
   capture_timer_.reset(new base::OneShotTimer<VideoScheduler>());
