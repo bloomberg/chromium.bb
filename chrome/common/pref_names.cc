@@ -849,6 +849,8 @@ const char kDeleteHostedAppsData[] = "browser.clear_data.hosted_apps_data";
 const char kDeauthorizeContentLicenses[] =
     "browser.clear_data.content_licenses";
 const char kDeleteTimePeriod[] = "browser.clear_data.time_period";
+const char kLastClearBrowsingDataTime[] =
+    "browser.last_clear_browsing_data_time";
 
 // Boolean pref to define the default values for using spellchecker.
 const char kEnableContinuousSpellcheck[] = "browser.enable_spellchecking";

@@ -413,7 +413,7 @@ are declared in build/common.gypi.
       <message name="IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING" desc="Warning shown before deleting">
         Are you sure you want to delete these pages from your history?
 
-Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may come in useful next time.
+Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may come in handy next time.
       </message>
 
       <!-- History HTML UI -->
@@ -8116,6 +8116,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <!-- Clear Browsing Data -->
       <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Dialog title">
         Clear browsing data
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_INFO_BAR_TEXT" desc="The text of the infobar that is displayed in the clear browsing data dialog. This infobar remindes users that they can use the incognito mode instead of clearing their browsing data.">
+        Psst! Incognito mode (<ph name="INCOGNITO_MODE_SHORTCUT">$1<ex>Shift+Ctrl+N</ex></ph>) may come in handy next time.
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_LABEL" desc="Label at the top of the client area of the dialog, preceding the period combo box">
         Obliterate the following items from:

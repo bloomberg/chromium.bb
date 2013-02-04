@@ -68,6 +68,9 @@ void RegisterBrowserUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterIntegerPref(prefs::kDeleteTimePeriod,
                              0,
                              PrefServiceSyncable::SYNCABLE_PREF);
+  prefs->RegisterInt64Pref(prefs::kLastClearBrowsingDataTime,
+                           0,
+                           PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kCheckDefaultBrowser,
                              true,
                              PrefServiceSyncable::UNSYNCABLE_PREF);

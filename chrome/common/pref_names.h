@@ -312,6 +312,7 @@ extern const char kEnableAutoSpellCorrect[];
 extern const char kSavingBrowserHistoryDisabled[];
 extern const char kForceSafeSearch[];
 extern const char kDeleteTimePeriod[];
+extern const char kLastClearBrowsingDataTime[];
 #if defined(TOOLKIT_GTK)
 extern const char kUsesSystemTheme[];
 #endif

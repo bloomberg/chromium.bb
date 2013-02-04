@@ -20,3 +20,13 @@
 #flash-storage-settings {
   padding-top: 5px;
 }
+
+#info-banner {
+  background-color: rgb(249, 237, 184);
+  border: solid 1px rgb(237, 201, 103);
+  border-radius: 2px;
+  font-weight: bold;
+  margin: 0 20px 11px 17px;
+  padding: 6px 8px;
+}
+

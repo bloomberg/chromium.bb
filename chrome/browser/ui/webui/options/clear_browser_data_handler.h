@@ -21,9 +21,12 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
   virtual void InitializeHandler() OVERRIDE;
+  virtual void InitializePage() OVERRIDE;
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
+
+  void UpdateInfoBannerVisibility();
 
  private:
   // Javascript callback to start clearing data.

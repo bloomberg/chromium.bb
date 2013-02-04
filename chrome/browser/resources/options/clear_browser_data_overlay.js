@@ -95,6 +95,11 @@ cr.define('options', function() {
       ClearBrowserDataOverlay.getInstance().updateCommitButtonState_();
   };
 
+  ClearBrowserDataOverlay.setBannerVisibility = function(args) {
+    var visible = args[0];
+    $('info-banner').hidden = !visible;
+  };
+
   ClearBrowserDataOverlay.doneClearing = function() {
     // The delay gives the user some feedback that the clearing
     // actually worked. Otherwise the dialog just vanishes instantly in most

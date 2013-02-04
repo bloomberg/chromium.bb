@@ -21,6 +21,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -44,6 +45,25 @@ void ClearBrowserDataHandler::InitializeHandler() {
                                       Profile::FromWebUI(web_ui())->GetPrefs());
   pepper_flash_settings_enabled_.Init(prefs::kPepperFlashSettingsEnabled,
                                       Profile::FromWebUI(web_ui())->GetPrefs());
+}
+
+void ClearBrowserDataHandler::InitializePage() {
+  UpdateInfoBannerVisibility();
+}
+
+void ClearBrowserDataHandler::UpdateInfoBannerVisibility() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  base::Time lastClearBrowsingDataTime = base::Time::FromInternalValue(
+      profile->GetPrefs()->GetInt64(prefs::kLastClearBrowsingDataTime));
+
+  const int64 kHoursPerDay = 24;
+  bool visible = (base::Time::Now() - lastClearBrowsingDataTime) <=
+      base::TimeDelta::FromHours(kHoursPerDay);
+
+  ListValue args;
+  args.Append(Value::CreateBooleanValue(visible));
+  web_ui()->CallJavascriptFunction(
+      "ClearBrowserDataOverlay.setBannerVisibility", args);
 }
 
 void ClearBrowserDataHandler::GetLocalizedValues(
@@ -73,6 +93,13 @@ void ClearBrowserDataHandler::GetLocalizedValues(
       "clearBrowsingDataLearnMoreUrl",
       google_util::StringAppendGoogleLocaleParam(
           kClearBrowsingDataLearnMoreUrl));
+
+  ui::Accelerator acc(ui::VKEY_N, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  localized_strings->SetString(
+      "clearBrowserDataInfoBar",
+      l10n_util::GetStringFUTF16(
+          IDS_CLEAR_BROWSING_DATA_INFO_BAR_TEXT,
+          acc.GetShortcutText()));
 
   ListValue* time_list = new ListValue;
   for (int i = 0; i < 5; i++) {
@@ -152,6 +179,12 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
       static_cast<BrowsingDataRemover::TimePeriod>(period_selected));
   remover_->AddObserver(this);
   remover_->Remove(remove_mask, origin_mask);
+
+  // Store the clear browsing data time. Next time the clear browsing data
+  // dialog is open, this time is used to decide whether to display an info
+  // banner or not.
+  prefs->SetInt64(prefs::kLastClearBrowsingDataTime,
+                  base::Time::Now().ToInternalValue());
 }
 
 void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
