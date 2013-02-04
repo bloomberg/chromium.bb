@@ -113,6 +113,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
   virtual ~RenderMessageFilter();
 
+  void OnGetProcessMemorySizes(size_t* private_bytes, size_t* shared_bytes);
   void OnCreateWindow(const ViewHostMsg_CreateWindow_Params& params,
                       int* route_id,
                       int* surface_id,

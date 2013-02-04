@@ -68,8 +68,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual size_t highMemoryUsageMB() OVERRIDE;
   virtual size_t highUsageDeltaMB() OVERRIDE;
 #endif
-  virtual bool processMemorySizesInBytes(size_t* private_bytes,
-                                         size_t* shared_bytes);
   virtual bool memoryAllocatorWasteInBytes(size_t* size);
   virtual WebKit::WebURLLoader* createURLLoader();
   virtual WebKit::WebSocketStreamHandle* createSocketStreamHandle();

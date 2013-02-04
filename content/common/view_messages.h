@@ -734,6 +734,11 @@ IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetCPUUsage,
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetMonitorColorProfile,
                             std::vector<char> /* profile */)
 
+// Asks the browser for the renderer process memory size stats.
+IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_GetProcessMemorySizes,
+                            size_t /* private_bytes */,
+                            size_t /* shared_bytes */)
+
 // Tells the renderer to create a new view.
 // This message is slightly different, the view it takes (via
 // ViewMsg_New_Params) is the view to create, the message itself is sent as a

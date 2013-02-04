@@ -96,6 +96,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       size_t length,
       size_t before_index,
       const WebKit::WebString& locale);
+  virtual bool processMemorySizesInBytes(
+      size_t* private_bytes, size_t* shared_bytes);
 
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call

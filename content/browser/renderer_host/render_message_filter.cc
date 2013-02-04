@@ -373,6 +373,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_PreCacheFontCharacters,
                         OnPreCacheFontCharacters)
 #endif
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetProcessMemorySizes,
+                        OnGetProcessMemorySizes)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GenerateRoutingID, OnGenerateRoutingID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnCreateWindow)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnCreateWidget)
@@ -496,6 +498,20 @@ void RenderMessageFilter::OnCreateFullscreenWidget(int opener_id,
                                                    int* surface_id) {
   render_widget_helper_->CreateNewFullscreenWidget(
       opener_id, route_id, surface_id);
+}
+
+void RenderMessageFilter::OnGetProcessMemorySizes(
+    size_t* private_bytes, size_t* shared_bytes) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  using base::ProcessMetrics;
+#if !defined(OS_MACOSX) || defined(OS_IOS)
+  scoped_ptr<ProcessMetrics> metrics(
+      ProcessMetrics::CreateProcessMetrics(peer_handle()));
+#else
+  scoped_ptr<ProcessMetrics> metrics(
+      ProcessMetrics::CreateProcessMetrics(peer_handle(), NULL));
+#endif
+  metrics->GetMemoryBytes(private_bytes, shared_bytes);
 }
 
 void RenderMessageFilter::OnSetCookie(const IPC::Message& message,

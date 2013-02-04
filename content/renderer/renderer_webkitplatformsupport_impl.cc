@@ -769,4 +769,13 @@ size_t RendererWebKitPlatformSupportImpl::computeLastHyphenLocation(
                                                 before_index);
 }
 
+//------------------------------------------------------------------------------
+
+bool RendererWebKitPlatformSupportImpl::processMemorySizesInBytes(
+    size_t* private_bytes, size_t* shared_bytes) {
+  content::RenderThread::Get()->Send(
+      new ViewHostMsg_GetProcessMemorySizes(private_bytes, shared_bytes));
+  return true;
+}
+
 }  // namespace content
