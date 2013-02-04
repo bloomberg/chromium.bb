@@ -9,6 +9,10 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 
+#if NACL_LINUX
+# include <sys/syscall.h>
+#endif
+
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 #include "native_client/tests/performance/perf_test_runner.h"
@@ -30,6 +34,18 @@ class TestNaClSyscall : public PerfTest {
   }
 };
 PERF_TEST_DECLARE(TestNaClSyscall)
+
+#if NACL_LINUX
+class TestHostSyscall : public PerfTest {
+ public:
+  virtual void run() {
+    // Don't use getpid() here, because glibc caches the pid in userland.
+    int rc = syscall(__NR_getpid);
+    ASSERT_GT(rc, 0);
+  }
+};
+PERF_TEST_DECLARE(TestHostSyscall)
+#endif
 
 // Measure the overhead of the clock_gettime() call that the test
 // framework uses.  This is also an example of a not-quite-trivial

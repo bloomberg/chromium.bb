@@ -108,6 +108,9 @@ int main(int argc, char **argv) {
 #if defined(__native_client__)
   RUN_TEST(TestNaClSyscall);
 #endif
+#if NACL_LINUX
+  RUN_TEST(TestHostSyscall);
+#endif
   RUN_TEST(TestClockGetTime);
   RUN_TEST(TestTlsVariable);
   RUN_TEST(TestMmapAnonymous);
