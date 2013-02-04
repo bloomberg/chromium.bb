@@ -92,7 +92,6 @@
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/translate/translate_manager.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
@@ -330,32 +329,13 @@ PrefService* InitializeLocalState(
   return local_state;
 }
 
-// Returns the path that contains the profile that should be loaded
-// on process startup.
-FilePath GetStartupProfilePath(const FilePath& user_data_dir,
-                               const CommandLine& command_line) {
-  if (command_line.HasSwitch(switches::kProfileDirectory)) {
-    return user_data_dir.Append(
-        command_line.GetSwitchValuePath(switches::kProfileDirectory));
-  }
-
-#if defined(ENABLE_APP_LIST)
-  // If we are showing the app list then chrome isn't shown so load the app
-  // list's profile rather than chrome's.
-  if (command_line.HasSwitch(switches::kShowAppList))
-    return chrome::GetAppListProfilePath(user_data_dir);
-#endif
-
-  return g_browser_process->profile_manager()->GetLastUsedProfileDir(
-      user_data_dir);
-}
-
 // Initializes the profile, possibly doing some user prompting to pick a
 // fallback profile. Returns the newly created profile, or NULL if startup
 // should not continue.
 Profile* CreateProfile(const content::MainFunctionParams& parameters,
                        const FilePath& user_data_dir,
                        const CommandLine& parsed_command_line) {
+  Profile* profile;
   if (ProfileManager::IsMultipleProfilesEnabled() &&
       parsed_command_line.HasSwitch(switches::kProfileDirectory)) {
     g_browser_process->local_state()->SetString(prefs::kProfileLastUsed,
@@ -367,17 +347,13 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
     ListValue* profile_list = update.Get();
     profile_list->Clear();
   }
-
-  Profile* profile = NULL;
 #if defined(OS_CHROMEOS)
   // TODO(ivankr): http://crbug.com/83792
   profile = g_browser_process->profile_manager()->GetDefaultProfile(
       user_data_dir);
 #else
-  FilePath profile_path =
-      GetStartupProfilePath(user_data_dir, parsed_command_line);
-  profile = g_browser_process->profile_manager()->GetProfile(
-      profile_path);
+  profile = g_browser_process->profile_manager()->GetLastUsedProfile(
+      user_data_dir);
 #endif
   if (profile)
     return profile;
@@ -494,13 +470,8 @@ bool ProcessSingletonNotificationCallback(const CommandLine& command_line,
     return true;
   }
 
-  FilePath user_data_dir =
-      g_browser_process->profile_manager()->user_data_dir();
-  FilePath startup_profile_dir =
-      GetStartupProfilePath(user_data_dir, command_line);
-
   StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
-      command_line, current_directory, startup_profile_dir);
+      command_line, current_directory);
   return true;
 }
 

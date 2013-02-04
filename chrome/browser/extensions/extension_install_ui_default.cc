@@ -110,7 +110,7 @@ void OnAppLauncherEnabledCompleted(const extensions::Extension* extension,
                                    bool use_launcher) {
 #if defined(ENABLE_APP_LIST)
   if (use_launcher) {
-    chrome::ShowAppList(browser->profile());
+    chrome::ShowAppList();
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
@@ -230,7 +230,7 @@ ExtensionInstallUI* ExtensionInstallUI::Create(Profile* profile) {
 void ExtensionInstallUI::OpenAppInstalledUI(Browser* browser,
                                             const std::string& app_id) {
 #if defined(OS_CHROMEOS)
-  chrome::ShowAppList(browser->profile());
+  chrome::ShowAppList();
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,

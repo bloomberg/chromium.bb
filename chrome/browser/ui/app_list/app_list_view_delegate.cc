@@ -16,30 +16,28 @@
 #include "chrome/browser/ui/ash/app_list/app_sync_ui_state_watcher.h"
 #endif
 
-AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller,
-                                         Profile* profile)
-    : controller_(controller),
-      profile_(profile) {}
+AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
+    : controller_(controller) {}
 
 AppListViewDelegate::~AppListViewDelegate() {}
 
 void AppListViewDelegate::SetModel(app_list::AppListModel* model) {
   if (model) {
-    apps_builder_.reset(new AppsModelBuilder(profile_,
+    Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+    apps_builder_.reset(new AppsModelBuilder(profile,
                                              model->apps(),
                                              controller_.get()));
     apps_builder_->Build();
 
-    search_builder_.reset(new SearchBuilder(profile_,
+    search_builder_.reset(new SearchBuilder(profile,
                                             model->search_box(),
                                             model->results(),
                                             controller_.get()));
 
-    signin_delegate_.reset(new ChromeSigninDelegate(profile_));
+    signin_delegate_.reset(new ChromeSigninDelegate(profile));
 
 #if defined(USE_ASH)
-    app_sync_ui_state_watcher_.reset(new AppSyncUIStateWatcher(profile_,
-                                                               model));
+    app_sync_ui_state_watcher_.reset(new AppSyncUIStateWatcher(profile, model));
 #endif
   } else {
     apps_builder_.reset();

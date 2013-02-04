@@ -640,33 +640,37 @@ bool StartupBrowserCreator::CreateAutomationProvider(
 
 // static
 void StartupBrowserCreator::ProcessCommandLineOnProfileCreated(
-    const CommandLine& command_line,
+    const CommandLine& cmd_line,
     const FilePath& cur_dir,
     Profile* profile,
     Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED)
-    ProcessCmdLineImpl(command_line, cur_dir, false, profile, Profiles(), NULL,
+    ProcessCmdLineImpl(cmd_line, cur_dir, false, profile, Profiles(), NULL,
                        NULL);
 }
 
 // static
 void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
-    const CommandLine& command_line,
-    const FilePath& cur_dir,
-    const FilePath& profile_path) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* profile = profile_manager->GetProfileByPath(profile_path);
-
-  // The profile isn't loaded yet and so needs to be loaded asynchronously.
-  if (!profile) {
-    profile_manager->CreateProfileAsync(profile_path,
+    const CommandLine& cmd_line,
+    const FilePath& cur_dir) {
+  if (cmd_line.HasSwitch(switches::kProfileDirectory)) {
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    FilePath path = cmd_line.GetSwitchValuePath(switches::kProfileDirectory);
+    path = profile_manager->user_data_dir().Append(path);
+    profile_manager->CreateProfileAsync(path,
         base::Bind(&StartupBrowserCreator::ProcessCommandLineOnProfileCreated,
-                   command_line, cur_dir), string16(), string16(), false);
+                   cmd_line, cur_dir), string16(), string16(), false);
     return;
   }
 
-  ProcessCmdLineImpl(command_line, cur_dir, false, profile, Profiles(), NULL,
-                     NULL);
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  if (!profile) {
+    // We should only be able to get here if the profile already exists and
+    // has been created.
+    NOTREACHED();
+    return;
+  }
+  ProcessCmdLineImpl(cmd_line, cur_dir, false, profile, Profiles(), NULL, NULL);
 }
 
 // static

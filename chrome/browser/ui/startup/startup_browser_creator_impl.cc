@@ -335,9 +335,9 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     base::StatisticsRecorder::set_dump_on_exit(true);
 
 #if defined(ENABLE_APP_LIST)
-  chrome::InitAppList(profile);
+  chrome::InitAppList();
   if (command_line_.HasSwitch(switches::kShowAppList)) {
-    chrome::ShowAppList(profile);
+    chrome::ShowAppList();
     return true;
   }
 #endif

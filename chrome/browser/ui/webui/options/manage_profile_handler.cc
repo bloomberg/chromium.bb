@@ -28,11 +28,6 @@
 #include "grit/generated_resources.h"
 #include "ui/webui/web_ui_util.h"
 
-#if defined(ENABLE_SETTINGS_APP)
-#include "chrome/browser/ui/app_list/app_list_util.h"
-#include "content/public/browser/web_contents.h"
-#endif
-
 namespace options {
 
 namespace {
@@ -119,11 +114,6 @@ void ManageProfileHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("profileIconSelectionChanged",
       base::Bind(&ManageProfileHandler::ProfileIconSelectionChanged,
                  base::Unretained(this)));
-#if defined(ENABLE_SETTINGS_APP)
-  web_ui()->RegisterMessageCallback("switchAppListProfile",
-      base::Bind(&ManageProfileHandler::SwitchAppListProfile,
-                 base::Unretained(this)));
-#endif
 }
 
 void ManageProfileHandler::Observe(
@@ -319,23 +309,6 @@ void ManageProfileHandler::DeleteProfile(const ListValue* args) {
   g_browser_process->profile_manager()->ScheduleProfileForDeletion(
       profile_file_path, desktop_type);
 }
-
-#if defined(ENABLE_SETTINGS_APP)
-void ManageProfileHandler::SwitchAppListProfile(const ListValue* args) {
-  DCHECK(args);
-  DCHECK(ProfileManager::IsMultipleProfilesEnabled());
-
-  const Value* file_path_value;
-  FilePath profile_file_path;
-  if (!args->Get(0, &file_path_value) ||
-      !base::GetValueAsFilePath(*file_path_value, &profile_file_path))
-    return;
-
-  chrome::SetAppListProfile(profile_file_path);
-  // Close the settings app, since it will now be for the wrong profile.
-  web_ui()->GetWebContents()->Close();
-}
-#endif  // defined(ENABLE_SETTINGS_APP)
 
 void ManageProfileHandler::ProfileIconSelectionChanged(
     const base::ListValue* args) {

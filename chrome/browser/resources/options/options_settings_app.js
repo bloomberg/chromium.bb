@@ -6,7 +6,7 @@
   if (document.location != 'chrome://settings-frame/options_settings_app.html')
     return;
 
-  OptionsPage.setIsSettingsApp();
+  document.documentElement.classList.add('settings-app');
 
   // Override the offset in the options page.
   OptionsPage.setHorizontalOffset(38);

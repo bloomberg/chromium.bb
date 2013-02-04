@@ -101,10 +101,6 @@ class ProfileManager : public base::NonThreadSafe,
   // Same as instance method but provides the default user_data_dir as well.
   static Profile* GetLastUsedProfile();
 
-  // Get the path of the last used profile, or if that's undefined, the default
-  // profile.
-  FilePath GetLastUsedProfileDir(const FilePath& user_data_dir);
-
   // Get the Profiles which are currently open, i.e., have open browsers, or
   // were open the last time Chrome was running. The Profiles appear in the
   // order they were opened. The last used profile will be on the list, but its

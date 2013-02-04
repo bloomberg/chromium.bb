@@ -2230,10 +2230,4 @@ const char kRLZBrand[] = "rlz.brand";
 const char kRLZDisabled[] = "rlz.disabled";
 #endif
 
-#if defined(ENABLE_APP_LIST)
-// The directory in user data dir that contains the profile to be used with the
-// app launcher.
-extern const char kAppListProfile[] = "app_list.profile";
-#endif
-
 }  // namespace prefs

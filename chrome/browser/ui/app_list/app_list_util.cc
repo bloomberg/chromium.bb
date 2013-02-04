@@ -4,47 +4,13 @@
 
 #include "chrome/browser/ui/app_list/app_list_util.h"
 
-#include "base/file_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/pref_names.h"
 
 namespace chrome {
 
 #if defined(OS_CHROMEOS)
 // Default implementation for ports which do not have this implemented.
-void InitAppList(Profile* profile) {}
+void InitAppList() {}
 #endif
-
-#if defined(ENABLE_APP_LIST)
-FilePath GetAppListProfilePath(const FilePath& user_data_dir) {
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-
-  std::string app_list_profile;
-  if (local_state->HasPrefPath(prefs::kAppListProfile))
-    app_list_profile = local_state->GetString(prefs::kAppListProfile);
-
-  // If the user has no profile preference for the app launcher, default to the
-  // last browser profile used.
-  if (app_list_profile.empty() &&
-      local_state->HasPrefPath(prefs::kProfileLastUsed))
-    app_list_profile = local_state->GetString(prefs::kProfileLastUsed);
-
-  std::string profile_path = app_list_profile.empty() ?
-      chrome::kInitialProfile :
-      app_list_profile;
-
-  return user_data_dir.AppendASCII(profile_path);
-}
-
-void RegisterAppListPrefs(PrefServiceSimple* prefs) {
-  prefs->RegisterStringPref(prefs::kAppListProfile, "");
-}
-#endif  // defined(ENABLE_APP_LIST)
-
 
 }  // namespace chrome
