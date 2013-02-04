@@ -285,20 +285,8 @@ EVENT_TYPE(BAD_PROXY_LIST_REPORTED)
 EVENT_TYPE(PROXY_LIST_FALLBACK)
 
 // ------------------------------------------------------------------------
-// Proxy Resolver
+// ProxyResolverV8Tracing
 // ------------------------------------------------------------------------
-
-// Measures the time taken to execute the "myIpAddress()" javascript binding.
-EVENT_TYPE(PAC_JAVASCRIPT_MY_IP_ADDRESS)
-
-// Measures the time taken to execute the "myIpAddressEx()" javascript binding.
-EVENT_TYPE(PAC_JAVASCRIPT_MY_IP_ADDRESS_EX)
-
-// Measures the time taken to execute the "dnsResolve()" javascript binding.
-EVENT_TYPE(PAC_JAVASCRIPT_DNS_RESOLVE)
-
-// Measures the time taken to execute the "dnsResolveEx()" javascript binding.
-EVENT_TYPE(PAC_JAVASCRIPT_DNS_RESOLVE_EX)
 
 // This event is emitted when a javascript error has been triggered by a
 // PAC script. It contains the following event parameters:
@@ -315,6 +303,10 @@ EVENT_TYPE(PAC_JAVASCRIPT_ERROR)
 //      "message": <The string of the alert>,
 //   }
 EVENT_TYPE(PAC_JAVASCRIPT_ALERT)
+
+// ------------------------------------------------------------------------
+// MultiThreadedProxyResolver
+// ------------------------------------------------------------------------
 
 // Measures the time that a proxy resolve request was stalled waiting for a
 // proxy resolver thread to free-up.
