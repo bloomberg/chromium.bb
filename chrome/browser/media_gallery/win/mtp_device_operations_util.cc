@@ -91,7 +91,7 @@ base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs> GetDeviceObjectEnumerator(
 // TODO(kmadhusu) Deprecate this function after fixing crbug.com/110119.
 bool WriteStreamContentsToFile(IStream* stream,
                                size_t optimal_transfer_size,
-                               const FilePath& local_path) {
+                               const base::FilePath& local_path) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(stream);
   DCHECK(!local_path.empty());
@@ -379,7 +379,7 @@ bool GetDirectoryEntries(IPortableDevice* device,
 
 bool WriteFileObjectContentToPath(IPortableDevice* device,
                                   const string16& file_object_id,
-                                  const FilePath& local_path) {
+                                  const base::FilePath& local_path) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(device);
   DCHECK(!file_object_id.empty());

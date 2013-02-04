@@ -52,7 +52,7 @@ bool GetDirectoryEntries(IPortableDevice* device,
 // true and writes the object data in |local_path|. On failure, returns false.
 bool WriteFileObjectContentToPath(IPortableDevice* device,
                                   const string16& file_object_id,
-                                  const FilePath& local_path);
+                                  const base::FilePath& local_path);
 
 // Returns the identifier of the object specified by the |object_name|.
 // |parent_id| specifies the object's parent identifier.

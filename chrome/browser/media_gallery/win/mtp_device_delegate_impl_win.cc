@@ -117,7 +117,7 @@ MTPDeviceDelegateImplWin::~MTPDeviceDelegateImplWin() {
 }
 
 base::PlatformFileError MTPDeviceDelegateImplWin::GetFileInfo(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     base::PlatformFileInfo* file_info) {
   if (!LazyInit())
     return base::PLATFORM_FILE_ERROR_FAILED;
@@ -129,7 +129,7 @@ base::PlatformFileError MTPDeviceDelegateImplWin::GetFileInfo(
 }
 
 scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
-    MTPDeviceDelegateImplWin::CreateFileEnumerator(const FilePath& root,
+    MTPDeviceDelegateImplWin::CreateFileEnumerator(const base::FilePath& root,
                                                    bool recursive) {
   scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
       file_enumerator(new fileapi::FileSystemFileUtil::EmptyFileEnumerator());
@@ -156,8 +156,8 @@ scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
 }
 
 base::PlatformFileError MTPDeviceDelegateImplWin::CreateSnapshotFile(
-    const FilePath& device_file_path,
-    const FilePath& local_path,
+    const base::FilePath& device_file_path,
+    const base::FilePath& local_path,
     base::PlatformFileInfo* file_info) {
   if (!LazyInit())
     return base::PLATFORM_FILE_ERROR_FAILED;

@@ -23,7 +23,7 @@ MTPDeviceObjectEnumerator::~MTPDeviceObjectEnumerator() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-FilePath MTPDeviceObjectEnumerator::Next() {
+base::FilePath MTPDeviceObjectEnumerator::Next() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (IsIndexReadyAndInRange())
     ++index_;  // Normal traversal.
@@ -31,8 +31,8 @@ FilePath MTPDeviceObjectEnumerator::Next() {
     is_index_ready_ = true;  // First time calling Next().
 
   if (!HasMoreEntries())
-    return FilePath();
-  return FilePath(object_entries_[index_].name);
+    return base::FilePath();
+  return base::FilePath(object_entries_[index_].name);
 }
 
 int64 MTPDeviceObjectEnumerator::Size() {

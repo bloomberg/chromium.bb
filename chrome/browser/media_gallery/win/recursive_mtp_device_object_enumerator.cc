@@ -28,9 +28,9 @@ RecursiveMTPDeviceObjectEnumerator::~RecursiveMTPDeviceObjectEnumerator() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-FilePath RecursiveMTPDeviceObjectEnumerator::Next() {
+base::FilePath RecursiveMTPDeviceObjectEnumerator::Next() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FilePath path = current_enumerator_->Next();
+  base::FilePath path = current_enumerator_->Next();
   if (path.empty()) {
     // Reached the end of |current_enumerator_|.
     scoped_ptr<MTPDeviceObjectEnumerator> next_enumerator =
@@ -40,7 +40,7 @@ FilePath RecursiveMTPDeviceObjectEnumerator::Next() {
       path = current_enumerator_->Next();
     } else {
       // Traversed all the sub directories.
-      return FilePath();
+      return base::FilePath();
     }
   }
 
