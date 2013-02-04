@@ -22,8 +22,6 @@
       'input_method_win.h',
       'mock_input_method.cc',
       'mock_input_method.h',
-      'fake_input_method.cc',
-      'fake_input_method.h',
       'text_input_client.cc',
       'text_input_client.h',
       'text_input_type.h',
