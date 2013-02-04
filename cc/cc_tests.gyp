@@ -114,6 +114,8 @@
       'test/layer_test_common.h',
       'test/layer_tree_test_common.cc',
       'test/layer_tree_test_common.h',
+      'test/layer_tree_json_parser.cc',
+      'test/layer_tree_json_parser.h',
       'test/mock_quad_culler.cc',
       'test/mock_quad_culler.h',
       'test/occlusion_tracker_test_common.h',
