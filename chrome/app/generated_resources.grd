@@ -423,6 +423,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_HISTORY_DATE_WITH_RELATIVE_TIME" desc="In the history view, some dates are formatted as 'Today - Wednesday, Nov 7, 2007">
         <ph name="RELATIVE_DATE">$1<ex>Today</ex></ph> - <ph name="FULL_DATE">$2<ex>Wednesday, Nov 7, 2007</ex></ph>
       </message>
+      <message name="IDS_HISTORY_INTERVAL" desc="A history interval shown in the title. The dates are already localized strings.">
+        <ph name="START_DATE">$1<ex>Wednesday, Aug. 1, 2012</ex></ph> to <ph name="END_DATE">$2<ex>Thursday, Aug. 30, 2012</ex></ph>
+      </message>
       <message name="IDS_HISTORY_NO_SEARCH_RESULTS" desc="Text shown when no history search results have been found">
         No search results found.
       </message>
@@ -464,6 +467,18 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_GROUP_BY_DOMAIN_LABEL" desc="Label for the checkbox that toggles the mode to group history visits by domain.">
         Group domains
+      </message>
+      <message name="IDS_HISTORY_RANGE_LABEL" desc="Label for the combo box that selects the time range.">
+        Show
+      </message>
+      <message name="IDS_HISTORY_RANGE_ALLTIME" desc="Option in the history range combo box. Does not set any time restraints and enables pagination.">
+        all time visits
+      </message>
+      <message name="IDS_HISTORY_RANGE_WEEK" desc="Option in the history range combo box. Sets the range to week.">
+        weekly visits
+      </message>
+      <message name="IDS_HISTORY_RANGE_MONTH" desc="Option in the history range combo box. Sets the range to month.">
+        monthly visits
       </message>
       <message name="IDS_HISTORY_NUMBER_VISITS" desc="Format string for the number of visits of a site.">
         (<ph name="NUMBER_VISITS">$1</ph>)

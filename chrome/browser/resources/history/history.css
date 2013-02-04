@@ -34,16 +34,29 @@ body:not(.uber-frame) {
   max-width: 718px;
 }
 
+#filter-controls {
+  overflow: auto;
+}
+
 #editing-controls button:first-of-type {
   -webkit-margin-start: 0;
 }
 
-#filter-controls div {
-  display: inline-block;
+#filter-controls select {
+  -webkit-margin-end: 0;
 }
 
 #display-filter-controls {
   float: right;
+}
+
+#display-filter-controls label {
+  padding-left: 6px;
+}
+
+#display-filter-controls label:not(:last-child) {
+  border-right: 1px solid rgb(151, 156, 160);
+  padding-right: 6px;
 }
 
 #results-display {
@@ -123,6 +136,10 @@ html[dir=rtl] .entry-box {
   padding: 0;
 }
 
+.month-results {
+  -webkit-padding-start: 0;
+}
+
 h2.timeframe {
   font-size: 1.5em;
 }
@@ -191,7 +208,8 @@ html[dir='rtl'] .entry .title {
   width: 90px;
 }
 
-.search-results .time {
+.search-results .time,
+.month-results .time {
   width: 110px;
 }
 

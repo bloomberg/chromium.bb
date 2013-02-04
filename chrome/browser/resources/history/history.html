@@ -50,8 +50,16 @@
   <div id="filter-controls" hidden>
     <div id="display-filter-controls">
       <label>
-        <span i18n-content="displayfiltersites"></span>
         <input type="checkbox" id="display-filter-sites" name="display-filter">
+        <span i18n-content="displayfiltersites"></span>
+      </label>
+      <label>
+        <span i18n-content="rangelabel"></span>
+        <select id="timeframe-filter">
+          <option i18n-content="rangealltime" value="0"></option>
+          <option i18n-content="rangeweek" value="1"></option>
+          <option i18n-content="rangemonth" value="2"></option>
+        </select>
       </label>
     </div>
   </div>

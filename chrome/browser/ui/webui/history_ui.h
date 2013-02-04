@@ -46,6 +46,16 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  // The range for which to return results:
+  // - ALLTIME: allows access to all the results in a paginated way.
+  // - WEEK: the last 7 days.
+  // - MONTH: the last calendar month.
+  enum Range {
+    ALLTIME = 0,
+    WEEK = 1,
+    MONTH = 2
+  };
+
   // Core implementation of history querying.
   void QueryHistory(string16 search_text, const history::QueryOptions& options);
 
@@ -83,11 +93,11 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   bool ExtractIntegerValueAtIndex(
       const base::ListValue* value, int index, int* out_int);
 
-  // Set the query options for a month-wide query, |depth| months ago.
-  void SetQueryDepthInMonths(history::QueryOptions& options, int depth);
+  // Set the query options for a month-wide query.
+  void SetQueryTimeInMonths(history::QueryOptions* options);
 
-  // Set the query options for a day-wide query, |depth| days ago.
-  void SetQueryDepthInDays(history::QueryOptions& options, int depth);
+  // Set the query options for a week-wide query.
+  void SetQueryTimeInWeeks(history::QueryOptions* options);
 
   content::NotificationRegistrar registrar_;
 
