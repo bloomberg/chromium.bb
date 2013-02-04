@@ -7,6 +7,9 @@
   "version": "0.2",
   "manifest_version": 2,
   "description": "An experimental wallpaper picker UI",
+  "icons": {
+    "128": "images/icon128.png"
+  },
   "permissions": [
     "storage",
     "wallpaperPrivate",
