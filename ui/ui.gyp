@@ -407,6 +407,8 @@
         'gfx/interpolated_transform.cc',
         'gfx/interpolated_transform.h',
         'gfx/mac/scoped_ns_disable_screen_updates.h',
+        'gfx/matrix3_f.cc',
+        'gfx/matrix3_f.h',
         'gfx/native_widget_types.h',
         'gfx/pango_util.cc',
         'gfx/pango_util.h',

@@ -85,6 +85,7 @@
         'gfx/image/image_unittest_util_ios.mm',
         'gfx/image/image_unittest_util_mac.mm',
         'gfx/insets_unittest.cc',
+        'gfx/matrix3_unittest.cc',
         'gfx/point_unittest.cc',
         'gfx/point3_unittest.cc',
         'gfx/quad_unittest.cc',
