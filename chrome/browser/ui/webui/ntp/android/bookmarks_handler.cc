@@ -391,7 +391,7 @@ void BookmarksHandler::HandleCreateHomeScreenBookmarkShortcut(
           node->url(),
           history::FAVICON | history::TOUCH_ICON,
           gfx::kFaviconSize),
-      ui::SCALE_FACTOR_100P,
+      ui::GetMaxScaleFactor(),
       base::Bind(&BookmarksHandler::OnShortcutFaviconDataAvailable,
                  base::Unretained(this),
                  node),

@@ -22,9 +22,10 @@ namespace {
 
 // Parameters which can be used in chrome://favicon path. See .h file for a
 // description of what each does.
-const char kSizeParameter[] = "size/";
 const char kIconURLParameter[] = "iconurl/";
+const char kLargestParameter[] = "largest/";
 const char kOriginParameter[] = "origin/";
+const char kSizeParameter[] = "size/";
 
 // Returns true if |search| is a substring of |path| which starts at
 // |start_index|.
@@ -92,7 +93,10 @@ void FaviconSource::StartDataRequest(
   ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_100P;
 
   size_t parsed_index = 0;
-  if (HasSubstringAt(path, parsed_index, kSizeParameter)) {
+  if (HasSubstringAt(path, parsed_index, kLargestParameter)) {
+    parsed_index += strlen(kLargestParameter);
+    size_in_dip = 0;
+  } else if (HasSubstringAt(path, parsed_index, kSizeParameter)) {
     parsed_index += strlen(kSizeParameter);
 
     size_t scale_delimiter = path.find("@", parsed_index);
@@ -123,7 +127,13 @@ void FaviconSource::StartDataRequest(
                                         slash - scale_delimiter - 1);
     webui::ParseScaleFactor(scale_str, &scale_factor);
 
-    if (scale_factor != ui::SCALE_FACTOR_100P && size_in_dip != 16) {
+    // Return the default favicon (as opposed to a resized favicon) for
+    // favicon sizes which are not cached by the favicon service.
+    // Currently the favicon service caches:
+    // - favicons of sizes "16 * scale factor" px of type FAVICON
+    //   where scale factor is one of FaviconUtil::GetFaviconScaleFactors().
+    // - the largest TOUCH_ICON / TOUCH_PRECOMPOSED_ICON
+    if (size_in_dip != 16 && icon_types_ == history::FAVICON) {
       SendDefaultResponse(callback);
       return;
     }

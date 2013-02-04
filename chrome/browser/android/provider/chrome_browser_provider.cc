@@ -654,7 +654,7 @@ class BookmarkIconFetchTask : public FaviconServiceTask {
                        url,
                        history::FAVICON | history::TOUCH_ICON,
                        gfx::kFaviconSize),
-                   ui::SCALE_FACTOR_100P,
+                   ui::GetMaxScaleFactor(),
                    base::Bind(
                        &BookmarkIconFetchTask::OnFaviconRetrieved,
                        base::Unretained(this)),

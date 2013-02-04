@@ -30,13 +30,17 @@ class Profile;
 //    Specifies the page URL of the requested favicon. If the 'urlmodifier'
 //    parameter is 'iconurl', the URL refers to the URL of the favicon image
 //    instead.
-//  'size&scalefactor'  Optional  size/aa@bx/
-//    Specifies the requested favicon's size in DIP (aa) and the requested
-//    favicon's scale factor. (b).
-//    The supported requested DIP sizes are: 16x16, 32x32 and 64x64.
-//    If the parameter is unspecified, the requested favicon's size defaults to
-//    16 and the requested scale factor defaults to 1x.
-//    Example: chrome://favicon/size/16@2x/http://www.google.com/
+//  'size&scalefactor'  Optional
+//    Values: ['largest', size/aa@bx/]
+//    'largest': Specifies that the largest available favicon is requested.
+//      Example: chrome://favicon/largest/http://www.google.com/
+//    'size/aa@bx/':
+//      Specifies the requested favicon's size in DIP (aa) and the requested
+//      favicon's scale factor. (b).
+//      The supported requested DIP sizes are: 16x16, 32x32 and 64x64.
+//      If the parameter is unspecified, the requested favicon's size defaults
+//      to 16 and the requested scale factor defaults to 1x.
+//      Example: chrome://favicon/size/16@2x/http://www.google.com/
 //  'urlmodifier'      Optional
 //    Values: ['iconurl', 'origin']
 //    'iconurl': Specifies that the url parameter refers to the URL of
