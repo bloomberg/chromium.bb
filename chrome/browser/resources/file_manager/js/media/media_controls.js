@@ -502,6 +502,23 @@ MediaControls.prototype.decodeState = function() {
 };
 
 /**
+ * Remove current state from the page URL or the app state.
+ */
+MediaControls.prototype.clearState = function() {
+  if (window.appState) {
+    if ('time' in window.appState)
+      delete window.appState.time;
+    util.saveAppState();
+    return;
+  }
+
+  var newLocation = document.location.origin + document.location.pathname +
+      document.location.search + '#';
+
+  document.location.href = newLocation;
+};
+
+/**
  * Create a customized slider control.
  *
  * @param {HTMLElement} container The containing div element.

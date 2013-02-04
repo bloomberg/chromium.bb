@@ -4,17 +4,38 @@
 
 /**
  * Display error message.
- * @param {string} opt_message Message id.
+ * @param {string} message Message id.
  */
-function onError(opt_message) {
+function showErrorMessage(message) {
   var errorBanner = document.querySelector('#error');
   errorBanner.textContent =
-      loadTimeData.getString(opt_message || 'GALLERY_VIDEO_ERROR');
+      loadTimeData.getString(message);
   errorBanner.setAttribute('visible', 'true');
   if (util.platform.v2()) {
     // The window is hidden if the video has not loaded yet.
     chrome.app.window.current().show();
   }
+}
+
+/**
+ * Handles playback (decoder) errors.
+ */
+function onPlaybackError() {
+  showErrorMessage('GALLERY_VIDEO_DECODING_ERROR');
+  decodeErrorOccured = true;
+
+  // Disable inactivity watcher, and disable the ui, by hiding tools manually.
+  controls.inactivityWatcher.disabled = true;
+  document.querySelector('#video-player').setAttribute('disabled', 'true');
+
+  // Detach the video element, since it may be unreliable and reset stored
+  // current playback time.
+  controls.cleanup();
+  controls.clearState();
+
+  // Avoid reusing a video element.
+  video.parentNode.removeChild(video);
+  video = null;
 }
 
 /**
@@ -27,9 +48,11 @@ function FullWindowVideoControls(
     playerContainer, videoContainer, controlsContainer) {
   VideoControls.call(this,
       controlsContainer,
-      onError.bind(null, null),
+      onPlaybackError,
       function() { chrome.fileBrowserPrivate.toggleFullscreen() },
       videoContainer);
+
+  this.playerContainer_ = playerContainer;
 
   this.updateStyle();
   window.addEventListener('resize', this.updateStyle.bind(this));
@@ -44,8 +67,12 @@ function FullWindowVideoControls(
   videoContainer.addEventListener('click',
       this.togglePlayStateWithFeedback.bind(this));
 
-  var inactivityWatcher = new MouseInactivityWatcher(playerContainer);
-  inactivityWatcher.check();
+  this.inactivityWatcher_ = new MouseInactivityWatcher(playerContainer);
+  this.__defineGetter__('inactivityWatcher', function() {
+    return this.inactivityWatcher_;
+  });
+
+  this.inactivityWatcher_.check();
 }
 
 FullWindowVideoControls.prototype = { __proto__: VideoControls.prototype };
@@ -68,6 +95,8 @@ FullWindowVideoControls.prototype.restorePlayState = function() {
 };
 
 // TODO(mtomasz): Convert it to class members: crbug.com/171191.
+var decodeErrorOccured;
+var video;
 var controls;
 var metadataCache;
 var volumeManager;
@@ -87,9 +116,6 @@ function loadVideoPlayer() {
        document.querySelector('#video-container'),
        document.querySelector('#controls'));
 
-    var video = document.querySelector('video');
-    controls.attachMedia(video);
-
     if (!util.platform.v2())
       window.addEventListener('unload', unload);
 
@@ -102,6 +128,17 @@ function loadVideoPlayer() {
 
     volumeManager.addEventListener('externally-unmounted',
                                    onExternallyUnmounted);
+
+    var reloadVideo = function(e) {
+      if (decodeErrorOccured) {
+        reload();
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('keydown', reloadVideo, true);
+    document.addEventListener('click', reloadVideo, true);
+
   });
 }
 
@@ -128,6 +165,12 @@ function unload() {
  * Reload the player.
  */
 function reload() {
+  // Re-enable ui and hide error message if already displayed.
+  document.querySelector('#video-player').removeAttribute('disabled');
+  document.querySelector('#error').removeAttribute('visible');
+  controls.inactivityWatcher.disabled = false;
+  decodeErrorOccured = false;
+
   var src;
   if (window.appState) {
     util.saveAppState();
@@ -136,7 +179,7 @@ function reload() {
     src = document.location.search.substr(1);
   }
   if (!src) {
-    onError();
+    showErrorMessage('GALLERY_VIDEO_ERROR');
     return;
   }
 
@@ -145,7 +188,7 @@ function reload() {
   metadataCache.get(src, 'streaming', function(streaming) {
     if (streaming && streaming.url) {
       if (!navigator.onLine) {
-        onError('GALLERY_VIDEO_OFFLINE');
+        showErrorMessage('GALLERY_VIDEO_OFFLINE');
         return;
       }
       src = streaming.url;
@@ -154,7 +197,15 @@ function reload() {
       console.log('Playing local file: ' + src);
     }
 
-    var video = document.querySelector('video');
+    // Detach the previous video element, if exists.
+    if (video) {
+      video.parentNode.removeChild(video);
+    }
+
+    video = document.createElement('video');
+    document.querySelector('#video-container').appendChild(video);
+    controls.attachMedia(video);
+
     video.src = src;
     video.load();
     if (util.platform.v2()) {

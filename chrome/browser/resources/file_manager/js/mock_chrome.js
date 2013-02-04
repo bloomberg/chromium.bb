@@ -556,7 +556,8 @@ chrome.fileBrowserPrivate = {
       GALLERY_READONLY_WARNING: '$1 is read only. Edited images will be saved in the Downloads folder.',
       GALLERY_IMAGE_ERROR: 'This file could not be displayed',
       GALLERY_IMAGE_TOO_BIG_ERROR: 'This file is too large to be opened.',
-      GALLERY_VIDEO_ERROR: 'This file could not be played',
+      GALLERY_VIDEO_ERROR: 'This file could not be played.',
+      GALLERY_VIDEO_DECODING_ERROR: 'An error occurred. Click to restart from the beginning.',
 
       GALLERY_ITEMS_SELECTED: '$1 items selected',
       GALLERY_NO_IMAGES: 'No images in this directory.',

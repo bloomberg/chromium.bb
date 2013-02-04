@@ -22,6 +22,25 @@ function MouseInactivityWatcher(container, opt_timeout, opt_toolsActive) {
 
   this.clientX_ = 0;
   this.clientY_ = 0;
+
+  /**
+   * Indicates if the inactivity watcher is enabled or disabled. Use getters
+   * and setters.
+   * @type {boolean}
+   * @private
+   **/
+  this.disabled_ = false;
+  this.__defineSetter__('disabled', function(value) {
+    this.disabled_ = value;
+    if (value)
+      this.kick();
+    else
+      this.check();
+  });
+  this.__defineGetter__('disabled', function() {
+    return this.disabled_;
+  });
+
   this.container_.addEventListener('mousemove', this.onMouseMove_.bind(this));
 
   // Show tools when the user touches the screen.
@@ -76,7 +95,7 @@ MouseInactivityWatcher.prototype.activityStarted_ = function() {
  * @private
  */
 MouseInactivityWatcher.prototype.activityStopped_ = function(opt_timeout) {
-  if (this.mouseOverTool_ || this.toolsActive_())
+  if (this.disabled_ || this.mouseOverTool_ || this.toolsActive_())
     return;
 
   if (this.timeoutID_)
@@ -121,8 +140,6 @@ MouseInactivityWatcher.prototype.onMouseMove_ = function(e) {
   this.clientX_ = e.clientX;
   this.clientY_ = e.clientY;
 
-  this.activityStarted_();
-
   this.mouseOverTool_ = false;
   for (var elem = e.target; elem != this.container_; elem = elem.parentNode) {
     if (this.isToolElement(elem)) {
@@ -131,6 +148,10 @@ MouseInactivityWatcher.prototype.onMouseMove_ = function(e) {
     }
   }
 
+  if (this.disabled_)
+    return;
+
+  this.activityStarted_();
   this.activityStopped_();
 };
 
@@ -140,6 +161,6 @@ MouseInactivityWatcher.prototype.onMouseMove_ = function(e) {
  */
 MouseInactivityWatcher.prototype.onTimeout_ = function() {
   this.timeoutID_ = null;
-  if (!this.toolsActive_())
+  if (!this.disabled_ && !this.toolsActive_())
     this.showTools(false);
 };

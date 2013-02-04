@@ -60,6 +60,10 @@ video {
   cursor: none;
 }
 
+#video-player[disabled] .tool {
+  display: none;
+}
+
 .tool {
   -webkit-transition: opacity 180ms linear;
 }

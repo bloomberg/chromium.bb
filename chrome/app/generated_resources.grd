@@ -12840,6 +12840,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_GALLERY_VIDEO_ERROR" desc="In the Gallery, message informing that the video could not be played.">
         This file could not be played.
       </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_VIDEO_DECODING_ERROR" desc="In the Gallery, message informing that an error occured while playing the movie.">
+        An error occurred. Click to restart from the beginning.
+      </message>
       <message name="IDS_FILE_BROWSER_AUDIO_ERROR" desc="In the Audio Player, message informing that the file could not be played.">
         This file could not be played.
       </message>
