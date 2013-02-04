@@ -225,6 +225,7 @@ void EnterpriseEnrollmentScreen::ReportEnrollmentStatus(
 
   switch (status.status()) {
     case policy::EnrollmentStatus::STATUS_SUCCESS:
+      WizardController::MarkDeviceRegistered();
       UMA(is_auto_enrollment_ ? policy::kMetricEnrollmentAutoOK
                               : policy::kMetricEnrollmentOK);
       return;
