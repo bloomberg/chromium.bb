@@ -52,7 +52,7 @@ class TestOperand(unittest.TestCase):
         default_rw=def_format.OperandReadWriteMode.READ)
 
     assert op.Readable() and not op.Writable()
-    self.assertEquals(op.arg_type, 'r')
+    self.assertEquals(op.arg_type, def_format.OperandType.REGISTER_IN_OPCODE)
     self.assertEquals(op.size, '')
     assert not op.implicit
 

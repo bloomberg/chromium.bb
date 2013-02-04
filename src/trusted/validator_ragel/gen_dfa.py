@@ -67,7 +67,20 @@ class Operand(object):
                                     def_format.OperandReadWriteMode.READ_WRITE]
 
   def ResidesInModRM(self):
-    return self.arg_type in 'CDEGMNPQRSUVW'
+    return self.arg_type in [
+        def_format.OperandType.CONTROL_REGISTER,
+        def_format.OperandType.DEBUG_REGISTER,
+        def_format.OperandType.REGISTER_IN_REG,
+        def_format.OperandType.REGISTER_IN_RM,
+        def_format.OperandType.REGISTER_OR_MEMORY,
+        def_format.OperandType.MEMORY,
+        def_format.OperandType.SEGMENT_REGISTER_IN_RM,
+        def_format.OperandType.MMX_REGISTER_IN_RM,
+        def_format.OperandType.MMX_REGISTER_IN_REG,
+        def_format.OperandType.MMX_REGISTER_OR_MEMORY,
+        def_format.OperandType.XMM_REGISTER_IN_RM,
+        def_format.OperandType.XMM_REGISTER_IN_REG,
+        def_format.OperandType.XMM_REGISTER_OR_MEMORY]
 
   def GetFormat(self):
     """Get human-readable string for operand type and size.
@@ -244,7 +257,8 @@ class Instruction(object):
     return result
 
   def HasRegisterInOpcode(self):
-    return self.FindOperand('r') is not None
+    return self.FindOperand(
+        def_format.OperandType.REGISTER_IN_OPCODE) is not None
 
   def HasOpcodeInsteadOfImmediate(self):
     return '/' in self.opcodes
@@ -407,11 +421,11 @@ class InstructionPrinter(object):
       None.
     """
     for operand in instruction.operands:
-      if operand.arg_type == 'a':
+      if operand.arg_type == def_format.OperandType.ACCUMULATOR:
         self._PrintOperandSource(operand, 'rax')
-      elif operand.arg_type == 'X':
+      elif operand.arg_type == def_format.OperandType.DS_SI:
         self._PrintOperandSource(operand, 'ds_rsi')
-      elif operand.arg_type == 'Y':
+      elif operand.arg_type == def_format.OperandType.ES_DI:
         self._PrintOperandSource(operand, 'es_rdi')
 
     # TODO(shcherbina): handle other implicit operands.
@@ -451,13 +465,13 @@ class InstructionPrinter(object):
     # TODO(shcherbina): print immediate args.
 
     # Displacement encoded in the instruction.
-    operand = instruction.FindOperand('O')
+    operand = instruction.FindOperand(def_format.OperandType.ABSOLUTE_DISP)
     if operand is not None:
       self._PrintOperandSource(operand, 'absolute_disp')
       self._out.write('disp%d\n' % self._bitness)
 
     # Relative jump/call target encoded in the instruction.
-    operand = instruction.FindOperand('J')
+    operand = instruction.FindOperand(def_format.OperandType.RELATIVE_TARGET)
     if operand is not None:
       format = operand.GetFormat()
       if format == '8bit':

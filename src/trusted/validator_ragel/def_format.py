@@ -370,3 +370,34 @@ class OperandReadWriteMode(object):
   READ = '='
   WRITE = '!'
   READ_WRITE = '&'
+
+
+class OperandType(object):
+  ACCUMULATOR = 'a'
+  COUNTER = 'c'
+
+  CONTROL_REGISTER = 'C'  # in ModRM.reg
+  DEBUG_REGISTER = 'D'  # in ModRM.reg
+
+  REGISTER_IN_OPCODE = 'r'
+
+  ABSOLUTE_DISP = 'O'
+
+  RELATIVE_TARGET = 'J'
+
+  REGISTER_IN_RM = 'R'
+  REGISTER_IN_REG = 'G'
+  REGISTER_OR_MEMORY = 'E'  # in ModRM.mod and .r/m
+  MEMORY = 'M'  # in ModRM.mod and .r/m
+  SEGMENT_REGISTER_IN_RM = 'S'
+
+  MMX_REGISTER_IN_RM = 'N'
+  MMX_REGISTER_IN_REG = 'P'
+  MMX_REGISTER_OR_MEMORY = 'Q'  # in ModRM.mod and .r/m
+
+  XMM_REGISTER_IN_RM = 'U'
+  XMM_REGISTER_IN_REG = 'V'
+  XMM_REGISTER_OR_MEMORY = 'W'  # in ModRM.mod and .r/m
+
+  DS_SI = 'X'
+  ES_DI = 'Y'
