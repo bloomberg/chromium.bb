@@ -238,6 +238,39 @@ class InsertResourceOperation : public EntryActionOperation {
   DISALLOW_COPY_AND_ASSIGN(InsertResourceOperation);
 };
 
+//========================== DeleteResourceOperation ===========================
+
+// This class performs the operation for removing a resource from a directory.
+// Note that we use "delete" for the name of this class, which comes from the
+// operation name of the Drive API v2, although we prefer "remove" for that
+// sence in "drive/google_api"
+// Also note that this is the operation of "Children: delete" of the Drive API
+// v2. https://developers.google.com/drive/v2/reference/children/delete
+class DeleteResourceOperation : public EntryActionOperation {
+ public:
+  // |callback| must not be null.
+  DeleteResourceOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const DriveApiUrlGenerator& url_generator,
+      const std::string& parent_resource_id,
+      const std::string& resource_id,
+      const EntryActionCallback& callback);
+  virtual ~DeleteResourceOperation();
+
+ protected:
+  // UrlFetchOperationBase overrides.
+  virtual GURL GetURL() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+  const std::string parent_resource_id_;
+  const std::string resource_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeleteResourceOperation);
+};
+
 }  // namespace drive
 }  // namespace google_apis
 

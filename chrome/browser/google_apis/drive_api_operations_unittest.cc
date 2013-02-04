@@ -52,6 +52,9 @@ class DriveApiOperationsTest : public testing::Test {
 
     ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
     test_server_.RegisterRequestHandler(
+        base::Bind(&DriveApiOperationsTest::HandleChildrenDeleteRequest,
+                   base::Unretained(this)));
+    test_server_.RegisterRequestHandler(
         base::Bind(&DriveApiOperationsTest::HandleDataFileRequest,
                    base::Unretained(this)));
     test_server_.RegisterRequestHandler(
@@ -60,6 +63,9 @@ class DriveApiOperationsTest : public testing::Test {
 
     url_generator_.reset(new DriveApiUrlGenerator(
         test_util::GetBaseUrlForTesting(test_server_.port())));
+
+    // Reset the server's expected behavior just in case.
+    expected_data_file_path_.clear();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -92,6 +98,26 @@ class DriveApiOperationsTest : public testing::Test {
   test_server::HttpRequest http_request_;
 
  private:
+  // For "Children: delete" request, the server will return "204 No Content"
+  // response meaning "success".
+  scoped_ptr<test_server::HttpResponse> HandleChildrenDeleteRequest(
+      const test_server::HttpRequest& request) {
+    http_request_ = request;
+
+    if (request.method != test_server::METHOD_DELETE ||
+        request.relative_url.find("/children/") == string::npos) {
+      // The request is not the "Children: delete" operation. Delegate the
+      // processing to the next handler.
+      return scoped_ptr<test_server::HttpResponse>();
+    }
+
+    // Return the response with just "204 No Content" status code.
+    scoped_ptr<test_server::HttpResponse> http_response(
+        new test_server::HttpResponse);
+    http_response->set_code(test_server::NO_CONTENT);
+    return http_response.Pass();
+  }
+
   // Reads the data file of |expected_data_file_path_| and returns its content
   // for the request.
   // To use this method, it is necessary to set |expected_data_file_path_|
@@ -277,6 +303,31 @@ TEST_F(DriveApiOperationsTest, InsertResourceOperation) {
 
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ("{\"id\":\"resource_id\"}", http_request_.content);
+}
+
+TEST_F(DriveApiOperationsTest, DeleteResourceOperation) {
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+
+  // Remove a resource with "resource_id" from a directory with
+  // "parent_resource_id".
+  drive::DeleteResourceOperation* operation =
+      new drive::DeleteResourceOperation(
+          &operation_registry_,
+          request_context_getter_.get(),
+          *url_generator_,
+          "parent_resource_id",
+          "resource_id",
+          base::Bind(&test_util::CopyResultFromEntryActionCallbackAndQuit,
+                     &error));
+  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
+                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_NO_CONTENT, error);
+  EXPECT_EQ(test_server::METHOD_DELETE, http_request_.method);
+  EXPECT_EQ("/drive/v2/files/parent_resource_id/children/resource_id",
+            http_request_.relative_url);
+  EXPECT_FALSE(http_request_.has_content);
 }
 
 }  // namespace google_apis

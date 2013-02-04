@@ -128,4 +128,35 @@ TEST_F(DriveApiUrlGeneratorTest, GetChildrenUrl) {
             test_url_generator_.GetChildrenUrl("file:folder_id").spec());
 }
 
+TEST_F(DriveApiUrlGeneratorTest, GetChildrenUrlForRemoval) {
+  // |file_id| should be embedded into the url.
+  EXPECT_EQ(
+      "https://www.googleapis.com/drive/v2/files/0ADK06pfg/children/0Bz0bd074",
+      url_generator_.GetChildrenUrlForRemoval(
+          "0ADK06pfg", "0Bz0bd074").spec());
+  EXPECT_EQ(
+      "https://www.googleapis.com/drive/v2/files/0Bz0bd074/children/0ADK06pfg",
+      url_generator_.GetChildrenUrlForRemoval(
+          "0Bz0bd074", "0ADK06pfg").spec());
+  EXPECT_EQ(
+      "https://www.googleapis.com/drive/v2/files/file%3Afolder_id/children"
+      "/file%3Achild_id",
+      url_generator_.GetChildrenUrlForRemoval(
+          "file:folder_id", "file:child_id").spec());
+
+  EXPECT_EQ(
+      "http://127.0.0.1:12345/drive/v2/files/0ADK06pfg/children/0Bz0bd074",
+      test_url_generator_.GetChildrenUrlForRemoval(
+          "0ADK06pfg", "0Bz0bd074").spec());
+  EXPECT_EQ(
+      "http://127.0.0.1:12345/drive/v2/files/0Bz0bd074/children/0ADK06pfg",
+      test_url_generator_.GetChildrenUrlForRemoval(
+          "0Bz0bd074", "0ADK06pfg").spec());
+  EXPECT_EQ(
+      "http://127.0.0.1:12345/drive/v2/files/file%3Afolder_id/children/"
+      "file%3Achild_id",
+      test_url_generator_.GetChildrenUrlForRemoval(
+          "file:folder_id", "file:child_id").spec());
+}
+
 }  // namespace google_apis

@@ -266,5 +266,32 @@ bool InsertResourceOperation::GetContentData(std::string* upload_content_type,
   return true;
 }
 
+//========================== DeleteResourceOperation ===========================
+
+DeleteResourceOperation::DeleteResourceOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const DriveApiUrlGenerator& url_generator,
+    const std::string& parent_resource_id,
+    const std::string& resource_id,
+    const EntryActionCallback& callback)
+    : EntryActionOperation(registry, url_request_context_getter, callback),
+      url_generator_(url_generator),
+      parent_resource_id_(parent_resource_id),
+      resource_id_(resource_id) {
+  DCHECK(!callback.is_null());
+}
+
+DeleteResourceOperation::~DeleteResourceOperation() {}
+
+GURL DeleteResourceOperation::GetURL() const {
+  return url_generator_.GetChildrenUrlForRemoval(
+      parent_resource_id_, resource_id_);
+}
+
+net::URLFetcher::RequestType DeleteResourceOperation::GetRequestType() const {
+  return net::URLFetcher::DELETE_REQUEST;
+}
+
 }  // namespace drive
 }  // namespace google_apis
