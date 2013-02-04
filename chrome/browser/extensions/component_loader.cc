@@ -39,6 +39,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #endif
 
+// TODO(vadimt): Remove once the startup time experiment ends.
+#include "chrome/common/chrome_version_info.h"
+
 namespace extensions {
 
 namespace {
@@ -416,8 +419,36 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #endif
 
 #if defined(ENABLE_GOOGLE_NOW)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableGoogleNowIntegration)) {
+  // TEMPORARY CODE: We are running an experiment to measure how loading the
+  // Google Now component extension affects browser startup time. To get
+  // reliable results, we need to land a temporary change that enables the
+  // extension without a flag in Canary. Then, we'll see what performance bots
+  // will say. After this, we'll let Canary users install the build, and watch
+  // startup time histograms. After we have the data, we'll undo the change, and
+  // will load the extension only under the flag.
+  // The experiment will be rolled back within 1 week from checking in, which is
+  // definitely before 2/12/2013.
+  // While the experiment is running, Canary Chrome will load the Google Now
+  // component extension on startup. While Chrome is running, the extension will
+  // repeat the following every 5 min:
+  // 1. Get location of the computer. Sometimes this will result in a Wifi scan
+  // and sending a request to Google location-based services to get location.
+  // The location will not be sent back to Google, saved to disk or associated
+  // with the user.
+  // 2. Issue a XMLHttpRequest to a URL that turns to be a not existing local
+  // file. So, the request will fail every time.
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+
+  // TODO(vadimt): Unconditional loading of the extension is enabled for Canary
+  // and for unofficial builds; remove after enough data is generated, perhaps
+  // by 2/12/13.
+  // http://crbug.com/164227
+
+  // Loading Google Now component if the flag is specified or if this is an
+  // unofficial or Canary build.
+  if (channel <= chrome::VersionInfo::CHANNEL_CANARY ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGoogleNowIntegration)) {
     Add(IDR_GOOGLE_NOW_MANIFEST, FilePath(FILE_PATH_LITERAL("google_now")));
   }
 #endif
