@@ -7,14 +7,18 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/browser/renderer_host/media/web_contents_video_capture_device.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/video/capture/fake_video_capture_device.h"
+#include "media/video/capture/screen/screen_capture_device.h"
 #include "media/video/capture/video_capture_device.h"
 
 namespace content {
@@ -163,17 +167,32 @@ void VideoCaptureManager::OnOpen(int capture_session_id,
         media::FakeVideoCaptureDevice::Create(vc_device_name);
   } else {
     switch (device.device.type) {
-      case MEDIA_DEVICE_VIDEO_CAPTURE:
+      case MEDIA_DEVICE_VIDEO_CAPTURE: {
         video_capture_device =
             media::VideoCaptureDevice::Create(vc_device_name);
         break;
-      case MEDIA_TAB_VIDEO_CAPTURE:
+      }
+      case MEDIA_TAB_VIDEO_CAPTURE: {
         video_capture_device = WebContentsVideoCaptureDevice::Create(
             vc_device_name.unique_id);
         break;
-      default:
+      }
+      case MEDIA_SCREEN_VIDEO_CAPTURE: {
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+        CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kEnableUserMediaScreenCapturing));
+        scoped_refptr<base::SequencedWorkerPool> blocking_pool =
+            BrowserThread::GetBlockingPool();
+        video_capture_device = new media::ScreenCaptureDevice(
+            blocking_pool->GetSequencedTaskRunner(
+                blocking_pool->GetSequenceToken()));
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+        break;
+      }
+      default: {
         NOTIMPLEMENTED();
         break;
+      }
     }
   }
   if (!video_capture_device) {
@@ -384,6 +403,10 @@ void VideoCaptureManager::GetAvailableDevices(
       } else {
         media::FakeVideoCaptureDevice::GetDeviceNames(device_names);
       }
+      break;
+
+    case MEDIA_SCREEN_VIDEO_CAPTURE:
+      device_names->clear();
       break;
 
     default:

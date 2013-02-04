@@ -11,6 +11,7 @@ namespace content {
 const char kMediaStreamSource[] = "chromeMediaSource";
 const char kMediaStreamSourceId[] = "chromeMediaSourceId";
 const char kMediaStreamSourceTab[] = "tab";
+const char kMediaStreamSourceScreen[] = "screen";
 
 StreamOptions::StreamOptions()
     : audio_type(MEDIA_NO_SERVICE),

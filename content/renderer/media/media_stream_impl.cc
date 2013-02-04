@@ -10,10 +10,10 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "content/renderer/media/media_stream_extra_data.h"
-#include "content/renderer/media/media_stream_source_extra_data.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
+#include "content/renderer/media/media_stream_extra_data.h"
+#include "content/renderer/media/media_stream_source_extra_data.h"
 #include "content/renderer/media/rtc_video_decoder.h"
 #include "content/renderer/media/rtc_video_renderer.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
@@ -44,27 +44,31 @@ std::string GetMandatoryStreamConstraint(
   return UTF16ToUTF8(value);
 }
 
-void UpdateOptionsIfTabMediaRequest(
+void UpdateRequestOptions(
     const WebKit::WebUserMediaRequest& user_media_request,
     StreamOptions* options) {
-  if (options->audio_type != content::MEDIA_NO_SERVICE &&
-      GetMandatoryStreamConstraint(user_media_request.audioConstraints(),
-                                   kMediaStreamSource) ==
-          kMediaStreamSourceTab) {
-    options->audio_type = content::MEDIA_TAB_AUDIO_CAPTURE;
-    options->audio_device_id = GetMandatoryStreamConstraint(
-        user_media_request.audioConstraints(),
-        kMediaStreamSourceId);
+  if (options->audio_type != content::MEDIA_NO_SERVICE) {
+    std::string audio_stream_source = GetMandatoryStreamConstraint(
+        user_media_request.audioConstraints(), kMediaStreamSource);
+    if (audio_stream_source == kMediaStreamSourceTab) {
+      options->audio_type = content::MEDIA_TAB_AUDIO_CAPTURE;
+      options->audio_device_id = GetMandatoryStreamConstraint(
+          user_media_request.audioConstraints(),
+          kMediaStreamSourceId);
+    }
   }
 
-  if (options->video_type != content::MEDIA_NO_SERVICE &&
-      GetMandatoryStreamConstraint(user_media_request.videoConstraints(),
-                                   kMediaStreamSource) ==
-          kMediaStreamSourceTab) {
-    options->video_type = content::MEDIA_TAB_VIDEO_CAPTURE;
-    options->video_device_id = GetMandatoryStreamConstraint(
-        user_media_request.videoConstraints(),
-        kMediaStreamSourceId);
+  if (options->video_type != content::MEDIA_NO_SERVICE) {
+    std::string video_stream_source = GetMandatoryStreamConstraint(
+        user_media_request.videoConstraints(), kMediaStreamSource);
+    if (video_stream_source == kMediaStreamSourceTab) {
+      options->video_type = content::MEDIA_TAB_VIDEO_CAPTURE;
+      options->video_device_id = GetMandatoryStreamConstraint(
+          user_media_request.videoConstraints(),
+          kMediaStreamSourceId);
+    } else if (video_stream_source == kMediaStreamSourceScreen) {
+      options->video_type = content::MEDIA_SCREEN_VIDEO_CAPTURE;
+    }
   }
 }
 
@@ -170,7 +174,7 @@ void MediaStreamImpl::requestUserMedia(
     frame = user_media_request.ownerDocument().frame();
     DCHECK(frame);
 
-    UpdateOptionsIfTabMediaRequest(user_media_request, &options);
+    UpdateRequestOptions(user_media_request, &options);
   }
 
   DVLOG(1) << "MediaStreamImpl::requestUserMedia(" << request_id << ", [ "

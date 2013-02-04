@@ -18,6 +18,7 @@ namespace content {
 CONTENT_EXPORT extern const char kMediaStreamSource[];
 CONTENT_EXPORT extern const char kMediaStreamSourceId[];
 CONTENT_EXPORT extern const char kMediaStreamSourceTab[];
+CONTENT_EXPORT extern const char kMediaStreamSourceScreen[];
 
 // Callback to deliver the result of a media request. |label| is the string
 // to identify the request,

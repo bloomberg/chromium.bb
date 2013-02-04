@@ -539,25 +539,17 @@ void MediaStreamManager::StartEnumeration(DeviceRequest* request) {
   // Start monitoring the devices when doing the first enumeration.
   if (!monitoring_started_ && base::SystemMonitor::Get()) {
     StartMonitoring();
+  }
 
-    if (IsAudioMediaType(request->options.audio_type)) {
-      request->SetState(request->options.audio_type,
-                        MEDIA_REQUEST_STATE_REQUESTED);
-    }
-    if (IsVideoMediaType(request->options.video_type)) {
-      request->SetState(request->options.video_type,
-                        MEDIA_REQUEST_STATE_REQUESTED);
-    }
-  } else {
-    for (int i = MEDIA_NO_SERVICE + 1; i < NUM_MEDIA_TYPES; ++i) {
-      const MediaStreamType stream_type = static_cast<MediaStreamType>(i);
-      if (Requested(request->options, stream_type)) {
-        request->SetState(stream_type, MEDIA_REQUEST_STATE_REQUESTED);
-        DCHECK_GE(active_enumeration_ref_count_[stream_type], 0);
-        if (active_enumeration_ref_count_[stream_type] == 0) {
-          ++active_enumeration_ref_count_[stream_type];
-          GetDeviceManager(stream_type)->EnumerateDevices(stream_type);
-        }
+  // Start enumeration for devices of all requested device types.
+  for (int i = MEDIA_NO_SERVICE + 1; i < NUM_MEDIA_TYPES; ++i) {
+    const MediaStreamType stream_type = static_cast<MediaStreamType>(i);
+    if (Requested(request->options, stream_type)) {
+      request->SetState(stream_type, MEDIA_REQUEST_STATE_REQUESTED);
+      DCHECK_GE(active_enumeration_ref_count_[stream_type], 0);
+      if (active_enumeration_ref_count_[stream_type] == 0) {
+        ++active_enumeration_ref_count_[stream_type];
+        GetDeviceManager(stream_type)->EnumerateDevices(stream_type);
       }
     }
   }

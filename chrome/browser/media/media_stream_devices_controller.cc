@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/media_stream_devices_controller.h"
 
+#include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,15 +45,23 @@ MediaStreamDevicesController::MediaStreamDevicesController(
       content_settings_(content_settings),
       request_(request),
       callback_(callback),
-      has_audio_(content::IsAudioMediaType(request.audio_type)),
-      has_video_(content::IsVideoMediaType(request.video_type)) {
+      microphone_requested_(
+          request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE),
+      webcam_requested_(
+          request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE),
+      screen_capture_requested_(
+          request.video_type == content::MEDIA_SCREEN_VIDEO_CAPTURE) {
   // Don't call GetDevicePolicy from the initializer list since the
   // implementation depends on member variables.
-  if (has_audio_ && GetDevicePolicy(prefs::kAudioCaptureAllowed) == ALWAYS_DENY)
-    has_audio_ = false;
+  if (microphone_requested_ &&
+      GetDevicePolicy(prefs::kAudioCaptureAllowed) == ALWAYS_DENY) {
+    microphone_requested_ = false;
+  }
 
-  if (has_video_ && GetDevicePolicy(prefs::kVideoCaptureAllowed) == ALWAYS_DENY)
-    has_video_ = false;
+  if (webcam_requested_ &&
+      GetDevicePolicy(prefs::kVideoCaptureAllowed) == ALWAYS_DENY) {
+    webcam_requested_ = false;
+  }
 }
 
 MediaStreamDevicesController::~MediaStreamDevicesController() {}
@@ -127,15 +137,15 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
 
   // Get the default devices for the request.
   content::MediaStreamDevices devices;
-  if (has_audio_ || has_video_) {
+  if (microphone_requested_ || webcam_requested_) {
     switch (request_.request_type) {
       case content::MEDIA_OPEN_DEVICE:
         // For open device request pick the desired device or fall back to the
         // first available of the given type.
         MediaCaptureDevicesDispatcher::GetInstance()->GetRequestedDevice(
             request_.requested_device_id,
-            has_audio_,
-            has_video_,
+            microphone_requested_,
+            webcam_requested_,
             &devices);
         break;
       case content::MEDIA_DEVICE_ACCESS:
@@ -144,14 +154,22 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
         // Get the default devices for the request.
         MediaCaptureDevicesDispatcher::GetInstance()->
             GetDefaultDevicesForProfile(profile_,
-                                        has_audio_,
-                                        has_video_,
+                                        microphone_requested_,
+                                        webcam_requested_,
                                         &devices);
         break;
     }
 
     if (update_content_setting && IsSchemeSecure() && !devices.empty())
       SetPermission(true);
+  }
+
+  if (screen_capture_requested_ &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableUserMediaScreenCapturing)) {
+    // Add screen capturer source if it was requested.
+    devices.push_back(content::MediaStreamDevice(
+        content::MEDIA_SCREEN_VIDEO_CAPTURE, "", "Screen"));
   }
 
   callback_.Run(devices);
@@ -193,9 +211,9 @@ bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
     const char* policy_name;
     ContentSettingsType settings_type;
   } device_checks[] = {
-    { has_audio_, prefs::kAudioCaptureAllowed,
+    { microphone_requested_, prefs::kAudioCaptureAllowed,
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC },
-    { has_video_, prefs::kVideoCaptureAllowed,
+    { webcam_requested_, prefs::kVideoCaptureAllowed,
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA },
   };
 
@@ -216,11 +234,14 @@ bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
     // settings allow the request by default.
   }
 
+  // TODO(sergeyu): Add content setting and UI notifications for screen
+  // capturing and use them when screen_capture_requested_==true.
+
   return true;
 }
 
 bool MediaStreamDevicesController::IsRequestBlockedByDefault() const {
-  if (has_audio_ &&
+  if (microphone_requested_ &&
       profile_->GetHostContentSettingsMap()->GetContentSetting(
           request_.security_origin,
           request_.security_origin,
@@ -229,7 +250,7 @@ bool MediaStreamDevicesController::IsRequestBlockedByDefault() const {
     return false;
   }
 
-  if (has_video_ &&
+  if (webcam_requested_ &&
       profile_->GetHostContentSettingsMap()->GetContentSetting(
           request_.security_origin,
           request_.security_origin,
@@ -305,15 +326,15 @@ void MediaStreamDevicesController::SetPermission(bool allowed) const {
 
   ContentSetting content_setting = allowed ?
       CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
-  if (has_audio_) {
-    profile_->GetHostContentSettingsMap()->SetContentSetting(
+  if (microphone_requested_) {
+      profile_->GetHostContentSettingsMap()->SetContentSetting(
         primary_pattern,
         ContentSettingsPattern::Wildcard(),
         CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
         std::string(),
         content_setting);
   }
-  if (has_video_) {
+  if (webcam_requested_) {
     profile_->GetHostContentSettingsMap()->SetContentSetting(
         primary_pattern,
         ContentSettingsPattern::Wildcard(),

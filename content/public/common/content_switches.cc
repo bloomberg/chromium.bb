@@ -334,6 +334,10 @@ const char kEnablePrivilegedWebGLExtensions[] =
 const char kEnablePruneGpuCommandBuffers[] =
     "enable-prune-gpu-command-buffers";
 
+// Enable screen capturing support for MediaStream API.
+const char kEnableUserMediaScreenCapturing[] =
+    "enable-usermedia-screen-capturing";
+
 // Enables TLS cached info extension.
 const char kEnableSSLCachedInfo[]  = "enable-ssl-cached-info";
 
