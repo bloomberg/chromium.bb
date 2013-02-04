@@ -14,7 +14,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "remoting/host/win/elevated_controller_resource.h"
+#include "remoting/host/win/core_resource.h"
 
 namespace remoting {
 
