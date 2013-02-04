@@ -222,7 +222,7 @@ class Function(object):
     self.supports_rules = options.get('supportsRules', False)
 
     def GeneratePropertyFromParam(p):
-      return Property.FromJSON(self, p['name'], p, namespace, origin)
+      return Property(self, p['name'], p, namespace, origin)
 
     self.filters = [GeneratePropertyFromParam(filter)
                     for filter in json.get('filters', [])]
@@ -246,8 +246,11 @@ class Function(object):
 
     self.returns = None
     if 'returns' in json:
-      self.returns = Property.FromJSON(
-          self, 'return', json['returns'], namespace, origin)
+      self.returns = Type(self,
+                          '%sReturnType' % name,
+                          json['returns'],
+                          namespace,
+                          origin)
 
 class Property(object):
   """A property of a type OR a parameter to a function.
@@ -260,18 +263,18 @@ class Property(object):
   - |type_| the model.Type of this property
   - |simple_name| the name of this Property without a namespace
   """
-
-  @staticmethod
-  def FromJSON(parent, name, json, namespace, origin):
+  def __init__(self, parent, name, json, namespace, origin):
     """Creates a Property from JSON.
     """
-    opt_args = {}
-    if 'description' in json:
-      opt_args['description'] = json['description']
-    if 'optional' in json:
-      opt_args['optional'] = json.get('optional')
-    if 'isInstanceOf' in json:
-      opt_args['instance_of'] = json.get('isInstanceOf')
+    self.parent = parent
+    self.name = name
+    self._unix_name = UnixName(self.name)
+    self._unix_name_used = False
+    self.origin = origin
+    self.simple_name = _StripNamespace(self.name, namespace)
+    self.description = json.get('description', None)
+    self.optional = json.get('optional', None)
+    self.instance_of = json.get('isInstanceOf', None)
 
     # HACK: only support very specific value types.
     is_allowed_value = (
@@ -279,57 +282,23 @@ class Property(object):
         ('type' not in json or json['type'] == 'integer'
                             or json['type'] == 'string'))
 
+    self.value = None
     if 'value' in json and is_allowed_value:
-      value = json['value']
-      opt_args['value'] = value
+      self.value = json['value']
       if 'type' not in json:
         # Sometimes the type of the value is left out, and we need to figure
         # it out for ourselves.
-        if isinstance(value, int):
+        if isinstance(self.value, int):
           json['type'] = 'integer'
-        elif isinstance(value, basestring):
+        elif isinstance(self.value, basestring):
           json['type'] = 'string'
         else:
           # TODO(kalman): support more types as necessary.
           raise ParseException(
-              parent, '"%s" is not a supported type for "value"' % type(value))
+              parent,
+              '"%s" is not a supported type for "value"' % type(self.value))
 
-    type_ = Type(parent, name, json, namespace, origin)
-    return Property(parent,
-                    name,
-                    namespace,
-                    type_,
-                    origin,
-                    **opt_args);
-
-  def __init__(self,
-               parent,
-               name,
-               namespace,
-               type_,
-               origin,
-               description=None,
-               optional=False,
-               returns=None,
-               instance_of=None,
-               value=None):
-    """Directly initializes the fields of the Property.
-    """
-    self.name = name
-    self.simple_name = _StripNamespace(self.name, namespace)
-    self._unix_name = UnixName(self.name)
-    self._unix_name_used = False
-    self.optional = optional
-    self.description = description
-    self.parent = parent
-    self.origin = origin
-    if not isinstance(type_, Type):
-      raise ValueError("not Type: %s" % type_)
-    self.type_ = type_
-    self.returns = returns
-    if instance_of is not None:
-      self.instance_of = instance_of
-    self.value = value
+    self.type_ = Type(parent, name, json, namespace, origin)
 
   def GetUnixName(self):
     """Gets the property's unix_name. Raises AttributeError if not set.
@@ -468,8 +437,7 @@ def _GetProperties(parent, json, namespace, origin):
   """
   properties = OrderedDict()
   for name, property_json in json.get('properties', {}).items():
-    properties[name] = Property.FromJSON(
-        parent, name, property_json, namespace, origin)
+    properties[name] = Property(parent, name, property_json, namespace, origin)
   return properties
 
 class _PlatformInfo(_Enum):
