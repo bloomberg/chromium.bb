@@ -11,7 +11,8 @@ using extensions::NativeHandler;
 
 class CounterNatives : public NativeHandler {
  public:
-  CounterNatives() : counter_(0) {
+  explicit CounterNatives(v8::Isolate* isolate)
+      : NativeHandler(isolate), counter_(0) {
     RouteFunction("Get", base::Bind(&CounterNatives::Get,
         base::Unretained(this)));
     RouteFunction("Increment", base::Bind(&CounterNatives::Increment,
@@ -172,7 +173,7 @@ TEST_F(ModuleSystemTest, TestLazyFieldIsOnlyEvaledOnce) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   module_system_->RegisterNativeHandler(
       "counter",
-      scoped_ptr<NativeHandler>(new CounterNatives()));
+      scoped_ptr<NativeHandler>(new CounterNatives(v8::Isolate::GetCurrent())));
   RegisterModule("lazy",
       "requireNative('counter').Increment();"
       "exports.x = 5;");
@@ -226,7 +227,7 @@ TEST_F(ModuleSystemTest, TestModulesOnlyGetEvaledOnce) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   module_system_->RegisterNativeHandler(
       "counter",
-      scoped_ptr<NativeHandler>(new CounterNatives()));
+      scoped_ptr<NativeHandler>(new CounterNatives(v8::Isolate::GetCurrent())));
 
   RegisterModule("incrementsWhenEvaled",
       "requireNative('counter').Increment();");

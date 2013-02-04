@@ -62,10 +62,12 @@ AppWindowCustomBindings::AppWindowCustomBindings(Dispatcher* dispatcher)
 namespace {
 class LoadWatcher : public content::RenderViewObserver {
  public:
-  LoadWatcher(
-      content::RenderView* view, v8::Handle<v8::Function> cb)
+  LoadWatcher(v8::Isolate* isolate,
+              content::RenderView* view,
+              v8::Handle<v8::Function> cb)
       : content::RenderViewObserver(view),
-        callback_(v8::Persistent<v8::Function>::New(cb)) {
+        isolate_(isolate),
+        callback_(v8::Persistent<v8::Function>::New(isolate, cb)) {
   }
 
   virtual void DidCreateDocumentElement(WebKit::WebFrame* frame) OVERRIDE {
@@ -78,10 +80,11 @@ class LoadWatcher : public content::RenderViewObserver {
   }
 
   virtual ~LoadWatcher() {
-    callback_.Dispose();
+    callback_.Dispose(isolate_);
   }
 
  private:
+  v8::Isolate* isolate_;
   v8::Persistent<v8::Function> callback_;
 
   void CallbackAndDie(WebKit::WebFrame* frame, bool succeeded) {
@@ -118,7 +121,7 @@ v8::Handle<v8::Value> AppWindowCustomBindings::OnContextReady(
     return v8::Undefined();
 
   v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(args[1]);
-  new LoadWatcher(view, func);
+  new LoadWatcher(args.GetIsolate(), view, func);
 
   return v8::True();
 }

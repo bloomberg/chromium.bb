@@ -49,7 +49,11 @@ content::RenderView* ChromeV8Extension::GetCurrentRenderView() {
 }
 
 ChromeV8Extension::ChromeV8Extension(Dispatcher* dispatcher)
-    : dispatcher_(dispatcher) {
+    // TODO(svenpanne) It would be nice to remove the GetCurrent() call and use
+    // an additional constructor parameter instead, but this would involve too
+    // many changes for now.
+    : NativeHandler(v8::Isolate::GetCurrent()),
+      dispatcher_(dispatcher) {
   g_instances.Get().insert(this);
 }
 

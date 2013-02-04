@@ -143,25 +143,30 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
     v8::Persistent<v8::Function> callback;
   };
 
-  static void GCCallback(v8::Persistent<v8::Value> object, void* parameter) {
+  static void GCCallback(v8::Isolate* isolate,
+                         v8::Persistent<v8::Value> object,
+                         void* parameter) {
     v8::HandleScope handle_scope;
     GCCallbackArgs* args = reinterpret_cast<GCCallbackArgs*>(parameter);
     WebKit::WebScopedMicrotaskSuppression suppression;
     args->callback->Call(args->callback->CreationContext()->Global(), 0, NULL);
-    args->callback.Dispose();
-    args->object.Dispose();
+    args->callback.Dispose(isolate);
+    args->object.Dispose(isolate);
     delete args;
   }
 
   // Binds a callback to be invoked when the given object is garbage collected.
   static v8::Handle<v8::Value> BindToGC(const v8::Arguments& args) {
     if (args.Length() == 2 && args[0]->IsObject() && args[1]->IsFunction()) {
+      v8::Isolate* isolate = args.GetIsolate();
       GCCallbackArgs* context = new GCCallbackArgs;
       context->callback = v8::Persistent<v8::Function>::New(
+          isolate,
           v8::Handle<v8::Function>::Cast(args[1]));
       context->object = v8::Persistent<v8::Object>::New(
+          isolate,
           v8::Handle<v8::Object>::Cast(args[0]));
-      context->object.MakeWeak(context, GCCallback);
+      context->object.MakeWeak(isolate, context, GCCallback);
     } else {
       NOTREACHED();
     }

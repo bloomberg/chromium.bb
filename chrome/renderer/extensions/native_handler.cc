@@ -11,13 +11,15 @@
 
 namespace extensions {
 
-NativeHandler::NativeHandler()
-    : object_template_(
-        v8::Persistent<v8::ObjectTemplate>::New(v8::ObjectTemplate::New())) {
+NativeHandler::NativeHandler(v8::Isolate* isolate)
+    : isolate_(isolate),
+      object_template_(
+          v8::Persistent<v8::ObjectTemplate>::New(isolate,
+                                                  v8::ObjectTemplate::New())) {
 }
 
 NativeHandler::~NativeHandler() {
-  object_template_.Dispose();
+  object_template_.Dispose(isolate_);
 }
 
 v8::Handle<v8::Object> NativeHandler::NewInstance() {

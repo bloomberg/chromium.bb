@@ -19,8 +19,9 @@ using extensions::NativeHandler;
 // Native JS functions for doing asserts.
 class AssertNatives : public NativeHandler {
  public:
-  AssertNatives()
-      : assertion_made_(false),
+  explicit AssertNatives(v8::Isolate* isolate)
+      : NativeHandler(isolate),
+        assertion_made_(false),
         failed_(false) {
     RouteFunction("AssertTrue", base::Bind(&AssertNatives::AssertTrue,
         base::Unretained(this)));
@@ -87,7 +88,7 @@ ModuleSystemTest::ModuleSystemTest()
       source_map_(new StringSourceMap()),
       should_assertions_be_made_(true) {
   context_->Enter();
-  assert_natives_ = new AssertNatives();
+  assert_natives_ = new AssertNatives(context_->GetIsolate());
   module_system_.reset(new ModuleSystem(context_, source_map_.get()));
   module_system_->RegisterNativeHandler("assert", scoped_ptr<NativeHandler>(
       assert_natives_));
@@ -98,7 +99,7 @@ ModuleSystemTest::ModuleSystemTest()
 ModuleSystemTest::~ModuleSystemTest() {
   module_system_.reset();
   context_->Exit();
-  context_.Dispose();
+  context_.Dispose(context_->GetIsolate());
 }
 
 void ModuleSystemTest::RegisterModule(const std::string& name,

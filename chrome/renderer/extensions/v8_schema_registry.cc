@@ -16,11 +16,12 @@ namespace extensions {
 V8SchemaRegistry::V8SchemaRegistry() : context_(v8::Context::New()) {}
 
 V8SchemaRegistry::~V8SchemaRegistry() {
+  v8::Isolate* isolate = context_->GetIsolate();
   for (SchemaCache::iterator i = schema_cache_.begin();
       i != schema_cache_.end(); ++i) {
-    i->second.Dispose();
+    i->second.Dispose(isolate);
   }
-  context_.Dispose();
+  context_.Dispose(isolate);
 }
 
 v8::Handle<v8::Array> V8SchemaRegistry::GetSchemas(
@@ -46,8 +47,10 @@ v8::Handle<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
 
   scoped_ptr<V8ValueConverter> v8_value_converter(V8ValueConverter::create());
   v8::Persistent<v8::Object> v8_schema =
-      v8::Persistent<v8::Object>::New(v8::Handle<v8::Object>::Cast(
-          v8_value_converter->ToV8Value(schema, context_)));
+      v8::Persistent<v8::Object>::New(
+          context_->GetIsolate(),
+          v8::Handle<v8::Object>::Cast(
+              v8_value_converter->ToV8Value(schema, context_)));
   CHECK(!v8_schema.IsEmpty());
   schema_cache_[api] = v8_schema;
   return v8_schema;

@@ -28,7 +28,7 @@ struct PendingRequest {
   }
 
   ~PendingRequest() {
-    context.Dispose();
+    context.Dispose(context->GetIsolate());
   }
 
   v8::Persistent<v8::Context> context;
@@ -93,8 +93,9 @@ void RequestSender::StartRequest(const std::string& name,
     source_origin = webframe->document().securityOrigin();
   }
 
+  v8::Local<v8::Context> ctx = v8::Context::GetCurrent();
   v8::Persistent<v8::Context> v8_context =
-      v8::Persistent<v8::Context>::New(v8::Context::GetCurrent());
+      v8::Persistent<v8::Context>::New(ctx->GetIsolate(), ctx);
   DCHECK(!v8_context.IsEmpty());
 
   std::string extension_id = current_context->GetExtensionID();

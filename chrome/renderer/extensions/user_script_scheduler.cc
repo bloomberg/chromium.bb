@@ -196,7 +196,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
       v8::Persistent<v8::Context> persistent_context = v8::Context::New();
       v8::Local<v8::Context> context =
           v8::Local<v8::Context>::New(persistent_context);
-      persistent_context.Dispose();
+      persistent_context.Dispose(context->GetIsolate());
 
       scoped_ptr<content::V8ValueConverter> v8_converter(
           content::V8ValueConverter::create());

@@ -25,7 +25,7 @@ namespace extensions {
 // TODO(koz): Rename this to NativeJavaScriptModule.
 class NativeHandler {
  public:
-  explicit NativeHandler();
+  explicit NativeHandler(v8::Isolate* isolate);
   virtual ~NativeHandler();
 
   // Create an object with bindings to the native functions defined through
@@ -50,6 +50,7 @@ class NativeHandler {
   static v8::Handle<v8::Value> Router(const v8::Arguments& args);
 
   std::vector<linked_ptr<HandlerFunction> > handler_functions_;
+  v8::Isolate* isolate_;
   v8::Persistent<v8::ObjectTemplate> object_template_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeHandler);
