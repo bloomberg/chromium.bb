@@ -32,6 +32,10 @@
 #include "base/win/scoped_com_initializer.h"
 #endif
 
+namespace {
+const char kExtensionScheme[] = "chrome-extension";
+}  // namespace
+
 namespace content {
 
 // Creates a random label used to identify requests.
@@ -241,17 +245,18 @@ std::string MediaStreamManager::GenerateStreamForDevice(
   int target_render_process_id = -1;
   int target_render_view_id = -1;
 
-  // We will post the request to the render view that is the target of the
-  // capture.
+  // We will post the request to the target render view, not the source (i.e.
+  // source is an extension, and target is the tab we want to capture).
   bool has_valid_device_id = WebContentsCaptureUtil::ExtractTabCaptureTarget(
       device_id, &target_render_process_id, &target_render_view_id);
 
   if (!has_valid_device_id ||
+      !security_origin.SchemeIs(kExtensionScheme) ||
       (options.audio_type != MEDIA_TAB_AUDIO_CAPTURE &&
        options.audio_type != MEDIA_NO_SERVICE) ||
       (options.video_type != MEDIA_TAB_VIDEO_CAPTURE &&
        options.video_type != MEDIA_NO_SERVICE)) {
-    LOG(ERROR) << "Invalid request.";
+    LOG(ERROR) << "Invalid request or used tab capture outside extension API.";
     return std::string();
   }
 
