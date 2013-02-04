@@ -216,7 +216,6 @@ int BookmarkMenuDelegate::GetDropOperation(
         // Dropping before this node makes no sense.
         *position = views::MenuDelegate::DROP_NONE;
       }
-      index_to_drop_at++;
       break;
 
     case views::MenuDelegate::DROP_ON:
