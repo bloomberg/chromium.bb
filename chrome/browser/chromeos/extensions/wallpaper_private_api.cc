@@ -245,8 +245,12 @@ class WallpaperFunctionBase::WallpaperDecoder : public ImageDecoder::Delegate {
 
   virtual void OnImageDecoded(const ImageDecoder* decoder,
                               const SkBitmap& decoded_image) OVERRIDE {
+    // Make the SkBitmap immutable as we won't modify it. This is important
+    // because otherwise it gets duplicated during painting, wasting memory.
+    SkBitmap immutable(decoded_image);
+    immutable.setImmutable();
     gfx::ImageSkia final_image =
-        gfx::ImageSkia::CreateFrom1xBitmap(decoded_image);
+        gfx::ImageSkia::CreateFrom1xBitmap(immutable);
     final_image.MakeThreadSafe();
     if (cancel_flag_.IsSet()) {
       function_->OnFailureOrCancel("");

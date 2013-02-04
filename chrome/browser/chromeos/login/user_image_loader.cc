@@ -112,6 +112,9 @@ void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
       final_image = cropped_image;
     }
   }
+  // Make the SkBitmap immutable as we won't modify it. This is important
+  // because otherwise it gets duplicated during painting, wasting memory.
+  final_image.setImmutable();
   gfx::ImageSkia final_image_skia =
       gfx::ImageSkia::CreateFrom1xBitmap(final_image);
   final_image_skia.MakeThreadSafe();
