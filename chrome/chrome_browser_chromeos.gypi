@@ -248,6 +248,8 @@
         'browser/chromeos/drive/file_write_helper.h',
         'browser/chromeos/drive/resource_entry_conversion.cc',
         'browser/chromeos/drive/resource_entry_conversion.h',
+        'browser/chromeos/drive/search_metadata.cc',
+        'browser/chromeos/drive/search_metadata.h',
         'browser/chromeos/drive/stale_cache_files_remover.cc',
         'browser/chromeos/drive/stale_cache_files_remover.h',
         'browser/chromeos/enrollment_dialog_view.cc',

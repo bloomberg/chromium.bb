@@ -575,6 +575,7 @@
         'browser/chromeos/drive/mock_drive_file_system.cc',
         'browser/chromeos/drive/mock_drive_file_system.h',
         'browser/chromeos/drive/resource_entry_conversion_unittest.cc',
+        'browser/chromeos/drive/search_metadata_unittest.cc',
         'browser/chromeos/drive/stale_cache_files_remover_unittest.cc',
         'browser/chromeos/extensions/default_app_order_unittest.cc',
         'browser/chromeos/extensions/file_browser_manifest_unittest.cc',

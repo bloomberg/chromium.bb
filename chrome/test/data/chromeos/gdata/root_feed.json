@@ -232,6 +232,9 @@
                "$t": "tester"
             }
          },
+         "gd$lastViewed": {
+            "$t": "2012-01-01T00:00:00.000Z"
+         },
          "gd$quotaBytesUsed": {
             "$t": "10"
          },
@@ -485,6 +488,9 @@
                "$t": "tester"
             }
          },
+         "gd$lastViewed": {
+            "$t": "2012-01-02T00:00:00.000Z"
+         },
          "gd$quotaBytesUsed": {
             "$t": "10"
          },
@@ -573,6 +579,9 @@
             "name": {
                "$t": "tester"
             }
+         },
+         "gd$lastViewed": {
+            "$t": "2012-01-03T00:00:00.000Z"
          },
          "gd$quotaBytesUsed": {
             "$t": "10"
@@ -663,6 +672,9 @@
                "$t": "tester"
             }
          },
+         "gd$lastViewed": {
+            "$t": "2012-01-04T00:00:00.000Z"
+         },
          "gd$quotaBytesUsed": {
             "$t": "10"
          },
@@ -752,6 +764,9 @@
                "$t": "tester"
             }
          },
+         "gd$lastViewed": {
+            "$t": "2012-01-05T00:00:00.000Z"
+         },
          "gd$quotaBytesUsed": {
             "$t": "10"
          },
@@ -834,7 +849,7 @@
             }
          },
          "gd$lastViewed": {
-            "$t": "2011-12-13T02:12:18.527Z"
+            "$t": "2012-01-06T00:00:00.000Z"
          },
          "gd$quotaBytesUsed": {
             "$t": "0"
@@ -1004,6 +1019,9 @@
             "name": {
                "$t": "tester"
             }
+         },
+         "gd$lastViewed": {
+            "$t": "2012-01-07T00:00:00.000Z"
          },
          "gd$quotaBytesUsed": {
             "$t": "10"

@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/test_util.h"
 
@@ -138,6 +139,13 @@ void CopyResultsFromGetAvailableSpaceCallback(DriveFileError* out_error,
                                               DriveFileError error,
                                               int64 bytes_total,
                                               int64 bytes_used);
+
+// Copies results from SearchMetadataCallback.
+void CopyResultsFromSearchMetadataCallback(
+    DriveFileError* out_error,
+    scoped_ptr<MetadataSearchResultVector>* out_result,
+    DriveFileError error,
+    scoped_ptr<MetadataSearchResultVector> result);
 
 // Copies the results from DriveFileSystem methods and stops the message loop
 // of the current thread. Used to run asynchronous function that take

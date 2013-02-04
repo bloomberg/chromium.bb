@@ -170,6 +170,18 @@ void CopyResultsFromGetAvailableSpaceCallback(DriveFileError* out_error,
   *out_bytes_used = bytes_used;
 }
 
+void CopyResultsFromSearchMetadataCallback(
+    DriveFileError* out_error,
+    scoped_ptr<MetadataSearchResultVector>* out_result,
+    DriveFileError error,
+    scoped_ptr<MetadataSearchResultVector> result) {
+  DCHECK(out_error);
+  DCHECK(out_result);
+
+  *out_error = error;
+  *out_result = result.Pass();
+}
+
 void CopyResultsFromOpenFileCallbackAndQuit(DriveFileError* out_error,
                                             FilePath* out_file_path,
                                             DriveFileError error,
