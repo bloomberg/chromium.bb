@@ -24,7 +24,6 @@ dnl
 dnl Process this file with autoconf to create configure.
 
 AC_PREREQ(2.61)
-AC_INIT(fonts.dtd)
 
 dnl ==========================================================================
 dnl                               Versioning              
@@ -34,7 +33,8 @@ dnl This is the package version number, not the shared library
 dnl version.  This same version number must appear in fontconfig/fontconfig.h
 dnl Yes, it is a pain to synchronize version numbers.  Unfortunately, it's
 dnl not possible to extract the version number here from fontconfig.h
-AM_INIT_AUTOMAKE(fontconfig, 2.10.91)
+AC_INIT([fontconfig], [2.10.91], [https://bugs.freedesktop.org/enger_bug.cgi?product=fontconfig])
+AM_INIT_AUTOMAKE
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
 dnl libtool versioning
@@ -681,7 +681,7 @@ dnl include the header file for workaround of miscalculating size on autoconf
 dnl particularly for fat binaries
 AH_BOTTOM([#include "config-fixups.h"])
 
-AC_OUTPUT([
+AC_CONFIG_FILES([
 Makefile
 fontconfig/Makefile
 fc-lang/Makefile
@@ -704,3 +704,4 @@ fontconfig.spec
 fontconfig.pc
 fontconfig-zip
 ])
+AC_OUTPUT
