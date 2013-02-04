@@ -122,6 +122,18 @@ class ContentViewCoreImpl::ContentViewUserData
 struct ContentViewCoreImpl::JavaObject {
   ScopedJavaGlobalRef<jclass> rect_clazz;
   jmethodID rect_constructor;
+  ScopedJavaLocalRef<jobject> CreateJavaRect(
+      JNIEnv* env,
+      const gfx::Rect& rect,
+      float scale) {
+    return ScopedJavaLocalRef<jobject>(
+        env, env->NewObject(rect_clazz.obj(),
+                            rect_constructor,
+                            static_cast<int>(rect.x() * scale),
+                            static_cast<int>(rect.y() * scale),
+                            static_cast<int>(rect.right() * scale),
+                            static_cast<int>(rect.bottom() * scale)));
+  }
 };
 
 // static
@@ -514,24 +526,14 @@ void ContentViewCoreImpl::OnSelectionBoundsChanged(
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  ScopedJavaLocalRef<jobject> start_rect_object(env,
-      env->NewObject(java_object_->rect_clazz.obj(),
-                     java_object_->rect_constructor,
-                     static_cast<int>(start_rect.x() * DpiScale()),
-                     static_cast<int>(start_rect.y() * DpiScale()),
-                     static_cast<int>(start_rect.right() * DpiScale()),
-                     static_cast<int>(start_rect.bottom() * DpiScale())));
-  ScopedJavaLocalRef<jobject> end_rect_object(env,
-      env->NewObject(java_object_->rect_clazz.obj(),
-                     java_object_->rect_constructor,
-                     static_cast<int>(end_rect.x() * DpiScale()),
-                     static_cast<int>(end_rect.y() * DpiScale()),
-                     static_cast<int>(end_rect.right() * DpiScale()),
-                     static_cast<int>(end_rect.bottom() * DpiScale())));
+  ScopedJavaLocalRef<jobject> java_start_rect(
+      java_object_->CreateJavaRect(env, start_rect, DpiScale()));
+  ScopedJavaLocalRef<jobject> java_end_rect(
+      java_object_->CreateJavaRect(env, end_rect, DpiScale()));
   Java_ContentViewCore_onSelectionBoundsChanged(env, obj.obj(),
-                                                start_rect_object.obj(),
+                                                java_start_rect.obj(),
                                                 start_dir,
-                                                end_rect_object.obj(),
+                                                java_end_rect.obj(),
                                                 end_dir);
 }
 
