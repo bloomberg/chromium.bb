@@ -323,7 +323,6 @@ void AppListController::CreateAppList() {
   ::SetWindowText(hwnd, app_name.c_str());
   string16 icon_path = GetAppListIconPath();
   ui::win::SetAppIconForWindow(icon_path, hwnd);
-  current_view_->GetWidget()->SetAlwaysOnTop(true);
 #endif
 }
 
@@ -340,6 +339,7 @@ void AppListController::ShowAppList() {
   UpdateArrowPositionAndAnchorPoint(cursor);
   current_view_->Show();
   current_view_->GetWidget()->Activate();
+  current_view_->GetWidget()->SetAlwaysOnTop(true);
 #endif
 }
 
