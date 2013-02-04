@@ -43,59 +43,60 @@ LanguageOptionsHandlerCommon::~LanguageOptionsHandlerCommon() {
 void LanguageOptionsHandlerCommon::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  string16 product_name = GetProductName();
-  localized_strings->SetString("add_button",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_BUTTON));
-  localized_strings->SetString("languages",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES));
-  localized_strings->SetString("add_language_instructions",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_INSTRUCTIONS));
-  localized_strings->SetString("cannot_be_displayed_in_this_language",
-      l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_CANNOT_BE_DISPLAYED_IN_THIS_LANGUAGE,
-          product_name));
-  localized_strings->SetString("is_displayed_in_this_language",
-      l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE,
-          product_name));
-  localized_strings->SetString("display_in_this_language",
-      l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE,
-          product_name));
-  localized_strings->SetString("restart_required",
-          l10n_util::GetStringUTF16(IDS_OPTIONS_RELAUNCH_REQUIRED));
+  static OptionsStringResource resources[] = {
+    { "add_button", IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_BUTTON },
+    { "languages", IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES },
+    { "add_language_instructions",
+      IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_INSTRUCTIONS },
+    { "cannot_be_displayed_in_this_language",
+      IDS_OPTIONS_SETTINGS_LANGUAGES_CANNOT_BE_DISPLAYED_IN_THIS_LANGUAGE,
+      IDS_PRODUCT_NAME },
+    { "is_displayed_in_this_language",
+      IDS_OPTIONS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE,
+      IDS_PRODUCT_NAME },
+    { "display_in_this_language",
+      IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE,
+      IDS_PRODUCT_NAME },
+    { "restart_required", IDS_OPTIONS_RELAUNCH_REQUIRED },
   // OS X uses the OS native spellchecker so no need for these strings.
 #if !defined(OS_MACOSX)
-  localized_strings->SetString("use_this_for_spell_checking",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_USE_THIS_FOR_SPELL_CHECKING));
-  localized_strings->SetString("cannot_be_used_for_spell_checking",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_CANNOT_BE_USED_FOR_SPELL_CHECKING));
-  localized_strings->SetString("is_used_for_spell_checking",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_IS_USED_FOR_SPELL_CHECKING));
-  localized_strings->SetString("enable_spell_check",
-          l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_SPELLCHECK));
-  localized_strings->SetString("enable_auto_spell_correction",
-          l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_AUTO_SPELL_CORRECTION));
-  localized_strings->SetString("downloading_dictionary",
-          l10n_util::GetStringUTF16(IDS_OPTIONS_DICTIONARY_DOWNLOADING));
-  localized_strings->SetString("download_failed",
-          l10n_util::GetStringUTF16(IDS_OPTIONS_DICTIONARY_DOWNLOAD_FAILED));
-  localized_strings->SetString("retry_button",
-          l10n_util::GetStringUTF16(IDS_OPTIONS_DICTIONARY_DOWNLOAD_RETRY));
-  localized_strings->SetString("download_fail_help",
-          l10n_util::GetStringUTF16(IDS_OPTIONS_DICTIONARY_DOWNLOAD_FAIL_HELP));
+    { "use_this_for_spell_checking",
+      IDS_OPTIONS_SETTINGS_USE_THIS_FOR_SPELL_CHECKING },
+    { "cannot_be_used_for_spell_checking",
+      IDS_OPTIONS_SETTINGS_CANNOT_BE_USED_FOR_SPELL_CHECKING },
+    { "is_used_for_spell_checking",
+      IDS_OPTIONS_SETTINGS_IS_USED_FOR_SPELL_CHECKING },
+    { "enable_spell_check", IDS_OPTIONS_ENABLE_SPELLCHECK },
+    { "enable_auto_spell_correction",
+      IDS_OPTIONS_ENABLE_AUTO_SPELL_CORRECTION },
+    { "downloading_dictionary", IDS_OPTIONS_DICTIONARY_DOWNLOADING },
+    { "download_failed", IDS_OPTIONS_DICTIONARY_DOWNLOAD_FAILED },
+    { "retry_button", IDS_OPTIONS_DICTIONARY_DOWNLOAD_RETRY },
+    { "download_fail_help", IDS_OPTIONS_DICTIONARY_DOWNLOAD_FAIL_HELP },
 #endif  // !OS_MACOSX
-  localized_strings->SetString("add_language_title",
-          l10n_util::GetStringUTF16(IDS_OPTIONS_LANGUAGES_ADD_TITLE));
-  localized_strings->SetString("add_language_select_label",
-          l10n_util::GetStringUTF16(IDS_OPTIONS_LANGUAGES_ADD_SELECT_LABEL));
-  localized_strings->SetString("restart_button",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON));
+    { "add_language_title", IDS_OPTIONS_LANGUAGES_ADD_TITLE },
+    { "add_language_select_label", IDS_OPTIONS_LANGUAGES_ADD_SELECT_LABEL },
+    { "restart_button", IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON }
+  };
+
+#if defined(ENABLE_SETTINGS_APP)
+  static OptionsStringResource app_resources[] = {
+    { "cannot_be_displayed_in_this_language",
+      IDS_OPTIONS_SETTINGS_LANGUAGES_CANNOT_BE_DISPLAYED_IN_THIS_LANGUAGE,
+      IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME },
+    { "is_displayed_in_this_language",
+      IDS_OPTIONS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE,
+      IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME },
+    { "display_in_this_language",
+      IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE,
+      IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME },
+  };
+  DictionaryValue* app_values = NULL;
+  CHECK(localized_strings->GetDictionary(kSettingsAppKey, &app_values));
+  RegisterStrings(app_values, app_resources, arraysize(app_resources));
+#endif
+
+  RegisterStrings(localized_strings, resources, arraysize(resources));
 
   // The following are resources, rather than local strings.
   std::string application_locale = g_browser_process->GetApplicationLocale();
