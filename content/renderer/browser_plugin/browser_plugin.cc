@@ -147,20 +147,16 @@ void BrowserPlugin::UpdateDOMAttribute(const std::string& attribute_name,
   WebKit::WebElement element = container()->element();
   WebKit::WebString web_attribute_name =
       WebKit::WebString::fromUTF8(attribute_name);
-  if (!HasDOMAttribute(attribute_name) ||
-      (std::string(element.getAttribute(web_attribute_name).utf8()) !=
-          attribute_value)) {
+  std::string current_value(element.getAttribute(web_attribute_name).utf8());
+  if (current_value == attribute_value)
+    return;
+
+  if (attribute_value.empty()) {
+    element.removeAttribute(web_attribute_name);
+  } else {
     element.setAttribute(web_attribute_name,
         WebKit::WebString::fromUTF8(attribute_value));
   }
-}
-
-void BrowserPlugin::RemoveDOMAttribute(const std::string& attribute_name) {
-  if (!container())
-    return;
-
-  container()->element().removeAttribute(
-      WebKit::WebString::fromUTF8(attribute_name));
 }
 
 std::string BrowserPlugin::GetDOMAttributeValue(
@@ -168,16 +164,10 @@ std::string BrowserPlugin::GetDOMAttributeValue(
   if (!container())
     return "";
 
-  return container()->element().getAttribute(
-      WebKit::WebString::fromUTF8(attribute_name)).utf8();
-}
-
-bool BrowserPlugin::HasDOMAttribute(const std::string& attribute_name) const {
-  if (!container())
-    return false;
-
-  return container()->element().hasAttribute(
-      WebKit::WebString::fromUTF8(attribute_name));
+  WebKit::WebElement element = container()->element();
+  WebKit::WebString web_attribute_name =
+      WebKit::WebString::fromUTF8(attribute_name);
+  return element.getAttribute(web_attribute_name).utf8();
 }
 
 std::string BrowserPlugin::GetNameAttribute() const {
@@ -189,7 +179,7 @@ std::string BrowserPlugin::GetSrcAttribute() const {
 }
 
 bool BrowserPlugin::GetAutoSizeAttribute() const {
-  return HasDOMAttribute(browser_plugin::kAttributeAutoSize);
+  return GetDOMAttributeValue(browser_plugin::kAttributeAutoSize) == "true";
 }
 
 int BrowserPlugin::GetMaxHeightAttribute() const {
@@ -231,21 +221,13 @@ int BrowserPlugin::GetAdjustedMaxWidth() const {
 }
 
 int BrowserPlugin::GetAdjustedMinHeight() const {
-  int min_height = GetMinHeightAttribute();
-  // FrameView.cpp does not allow this value to be <= 0, so when the value is
-  // unset (or set to 0), we set it to the container size.
-  min_height = min_height ? min_height : height();
-  // For autosize, minHeight should not be bigger than maxHeight.
-  return std::min(min_height, GetAdjustedMaxHeight());
+  // For autosize, minheight should not be bigger than maxheight.
+  return std::min(GetMinHeightAttribute(), GetAdjustedMaxHeight());
 }
 
 int BrowserPlugin::GetAdjustedMinWidth() const {
-  int min_width = GetMinWidthAttribute();
-  // FrameView.cpp does not allow this value to be <= 0, so when the value is
-  // unset (or set to 0), we set it to the container size.
-  min_width = min_width ? min_width : width();
-  // For autosize, minWidth should not be bigger than maxWidth.
-  return std::min(min_width, GetAdjustedMaxWidth());
+  // For autosize, minwidth should not be bigger than maxwidth.
+  return std::min(GetMinWidthAttribute(), GetAdjustedMaxWidth());
 }
 
 std::string BrowserPlugin::GetPartitionAttribute() const {
@@ -724,12 +706,6 @@ bool BrowserPlugin::ParsePartitionAttribute(std::string* error_message) {
   valid_partition_id_ = true;
   storage_partition_id_ = input;
   return true;
-}
-
-bool BrowserPlugin::CanRemovePartitionAttribute(std::string* error_message) {
-  if (navigate_src_sent_)
-    *error_message = browser_plugin::kErrorCannotRemovePartition;
-  return !navigate_src_sent_;
 }
 
 void BrowserPlugin::ParseAttributes() {

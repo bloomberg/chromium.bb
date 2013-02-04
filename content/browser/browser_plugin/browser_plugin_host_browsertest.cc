@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/run_loop.h"
-#include "base/string_split.h"
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
@@ -278,23 +277,6 @@ class BrowserPluginHostTest : public ContentBrowserTest {
   void ExecuteSyncJSFunction(RenderViewHost* rvh, const std::string& jscript) {
     scoped_ptr<base::Value> value =
         content::ExecuteScriptAndGetValue(rvh, jscript);
-  }
-
-  bool IsAttributeNull(RenderViewHost* rvh, const std::string& attribute) {
-    scoped_ptr<base::Value> value = content::ExecuteScriptAndGetValue(rvh,
-        "document.getElementById('plugin').getAttribute('" + attribute + "');");
-    return value->GetType() == Value::TYPE_NULL;
-  }
-
-  // Removes all attributes in the comma-delimited string |attributes|.
-  void RemoveAttributes(RenderViewHost* rvh, const std::string& attributes) {
-    std::vector<std::string> attributes_list;
-    base::SplitString(attributes, ',', &attributes_list);
-    std::vector<std::string>::const_iterator itr;
-    for (itr = attributes_list.begin(); itr != attributes_list.end(); ++itr) {
-      ExecuteSyncJSFunction(rvh, "document.getElementById('plugin')"
-                                 "." + *itr + " = null;");
-    }
   }
 
   // This helper method does the following:
@@ -1186,11 +1168,11 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusTracksEmbedder) {
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AutoSizeBeforeNavigation) {
   const char* kEmbedderURL = "files/browser_plugin_embedder.html";
   const std::string embedder_code =
-      "document.getElementById('plugin').minwidth = 300;"
-      "document.getElementById('plugin').minheight = 200;"
-      "document.getElementById('plugin').maxwidth = 600;"
-      "document.getElementById('plugin').maxheight = 400;"
-      "document.getElementById('plugin').autosize = true;";
+      "document.getElementById('plugin').minWidth = 300;"
+      "document.getElementById('plugin').minHeight = 200;"
+      "document.getElementById('plugin').maxWidth = 600;"
+      "document.getElementById('plugin').maxHeight = 400;"
+      "document.getElementById('plugin').autoSize = true;";
   StartBrowserPluginTest(
       kEmbedderURL, kHTMLForGuestWithSize, true, embedder_code);
   // Verify that the guest has been auto-sized.
@@ -1212,28 +1194,28 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AutoSizeAfterNavigation) {
                                         expected_title);
     ExecuteSyncJSFunction(
         rvh,
-        "document.getElementById('plugin').minwidth = 300;"
-        "document.getElementById('plugin').minheight = 200;"
-        "document.getElementById('plugin').maxwidth = 600;"
-        "document.getElementById('plugin').maxheight = 400;"
-        "document.getElementById('plugin').autosize = true;");
+        "document.getElementById('plugin').minWidth = 300;"
+        "document.getElementById('plugin').minHeight = 200;"
+        "document.getElementById('plugin').maxWidth = 600;"
+        "document.getElementById('plugin').maxHeight = 400;"
+        "document.getElementById('plugin').autoSize = true;");
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
   }
   {
-    // Change the minwidth and verify that it causes relayout.
+    // Change the minWidth and verify that it causes relayout.
     const string16 expected_title = ASCIIToUTF16("AutoSize(350, 400)");
     content::TitleWatcher title_watcher(test_embedder()->web_contents(),
                                         expected_title);
     ExecuteSyncJSFunction(
-        rvh, "document.getElementById('plugin').minwidth = 350;");
+        rvh, "document.getElementById('plugin').minWidth = 350;");
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
   }
   {
     // Turn off autoSize and verify that the guest resizes to fit the container.
     ExecuteSyncJSFunction(
-        rvh, "document.getElementById('plugin').autosize = null;");
+        rvh, "document.getElementById('plugin').autoSize = false;");
     test_guest()->WaitForViewSize(gfx::Size(640, 480));
   }
 }
@@ -1294,82 +1276,6 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ChangeWindowName) {
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
 
-  }
-}
-
-// This test verifies that allattributes (except partition) can be removed
-// without crashing the plugin, or throwing errors.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, RemoveAllAttributes) {
-  const char* kEmbedderURL = "files/browser_plugin_embedder.html";
-  const std::string embedder_code =
-      "document.getElementById('plugin').minwidth = 300;"
-      "document.getElementById('plugin').minheight = 200;"
-      "document.getElementById('plugin').maxwidth = 600;"
-      "document.getElementById('plugin').maxheight = 400;"
-      "document.getElementById('plugin').name = 'name';"
-      "document.getElementById('plugin').src = 'foo';"
-      "document.getElementById('plugin').autosize = '';";
-  StartBrowserPluginTest(
-      kEmbedderURL, kHTMLForGuestWithSize, true, embedder_code);
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      test_embedder()->web_contents()->GetRenderViewHost());
-
-  RemoveAttributes(rvh, "maxheight, maxwidth, minheight, minwidth, src, "
-                        "name, autosize");
-  EXPECT_TRUE(IsAttributeNull(rvh, "maxheight"));
-  EXPECT_TRUE(IsAttributeNull(rvh, "maxwidth"));
-  EXPECT_TRUE(IsAttributeNull(rvh, "minheight"));
-  EXPECT_TRUE(IsAttributeNull(rvh, "minwidth"));
-  EXPECT_TRUE(IsAttributeNull(rvh, "src"));
-  EXPECT_TRUE(IsAttributeNull(rvh, "name"));
-  EXPECT_TRUE(IsAttributeNull(rvh, "autosize"));
-  // Verify that the guest resizes to fit the container (and hasn't crashed).
-  test_guest()->WaitForViewSize(gfx::Size(640, 480));
-}
-
-// This test verifies that autosize works when some of the parameters are unset.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, PartialAutosizeAttributes) {
-  const char* kEmbedderURL = "files/browser_plugin_embedder.html";
-  const std::string embedder_code =
-      "document.getElementById('plugin').minwidth = 300;"
-      "document.getElementById('plugin').minheight = 200;"
-      "document.getElementById('plugin').maxwidth = 700;"
-      "document.getElementById('plugin').maxheight = 600;"
-      "document.getElementById('plugin').autosize = '';";
-  StartBrowserPluginTest(
-      kEmbedderURL, kHTMLForGuestWithSize, true, embedder_code);
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      test_embedder()->web_contents()->GetRenderViewHost());
-  {
-    // Remove an autosize attribute and verify that it causes relayout.
-    const string16 expected_title = ASCIIToUTF16("AutoSize(640, 400)");
-    content::TitleWatcher title_watcher(test_embedder()->web_contents(),
-                                        expected_title);
-    RemoveAttributes(rvh, "minwidth");
-    string16 actual_title = title_watcher.WaitAndGetTitle();
-    EXPECT_EQ(expected_title, actual_title);
-  }
-  {
-    // Remove an autosize attribute and verify that it causes relayout.
-    // Also tests that when minwidth > maxwidth, minwidth = maxwidth.
-    const string16 expected_title = ASCIIToUTF16("AutoSize(700, 480)");
-    content::TitleWatcher title_watcher(test_embedder()->web_contents(),
-                                        expected_title);
-    RemoveAttributes(rvh, "maxheight");
-    ExecuteSyncJSFunction(
-        rvh, "document.getElementById('plugin').minwidth = 800;"
-             "document.getElementById('plugin').minheight = 800;");
-    string16 actual_title = title_watcher.WaitAndGetTitle();
-    EXPECT_EQ(expected_title, actual_title);
-  }
-  {
-    // Remove maxwidth and make sure the size returns to plugin size.
-    const string16 expected_title = ASCIIToUTF16("AutoSize(640, 480)");
-    content::TitleWatcher title_watcher(test_embedder()->web_contents(),
-                                        expected_title);
-    RemoveAttributes(rvh, "maxwidth");
-    string16 actual_title = title_watcher.WaitAndGetTitle();
-    EXPECT_EQ(expected_title, actual_title);
   }
 }
 

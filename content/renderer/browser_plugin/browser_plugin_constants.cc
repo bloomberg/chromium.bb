@@ -21,12 +21,12 @@ const char kMethodStop[] = "stop";
 const char kMethodTerminate[] = "terminate";
 
 // Attributes.
-const char kAttributeAutoSize[] = "autosize";
+const char kAttributeAutoSize[] = "autoSize";
 const char kAttributeContentWindow[] = "contentWindow";
-const char kAttributeMaxHeight[] = "maxheight";
-const char kAttributeMaxWidth[] = "maxwidth";
-const char kAttributeMinHeight[] = "minheight";
-const char kAttributeMinWidth[] = "minwidth";
+const char kAttributeMaxHeight[] = "maxHeight";
+const char kAttributeMaxWidth[] = "maxWidth";
+const char kAttributeMinHeight[] = "minHeight";
+const char kAttributeMinWidth[] = "minWidth";
 const char kAttributeName[] = "name";
 const char kAttributePartition[] = "partition";
 const char kAttributeSrc[] = "src";
@@ -60,8 +60,6 @@ const char kErrorAlreadyNavigated[] =
     "The object has already navigated, so its partition cannot be changed.";
 const char kErrorInvalidPartition[] =
     "Invalid partition attribute.";
-const char kErrorCannotRemovePartition[] =
-    "Cannot remove partition attribute after navigating.";
 
 // Other.
 const int kInstanceIDNone = 0;

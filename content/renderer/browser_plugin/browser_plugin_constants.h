@@ -59,7 +59,6 @@ extern const char kURL[];
 // Error messages.
 extern const char kErrorAlreadyNavigated[];
 extern const char kErrorInvalidPartition[];
-extern const char kErrorCannotRemovePartition[];
 
 // Other.
 extern const int kInstanceIDNone;

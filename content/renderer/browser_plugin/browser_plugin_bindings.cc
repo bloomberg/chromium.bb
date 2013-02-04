@@ -158,9 +158,6 @@ bool BrowserPluginBindingsSetProperty(NPObject* np_obj, NPIdentifier name,
   if (!bindings)
     return false;
 
-  if (variant->type == NPVariantType_Null)
-    return bindings->RemoveProperty(np_obj, name);
-
   return bindings->SetProperty(np_obj, name, variant);
 }
 
@@ -404,32 +401,10 @@ class BrowserPluginPropertyBinding {
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) = 0;
-  virtual void RemoveProperty(BrowserPluginBindings* bindings,
-                              NPObject* np_obj) = 0;
   // Updates the DOM Attribute value with the current property value.
   void UpdateDOMAttribute(BrowserPluginBindings* bindings,
                           std::string new_value) {
     bindings->instance()->UpdateDOMAttribute(name(), new_value);
-  }
- protected:
-  // Depending on where the attribute comes from it could be a string, int32,
-  // or a double. Javascript tends to produce an Int32 or a String, but setting
-  // the value from the developer tools console may also produce a Double...
-  int IntFromNPVariant(const NPVariant* variant) {
-    int value;
-    switch (variant->type) {
-      case NPVariantType_Double:
-      case NPVariantType_Int32:
-        value = Int32FromNPVariant(*variant);
-        break;
-      case NPVariantType_String:
-        base::StringToInt(StringFromNPVariant(*variant), &value);
-        break;
-      default:
-        value = 0;
-        break;
-    }
-    return value;
   }
  private:
   std::string name_;
@@ -452,19 +427,18 @@ class BrowserPluginPropertyBindingAutoSize
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    std::string value = StringFromNPVariant(*variant);
-    if (!bindings->instance()->HasDOMAttribute(name())) {
-      UpdateDOMAttribute(bindings, value);
-      bindings->instance()->ParseAutoSizeAttribute();
+    bool new_value;
+    if (variant->type == NPVariantType_Bool) {
+      new_value = NPVARIANT_TO_BOOLEAN(*variant);
     } else {
-      UpdateDOMAttribute(bindings, value);
+      new_value = LowerCaseEqualsASCII(std::string(
+          NPVARIANT_TO_STRING(*variant).UTF8Characters), "true");
+    }
+    if (bindings->instance()->GetAutoSizeAttribute() != new_value) {
+      UpdateDOMAttribute(bindings, new_value ? "true" : "false");
+      bindings->instance()->ParseAutoSizeAttribute();
     }
     return true;
-  }
-  virtual void RemoveProperty(BrowserPluginBindings* bindings,
-                              NPObject* np_obj) OVERRIDE {
-    bindings->instance()->RemoveDOMAttribute(name());
-    bindings->instance()->ParseAutoSizeAttribute();
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingAutoSize);
@@ -490,8 +464,6 @@ class BrowserPluginPropertyBindingContentWindow
                            const NPVariant* variant) OVERRIDE {
     return false;
   }
-  virtual void RemoveProperty(BrowserPluginBindings* bindings,
-                              NPObject* np_obj) OVERRIDE {}
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingContentWindow);
 };
@@ -511,17 +483,12 @@ class BrowserPluginPropertyBindingMaxHeight
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    int new_value = IntFromNPVariant(variant);
+    int new_value = Int32FromNPVariant(*variant);
     if (bindings->instance()->GetMaxHeightAttribute() != new_value) {
       UpdateDOMAttribute(bindings, base::IntToString(new_value));
       bindings->instance()->ParseSizeContraintsChanged();
     }
     return true;
-  }
-  virtual void RemoveProperty(BrowserPluginBindings* bindings,
-                              NPObject* np_obj) OVERRIDE {
-    bindings->instance()->RemoveDOMAttribute(name());
-    bindings->instance()->ParseSizeContraintsChanged();
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMaxHeight);
@@ -542,17 +509,12 @@ class BrowserPluginPropertyBindingMaxWidth
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    int new_value = IntFromNPVariant(variant);
+    int new_value = Int32FromNPVariant(*variant);
     if (bindings->instance()->GetMaxWidthAttribute() != new_value) {
       UpdateDOMAttribute(bindings, base::IntToString(new_value));
       bindings->instance()->ParseSizeContraintsChanged();
     }
     return true;
-  }
-  virtual void RemoveProperty(BrowserPluginBindings* bindings,
-                              NPObject* np_obj) OVERRIDE {
-    bindings->instance()->RemoveDOMAttribute(name());
-    bindings->instance()->ParseSizeContraintsChanged();
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMaxWidth);
@@ -573,17 +535,12 @@ class BrowserPluginPropertyBindingMinHeight
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    int new_value = IntFromNPVariant(variant);
+    int new_value = Int32FromNPVariant(*variant);
     if (bindings->instance()->GetMinHeightAttribute() != new_value) {
       UpdateDOMAttribute(bindings, base::IntToString(new_value));
       bindings->instance()->ParseSizeContraintsChanged();
     }
     return true;
-  }
-  virtual void RemoveProperty(BrowserPluginBindings* bindings,
-                              NPObject* np_obj) OVERRIDE {
-    bindings->instance()->RemoveDOMAttribute(name());
-    bindings->instance()->ParseSizeContraintsChanged();
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMinHeight);
@@ -604,17 +561,12 @@ class BrowserPluginPropertyBindingMinWidth
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    int new_value = IntFromNPVariant(variant);
+    int new_value = Int32FromNPVariant(*variant);
     if (bindings->instance()->GetMinWidthAttribute() != new_value) {
       UpdateDOMAttribute(bindings, base::IntToString(new_value));
       bindings->instance()->ParseSizeContraintsChanged();
     }
     return true;
-  }
-  virtual void RemoveProperty(BrowserPluginBindings* bindings,
-                              NPObject* np_obj) OVERRIDE {
-    bindings->instance()->RemoveDOMAttribute(name());
-    bindings->instance()->ParseSizeContraintsChanged();
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMinWidth);
@@ -641,11 +593,6 @@ class BrowserPluginPropertyBindingName
       bindings->instance()->ParseNameAttribute();
     }
     return true;
-  }
-  virtual void RemoveProperty(BrowserPluginBindings* bindings,
-                              NPObject* np_obj) OVERRIDE {
-    bindings->instance()->RemoveDOMAttribute(name());
-    bindings->instance()->ParseNameAttribute();
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingName);
@@ -680,16 +627,6 @@ class BrowserPluginPropertyBindingPartition
     }
     return true;
   }
-  virtual void RemoveProperty(BrowserPluginBindings* bindings,
-                              NPObject* np_obj) OVERRIDE {
-    std::string error_message;
-    if (bindings->instance()->CanRemovePartitionAttribute(&error_message)) {
-      bindings->instance()->RemoveDOMAttribute(name());
-    } else {
-      WebBindings::setException(
-          np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
-    }
-  }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingPartition);
 };
@@ -721,10 +658,6 @@ class BrowserPluginPropertyBindingSrc : public BrowserPluginPropertyBinding {
       }
     }
     return true;
-  }
-  virtual void RemoveProperty(BrowserPluginBindings* bindings,
-                              NPObject* np_obj) OVERRIDE {
-    bindings->instance()->RemoveDOMAttribute(name());
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingSrc);
@@ -818,19 +751,6 @@ bool BrowserPluginBindings::SetProperty(NPObject* np_obj,
         return true;
       }
       break;
-    }
-  }
-  return false;
-}
-
-bool BrowserPluginBindings::RemoveProperty(NPObject* np_obj,
-                                           NPIdentifier name) {
-  for (PropertyBindingList::iterator iter = property_bindings_.begin();
-       iter != property_bindings_.end();
-       ++iter) {
-    if ((*iter)->MatchesName(name)) {
-      (*iter)->RemoveProperty(this, np_obj);
-      return true;
     }
   }
   return false;
