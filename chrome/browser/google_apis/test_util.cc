@@ -15,8 +15,8 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/test_server/http_request.h"
 #include "chrome/browser/google_apis/test_server/http_response.h"
-#include "chrome/browser/google_apis/test_server/http_server.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
@@ -43,6 +43,16 @@ class TaskObserver : public MessageLoop::TaskObserver {
   bool posted_;
   DISALLOW_COPY_AND_ASSIGN(TaskObserver);
 };
+
+bool RemovePrefix(const std::string& input,
+                  const std::string& prefix,
+                  std::string* output) {
+  if (!StartsWithASCII(input, prefix, true /* case sensitive */))
+    return false;
+
+  *output = input.substr(prefix.size());
+  return true;
+}
 
 FilePath GetTestFilePath(const std::string& relative_path) {
   FilePath path;
@@ -182,6 +192,19 @@ scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
 void DoNothingForReAuthenticateCallback(
     AuthenticatedOperationInterface* /* operation */) {
   NOTREACHED();
+}
+
+scoped_ptr<test_server::HttpResponse> HandleDownloadRequest(
+    const GURL& base_url,
+    test_server::HttpRequest* out_request,
+    const test_server::HttpRequest& request) {
+  *out_request = request;
+
+  GURL absolute_url = base_url.Resolve(request.relative_url);
+  std::string remaining_path;
+  if (!RemovePrefix(absolute_url.path(), "/files/", &remaining_path))
+    return scoped_ptr<test_server::HttpResponse>();
+  return CreateHttpResponseFromFile(GetTestFilePath(remaining_path));
 }
 
 bool VerifyJsonData(const FilePath& expected_json_file_path,

@@ -71,18 +71,6 @@ void CopyResultFromResumeUploadCallbackAndQuit(
   MessageLoop::current()->Quit();
 }
 
-// Removes |prefix| from |input| and stores the result in |output|. Returns
-// true if the prefix is removed.
-bool RemovePrefix(const std::string& input,
-                  const std::string& prefix,
-                  std::string* output) {
-  if (!StartsWithASCII(input, prefix, true /* case sensitive */))
-    return false;
-
-  *output = input.substr(prefix.size());
-  return true;
-}
-
 // Parses a value of Content-Range header, which looks like
 // "bytes <start_position>-<end_position>/<length>".
 // Returns true on success.
@@ -95,7 +83,7 @@ bool ParseContentRangeHeader(const std::string& value,
   DCHECK(length);
 
   std::string remaining;
-  if (!RemovePrefix(value, "bytes ", &remaining))
+  if (!test_util::RemovePrefix(value, "bytes ", &remaining))
     return false;
 
   std::vector<std::string> parts;
@@ -135,8 +123,9 @@ class GDataWapiOperationsTest : public testing::Test {
 
     ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
     test_server_.RegisterRequestHandler(
-        base::Bind(&GDataWapiOperationsTest::HandleDownloadRequest,
-                   base::Unretained(this)));
+        base::Bind(&test_util::HandleDownloadRequest,
+                   test_server_.base_url(),
+                   base::Unretained(&http_request_)));
     test_server_.RegisterRequestHandler(
         base::Bind(&GDataWapiOperationsTest::HandleResourceFeedRequest,
                    base::Unretained(this)));
@@ -165,21 +154,6 @@ class GDataWapiOperationsTest : public testing::Test {
     return profile_->GetPath().Append(file_name);
   }
 
-  // Handles a request for downloading a file. Reads a file from the test
-  // directory and returns the content.
-  scoped_ptr<test_server::HttpResponse> HandleDownloadRequest(
-      const test_server::HttpRequest& request) {
-    http_request_ = request;
-
-    const GURL absolute_url = test_server_.GetURL(request.relative_url);
-    std::string remaining_path;
-    if (!RemovePrefix(absolute_url.path(), "/files/", &remaining_path))
-      return scoped_ptr<test_server::HttpResponse>();
-
-    return test_util::CreateHttpResponseFromFile(
-        test_util::GetTestFilePath(remaining_path));
-  }
-
   // Handles a request for fetching a resource feed.
   scoped_ptr<test_server::HttpResponse> HandleResourceFeedRequest(
       const test_server::HttpRequest& request) {
@@ -196,9 +170,9 @@ class GDataWapiOperationsTest : public testing::Test {
           test_util::GetTestFilePath("gdata/file_entry.json"));
     }
 
-    if (!RemovePrefix(absolute_url.path(),
-                      "/feeds/default/private/full/",
-                      &remaining_path)) {
+    if (!test_util::RemovePrefix(absolute_url.path(),
+                                 "/feeds/default/private/full/",
+                                 &remaining_path)) {
       return scoped_ptr<test_server::HttpResponse>();
     }
 

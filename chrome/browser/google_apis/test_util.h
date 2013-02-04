@@ -25,6 +25,7 @@ class ResourceEntry;
 class ResourceList;
 
 namespace test_server {
+struct HttpRequest;
 class HttpResponse;
 }
 
@@ -38,6 +39,12 @@ namespace test_util {
 // post a task to the blocking pool. This function processes these tasks
 // repeatedly.
 void RunBlockingPoolTask();
+
+// Removes |prefix| from |input| and stores the result in |output|. Returns
+// true if the prefix is removed.
+bool RemovePrefix(const std::string& input,
+                  const std::string& prefix,
+                  std::string* output);
 
 // Returns the absolute path for a test file stored under
 // chrome/test/data/chromeos.
@@ -115,6 +122,15 @@ scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
 // authentication failures in the test.
 void DoNothingForReAuthenticateCallback(
     AuthenticatedOperationInterface* operation);
+
+// Handles a request for downloading a file. Reads a file from the test
+// directory and returns the content. Also, copies the |request| to the memory
+// pointed by |out_request|.
+// |base_url| must be set to the server's base url.
+scoped_ptr<test_server::HttpResponse> HandleDownloadRequest(
+    const GURL& base_url,
+    test_server::HttpRequest* out_request,
+    const test_server::HttpRequest& request);
 
 // Returns true if |json_data| is not NULL and equals to the content in
 // |expected_json_file_path|. The failure reason will be logged into LOG(ERROR)
