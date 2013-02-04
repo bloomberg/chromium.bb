@@ -661,7 +661,7 @@ void SourceBufferStream::InsertIntoExistingRange(
     // Clean up the old buffers between the last appended buffer and the
     // beginning of |new_buffers|.
     DeleteBetween(
-        range_for_new_buffers, last_appended_buffer_timestamp_,
+        range_for_new_buffers_itr, last_appended_buffer_timestamp_,
         new_buffers.front()->GetDecodeTimestamp(), true,
         deleted_buffers);
   }
@@ -671,7 +671,7 @@ void SourceBufferStream::InsertIntoExistingRange(
   // that |new_buffers| overlaps.
   if (!range_for_new_buffers->CanAppendBuffersToEnd(new_buffers)) {
     DeleteBetween(
-        range_for_new_buffers, new_buffers.front()->GetDecodeTimestamp(),
+        range_for_new_buffers_itr, new_buffers.front()->GetDecodeTimestamp(),
         new_buffers.back()->GetDecodeTimestamp(), false,
         deleted_buffers);
   }
@@ -684,19 +684,22 @@ void SourceBufferStream::InsertIntoExistingRange(
 }
 
 void SourceBufferStream::DeleteBetween(
-    SourceBufferRange* range, base::TimeDelta start_timestamp,
+    const RangeList::iterator& range_itr, base::TimeDelta start_timestamp,
     base::TimeDelta end_timestamp, bool is_range_exclusive,
     BufferQueue* deleted_buffers) {
   SourceBufferRange* new_next_range =
-      range->SplitRange(end_timestamp, is_range_exclusive);
+      (*range_itr)->SplitRange(end_timestamp, is_range_exclusive);
 
-  if (new_next_range)
-    AddToRanges(new_next_range);
+  // Insert the |new_next_range| into |ranges_| after |range|.
+  if (new_next_range) {
+    RangeList::iterator next_range_itr = range_itr;
+    ranges_.insert(++next_range_itr, new_next_range);
+  }
 
   BufferQueue saved_buffers;
-  range->TruncateAt(start_timestamp, &saved_buffers, is_range_exclusive);
+  (*range_itr)->TruncateAt(start_timestamp, &saved_buffers, is_range_exclusive);
 
-  if (selected_range_ != range)
+  if (selected_range_ != *range_itr)
     return;
 
   DCHECK(deleted_buffers->empty());
@@ -705,7 +708,7 @@ void SourceBufferStream::DeleteBetween(
   // If the next buffer position has transferred to the split range, set the
   // selected range accordingly.
   if (new_next_range && new_next_range->HasNextBufferPosition()) {
-    DCHECK(!range->HasNextBufferPosition());
+    DCHECK(!(*range_itr)->HasNextBufferPosition());
     SetSelectedRange(new_next_range);
   } else if (!selected_range_->HasNextBufferPosition()) {
     SetSelectedRange(NULL);

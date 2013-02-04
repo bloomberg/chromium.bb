@@ -495,6 +495,26 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Several) {
   CheckExpectedBuffers(15, 19);
 }
 
+// Test an end overlap edge case where a single buffer overlaps the
+// beginning of a range.
+// old  : *0K*   30   60   90   120K  150
+// new  : *0K*
+// after: *0K*                 *120K* 150K
+// track:
+TEST_F(SourceBufferStreamTest, End_Overlap_SingleBuffer) {
+  // Seek to start of stream.
+  SeekToTimestamp(base::TimeDelta::FromMilliseconds(0));
+
+  NewSegmentAppend("0K 30 60 90 120K 150");
+  CheckExpectedRangesByTimestamp("{ [0,180) }");
+
+  NewSegmentAppend("0K");
+  CheckExpectedRangesByTimestamp("{ [0,30) [120,180) }");
+
+  CheckExpectedBuffers("0K");
+  CheckNoNextBuffer();
+}
+
 TEST_F(SourceBufferStreamTest, Complete_Overlap_Several) {
   // Append 2 buffers at positions 5 through 6.
   NewSegmentAppend(5, 2);

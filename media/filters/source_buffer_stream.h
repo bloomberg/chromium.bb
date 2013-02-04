@@ -151,11 +151,11 @@ class MEDIA_EXPORT SourceBufferStream {
       const RangeList::iterator& range_with_new_buffers_itr);
 
   // Deletes the buffers between |start_timestamp|, |end_timestamp| from
-  // |range|. Deletes between [start,end] if |is_range_exclusive| is true, or
-  // (start,end) if |is_range_exclusive| is false.
-  // Buffers are deleted in GOPs, so this method may delete buffers past
+  // the range that |range_itr| points to. Deletes between [start,end] if
+  // |is_range_exclusive| is true, or (start,end) if |is_range_exclusive| is
+  // false. Buffers are deleted in GOPs, so this method may delete buffers past
   // |end_timestamp| if the keyframe a buffer depends on was deleted.
-  void DeleteBetween(SourceBufferRange* range,
+  void DeleteBetween(const RangeList::iterator& range_itr,
                      base::TimeDelta start_timestamp,
                      base::TimeDelta end_timestamp,
                      bool is_range_exclusive,
