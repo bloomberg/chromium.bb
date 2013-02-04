@@ -53,6 +53,11 @@ bool IsAppHostPresent();
 // Returns true if App Launcher is installed (system-level or user-level).
 bool IsAppLauncherPresent();
 
+// Returns true if the Chrome browser is installed (system-level or user-level).
+// If this is running in an official build, it will check if a non-canary build
+// if installed. If it is not an official build, it will always return true.
+bool IsChromeBrowserPresent();
+
 }  // namespace chrome_launcher_support
 
 #endif  // CHROME_INSTALLER_LAUNCHER_SUPPORT_CHROME_LAUNCHER_SUPPORT_H_

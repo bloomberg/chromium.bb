@@ -25,6 +25,8 @@ namespace {
 // TODO(huangs) Refactor the constants: http://crbug.com/148538
 const wchar_t kGoogleRegClientStateKey[] =
     L"Software\\Google\\Update\\ClientState";
+const wchar_t kGoogleRegClientsKey[] = L"Software\\Google\\Update\\Clients";
+const wchar_t kRegVersionField[] = L"pv";
 
 // Copied from binaries_installer_internal.cc
 const wchar_t kAppHostAppId[] = L"{FDA71E6F-AC4C-4a00-8B70-9958A68906BF}";
@@ -73,6 +75,20 @@ bool GetClientStateValue(InstallationLevel level,
     }
   }
   return false;
+}
+
+// Determines whether the specified product has a key in "Clients". This
+// indicates whether the product is installed at the given level.
+bool IsProductInstalled(InstallationLevel level, const wchar_t* app_guid) {
+  HKEY root_key = (level == USER_LEVEL_INSTALLATION) ?
+      HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
+  string16 subkey(kGoogleRegClientsKey);
+  subkey.append(1, L'\\').append(app_guid);
+  base::win::RegKey reg_key;
+  // Google Update always uses 32bit hive.
+  return reg_key.Open(root_key, subkey.c_str(),
+                      KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
+      reg_key.HasValue(kRegVersionField);
 }
 
 bool IsAppLauncherEnabledAtLevel(InstallationLevel level) {
@@ -182,6 +198,11 @@ bool IsAppHostPresent() {
 bool IsAppLauncherPresent() {
   return IsAppLauncherEnabledAtLevel(USER_LEVEL_INSTALLATION) ||
       IsAppLauncherEnabledAtLevel(SYSTEM_LEVEL_INSTALLATION);
+}
+
+bool IsChromeBrowserPresent() {
+  return IsProductInstalled(USER_LEVEL_INSTALLATION, kBrowserAppGuid) ||
+      IsProductInstalled(SYSTEM_LEVEL_INSTALLATION, kBrowserAppGuid);
 }
 
 }  // namespace chrome_launcher_support
