@@ -1560,6 +1560,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
               '$ld /nologo $implibflag /DLL /OUT:$dll '
               '/PDB:$dll.pdb @$dll.rsp' % sys.executable)
     dllcmd += (' && %s gyp-win-tool manifest-wrapper $arch '
+               'cmd /c if exist $dll.manifest del $dll.manifest' %
+               sys.executable)
+    dllcmd += (' && %s gyp-win-tool manifest-wrapper $arch '
                '$mt -nologo -manifest $manifests -out:$dll.manifest' %
                sys.executable)
     master_ninja.rule('solink', description=dlldesc, command=dllcmd,
@@ -1578,8 +1581,10 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
         command=('%s gyp-win-tool link-wrapper $arch '
                  '$ld /nologo /OUT:$out /PDB:$out.pdb @$out.rsp && '
                  '%s gyp-win-tool manifest-wrapper $arch '
+                 'cmd /c if exist $out.manifest del $out.manifest && '
+                 '%s gyp-win-tool manifest-wrapper $arch '
                  '$mt -nologo -manifest $manifests -out:$out.manifest' %
-                 (sys.executable, sys.executable)),
+                 (sys.executable, sys.executable, sys.executable)),
         rspfile='$out.rsp',
         rspfile_content='$in_newline $libs $ldflags')
   else:
