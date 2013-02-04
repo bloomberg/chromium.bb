@@ -27,19 +27,27 @@ const char kDrivePathKey[] = "DrivePath";
 // User Data stored in DownloadItem for drive path.
 class DriveUserData : public base::SupportsUserData::Data {
  public:
-  explicit DriveUserData(const FilePath& path) : file_path_(path) {}
+  explicit DriveUserData(const FilePath& path) : file_path_(path),
+                                                 is_complete_(false) {}
   virtual ~DriveUserData() {}
 
   const FilePath& file_path() const { return file_path_; }
+  bool is_complete() const { return is_complete_; }
+  void set_complete() { is_complete_ = true; }
 
  private:
   const FilePath file_path_;
+  bool is_complete_;
 };
 
 // Extracts DriveUserData* from |download|.
 const DriveUserData* GetDriveUserData(const DownloadItem* download) {
   return static_cast<const DriveUserData*>(
       download->GetUserData(&kDrivePathKey));
+}
+
+DriveUserData* GetDriveUserData(DownloadItem* download) {
+  return static_cast<DriveUserData*>(download->GetUserData(&kDrivePathKey));
 }
 
 // Creates a temporary file |drive_tmp_download_path| in
@@ -164,9 +172,11 @@ void DriveDownloadHandler::OnDownloadUpdated(
   // Drive downloads are considered temporary downloads. Only accept downloads
   // that have the Drive meta data associated with them. Otherwise we might trip
   // over non-Drive downloads being saved to drive_tmp_download_path_.
+  DriveUserData* data = GetDriveUserData(download);
   if (!download->IsTemporary() ||
       (download->GetTargetFilePath().DirName() != drive_tmp_download_path_) ||
-      !IsDriveDownload(download))
+      !data ||
+      data->is_complete())
     return;
 
   switch (download->GetState()) {
@@ -175,8 +185,7 @@ void DriveDownloadHandler::OnDownloadUpdated(
 
     case DownloadItem::COMPLETE:
       UploadDownloadItem(download);
-      // Reset user data here to filter out subsequent updates from this item.
-      download->SetUserData(&kDrivePathKey, NULL);
+      data->set_complete();
       break;
 
     case DownloadItem::CANCELLED:
