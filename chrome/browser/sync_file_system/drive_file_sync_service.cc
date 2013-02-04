@@ -17,6 +17,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
@@ -25,6 +27,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
+#include "google/cacheinvalidation/types.pb.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/sync_file_type.h"
@@ -39,10 +42,15 @@ const FilePath::CharType kTempDirName[] = FILE_PATH_LITERAL("tmp");
 const FilePath::CharType kSyncFileSystemDir[] =
     FILE_PATH_LITERAL("Sync FileSystem");
 
+// The sync invalidation object ID for Google Drive.
+const char kDriveInvalidationObjectId[] = "CHANGELOG";
+
 // Incremental sync polling interval.
-// TODO(tzik,nhiroki): Support push notifications. (http://crbug.com/165592)
+// TODO(calvinlo): Improve polling algorithm dependent on whether push
+// notifications are on or off.
 const int64 kMinimumPollingDelaySeconds = 5;
 const int64 kMaximumPollingDelaySeconds = 10 * 60;  // 10 min
+const int64 kPollingDelaySecondsWithNotification = 4 * 60 * 60; // 4 hr
 const double kDelayMultiplier = 1.6;
 
 bool CreateTemporaryFile(const FilePath& dir_path, FilePath* temp_file) {
@@ -150,6 +158,33 @@ class DriveFileSyncService::TaskToken {
   DISALLOW_COPY_AND_ASSIGN(TaskToken);
 };
 
+void DriveFileSyncService::OnInvalidatorStateChange(
+    syncer::InvalidatorState state) {
+  SetPushNotificationEnabled(state);
+}
+
+void DriveFileSyncService::SetPushNotificationEnabled(
+    syncer::InvalidatorState state) {
+  push_notification_enabled_ = (state == syncer::INVALIDATIONS_ENABLED);
+  if (!push_notification_enabled_)
+    return;
+
+  // Push notifications are enabled so reset polling timer.
+  UpdatePollingDelay(kPollingDelaySecondsWithNotification);
+}
+
+void DriveFileSyncService::OnIncomingInvalidation(
+    const syncer::ObjectIdInvalidationMap& invalidation_map) {
+  DCHECK(push_notification_enabled_);
+  DCHECK_EQ(1U, invalidation_map.size());
+  const invalidation::ObjectId object_id(
+      ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
+      kDriveInvalidationObjectId);
+  DCHECK_EQ(1U, invalidation_map.count(object_id));
+
+  FetchChangesForIncrementalSync();
+}
+
 struct DriveFileSyncService::ProcessRemoteChangeParam {
   scoped_ptr<TaskToken> token;
   RemoteChangeProcessor* processor;
@@ -243,6 +278,8 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
       state_(REMOTE_SERVICE_OK),
       sync_enabled_(true),
       largest_fetched_changestamp_(0),
+      push_notification_registered_(false),
+      push_notification_enabled_(false),
       polling_delay_seconds_(kMinimumPollingDelaySeconds),
       is_fetching_changes_(false),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -271,6 +308,23 @@ DriveFileSyncService::~DriveFileSyncService() {
   weak_factory_.InvalidateWeakPtrs();
   sync_client_->RemoveObserver(this);
   token_.reset();
+
+  // Unregister for Drive notifications.
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  if (!profile_sync_service || !push_notification_registered_) {
+    return;
+  }
+
+  // TODO(calvinlo): Revisit this later in Consolidate Drive XMPP Notification
+  // and Polling Backup into one Class patch. http://crbug/173339.
+  // Original comment from Kochi about the order this is done in:
+  // Once DriveSystemService gets started / stopped at runtime, this ID needs to
+  // be unregistered *before* the handler is unregistered
+  // as ID persists across browser restarts.
+  profile_sync_service->UpdateRegisteredInvalidationIds(
+      this, syncer::ObjectIdSet());
+  profile_sync_service->UnregisterInvalidationHandler(this);
 }
 
 // static
@@ -645,9 +699,12 @@ DriveFileSyncService::DriveFileSyncService(
       state_(REMOTE_SERVICE_OK),
       sync_enabled_(true),
       largest_fetched_changestamp_(0),
+      push_notification_registered_(false),
+      push_notification_enabled_(false),
       polling_delay_seconds_(-1),
       is_fetching_changes_(false),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  DCHECK(profile);
   temporary_file_dir_ = base_dir.Append(kTempDirName);
 
   token_.reset(new TaskToken(AsWeakPtr()));
@@ -792,6 +849,9 @@ void DriveFileSyncService::DidInitializeMetadataStore(
     return;
   }
 
+  // Remove any origins that are not installed or enabled.
+  UnregisterInactiveExtensionsIds();
+
   largest_fetched_changestamp_ = metadata_store_->GetLargestChangeStamp();
 
   // Mark all the batch sync origins as 'pending' so that we can start
@@ -810,13 +870,6 @@ void DriveFileSyncService::DidInitializeMetadataStore(
     return;
   }
 
-  // Remove any origins that are not installed or enabled.
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  std::vector<GURL> tracked_origins;
-  metadata_store_->GetAllOrigins(&tracked_origins);
-  UnregisterInactiveExtensionsIds(extension_service, tracked_origins);
-
   DriveMetadataStore::URLAndResourceIdList to_be_fetched_files;
   status = metadata_store_->GetToBeFetchedFiles(&to_be_fetched_files);
   DCHECK_EQ(fileapi::SYNC_STATUS_OK, status);
@@ -830,11 +883,17 @@ void DriveFileSyncService::DidInitializeMetadataStore(
   }
 
   NotifyTaskDone(status, token.Pass());
+
+  RegisterDriveNotifications();
 }
 
-void DriveFileSyncService::UnregisterInactiveExtensionsIds(
-    ExtensionService* extension_service,
-    const std::vector<GURL>& tracked_origins) {
+void DriveFileSyncService::UnregisterInactiveExtensionsIds() {
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(extension_service);
+  std::vector<GURL> tracked_origins;
+  metadata_store_->GetAllOrigins(&tracked_origins);
+
   for (std::vector<GURL>::const_iterator itr = tracked_origins.begin();
        itr != tracked_origins.end();
        ++itr) {
@@ -1688,6 +1747,15 @@ bool DriveFileSyncService::GetPendingChangeForFileSystemURL(
 }
 
 void DriveFileSyncService::FetchChangesForIncrementalSync() {
+  if (!sync_enabled_ ||
+      is_fetching_changes_ ||
+      !pending_batch_sync_origins_.empty() ||
+      metadata_store_->incremental_sync_origins().empty() ||
+      !pending_changes_.empty())
+    return;
+
+  is_fetching_changes_ = true;
+
   scoped_ptr<TaskToken> token(GetToken(FROM_HERE, TASK_TYPE_DRIVE,
                                        "Fetching remote change list"));
   if (!token) {
@@ -1696,7 +1764,6 @@ void DriveFileSyncService::FetchChangesForIncrementalSync() {
     return;
   }
 
-  is_fetching_changes_ = true;
   token->set_completion_callback(
       base::Bind(&MarkFetchingChangesCompleted, &is_fetching_changes_));
 
@@ -1757,9 +1824,8 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
   } else {
     // If the change_queue_ was not updated, update the polling delay to wait
     // longer.
-    UpdatePollingDelay(std::min(
-        static_cast<int64>(kDelayMultiplier * polling_delay_seconds_),
-        kMaximumPollingDelaySeconds));
+    UpdatePollingDelay(static_cast<int64>(
+        kDelayMultiplier * polling_delay_seconds_));
   }
 
   NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());
@@ -1792,13 +1858,32 @@ bool DriveFileSyncService::GetOriginForEntry(
   return false;
 }
 
+// Register for Google Drive invalidation notifications through XMPP.
+void DriveFileSyncService::RegisterDriveNotifications() {
+  // Push notification registration might have already occurred if called from
+  // a different extension.
+  if (push_notification_registered_) {
+    return;
+  }
+
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  if (!profile_sync_service) {
+    return;
+  }
+
+  profile_sync_service->RegisterInvalidationHandler(this);
+  syncer::ObjectIdSet ids;
+  ids.insert(invalidation::ObjectId(
+      ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
+      kDriveInvalidationObjectId));
+  profile_sync_service->UpdateRegisteredInvalidationIds(this, ids);
+  push_notification_registered_ = true;
+  SetPushNotificationEnabled(profile_sync_service->GetInvalidatorState());
+}
+
 void DriveFileSyncService::SchedulePolling() {
-  if (!sync_enabled_ ||
-      !pending_batch_sync_origins_.empty() ||
-      metadata_store_->incremental_sync_origins().empty() ||
-      !pending_changes_.empty() ||
-      is_fetching_changes_ ||
-      polling_timer_.IsRunning() ||
+  if (polling_timer_.IsRunning() ||
       polling_delay_seconds_ < 0)
     return;
 
@@ -1819,9 +1904,18 @@ void DriveFileSyncService::SchedulePolling() {
 }
 
 void DriveFileSyncService::UpdatePollingDelay(int64 new_delay_sec) {
+  // polling_delay_seconds_ made negative to disable polling for testing.
   if (polling_delay_seconds_ < 0)
     return;
-  polling_delay_seconds_ = new_delay_sec;
+
+  if (push_notification_enabled_) {
+    polling_delay_seconds_ = kPollingDelaySecondsWithNotification;
+    return;
+  }
+
+  // Push notifications off.
+  polling_delay_seconds_ = std::min(new_delay_sec, kMaximumPollingDelaySeconds);
+
   // TODO(tzik): Reset the timer if new_delay_sec is less than
   // polling_delay_seconds_.
 }

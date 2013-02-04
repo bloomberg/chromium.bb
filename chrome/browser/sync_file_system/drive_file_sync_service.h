@@ -21,6 +21,7 @@
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
+#include "sync/notifier/invalidation_handler.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
 
@@ -42,7 +43,8 @@ class DriveFileSyncService
     : public RemoteFileSyncService,
       public LocalChangeProcessor,
       public DriveFileSyncClientObserver,
-      public base::NonThreadSafe {
+      public base::NonThreadSafe,
+      public syncer::InvalidationHandler {
  public:
   static const char kServiceName[];
 
@@ -91,6 +93,12 @@ class DriveFileSyncService
   // DriveFileSyncClientObserver overrides.
   virtual void OnAuthenticated() OVERRIDE;
   virtual void OnNetworkConnected() OVERRIDE;
+
+  // syncer::InvalidationHandler implementation.
+  virtual void OnInvalidatorStateChange(
+      syncer::InvalidatorState state) OVERRIDE;
+  virtual void OnIncomingInvalidation(
+      const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
  private:
   friend class DriveFileSyncServiceTest;
@@ -234,9 +242,7 @@ class DriveFileSyncService
   void DidInitializeMetadataStore(scoped_ptr<TaskToken> token,
                                   fileapi::SyncStatusCode status,
                                   bool created);
-  void UnregisterInactiveExtensionsIds(
-      ExtensionService* extension_service,
-      const std::vector<GURL>& tracked_origins);
+  void UnregisterInactiveExtensionsIds();
 
   void GetSyncRootDirectory(scoped_ptr<TaskToken> token,
                             const fileapi::SyncStatusCallback& callback);
@@ -345,6 +351,8 @@ class DriveFileSyncService
   bool GetOriginForEntry(const google_apis::ResourceEntry& entry, GURL* origin);
   void SchedulePolling();
   void UpdatePollingDelay(int64 new_delay_sec);
+  void RegisterDriveNotifications();
+  void SetPushNotificationEnabled(syncer::InvalidatorState state);
 
   scoped_ptr<DriveMetadataStore> metadata_store_;
   scoped_ptr<DriveFileSyncClient> sync_client_;
@@ -378,9 +386,13 @@ class DriveFileSyncService
   // NotifyTaskDone when the task finished.
   scoped_ptr<TaskToken> token_;
 
+  // True when Drive File Sync Service is registered for Drive notifications.
+  bool push_notification_registered_;
+  // True once the first drive notification is received with OK state.
+  bool push_notification_enabled_;
   // Timer to trigger fetching changes for incremental sync.
-  // If polling_delay_seconds_ is negative (<0) the timer won't start.
   base::OneShotTimer<DriveFileSyncService> polling_timer_;
+  // If polling_delay_seconds_ is negative (<0) the timer won't start.
   int64 polling_delay_seconds_;
 
   // Is set to true while the service is fetching changes for incremental
