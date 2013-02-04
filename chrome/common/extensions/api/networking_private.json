@@ -1,0 +1,104 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  {
+    "namespace":"networkingPrivate",
+    "compiler_options": {
+      "implemented_in": "chrome/browser/chromeos/extensions/networking_private_api.h"
+    },
+    "platforms": ["chromeos"],
+    "types" : [
+      {
+        "id": "NetworkProperties",
+        "type": "object",
+        "additionalProperties": { "type": "any" }
+      }
+    ],
+    "functions": [
+      {
+        "name": "getProperties",
+        "description": "Gets the properties of the network with id networkGuid.",
+        "parameters": [
+          {
+            "name": "networkGuid",
+            "type": "string",
+            "description": "The unique identifier of the network to get properties from."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "properties",
+                "$ref": "NetworkProperties",
+                "description": "Results of the query for network properties."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getVisibleNetworks",
+        "description": "Gets the list of visible networks.",
+        "parameters": [
+          {
+            "name": "type",
+            "type": "string",
+            "enum": ["Ethernet", "WiFi", "Bluetooth", "Cellular", "VPN", "All"],
+            "description": "The type of networks to return."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "networkList",
+                "type": "array",
+                "items": { "$ref": "NetworkProperties" }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "startConnect",
+        "description": "Starts a connection to the network with networkGuid.",
+        "parameters": [
+          {
+            "name": "networkGuid",
+            "type": "string",
+            "description": "The unique identifier of the network to connect to."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [],
+            "description": "A callback function that indicates that a connection has been initiated."
+          }
+        ]
+      },
+      {
+        "name": "startDisconnect",
+        "description": "Starts a disconnect from the network with networkGuid.",
+        "parameters": [
+          {
+            "name": "networkGuid",
+            "type": "string",
+            "description": "The unique identifier of the network to disconnect from."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [],
+            "description": "A callback function that indicates that a disconnect has been initiated."
+          }
+        ]
+      }
+    ]
+  }
+]

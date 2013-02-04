@@ -995,6 +995,7 @@
         'browser/chromeos/extensions/file_browser_resource_throttle_browsertest.cc',
         'browser/chromeos/extensions/info_private_apitest.cc',
         'browser/chromeos/extensions/input_method_apitest_chromeos.cc',
+        'browser/chromeos/extensions/networking_private_apitest.cc',
         'browser/chromeos/extensions/power/power_api_browsertest.cc',
         'browser/chromeos/extensions/wallpaper_private_apitest.cc',
         'browser/chromeos/kiosk_mode/mock_kiosk_mode_settings.cc',

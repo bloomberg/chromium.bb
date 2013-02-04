@@ -256,6 +256,8 @@ void APIPermissionInfo::RegisterAllPermissions(
       kFlagCannotBeOptional },
     { APIPermission::kFileBrowserPrivate, "fileBrowserPrivate",
       kFlagCannotBeOptional },
+    { APIPermission::kNetworkingPrivate, "networkingPrivate",
+      kFlagCannotBeOptional },
     { APIPermission::kManagedModePrivate, "managedModePrivate",
       kFlagCannotBeOptional },
     { APIPermission::kMediaPlayerPrivate, "mediaPlayerPrivate",

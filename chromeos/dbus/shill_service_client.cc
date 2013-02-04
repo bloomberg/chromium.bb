@@ -312,6 +312,11 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
   virtual void Connect(const dbus::ObjectPath& service_path,
                        const base::Closure& callback,
                        const ErrorCallback& error_callback) OVERRIDE {
+    base::Value* service;
+    if (!stub_services_.Get(service_path.value(), &service)) {
+      error_callback.Run("Error.InvalidService", "Invalid Service");
+      return;
+    }
     // Set Associating
     base::StringValue associating_value(flimflam::kStateAssociation);
     SetServiceProperty(service_path.value(),

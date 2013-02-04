@@ -681,6 +681,8 @@
             'browser/chromeos/extensions/input_method_api.h',
             'browser/chromeos/extensions/media_player_api.cc',
             'browser/chromeos/extensions/media_player_api.h',
+            'browser/chromeos/extensions/networking_private_api.cc',
+            'browser/chromeos/extensions/networking_private_api.h',
             'browser/chromeos/extensions/wallpaper_manager_util.cc',
             'browser/chromeos/extensions/wallpaper_manager_util.h',
             'browser/chromeos/extensions/wallpaper_private_api.cc',

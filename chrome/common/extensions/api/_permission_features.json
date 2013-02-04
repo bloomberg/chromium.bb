@@ -252,6 +252,11 @@
       "ionpfmkccalenbmnddpbmocokhaknphg"   // Quickoffice dev
     ]
   },
+  "networkingPrivate": {
+    "channel": "dev",
+    "extension_types": ["extension", "packaged_app"],
+    "location": "component"
+  },
   "notifications": {
     "channel": "stable",
     "extension_types": [

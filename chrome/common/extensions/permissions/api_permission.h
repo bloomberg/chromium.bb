@@ -86,6 +86,7 @@ class APIPermission {
     kMediaGalleriesPrivate,
     kMediaPlayerPrivate,
     kMetricsPrivate,
+    kNetworkingPrivate,
     kNotification,
     kPageCapture,
     kPointerLock,

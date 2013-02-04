@@ -54,6 +54,7 @@
           'management.json',
           'media_galleries.idl',
           'media_galleries_private.idl',
+          'networking_private.json',
           'page_capture.json',
           'permissions.json',
           'push_messaging.idl',
