@@ -86,7 +86,7 @@
       </if>
       <include name="IDR_CRASHES_HTML" file="resources\crashes.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_CRASHES_JS" file="resources\crashes.js" type="BINDATA" />
-      <include name="IDR_CREDITS_HTML" file="${about_credits_file}" use_base_dir="false" type="BINDATA" />
+      <include name="IDR_CREDITS_HTML" file="resources\about_credits.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_CREDITS_JS" file="resources\about_credits.js" type="BINDATA" />
       <if expr="not pp_ifdef('android')">
         <include name="IDR_DOWNLOADS_JS" file="resources\downloads\downloads.js" type="BINDATA" />
