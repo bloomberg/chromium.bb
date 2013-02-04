@@ -39,19 +39,19 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
                               void           *code_copy,
                               uint32_t       size) NACL_WUR;
 
-int32_t NaClTextSysDyncode_Create(struct NaClAppThread *natp,
-                                  uint32_t             dest,
-                                  uint32_t             src,
-                                  uint32_t             size) NACL_WUR;
+int32_t NaClTextSysDyncodeCreate(struct NaClAppThread *natp,
+                                 uint32_t             dest,
+                                 uint32_t             src,
+                                 uint32_t             size) NACL_WUR;
 
-int32_t NaClTextSysDyncode_Modify(struct NaClAppThread *natp,
-                                  uint32_t             dest,
-                                  uint32_t             src,
-                                  uint32_t             size) NACL_WUR;
+int32_t NaClTextSysDyncodeModify(struct NaClAppThread *natp,
+                                 uint32_t             dest,
+                                 uint32_t             src,
+                                 uint32_t             size) NACL_WUR;
 
-int32_t NaClTextSysDyncode_Delete(struct NaClAppThread *natp,
-                                  uint32_t             dest,
-                                  uint32_t             size) NACL_WUR;
+int32_t NaClTextSysDyncodeDelete(struct NaClAppThread *natp,
+                                 uint32_t             dest,
+                                 uint32_t             size) NACL_WUR;
 
 EXTERN_C_END
 

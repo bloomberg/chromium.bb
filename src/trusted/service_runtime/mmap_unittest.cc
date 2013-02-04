@@ -76,7 +76,7 @@ void MapShmFd(struct NaClApp *nap, uintptr_t addr, size_t shm_size) {
   struct NaClDesc *desc = &shm_desc->base;
   int fd = NaClSetAvail(nap, desc);
 
-  uintptr_t mapping_addr = (uint32_t) NaClCommonSysMmapIntern(
+  uintptr_t mapping_addr = (uint32_t) NaClSysMmapIntern(
       nap, (void *) addr, shm_size,
       NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
       NACL_ABI_MAP_FIXED | NACL_ABI_MAP_SHARED, fd, 0);
@@ -115,7 +115,7 @@ void MapFileFd(struct NaClApp *nap, uintptr_t addr, size_t file_size) {
 
   int fd = NaClSetAvail(nap, desc);
 
-  uintptr_t mapping_addr = (uint32_t) NaClCommonSysMmapIntern(
+  uintptr_t mapping_addr = (uint32_t) NaClSysMmapIntern(
       nap, (void *) addr, file_size,
       NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
       NACL_ABI_MAP_FIXED | NACL_ABI_MAP_SHARED, fd, 0);
@@ -239,7 +239,7 @@ TEST_F(MmapTest, TestUnmapAnonymousMemoryMapping) {
   // Create an anonymous memory mapping.
   uintptr_t addr = 0x200000;
   size_t size = 0x100000;
-  uintptr_t mapping_addr = (uint32_t) NaClCommonSysMmapIntern(
+  uintptr_t mapping_addr = (uint32_t) NaClSysMmapIntern(
       &app, (void *) addr, size,
       NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
       NACL_ABI_MAP_FIXED | NACL_ABI_MAP_PRIVATE | NACL_ABI_MAP_ANONYMOUS,
@@ -289,7 +289,7 @@ TEST_F(MmapTest, TestProtectShmMapping) {
 # error Unsupported platform
 #endif
 
-  ASSERT_EQ(0, NaClCommonSysMprotectInternal(
+  ASSERT_EQ(0, NaClSysMprotectInternal(
                    &app, (uint32_t) addr, size, NACL_ABI_PROT_NONE));
 
 #if NACL_WINDOWS
@@ -332,7 +332,7 @@ TEST_F(MmapTest, TestProtectFileMapping) {
 # error Unsupported platform
 #endif
 
-  ASSERT_EQ(0, NaClCommonSysMprotectInternal(
+  ASSERT_EQ(0, NaClSysMprotectInternal(
                    &app, (uint32_t) addr, size, NACL_ABI_PROT_NONE));
 
 #if NACL_WINDOWS
@@ -363,7 +363,7 @@ TEST_F(MmapTest, TestProtectAnonymousMemory) {
   // Create an anonymous memory mapping.
   uintptr_t addr = 0x200000;
   size_t size = 0x100000;
-  uintptr_t mapping_addr = (uint32_t) NaClCommonSysMmapIntern(
+  uintptr_t mapping_addr = (uint32_t) NaClSysMmapIntern(
       &app, (void *) addr, size,
       NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
       NACL_ABI_MAP_FIXED | NACL_ABI_MAP_PRIVATE | NACL_ABI_MAP_ANONYMOUS,
@@ -381,7 +381,7 @@ TEST_F(MmapTest, TestProtectAnonymousMemory) {
 # error Unsupported platform
 #endif
 
-  ASSERT_EQ(0, NaClCommonSysMprotectInternal(
+  ASSERT_EQ(0, NaClSysMprotectInternal(
                    &app, (uint32_t) addr, size, NACL_ABI_PROT_NONE));
 
 #if NACL_WINDOWS
@@ -420,14 +420,14 @@ TEST_F(MmapTest, TestSysvShmMapping) {
   // First, map something with PROT_READ, so that we can later check
   // that this is correctly overwritten by PROT_READ|PROT_WRITE and
   // PROT_NONE mappings.
-  uintptr_t result_addr = (uint32_t) NaClCommonSysMmapIntern(
+  uintptr_t result_addr = (uint32_t) NaClSysMmapIntern(
       &app, (void *) mapping_addr, shm_size,
       NACL_ABI_PROT_READ,
       NACL_ABI_MAP_FIXED | NACL_ABI_MAP_PRIVATE | NACL_ABI_MAP_ANONYMOUS,
       -1, 0);
   ASSERT_EQ(result_addr, mapping_addr);
 
-  result_addr = (uint32_t) NaClCommonSysMmapIntern(
+  result_addr = (uint32_t) NaClSysMmapIntern(
       &app, (void *) mapping_addr, shm_size,
       NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
       NACL_ABI_MAP_FIXED | NACL_ABI_MAP_SHARED, fd, 0);

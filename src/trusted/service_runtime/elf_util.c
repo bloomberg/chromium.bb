@@ -641,7 +641,7 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
      * to fill out the "loadable" array for this ELF object.  This ELF
      * object does not have to fit such strict constraints (such as
      * having code at 0x20000), and safety checks are applied by
-     * NaClTextDyncodeCreate() and NaClCommonSysMmapIntern().
+     * NaClTextDyncodeCreate() and NaClSysMmapIntern().
      */
     if (PT_LOAD != php->p_type) {
       continue;
@@ -698,7 +698,7 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
        * (Ideally mmap would provide a MAP_EXCL option for this
        * instead.)
        */
-      result = NaClCommonSysMmapIntern(
+      result = NaClSysMmapIntern(
           nap, (void *) (uintptr_t) vaddr, mapping_size,
           NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
           NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,

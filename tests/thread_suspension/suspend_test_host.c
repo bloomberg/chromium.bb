@@ -74,7 +74,7 @@ static struct SuspendTestShm *StartGuestWithSharedMemory(
    * to the guest program so that it can write to it, so that we can
    * observe its writes.
    */
-  mmap_addr = NaClCommonSysMmapIntern(
+  mmap_addr = NaClSysMmapIntern(
       nap, NULL, sizeof(struct SuspendTestShm),
       NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
       NACL_ABI_MAP_PRIVATE | NACL_ABI_MAP_ANONYMOUS,

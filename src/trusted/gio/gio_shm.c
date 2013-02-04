@@ -69,8 +69,8 @@ static int NaClGioShmSetWindow(struct NaClGioShm  *self,
   /*
    * The Map virtual function will NOT pad space beyond the end of the
    * memory mapping object with zero-filled pages.  This is done for
-   * user code in nacl_syscall_common.c(NaClCommonSysMmap), and the
-   * Map virtual function exposes the behavioral inconsistencies wrt
+   * user code in nacl_syscall_common.c (NaClSysMmap), and the Map
+   * virtual function exposes the behavioral inconsistencies wrt
    * allowing but ignoring mapping an offset beyond the end of file
    * (linux) versus disallowing the mapping (MapViewOfFileEx).
    *

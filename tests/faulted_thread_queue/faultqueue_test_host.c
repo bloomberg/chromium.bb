@@ -96,7 +96,7 @@ struct NaClSignalContext *StartGuestWithSharedMemory(
    * Allocate some space in untrusted address space.  We pass the
    * address to the guest program so that we can share data with it.
    */
-  mmap_addr = NaClCommonSysMmapIntern(
+  mmap_addr = NaClSysMmapIntern(
       nap, NULL, sizeof(*expected_regs),
       NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
       NACL_ABI_MAP_PRIVATE | NACL_ABI_MAP_ANONYMOUS,

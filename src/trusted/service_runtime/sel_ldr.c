@@ -1154,7 +1154,7 @@ static void NaClLoadIrtRpc(struct NaClSrpcRpc      *rpc,
   /*
    * We cannot take the nap->mu lock, since NaClAppLoadFileDynamically
    * invokes NaClElfImageLoadDynamically which in turn invokes
-   * NaClCommonSysMmapIntern resulting in a deadlock. This is not really
+   * NaClSysMmapIntern resulting in a deadlock. This is not really
    * a problem since there is only one secure command channel, unless
    * embedders invokes load_irt repeatedly, which is against the protocol.
    * TODO(phosek): record load_module/load_irt state and return error

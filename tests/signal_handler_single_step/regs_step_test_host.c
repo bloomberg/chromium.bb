@@ -168,7 +168,7 @@ int main(int argc, char **argv) {
    * address to the guest program so that it can write a register
    * snapshot for us to compare against.
    */
-  mmap_addr = NaClCommonSysMmapIntern(
+  mmap_addr = NaClSysMmapIntern(
       &app, NULL, sizeof(*g_test_shm),
       NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
       NACL_ABI_MAP_PRIVATE | NACL_ABI_MAP_ANONYMOUS, -1, 0);
