@@ -67,11 +67,11 @@ void AppListController::DismissAppList() {
 
 namespace chrome {
 
-void InitAppList() {
+void InitAppList(Profile* profile) {
   // TODO(tapted): AppList warmup code coes here.
 }
 
-void ShowAppList() {
+void ShowAppList(Profile* profile) {
   // Create the App list.
   g_app_list_controller.Get().ShowAppList();
 }

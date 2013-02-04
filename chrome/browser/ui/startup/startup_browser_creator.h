@@ -48,9 +48,15 @@ class StartupBrowserCreator {
 
   // This function performs command-line handling and is invoked only after
   // start up (for example when we get a start request for another process).
-  // |command_line| holds the command line we need to process
-  static void ProcessCommandLineAlreadyRunning(const CommandLine& cmd_line,
-                                               const FilePath& cur_dir);
+  // |command_line| holds the command line we need to process.
+  // |cur_dir| is the current working directory that the original process was
+  // invoked from.
+  // |startup_profile_dir| is the directory that contains the profile that the
+  // command line arguments will be executed under.
+  static void ProcessCommandLineAlreadyRunning(
+      const CommandLine& command_line,
+      const FilePath& cur_dir,
+      const FilePath& startup_profile_dir);
 
   template <class AutomationProviderClass>
   static bool CreateAutomationProvider(const std::string& channel_id,
@@ -129,7 +135,7 @@ class StartupBrowserCreator {
 
   // Callback after a profile has been created.
   static void ProcessCommandLineOnProfileCreated(
-      const CommandLine& cmd_line,
+      const CommandLine& command_line,
       const FilePath& cur_dir,
       Profile* profile,
       Profile::CreateStatus status);

@@ -24,7 +24,7 @@ class AppSyncUIStateWatcher;
 class AppListViewDelegate : public app_list::AppListViewDelegate {
  public:
   // The delegate will take ownership of the controller.
-  explicit AppListViewDelegate(AppListControllerDelegate* controller);
+  AppListViewDelegate(AppListControllerDelegate* controller, Profile* profile);
   virtual ~AppListViewDelegate();
 
  private:
@@ -48,6 +48,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
   scoped_ptr<AppsModelBuilder> apps_builder_;
   scoped_ptr<SearchBuilder> search_builder_;
   scoped_ptr<AppListControllerDelegate> controller_;
+  Profile* profile_;
 
 #if defined(USE_ASH)
   scoped_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;

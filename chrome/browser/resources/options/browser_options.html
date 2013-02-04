@@ -174,6 +174,11 @@
       </div>
       <div id="profiles-buttons">
         <button id="profiles-create" i18n-content="profilesCreate"></button>
+<if expr="pp_ifdef('enable_settings_app')">
+        <button id="profiles-app-list-switch"
+            i18n-content="profilesAppListSwitch" hidden>
+        </button>
+</if>
         <button id="profiles-manage" i18n-content="profilesManage" disabled>
         </button>
         <button id="profiles-delete" i18n-content="profilesDelete"></button>

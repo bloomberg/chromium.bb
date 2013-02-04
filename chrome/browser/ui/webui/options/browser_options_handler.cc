@@ -238,6 +238,9 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "profilesDeleteSingle", IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL },
     { "profilesListItemCurrent", IDS_PROFILES_LIST_ITEM_CURRENT },
     { "profilesManage", IDS_PROFILES_MANAGE_BUTTON_LABEL },
+#if defined(ENABLE_SETTINGS_APP)
+    { "profilesAppListSwitch", IDS_SETTINGS_APP_PROFILES_SWITCH_BUTTON_LABEL },
+#endif
     { "proxiesLabel", IDS_OPTIONS_PROXIES_LABEL },
     { "safeBrowsingEnableProtection",
       IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION },

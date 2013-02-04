@@ -315,17 +315,21 @@ Profile* ProfileManager::GetLastUsedProfile(const FilePath& user_data_dir) {
     return GetDefaultProfile(user_data_dir);
 #endif
 
+  return GetProfile(GetLastUsedProfileDir(user_data_dir));
+}
+
+FilePath ProfileManager::GetLastUsedProfileDir(const FilePath& user_data_dir) {
   FilePath last_used_profile_dir(user_data_dir);
-  std::string last_profile_used;
+  std::string last_used_profile;
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
-  if (local_state->HasPrefPath(prefs::kProfileLastUsed))
-    last_profile_used = local_state->GetString(prefs::kProfileLastUsed);
-  last_used_profile_dir = last_profile_used.empty() ?
-      last_used_profile_dir.AppendASCII(chrome::kInitialProfile) :
-      last_used_profile_dir.AppendASCII(last_profile_used);
-  return GetProfile(last_used_profile_dir);
+  if (local_state->HasPrefPath(prefs::kProfileLastUsed)) {
+    return last_used_profile_dir.AppendASCII(
+        local_state->GetString(prefs::kProfileLastUsed));
+  }
+
+  return last_used_profile_dir.AppendASCII(chrome::kInitialProfile);
 }
 
 std::vector<Profile*> ProfileManager::GetLastOpenedProfiles(

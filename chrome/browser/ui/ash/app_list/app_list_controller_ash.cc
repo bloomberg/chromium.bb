@@ -67,10 +67,20 @@ void AppListControllerDelegateAsh::LaunchApp(
 
 namespace chrome {
 
+// In the win_aura build these are defined in app_list_controller_win.cc.
 #if defined(OS_CHROMEOS)
-void ShowAppList() {
+void ShowAppList(Profile* default_profile) {
   ash::Shell::GetInstance()->ToggleAppList(NULL);
 }
-#endif
+
+bool IsAppListVisible() {
+  return ash::Shell::GetInstance()->GetAppListWindow() != NULL;
+}
+
+void DismissAppList() {
+  if (IsAppListVisible())
+    ash::Shell::GetInstance()->ToggleAppList(NULL);
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace chrome

@@ -718,6 +718,14 @@ cr.define('options', function() {
     }
   };
 
+  OptionsPage.setIsSettingsApp = function() {
+    document.documentElement.classList.add('settings-app');
+  };
+
+  OptionsPage.isSettingsApp = function() {
+    return document.documentElement.classList.contains('settings-app');
+  };
+
   OptionsPage.prototype = {
     __proto__: cr.EventTarget.prototype,
 

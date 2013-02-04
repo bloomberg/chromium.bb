@@ -180,6 +180,12 @@ cr.define('options', function() {
         $('profiles-create').onclick = function(event) {
           ManageProfileOverlay.showCreateDialog();
         };
+        if (OptionsPage.isSettingsApp()) {
+          $('profiles-app-list-switch').onclick = function(event) {
+            var selectedProfile = self.getSelectedProfileItem_();
+            chrome.send('switchAppListProfile', [selectedProfile.filePath]);
+          };
+        }
         $('profiles-manage').onclick = function(event) {
           ManageProfileOverlay.showManageDialog();
         };
@@ -919,6 +925,10 @@ cr.define('options', function() {
       else
         $('profiles-manage').title = '';
       $('profiles-delete').disabled = !hasSelection && !hasSingleProfile;
+      if (OptionsPage.isSettingsApp()) {
+        $('profiles-app-list-switch').disabled = !hasSelection ||
+            selectedProfile.isCurrentProfile;
+      }
       var importData = $('import-data');
       if (importData) {
         importData.disabled = $('import-data').disabled = hasSelection &&
@@ -940,6 +950,8 @@ cr.define('options', function() {
       $('profiles-delete').textContent = hasSingleProfile ?
           loadTimeData.getString('profilesDeleteSingle') :
           loadTimeData.getString('profilesDelete');
+      if (OptionsPage.isSettingsApp())
+        $('profiles-app-list-switch').hidden = hasSingleProfile;
     },
 
     /**
