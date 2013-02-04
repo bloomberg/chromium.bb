@@ -77,6 +77,13 @@ FormCache::~FormCache() {
 
 void FormCache::ExtractForms(const WebFrame& frame,
                              std::vector<FormData>* forms) {
+  ExtractFormsAndFormElements(frame, forms, NULL);
+}
+
+void FormCache::ExtractFormsAndFormElements(
+    const WebFrame& frame,
+    std::vector<FormData>* forms,
+    std::vector<WebFormElement>* web_form_elements) {
   // Reset the cache for this frame.
   ResetFrame(frame);
 
@@ -122,8 +129,11 @@ void FormCache::ExtractForms(const WebFrame& frame,
       continue;
 
     FormData form;
+    ExtractMask extract_mask =
+      static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTIONS);
+
     if (!WebFormElementToFormData(form_element, WebFormControlElement(),
-                                  REQUIRE_NONE, EXTRACT_VALUE, &form, NULL)) {
+                                  REQUIRE_NONE, extract_mask, &form, NULL)) {
       continue;
     }
 
@@ -131,8 +141,11 @@ void FormCache::ExtractForms(const WebFrame& frame,
     if (num_fields_seen > kMaxParseableFields)
       break;
 
-    if (form.fields.size() >= kRequiredAutofillFields)
+    if (form.fields.size() >= kRequiredAutofillFields) {
       forms->push_back(form);
+      if (web_form_elements)
+        web_form_elements->push_back(form_element);
+    }
   }
 }
 

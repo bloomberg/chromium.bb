@@ -180,10 +180,14 @@ void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
   // The document has now been fully loaded.  Scan for forms to be sent up to
   // the browser.
   std::vector<FormData> forms;
-  form_cache_.ExtractForms(*frame, &forms);
 
-  if (!frame->parent())
+  if (!frame->parent()) {
     topmost_frame_ = frame;
+    form_elements_.clear();
+    form_cache_.ExtractFormsAndFormElements(*frame, &forms, &form_elements_);
+  } else {
+    form_cache_.ExtractForms(*frame, &forms);
+  }
 
   if (!forms.empty()) {
     Send(new AutofillHostMsg_FormsSeen(routing_id(), forms,
@@ -657,9 +661,13 @@ void AutofillAgent::OnRequestAutocompleteResult(
 }
 
 void AutofillAgent::OnFillFormsAndClick(
-    const std::vector<FormData>& form_data,
+    const std::vector<FormData>& forms,
     const WebElementDescriptor& click_element_descriptor) {
-  // TODO(ramankk): Implement form filling.
+  DCHECK_EQ(forms.size(), form_elements_.size());
+
+  // Fill the form.
+  for (size_t i = 0; i < forms.size(); ++i)
+    FillFormIncludingNonFocusableElements(forms[i], form_elements_[i]);
 
   // It's possible that clicking the element to proceed in an Autocheckout
   // flow will not actually proceed to the next step in the flow, e.g. there

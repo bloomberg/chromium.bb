@@ -212,6 +212,9 @@ class AutofillAgent : public content::RenderViewObserver,
   // The form element currently requesting an interactive autocomplete.
   WebKit::WebFormElement in_flight_request_form_;
 
+  // All the form elements seen in the top frame.
+  std::vector<WebKit::WebFormElement> form_elements_;
+
   // The action to take when receiving Autofill data from the AutofillManager.
   AutofillAction autofill_action_;
 
