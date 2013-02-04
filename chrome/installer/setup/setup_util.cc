@@ -75,6 +75,13 @@ bool LaunchAndWaitForExistingInstall(const FilePath& setup_exe,
   return true;
 }
 
+// Returns true if product |type| cam be meaningfully installed without the
+// --multi-install flag.
+bool SupportsSingleInstall(BrowserDistribution::Type type) {
+  return (type == BrowserDistribution::CHROME_BROWSER ||
+          type == BrowserDistribution::CHROME_FRAME);
+}
+
 }  // namespace
 
 int ApplyDiffPatch(const FilePath& src,
@@ -257,6 +264,53 @@ bool DeferToExistingInstall(const FilePath& setup_exe,
   }
   *install_status = static_cast<InstallStatus>(exit_code);
   return true;
+}
+
+// There are 4 disjoint cases => return values {false,true}:
+// (1) Product is being uninstalled => false.
+// (2) Product is being installed => true.
+// (3) Current operation ignores product, product is absent => false.
+// (4) Current operation ignores product, product is present => true.
+bool WillProductBePresentAfterSetup(
+    const installer::InstallerState& installer_state,
+    const installer::InstallationState& machine_state,
+    BrowserDistribution::Type type) {
+  DCHECK(SupportsSingleInstall(type) || installer_state.is_multi_install());
+
+  const ProductState* product_state =
+      machine_state.GetProductState(installer_state.system_install(), type);
+
+  // Determine if the product is present prior to the current operation.
+  bool is_present = false;
+  if (product_state != NULL) {
+    if (type == BrowserDistribution::CHROME_FRAME) {
+      is_present = !product_state->uninstall_command().HasSwitch(
+                        switches::kChromeFrameReadyMode);
+    } else {
+      is_present = true;
+    }
+  }
+
+  bool is_uninstall = installer_state.operation() == InstallerState::UNINSTALL;
+
+  // Determine if current operation affects the product.
+  bool is_affected = false;
+  const Product* product = installer_state.FindProduct(type);
+  if (product != NULL) {
+    if (type == BrowserDistribution::CHROME_FRAME) {
+      // If Chrome Frame is being uninstalled, we don't bother to check
+      // !HasOption(kOptionReadyMode) since CF would not have been installed
+      // in the first place. If for some odd reason it weren't, we would be
+      // conservative, and cause false to be retruned since CF should not be
+      // installed then (so is_uninstall = true and is_affected = true).
+      is_affected = is_uninstall || !product->HasOption(kOptionReadyMode);
+    } else {
+      is_affected = true;
+    }
+  }
+
+  // Decide among {(1),(2),(3),(4)}.
+  return is_affected ? !is_uninstall : is_present;
 }
 
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)

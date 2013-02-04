@@ -520,6 +520,7 @@ void InstallUtil::MakeUninstallCommand(const string16& program,
   *command_line = CommandLine::FromString(L"\"" + program + L"\" " + arguments);
 }
 
+// static
 string16 InstallUtil::GetCurrentDate() {
   static const wchar_t kDateFormat[] = L"yyyyMMdd";
   wchar_t date_str[arraysize(kDateFormat)] = {0};

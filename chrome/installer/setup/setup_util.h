@@ -71,6 +71,16 @@ bool DeferToExistingInstall(const base::FilePath& setup_exe,
                             const base::FilePath& temp_path,
                             InstallStatus* install_status);
 
+// Returns true if the product |type| will be installed after the current
+// setup.exe instance have carried out installation / uninstallation, at
+// the level specified by |installer_state|.
+// This function only returns meaningful results for install and update
+// operations if called after CheckPreInstallConditions (see setup_main.cc).
+bool WillProductBePresentAfterSetup(
+    const installer::InstallerState& installer_state,
+    const installer::InstallationState& machine_state,
+    BrowserDistribution::Type type);
+
 // This class will enable the privilege defined by |privilege_name| on the
 // current process' token. The privilege will be disabled upon the
 // ScopedTokenPrivilege's destruction (unless it was already enabled when the
