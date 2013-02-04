@@ -248,7 +248,6 @@ struct DriveFileSystem::GetFileFromCacheParams {
   GetFileFromCacheParams(
       const FilePath& virtual_file_path,
       const FilePath& local_tmp_path,
-      const GURL& content_url,
       const std::string& resource_id,
       const std::string& md5,
       const std::string& mime_type,
@@ -256,7 +255,6 @@ struct DriveFileSystem::GetFileFromCacheParams {
       const google_apis::GetContentCallback& get_content_callback)
       : virtual_file_path(virtual_file_path),
         local_tmp_path(local_tmp_path),
-        content_url(content_url),
         resource_id(resource_id),
         md5(md5),
         mime_type(mime_type),
@@ -267,7 +265,6 @@ struct DriveFileSystem::GetFileFromCacheParams {
   FilePath virtual_file_path;
   FilePath local_tmp_path;
   FilePath cache_file_path;
-  GURL content_url;
   std::string resource_id;
   std::string md5;
   std::string mime_type;
@@ -876,7 +873,6 @@ void DriveFileSystem::GetResolvedFileByPath(
                       GetFileFromCacheParams(
                           file_path,
                           local_tmp_path,
-                          GURL(entry_proto->content_url()),
                           entry_proto->resource_id(),
                           entry_proto->file_specific_info().file_md5(),
                           entry_proto->file_specific_info().content_mime_type(),
