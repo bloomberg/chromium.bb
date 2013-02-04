@@ -1064,8 +1064,13 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
 
   // First, let keypress listeners take a shot at handling the event.  If a
   // listener handles the event, it should not be propagated to the renderer.
-  if (KeyPressListenersHandleEvent(key_event))
+  if (KeyPressListenersHandleEvent(key_event)) {
+    // Some keypresses that are accepted by the listener might have follow up
+    // char events, which should be ignored.
+    if (key_event.type == WebKeyboardEvent::RawKeyDown)
+      suppress_next_char_events_ = true;
     return;
+  }
 
   if (key_event.type == WebKeyboardEvent::Char &&
       (key_event.windowsKeyCode == ui::VKEY_RETURN ||
