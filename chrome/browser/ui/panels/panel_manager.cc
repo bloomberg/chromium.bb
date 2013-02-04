@@ -354,7 +354,7 @@ void PanelManager::OnPanelClosed(Panel* panel) {
   // Note that we need to keep track of panel's collection since it will be
   // gone once RemovePanel is called.
   PanelCollection* collection = panel->collection();
-  collection->RemovePanel(panel);
+  collection->RemovePanel(panel, PanelCollection::PANEL_CLOSED);
 
   // If only one panel is left in the stack, move it out of the stack.
   if (collection->type() == PanelCollection::STACKED) {
@@ -433,7 +433,8 @@ void PanelManager::MovePanelToCollection(
   PanelCollection* current_collection = panel->collection();
   DCHECK(current_collection);
   DCHECK_NE(current_collection, target_collection);
-  current_collection->RemovePanel(panel);
+  current_collection->RemovePanel(panel,
+                                  PanelCollection::PANEL_CHANGED_COLLECTION);
 
   target_collection->AddPanel(panel, positioning_mask);
   target_collection->UpdatePanelOnCollectionChange(panel);

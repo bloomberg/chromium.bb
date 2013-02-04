@@ -152,7 +152,7 @@ int DockedPanelCollection::GetRightMostAvailablePosition() const {
       (panels_.back()->GetBounds().x() - kPanelsHorizontalSpacing);
 }
 
-void DockedPanelCollection::RemovePanel(Panel* panel) {
+void DockedPanelCollection::RemovePanel(Panel* panel, RemovalReason reason) {
   DCHECK_EQ(this, panel->collection());
   panel->set_collection(NULL);
 

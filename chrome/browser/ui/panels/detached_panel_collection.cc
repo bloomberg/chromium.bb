@@ -82,7 +82,7 @@ void DetachedPanelCollection::AddPanel(Panel* panel,
     ComputeNextDefaultPanelOrigin();
 }
 
-void DetachedPanelCollection::RemovePanel(Panel* panel) {
+void DetachedPanelCollection::RemovePanel(Panel* panel, RemovalReason reason) {
   DCHECK_EQ(this, panel->collection());
   panel->set_collection(NULL);
   panels_.remove(panel);

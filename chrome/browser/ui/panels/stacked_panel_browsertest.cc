@@ -761,21 +761,55 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ClosePanels) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
-  // Create 2 stacked panels.
+  // Create 3 stacked panels.
   StackedPanelCollection* stack = panel_manager->CreateStack();
   gfx::Rect panel1_initial_bounds = gfx::Rect(100, 50, 200, 150);
   Panel* panel1 = CreateStackedPanel("1", panel1_initial_bounds, stack);
   gfx::Rect panel2_initial_bounds = gfx::Rect(0, 0, 150, 100);
   Panel* panel2 = CreateStackedPanel("2", panel2_initial_bounds, stack);
+  gfx::Rect panel3_initial_bounds = gfx::Rect(0, 0, 250, 120);
+  Panel* panel3 = CreateStackedPanel("3", panel3_initial_bounds, stack);
+  ASSERT_EQ(3, panel_manager->num_panels());
+  ASSERT_EQ(1, panel_manager->num_stacks());
+  ASSERT_EQ(3, stack->num_panels());
+
+  gfx::Rect panel1_expected_bounds(panel1_initial_bounds);
+  EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
+  gfx::Rect panel2_expected_bounds(panel1_expected_bounds.x(),
+                                   panel1_expected_bounds.bottom(),
+                                   panel1_expected_bounds.width(),
+                                   panel2_initial_bounds.height());
+  EXPECT_EQ(panel2_expected_bounds, panel2->GetBounds());
+  gfx::Rect panel3_expected_bounds(panel2_expected_bounds.x(),
+                                   panel2_expected_bounds.bottom(),
+                                   panel2_expected_bounds.width(),
+                                   panel3_initial_bounds.height());
+  EXPECT_EQ(panel3_expected_bounds, panel3->GetBounds());
+
+  // Close P1. Expect that P2 and P3 should move up.
+  CloseWindowAndWait(panel1);
+  WaitForBoundsAnimationFinished(panel2);
+  WaitForBoundsAnimationFinished(panel3);
   ASSERT_EQ(2, panel_manager->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
   ASSERT_EQ(2, stack->num_panels());
+  EXPECT_EQ(PanelCollection::STACKED, panel2->collection()->type());
+  EXPECT_EQ(PanelCollection::STACKED, panel3->collection()->type());
 
-  // Close P2. Expect that P1 should become detached.
+  panel2_expected_bounds.set_y(panel1_expected_bounds.y());
+  EXPECT_EQ(panel2_expected_bounds, panel2->GetBounds());
+  panel3_expected_bounds.set_y(panel2_expected_bounds.bottom());
+  EXPECT_EQ(panel3_expected_bounds, panel3->GetBounds());
+
+  // Close P2. Expect that P3 should become detached and move up.
   CloseWindowAndWait(panel2);
+  WaitForBoundsAnimationFinished(panel3);
   ASSERT_EQ(1, panel_manager->num_panels());
   ASSERT_EQ(0, panel_manager->num_stacks());
-  EXPECT_EQ(PanelCollection::DETACHED, panel1->collection()->type());
+  EXPECT_EQ(PanelCollection::DETACHED, panel3->collection()->type());
+
+  panel3_expected_bounds.set_y(panel2_expected_bounds.y());
+  EXPECT_EQ(panel3_expected_bounds, panel3->GetBounds());
 
   panel_manager->CloseAll();
 }

@@ -120,9 +120,18 @@ void StackedPanelCollection::AddPanel(Panel* panel,
   native_stack_->OnPanelAddedOrRemoved(panel);
 }
 
-void StackedPanelCollection::RemovePanel(Panel* panel) {
+void StackedPanelCollection::RemovePanel(Panel* panel, RemovalReason reason) {
   bool is_top = panel == top_panel();
   bool is_bottom = panel == bottom_panel();
+
+  // If the top panel is being closed, all panels below it should move up. To
+  // do this, the top y position of top panel needs to be tracked first.
+  bool top_panel_closed = false;
+  int top_y = 0;
+  if (reason == PanelCollection::PANEL_CLOSED && is_top) {
+    top_panel_closed = true;
+    top_y = panel->GetBounds().y();
+  }
 
   panel->set_collection(NULL);
   panels_.remove(panel);
@@ -136,6 +145,18 @@ void StackedPanelCollection::RemovePanel(Panel* panel) {
     Panel* new_bottom_panel = bottom_panel();
     if (new_bottom_panel)
       UpdatePanelCornerStyle(new_bottom_panel);
+  }
+
+  // Now move the new top panel up to be at the same y position of the old
+  // top panel. The subsequent RefreshLayout call will take care of moving all
+  // other panels up.
+  if (top_panel_closed) {
+    Panel* new_top_panel = top_panel();
+    if (new_top_panel) {
+      gfx::Rect bounds = new_top_panel->GetBounds();
+      bounds.set_y(top_y);
+      new_top_panel->SetPanelBounds(bounds);
+    }
   }
 
   RefreshLayout();

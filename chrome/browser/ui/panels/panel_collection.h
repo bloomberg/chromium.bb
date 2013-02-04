@@ -45,6 +45,11 @@ class PanelCollection {
     COLLAPSE_TO_FIT = 0x20
   };
 
+  enum RemovalReason {
+    PANEL_CLOSED,
+    PANEL_CHANGED_COLLECTION
+  };
+
   Type type() const { return type_; }
 
   // Called when the display area is changed.
@@ -60,7 +65,8 @@ class PanelCollection {
 
   // Removes |panel| from the collection of panels. Invoked asynchronously
   // after a panel has been closed.
-  virtual void RemovePanel(Panel* panel) = 0;
+  // |reason| denotes why the panel is removed from the collection.
+  virtual void RemovePanel(Panel* panel, RemovalReason reason) = 0;
 
   // Closes all panels in the collection. Panels will be removed after closing.
   virtual void CloseAll() = 0;
