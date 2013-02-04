@@ -15,6 +15,7 @@ fileapi::SyncStatusCode GDataErrorCodeToSyncStatusCode(
   switch (error) {
     case google_apis::HTTP_SUCCESS:
     case google_apis::HTTP_CREATED:
+    case google_apis::HTTP_NO_CONTENT:
     case google_apis::HTTP_FOUND:
       return fileapi::SYNC_STATUS_OK;
 

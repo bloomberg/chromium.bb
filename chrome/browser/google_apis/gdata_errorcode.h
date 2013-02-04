@@ -11,6 +11,7 @@ namespace google_apis {
 enum GDataErrorCode {
   HTTP_SUCCESS               = 200,
   HTTP_CREATED               = 201,
+  HTTP_NO_CONTENT            = 204,
   HTTP_FOUND                 = 302,
   HTTP_NOT_MODIFIED          = 304,
   HTTP_RESUME_INCOMPLETE     = 308,

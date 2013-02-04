@@ -331,6 +331,7 @@ DriveFileError GDataToDriveFileError(google_apis::GDataErrorCode status) {
   switch (status) {
     case google_apis::HTTP_SUCCESS:
     case google_apis::HTTP_CREATED:
+    case google_apis::HTTP_NO_CONTENT:
       return DRIVE_FILE_OK;
     case google_apis::HTTP_UNAUTHORIZED:
     case google_apis::HTTP_FORBIDDEN:
