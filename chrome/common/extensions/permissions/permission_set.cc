@@ -251,7 +251,7 @@ std::set<std::string> PermissionSet::GetAPIsAsStrings() const {
 
 bool PermissionSet::HasAnyAccessToAPI(
     const std::string& api_name) const {
-  if (HasAccessToFunction(api_name))
+  if (HasAccessToFunction(api_name, true))
     return true;
 
   for (size_t i = 0; i < kNumNonPermissionFunctionNames; ++i) {
@@ -361,14 +361,16 @@ bool PermissionSet::CheckAPIPermissionWithParam(
 }
 
 bool PermissionSet::HasAccessToFunction(
-    const std::string& function_name) const {
+    const std::string& function_name, bool allow_implicit) const {
   // TODO(jstritar): Embed this information in each permission and add a method
   // like GrantsAccess(function_name) to APIPermission. A "default"
   // permission can then handle the modules and functions that everyone can
   // access.
-  for (size_t i = 0; i < kNumNonPermissionFunctionNames; ++i) {
-    if (function_name == kNonPermissionFunctionNames[i])
-      return true;
+  if (allow_implicit) {
+    for (size_t i = 0; i < kNumNonPermissionFunctionNames; ++i) {
+      if (function_name == kNonPermissionFunctionNames[i])
+        return true;
+    }
   }
 
   // Search for increasingly smaller substrings of |function_name| to see if we
@@ -382,9 +384,11 @@ bool PermissionSet::HasAccessToFunction(
     if (permission && apis_.count(permission->id()))
       return true;
 
-    for (size_t i = 0; i < kNumNonPermissionModuleNames; ++i) {
-      if (name == kNonPermissionModuleNames[i]) {
-        return true;
+    if (allow_implicit) {
+      for (size_t i = 0; i < kNumNonPermissionModuleNames; ++i) {
+        if (name == kNonPermissionModuleNames[i]) {
+          return true;
+        }
       }
     }
     lastdot = name.find_last_of("./");

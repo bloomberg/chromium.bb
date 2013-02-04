@@ -798,7 +798,7 @@ TEST(PermissionsTest, DefaultFunctionAccess) {
   scoped_refptr<PermissionSet> empty = new PermissionSet();
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
     EXPECT_EQ(kTests[i].expect_success,
-              empty->HasAccessToFunction(kTests[i].permission_name))
+              empty->HasAccessToFunction(kTests[i].permission_name, true))
                   << "Permission being tested: " << kTests[i].permission_name;
   }
 }

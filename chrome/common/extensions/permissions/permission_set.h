@@ -104,8 +104,11 @@ class PermissionSet
       const APIPermission::CheckParam* param) const;
 
   // Returns true if the permissions in this set grant access to the specified
-  // |function_name|.
-  bool HasAccessToFunction(const std::string& function_name) const;
+  // |function_name|. The |allow_implicit| flag controls whether we
+  // want to strictly check against just the explicit permissions, or also
+  // include implicit "no permission needed" namespaces/functions.
+  bool HasAccessToFunction(const std::string& function_name,
+                           bool allow_implicit) const;
 
   // Returns true if this includes permission to access |origin|.
   bool HasExplicitAccessToOrigin(const GURL& origin) const;
