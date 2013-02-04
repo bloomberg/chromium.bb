@@ -76,6 +76,15 @@ void DidRemoveOrigin(const GURL& origin, fileapi::SyncStatusCode status) {
                << " status=" << status;
 }
 
+fileapi::FileChange CreateFileChange(bool is_deleted) {
+  if (is_deleted) {
+    return fileapi::FileChange(fileapi::FileChange::FILE_CHANGE_DELETE,
+                               fileapi::SYNC_FILE_TYPE_UNKNOWN);
+  }
+  return fileapi::FileChange(fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                             fileapi::SYNC_FILE_TYPE_FILE);
+}
+
 }  // namespace
 
 const char DriveFileSyncService::kServiceName[] = "drive";
@@ -1596,14 +1605,6 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
     int64 changestamp,
     const std::string& remote_file_md5,
     RemoteSyncType sync_type) {
-  PathToChangeMap* path_to_change = &origin_to_changes_map_[origin];
-  PathToChangeMap::iterator found = path_to_change->find(path);
-  if (found != path_to_change->end()) {
-    if (found->second.changestamp >= changestamp)
-      return false;
-    pending_changes_.erase(found->second.position_in_queue);
-  }
-
   fileapi::FileSystemURL url(
       fileapi::CreateSyncableFileSystemURL(origin, kServiceName, path));
   if (!is_deleted && !remote_file_md5.empty()) {
@@ -1615,29 +1616,35 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
       return false;
   }
 
-  fileapi::FileChange::ChangeType change_type;
-  fileapi::SyncFileType file_type;
-  if (is_deleted) {
-    change_type = fileapi::FileChange::FILE_CHANGE_DELETE;
-    file_type = fileapi::SYNC_FILE_TYPE_UNKNOWN;
-  } else {
-    change_type = fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE;
-    file_type = fileapi::SYNC_FILE_TYPE_FILE;
+  PathToChangeMap* path_to_change = &origin_to_changes_map_[origin];
+  PathToChangeMap::iterator found = path_to_change->find(path);
+  PendingChangeQueue::iterator overridden_queue_item = pending_changes_.end();
+  if (found != path_to_change->end()) {
+    if (found->second.changestamp >= changestamp)
+      return false;
+    overridden_queue_item = found->second.position_in_queue;
   }
 
-  fileapi::FileChange file_change(change_type, file_type);
+  fileapi::FileChange file_change(CreateFileChange(is_deleted));
 
-  std::pair<PendingChangeQueue::iterator, bool> inserted_to_queue =
-      pending_changes_.insert(ChangeQueueItem(changestamp, sync_type, url));
-  DCHECK(inserted_to_queue.second);
+  // Do not return in this block. These changes should be done together.
+  {
+    if (overridden_queue_item != pending_changes_.end())
+      pending_changes_.erase(overridden_queue_item);
+
+    std::pair<PendingChangeQueue::iterator, bool> inserted_to_queue =
+        pending_changes_.insert(ChangeQueueItem(changestamp, sync_type, url));
+    DCHECK(inserted_to_queue.second);
+
+    (*path_to_change)[path] = RemoteChange(
+        changestamp, resource_id, sync_type, url, file_change,
+        inserted_to_queue.first);
+  }
 
   DVLOG(3) << "Append remote change: " << path.value()
            << "@" << changestamp << " "
            << file_change.DebugString();
 
-  (*path_to_change)[path] = RemoteChange(
-      changestamp, resource_id, sync_type, url, file_change,
-      inserted_to_queue.first);
   return true;
 }
 

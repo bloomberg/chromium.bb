@@ -65,7 +65,7 @@ void DidInitialize(bool* done, fileapi::SyncStatusCode status, bool created) {
   EXPECT_TRUE(created);
 }
 
-void DidEntryOperation(fileapi::SyncStatusCode status) {
+void DidUpdateEntry(fileapi::SyncStatusCode status) {
   EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
 }
 
@@ -394,11 +394,25 @@ class DriveFileSyncServiceTest : public testing::Test {
     *result_out = result;
   }
 
-  void AppendIncrementalRemoteChange(const GURL& origin,
-                                     const google_apis::ResourceEntry& entry,
-                                     int64 changestamp) {
+  void AppendIncrementalRemoteChangeByEntry(
+      const GURL& origin,
+      const google_apis::ResourceEntry& entry,
+      int64 changestamp) {
     sync_service_->AppendRemoteChange(
         origin, entry, changestamp,
+        DriveFileSyncService::REMOTE_SYNC_TYPE_INCREMENTAL);
+  }
+
+  bool AppendIncrementalRemoteChange(
+      const GURL& origin,
+      const FilePath& path,
+      bool is_deleted,
+      const std::string& resource_id,
+      int64 changestamp,
+      const std::string& remote_file_md5) {
+    return sync_service_->AppendRemoteChangeInternal(
+        origin, path, is_deleted, resource_id,
+        changestamp, remote_file_md5,
         DriveFileSyncService::REMOTE_SYNC_TYPE_INCREMENTAL);
   }
 
@@ -740,7 +754,7 @@ TEST_F(DriveFileSyncServiceTest, ResolveLocalSyncOperationType) {
   metadata.set_conflicted(false);
   metadata.set_to_be_fetched(false);
   metadata_store()->UpdateEntry(url, metadata,
-                                base::Bind(&DidEntryOperation));
+                                base::Bind(&DidUpdateEntry));
 
   message_loop()->RunUntilIdle();
 
@@ -775,7 +789,7 @@ TEST_F(DriveFileSyncServiceTest, ResolveLocalSyncOperationType) {
   // Mark the file as conflicted so that the conflict resolution will occur.
   metadata.set_conflicted(true);
   metadata_store()->UpdateEntry(url, metadata,
-                                base::Bind(&DidEntryOperation));
+                                base::Bind(&DidUpdateEntry));
 
   EXPECT_TRUE(IsLocalSyncOperationNone(
       ResolveLocalSyncOperationType(local_add_or_update_change, url)));
@@ -832,7 +846,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_Busy) {
 
   scoped_ptr<ResourceEntry> entry(ResourceEntry::ExtractAndParse(
       *LoadJSONFile("gdata/file_entry.json")));
-  AppendIncrementalRemoteChange(kOrigin, *entry, 12345);
+  AppendIncrementalRemoteChangeByEntry(kOrigin, *entry, 12345);
 
   ProcessRemoteChange(fileapi::SYNC_STATUS_FILE_BUSY,
                       CreateURL(kOrigin, kFileName),
@@ -874,7 +888,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
 
   scoped_ptr<ResourceEntry> entry(ResourceEntry::ExtractAndParse(
       *LoadJSONFile("gdata/file_entry.json")));
-  AppendIncrementalRemoteChange(kOrigin, *entry, 12345);
+  AppendIncrementalRemoteChangeByEntry(kOrigin, *entry, 12345);
 
   ProcessRemoteChange(fileapi::SYNC_STATUS_OK,
                       CreateURL(kOrigin, kFileName),
@@ -916,7 +930,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
 
   scoped_ptr<ResourceEntry> entry(ResourceEntry::ExtractAndParse(
       *LoadJSONFile("gdata/file_entry.json")));
-  AppendIncrementalRemoteChange(kOrigin, *entry, 12345);
+  AppendIncrementalRemoteChangeByEntry(kOrigin, *entry, 12345);
   ProcessRemoteChange(fileapi::SYNC_STATUS_OK,
                       CreateURL(kOrigin, kFileName),
                       fileapi::SYNC_OPERATION_UPDATED);
@@ -958,6 +972,56 @@ TEST_F(DriveFileSyncServiceTest, RegisterOriginWithSyncDisabled) {
   EXPECT_EQ(1u, metadata_store()->batch_sync_origins().size());
   EXPECT_TRUE(metadata_store()->incremental_sync_origins().empty());
   EXPECT_TRUE(pending_changes().empty());
+}
+
+TEST_F(DriveFileSyncServiceTest, RemoteChange_Override) {
+  const GURL kOrigin = ExtensionNameToGURL(FPL("example1"));
+  const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
+  const std::string kSyncRootResourceId("folder:sync_root_resource_id");
+  const FilePath kFilePath(FPL("File 1.mp3"));
+  const std::string kFileResourceId("file:2_file_resource_id");
+  const fileapi::FileSystemURL kURL(CreateURL(kOrigin, kFilePath.value()));
+
+  metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
+  metadata_store()->AddBatchSyncOrigin(kOrigin, kDirectoryResourceId);
+  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin);
+
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
+      .Times(AnyNumber());
+
+  SetUpDriveSyncService(true);
+
+  EXPECT_TRUE(AppendIncrementalRemoteChange(
+      kOrigin, kFilePath, false /* is_deleted */,
+      kFileResourceId, 2, "remote_file_md5"));
+
+  // Expect to drop this change since there is another newer change on the
+  // queue.
+  EXPECT_FALSE(AppendIncrementalRemoteChange(
+      kOrigin, kFilePath, false /* is_deleted */,
+      kFileResourceId, 1, "remote_file_md5_2"));
+
+  DriveMetadata metadata;
+  metadata.set_resource_id(kFileResourceId);
+  metadata.set_md5_checksum("remote_file_md5");
+  metadata.set_conflicted(false);
+  metadata.set_to_be_fetched(false);
+  metadata_store()->UpdateEntry(
+      kURL, metadata, base::Bind(&DidUpdateEntry));
+  message_loop()->RunUntilIdle();
+
+  // Expect to drop this change since it has the same md5 with the previous one.
+  EXPECT_FALSE(AppendIncrementalRemoteChange(
+      kOrigin, kFilePath, false /* is_deleted */,
+      kFileResourceId, 4, "remote_file_md5"));
+
+  // This should not cause browser crash.
+  EXPECT_FALSE(AppendIncrementalRemoteChange(
+      kOrigin, kFilePath, false /* is_deleted */,
+      kFileResourceId, 4, "remote_file_md5"));
 }
 
 #endif  // !defined(OS_ANDROID)
