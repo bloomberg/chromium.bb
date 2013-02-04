@@ -175,14 +175,6 @@ DirectoryContents.prototype.getLastNonSearchDirectoryEntry = function() {
 };
 
 /**
- * @param {Entry} entry File entry for a file in current DC results.
- * @return {string} Display name.
- */
-DirectoryContents.prototype.getDisplayName = function(entry) {
-  return entry.name;
-};
-
-/**
  * Start directory scan/search operation. Either 'scan-completed' or
  * 'scan-failed' event will be fired upon completion.
  */
@@ -262,7 +254,7 @@ DirectoryContents.prototype.onNewEntries = function(entries) {
       return;
     this.fileList_.push.apply(this.fileList_, entriesFiltered);
 
-    if (this.pendingMetadataRequests === 0 && this.allChunksFetched_) {
+    if (this.pendingMetadataRequests_ === 0 && this.allChunksFetched_) {
       cr.dispatchSimpleEvent(this, 'scan-completed');
     }
 
@@ -583,14 +575,6 @@ DirectoryContentsLocalSearch.prototype.getDirectoryEntry = function() {
 DirectoryContentsLocalSearch.prototype.getLastNonSearchDirectoryEntry =
     function() {
   return this.directoryEntry_;
-};
-
-/**
- * @param {Entry} entry File entry for a file in current DC results.
- * @return {string} Display name.
- */
-DirectoryContentsLocalSearch.prototype.getDisplayName = function(entry) {
-  return entry.name;
 };
 
 /**
