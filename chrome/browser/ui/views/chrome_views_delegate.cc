@@ -184,7 +184,15 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
 #if defined(OS_CHROMEOS)
   // When we are doing straight chromeos builds, we still need to handle the
   // toplevel window case.
-  if (params->parent == NULL && params->context == NULL && params->top_level)
+  // TODO(jamescook): There may be a few remaining widgets in Chrome OS that
+  // are not top level, but have neither a context nor a parent. Provide a
+  // fallback context so users don't crash. After the R26 branch replace
+  // the if() with:
+  //   if (!params->parent && !params->context && !params->top_level)
+  // so we only fix up top level windows. http://crbug.com/173496
+  DCHECK(params->parent || params->context || params->top_level)
+      << "Please provide a parent or context for this widget.";
+  if (!params->parent && !params->context)
     params->context = ash::Shell::GetPrimaryRootWindow();
 #elif defined(USE_AURA)
   // While the majority of the time, context wasn't plumbed through due to the
