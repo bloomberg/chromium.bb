@@ -17,7 +17,9 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "content/public/browser/browser_thread.h"
 #endif
 
 namespace {
@@ -59,6 +61,11 @@ BrowserTestBase::BrowserTestBase() {
 }
 
 BrowserTestBase::~BrowserTestBase() {
+#if defined(OS_ANDROID)
+  // RemoteTestServer can cause wait on the UI thread.
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  test_server_.reset(NULL);
+#endif
 }
 
 void BrowserTestBase::SetUp() {
@@ -79,6 +86,13 @@ void BrowserTestBase::SetUp() {
   SetUpInProcessBrowserTestFixture();
 #if defined(OS_ANDROID)
   BrowserMainRunner::Create()->Initialize(params);
+  // We are done running the test by now. During teardown we
+  // need to be able to perform IO.
+  base::ThreadRestrictions::SetIOAllowed(true);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
+                 true));
 #else
   BrowserMain(params);
 #endif

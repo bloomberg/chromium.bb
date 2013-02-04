@@ -7,6 +7,8 @@ package org.chromium.content_browsertests_apk;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.util.Log;
 
 import org.chromium.content.app.LibraryLoader;
@@ -32,8 +34,10 @@ public class ContentBrowserTestsActivity extends Activity {
         }
         AndroidBrowserProcess.initChromiumBrowserProcessForTests();
 
-        setContentView(R.layout.test_activity);
-        mShellManager = (ShellManager) findViewById(R.id.shell_container);
+        LayoutInflater inflater =
+                (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View view = inflater.inflate(R.layout.test_activity, null);
+        mShellManager = (ShellManager) view.findViewById(R.id.shell_container);
         mActivityNativeWindow = new ActivityNativeWindow(this);
         mShellManager.setWindow(mActivityNativeWindow);
 
