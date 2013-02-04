@@ -69,6 +69,7 @@ endnum i 56-24
 endnum j 56-245
 
 # Ordinary translation entries
+always / 456-34
 always = a-56-2356
 always + a-56-235
 always > a-135-a
@@ -104,7 +105,7 @@ repeated \s 0
 repeated \x00a0 a
 
 # swap opcodes for replacement and testing.
-swapcd dropped 0123456789 356,2,23,25,456,26,235,2356,236,35
+swapcd dropped 0123456789 356,2,23,25,256,26,235,2356,236,35
 swapdd upnum 245,1,12,14,145,15,124,1245,125,24 0,0,0,0,0,0,0,0,0,0
 swapdd lownum 356,2,23,25,256,26,235,2356,236,35 0,0,0,0,0,0,0,0,0,0
 
