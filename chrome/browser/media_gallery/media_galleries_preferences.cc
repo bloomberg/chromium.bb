@@ -133,7 +133,7 @@ MediaGalleryPrefInfo::~MediaGalleryPrefInfo() {}
 
 FilePath MediaGalleryPrefInfo::AbsolutePath() const {
   FilePath base_path = MediaStorageUtil::FindDevicePathById(device_id);
-  return base_path.Append(path);
+  return base_path.empty() ? base_path : base_path.Append(path);
 }
 
 MediaGalleriesPreferences::GalleryChangeObserver::~GalleryChangeObserver() {}

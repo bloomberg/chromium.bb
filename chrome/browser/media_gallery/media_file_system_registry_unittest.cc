@@ -410,7 +410,7 @@ namespace {
 
 bool MediaFileSystemInfoComparator(const MediaFileSystemInfo& a,
                                    const MediaFileSystemInfo& b) {
-  CHECK_NE(a.name, b.name); // Name must be unique.
+  CHECK_NE(a.name, b.name);  // Name must be unique.
   return a.name < b.name;
 }
 
@@ -923,6 +923,27 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameUserAddedPath) {
                        true /*has access*/);
   CheckNewGalleryInfo(profile_state, galleries_info, empty_dir(),
                       false /*removable*/, false /* media device */);
+}
+
+TEST_F(MediaFileSystemRegistryTest, DetachedDeviceGalleryPath) {
+  const std::string device_id = AttachDevice(
+      MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM,
+      "removable_dcim_fake_id",
+      dcim_dir());
+
+  MediaGalleryPrefInfo pref_info;
+  pref_info.device_id = device_id;
+  EXPECT_EQ(dcim_dir().value(), pref_info.AbsolutePath().value());
+
+  MediaGalleryPrefInfo pref_info_with_relpath;
+  pref_info_with_relpath.path = FilePath(FILE_PATH_LITERAL("test_relpath"));
+  pref_info_with_relpath.device_id = device_id;
+  EXPECT_EQ(dcim_dir().Append(pref_info_with_relpath.path).value(),
+            pref_info_with_relpath.AbsolutePath().value());
+
+  DetachDevice(device_id);
+  EXPECT_TRUE(pref_info.AbsolutePath().empty());
+  EXPECT_TRUE(pref_info_with_relpath.AbsolutePath().empty());
 }
 
 }  // namespace chrome
