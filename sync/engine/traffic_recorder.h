@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "sync/base/sync_export.h"
 #include "sync/protocol/sync.pb.h"
@@ -40,14 +41,18 @@ class SYNC_EXPORT_PRIVATE TrafficRecorder {
 
     TrafficRecord(const std::string& message,
                   TrafficMessageType message_type,
-                  bool truncated);
+                  bool truncated,
+                  base::Time time);
     TrafficRecord();
     ~TrafficRecord();
     DictionaryValue* ToValue() const;
+
+    // Time of record creation.
+    base::Time timestamp;
   };
 
   TrafficRecorder(unsigned int max_messages, unsigned int max_message_size);
-  ~TrafficRecorder();
+  virtual ~TrafficRecorder();
 
   void RecordClientToServerMessage(const sync_pb::ClientToServerMessage& msg);
   void RecordClientToServerResponse(
@@ -62,6 +67,9 @@ class SYNC_EXPORT_PRIVATE TrafficRecorder {
   void AddTrafficToQueue(TrafficRecord* record);
   void StoreProtoInQueue(const ::google::protobuf::MessageLite& msg,
                          TrafficMessageType type);
+
+  // Method to get record creation time.
+  virtual base::Time GetTime();
 
   // Maximum number of messages stored in the queue.
   unsigned int max_messages_;
