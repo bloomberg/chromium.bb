@@ -81,9 +81,11 @@ WebAppsTable* WebDatabase::GetWebAppsTable() {
   return web_apps_table_.get();
 }
 
+#if defined(ENABLE_WEB_INTENTS)
 WebIntentsTable* WebDatabase::GetWebIntentsTable() {
   return web_intents_table_.get();
 }
+#endif
 
 sql::Connection* WebDatabase::GetSQLConnection() {
   return &db_;
@@ -141,7 +143,7 @@ sql::InitStatus WebDatabase::Init(const base::FilePath& db_name,
   // Initialize the tables.
   if (!keyword_table_->Init() || !autofill_table_->Init() ||
       !logins_table_->Init() || !web_apps_table_->Init() ||
-      !token_service_table_->Init() || !web_intents_table_->Init() ) {
+      !token_service_table_->Init() || !web_intents_table_->Init()) {
     LOG(WARNING) << "Unable to initialize the web database.";
     return sql::INIT_FAILURE;
   }

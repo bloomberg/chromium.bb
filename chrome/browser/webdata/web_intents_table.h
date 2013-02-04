@@ -58,6 +58,7 @@ class WebIntentsTable : public WebDatabaseTable {
   // Adds "scheme" column to the web_intents and web_intents_defaults tables.
   bool MigrateToVersion46AddSchemeColumn();
 
+#if (ENABLE_WEB_INTENTS)
   // Adds a web intent service to the WebIntents table.
   // If |service| already exists, replaces it.
   bool SetWebIntentService(const webkit_glue::WebIntentServiceData& service);
@@ -106,6 +107,7 @@ class WebIntentsTable : public WebDatabaseTable {
 
   // Removes all default services associated with |service_url|.
   bool RemoveServiceDefaults(const GURL& service_url);
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebIntentsTable);

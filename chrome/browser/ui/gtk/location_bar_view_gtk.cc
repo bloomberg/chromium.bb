@@ -148,8 +148,10 @@ const int kContentSettingImageDisplayTime = 3200;
 // The time, in ms, of the animation (open and close).
 const int kContentSettingImageAnimationTime = 150;
 
+#if defined(ENABLE_WEB_INTENTS)
 // Animation opening time for web intents button (in ms).
 const int kWebIntentsButtonAnimationTime = 150;
+#endif
 
 // Color of border of content setting area (icon/label).
 const GdkColor kContentSettingBorderColor = GDK_COLOR_RGB(0xe9, 0xb9, 0x66);
@@ -317,6 +319,7 @@ void ContentSettingImageViewGtk::BubbleClosing(
   content_setting_bubble_ = NULL;
 }
 
+#if defined(ENABLE_WEB_INTENTS)
 class WebIntentsButtonViewGtk : public LocationBarViewGtk::PageToolViewGtk {
  public:
   explicit WebIntentsButtonViewGtk(const LocationBarViewGtk* parent)
@@ -378,6 +381,7 @@ GdkColor WebIntentsButtonViewGtk::gradient_top_color() const {
 GdkColor WebIntentsButtonViewGtk::gradient_bottom_color() const {
   return kBottomColorGray;
 }
+#endif
 
 }  // namespace
 
@@ -401,7 +405,9 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       drag_icon_(NULL),
       enable_location_drag_(false),
       security_info_label_(NULL),
+#if defined(ENABLE_WEB_INTENTS)
       web_intents_button_view_(new WebIntentsButtonViewGtk(this)),
+#endif
       tab_to_search_alignment_(NULL),
       tab_to_search_box_(NULL),
       tab_to_search_full_label_(NULL),
@@ -434,7 +440,9 @@ LocationBarViewGtk::~LocationBarViewGtk() {
   hbox_.Destroy();
   content_setting_hbox_.Destroy();
   page_action_hbox_.Destroy();
+#if defined(ENABLE_WEB_INTENTS)
   web_intents_hbox_.Destroy();
+#endif
 }
 
 void LocationBarViewGtk::Init(bool popup_window_mode) {
@@ -599,6 +607,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_box_pack_end(GTK_BOX(hbox_.get()), page_action_hbox_.get(),
                    FALSE, FALSE, 0);
 
+#if defined(ENABLE_WEB_INTENTS)
   web_intents_hbox_.Own(gtk_hbox_new(FALSE, InnerPadding()));
   gtk_widget_set_name(web_intents_hbox_.get(),
                       "chrome-web-intents-hbox");
@@ -606,6 +615,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                    FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(web_intents_hbox_.get()),
                    web_intents_button_view_->widget(), FALSE, FALSE, 0);
+#endif
 
   // Now that we've created the widget hierarchy, connect to the main |hbox_|'s
   // size-allocate so we can do proper resizing and eliding on

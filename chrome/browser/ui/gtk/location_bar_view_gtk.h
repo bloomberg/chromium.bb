@@ -469,9 +469,11 @@ class LocationBarViewGtk : public OmniboxEditController,
   ui::OwnedWidgetGtk page_action_hbox_;
   ScopedVector<PageActionViewGtk> page_action_views_;
 
+#if defined(ENABLE_WEB_INTENTS)
   // Control for web intents window disposition picker control.
   ui::OwnedWidgetGtk web_intents_hbox_;
   scoped_ptr<PageToolViewGtk> web_intents_button_view_;
+#endif
 
   // The widget that contains our tab hints and the location bar.
   GtkWidget* entry_box_;

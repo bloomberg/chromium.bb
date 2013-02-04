@@ -49,7 +49,9 @@ class WebDatabase {
   virtual LoginsTable* GetLoginsTable();
   virtual TokenServiceTable* GetTokenServiceTable();
   virtual WebAppsTable* GetWebAppsTable();
+#if defined(ENABLE_WEB_INTENTS)
   virtual WebIntentsTable* GetWebIntentsTable();
+#endif
 
   // Exposed for testing only.
   sql::Connection* GetSQLConnection();

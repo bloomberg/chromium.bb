@@ -213,6 +213,7 @@ WebDataService::Handle WebDataService::GetWebAppImages(
       Bind(&WebDataService::GetWebAppImagesImpl, this, app_url), consumer);
 }
 
+#if (ENABLE_WEB_INTENTS)
 //////////////////////////////////////////////////////////////////////////////
 //
 // Web Intents.
@@ -286,6 +287,7 @@ WebDataService::Handle WebDataService::GetAllDefaultWebIntentServices(
       Bind(&WebDataService::GetAllDefaultWebIntentServicesImpl, this),
       consumer);
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -662,6 +664,7 @@ scoped_ptr<WDTypedResult> WebDataService::GetWebAppImagesImpl(
       new WDResult<WDAppImagesResult>(WEB_APP_IMAGES, result));
 }
 
+#if defined(ENABLE_WEB_INTENTS)
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Web Intents implementation.
@@ -742,6 +745,7 @@ scoped_ptr<WDTypedResult> WebDataService::GetAllDefaultWebIntentServicesImpl() {
       new WDResult<std::vector<DefaultWebIntentService> >(
           WEB_INTENTS_DEFAULTS_RESULT, result));
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 //

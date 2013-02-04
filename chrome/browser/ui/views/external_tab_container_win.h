@@ -161,6 +161,7 @@ class ExternalTabContainerWin : public ExternalTabContainer,
                                        const GURL& url,
                                        const string16& title,
                                        bool user_gesture) OVERRIDE;
+#if defined(ENABLE_WEB_INTENTS)
   virtual void RegisterIntentHandler(
       content::WebContents* tab,
       const webkit_glue::WebIntentServiceData& data,
@@ -168,6 +169,7 @@ class ExternalTabContainerWin : public ExternalTabContainer,
   virtual void WebIntentDispatch(
       content::WebContents* tab,
       content::WebIntentsDispatcher* intents_dispatcher) OVERRIDE;
+#endif
   virtual void FindReply(content::WebContents* tab,
                          int request_id,
                          int number_of_matches,

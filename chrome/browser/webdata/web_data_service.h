@@ -183,6 +183,7 @@ class WebDataService
   // specified web app.
   Handle GetWebAppImages(const GURL& app_url, WebDataServiceConsumer* consumer);
 
+#if defined(ENABLE_WEB_INTENTS)
   //////////////////////////////////////////////////////////////////////////////
   //
   // Web Intents
@@ -227,6 +228,7 @@ class WebDataService
   // Get a list of all registered web intent service defaults.
   // |consumer| must not be null.
   Handle GetAllDefaultWebIntentServices(WebDataServiceConsumer* consumer);
+#endif
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -402,6 +404,7 @@ class WebDataService
   void RemoveWebAppImpl(const GURL& app_url);
   scoped_ptr<WDTypedResult> GetWebAppImagesImpl(const GURL& app_url);
 
+#if defined(ENABLE_WEB_INTENTS)
   //////////////////////////////////////////////////////////////////////////////
   //
   // Web Intents.
@@ -422,6 +425,7 @@ class WebDataService
   scoped_ptr<WDTypedResult> GetDefaultWebIntentServicesForActionImpl(
       const string16& action);
   scoped_ptr<WDTypedResult> GetAllDefaultWebIntentServicesImpl();
+#endif
 
   //////////////////////////////////////////////////////////////////////////////
   //

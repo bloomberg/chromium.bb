@@ -811,6 +811,7 @@ void ExternalTabContainerWin::RegisterProtocolHandler(
                                          user_gesture, NULL);
 }
 
+#if defined(ENABLE_WEB_INTENTS)
 void ExternalTabContainerWin::RegisterIntentHandler(
     WebContents* tab,
     const webkit_glue::WebIntentServiceData& data,
@@ -825,6 +826,7 @@ void ExternalTabContainerWin::WebIntentDispatch(
   // is no BrowserWindow?
   delete intents_dispatcher;
 }
+#endif
 
 void ExternalTabContainerWin::FindReply(WebContents* tab,
                                         int request_id,
