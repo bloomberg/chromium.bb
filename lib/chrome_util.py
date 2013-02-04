@@ -139,12 +139,12 @@ class Path(object):
     else:
       shutil.copy(src, dest)
 
-  def Copy(self, src_base, dest_base):
+  def Copy(self, src_base, dest_base, ignore_missing=False):
     """Copy artifact(s) from source directory to destination."""
     src = os.path.join(src_base, self.src)
     paths = glob.glob(src)
     if not paths:
-      if self.optional:
+      if self.optional or ignore_missing:
         logging.info('%s does not exist.  Skipping.', src)
         return
       else:
@@ -206,7 +206,8 @@ def _SetPermissions(staging_dir, dest_base):
 
   # Setuid the sandbox after running chown, since chown clears the setuid bit.
   target = os.path.join(dest_base, _CHROME_SANDBOX_DEST)
-  cros_build_lib.SudoRunCommand(['chmod', '4755', target])
+  if os.path.exists(target):
+    cros_build_lib.SudoRunCommand(['chmod', '4755', target])
 
 
 class StagingError(Exception):
@@ -214,16 +215,24 @@ class StagingError(Exception):
   pass
 
 
-def StageChromeFromBuildDir(staging_dir, build_dir, gyp_defines, staging_flags):
+def StageChromeFromBuildDir(staging_dir, build_dir, strict=False,
+                            gyp_defines=None, staging_flags=None):
   """Populates a staging directory with necessary build artifacts.
+
+  If |strict| is set, then we decide what to stage based on the |gyp_defines|
+  and |staging_flags| passed in.  Otherwise, we stage everything that we know
+  about, that we can find.
 
   Arguments:
     staging_dir: Path to an empty staging directory.
     build_dir: Path to location of Chrome build artifacts.
+    strict: If set, decide what to stage based on the |gyp_defines| and
+      |staging_flags| passed in.  Otherwise, we stage everything that we know
+      about, that we can find.
     gyp_defines: A dictionary (i.e., one returned by ProcessGypDefines)
-                 containing GYP_DEFINES Chrome was built with.
+      containing GYP_DEFINES Chrome was built with.
     staging_flags: A list of extra staging flags.  Valid flags are specified in
-                   STAGING_FLAGS.
+      STAGING_FLAGS.
   """
   if os.path.exists(staging_dir) and os.listdir(staging_dir):
     raise StagingError('Staging directory %s must be empty.' % staging_dir)
@@ -231,8 +240,13 @@ def StageChromeFromBuildDir(staging_dir, build_dir, gyp_defines, staging_flags):
   dest_base = os.path.join(staging_dir, _CHROME_DIR)
   os.makedirs(os.path.join(dest_base, 'plugins'))
 
+  if gyp_defines is None:
+    gyp_defines = {}
+  if staging_flags is None:
+    staging_flags = []
+
   for p in _COPY_PATHS:
-    if p.ShouldProcess(gyp_defines, staging_flags):
-      p.Copy(build_dir, dest_base)
+    if not strict or p.ShouldProcess(gyp_defines, staging_flags):
+      p.Copy(build_dir, dest_base, ignore_missing=(not strict))
 
   _SetPermissions(staging_dir, dest_base)

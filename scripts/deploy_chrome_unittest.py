@@ -9,11 +9,14 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
+
+from chromite.lib import chrome_util
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import partial_mock
 from chromite.lib import remote_access_unittest
 from chromite.scripts import deploy_chrome
+
 
 # TODO(build): Finish test wrapper (http://crosbug.com/37517).
 # Until then, this has to be after the chromite imports.
@@ -52,9 +55,23 @@ class InterfaceTest(cros_test_lib.OutputTestCase):
   def testNoTarget(self):
     """Test no target specified."""
     argv = ['--gs-path', _GS_PATH]
+    self.assertParseError(argv)
+
+  def assertParseError(self, argv):
     with self.OutputCapturer():
       self.assertRaises2(SystemExit, _ParseCommandLine, argv,
                          check_attrs={'code': 2})
+
+  def testStagingFlagsNoStrict(self):
+    """Errors out when --staging-flags is set without --strict."""
+    argv = ['--staging-only', '--build-dir=/path/to/nowhere',
+            '--staging-flags=highdpi']
+    self.assertParseError(argv)
+
+  def testStrictNoBuildDir(self):
+    """Errors out when --strict is set without --build-dir."""
+    argv = ['--staging-only', '--strict', '--gs-path', _GS_PATH]
+    self.assertParseError(argv)
 
 
 class DeployChromeMock(partial_mock.PartialMock):
@@ -96,19 +113,19 @@ class DeployChromeMock(partial_mock.PartialMock):
     pass
 
 
-class DeployChromeTest(cros_test_lib.MockTempDirTestCase):
-
-  def _GetDeployChrome(self):
-    options, _ = _ParseCommandLine(list(_REGULAR_TO) + ['--gs-path', _GS_PATH])
+class DeployTest(cros_test_lib.MockTempDirTestCase):
+  def _GetDeployChrome(self, args):
+    options, _ = _ParseCommandLine(args)
     return deploy_chrome.DeployChrome(
         options, self.tempdir, os.path.join(self.tempdir, 'staging'))
 
   def setUp(self):
     self.deploy_mock = self.StartPatcher(DeployChromeMock())
-    self.deploy = self._GetDeployChrome()
+    self.deploy = self._GetDeployChrome(
+        list(_REGULAR_TO) + ['--gs-path', _GS_PATH])
 
 
-class TestPrepareTarget(DeployChromeTest):
+class TestPrepareTarget(DeployTest):
   """Testing disabling of rootfs verification and RO mode."""
 
   def testSuccess(self):
@@ -142,7 +159,7 @@ none /proc proc rw,nosuid,nodev,noexec,relatime 0 0
 """
 
 
-class TestCheckRootfs(DeployChromeTest):
+class TestCheckRootfs(DeployTest):
   """Test Rootfs RW check functionality."""
 
   def setUp(self):
@@ -162,7 +179,7 @@ class TestCheckRootfs(DeployChromeTest):
     self.assertTrue(self.deploy._CheckRootfsWriteable())
 
 
-class TestUiJobStarted(DeployChromeTest):
+class TestUiJobStarted(DeployTest):
   """Test detection of a running 'ui' job."""
 
   def MockStatusUiCmd(self, output):
@@ -177,6 +194,30 @@ class TestUiJobStarted(DeployChromeTest):
     """Correct results with a running job."""
     self.MockStatusUiCmd('ui start/running, process 297')
     self.assertTrue(self.deploy._CheckUiJobStarted())
+
+
+class StagingTest(cros_test_lib.MockTempDirTestCase):
+  """Test user-mode and ebuild-mode staging functionality."""
+
+  def setUp(self):
+    self.sudo_cleanup = True
+    self.staging_dir = os.path.join(self.tempdir, 'staging')
+    self.build_dir = os.path.join(self.tempdir, 'build_dir')
+    self.common_flags = ['--build-dir', self.build_dir, '--staging-only']
+
+  def testEmptyDeploySuccess(self):
+    """User-mode staging - stage whatever we can find."""
+    options, _ = _ParseCommandLine(self.common_flags)
+    deploy_chrome._PrepareStagingDir(
+        options, self.tempdir, self.staging_dir)
+
+  def testEmptyDeployStrict(self):
+    """ebuild-mode staging - stage only things we want."""
+    options, _ = _ParseCommandLine(
+        self.common_flags + ['--gyp-defines', 'chromeos=1', '--strict'])
+    self.assertRaises(
+        chrome_util.MissingPathError, deploy_chrome._PrepareStagingDir,
+        options, self.tempdir, self.staging_dir)
 
 
 if __name__ == '__main__':

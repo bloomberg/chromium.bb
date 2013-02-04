@@ -230,10 +230,15 @@ def _CreateParser():
 
   group = optparse.OptionGroup(parser, 'Advanced Options')
   group.add_option('-l', '--local-pkg-path', type='path',
-                    help='path to local chrome prebuilt package to deploy.')
-  group.add_option('--staging-flags', default={}, type='gyp_defines',
-                    help=('Extra flags to control staging.  Valid flags '
-                          'are - %s' % ', '.join(chrome_util.STAGING_FLAGS)))
+                    help='Path to local chrome prebuilt package to deploy.')
+  group.add_option('--strict', action='store_true', default=False,
+                    help='Stage artifacts based on the GYP_DEFINES environment '
+                         'variable and --staging-flags, if set.')
+  group.add_option('--staging-flags', default=None, type='gyp_defines',
+                    help=('Requires --strict to be set.  Extra flags to '
+                          'control staging.  Valid flags are - %s'
+                          % ', '.join(chrome_util.STAGING_FLAGS)))
+
   parser.add_option_group(group)
 
   # Path of an empty directory to stage chrome artifacts to.  Defaults to a
@@ -247,7 +252,7 @@ def _CreateParser():
   # GYP_DEFINES that Chrome was built with.  Influences which files are staged
   # when --build-dir is set.  Defaults to reading from the GYP_DEFINES
   # enviroment variable.
-  parser.add_option('--gyp-defines', default={}, type='gyp_defines',
+  parser.add_option('--gyp-defines', default=None, type='gyp_defines',
                     help=optparse.SUPPRESS_HELP)
   return parser
 
@@ -259,7 +264,7 @@ def _ParseCommandLine(argv):
 
   if not any([options.gs_path, options.local_pkg_path, options.build_dir]):
     parser.error('Need to specify either --gs-path, --local-pkg-path, or '
-                 '--build_dir')
+                 '--build-dir')
   if options.build_dir and any([options.gs_path, options.local_pkg_path]):
     parser.error('Cannot specify both --build_dir and '
                  '--gs-path/--local-pkg-patch')
@@ -267,6 +272,11 @@ def _ParseCommandLine(argv):
     parser.error('Cannot specify both --gs-path and --local-pkg-path')
   if not (options.staging_only or options.to):
     parser.error('Need to specify --to')
+  if (options.strict or options.staging_flags) and not options.build_dir:
+    parser.error('--strict and --staging-flags require --build-dir to be '
+                 'set.')
+  if options.staging_flags and not options.strict:
+    parser.error('--strict requires --staging-flags to be set.')
 
   return options, args
 
@@ -280,15 +290,15 @@ def _PostParseCheck(options, _args):
   if options.local_pkg_path and not os.path.isfile(options.local_pkg_path):
     cros_build_lib.Die('%s is not a file.', options.local_pkg_path)
 
-  if options.build_dir and not options.gyp_defines:
+  if options.build_dir and options.strict and not options.gyp_defines:
     gyp_env = os.getenv('GYP_DEFINES', None)
     if gyp_env is not None:
       options.gyp_defines = chrome_util.ProcessGypDefines(gyp_env)
       logging.info('GYP_DEFINES taken from environment: %s',
                    options.gyp_defines)
     else:
-      cros_build_lib.Die('When --build-dir is set, the GYP_DEFINES environment '
-                         'variable must be set.')
+      cros_build_lib.Die('When --build-dir and --strict is set, the '
+                         'GYP_DEFINES environment variable must be set.')
 
 
 def _FetchChromePackage(cache_dir, tempdir, gs_path):
