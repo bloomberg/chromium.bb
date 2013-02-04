@@ -65,7 +65,6 @@ include_rules = [
   "+webkit/glue/webkit_glue.h",
   "+webkit/glue/webmenuitem.h",
   "+webkit/glue/webpreferences.h",
-  "+webkit/glue/window_open_disposition.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
   "-chrome/browser/ui/views",
