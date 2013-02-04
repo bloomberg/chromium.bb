@@ -174,6 +174,37 @@ class CreateDirectoryOperation : public GetDataOperation {
   DISALLOW_COPY_AND_ASSIGN(CreateDirectoryOperation);
 };
 
+//=========================== RenameResourceOperation ==========================
+
+// This class performs the operation for renaming a document/file/directory.
+class RenameResourceOperation : public EntryActionOperation {
+ public:
+  // |callback| must not be null.
+  RenameResourceOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const DriveApiUrlGenerator& url_generator,
+      const std::string& resource_id,
+      const std::string& new_name,
+      const EntryActionCallback& callback);
+  virtual ~RenameResourceOperation();
+
+ protected:
+  // UrlFetchOperationBase overrides.
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+  virtual GURL GetURL() const OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+  const std::string resource_id_;
+  const std::string new_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenameResourceOperation);
+};
+
 }  // namespace drive
 }  // namespace google_apis
 

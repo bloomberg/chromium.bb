@@ -178,4 +178,36 @@ TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
             http_request_.content);
 }
 
+TEST_F(DriveApiOperationsTest, RenameResourceOperation) {
+  // Set an expected data file containing the directory's entry data.
+  // It'd be returned if we rename a directory.
+  expected_data_file_path_ =
+      test_util::GetTestFilePath("drive/directory_entry.json");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+
+  // Create "new directory" in the root directory.
+  drive::RenameResourceOperation* operation =
+      new drive::RenameResourceOperation(
+          &operation_registry_,
+          request_context_getter_.get(),
+          *url_generator_,
+          "resource_id",
+          "new name",
+          base::Bind(&test_util::CopyResultFromEntryActionCallbackAndQuit,
+                     &error));
+  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
+                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ("/drive/v2/files/resource_id", http_request_.relative_url);
+  EXPECT_EQ("PATCH", http_request_.headers["X-HTTP-Method-Override"]);
+  EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
+
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("{\"title\":\"new name\"}", http_request_.content);
+}
+
 }  // namespace google_apis

@@ -13,6 +13,17 @@ namespace {
 const char kContentTypeApplicationJson[] = "application/json";
 const char kDirectoryMimeType[] = "application/vnd.google-apps.folder";
 
+// This is an annotation to use PATCH request documented here:
+// https://developers.google.com/drive/performance#patch
+// Now, UrlFetcher doesn't support PATCH comment, and this is a workaround
+// in such a case.
+// TODO(hidehiko): Use PATCH command directly, when it is supported.
+//   crbug.com/173315
+const char kHttpMethodOverridePatchHeader[] = "X-HTTP-Method-Override: PATCH";
+
+// etag matching header.
+const char kIfMatchAllHeader[] = "If-Match: *";
+
 }  // namespace
 
 //============================== GetAboutOperation =============================
@@ -164,6 +175,54 @@ bool CreateDirectoryOperation::GetContentData(std::string* upload_content_type,
   base::JSONWriter::Write(&root, upload_content);
 
   DVLOG(1) << "CreateDirectory data: " << *upload_content_type << ", ["
+           << *upload_content << "]";
+  return true;
+}
+
+//=========================== RenameResourceOperation ==========================
+
+RenameResourceOperation::RenameResourceOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const DriveApiUrlGenerator& url_generator,
+    const std::string& resource_id,
+    const std::string& new_name,
+    const EntryActionCallback& callback)
+    : EntryActionOperation(registry, url_request_context_getter, callback),
+      url_generator_(url_generator),
+      resource_id_(resource_id),
+      new_name_(new_name) {
+  DCHECK(!callback.is_null());
+}
+
+RenameResourceOperation::~RenameResourceOperation() {}
+
+net::URLFetcher::RequestType RenameResourceOperation::GetRequestType() const {
+  // TODO(hidehiko): Use PATCH operation, when it is supported.
+  return net::URLFetcher::POST;
+}
+
+std::vector<std::string>
+RenameResourceOperation::GetExtraRequestHeaders() const {
+  std::vector<std::string> headers;
+  headers.push_back(kHttpMethodOverridePatchHeader);
+  headers.push_back(kIfMatchAllHeader);
+  return headers;
+}
+
+GURL RenameResourceOperation::GetURL() const {
+  return url_generator_.GetFileUrl(resource_id_);
+}
+
+bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
+                                             std::string* upload_content) {
+  *upload_content_type = kContentTypeApplicationJson;
+
+  base::DictionaryValue root;
+  root.SetString("title", new_name_);
+  base::JSONWriter::Write(&root, upload_content);
+
+  DVLOG(1) << "RenameResource data: " << *upload_content_type << ", ["
            << *upload_content << "]";
   return true;
 }
