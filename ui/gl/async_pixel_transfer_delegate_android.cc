@@ -198,6 +198,8 @@ class TransferStateInternal
         egl_target,
         egl_buffer,
         egl_attrib_list);
+
+    DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_);
   }
 
   void CreateEglImageOnUploadThread() {
@@ -366,6 +368,15 @@ class AsyncPixelTransferDelegateAndroid
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateAndroid);
 };
 
+namespace {
+// Imagination has some odd problems still.
+bool IsImagination() {
+  std::string vendor;
+  vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+  return vendor.find("Imagination") != std::string::npos;
+}
+}
+
 // We only used threaded uploads when we can:
 // - Create EGLImages out of OpenGL textures (EGL_KHR_gl_texture_2D_image)
 // - Bind EGLImages to OpenGL textures (GL_OES_EGL_image)
@@ -377,7 +388,8 @@ scoped_ptr<AsyncPixelTransferDelegate>
       context->HasExtension("EGL_KHR_image") &&
       context->HasExtension("EGL_KHR_image_base") &&
       context->HasExtension("EGL_KHR_gl_texture_2D_image") &&
-      context->HasExtension("GL_OES_EGL_image")) {
+      context->HasExtension("GL_OES_EGL_image") &&
+      !IsImagination()) {
     return make_scoped_ptr(
         static_cast<AsyncPixelTransferDelegate*>(
             new AsyncPixelTransferDelegateAndroid()));
