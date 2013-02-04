@@ -158,10 +158,12 @@ Commands.formatCommand = {
           chrome.fileBrowserPrivate.formatDevice.bind(null, url));
     }
   },
-  canExecute: function(event, rootsList) {
-    var removable =
-        CommandUtil.getCommandRootType(event, rootsList) == RootType.REMOVABLE;
-    event.canExecute = removable && !fileManager.isOnReadonlyDirectory();
+  canExecute: function(event, rootsList, fileManager, directoryModel) {
+    var root = CommandUtil.getCommandRoot(event, rootsList);
+    var removable = root &&
+                    PathUtil.getRootType(root.fullPath) == RootType.REMOVABLE;
+    var isReadOnly = root && directoryModel.isPathReadOnly(root.fullPath);
+    event.canExecute = removable && !isReadOnly;
     event.command.setHidden(!removable);
   }
 };
@@ -374,8 +376,8 @@ Commands.togglePinnedCommand = {
  * Creates zip file for current selection.
  */
 Commands.zipSelectionCommand = {
-  execute: function(event, fileManager) {
-    var dirEntry = fileManager.directoryModel_.getCurrentDirEntry();
+  execute: function(event, fileManager, directoryModel) {
+    var dirEntry = directoryModel.getCurrentDirEntry();
     var selectionEntries = fileManager.getSelection().entries;
     fileManager.copyManager_.zipSelection(dirEntry, fileManager.isOnDrive(),
                                           selectionEntries);

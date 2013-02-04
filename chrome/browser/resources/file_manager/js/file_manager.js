@@ -554,7 +554,7 @@ DialogType.isModal = function(type) {
         Commands.unmountCommand, this.rootsList_, this);
 
     CommandUtil.registerCommand(doc, 'format',
-        Commands.formatCommand, this.rootsList_, this);
+        Commands.formatCommand, this.rootsList_, this, this.directoryModel_);
 
     CommandUtil.registerCommand(this.rootsList_, 'import-photos',
         Commands.importCommand, this.rootsList_);
@@ -593,7 +593,7 @@ DialogType.isModal = function(type) {
         Commands.togglePinnedCommand, this);
 
     CommandUtil.registerCommand(doc, 'zip-selection',
-        Commands.zipSelectionCommand, this);
+        Commands.zipSelectionCommand, this, this.directoryModel_);
 
     CommandUtil.registerCommand(doc, 'search', Commands.searchCommand, this,
             this.dialogDom_.querySelector('#search-box'));
@@ -1968,6 +1968,11 @@ DialogType.isModal = function(type) {
       } else {
         errorNode.textContent = str('UNKNOWN_FILESYSTEM_WARNING');
       }
+
+      // Update 'canExecute' for format command so the format button's disabled
+      // property is properly set.
+      var formatCommand = this.dialogDom_.querySelector('command#format');
+      formatCommand.canExecuteChange(errorNode);
     } else {
       this.dialogContainer_.removeAttribute('unformatted');
     }
