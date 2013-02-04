@@ -27,9 +27,6 @@ namespace fileapi {
 //
 // Note that all the methods of this class are static and this does NOT
 // inherit from FileSystemFileUtil.
-//
-// TODO(dmikurube): Add unit tests for NativeFileUtil.
-// http://crbug.com/170564
 class WEBKIT_STORAGE_EXPORT_PRIVATE NativeFileUtil {
  public:
   static base::PlatformFileError CreateOrOpen(

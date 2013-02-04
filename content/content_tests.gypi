@@ -449,6 +449,7 @@
         '../webkit/fileapi/media/native_media_file_util_unittest.cc',
         '../webkit/fileapi/mock_file_change_observer.cc',
         '../webkit/fileapi/mock_file_change_observer.h',
+        '../webkit/fileapi/native_file_util_unittest.cc',
         '../webkit/fileapi/obfuscated_file_util_unittest.cc',
         '../webkit/fileapi/sandbox_mount_point_provider_unittest.cc',
         '../webkit/fileapi/syncable/canned_syncable_file_system.cc',
