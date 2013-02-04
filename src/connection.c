@@ -378,23 +378,28 @@ wl_connection_queue(struct wl_connection *connection,
 	return 0;
 }
 
+#define ALIGN(p, s) (void *) ( ((intptr_t) (p) + ((s) - 1)) & ~((s) - 1) )
+
 static int
 wl_message_size_extra(const struct wl_message *message)
 {
-	int i, extra;
+	char *extra;
+	int i;
 
-	for (i = 0, extra = 0; message->signature[i]; i++) {
-
+	for (i = 0, extra = NULL; message->signature[i]; i++) {
 		switch (message->signature[i]) {
 		case 's':
 		case 'o':
 		case 'n':
+			extra = ALIGN(extra, sizeof (void *));
 			extra += sizeof (void *);
 			break;
 		case 'a':
+			extra = ALIGN(extra, sizeof (void *));
 			extra += sizeof (void *) + sizeof (struct wl_array);
 			break;
 		case 'h':
+			extra = ALIGN(extra, sizeof (int));
 			extra += sizeof (int);
 			break;
 		default:
@@ -402,7 +407,7 @@ wl_message_size_extra(const struct wl_message *message)
 		}
 	}
 
-	return extra;
+	return (intptr_t) extra;
 }
 
 static int
@@ -501,6 +506,7 @@ wl_closure_vmarshal(struct wl_object *sender,
 			*p++ = va_arg(ap, int32_t);
 			break;
 		case 's':
+			extra = ALIGN(extra, sizeof (void *));
 			closure->types[i] = &ffi_type_pointer;
 			closure->args[i] = extra;
 			sp = (const char **) extra;
@@ -527,6 +533,7 @@ wl_closure_vmarshal(struct wl_object *sender,
 			p += aligned / sizeof *p;
 			break;
 		case 'o':
+			extra = ALIGN(extra, sizeof (void *));
 			closure->types[i] = &ffi_type_pointer;
 			closure->args[i] = extra;
 			objectp = (struct wl_object **) extra;
@@ -557,6 +564,7 @@ wl_closure_vmarshal(struct wl_object *sender,
 			break;
 
 		case 'a':
+			extra = ALIGN(extra, sizeof (void *));
 			closure->types[i] = &ffi_type_pointer;
 			closure->args[i] = extra;
 			arrayp = (struct wl_array **) extra;
@@ -589,6 +597,7 @@ wl_closure_vmarshal(struct wl_object *sender,
 			break;
 
 		case 'h':
+			extra = ALIGN(extra, sizeof (int));
 			closure->types[i] = &ffi_type_sint;
 			closure->args[i] = extra;
 			fd_ptr = (int *) extra;
@@ -715,6 +724,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 				goto err;
 			}
 
+			extra = ALIGN(extra, sizeof (void *));
 			s = (char **) extra;
 			extra += sizeof *s;
 			closure->args[i] = s;
@@ -736,6 +746,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 			break;
 		case 'o':
 			closure->types[i] = &ffi_type_pointer;
+			extra = ALIGN(extra, sizeof (void *));
 			id = (uint32_t **) extra;
 			extra += sizeof *id;
 			closure->args[i] = id;
@@ -753,6 +764,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 			break;
 		case 'n':
 			closure->types[i] = &ffi_type_pointer;
+			extra = ALIGN(extra, sizeof (void *));
 			id = (uint32_t **) extra;
 			extra += sizeof *id;
 			closure->args[i] = id;
@@ -789,6 +801,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 				goto err;
 			}
 
+			extra = ALIGN(extra, sizeof (void *));
 			array = (struct wl_array **) extra;
 			extra += sizeof *array;
 			closure->args[i] = array;
@@ -804,6 +817,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 		case 'h':
 			closure->types[i] = &ffi_type_sint;
 
+			extra = ALIGN(extra, sizeof (int));
 			fd = (int *) extra;
 			extra += sizeof *fd;
 			closure->args[i] = fd;
