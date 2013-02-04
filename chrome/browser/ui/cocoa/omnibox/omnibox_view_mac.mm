@@ -378,6 +378,13 @@ void OmniboxViewMac::SetTextInternal(const string16& display_text) {
   NSMutableAttributedString* as =
       [[[NSMutableAttributedString alloc] initWithString:ss] autorelease];
 
+  // |ApplyTextAttributes()| may call |GetText()|, expecting the current text
+  // to be consistent with |suggest_text_length_|, which may not be the case
+  // when |SetTextInternal()| is called after updating |suggest_text_length_|.
+  // To work around this, set the non-attributed string first, before applying
+  // styles to it.
+  [field_ setAttributedStringValue:as];
+
   ApplyTextAttributes(display_text, as);
 
   [field_ setAttributedStringValue:as];
