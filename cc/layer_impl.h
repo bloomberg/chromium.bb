@@ -365,7 +365,7 @@ private:
 
     // Indicates that a property has changed on this layer that would not
     // affect the pixels on its target surface, but would require redrawing
-    // but would require redrawing the targetSurface onto its ancestor targetSurface.
+    // the targetSurface onto its ancestor targetSurface.
     // For layers that do not own a surface this flag acts as m_layerPropertyChanged.
     bool m_layerSurfacePropertyChanged;
 
