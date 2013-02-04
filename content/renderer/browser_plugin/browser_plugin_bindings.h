@@ -48,6 +48,7 @@ class BrowserPluginBindings {
                    NPIdentifier name,
                    const NPVariant* variant);
   bool GetProperty(NPIdentifier name, NPVariant* result);
+  bool RemoveProperty(NPObject *np_obj, NPIdentifier name);
  private:
   BrowserPlugin* instance_;
   // The NPObject we use to expose postMessage to JavaScript.

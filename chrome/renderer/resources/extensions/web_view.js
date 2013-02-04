@@ -9,8 +9,8 @@
 
 var watchForTag = require("tagWatcher").watchForTag;
 
-var WEB_VIEW_ATTRIBUTES = ['name', 'src', 'partition', 'autoSize', 'minHeight',
-    'minWidth', 'maxHeight', 'maxWidth'];
+var WEB_VIEW_ATTRIBUTES = ['name', 'src', 'partition', 'autosize', 'minheight',
+    'minwidth', 'maxheight', 'maxwidth'];
 
 // All exposed api methods for <webview>, these are forwarded to the browser
 // plugin.

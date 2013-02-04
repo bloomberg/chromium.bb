@@ -28,8 +28,8 @@ const char kHTMLForBrowserPluginObject[] =
 
 const char kHTMLForBrowserPluginWithAllAttributes[] =
     "<object id='browserplugin' width='640' height='480' type='%s'"
-    " autoSize='true' maxHeight='600' maxWidth='800' minHeight='240'"
-    " minWidth='320' name='Jim' partition='someid' src='foo'>";
+    " autosize maxheight='600' maxwidth='800' minheight='240'"
+    " minwidth='320' name='Jim' partition='someid' src='foo'>";
 
 const char kHTMLForSourcelessPluginObject[] =
     "<object id='browserplugin' width='640px' height='480px' type='%s'>";
@@ -185,20 +185,20 @@ TEST_F(BrowserPluginTest, ParseAllAttributes) {
   LoadHTML(html.c_str());
   bool result;
   bool has_value = ExecuteScriptAndReturnBool(
-      "document.getElementById('browserplugin').autoSize", &result);
+      "document.getElementById('browserplugin').autosize", &result);
   EXPECT_TRUE(has_value);
   EXPECT_TRUE(result);
   int maxHeight = ExecuteScriptAndReturnInt(
-      "document.getElementById('browserplugin').maxHeight");
+      "document.getElementById('browserplugin').maxheight");
   EXPECT_EQ(600, maxHeight);
   int maxWidth = ExecuteScriptAndReturnInt(
-      "document.getElementById('browserplugin').maxWidth");
+      "document.getElementById('browserplugin').maxwidth");
   EXPECT_EQ(800, maxWidth);
   int minHeight = ExecuteScriptAndReturnInt(
-      "document.getElementById('browserplugin').minHeight");
+      "document.getElementById('browserplugin').minheight");
   EXPECT_EQ(240, minHeight);
   int minWidth = ExecuteScriptAndReturnInt(
-      "document.getElementById('browserplugin').minWidth");
+      "document.getElementById('browserplugin').minwidth");
   EXPECT_EQ(320, minWidth);
   std::string name = ExecuteScriptAndReturnString(
       "document.getElementById('browserplugin').name");
@@ -815,14 +815,14 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
   LoadHTML(html.c_str());
   const char* kSetAutoSizeParametersAndNavigate =
     "var browserplugin = document.getElementById('browserplugin');"
-    "browserplugin.autoSize = true;"
-    "browserplugin.minWidth = 42;"
-    "browserplugin.minHeight = 43;"
-    "browserplugin.maxWidth = 1337;"
-    "browserplugin.maxHeight = 1338;"
+    "browserplugin.autosize = true;"
+    "browserplugin.minwidth = 42;"
+    "browserplugin.minheight = 43;"
+    "browserplugin.maxwidth = 1337;"
+    "browserplugin.maxheight = 1338;"
     "browserplugin.src = 'foobar';";
   const char* kDisableAutoSize =
-    "document.getElementById('browserplugin').autoSize = false;";
+    "document.getElementById('browserplugin').removeAttribute('autosize');";
 
   int instance_id = 0;
   // Set some autosize parameters before navigating then navigate.
