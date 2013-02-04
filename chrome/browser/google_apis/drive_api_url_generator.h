@@ -48,6 +48,12 @@ class DriveApiUrlGenerator {
   // Returns a URL to fecth a file content.
   GURL GetFileUrl(const std::string& file_id) const;
 
+  // Returns a URL to add a resource to a directory with |resource_id|.
+  // Note that the |resource_id| is corresponding to the "folder id" in the
+  // document: https://developers.google.com/drive/v2/reference/children/insert
+  // but we use the term "resource" for consistency in our code.
+  GURL GetChildrenUrl(const std::string& resource_id) const;
+
  private:
   const GURL base_url_;
 

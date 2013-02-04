@@ -409,8 +409,14 @@ void DriveAPIService::AddResourceToDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(kochi): Implement this.
-  NOTREACHED();
+  runner_->StartOperationWithRetry(
+      new drive::InsertResourceOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          parent_resource_id,
+          resource_id,
+          callback));
 }
 
 void DriveAPIService::RemoveResourceFromDirectory(

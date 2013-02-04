@@ -19,6 +19,7 @@ const char kDriveV2ApplistUrl[] = "/drive/v2/apps";
 const char kDriveV2ChangelistUrl[] = "/drive/v2/changes";
 const char kDriveV2FilelistUrl[] = "/drive/v2/files";
 const char kDriveV2FileUrlPrefix[] = "/drive/v2/files/";
+const char kDriveV2ChildrenUrlFormat[] = "/drive/v2/files/%s/children";
 
 }  // namespace
 
@@ -69,6 +70,13 @@ GURL DriveApiUrlGenerator::GetFilelistUrl(
 
 GURL DriveApiUrlGenerator::GetFileUrl(const std::string& file_id) const {
   return base_url_.Resolve(kDriveV2FileUrlPrefix + net::EscapePath(file_id));
+}
+
+GURL DriveApiUrlGenerator::GetChildrenUrl(
+    const std::string& resource_id) const {
+  return base_url_.Resolve(
+      base::StringPrintf(kDriveV2ChildrenUrlFormat,
+                         net::EscapePath(resource_id).c_str()));
 }
 
 }  // namespace google_apis

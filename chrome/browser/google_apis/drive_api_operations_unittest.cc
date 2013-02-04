@@ -24,6 +24,14 @@ namespace {
 const char kTestDriveApiAuthToken[] = "testtoken";
 const char kTestUserAgent[] = "test-user-agent";
 
+const char kTestChildrenResponse[] =
+    "{\n"
+    "\"kind\": \"drive#childReference\",\n"
+    "\"id\": \"resource_id\",\n"
+    "\"selfLink\": \"self_link\",\n"
+    "\"childLink\": \"child_link\",\n"
+    "}\n";
+
 }  // namespace
 
 class DriveApiOperationsTest : public testing::Test {
@@ -45,6 +53,9 @@ class DriveApiOperationsTest : public testing::Test {
     ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
     test_server_.RegisterRequestHandler(
         base::Bind(&DriveApiOperationsTest::HandleDataFileRequest,
+                   base::Unretained(this)));
+    test_server_.RegisterRequestHandler(
+        base::Bind(&DriveApiOperationsTest::HandleContentResponse,
                    base::Unretained(this)));
 
     url_generator_.reset(new DriveApiUrlGenerator(
@@ -70,6 +81,11 @@ class DriveApiOperationsTest : public testing::Test {
   // the server. See also HandleDataFileRequest below.
   FilePath expected_data_file_path_;
 
+  // These are content and its type in the expected response from the server.
+  // See also HandleContentResponse below.
+  std::string expected_content_type_;
+  std::string expected_content_;
+
   // The incoming HTTP request is saved so tests can verify the request
   // parameters like HTTP method (ex. some operations should use DELETE
   // instead of GET).
@@ -92,6 +108,27 @@ class DriveApiOperationsTest : public testing::Test {
 
     // Return the response from the data file.
     return test_util::CreateHttpResponseFromFile(expected_data_file_path_);
+  }
+
+  // Returns the response based on set expected content and its type.
+  // To use this method, both |expected_content_type_| and |expected_content_|
+  // must be set in advance.
+  scoped_ptr<test_server::HttpResponse> HandleContentResponse(
+      const test_server::HttpRequest& request) {
+    http_request_ = request;
+
+    if (expected_content_type_.empty() || expected_content_.empty()) {
+      // Expected content is not set. Delegate the processing to the next
+      // handler.
+      return scoped_ptr<test_server::HttpResponse>();
+    }
+
+    scoped_ptr<test_server::HttpResponse> response(
+        new test_server::HttpResponse);
+    response->set_code(test_server::SUCCESS);
+    response->set_content_type(expected_content_type_);
+    response->set_content(expected_content_);
+    return response.Pass();
   }
 };
 
@@ -208,6 +245,38 @@ TEST_F(DriveApiOperationsTest, RenameResourceOperation) {
 
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ("{\"title\":\"new name\"}", http_request_.content);
+}
+
+TEST_F(DriveApiOperationsTest, InsertResourceOperation) {
+  // Set an expected data file containing the children entry.
+  expected_content_type_ = "application/json";
+  expected_content_ = kTestChildrenResponse;
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+
+  // Add a resource with "resource_id" to a directory with
+  // "parent_resource_id".
+  drive::InsertResourceOperation* operation =
+      new drive::InsertResourceOperation(
+          &operation_registry_,
+          request_context_getter_.get(),
+          *url_generator_,
+          "parent_resource_id",
+          "resource_id",
+          base::Bind(&test_util::CopyResultFromEntryActionCallbackAndQuit,
+                     &error));
+  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
+                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ("/drive/v2/files/parent_resource_id/children",
+            http_request_.relative_url);
+  EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
+
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("{\"id\":\"resource_id\"}", http_request_.content);
 }
 
 }  // namespace google_apis

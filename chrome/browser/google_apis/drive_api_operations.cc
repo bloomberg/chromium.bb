@@ -227,5 +227,44 @@ bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
   return true;
 }
 
+//========================== InsertResourceOperation ===========================
+
+InsertResourceOperation::InsertResourceOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const DriveApiUrlGenerator& url_generator,
+    const std::string& parent_resource_id,
+    const std::string& resource_id,
+    const EntryActionCallback& callback)
+    : EntryActionOperation(registry, url_request_context_getter, callback),
+      url_generator_(url_generator),
+      parent_resource_id_(parent_resource_id),
+      resource_id_(resource_id) {
+  DCHECK(!callback.is_null());
+}
+
+InsertResourceOperation::~InsertResourceOperation() {}
+
+GURL InsertResourceOperation::GetURL() const {
+  return url_generator_.GetChildrenUrl(parent_resource_id_);
+}
+
+net::URLFetcher::RequestType InsertResourceOperation::GetRequestType() const {
+  return net::URLFetcher::POST;
+}
+
+bool InsertResourceOperation::GetContentData(std::string* upload_content_type,
+                                             std::string* upload_content) {
+  *upload_content_type = kContentTypeApplicationJson;
+
+  base::DictionaryValue root;
+  root.SetString("id", resource_id_);
+  base::JSONWriter::Write(&root, upload_content);
+
+  DVLOG(1) << "InsertResource data: " << *upload_content_type << ", ["
+           << *upload_content << "]";
+  return true;
+}
+
 }  // namespace drive
 }  // namespace google_apis

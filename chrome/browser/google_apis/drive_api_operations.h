@@ -199,10 +199,43 @@ class RenameResourceOperation : public EntryActionOperation {
 
  private:
   const DriveApiUrlGenerator url_generator_;
+
   const std::string resource_id_;
   const std::string new_name_;
 
   DISALLOW_COPY_AND_ASSIGN(RenameResourceOperation);
+};
+
+//========================== InsertResourceOperation ===========================
+
+// This class performs the operation for inserting a resource to a directory.
+// Note that this is the operation of "Children: insert" of the Drive API v2.
+// https://developers.google.com/drive/v2/reference/children/insert.
+class InsertResourceOperation : public EntryActionOperation {
+ public:
+  // |callback| must not be null.
+  InsertResourceOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const DriveApiUrlGenerator& url_generator,
+      const std::string& parent_resource_id,
+      const std::string& resource_id,
+      const EntryActionCallback& callback);
+  virtual ~InsertResourceOperation();
+
+ protected:
+  // UrlFetchOperationBase overrides.
+  virtual GURL GetURL() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+  const std::string parent_resource_id_;
+  const std::string resource_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(InsertResourceOperation);
 };
 
 }  // namespace drive
