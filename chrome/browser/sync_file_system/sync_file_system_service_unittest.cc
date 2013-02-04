@@ -137,6 +137,10 @@ class SyncFileSystemServiceTest : public testing::Test {
         make_scoped_ptr(local_service_),
         scoped_ptr<RemoteFileSyncService>(remote_service_));
 
+    // Disable auto sync by default.
+    EXPECT_CALL(*mock_remote_service(), SetSyncEnabled(false)).Times(1);
+    sync_service_->SetSyncEnabledForTesting(false);
+
     file_system_->SetUp();
   }
 
@@ -317,7 +321,7 @@ TEST_F(SyncFileSystemServiceTest, GetConflictFilesWithoutInitialize) {
   }
 }
 
-TEST_F(SyncFileSystemServiceTest, DISABLED_GetConflictFiles) {
+TEST_F(SyncFileSystemServiceTest, GetConflictFiles) {
   InitializeApp();
 
   // 1. Sets up (conflicting) files.
