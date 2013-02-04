@@ -1044,7 +1044,6 @@
             'base/simd/empty_register_state_mmx.asm',
             'base/simd/filter_yuv.h',
             'base/simd/filter_yuv_c.cc',
-            'base/simd/filter_yuv_mmx.cc',
             'base/simd/filter_yuv_sse2.cc',
             'base/simd/linear_scale_yuv_to_rgb_mmx.asm',
             'base/simd/linear_scale_yuv_to_rgb_mmx.inc',
@@ -1056,6 +1055,11 @@
             'base/simd/yuv_to_rgb_table.h',
           ],
           'conditions': [
+            [ 'OS!="win" or target_arch=="ia32" or MSVS_VERSION>="2012"', {
+              'sources': [
+                'base/simd/filter_yuv_mmx.cc',
+              ],
+            }],
             [ 'target_arch == "x64"', {
               # Source files optimized for X64 systems.
               'sources': [
