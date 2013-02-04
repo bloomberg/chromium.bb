@@ -175,7 +175,7 @@ class WebrtcBrowserTest : public InProcessBrowserTest {
  private:
   void RunPeerConnectionServer() {
     FilePath peerconnection_server;
-    EXPECT_TRUE(PathService::Get(base::DIR_EXE, &peerconnection_server));
+    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &peerconnection_server));
     peerconnection_server = peerconnection_server.Append(kPeerConnectionServer);
 
     EXPECT_TRUE(file_util::PathExists(peerconnection_server)) <<
