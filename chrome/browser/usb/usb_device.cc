@@ -83,7 +83,8 @@ static UsbTransferStatus ConvertTransferStatus(
   return USB_TRANSFER_ERROR;
 }
 
-static void HandleTransferCompletion(struct libusb_transfer* transfer) {
+static void LIBUSB_CALL HandleTransferCompletion(
+    struct libusb_transfer* transfer) {
   UsbDevice* const device = reinterpret_cast<UsbDevice*>(transfer->user_data);
   device->TransferComplete(transfer);
 }
@@ -238,8 +239,7 @@ void UsbDevice::ControlTransfer(const TransferDirection direction,
   libusb_fill_control_setup(reinterpret_cast<uint8*>(resized_buffer->data()),
                             converted_type, request, value, index, length);
   libusb_fill_control_transfer(transfer, handle_, reinterpret_cast<uint8*>(
-      resized_buffer->data()), reinterpret_cast<libusb_transfer_cb_fn>(
-          &HandleTransferCompletion), this, timeout);
+      resized_buffer->data()), HandleTransferCompletion, this, timeout);
   SubmitTransfer(transfer, USB_TRANSFER_CONTROL, resized_buffer, resized_length,
                  callback);
 }
@@ -253,8 +253,7 @@ void UsbDevice::BulkTransfer(const TransferDirection direction,
   const uint8 new_endpoint = ConvertTransferDirection(direction) | endpoint;
   libusb_fill_bulk_transfer(transfer, handle_, new_endpoint,
       reinterpret_cast<uint8*>(buffer->data()), length,
-      reinterpret_cast<libusb_transfer_cb_fn>(&HandleTransferCompletion), this,
-      timeout);
+      HandleTransferCompletion, this, timeout);
   SubmitTransfer(transfer, USB_TRANSFER_BULK, buffer, length, callback);
 }
 
@@ -267,8 +266,7 @@ void UsbDevice::InterruptTransfer(const TransferDirection direction,
   const uint8 new_endpoint = ConvertTransferDirection(direction) | endpoint;
   libusb_fill_interrupt_transfer(transfer, handle_, new_endpoint,
       reinterpret_cast<uint8*>(buffer->data()), length,
-      reinterpret_cast<libusb_transfer_cb_fn>(&HandleTransferCompletion), this,
-      timeout);
+      HandleTransferCompletion, this, timeout);
   SubmitTransfer(transfer, USB_TRANSFER_INTERRUPT, buffer, length, callback);
 }
 
@@ -288,8 +286,7 @@ void UsbDevice::IsochronousTransfer(const TransferDirection direction,
   const uint8 new_endpoint = ConvertTransferDirection(direction) | endpoint;
   libusb_fill_iso_transfer(transfer, handle_, new_endpoint,
       reinterpret_cast<uint8*>(buffer->data()), length, packets,
-      reinterpret_cast<libusb_transfer_cb_fn>(&HandleTransferCompletion), this,
-      timeout);
+      HandleTransferCompletion, this, timeout);
   libusb_set_iso_packet_lengths(transfer, packet_length);
 
   SubmitTransfer(transfer, USB_TRANSFER_ISOCHRONOUS, buffer, length, callback);
