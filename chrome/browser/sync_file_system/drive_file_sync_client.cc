@@ -4,8 +4,6 @@
 
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
 
-#include <algorithm>
-#include <functional>
 #include <sstream>
 
 #include "base/string_util.h"
@@ -654,6 +652,7 @@ void DriveFileSyncClient::DeleteFileInternal(
   // http://crbug.com/156037
   drive_service_->DeleteResource(
       entry->resource_id(),
+      entry->etag(),
       base::Bind(&DriveFileSyncClient::DidDeleteFile,
                  AsWeakPtr(), callback));
 }
@@ -744,6 +743,7 @@ void DriveFileSyncClient::DeleteEntries(
 
   drive_service_->DeleteResource(
       entry->resource_id(),
+      entry->etag(),
       base::Bind(&DriveFileSyncClient::DidDeleteEntry, AsWeakPtr(),
                  base::Passed(&entries), callback));
 }

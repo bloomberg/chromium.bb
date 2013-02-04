@@ -195,11 +195,11 @@ ACTION_P2(InvokeDownloadActionCallback3, error, downloaded_file_path) {
       base::Bind(arg3, error, downloaded_file_path));
 }
 
-// Invokes |arg1| as a EntryActionCallback.
+// Invokes |arg2| as a EntryActionCallback.
 ACTION_P(InvokeEntryActionCallback2, error) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg1, error));
+      base::Bind(arg2, error));
 }
 
 void DidGetResourceID(bool* done_out,
@@ -403,7 +403,7 @@ TEST_F(DriveFileSyncClientTest, CreateSyncRoot_Conflict) {
   // Expect to call DeleteResource from DeleteEntries through
   // EnsureTitleUniqueness.
   EXPECT_CALL(*mock_drive_service(),
-              DeleteResource("folder:sync_root_resource_id_duplicated", _))
+              DeleteResource("folder:sync_root_resource_id_duplicated", _, _))
       .WillOnce(InvokeEntryActionCallback2(google_apis::HTTP_SUCCESS));
 
   bool done = false;
@@ -569,7 +569,7 @@ TEST_F(DriveFileSyncClientTest, CreateOriginDirectory_Conflict) {
   // EnsureTitleUniqueness.
   EXPECT_CALL(
       *mock_drive_service(),
-      DeleteResource("folder:origin_directory_resource_id_duplicated", _))
+      DeleteResource("folder:origin_directory_resource_id_duplicated", _, _))
       .WillOnce(InvokeEntryActionCallback2(google_apis::HTTP_SUCCESS));
 
   bool done = false;
@@ -976,7 +976,8 @@ TEST_F(DriveFileSyncClientTest, DeleteFile) {
 
   // Expect to call DriveUploaderInterface::DeleteResource from
   // DidGetResourceEntryForDeleteFile.
-  EXPECT_CALL(*mock_drive_service(), DeleteResource(kResourceId, _))
+  EXPECT_CALL(*mock_drive_service(),
+              DeleteResource(kResourceId, "\"HhMOFgxXHit7ImBr\"", _))
       .WillOnce(InvokeEntryActionCallback2(google_apis::HTTP_SUCCESS))
       .RetiresOnSaturation();
 

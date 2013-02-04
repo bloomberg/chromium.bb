@@ -499,6 +499,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.DeleteResource(
       "file:2_file_resource_id",
+      "",  // etag
       base::Bind(&test_util::CopyResultsFromEntryActionCallback,
                  &error));
   message_loop_.RunUntilIdle();
@@ -514,6 +515,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_NonexistingFile) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.DeleteResource(
       "file:nonexisting_resource_id",
+      "",  // etag
       base::Bind(&test_util::CopyResultsFromEntryActionCallback,
                  &error));
   message_loop_.RunUntilIdle();
@@ -528,6 +530,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_Offline) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.DeleteResource(
       "file:2_file_resource_id",
+      "",  // etag
       base::Bind(&test_util::CopyResultsFromEntryActionCallback,
                  &error));
   message_loop_.RunUntilIdle();

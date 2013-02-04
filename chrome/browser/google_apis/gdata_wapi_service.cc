@@ -312,6 +312,7 @@ void GDataWapiService::DownloadFile(
 
 void GDataWapiService::DeleteResource(
     const std::string& resource_id,
+    const std::string& etag,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -321,7 +322,8 @@ void GDataWapiService::DeleteResource(
                                   url_request_context_getter_,
                                   url_generator_,
                                   callback,
-                                  resource_id));
+                                  resource_id,
+                                  etag));
 }
 
 void GDataWapiService::AddNewDirectory(

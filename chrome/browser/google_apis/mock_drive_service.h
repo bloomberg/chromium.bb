@@ -49,8 +49,9 @@ class MockDriveService : public DriveServiceInterface {
   MOCK_METHOD1(GetAccountMetadata,
       void(const GetAccountMetadataCallback& callback));
   MOCK_METHOD1(GetAppList, void(const GetAppListCallback& callback));
-  MOCK_METHOD2(DeleteResource,
+  MOCK_METHOD3(DeleteResource,
       void(const std::string& resource_id,
+          const std::string& etag,
           const EntryActionCallback& callback));
   MOCK_METHOD3(CopyHostedDocument,
       void(const std::string& resource_id,
@@ -118,6 +119,7 @@ class MockDriveService : public DriveServiceInterface {
 
   // Will call |callback| with HTTP_SUCCESS.
   void DeleteResourceStub(const std::string& resource_id,
+                          const std::string& etag,
                           const EntryActionCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS and the current value of

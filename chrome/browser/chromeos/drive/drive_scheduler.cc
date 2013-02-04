@@ -344,6 +344,7 @@ void DriveScheduler::DoJobLoop() {
     case TYPE_DELETE_RESOURCE: {
       drive_service_->DeleteResource(
           queue_entry->resource_id,
+          "",  // etag
           base::Bind(&DriveScheduler::OnEntryActionJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id));

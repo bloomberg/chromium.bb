@@ -249,10 +249,12 @@ DeleteResourceOperation::DeleteResourceOperation(
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const EntryActionCallback& callback,
-    const std::string& resource_id)
+    const std::string& resource_id,
+    const std::string& etag)
     : EntryActionOperation(registry, url_request_context_getter, callback),
       url_generator_(url_generator),
-      resource_id_(resource_id) {
+      resource_id_(resource_id),
+      etag_(etag) {
   DCHECK(!callback.is_null());
 }
 
@@ -269,7 +271,10 @@ URLFetcher::RequestType DeleteResourceOperation::GetRequestType() const {
 std::vector<std::string>
 DeleteResourceOperation::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
-  headers.push_back(kIfMatchAllHeader);
+  if (etag_.empty())
+    headers.push_back(kIfMatchAllHeader);
+  else
+    headers.push_back(StringPrintf(kIfMatchHeaderFormat, etag_.c_str()));
   return headers;
 }
 
