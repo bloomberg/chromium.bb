@@ -257,6 +257,16 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
                          const gfx::Rect& rect,
                          const TextFieldExtraParams& extra) const;
 
+  // Paints a theme part, with support for scene scaling in high-DPI mode.
+  // |theme| is the theme handle. |hdc| is the handle for the device context.
+  // |part_id| is the identifier for the part (e.g. thumb gripper). |state_id|
+  // is the identifier for the rendering state of the part (e.g. hover). |rect|
+  // is the bounds for rendering, expressed in logical coordinates.
+  HRESULT PaintScaledTheme(HANDLE theme,
+                           HDC hdc,
+                           int part_id,
+                           int state_id,
+                           const gfx::Rect& rect) const;
 
   // Get the windows theme name/part/state.  These three helper functions are
   // used only by GetPartSize(), as each of the corresponding PaintXXX()

@@ -23,9 +23,11 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/win/dpi.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/native_theme/common_theme.h"
 
 // This was removed from Winvers.h but is still used.
@@ -1071,8 +1073,7 @@ HRESULT NativeThemeWin::PaintScrollbarArrow(
           break;
       }
     }
-
-    return draw_theme_(handle, hdc, SBP_ARROWBTN, state_id, &rect_win, NULL);
+    return PaintScaledTheme(handle, hdc, SBP_ARROWBTN, state_id, rect);
   }
 
   int classic_state = DFCS_SCROLLDOWN;
@@ -1161,7 +1162,7 @@ HRESULT NativeThemeWin::PaintScrollbarThumb(
   }
 
   if (handle && draw_theme_)
-    return draw_theme_(handle, hdc, part_id, state_id, &rect_win, NULL);
+    return PaintScaledTheme(handle, hdc, part_id, state_id, rect);
 
   // Draw it manually.
   if ((part_id == SBP_THUMBBTNHORZ) || (part_id == SBP_THUMBBTNVERT))
@@ -1589,6 +1590,35 @@ HRESULT NativeThemeWin::PaintTextField(HDC hdc,
   }
   DeleteObject(bg_brush);
   return hr;
+}
+
+HRESULT NativeThemeWin::PaintScaledTheme(HANDLE theme,
+                                         HDC hdc,
+                                         int part_id,
+                                         int state_id,
+                                         const gfx::Rect& rect) const {
+  // Correct the scaling and positioning of sub-components such as scrollbar
+  // arrows and thumb grippers in the event that the world transform applies
+  // scaling (e.g. in high-DPI mode).
+  XFORM save_transform;
+  if (GetWorldTransform(hdc, &save_transform)) {
+    float scale = save_transform.eM11;
+    if (scale != 1 && save_transform.eM12 == 0) {
+      ModifyWorldTransform(hdc, NULL, MWT_IDENTITY);
+      gfx::Rect scaled_rect = gfx::ToEnclosedRect(
+          gfx::ScaleRect(rect, scale));
+      RECT bounds = gfx::Rect(scaled_rect.x() + save_transform.eDx,
+                              scaled_rect.y() + save_transform.eDy,
+                              scaled_rect.width(),
+                              scaled_rect.height()).ToRECT();
+      HRESULT result = draw_theme_(theme, hdc, part_id, state_id, &bounds,
+                                   NULL);
+      SetWorldTransform(hdc, &save_transform);
+      return result;
+    }
+  }
+  RECT bounds = rect.ToRECT();
+  return draw_theme_(theme, hdc, part_id, state_id, &bounds, NULL);
 }
 
 // static
