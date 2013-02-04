@@ -46,7 +46,6 @@ WebUIDataSource* CreateTracingHTMLSource() {
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_TRACING_HTML);
   source->AddResourcePath("tracing.js", IDR_TRACING_JS);
-  source->AddLocalizedString("tracingTitle", IDS_TRACING_TITLE);
   return source;
 }
 

@@ -10,11 +10,6 @@
   </outputs>
   <translations />
   <release seq="1">
-    <messages fallback_to_english="true">
-      <message name="IDS_TRACING_TITLE" desc="Title for the about:tracing page.">
-        Tracing
-      </message>
-    </messages>
     <includes>
       <include name="IDR_GPU_BLACKLIST" file="browser/gpu/software_rendering_list.json" type="BINDATA" />
       <include name="IDR_GPU_INTERNALS_HTML" file="browser/resources/gpu/gpu_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

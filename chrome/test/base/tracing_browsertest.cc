@@ -42,7 +42,7 @@ void AddEvents(int num) {
     TRACE_EVENT_INSTANT0(g_category, g_event);
 }
 
-IN_PROC_BROWSER_TEST_F(TracingBrowserTest, DISABLED_BeginTracingWithWatch) {
+IN_PROC_BROWSER_TEST_F(TracingBrowserTest, BeginTracingWithWatch) {
   base::TimeDelta no_timeout;
   base::TimeDelta short_timeout = base::TimeDelta::FromMilliseconds(5);
   std::string json_events;
