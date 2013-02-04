@@ -49,7 +49,7 @@ GpuMemoryManager::GpuMemoryManager(
     GpuChannelManager* channel_manager,
     uint64 max_surfaces_with_frontbuffer_soft_limit)
     : channel_manager_(channel_manager),
-      use_nonuniform_memory_policy_(false),
+      use_nonuniform_memory_policy_(true),
       manage_immediate_scheduled_(false),
       max_surfaces_with_frontbuffer_soft_limit_(
           max_surfaces_with_frontbuffer_soft_limit),
@@ -80,6 +80,9 @@ GpuMemoryManager::GpuMemoryManager(
   bytes_minimum_per_client_ = 64 * 1024 * 1024;
 #endif
 
+  if (command_line->HasSwitch(switches::kDisableNonuniformGpuMemPolicy))
+    use_nonuniform_memory_policy_ = false;
+
   if (command_line->HasSwitch(switches::kForceGpuMemAvailableMb)) {
     base::StringToUint64(
         command_line->GetSwitchValueASCII(switches::kForceGpuMemAvailableMb),
@@ -88,6 +91,7 @@ GpuMemoryManager::GpuMemoryManager(
     bytes_available_gpu_memory_overridden_ = true;
   } else
     bytes_available_gpu_memory_ = GetDefaultAvailableGpuMemory();
+
   UpdateNonvisibleAvailableGpuMemory();
 }
 
