@@ -643,17 +643,20 @@ bool CompositingIOSurfaceMac::SynchronousCopyTo(
 
   TRACE_EVENT0("browser", "CompositingIOSurfaceMac::SynchronousCopyTo()");
 
-  GLuint target = GL_TEXTURE_RECTANGLE_ARB;
+  const GLenum kDestTextureTarget = GL_TEXTURE_2D;
+  const GLenum kSrcTextureTarget = GL_TEXTURE_RECTANGLE_ARB;
 
   GLuint dst_texture = 0;
   glGenTextures(1, &dst_texture); CHECK_GL_ERROR();
-  glBindTexture(target, dst_texture); CHECK_GL_ERROR();
+  glBindTexture(kDestTextureTarget, dst_texture); CHECK_GL_ERROR();
+  glTexParameterf(kDestTextureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameterf(kDestTextureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   GLuint dst_framebuffer = 0;
   glGenFramebuffersEXT(1, &dst_framebuffer); CHECK_GL_ERROR();
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, dst_framebuffer); CHECK_GL_ERROR();
 
-  glTexImage2D(target,
+  glTexImage2D(kDestTextureTarget,
                0,
                GL_RGBA,
                dst_pixel_size.width(),
@@ -664,10 +667,10 @@ bool CompositingIOSurfaceMac::SynchronousCopyTo(
                NULL); CHECK_GL_ERROR();
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
                             GL_COLOR_ATTACHMENT0_EXT,
-                            target,
+                            kDestTextureTarget,
                             dst_texture,
                             0); CHECK_GL_ERROR();
-  glBindTexture(target, 0); CHECK_GL_ERROR();
+  glBindTexture(kDestTextureTarget, 0); CHECK_GL_ERROR();
 
   glViewport(0, 0, dst_pixel_size.width(), dst_pixel_size.height());
 
@@ -685,9 +688,9 @@ bool CompositingIOSurfaceMac::SynchronousCopyTo(
   int texture_unit = 0;
   glUniform1i(blit_rgb_sampler_location_, texture_unit);
   glActiveTexture(GL_TEXTURE0 + texture_unit);
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
-  glTexParameterf(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameterf(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glBindTexture(kSrcTextureTarget, texture_);
+  glTexParameterf(kSrcTextureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameterf(kSrcTextureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   SurfaceQuad quad;
   quad.set_rect(0.0f, 0.0f, dst_pixel_size.width(), dst_pixel_size.height());
@@ -695,7 +698,7 @@ bool CompositingIOSurfaceMac::SynchronousCopyTo(
                          src_pixel_subrect.right(), src_pixel_subrect.bottom());
   DrawQuad(quad);
 
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0); CHECK_GL_ERROR();
+  glBindTexture(kSrcTextureTarget, 0); CHECK_GL_ERROR();
   glUseProgram(0);
 
   CGLFlushDrawable(cglContext_);
@@ -738,17 +741,22 @@ bool CompositingIOSurfaceMac::AsynchronousCopyTo(
 
   // Create an offscreen framebuffer.
   // This is used to render and scale a subrect of IOSurface.
-  const GLenum kTarget = GL_TEXTURE_RECTANGLE_ARB;
+  const GLenum kDestTextureTarget = GL_TEXTURE_2D;
+  const GLenum kSrcTextureTarget = GL_TEXTURE_RECTANGLE_ARB;
   const int dest_width = copy_context_.dest_size.width();
   const int dest_height = copy_context_.dest_size.height();
 
   glGenTextures(1, &copy_context_.frame_buffer_texture); CHECK_GL_ERROR();
-  glBindTexture(kTarget, copy_context_.frame_buffer_texture); CHECK_GL_ERROR();
+  glBindTexture(kDestTextureTarget, copy_context_.frame_buffer_texture);
+  CHECK_GL_ERROR();
+  glTexParameterf(kDestTextureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameterf(kDestTextureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
   glGenFramebuffersEXT(1, &copy_context_.frame_buffer); CHECK_GL_ERROR();
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, copy_context_.frame_buffer);
   CHECK_GL_ERROR();
 
-  glTexImage2D(kTarget,
+  glTexImage2D(kDestTextureTarget,
                0,
                GL_RGBA,
                dest_width,
@@ -759,9 +767,10 @@ bool CompositingIOSurfaceMac::AsynchronousCopyTo(
                NULL); CHECK_GL_ERROR();
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
                             GL_COLOR_ATTACHMENT0_EXT,
-                            kTarget,
+                            kDestTextureTarget,
                             copy_context_.frame_buffer_texture,
                             0); CHECK_GL_ERROR();
+  glBindTexture(kDestTextureTarget, 0); CHECK_GL_ERROR();
 
   glViewport(0, 0, dest_width, dest_height); CHECK_GL_ERROR();
   glMatrixMode(GL_PROJECTION); CHECK_GL_ERROR();
@@ -778,9 +787,11 @@ bool CompositingIOSurfaceMac::AsynchronousCopyTo(
   const int kTextureUnit = 0;
   glUniform1i(blit_rgb_sampler_location_, kTextureUnit); CHECK_GL_ERROR();
   glActiveTexture(GL_TEXTURE0 + kTextureUnit); CHECK_GL_ERROR();
-  glBindTexture(kTarget, texture_); CHECK_GL_ERROR();
-  glTexParameterf(kTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR); CHECK_GL_ERROR();
-  glTexParameterf(kTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST); CHECK_GL_ERROR();
+  glBindTexture(kSrcTextureTarget, texture_); CHECK_GL_ERROR();
+  glTexParameterf(kSrcTextureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  CHECK_GL_ERROR();
+  glTexParameterf(kSrcTextureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  CHECK_GL_ERROR();
 
   SurfaceQuad quad;
   quad.set_rect(0.0f, 0.0f, dest_width, dest_height); CHECK_GL_ERROR();
@@ -789,7 +800,7 @@ bool CompositingIOSurfaceMac::AsynchronousCopyTo(
       copy_context_.src_rect.right(), copy_context_.src_rect.bottom());
   DrawQuad(quad);
 
-  glBindTexture(kTarget, 0); CHECK_GL_ERROR();
+  glBindTexture(kSrcTextureTarget, 0); CHECK_GL_ERROR();
   glUseProgram(0); CHECK_GL_ERROR();
 
   // Copy the offscreen framebuffer to a PBO.
