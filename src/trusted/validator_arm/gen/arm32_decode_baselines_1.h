@@ -1969,6 +1969,7 @@ class LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_0
 //    Rt2: Rt + 1,
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1,
 //    add: U(23)=1,
 //    address: offset_addr
 //         if index
@@ -2038,6 +2039,7 @@ class LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0
 //    Rt2: Rt + 1,
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1,
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Pc,
@@ -2090,6 +2092,7 @@ class LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0
 //    Rt2: Rt + 1,
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1,
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Rn,
@@ -2262,6 +2265,7 @@ class LDREX_cccc00011001nnnntttt111110011111_case_0
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //    add: U(23)=1,
 //    address: offset_addr
 //         if index
@@ -2328,6 +2332,7 @@ class LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //    add: U(23)=1,
 //    base: Pc,
 //    baseline: LoadRegisterImm8Op,
@@ -2381,6 +2386,7 @@ class LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Load3RegisterOp,
@@ -2442,6 +2448,7 @@ class LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //    add: U(23)=1,
 //    address: offset_addr
 //         if index
@@ -2508,6 +2515,7 @@ class LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //    add: U(23)=1,
 //    base: Pc,
 //    baseline: LoadRegisterImm8Op,
@@ -2558,6 +2566,7 @@ class LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //    add: U(23)=1,
 //    base: Pc,
 //    baseline: LoadRegisterImm8Op,
@@ -2611,6 +2620,7 @@ class LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Load3RegisterOp,
@@ -2672,6 +2682,7 @@ class LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //    add: U(23)=1,
 //    address: offset_addr
 //         if index
@@ -2741,6 +2752,7 @@ class LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Load3RegisterOp,

@@ -24,6 +24,12 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1_instance_()
   , Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1_instance_()
   , Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1_instance_()
+  , Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1_instance_()
+  , Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1_instance_()
+  , Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1_instance_()
+  , Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_instance_()
+  , Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_instance_()
+  , Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_instance_()
   , Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1_instance_()
   , Actual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1_instance_()
   , Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1_instance_()
@@ -36,6 +42,10 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1_instance_()
   , Actual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1_instance_()
   , Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1_instance_()
+  , Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1_instance_()
+  , Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1_instance_()
+  , Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1_instance_()
+  , Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1_instance_()
   , Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1_instance_()
   , Actual_Unnamed_case_1_instance_()
   , Binary2RegisterBitRangeMsbGeLsb_instance_()
@@ -59,15 +69,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , InstructionBarrier_instance_()
   , LdrImmediateOp_instance_()
   , Load2RegisterImm12Op_instance_()
-  , Load2RegisterImm8DoubleOp_instance_()
-  , Load2RegisterImm8Op_instance_()
-  , Load3RegisterDoubleOp_instance_()
   , Load3RegisterImm5Op_instance_()
-  , Load3RegisterOp_instance_()
   , LoadExclusive2RegisterDoubleOp_instance_()
   , LoadExclusive2RegisterOp_instance_()
-  , LoadRegisterImm8DoubleOp_instance_()
-  , LoadRegisterImm8Op_instance_()
   , LoadRegisterList_instance_()
   , LoadVectorRegister_instance_()
   , LoadVectorRegisterList_instance_()
@@ -79,11 +83,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , PreloadRegisterImm12Op_instance_()
   , PreloadRegisterPairOp_instance_()
   , Store2RegisterImm12Op_instance_()
-  , Store2RegisterImm8DoubleOp_instance_()
-  , Store2RegisterImm8Op_instance_()
-  , Store3RegisterDoubleOp_instance_()
   , Store3RegisterImm5Op_instance_()
-  , Store3RegisterOp_instance_()
   , StoreExclusive3RegisterDoubleOp_instance_()
   , StoreExclusive3RegisterOp_instance_()
   , StoreRegisterList_instance_()
@@ -1020,14 +1020,14 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store_instructions(
           0x00000000 /* op1(24:20)=xx0x0 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return Store3RegisterOp_instance_;
+    return Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000060)  ==
           0x00000020 /* op2(6:5)=01 */ &&
       (inst.Bits() & 0x00500000)  ==
           0x00400000 /* op1(24:20)=xx1x0 */) {
-    return Store2RegisterImm8Op_instance_;
+    return Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000060)  ==
@@ -1036,7 +1036,7 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store_instructions(
           0x00500000 /* op1(24:20)=xx1x1 */ &&
       (inst.Bits() & 0x000F0000)  ==
           0x000F0000 /* Rn(19:16)=1111 */) {
-    return LoadRegisterImm8Op_instance_;
+    return Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000060)  ==
@@ -1045,7 +1045,7 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store_instructions(
           0x00000000 /* op1(24:20)=xx0x0 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return Load3RegisterDoubleOp_instance_;
+    return Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000060)  ==
@@ -1054,7 +1054,7 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store_instructions(
           0x00100000 /* op1(24:20)=xx0x1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return Load3RegisterOp_instance_;
+    return Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000060)  ==
@@ -1063,7 +1063,7 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store_instructions(
           0x00400000 /* op1(24:20)=xx1x0 */ &&
       (inst.Bits() & 0x000F0000)  !=
           0x000F0000 /* Rn(19:16)=~1111 */) {
-    return Load2RegisterImm8DoubleOp_instance_;
+    return Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000060)  ==
@@ -1074,7 +1074,7 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store_instructions(
           0x000F0000 /* Rn(19:16)=1111 */ &&
       (inst.Bits() & 0x01200000)  ==
           0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) {
-    return LoadRegisterImm8DoubleOp_instance_;
+    return Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000060)  ==
@@ -1083,7 +1083,7 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store_instructions(
           0x00500000 /* op1(24:20)=xx1x1 */ &&
       (inst.Bits() & 0x000F0000)  !=
           0x000F0000 /* Rn(19:16)=~1111 */) {
-    return Load2RegisterImm8Op_instance_;
+    return Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000060)  ==
@@ -1092,14 +1092,14 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store_instructions(
           0x00000000 /* op1(24:20)=xx0x0 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return Store3RegisterDoubleOp_instance_;
+    return Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000060)  ==
           0x00000060 /* op2(6:5)=11 */ &&
       (inst.Bits() & 0x00500000)  ==
           0x00400000 /* op1(24:20)=xx1x0 */) {
-    return Store2RegisterImm8DoubleOp_instance_;
+    return Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
@@ -1108,7 +1108,7 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store_instructions(
           0x00100000 /* op1(24:20)=xx0x1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return Load3RegisterOp_instance_;
+    return Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
@@ -1117,7 +1117,7 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store_instructions(
           0x00500000 /* op1(24:20)=xx1x1 */ &&
       (inst.Bits() & 0x000F0000)  !=
           0x000F0000 /* Rn(19:16)=~1111 */) {
-    return Load2RegisterImm8Op_instance_;
+    return Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000040)  ==
@@ -1128,7 +1128,7 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store_instructions(
           0x000F0000 /* Rn(19:16)=1111 */ &&
       (inst.Bits() & 0x01200000)  ==
           0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) {
-    return LoadRegisterImm8Op_instance_;
+    return Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...

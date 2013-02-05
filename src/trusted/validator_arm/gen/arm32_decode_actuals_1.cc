@@ -4214,6 +4214,8 @@ uses(Instruction inst) const {
 //         (15  ==
 //            inst(19:16) ||
 //         inst(15:12)  ==
+//            inst(19:16) ||
+//         inst(15:12) + 1  ==
 //            inst(19:16)) => UNPREDICTABLE,
 //      15  ==
 //            inst(15:12) + 1 => UNPREDICTABLE,
@@ -4269,13 +4271,16 @@ safety(Instruction inst) const {
   //       (15  ==
   //          inst(19:16) ||
   //       inst(15:12)  ==
+  //          inst(19:16) ||
+  //       inst(15:12) + 1  ==
   //          inst(19:16)) => UNPREDICTABLE
   if (((((inst.Bits() & 0x01000000)  ==
           0x00000000)) ||
        (((inst.Bits() & 0x00200000)  ==
           0x00200000))) &&
        (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))))))
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12) + 1))))))
     return UNPREDICTABLE;
 
   // 15  ==

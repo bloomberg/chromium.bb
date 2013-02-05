@@ -1537,6 +1537,7 @@ uses(Instruction inst) const {
 //    Rt2: Rt + 1,
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1,
 //    add: U(23)=1,
 //    address: offset_addr
 //         if index
@@ -1573,7 +1574,9 @@ uses(Instruction inst) const {
 //         (Rn  ==
 //            Pc ||
 //         Rn  ==
-//            Rt) => UNPREDICTABLE,
+//            Rt ||
+//         Rn  ==
+//            Rt2) => UNPREDICTABLE,
 //      Rt2  ==
 //            Pc => UNPREDICTABLE],
 //    small_imm_base_wb: wback,
@@ -1625,13 +1628,16 @@ safety(Instruction inst) const {
   //       (15  ==
   //          inst(19:16) ||
   //       inst(15:12)  ==
+  //          inst(19:16) ||
+  //       inst(15:12) + 1  ==
   //          inst(19:16)) => UNPREDICTABLE
   if (((((inst.Bits() & 0x01000000)  ==
           0x00000000)) ||
        (((inst.Bits() & 0x00200000)  ==
           0x00200000))) &&
        (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))))))
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12) + 1))))))
     return UNPREDICTABLE;
 
   // 15  ==
@@ -1676,6 +1682,7 @@ uses(Instruction inst) const {
 //    Rt2: Rt + 1,
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Store3RegisterDoubleOp,
@@ -2179,6 +2186,7 @@ uses(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1,
 //    add: U(23)=1,
 //    address: offset_addr
 //         if index
@@ -2310,6 +2318,7 @@ uses(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Store3RegisterOp,

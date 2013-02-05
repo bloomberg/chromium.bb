@@ -216,7 +216,8 @@ void ValidatorTests::all_cond_values_fail(const arm_inst prototype,
        cond = Instruction::Next(cond)) {
     test_inst = ChangeCond(test_inst, cond);
     EXPECT_FALSE(validate(&test_inst, 1, base_addr, &spy))
-        << "Passes on cond " << Instruction::ToString(cond) << ": " << msg;
+      << std::hex << test_inst
+        << ": Passes on cond " << Instruction::ToString(cond) << ": " << msg;
   }
 }
 

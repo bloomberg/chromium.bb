@@ -852,6 +852,7 @@ class STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_0
 //    Rt2: Rt + 1,
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1,
 //    add: U(23)=1,
 //    address: offset_addr
 //         if index
@@ -888,7 +889,9 @@ class STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_0
 //         (Rn  ==
 //            Pc ||
 //         Rn  ==
-//            Rt) => UNPREDICTABLE,
+//            Rt ||
+//         Rn  ==
+//            Rt2) => UNPREDICTABLE,
 //      Rt2  ==
 //            Pc => UNPREDICTABLE],
 //    small_imm_base_wb: wback,
@@ -922,6 +925,7 @@ class STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_0
 //    Rt2: Rt + 1,
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Store3RegisterDoubleOp,
@@ -1160,6 +1164,7 @@ class STREX_cccc00011000nnnndddd11111001tttt_case_0
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1,
 //    add: U(23)=1,
 //    address: offset_addr
 //         if index
@@ -1228,6 +1233,7 @@ class STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_0
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Store3RegisterOp,

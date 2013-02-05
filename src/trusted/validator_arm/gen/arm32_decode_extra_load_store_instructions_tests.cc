@@ -42,7 +42,7 @@ namespace nacl_arm_test {
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Store3RegisterOp,
+//       actual: Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: Store3RegisterOp,
 //       constraints: ,
@@ -169,7 +169,7 @@ bool LoadStore3RegisterOpTesterCase0
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load3RegisterOp,
+//       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: Load3RegisterOp,
 //       constraints: ,
@@ -296,7 +296,7 @@ bool LoadStore3RegisterOpTesterCase1
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Store2RegisterImm8Op,
+//       actual: Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: Store2RegisterImm8Op,
 //       constraints: ,
@@ -398,7 +398,7 @@ bool LoadStore2RegisterImm8OpTesterCase2
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load2RegisterImm8Op,
+//       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: Load2RegisterImm8Op,
 //       constraints: ,
@@ -507,7 +507,7 @@ bool LoadStore2RegisterImm8OpTesterCase3
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: LoadRegisterImm8Op,
+//       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
@@ -593,7 +593,7 @@ bool LoadRegisterImm8OpTesterCase4
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
-//       actual: Load3RegisterDoubleOp,
+//       actual: Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1,
 //       base: Rn,
 //       baseline: Load3RegisterDoubleOp,
 //       constraints: ,
@@ -748,7 +748,7 @@ bool LoadStore3RegisterDoubleOpTesterCase5
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load3RegisterOp,
+//       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: Load3RegisterOp,
 //       constraints: ,
@@ -876,7 +876,7 @@ bool LoadStore3RegisterOpTesterCase6
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
-//       actual: Load2RegisterImm8DoubleOp,
+//       actual: Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1,
 //       base: Rn,
 //       baseline: Load2RegisterImm8DoubleOp,
 //       constraints: ,
@@ -990,7 +990,7 @@ bool LoadStore2RegisterImm8DoubleOpTesterCase7
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
-//       actual: LoadRegisterImm8DoubleOp,
+//       actual: Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1,
 //       base: Pc,
 //       baseline: LoadRegisterImm8DoubleOp,
 //       constraints: ,
@@ -1068,7 +1068,7 @@ bool LoadRegisterImm8DoubleOpTesterCase8
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load2RegisterImm8Op,
+//       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: Load2RegisterImm8Op,
 //       constraints: ,
@@ -1177,7 +1177,7 @@ bool LoadStore2RegisterImm8OpTesterCase9
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: LoadRegisterImm8Op,
+//       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
@@ -1266,7 +1266,7 @@ bool LoadRegisterImm8OpTesterCase10
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
-//       actual: Store3RegisterDoubleOp,
+//       actual: Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1,
 //       base: Rn,
 //       baseline: Store3RegisterDoubleOp,
 //       constraints: ,
@@ -1409,7 +1409,7 @@ bool LoadStore3RegisterDoubleOpTesterCase11
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load3RegisterOp,
+//       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: Load3RegisterOp,
 //       constraints: ,
@@ -1537,7 +1537,7 @@ bool LoadStore3RegisterOpTesterCase12
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
-//       actual: Store2RegisterImm8DoubleOp,
+//       actual: Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1,
 //       base: Rn,
 //       baseline: Store2RegisterImm8DoubleOp,
 //       constraints: ,
@@ -1553,7 +1553,9 @@ bool LoadStore3RegisterOpTesterCase12
 //            (Rn  ==
 //               Pc ||
 //            Rn  ==
-//               Rt) => UNPREDICTABLE,
+//               Rt ||
+//            Rn  ==
+//               Rt2) => UNPREDICTABLE,
 //         Rt2  ==
 //               Pc => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
@@ -1611,13 +1613,16 @@ bool LoadStore2RegisterImm8DoubleOpTesterCase13
   //       (Rn  ==
   //          Pc ||
   //       Rn  ==
-  //          Rt) => UNPREDICTABLE
+  //          Rt ||
+  //       Rn  ==
+  //          Rt2) => UNPREDICTABLE
   EXPECT_TRUE(!(((((inst.Bits() & 0x01000000)  ==
           0x00000000)) ||
        (((inst.Bits() & 0x00200000)  ==
           0x00200000))) &&
        (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12))))))));
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12) + 1)))))));
 
   // safety: Rt2  ==
   //          Pc => UNPREDICTABLE
@@ -1644,7 +1649,7 @@ bool LoadStore2RegisterImm8DoubleOpTesterCase13
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load2RegisterImm8Op,
+//       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: Load2RegisterImm8Op,
 //       constraints: ,
@@ -1753,7 +1758,7 @@ bool LoadStore2RegisterImm8OpTesterCase14
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: LoadRegisterImm8Op,
+//       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
@@ -1846,7 +1851,7 @@ bool LoadRegisterImm8OpTesterCase15
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Store3RegisterOp,
+//       actual: Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: Store3RegisterOp,
 //       constraints: ,
@@ -1891,7 +1896,7 @@ class Store3RegisterOpTester_Case0
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load3RegisterOp,
+//       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: Load3RegisterOp,
 //       constraints: ,
@@ -1935,7 +1940,7 @@ class Load3RegisterOpTester_Case1
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Store2RegisterImm8Op,
+//       actual: Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: Store2RegisterImm8Op,
 //       constraints: ,
@@ -1974,7 +1979,7 @@ class Store2RegisterImm8OpTester_Case2
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load2RegisterImm8Op,
+//       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: Load2RegisterImm8Op,
 //       constraints: ,
@@ -2012,7 +2017,7 @@ class Load2RegisterImm8OpTester_Case3
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: LoadRegisterImm8Op,
+//       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
@@ -2047,7 +2052,7 @@ class LoadRegisterImm8OpTester_Case4
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
-//       actual: Load3RegisterDoubleOp,
+//       actual: Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1,
 //       base: Rn,
 //       baseline: Load3RegisterDoubleOp,
 //       constraints: ,
@@ -2102,7 +2107,7 @@ class Load3RegisterDoubleOpTester_Case5
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load3RegisterOp,
+//       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: Load3RegisterOp,
 //       constraints: ,
@@ -2147,7 +2152,7 @@ class Load3RegisterOpTester_Case6
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
-//       actual: Load2RegisterImm8DoubleOp,
+//       actual: Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1,
 //       base: Rn,
 //       baseline: Load2RegisterImm8DoubleOp,
 //       constraints: ,
@@ -2185,7 +2190,7 @@ class Load2RegisterImm8DoubleOpTester_Case7
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
-//       actual: LoadRegisterImm8DoubleOp,
+//       actual: Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1,
 //       base: Pc,
 //       baseline: LoadRegisterImm8DoubleOp,
 //       constraints: ,
@@ -2215,7 +2220,7 @@ class LoadRegisterImm8DoubleOpTester_Case8
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load2RegisterImm8Op,
+//       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: Load2RegisterImm8Op,
 //       constraints: ,
@@ -2253,7 +2258,7 @@ class Load2RegisterImm8OpTester_Case9
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: LoadRegisterImm8Op,
+//       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
@@ -2288,7 +2293,7 @@ class LoadRegisterImm8OpTester_Case10
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
-//       actual: Store3RegisterDoubleOp,
+//       actual: Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1,
 //       base: Rn,
 //       baseline: Store3RegisterDoubleOp,
 //       constraints: ,
@@ -2339,7 +2344,7 @@ class Store3RegisterDoubleOpTester_Case11
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load3RegisterOp,
+//       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: Load3RegisterOp,
 //       constraints: ,
@@ -2384,7 +2389,7 @@ class Load3RegisterOpTester_Case12
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
-//       actual: Store2RegisterImm8DoubleOp,
+//       actual: Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1,
 //       base: Rn,
 //       baseline: Store2RegisterImm8DoubleOp,
 //       constraints: ,
@@ -2401,7 +2406,9 @@ class Load3RegisterOpTester_Case12
 //            (Rn  ==
 //               Pc ||
 //            Rn  ==
-//               Rt) => UNPREDICTABLE,
+//               Rt ||
+//            Rn  ==
+//               Rt2) => UNPREDICTABLE,
 //         Rt2  ==
 //               Pc => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
@@ -2424,7 +2431,7 @@ class Store2RegisterImm8DoubleOpTester_Case13
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load2RegisterImm8Op,
+//       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: Load2RegisterImm8Op,
 //       constraints: ,
@@ -2462,7 +2469,7 @@ class Load2RegisterImm8OpTester_Case14
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: LoadRegisterImm8Op,
+//       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
@@ -2505,7 +2512,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Store3RegisterOp,
+//       actual: Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: Store3RegisterOp,
 //       constraints: ,
@@ -2536,8 +2543,10 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
        Store3RegisterOpTester_Case0_TestCase0) {
-  Store3RegisterOpTester_Case0 tester;
-  tester.Test("cccc000pu0w0nnnntttt00001011mmmm");
+  Store3RegisterOpTester_Case0 baseline_tester;
+  NamedActual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1_STRH_register actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000pu0w0nnnntttt00001011mmmm");
 }
 
 // op2(6:5)=01 & op1(24:20)=xx0x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
@@ -2548,7 +2557,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load3RegisterOp,
+//       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: Load3RegisterOp,
 //       constraints: ,
@@ -2579,8 +2588,10 @@ TEST_F(Arm32DecoderStateTests,
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
        Load3RegisterOpTester_Case1_TestCase1) {
-  Load3RegisterOpTester_Case1 tester;
-  tester.Test("cccc000pu0w1nnnntttt00001011mmmm");
+  Load3RegisterOpTester_Case1 baseline_tester;
+  NamedActual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRH_register actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000pu0w1nnnntttt00001011mmmm");
 }
 
 // op2(6:5)=01 & op1(24:20)=xx1x0
@@ -2590,7 +2601,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Store2RegisterImm8Op,
+//       actual: Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: Store2RegisterImm8Op,
 //       constraints: ,
@@ -2616,8 +2627,10 @@ TEST_F(Arm32DecoderStateTests,
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
        Store2RegisterImm8OpTester_Case2_TestCase2) {
-  Store2RegisterImm8OpTester_Case2 tester;
-  tester.Test("cccc000pu1w0nnnnttttiiii1011iiii");
+  Store2RegisterImm8OpTester_Case2 baseline_tester;
+  NamedActual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1_STRH_immediate actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000pu1w0nnnnttttiiii1011iiii");
 }
 
 // op2(6:5)=01 & op1(24:20)=xx1x1 & Rn(19:16)=~1111
@@ -2627,7 +2640,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load2RegisterImm8Op,
+//       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: Load2RegisterImm8Op,
 //       constraints: ,
@@ -2654,8 +2667,10 @@ TEST_F(Arm32DecoderStateTests,
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm8OpTester_Case3_TestCase3) {
-  Load2RegisterImm8OpTester_Case3 tester;
-  tester.Test("cccc000pu1w1nnnnttttiiii1011iiii");
+  Load2RegisterImm8OpTester_Case3 baseline_tester;
+  NamedActual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRH_immediate actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000pu1w1nnnnttttiiii1011iiii");
 }
 
 // op2(6:5)=01 & op1(24:20)=xx1x1 & Rn(19:16)=1111
@@ -2663,7 +2678,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: LoadRegisterImm8Op,
+//       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
@@ -2683,8 +2698,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Pc}}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterImm8OpTester_Case4_TestCase4) {
-  LoadRegisterImm8OpTester_Case4 tester;
-  tester.Test("cccc000pu1w11111ttttiiii1011iiii");
+  LoadRegisterImm8OpTester_Case4 baseline_tester;
+  NamedActual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRH_literal actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000pu1w11111ttttiiii1011iiii");
 }
 
 // op2(6:5)=10 & op1(24:20)=xx0x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
@@ -2696,7 +2713,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
-//       actual: Load3RegisterDoubleOp,
+//       actual: Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1,
 //       base: Rn,
 //       baseline: Load3RegisterDoubleOp,
 //       constraints: ,
@@ -2737,8 +2754,10 @@ TEST_F(Arm32DecoderStateTests,
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
        Load3RegisterDoubleOpTester_Case5_TestCase5) {
-  Load3RegisterDoubleOpTester_Case5 tester;
-  tester.Test("cccc000pu0w0nnnntttt00001101mmmm");
+  Load3RegisterDoubleOpTester_Case5 baseline_tester;
+  NamedActual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1_LDRD_register actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000pu0w0nnnntttt00001101mmmm");
 }
 
 // op2(6:5)=10 & op1(24:20)=xx0x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
@@ -2749,7 +2768,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load3RegisterOp,
+//       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: Load3RegisterOp,
 //       constraints: ,
@@ -2780,8 +2799,10 @@ TEST_F(Arm32DecoderStateTests,
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
        Load3RegisterOpTester_Case6_TestCase6) {
-  Load3RegisterOpTester_Case6 tester;
-  tester.Test("cccc000pu0w1nnnntttt00001101mmmm");
+  Load3RegisterOpTester_Case6 baseline_tester;
+  NamedActual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRSB_register actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000pu0w1nnnntttt00001101mmmm");
 }
 
 // op2(6:5)=10 & op1(24:20)=xx1x0 & Rn(19:16)=~1111
@@ -2792,7 +2813,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
-//       actual: Load2RegisterImm8DoubleOp,
+//       actual: Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1,
 //       base: Rn,
 //       baseline: Load2RegisterImm8DoubleOp,
 //       constraints: ,
@@ -2820,15 +2841,17 @@ TEST_F(Arm32DecoderStateTests,
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm8DoubleOpTester_Case7_TestCase7) {
-  Load2RegisterImm8DoubleOpTester_Case7 tester;
-  tester.Test("cccc000pu1w0nnnnttttiiii1101iiii");
+  Load2RegisterImm8DoubleOpTester_Case7 baseline_tester;
+  NamedActual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1_LDRD_immediate actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000pu1w0nnnnttttiiii1101iiii");
 }
 
 // op2(6:5)=10 & op1(24:20)=xx1x0 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
-//       actual: LoadRegisterImm8DoubleOp,
+//       actual: Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1,
 //       base: Pc,
 //       baseline: LoadRegisterImm8DoubleOp,
 //       constraints: ,
@@ -2845,8 +2868,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Pc}}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterImm8DoubleOpTester_Case8_TestCase8) {
-  LoadRegisterImm8DoubleOpTester_Case8 tester;
-  tester.Test("cccc0001u1001111ttttiiii1101iiii");
+  LoadRegisterImm8DoubleOpTester_Case8 baseline_tester;
+  NamedActual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1_LDRD_literal actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0001u1001111ttttiiii1101iiii");
 }
 
 // op2(6:5)=10 & op1(24:20)=xx1x1 & Rn(19:16)=~1111
@@ -2856,7 +2881,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load2RegisterImm8Op,
+//       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: Load2RegisterImm8Op,
 //       constraints: ,
@@ -2883,8 +2908,10 @@ TEST_F(Arm32DecoderStateTests,
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm8OpTester_Case9_TestCase9) {
-  Load2RegisterImm8OpTester_Case9 tester;
-  tester.Test("cccc000pu1w1nnnnttttiiii1101iiii");
+  Load2RegisterImm8OpTester_Case9 baseline_tester;
+  NamedActual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRSB_immediate actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000pu1w1nnnnttttiiii1101iiii");
 }
 
 // op2(6:5)=10 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
@@ -2892,7 +2919,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: LoadRegisterImm8Op,
+//       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
@@ -2912,8 +2939,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Pc}}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterImm8OpTester_Case10_TestCase10) {
-  LoadRegisterImm8OpTester_Case10 tester;
-  tester.Test("cccc0001u1011111ttttiiii1101iiii");
+  LoadRegisterImm8OpTester_Case10 baseline_tester;
+  NamedActual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSB_literal actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0001u1011111ttttiiii1101iiii");
 }
 
 // op2(6:5)=11 & op1(24:20)=xx0x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
@@ -2925,7 +2954,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
-//       actual: Store3RegisterDoubleOp,
+//       actual: Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1,
 //       base: Rn,
 //       baseline: Store3RegisterDoubleOp,
 //       constraints: ,
@@ -2962,8 +2991,10 @@ TEST_F(Arm32DecoderStateTests,
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
        Store3RegisterDoubleOpTester_Case11_TestCase11) {
-  Store3RegisterDoubleOpTester_Case11 tester;
-  tester.Test("cccc000pu0w0nnnntttt00001111mmmm");
+  Store3RegisterDoubleOpTester_Case11 baseline_tester;
+  NamedActual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1_STRD_register actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000pu0w0nnnntttt00001111mmmm");
 }
 
 // op2(6:5)=11 & op1(24:20)=xx0x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
@@ -2974,7 +3005,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load3RegisterOp,
+//       actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //       base: Rn,
 //       baseline: Load3RegisterOp,
 //       constraints: ,
@@ -3005,8 +3036,10 @@ TEST_F(Arm32DecoderStateTests,
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
        Load3RegisterOpTester_Case12_TestCase12) {
-  Load3RegisterOpTester_Case12 tester;
-  tester.Test("cccc000pu0w1nnnntttt00001111mmmm");
+  Load3RegisterOpTester_Case12 baseline_tester;
+  NamedActual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRSH_register actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000pu0w1nnnntttt00001111mmmm");
 }
 
 // op2(6:5)=11 & op1(24:20)=xx1x0
@@ -3017,7 +3050,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
-//       actual: Store2RegisterImm8DoubleOp,
+//       actual: Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1,
 //       base: Rn,
 //       baseline: Store2RegisterImm8DoubleOp,
 //       constraints: ,
@@ -3035,7 +3068,9 @@ TEST_F(Arm32DecoderStateTests,
 //            (Rn  ==
 //               Pc ||
 //            Rn  ==
-//               Rt) => UNPREDICTABLE,
+//               Rt ||
+//            Rn  ==
+//               Rt2) => UNPREDICTABLE,
 //         Rt2  ==
 //               Pc => UNPREDICTABLE],
 //       small_imm_base_wb: wback,
@@ -3044,8 +3079,10 @@ TEST_F(Arm32DecoderStateTests,
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
        Store2RegisterImm8DoubleOpTester_Case13_TestCase13) {
-  Store2RegisterImm8DoubleOpTester_Case13 tester;
-  tester.Test("cccc000pu1w0nnnnttttiiii1111iiii");
+  Store2RegisterImm8DoubleOpTester_Case13 baseline_tester;
+  NamedActual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1_STRD_immediate actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000pu1w0nnnnttttiiii1111iiii");
 }
 
 // op2(6:5)=11 & op1(24:20)=xx1x1 & Rn(19:16)=~1111
@@ -3055,7 +3092,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: Load2RegisterImm8Op,
+//       actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //       base: Rn,
 //       baseline: Load2RegisterImm8Op,
 //       constraints: ,
@@ -3082,8 +3119,10 @@ TEST_F(Arm32DecoderStateTests,
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm8OpTester_Case14_TestCase14) {
-  Load2RegisterImm8OpTester_Case14 tester;
-  tester.Test("cccc000pu1w1nnnnttttiiii1111iiii");
+  Load2RegisterImm8OpTester_Case14 baseline_tester;
+  NamedActual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRSH_immediate actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000pu1w1nnnnttttiiii1111iiii");
 }
 
 // op2(6:5)=11 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
@@ -3091,7 +3130,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
-//       actual: LoadRegisterImm8Op,
+//       actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
@@ -3111,8 +3150,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Pc}}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterImm8OpTester_Case15_TestCase15) {
-  LoadRegisterImm8OpTester_Case15 tester;
-  tester.Test("cccc0001u1011111ttttiiii1111iiii");
+  LoadRegisterImm8OpTester_Case15 baseline_tester;
+  NamedActual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSB_literal actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0001u1011111ttttiiii1111iiii");
 }
 
 }  // namespace nacl_arm_test

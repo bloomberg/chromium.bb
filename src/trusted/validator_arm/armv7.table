@@ -844,7 +844,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   uses := {Rt, Rt2, Rn};
   safety := Rt(0)=1 => UNPREDICTABLE &
             P=0 & W=1 => UNPREDICTABLE &
-            wback & (Rn == Pc | Rn == Rt) => UNPREDICTABLE &
+            wback & (Rn == Pc | Rn == Rt | Rn == Rt2) => UNPREDICTABLE &
             Rt2 == Pc => UNPREDICTABLE;
 
 *RtRnRm

@@ -3387,6 +3387,7 @@ uses(Instruction inst) const {
 //    Rt2: Rt + 1,
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1,
 //    add: U(23)=1,
 //    address: offset_addr
 //         if index
@@ -3530,6 +3531,7 @@ uses(Instruction inst) const {
 //    Rt2: Rt + 1,
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1,
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Pc,
@@ -3616,6 +3618,7 @@ uses(Instruction inst) const {
 //    Rt2: Rt + 1,
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1,
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Rn,
@@ -3958,6 +3961,7 @@ uses(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //    add: U(23)=1,
 //    address: offset_addr
 //         if index
@@ -4092,6 +4096,7 @@ uses(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //    add: U(23)=1,
 //    base: Pc,
 //    baseline: LoadRegisterImm8Op,
@@ -4186,6 +4191,7 @@ uses(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Load3RegisterOp,
@@ -4323,6 +4329,7 @@ uses(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //    add: U(23)=1,
 //    address: offset_addr
 //         if index
@@ -4457,6 +4464,7 @@ uses(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //    add: U(23)=1,
 //    base: Pc,
 //    baseline: LoadRegisterImm8Op,
@@ -4548,6 +4556,7 @@ uses(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
 //    add: U(23)=1,
 //    base: Pc,
 //    baseline: LoadRegisterImm8Op,
@@ -4642,6 +4651,7 @@ uses(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Load3RegisterOp,
@@ -4779,6 +4789,7 @@ uses(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1,
 //    add: U(23)=1,
 //    address: offset_addr
 //         if index
@@ -4916,6 +4927,7 @@ uses(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Load3RegisterOp,

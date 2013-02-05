@@ -2078,6 +2078,50 @@ class Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case
     : public Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1 {
 };
 
+class Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1_LDRD_immediate
+    : public Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1 {
+};
+
+class Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1_LDRD_literal
+    : public Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1 {
+};
+
+class Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1_LDRD_register
+    : public Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1 {
+};
+
+class Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRH_immediate
+    : public Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1 {
+};
+
+class Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRSB_immediate
+    : public Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1 {
+};
+
+class Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRSH_immediate
+    : public Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1 {
+};
+
+class Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRH_literal
+    : public Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1 {
+};
+
+class Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSB_literal
+    : public Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1 {
+};
+
+class Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRH_register
+    : public Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1 {
+};
+
+class Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRSB_register
+    : public Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1 {
+};
+
+class Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRSH_register
+    : public Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1 {
+};
+
 class Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1_LSL_immediate
     : public Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1 {
 };
@@ -2172,6 +2216,22 @@ class Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1_SMULL_A1
 
 class Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1_UMULL_A1
     : public Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1 {
+};
+
+class Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1_STRD_immediate
+    : public Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1 {
+};
+
+class Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1_STRD_register
+    : public Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1 {
+};
+
+class Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1_STRH_immediate
+    : public Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1 {
+};
+
+class Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1_STRH_register
+    : public Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1 {
 };
 
 class Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1_TST_immediate
@@ -8425,6 +8485,138 @@ class NamedActual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1_TST_register_shifted_register);
 };
 
+class NamedActual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1_LDRD_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedActual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1_LDRD_immediate()
+    : NamedClassDecoder(decoder_, "Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1 LDRD_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1_LDRD_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1_LDRD_immediate);
+};
+
+class NamedActual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1_LDRD_literal
+    : public NamedClassDecoder {
+ public:
+  NamedActual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1_LDRD_literal()
+    : NamedClassDecoder(decoder_, "Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1 LDRD_literal")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1_LDRD_literal decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1_LDRD_literal);
+};
+
+class NamedActual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1_LDRD_register
+    : public NamedClassDecoder {
+ public:
+  NamedActual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1_LDRD_register()
+    : NamedClassDecoder(decoder_, "Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1 LDRD_register")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1_LDRD_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1_LDRD_register);
+};
+
+class NamedActual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRH_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedActual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRH_immediate()
+    : NamedClassDecoder(decoder_, "Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1 LDRH_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRH_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRH_immediate);
+};
+
+class NamedActual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRSB_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedActual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRSB_immediate()
+    : NamedClassDecoder(decoder_, "Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1 LDRSB_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRSB_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRSB_immediate);
+};
+
+class NamedActual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRSH_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedActual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRSH_immediate()
+    : NamedClassDecoder(decoder_, "Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1 LDRSH_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRSH_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_LDRSH_immediate);
+};
+
+class NamedActual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRH_literal
+    : public NamedClassDecoder {
+ public:
+  NamedActual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRH_literal()
+    : NamedClassDecoder(decoder_, "Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1 LDRH_literal")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRH_literal decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRH_literal);
+};
+
+class NamedActual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSB_literal
+    : public NamedClassDecoder {
+ public:
+  NamedActual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSB_literal()
+    : NamedClassDecoder(decoder_, "Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1 LDRSB_literal")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSB_literal decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSB_literal);
+};
+
+class NamedActual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRH_register
+    : public NamedClassDecoder {
+ public:
+  NamedActual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRH_register()
+    : NamedClassDecoder(decoder_, "Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1 LDRH_register")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRH_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRH_register);
+};
+
+class NamedActual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRSB_register
+    : public NamedClassDecoder {
+ public:
+  NamedActual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRSB_register()
+    : NamedClassDecoder(decoder_, "Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1 LDRSB_register")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRSB_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRSB_register);
+};
+
+class NamedActual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRSH_register
+    : public NamedClassDecoder {
+ public:
+  NamedActual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRSH_register()
+    : NamedClassDecoder(decoder_, "Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1 LDRSH_register")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRSH_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRSH_register);
+};
+
 class NamedActual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1_LSL_immediate
     : public NamedClassDecoder {
  public:
@@ -8711,6 +8903,54 @@ class NamedActual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1_UMULL_A1
  private:
   nacl_arm_dec::Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1_UMULL_A1 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1_UMULL_A1);
+};
+
+class NamedActual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1_STRD_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedActual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1_STRD_immediate()
+    : NamedClassDecoder(decoder_, "Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1 STRD_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1_STRD_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1_STRD_immediate);
+};
+
+class NamedActual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1_STRD_register
+    : public NamedClassDecoder {
+ public:
+  NamedActual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1_STRD_register()
+    : NamedClassDecoder(decoder_, "Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1 STRD_register")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1_STRD_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1_STRD_register);
+};
+
+class NamedActual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1_STRH_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedActual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1_STRH_immediate()
+    : NamedClassDecoder(decoder_, "Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1 STRH_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1_STRH_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1_STRH_immediate);
+};
+
+class NamedActual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1_STRH_register
+    : public NamedClassDecoder {
+ public:
+  NamedActual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1_STRH_register()
+    : NamedClassDecoder(decoder_, "Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1 STRH_register")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1_STRH_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1_STRH_register);
 };
 
 class NamedActual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1_TST_immediate
