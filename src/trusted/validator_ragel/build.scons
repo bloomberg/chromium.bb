@@ -244,7 +244,7 @@ if ragel_involved:
       '32', 'decoder',
       'check_access,opcode,parse_operands_states',
       '-T0')
-  (validator32, _) = MakeAutomaton(
+  (validator32, validator32_xml) = MakeAutomaton(
       '32', 'validator',
       ('check_access,opcode,parse_operands,parse_operands_states,'
        'instruction_name,nacl-forbidden'),
@@ -303,12 +303,19 @@ if ragel_involved:
   # Never run decoder tests in parallel because they can take all CPU.
   SideEffect('check_decoder', check_decoders)
 
-  check_validators = env.AutoDepsCommand(
-    'dfacheckvalidator_validator_test_fake_file',
-    ['${PYTHON}',
-     env.File('verify_validators_dfa.py'),
-     validator64_xml])
-
   env.AlwaysBuild(env.Alias('dfagen', automata))
   env.AlwaysBuild(env.Alias('dfacheckdecoder', check_decoders))
-  env.AlwaysBuild(env.Alias('dfacheckvalidator', check_validators))
+
+  for bits, xml in [('32', validator32_xml), ('64', validator64_xml)]:
+    superinstruction = env.Command(
+        target='superinstructions_x86_%s.txt' % bits,
+        source=['verify_validators_dfa.py', xml],
+        action='${PYTHON} ${SOURCES[0]} ${SOURCES[1]} -o ${TARGETS[0]}')
+
+    superinstruction_verified = env.Command(
+        target='superinstructions_verified_by_regex_x86_%s.out' % bits,
+        source=['verify_superinstructions.py', superinstruction, gas, objdump],
+        action='${PYTHON} ${SOURCES[0]} -b %s -a ${SOURCES[2]} -d ${SOURCES[3]}'
+               ' -o ${TARGETS[0]} ${SOURCES[1]}' % bits)
+
+    env.AlwaysBuild(env.Alias('dfacheckvalidator', superinstruction_verified))

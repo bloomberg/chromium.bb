@@ -241,9 +241,9 @@ def CollectSandboxing(start_state, transitions, collected_superinstructions):
 
 
 def main():
-  # TODO(khim): get rid of options parser altogether if it turns out that it's
-  # not needed in the final version of the test.
   parser = optparse.OptionParser(__doc__)
+  parser.add_option('-o', '--out',
+                    help='Output file name (instead of sys.stdout')
 
   (options, args) = parser.parse_args()
 
@@ -267,8 +267,13 @@ def main():
           '.byte ' + ', '.join(['0x{0:02x}'.format(transition.byte)
                                 for transition in superinstruction]))
 
-  for superinstruction in sorted(all_superinstructions):
-    print(superinstruction)
+  if options.out is not None:
+    with open(options.out, "w") as out_file:
+      for superinstruction in sorted(all_superinstructions):
+        print(superinstruction, file=out_file)
+  else:
+    for superinstruction in sorted(all_superinstructions):
+      print(superinstruction)
 
 
 if __name__ == '__main__':
