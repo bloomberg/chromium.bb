@@ -15,6 +15,7 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/autofill/validation.h"
 #include "chrome/browser/autofill/wallet/full_wallet.h"
 #include "chrome/browser/autofill/wallet/wallet_items.h"
 #include "chrome/browser/autofill/wallet/wallet_service_url.h"
@@ -433,7 +434,14 @@ void AutofillDialogControllerImpl::EditClickedForSection(
 
 bool AutofillDialogControllerImpl::InputIsValid(const DetailInput* input,
                                                 const string16& value) {
-  // TODO(estade): do more complicated checks.
+  // TODO(groby): Add the missing checks.
+  switch (input->type) {
+    case CREDIT_CARD_NUMBER:
+      return autofill::IsValidCreditCardNumber(value);
+    default:
+      break;
+  }
+
   return !value.empty();
 }
 
