@@ -13,6 +13,10 @@ const char kChromeOSReleaseBoard[] = "chromeos-release-board";
 // Forces the stub implementation of dbus clients.
 const char kDbusStub[] = "dbus-stub";
 
+// Enables experiments in locally managed user creation ui.
+const char kEnableLocallyManagedUserUIExperiments[] =
+    "enable-locally-managed-users-ui-experiments";
+
 // Enables the new NetworkChangeNotifier using the NetworkStateHandler class.
 const char kEnableNewNetworkChangeNotifier[] =
     "enable-new-network-change-notifier";

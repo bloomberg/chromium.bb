@@ -185,7 +185,8 @@ class SigninScreenHandler
   enum UIState {
     UI_STATE_UNKNOWN = 0,
     UI_STATE_GAIA_SIGNIN,
-    UI_STATE_ACCOUNT_PICKER
+    UI_STATE_ACCOUNT_PICKER,
+    UI_STATE_LOCALLY_MANAGED_USER_CREATION
   };
 
   typedef base::hash_set<std::string> WebUIObservers;
@@ -291,8 +292,14 @@ class SigninScreenHandler
   void HandleShowGaiaFrameError(const base::ListValue* args);
   void HandleShowLoadingTimeoutError(const base::ListValue* args);
   void HandleUpdateOfflineLogin(const base::ListValue* args);
+  void HandleShowLocallyManagedUserCreationScreen(const base::ListValue* args);
   void HandleCheckLocallyManagedUserName(const base::ListValue* args);
   void HandleTryCreateLocallyManagedUser(const base::ListValue* args);
+
+  // Fills |user_dict| with information about |user|.
+  void FillUserDictionary(User* user,
+                          bool is_owner,
+                          DictionaryValue* user_dict);
 
   // Sends user list to account picker.
   void SendUserList(bool animated);

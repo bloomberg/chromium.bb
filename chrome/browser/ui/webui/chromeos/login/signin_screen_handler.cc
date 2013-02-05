@@ -42,6 +42,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/render_view_host.h"
@@ -80,6 +81,7 @@ const char kKeyPublicAccount[] = "publicAccount";
 const char kKeyLocallyManagedUser[] = "locallyManagedUser";
 const char kKeySignedIn[] = "signedIn";
 const char kKeyCanRemove[] = "canRemove";
+const char kKeyIsOwner[] = "isOwner";
 const char kKeyOauthTokenStatus[] = "oauthTokenStatus";
 
 // Max number of users to show.
@@ -132,7 +134,7 @@ void UpdateAuthParamsFromSettings(DictionaryValue* params,
   // chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   params->SetBoolean("createLocallyManagedUser",
-                     command_line->HasSwitch(switches::kEnableManagedUsers));
+                     command_line->HasSwitch(::switches::kEnableManagedUsers));
 }
 
 bool IsProxyError(NetworkStateInformer::State state,
@@ -354,6 +356,13 @@ void SigninScreenHandler::GetLocalizedStrings(
        l10n_util::GetStringUTF16(
            IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_MISMATCH_ERROR));
 
+  localized_strings->SetString("createManagedUserSelectManagerTitle",
+       l10n_util::GetStringUTF16(
+           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_SELECT_MANAGER_TEXT));
+  localized_strings->SetString("createManagedUserManagerPasswordHint",
+       l10n_util::GetStringUTF16(
+           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_MANAGER_PASSWORD_HINT));
+
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
     localized_strings->SetString("demoLoginMessage",
         l10n_util::GetStringUTF16(IDS_KIOSK_MODE_LOGIN_MESSAGE));
@@ -424,6 +433,10 @@ void SigninScreenHandler::UpdateUIState(UIState ui_state,
     case UI_STATE_ACCOUNT_PICKER:
       ui_state_ = UI_STATE_ACCOUNT_PICKER;
       ShowScreen(OobeUI::kScreenAccountPicker, params);
+      break;
+    case UI_STATE_LOCALLY_MANAGED_USER_CREATION:
+      ui_state_ = UI_STATE_LOCALLY_MANAGED_USER_CREATION;
+      ShowScreen(OobeUI::kScreenManagedUserCreation, params);
       break;
     default:
       NOTREACHED();
@@ -648,6 +661,10 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("launchIncognito",
       base::Bind(&SigninScreenHandler::HandleLaunchIncognito,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("showLocallyManagedUserCreationScreen",
+      base::Bind(
+          &SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback("launchPublicAccount",
       base::Bind(&SigninScreenHandler::HandleLaunchPublicAccount,
                  base::Unretained(this)));
@@ -971,13 +988,13 @@ void SigninScreenHandler::LoadAuthExtension(
 
   params.SetString("gaiaOrigin", GaiaUrls::GetInstance()->gaia_origin_url());
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kGaiaUrlPath)) {
+  if (command_line->HasSwitch(::switches::kGaiaUrlPath)) {
     params.SetString("gaiaUrlPath",
-                     command_line->GetSwitchValueASCII(switches::kGaiaUrlPath));
+        command_line->GetSwitchValueASCII(::switches::kGaiaUrlPath));
   }
 
   // Test automation data:
-  if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
+  if (command_line->HasSwitch(::switches::kAuthExtensionPath)) {
     if (!test_user_.empty()) {
       params.SetString("test_email", test_user_);
       test_user_.clear();
@@ -1045,6 +1062,31 @@ void SigninScreenHandler::HandleLaunchDemoUser(const base::ListValue* args) {
 void SigninScreenHandler::HandleLaunchIncognito(const base::ListValue* args) {
   if (delegate_)
     delegate_->LoginAsGuest();
+}
+
+void SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen(
+    const base::ListValue* args) {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(
+          chromeos::switches::kEnableLocallyManagedUserUIExperiments)) {
+    ListValue users_list;
+    const UserList& users = delegate_->GetUsers();
+    std::string owner;
+    chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
+
+    for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+      if ((*it)->GetType() != User::USER_TYPE_REGULAR)
+        continue;
+      bool is_owner = ((*it)->email() == owner);
+      DictionaryValue* user_dict = new DictionaryValue();
+      FillUserDictionary(*it, is_owner, user_dict);
+      users_list.Append(user_dict);
+    }
+    web_ui()->
+        CallJavascriptFunction("login.ManagedUserCreationScreen.loadManagers",
+                               users_list);
+  }
+  UpdateUIState(UI_STATE_LOCALLY_MANAGED_USER_CREATION, NULL);
 }
 
 void SigninScreenHandler::HandleLaunchPublicAccount(
@@ -1159,6 +1201,37 @@ void SigninScreenHandler::HandleLaunchHelpApp(const base::ListValue* args) {
       static_cast<HelpAppLauncher::HelpTopic>(help_topic_id));
 }
 
+void SigninScreenHandler::FillUserDictionary(User* user,
+                                             bool is_owner,
+                                             DictionaryValue* user_dict) {
+  const std::string& email = user->email();
+  bool is_public_account =
+      user->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT;
+  bool is_locally_managed_user =
+      user->GetType() == User::USER_TYPE_LOCALLY_MANAGED;
+  bool signed_in = user == UserManager::Get()->GetLoggedInUser();
+
+  user_dict->SetString(kKeyUsername, email);
+  user_dict->SetString(kKeyEmailAddress, user->display_email());
+  user_dict->SetString(kKeyDisplayName, user->GetDisplayName());
+  user_dict->SetString(kKeyNameTooltip, user->display_email());
+  user_dict->SetBoolean(kKeyPublicAccount, is_public_account);
+  user_dict->SetBoolean(kKeyLocallyManagedUser, is_locally_managed_user);
+  user_dict->SetInteger(kKeyOauthTokenStatus, user->oauth_token_status());
+  user_dict->SetBoolean(kKeySignedIn, signed_in);
+  user_dict->SetBoolean(kKeyIsOwner, is_owner);
+
+  if (is_public_account) {
+    policy::BrowserPolicyConnector* policy_connector =
+        g_browser_process->browser_policy_connector();
+
+    if (policy_connector->IsEnterpriseManaged()) {
+      user_dict->SetString(kKeyEnterpriseDomain,
+                           policy_connector->GetEnterpriseDomain());
+    }
+  }
+}
+
 void SigninScreenHandler::SendUserList(bool animated) {
   if (!delegate_)
     return;
@@ -1175,33 +1248,13 @@ void SigninScreenHandler::SendUserList(bool animated) {
     std::string owner;
     chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
     bool is_owner = (email == owner);
-    bool is_public_account =
-        ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT);
-    bool is_locally_managed_user =
-        ((*it)->GetType() == User::USER_TYPE_LOCALLY_MANAGED);
-    bool signed_in = *it == UserManager::Get()->GetLoggedInUser();
 
     if (non_owner_count < max_non_owner_users || is_owner) {
       DictionaryValue* user_dict = new DictionaryValue();
-      user_dict->SetString(kKeyUsername, email);
-      user_dict->SetString(kKeyEmailAddress, (*it)->display_email());
-      user_dict->SetString(kKeyDisplayName, (*it)->GetDisplayName());
-      user_dict->SetString(kKeyNameTooltip, (*it)->display_email());
-      user_dict->SetBoolean(kKeyPublicAccount, is_public_account);
-      user_dict->SetBoolean(kKeyLocallyManagedUser, is_locally_managed_user);
-      user_dict->SetInteger(kKeyOauthTokenStatus, (*it)->oauth_token_status());
-      user_dict->SetBoolean(kKeySignedIn, signed_in);
-
-      if (is_public_account) {
-        policy::BrowserPolicyConnector* policy_connector =
-            g_browser_process->browser_policy_connector();
-
-        if (policy_connector->IsEnterpriseManaged()) {
-          user_dict->SetString(kKeyEnterpriseDomain,
-                               policy_connector->GetEnterpriseDomain());
-        }
-      }
-
+      FillUserDictionary(*it, is_owner, user_dict);
+      bool is_public_account =
+          ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT);
+      bool signed_in = *it == UserManager::Get()->GetLoggedInUser();
       // Single user check here is necessary because owner info might not be
       // available when running into login screen on first boot.
       // See http://crosbug.com/12723

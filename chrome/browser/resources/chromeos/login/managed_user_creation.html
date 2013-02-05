@@ -17,7 +17,25 @@
           i18n-values="placeholder:createManagedUserPasswordConfirmHint"/>
     </div>
     <div id="managed-user-creation-password-error" class="no-error"></div>
+    <div id="managed-user-creation-managers-block" hidden>
+      <div id="managed-user-creation-managers-block-title"
+          i18n-content="createManagedUserSelectManagerTitle"></div>
+      <div id="managed-user-creation-managers-pane"></div>
+    </div>
   </div>
   <div id="managed-user-creation-controls" class="step-controls"></div>
   <div id="managed-user-creation-cancel-button" class="close-button"></div>
+  <div id="managed-user-creation-manager-template" hidden class="manager-pod">
+    <div class="managed-user-creation-manager-info-block">
+      <img class="managed-user-creation-manager-image" alt="">
+      <div class="managed-user-creation-manager-info-text">
+        <div class="managed-user-creation-manager-name"></div>
+        <div class="managed-user-creation-manager-email"></div>
+      </div>
+    </div>
+    <div class="managed-user-creation-manager-password-block" hidden>
+      <input class="managed-user-creation-manager-password" type="password"
+          i18n-values="placeholder:createManagedUserManagerPasswordHint"/>
+    </div>
+  </div>
 </div>

@@ -59,3 +59,50 @@
   padding-left: 28px;
   visibility: visible;
 }
+
+#managed-user-creation-managers-pane {
+  height: 200px;
+  overflow-y: auto;
+  width: 330px;
+}
+
+.manager-pod {
+  margin-bottom: 8px;
+  opacity: 0.8;
+  width: 300px;
+}
+
+#managed-user-creation-managers-pane .focused {
+  opacity: 1;
+}
+
+.manager-pod .managed-user-creation-manager-info-block {
+  height: 48px;
+}
+
+.manager-pod .managed-user-creation-manager-image {
+  display: inline-block;
+  height: 40px;
+  width: 40px;
+}
+
+.manager-pod .managed-user-creation-manager-info {
+  display: inline-block;
+  margin: 0 8px;
+  min-height: 40px;
+}
+
+.manager-pod .managed-user-creation-manager-info-text {
+  display: inline-block;
+  min-height: 40px;
+  vertical-align: top;
+}
+
+.manager-pod .managed-user-creation-manager-email {
+  color: #666;
+  margin-top: 2px;
+}
+
+.manager-pod .managed-user-creation-manager-name {
+  margin-top: 2px;
+}
