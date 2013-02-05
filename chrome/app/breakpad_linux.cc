@@ -81,13 +81,7 @@ using google_breakpad::MinidumpDescriptor;
 
 namespace {
 
-#if !defined(ADDRESS_SANITIZER)
 const char kUploadURL[] = "https://clients2.google.com/cr/report";
-#else
-// AddressSanitizer should currently upload the crash reports to the staging
-// crash server.
-const char kUploadURL[] = "https://clients2.google.com/cr/staging_report";
-#endif
 
 bool g_is_crash_reporter_enabled = false;
 uint64_t g_process_start_time = 0;
@@ -981,7 +975,11 @@ void HandleCrashDump(const BreakpadInfo& info) {
 #elif defined(OS_CHROMEOS)
     static const char chrome_product_msg[] = "Chrome_ChromeOS";
 #else  // OS_LINUX
+#if !defined(ADDRESS_SANITIZER)
     static const char chrome_product_msg[] = "Chrome_Linux";
+#else
+    static const char chrome_product_msg[] = "Chrome_Linux_ASan";
+#endif
 #endif
 
 #if defined (OS_ANDROID)
