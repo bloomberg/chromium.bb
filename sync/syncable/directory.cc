@@ -563,8 +563,6 @@ bool Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
 
 bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet types,
                                        ModelTypeSet types_to_journal) {
-  DCHECK(types.HasAll(types_to_journal));
-
   if (types.Empty())
     return true;
 
