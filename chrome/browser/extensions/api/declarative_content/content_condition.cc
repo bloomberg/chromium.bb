@@ -104,18 +104,19 @@ scoped_ptr<ContentCondition> ContentCondition::Create(
       }
     } else if (condition_attribute_name == keys::kCss) {
       const base::ListValue* css_rules_value = NULL;
-      if (!condition_attribute_value.GetAsList(&css_rules_value)) {
+      if (condition_attribute_value.GetAsList(&css_rules_value)) {
+        for (size_t i = 0; i < css_rules_value->GetSize(); ++i) {
+          std::string css_rule;
+          if (!css_rules_value->GetString(i, &css_rule)) {
+            *error = base::StringPrintf(kInvalidTypeOfParamter,
+                                        condition_attribute_name.c_str());
+            break;
+          }
+          css_rules.push_back(css_rule);
+        }
+      } else {
         *error = base::StringPrintf(kInvalidTypeOfParamter,
                                     condition_attribute_name.c_str());
-      }
-      for (size_t i = 0; i < css_rules_value->GetSize(); ++i) {
-        std::string css_rule;
-        if (!css_rules_value->GetString(i, &css_rule)) {
-          *error = base::StringPrintf(kInvalidTypeOfParamter,
-                                      condition_attribute_name.c_str());
-          break;
-        }
-        css_rules.push_back(css_rule);
       }
     } else {
       *error = base::StringPrintf(kUnknownConditionAttribute,
