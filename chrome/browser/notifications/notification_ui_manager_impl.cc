@@ -5,7 +5,6 @@
 #include "chrome/browser/notifications/notification_ui_manager_impl.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/fullscreen.h"
@@ -53,7 +52,6 @@ NotificationUIManagerImpl::NotificationUIManagerImpl()
 }
 
 NotificationUIManagerImpl::~NotificationUIManagerImpl() {
-  STLDeleteElements(&show_queue_);
 }
 
 void NotificationUIManagerImpl::Add(const Notification& notification,
@@ -64,8 +62,8 @@ void NotificationUIManagerImpl::Add(const Notification& notification,
 
   VLOG(1) << "Added notification. URL: "
           << notification.content_url().spec();
-  show_queue_.push_back(
-      new QueuedNotification(notification, profile));
+  show_queue_.push_back(linked_ptr<QueuedNotification>(
+      new QueuedNotification(notification, profile)));
   CheckAndShowNotifications();
 }
 
@@ -120,7 +118,6 @@ bool NotificationUIManagerImpl::CancelAllByProfile(Profile* profile) {
 }
 
 void NotificationUIManagerImpl::CancelAll() {
-  STLDeleteElements(&show_queue_);
 }
 
 void NotificationUIManagerImpl::CheckAndShowNotifications() {
@@ -148,14 +145,15 @@ void NotificationUIManagerImpl::CheckUserState() {
   }
 }
 
+// TODO(dewittj): Eliminate recursion.
 void NotificationUIManagerImpl::ShowNotifications() {
   while (!show_queue_.empty()) {
-    scoped_ptr<QueuedNotification> queued_notification(show_queue_.front());
+    linked_ptr<QueuedNotification> queued_notification(show_queue_.front());
     show_queue_.pop_front();
     if (!ShowNotification(queued_notification->notification(),
                           queued_notification->profile())) {
       // Subclass could not show notification, put it back in the queue.
-      show_queue_.push_front(queued_notification.release());
+      show_queue_.push_front(queued_notification);
       return;
     }
   }

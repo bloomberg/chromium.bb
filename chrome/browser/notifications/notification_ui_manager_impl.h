@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/id_map.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/linked_ptr.h"
 #include "base/prefs/public/pref_member.h"
 #include "base/timer.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -80,7 +80,7 @@ class NotificationUIManagerImpl
   void CheckUserState();
 
   // A queue of notifications which are waiting to be shown.
-  typedef std::deque<QueuedNotification*> NotificationDeque;
+  typedef std::deque<linked_ptr<QueuedNotification> > NotificationDeque;
   NotificationDeque show_queue_;
 
   // Registrar for the other kind of notifications (event signaling).
