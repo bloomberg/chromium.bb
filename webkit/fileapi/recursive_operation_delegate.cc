@@ -11,6 +11,11 @@
 
 namespace fileapi {
 
+namespace {
+// Don't start too many inflight operations.
+const int kMaxInflightOperations = 5;
+}
+
 RecursiveOperationDelegate::RecursiveOperationDelegate(
     LocalFileSystemOperation* original_operation)
     : original_operation_(original_operation),
@@ -24,7 +29,7 @@ void RecursiveOperationDelegate::StartRecursiveOperation(
     const StatusCallback& callback) {
   callback_ = callback;
   pending_directories_.push(root);
-  ProcessNextDirectory(base::PLATFORM_FILE_OK);
+  ProcessNextDirectory();
 }
 
 LocalFileSystemOperation* RecursiveOperationDelegate::NewOperation(
@@ -54,16 +59,12 @@ FileSystemContext* RecursiveOperationDelegate::file_system_context() {
   return original_operation_->file_system_context();
 }
 
-void RecursiveOperationDelegate::ProcessNextDirectory(
-    base::PlatformFileError error) {
-  if (error != base::PLATFORM_FILE_OK) {
-    callback_.Run(error);
-    return;
-  }
+void RecursiveOperationDelegate::ProcessNextDirectory() {
+  DCHECK(pending_files_.empty());
   if (inflight_operations_ > 0)
     return;
   if (pending_directories_.empty()) {
-    callback_.Run(error);
+    callback_.Run(base::PLATFORM_FILE_OK);
     return;
   }
   FileSystemURL url = pending_directories_.front();
@@ -74,10 +75,33 @@ void RecursiveOperationDelegate::ProcessNextDirectory(
                       AsWeakPtr(), url));
 }
 
+void RecursiveOperationDelegate::ProcessPendingFiles() {
+  if (pending_files_.empty()) {
+    ProcessNextDirectory();
+    return;
+  }
+  while (!pending_files_.empty() &&
+         inflight_operations_ < kMaxInflightOperations) {
+    FileSystemURL url = pending_files_.front();
+    pending_files_.pop();
+    inflight_operations_++;
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&RecursiveOperationDelegate::ProcessFile,
+                   AsWeakPtr(), url,
+                   base::Bind(&RecursiveOperationDelegate::DidProcessFile,
+                              AsWeakPtr())));
+  }
+}
+
 void RecursiveOperationDelegate::DidProcessFile(base::PlatformFileError error) {
   inflight_operations_--;
   DCHECK_GE(inflight_operations_, 0);
-  ProcessNextDirectory(error);
+  if (error != base::PLATFORM_FILE_OK) {
+    callback_.Run(error);
+    return;
+  }
+  ProcessPendingFiles();
 }
 
 void RecursiveOperationDelegate::DidProcessDirectory(
@@ -115,20 +139,17 @@ void RecursiveOperationDelegate::DidReadDirectory(
   }
   for (size_t i = 0; i < entries.size(); i++) {
     FileSystemURL url = parent.WithPath(parent.path().Append(entries[i].name));
-    if (entries[i].is_directory) {
+    if (entries[i].is_directory)
       pending_directories_.push(url);
-      continue;
-    }
-    inflight_operations_++;
-    ProcessFile(url, base::Bind(&RecursiveOperationDelegate::DidProcessFile,
-                                AsWeakPtr()));
+    else
+      pending_files_.push(url);
   }
   if (has_more)
     return;
 
   inflight_operations_--;
   DCHECK_GE(inflight_operations_, 0);
-  ProcessNextDirectory(base::PLATFORM_FILE_OK);
+  ProcessPendingFiles();
 }
 
 void RecursiveOperationDelegate::DidTryProcessFile(

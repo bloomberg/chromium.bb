@@ -74,7 +74,8 @@ class RecursiveOperationDelegate
   FileSystemContext* file_system_context();
 
  private:
-  void ProcessNextDirectory(base::PlatformFileError error);
+  void ProcessNextDirectory();
+  void ProcessPendingFiles();
   void DidProcessFile(base::PlatformFileError error);
   void DidProcessDirectory(const FileSystemURL& url,
                            base::PlatformFileError error);
@@ -89,6 +90,7 @@ class RecursiveOperationDelegate
   LocalFileSystemOperation* original_operation_;
   StatusCallback callback_;
   std::queue<FileSystemURL> pending_directories_;
+  std::queue<FileSystemURL> pending_files_;
   int inflight_operations_;
 
   DISALLOW_COPY_AND_ASSIGN(RecursiveOperationDelegate);

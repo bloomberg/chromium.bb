@@ -1031,16 +1031,24 @@ TEST_F(LocalFileSystemOperationTest, TestRemoveSuccess) {
 
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_directory_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
+}
 
+TEST_F(LocalFileSystemOperationTest, TestRemoveSuccessRecursive) {
   // Removing a non-empty directory with recursive flag == true should be ok.
   //      parent_dir
   //       |       |
-  //  child_dir  child_file
+  //  child_dir  child_files
+  //       |
+  //  child_files
+  //
   // Verify deleting parent_dir.
   base::FilePath parent_dir_path(CreateUniqueDir());
-  base::FilePath child_file_path(CreateUniqueFileInDir(parent_dir_path));
+  for (int i = 0; i < 8; ++i)
+    CreateUniqueFileInDir(parent_dir_path);
   base::FilePath child_dir_path(CreateUniqueDirInDir(parent_dir_path));
   ASSERT_FALSE(child_dir_path.empty());
+  for (int i = 0; i < 8; ++i)
+    CreateUniqueFileInDir(child_dir_path);
 
   operation()->Remove(URLForPath(parent_dir_path), true /* recursive */,
                       RecordStatusCallback());
@@ -1049,7 +1057,7 @@ TEST_F(LocalFileSystemOperationTest, TestRemoveSuccess) {
   EXPECT_FALSE(DirectoryExists(parent_dir_path));
 
   EXPECT_EQ(2, change_observer()->get_and_reset_remove_directory_count());
-  EXPECT_EQ(1, change_observer()->get_and_reset_remove_file_count());
+  EXPECT_EQ(16, change_observer()->get_and_reset_remove_file_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 

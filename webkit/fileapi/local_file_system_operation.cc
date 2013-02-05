@@ -225,6 +225,14 @@ void LocalFileSystemOperation::Remove(const FileSystemURL& url,
                                       bool recursive,
                                       const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationRemove));
+
+  base::PlatformFileError result = SetUp(url, SETUP_FOR_WRITE);
+  if (result != base::PLATFORM_FILE_OK) {
+    callback.Run(result);
+    delete this;
+    return;
+  }
+
   DCHECK(!recursive_operation_delegate_);
   recursive_operation_delegate_.reset(
       new RemoveOperationDelegate(
