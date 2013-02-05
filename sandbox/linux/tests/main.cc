@@ -4,7 +4,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-
 int main(int argc, char *argv[]) {
   testing::InitGoogleTest(&argc, argv);
   // Always go through re-execution for death tests.

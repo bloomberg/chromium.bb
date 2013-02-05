@@ -24,7 +24,18 @@ int GetSubProcessTimeoutTimeInSeconds() {
   return 10;
 }
 
+// Returns the number of threads of the current process or -1.
+int CountThreads() {
+  struct stat task_stat;
+  int task_d = stat("/proc/self/task", &task_stat);
+  // task_stat.st_nlink should be the number of tasks + 2 (accounting for
+  // "." and "..".
+  if (task_d != 0 || task_stat.st_nlink < 3)
+    return -1;
+  return task_stat.st_nlink - 2;
 }
+
+}  // namespace
 
 namespace sandbox {
 
@@ -66,12 +77,19 @@ static void SetProcessTimeout(int time_in_seconds) {
                                                 // alarm.
 }
 
+// Runs a test in a sub-process. This is necessary for most of the code
+// in the BPF sandbox, as it potentially makes global state changes and as
+// it also tends to raise fatal errors, if the code has been used in an
+// insecure manner.
 void UnitTests::RunTestInProcess(UnitTests::Test test, void *arg,
                                  DeathCheck death, const void *death_aux) {
-  // Runs a test in a sub-process. This is necessary for most of the code
-  // in the BPF sandbox, as it potentially makes global state changes and as
-  // it also tends to raise fatal errors, if the code has been used in an
-  // insecure manner.
+  if (CountThreads() != 1) {
+    // We need to use fork(), so we can't be multi-threaded.
+    // TODO(jln): change this to a fatal error once we can launch
+    // Android tests with --exe.
+    fprintf(stderr, "WARNING: running sandbox tests with multiple threads"
+                    " is not supported and will make the tests flaky.\n");
+  }
   int fds[2];
   ASSERT_EQ(0, pipe(fds));
   // Check that our pipe is not on one of the standard file descriptor.
