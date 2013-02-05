@@ -189,6 +189,7 @@
     { "name": "codereview.chromium.org", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "code.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "googlecode.com", "include_subdomains": true, "pins": "google" },
+    { "name": "dl.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
 
     // chart.apis.google.com is *not* HSTS because the certificate doesn't match
     // and there are lots of links out there that still use the name. The correct
