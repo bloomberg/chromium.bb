@@ -526,7 +526,7 @@ void NavigationControllerImpl::OnScreenshotTaken(
     return;
   }
 
-  if (!success) {
+  if (!success || bitmap.empty() || bitmap.isNull()) {
     ClearScreenshot(entry);
     return;
   }

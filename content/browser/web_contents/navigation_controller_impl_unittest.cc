@@ -3083,7 +3083,7 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
   ASSERT_TRUE(bitmap.allocPixels());
-  bitmap.setIsOpaque(false);
+  bitmap.eraseRGB(0, 0, 0);
   NavigationEntryImpl* entry;
 
   // Navigate enough times to make sure that some screenshots are purged.
