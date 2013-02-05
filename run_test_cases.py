@@ -766,7 +766,7 @@ def run_test_cases(
       if gtest_output.startswith('xml'):
         # Have each shard write an XML file and them merge them all.
         tempdir = tempfile.mkdtemp(prefix='run_test_cases')
-        cmd.append('--gtest_output=' + tempdir)
+        cmd.append('--gtest_output=xml:' + tempdir)
         # Figure out the result filepath in case we can't parse it, it'd be
         # annoying to error out after running the tests.
         if gtest_output == 'xml':

@@ -118,6 +118,10 @@ def main():
   options, args = parser.parse_args()
   if args:
     parser.error('Failed to process args %s' % args)
+  if options.gtest_output:
+    if not options.gtest_output.startswith('xml:'):
+      parser.error('--gtest_output value must start with xm:')
+    options.gtest_output = options.gtest_output[len('xml:'):]
 
   if options.trim_xml:
     trim_xml()
