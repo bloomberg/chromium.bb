@@ -149,6 +149,7 @@ typedef Bool (*ValidationCallbackFunc) (const uint8_t *instruction_start,
  * by all invocations of user_callback, so custom validation logic can be
  * placed there.
  */
+DLLEXPORT
 Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
                         uint32_t options,
                         const NaClCPUFeaturesX86 *cpu_features,
@@ -158,6 +159,7 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
 /*
  * See ValidateChunkAMD64
  */
+DLLEXPORT
 Bool ValidateChunkIA32(const uint8_t *data, size_t size,
                        uint32_t options,
                        const NaClCPUFeaturesX86 *cpu_features,

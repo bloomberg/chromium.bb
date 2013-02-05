@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 
 /* All supported features are enabled */
@@ -49,3 +50,8 @@ const NaClCPUFeaturesX86 kFullCPUIDFeatures = {
     1  /* NaClCPUFeatureX86_XOP */ /* AMD-specific */
   }
 };
+
+DLLEXPORT
+const NaClCPUFeaturesX86* GetFullCPUIDFeatures(void) {
+    return &kFullCPUIDFeatures;
+}
