@@ -20,11 +20,9 @@ const size_t kMaxURLChars = 2 * 1024 * 1024;
 const size_t kMaxURLDisplayChars = 32 * 1024;
 
 #if defined(GOOGLE_CHROME_BUILD)
-const wchar_t kBrowserAppName[] = L"Chrome";
-const char    kStatsFilename[] = "ChromeStats2";
+const char kStatsFilename[] = "ChromeStats2";
 #else
-const wchar_t kBrowserAppName[] = L"Chromium";
-const char    kStatsFilename[] = "ChromiumStats2";
+const char kStatsFilename[] = "ChromiumStats2";
 #endif
 
 const int kStatsMaxThreads = 32;
