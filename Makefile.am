@@ -26,9 +26,6 @@ SUBDIRS=fontconfig fc-case fc-lang fc-glyphname src \
 	fc-validate conf.d test
 if ENABLE_DOCS
 SUBDIRS += doc
-DIST_SUBDIRS = $(SUBDIRS)
-else
-DIST_SUBDIRS = $(SUBDIRS) doc
 endif
 
 AUTOMAKE_OPTIONS = dist-bzip2
