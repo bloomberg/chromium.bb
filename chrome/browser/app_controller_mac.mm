@@ -357,6 +357,10 @@ void RecordLastRunAppBundlePath() {
   // browsers get dealloc'd, it will stop the RunLoop and fall back into main().
   chrome::EndKeepAlive();
 
+  // Reset all pref watching, as this object outlives the prefs system.
+  profilePrefRegistrar_.reset();
+  localPrefRegistrar_.RemoveAll();
+
   [self unregisterEventHandlers];
 }
 
