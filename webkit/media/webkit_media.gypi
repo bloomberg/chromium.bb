@@ -171,6 +171,11 @@
         }, {  # 'os_posix != 1 or OS == "mac"'
           'type': 'shared_library',
         }],
+        ['OS == "mac"', {
+          'xcode_settings': {
+            'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+          },
+        }]
       ],
       'defines': ['CDM_IMPLEMENTATION'],
       'dependencies': [
@@ -223,6 +228,15 @@
               '-Wl,-exported_symbol,_PPP_InitializeModule',
               '-Wl,-exported_symbol,_PPP_ShutdownModule'
             ]},
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)/clearkeycdmplugin.plugin/Contents/MacOS/',
+              'files': [
+                '<(PRODUCT_DIR)/libclearkeycdm.dylib',
+                '<(PRODUCT_DIR)/ffmpegsumo.so'
+              ]
+            }
+          ]
         }],
       ],
     }

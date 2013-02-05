@@ -51,7 +51,7 @@ static base::AtExitManager g_at_exit_manager;
 // after http://crbug.com/91970 is fixed.
 static bool InitializeFFmpegLibraries() {
   base::FilePath file_path;
-  CHECK(PathService::Get(base::DIR_EXE, &file_path));
+  CHECK(PathService::Get(base::DIR_MODULE, &file_path));
   CHECK(media::InitializeMediaLibrary(file_path));
   return true;
 }

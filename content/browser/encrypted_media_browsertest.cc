@@ -114,11 +114,8 @@ class EncryptedMediaTest : public testing::WithParamInterface<const char*>,
 INSTANTIATE_TEST_CASE_P(ClearKey, EncryptedMediaTest,
                         ::testing::Values(kClearKeyKeySystem));
 
-// http://crbug.com/152864 (Mac)
-#if !defined(OS_MACOSX)
 INSTANTIATE_TEST_CASE_P(ExternalClearKey, EncryptedMediaTest,
                         ::testing::Values(kExternalClearKeyKeySystem));
-#endif
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
   const string16 kExpected = ASCIIToUTF16(
