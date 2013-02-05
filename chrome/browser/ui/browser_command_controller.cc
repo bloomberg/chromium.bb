@@ -47,6 +47,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
+#include "base/win/windows_version.h"
 #endif
 
 #if defined(USE_ASH)
@@ -813,8 +814,9 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB, false);
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
   command_updater_.UpdateCommandEnabled(IDC_DEBUG_FRAME_TOGGLE, true);
-#if defined(USE_ASH)
-  if (chrome::HOST_DESKTOP_TYPE_NATIVE != chrome::HOST_DESKTOP_TYPE_ASH)
+#if defined(OS_WIN) && defined(USE_ASH)
+  if (base::win::GetVersion() < base::win::VERSION_WIN8 &&
+      chrome::HOST_DESKTOP_TYPE_NATIVE != chrome::HOST_DESKTOP_TYPE_ASH)
     command_updater_.UpdateCommandEnabled(IDC_TOGGLE_ASH_DESKTOP, true);
 #endif
 

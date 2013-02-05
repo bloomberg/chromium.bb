@@ -90,8 +90,6 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_OEM_PLUS, ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
   { ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
   { ui::VKEY_ADD, ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
-  { ui::VKEY_A, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-    IDC_TOGGLE_ASH_DESKTOP },
   { ui::VKEY_F1, ui::EF_NONE, IDC_HELP_PAGE_VIA_KEYBOARD },
   { ui::VKEY_F3, ui::EF_NONE, IDC_FIND_NEXT },
   { ui::VKEY_F3, ui::EF_SHIFT_DOWN, IDC_FIND_PREVIOUS },

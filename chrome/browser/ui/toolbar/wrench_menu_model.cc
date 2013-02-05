@@ -464,6 +464,14 @@ void WrenchMenuModel::Build(bool is_new_menu, bool supports_new_separators) {
     AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
     AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
   }
+#if defined(USE_ASH)
+  if (base::win::GetVersion() < base::win::VERSION_WIN8 &&
+      chrome::HOST_DESKTOP_TYPE_NATIVE != chrome::HOST_DESKTOP_TYPE_ASH) {
+    AddItemWithStringId(IDC_TOGGLE_ASH_DESKTOP,
+                        ash::Shell::HasInstance() ? IDS_CLOSE_ASH_DESKTOP :
+                                                    IDS_OPEN_ASH_DESKTOP);
+  }
+#endif
 #else  // defined(OS_WIN)
   AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
 #if defined(OS_CHROMEOS)
@@ -474,14 +482,6 @@ void WrenchMenuModel::Build(bool is_new_menu, bool supports_new_separators) {
 #endif
 
 #endif  // else of defined(OS_WIN)
-
-#if defined(USE_ASH)
-  if (chrome::HOST_DESKTOP_TYPE_NATIVE != chrome::HOST_DESKTOP_TYPE_ASH) {
-    AddItemWithStringId(IDC_TOGGLE_ASH_DESKTOP,
-                        ash::Shell::HasInstance() ? IDS_CLOSE_ASH_DESKTOP :
-                                                    IDS_OPEN_ASH_DESKTOP);
-  }
-#endif
 
   bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
   AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
@@ -495,7 +495,7 @@ void WrenchMenuModel::Build(bool is_new_menu, bool supports_new_separators) {
                            recent_tabs_sub_menu_model_.get());
   }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_ASH)
   if (base::win::IsMetroProcess()) {
     // Metro mode, add the 'Relaunch Chrome in desktop mode'.
     AddSeparator(ui::SPACING_SEPARATOR);
