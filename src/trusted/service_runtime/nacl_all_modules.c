@@ -21,7 +21,6 @@ void  NaClAllModulesInit(void) {
   NaClNrdAllModulesInit();
   NaClFaultInjectionModuleInit();
   NaClGlobalModuleInit();  /* various global variables */
-  NaClStackSafetyInit();
   NaClSrpcModuleInit();
   NaClTlsInit();
   NaClSyscallTableInit();
@@ -32,7 +31,6 @@ void  NaClAllModulesInit(void) {
 void NaClAllModulesFini(void) {
   NaClTlsFini();
   NaClSrpcModuleFini();
-  NaClStackSafetyFini();
   NaClGlobalModuleFini();
   NaClNrdAllModulesFini();
 }
