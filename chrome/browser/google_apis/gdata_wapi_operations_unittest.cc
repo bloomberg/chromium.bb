@@ -35,20 +35,6 @@ const char kTestGDataAuthToken[] = "testtoken";
 const char kTestUserAgent[] = "test-user-agent";
 const char kTestETag[] = "test_etag";
 
-// Copies the results from DownloadActionCallback and quit the message loop.
-// The contents of the download cache file are copied to a string, and the
-// file is removed.
-void CopyResultsFromDownloadActionCallbackAndQuit(
-    GDataErrorCode* out_result_code,
-    std::string* contents,
-    GDataErrorCode result_code,
-    const FilePath& cache_file_path) {
-  *out_result_code = result_code;
-  file_util::ReadFileToString(cache_file_path, contents);
-  file_util::Delete(cache_file_path, false);
-  MessageLoop::current()->Quit();
-}
-
 // Copies the result from InitiateUploadCallback and quit the message loop.
 void CopyResultFromInitiateUploadCallbackAndQuit(
     GDataErrorCode* out_result_code,
@@ -149,11 +135,6 @@ class GDataWapiOperationsTest : public testing::Test {
   }
 
  protected:
-  // Returns a temporary file path suitable for storing the cache file.
-  FilePath GetTestCachedFilePath(const FilePath& file_name) {
-    return profile_->GetPath().Append(file_name);
-  }
-
   // Handles a request for fetching a resource feed.
   scoped_ptr<test_server::HttpResponse> HandleResourceFeedRequest(
       const test_server::HttpRequest& request) {
@@ -503,60 +484,6 @@ TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
   EXPECT_TRUE(test_util::VerifyJsonData(
       test_util::GetTestFilePath("gdata/account_metadata.json"),
       result_data.get()));
-}
-
-TEST_F(GDataWapiOperationsTest, DownloadFileOperation_ValidFile) {
-  GDataErrorCode result_code = GDATA_OTHER_ERROR;
-  std::string contents;
-  DownloadFileOperation* operation = new DownloadFileOperation(
-      &operation_registry_,
-      request_context_getter_.get(),
-      base::Bind(&CopyResultsFromDownloadActionCallbackAndQuit,
-                 &result_code,
-                 &contents),
-      GetContentCallback(),
-      test_server_.GetURL("/files/gdata/testfile.txt"),
-      FilePath::FromUTF8Unsafe("/dummy/gdata/testfile.txt"),
-      GetTestCachedFilePath(FilePath::FromUTF8Unsafe("cached_testfile.txt")));
-  operation->Start(kTestGDataAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
-  MessageLoop::current()->Run();
-
-  EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/files/gdata/testfile.txt", http_request_.relative_url);
-
-  const FilePath expected_path =
-      test_util::GetTestFilePath("gdata/testfile.txt");
-  std::string expected_contents;
-  file_util::ReadFileToString(expected_path, &expected_contents);
-  EXPECT_EQ(expected_contents, contents);
-}
-
-// http://crbug.com/169588
-TEST_F(GDataWapiOperationsTest,
-       DISABLED_DownloadFileOperation_NonExistentFile) {
-  GDataErrorCode result_code = GDATA_OTHER_ERROR;
-  std::string contents;
-  DownloadFileOperation* operation = new DownloadFileOperation(
-      &operation_registry_,
-      request_context_getter_.get(),
-      base::Bind(&CopyResultsFromDownloadActionCallbackAndQuit,
-                 &result_code,
-                 &contents),
-      GetContentCallback(),
-      test_server_.GetURL("/files/gdata/no-such-file.txt"),
-      FilePath::FromUTF8Unsafe("/dummy/gdata/no-such-file.txt"),
-      GetTestCachedFilePath(
-          FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
-  operation->Start(kTestGDataAuthToken, kTestUserAgent,
-                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
-  MessageLoop::current()->Run();
-
-  EXPECT_EQ(HTTP_NOT_FOUND, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/files/gdata/no-such-file.txt", http_request_.relative_url);
-  // Do not verify the not found message.
 }
 
 TEST_F(GDataWapiOperationsTest, DeleteResourceOperation) {

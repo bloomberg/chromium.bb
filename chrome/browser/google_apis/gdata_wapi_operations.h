@@ -124,65 +124,6 @@ class GetAccountMetadataOperation : public GetDataOperation {
   DISALLOW_COPY_AND_ASSIGN(GetAccountMetadataOperation);
 };
 
-//============================ DownloadFileOperation ===========================
-
-// Callback type for DownloadHostedDocument/DownloadFile
-// DocumentServiceInterface calls.
-typedef base::Callback<void(GDataErrorCode error,
-                            const FilePath& temp_file)> DownloadActionCallback;
-
-// This class performs the operation for downloading of a given document/file.
-class DownloadFileOperation : public UrlFetchOperationBase {
- public:
-  // download_action_callback:
-  //   This callback is called when the download is complete. Must not be null.
-  //
-  // get_content_callback:
-  //   This callback is called when some part of the content is
-  //   read. Used to read the download content progressively. May be null.
-  //
-  // content_url:
-  //   Specifies the target file to download.
-  //
-  // drive_file_path:
-  //   Specifies the drive path of the target file. Shown in UI.
-  //   TODO(satorux): Remove the drive file path hack. crbug.com/163296
-  //
-  // output_file_path:
-  //   Specifies the file path to save the downloaded file.
-  //
-  DownloadFileOperation(
-      OperationRegistry* registry,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const DownloadActionCallback& download_action_callback,
-      const GetContentCallback& get_content_callback,
-      const GURL& content_url,
-      const FilePath& drive_file_path,
-      const FilePath& output_file_path);
-  virtual ~DownloadFileOperation();
-
- protected:
-  // UrlFetchOperationBase overrides.
-  virtual GURL GetURL() const OVERRIDE;
-  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
-
-  // net::URLFetcherDelegate overrides.
-  virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                          int64 current, int64 total) OVERRIDE;
-  virtual bool ShouldSendDownloadData() OVERRIDE;
-  virtual void OnURLFetchDownloadData(
-      const net::URLFetcher* source,
-      scoped_ptr<std::string> download_data) OVERRIDE;
-
- private:
-  const DownloadActionCallback download_action_callback_;
-  const GetContentCallback get_content_callback_;
-  const GURL content_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadFileOperation);
-};
-
 //=========================== DeleteResourceOperation ==========================
 
 // This class performs the operation for deleting a resource.
