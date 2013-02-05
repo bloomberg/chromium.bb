@@ -223,20 +223,14 @@ class TransferStateInternal
   }
 
   void WaitForLastUpload() {
-    if (!wait_for_uploads_)
-      return;
-
-    // This fence is basically like calling glFinish, which is fine on
-    // the upload thread if uploads occur on the CPU. We may want to delay
-    // blocking on this fence if this causes any stalls.
-
-    TRACE_EVENT0("gpu", "eglWaitSync");
-    EGLDisplay display = eglGetCurrentDisplay();
-    EGLSyncKHR fence = eglCreateSyncKHR(display, EGL_SYNC_FENCE_KHR, NULL);
-    EGLint flags = EGL_SYNC_FLUSH_COMMANDS_BIT_KHR;
-    EGLTimeKHR time = EGL_FOREVER_KHR;
-    eglClientWaitSyncKHR(display, fence, flags, time);
-    eglDestroySyncKHR(display, fence);
+    // This glFinish is just a safe-guard for if uploads have some
+    // GPU action that needs to occur. We could use fences and try
+    // to do this less often. However, on older drivers fences are
+    // not always reliable (eg. Mali-400 just blocks forever).
+    if (wait_for_uploads_) {
+      TRACE_EVENT0("gpu", "glFinish");
+      glFinish();
+    }
   }
 
  protected:
