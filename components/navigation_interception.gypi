@@ -65,8 +65,8 @@
               'target_name': 'navigation_interception_jni_headers',
               'type': 'none',
               'sources': [
-                'navigation_interception/android/java/src/org/chromium/content/components/navigation_interception/InterceptNavigationDelegate.java',
-                'navigation_interception/android/java/src/org/chromium/content/components/navigation_interception/NavigationParams.java',
+                'navigation_interception/android/java/src/org/chromium/components/navigation_interception/InterceptNavigationDelegate.java',
+                'navigation_interception/android/java/src/org/chromium/components/navigation_interception/NavigationParams.java',
               ],
               'variables': {
                 'jni_gen_dir': 'navigation_interception',
