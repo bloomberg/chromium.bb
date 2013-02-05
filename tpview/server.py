@@ -6,16 +6,17 @@ from SimpleHTTPServer import SimpleHTTPRequestHandler
 import cgi
 import json
 import os
+import posixpath
 import shutil
 import SimpleHTTPServer
 import socket
 import SocketServer
 import sys
 import threading
+import urllib
 
 # change into script in order to serve tpview files
 script_dir = os.path.dirname(os.path.realpath(__file__))
-os.chdir(script_dir)
 
 class ServerData(object):
   def __init__(self, log):
@@ -65,6 +66,13 @@ class TPViewHTTPRequestHandler(SimpleHTTPRequestHandler):
       data.saved = True
       self.respond("Success")
 
+  def translate_path(self, path):
+      """
+        Modified version of translate_path to use script_dir
+        for looking up files instead of the local working dir.
+      """
+      path = SimpleHTTPRequestHandler.translate_path(self, path)
+      return path.replace(os.getcwd(), script_dir)
 
 def View(port, log=None, persistent=False):
   """
