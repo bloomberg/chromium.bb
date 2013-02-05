@@ -4009,7 +4009,7 @@
    bug_104578
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN16ProcessSingletonC1ERK8FilePath
+   fun:_ZN16ProcessSingletonC1ERKN4base8FilePathE
    fun:_ZN22ChromeBrowserMainParts20PreCreateThreadsImplEv
 }
 {
@@ -6484,9 +6484,9 @@
    fun:_ZN14ProfileManager22DoFinalInitForServicesEP7Profileb
    fun:_ZN14ProfileManager11DoFinalInitEP7Profileb
    fun:_ZN14ProfileManager10AddProfileEP7Profile
-   fun:_ZN14ProfileManager10GetProfileERK8FilePath
-   fun:_ZN14ProfileManager18GetLastUsedProfileERK8FilePath
-   fun:_ZN12_GLOBAL__N_113CreateProfileERKN7content18MainFunctionParamsERK8FilePathRK11CommandLine
+   fun:_ZN14ProfileManager10GetProfileERKN4base8FilePathE
+   fun:_ZN14ProfileManager18GetLastUsedProfileERKN4base8FilePathE
+   fun:_ZN12_GLOBAL__N_113CreateProfileERKN7content18MainFunctionParamsERKN4base8FilePathERK11CommandLine
    fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
    fun:_ZN22ChromeBrowserMainParts21PreMainMessageLoopRunEv
    fun:_ZN7content15BrowserMainLoop13CreateThreadsEv
