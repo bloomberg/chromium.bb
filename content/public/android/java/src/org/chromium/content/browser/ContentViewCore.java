@@ -1878,6 +1878,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             mContentWidth = newContentWidth;
             mContentHeight = newContentHeight;
 
+            getContentViewClient().onContentSizeChanged(mContentWidth, mContentHeight);
             if (mContentSizeChangeListener != null) {
                 mContentSizeChangeListener.onContentSizeChanged(getContentWidth(),
                         getContentHeight());
@@ -1898,8 +1899,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         mNativeScrollX = x;
         mNativeScrollY = y;
 
-        if (mNativePageScaleFactor != scale && mContentViewClient != null) {
-            mContentViewClient.onScaleChanged(mNativePageScaleFactor, scale);
+        if (mNativePageScaleFactor != scale) {
+            getContentViewClient().onScaleChanged(mNativePageScaleFactor, scale);
         }
 
         mNativePageScaleFactor = scale;
@@ -1913,11 +1914,10 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     @SuppressWarnings("unused")
     @CalledByNative
     private void updateOffsetsForFullscreen(float controlsOffsetYDp, float contentOffsetYDp) {
-        if (mContentViewClient == null) return;
         float scale = getContext().getResources().getDisplayMetrics().density;
         float controlsOffsetPx = controlsOffsetYDp * scale;
         float contentOffsetYPx = contentOffsetYDp * scale;
-        mContentViewClient.onOffsetsForFullscreenChanged(controlsOffsetPx, contentOffsetYPx);
+        getContentViewClient().onOffsetsForFullscreenChanged(controlsOffsetPx, contentOffsetYPx);
     }
 
     @SuppressWarnings("unused")
