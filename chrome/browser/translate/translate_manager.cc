@@ -154,6 +154,7 @@ const LanguageCodeSynonym kLanguageCodeSynonyms[] = {
   {"no", "nb"},
   {"iw", "he"},
   {"jw", "jv"},
+  {"tl", "fil"},
 };
 
 const char* const kTranslateScriptURL =
