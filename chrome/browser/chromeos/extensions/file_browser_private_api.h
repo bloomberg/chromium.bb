@@ -792,15 +792,15 @@ class ReloadDriveFunction: public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-// Implements the chrome.fileBrowserPrivate.getNetworkConnectionState method.
-class GetNetworkConnectionStateFunction : public SyncExtensionFunction {
+// Implements the chrome.fileBrowserPrivate.getDriveConnectionState method.
+class GetDriveConnectionStateFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
-      "fileBrowserPrivate.getNetworkConnectionState",
-      FILEBROWSERPRIVATE_GETNETWORKCONNECTIONSTATE);
+      "fileBrowserPrivate.getDriveConnectionState",
+      FILEBROWSERPRIVATE_GETDRIVECONNECTIONSTATE);
 
  protected:
-  virtual ~GetNetworkConnectionStateFunction() {}
+  virtual ~GetDriveConnectionStateFunction() {}
 
   virtual bool RunImpl() OVERRIDE;
 };

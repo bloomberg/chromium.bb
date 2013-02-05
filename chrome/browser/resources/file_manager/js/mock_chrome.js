@@ -418,7 +418,7 @@ chrome.fileBrowserPrivate = {
 
   onNetworkConnectionChanged: new MockEventSource(),
 
-  getNetworkConnectionState: function(callback) {
+  getDriveConnectionState: function(callback) {
     setTimeout(callback, 0, cloneShallow(
         chrome.fileBrowserPrivate.networkConnectionState_));
   },

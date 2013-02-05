@@ -1085,8 +1085,8 @@
         ]
       },
       {
-        "name": "getNetworkConnectionState",
-        "description": "Retrieves the state of the currently active network connection.",
+        "name": "getDriveConnectionState",
+        "description": "Retrieves the state of the current drive connection.",
         "parameters": [
           {
             "name": "callback",
@@ -1097,7 +1097,11 @@
                 "type": "object",
                 "properties": {
                   "type": {"type": "string"},
-                  "online": {"type": "boolean"}
+                  "reasons": {
+                    "type": "array",
+                    "description": "Reasons of offline.",
+                    "items": { "type": "string" }
+                  }
                 }
               }
             ]
@@ -1201,9 +1205,9 @@
         "parameters": []
       },
       {
-        "name": "onNetworkConnectionChanged",
+        "name": "onDriveConnectionStatusChanged",
         "type": "function",
-        "description": "Fired when the active network connection state changes. The network connection state can be retrieved via 'getNetworkConnectionState'.",
+        "description": "Fired when the active network connection state changes. The network connection state can be retrieved via 'getDriveConnectionState'.",
         "parameters": []
       }
     ]

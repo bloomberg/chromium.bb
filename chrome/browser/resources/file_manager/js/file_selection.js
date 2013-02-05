@@ -280,7 +280,7 @@ FileSelectionHandler.prototype.updateOkButton = function() {
   */
 FileSelectionHandler.prototype.isFileSelectionAvailable = function() {
   return !this.fileManager_.isOnDrive() ||
-      !this.fileManager_.isOffline() ||
+      !this.fileManager_.isDriveOffline() ||
       this.selection.allDriveFilesPresent;
 };
 

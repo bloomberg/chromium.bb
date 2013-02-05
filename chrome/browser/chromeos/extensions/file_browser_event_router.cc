@@ -471,7 +471,7 @@ void FileBrowserEventRouter::OnNetworkManagerChanged(
     return;
   }
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::event_names::kOnFileBrowserNetworkConnectionChanged,
+      extensions::event_names::kOnFileBrowserDriveConnectionStatusChanged,
       scoped_ptr<ListValue>(new ListValue())));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
       BroadcastEvent(event.Pass());
@@ -569,15 +569,12 @@ void FileBrowserEventRouter::OnAuthenticationFailed(
   if (error == google_apis::GDATA_NO_CONNECTION)
     return;
 
-  // Raise a mount event to notify the File Manager.
-  const std::string& gdata_path = drive::util::GetDriveMountPointPathAsString();
-  DiskMountManager::MountPointInfo mount_info(
-      gdata_path,
-      gdata_path,
-      chromeos::MOUNT_TYPE_GOOGLE_DRIVE,
-      chromeos::disks::MOUNT_CONDITION_NONE);
-  OnMountEvent(DiskMountManager::UNMOUNTING, chromeos::MOUNT_ERROR_NONE,
-               mount_info);
+  // Raise a DriveConnectionStatusChanged event to notify the status offline.
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::event_names::kOnFileBrowserDriveConnectionStatusChanged,
+      scoped_ptr<ListValue>(new ListValue())));
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      BroadcastEvent(event.Pass());
 }
 
 void FileBrowserEventRouter::HandleFileWatchNotification(

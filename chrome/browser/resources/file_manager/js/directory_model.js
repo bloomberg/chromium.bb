@@ -158,15 +158,15 @@ DirectoryModel.prototype.getCurrentRootUrl = function() {
 /**
  * @return {boolean} on True if offline.
  */
-DirectoryModel.prototype.isOffline = function() {
-  return this.offline_;
+DirectoryModel.prototype.isDriveOffline = function() {
+  return this.drive_offline_;
 };
 
 /**
  * @param {boolean} offline True if offline.
  */
-DirectoryModel.prototype.setOffline = function(offline) {
-  this.offline_ = offline;
+DirectoryModel.prototype.setDriveOffline = function(offline) {
+  this.drive_offline_ = offline;
 };
 
 /**
@@ -204,7 +204,7 @@ DirectoryModel.prototype.isPathReadOnly = function(path) {
     case RootType.DOWNLOADS:
       return false;
     case RootType.DRIVE:
-      return this.isOffline();
+      return this.isDriveOffline();
     default:
       return true;
   }
@@ -1234,7 +1234,7 @@ DirectoryModel.prototype.search = function(query,
   this.addEventListener('scan-completed', this.onSearchCompleted_);
 
   // If we are offline, let's fallback to file name search inside dir.
-  if (this.getCurrentRootType() === RootType.DRIVE && !this.isOffline()) {
+  if (this.getCurrentRootType() === RootType.DRIVE && !this.isDriveOffline()) {
     // Drive search is performed over the whole drive, so pass drive root as
     // |directoryEntry|.
     newDirContents = new DirectoryContentsDriveSearch(

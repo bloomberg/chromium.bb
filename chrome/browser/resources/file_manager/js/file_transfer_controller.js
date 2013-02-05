@@ -433,7 +433,7 @@ FileTransferController.prototype = {
 
   canCopyOrDrag_: function() {
     if (this.isOnDrive &&
-        this.directoryModel_.isOffline() &&
+        this.directoryModel_.isDriveOffline() &&
         !this.allDriveFilesAvailable)
       return false;
     return this.selectedEntries_.length > 0;

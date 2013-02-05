@@ -109,6 +109,23 @@ const char kFileError[] = "File error %d";
 const char kInvalidFileUrl[] = "Invalid file URL";
 const char kVolumeDevicePathNotFound[] = "Device path not found";
 
+/**
+ * List of connection types of drive.
+ *
+ * Keep this in sync with the DriveConnectionType in file_manager.js.
+ */
+const char kDriveConnectionTypeOffline[] = "offline";
+const char kDriveConnectionTypeMetered[] = "metered";
+const char kDriveConnectionTypeOnline[] = "online";
+
+/**
+ * List of reasons of kDriveConnectionType*.
+ *
+ * Keep this in sync with the DriveConnectionReason in file_manager.js.
+ */
+const char kDriveConnectionReasonNotReady[] = "not_ready";
+const char kDriveConnectionReasonNoNetwork[] = "no_network";
+
 // Unescape rules used for parsing query parameters.
 const net::UnescapeRule::Type kUnescapeRuleForQueryParameters =
     net::UnescapeRule::SPACES |
@@ -624,7 +641,7 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<SearchDriveFunction>();
   registry->RegisterFunction<ClearDriveCacheFunction>();
   registry->RegisterFunction<ReloadDriveFunction>();
-  registry->RegisterFunction<GetNetworkConnectionStateFunction>();
+  registry->RegisterFunction<GetDriveConnectionStateFunction>();
   registry->RegisterFunction<RequestDirectoryRefreshFunction>();
   registry->RegisterFunction<SetLastModifiedFunction>();
   registry->RegisterFunction<ZipSelectionFunction>();
@@ -3039,7 +3056,7 @@ bool ReloadDriveFunction::RunImpl() {
   return true;
 }
 
-bool GetNetworkConnectionStateFunction::RunImpl() {
+bool GetDriveConnectionStateFunction::RunImpl() {
   chromeos::NetworkLibrary* network_library =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   if (!network_library)
@@ -3048,17 +3065,28 @@ bool GetNetworkConnectionStateFunction::RunImpl() {
   const chromeos::Network* active_network = network_library->active_network();
 
   scoped_ptr<DictionaryValue> value(new DictionaryValue());
-  value->SetBoolean("online", active_network && active_network->online());
+  scoped_ptr<ListValue> reasons(new ListValue());
 
   std::string type_string;
-  if (!active_network)
-    type_string = "none";
-  else if (active_network->type() == chromeos::TYPE_CELLULAR)
-    type_string = "cellular";
-  else
-    type_string = "ethernet";  // Currently we do not care about other types.
+  drive::DriveSystemService* system_service =
+      drive::DriveSystemServiceFactory::GetForProfile(profile_);
+
+  bool ready = system_service->drive_service()->CanStartOperation();
+  if (!active_network || !ready) {
+    type_string = kDriveConnectionTypeOnline;
+    if (!active_network)
+      reasons->AppendString(kDriveConnectionReasonNoNetwork);
+    if (!ready)
+      reasons->AppendString(kDriveConnectionReasonNotReady);
+  } else if (active_network->type() == chromeos::TYPE_CELLULAR &&
+      profile_->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular)) {
+    type_string = kDriveConnectionTypeMetered;
+  } else {
+    type_string = kDriveConnectionTypeOffline;
+  }
 
   value->SetString("type", type_string);
+  value->Set("reasons", reasons.release());
   SetResult(value.release());
 
   return true;
