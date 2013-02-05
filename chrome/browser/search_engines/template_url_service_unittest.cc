@@ -254,6 +254,7 @@ void TemplateURLServiceTest::AssertEquals(const TemplateURL& expected,
   ASSERT_EQ(expected.url(), actual.url());
   ASSERT_EQ(expected.suggestions_url(), actual.suggestions_url());
   ASSERT_EQ(expected.favicon_url(), actual.favicon_url());
+  ASSERT_EQ(expected.alternate_urls(), actual.alternate_urls());
   ASSERT_EQ(expected.show_in_default_list(), actual.show_in_default_list());
   ASSERT_EQ(expected.safe_for_autoreplace(), actual.safe_for_autoreplace());
   ASSERT_EQ(expected.input_encodings(), actual.input_encodings());
@@ -261,6 +262,8 @@ void TemplateURLServiceTest::AssertEquals(const TemplateURL& expected,
   ASSERT_EQ(expected.date_created(), actual.date_created());
   ASSERT_EQ(expected.last_modified(), actual.last_modified());
   ASSERT_EQ(expected.sync_guid(), actual.sync_guid());
+  ASSERT_EQ(expected.search_terms_replacement_key(),
+            actual.search_terms_replacement_key());
 }
 
 void TemplateURLServiceTest::ExpectSimilar(const TemplateURL* expected,
@@ -272,9 +275,12 @@ void TemplateURLServiceTest::ExpectSimilar(const TemplateURL* expected,
   EXPECT_EQ(expected->url(), actual->url());
   EXPECT_EQ(expected->suggestions_url(), actual->suggestions_url());
   EXPECT_EQ(expected->favicon_url(), actual->favicon_url());
+  EXPECT_EQ(expected->alternate_urls(), actual->alternate_urls());
   EXPECT_EQ(expected->show_in_default_list(), actual->show_in_default_list());
   EXPECT_EQ(expected->safe_for_autoreplace(), actual->safe_for_autoreplace());
   EXPECT_EQ(expected->input_encodings(), actual->input_encodings());
+  EXPECT_EQ(expected->search_terms_replacement_key(),
+            actual->search_terms_replacement_key());
 }
 
 TemplateURL* TemplateURLServiceTest::CreatePreloadedTemplateURL(
@@ -1341,8 +1347,11 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   const char kSearchURL[] = "http://test.com/search?t={searchTerms}";
   const char kIconURL[] = "http://test.com/icon.jpg";
   const char kEncodings[] = "UTF-16;UTF-32";
+  const char kAlternateURL[] = "http://test.com/search#t={searchTerms}";
+  const char kSearchTermsReplacementKey[] = "espv";
   test_util_.SetManagedDefaultSearchPreferences(true, kName, kKeyword,
-      kSearchURL, std::string(), kIconURL, kEncodings);
+      kSearchURL, std::string(), kIconURL, kEncodings, kAlternateURL,
+      kSearchTermsReplacementKey);
   VerifyObserverFired();
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_EQ(initial_count + 2, model()->GetTemplateURLs().size());
@@ -1355,6 +1364,8 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   data.favicon_url = GURL(kIconURL);
   data.show_in_default_list = true;
   base::SplitString(kEncodings, ';', &data.input_encodings);
+  data.alternate_urls.push_back(kAlternateURL);
+  data.search_terms_replacement_key = kSearchTermsReplacementKey;
   Profile* profile = test_util_.profile();
   scoped_ptr<TemplateURL> expected_managed_default1(new TemplateURL(profile,
                                                                     data));
@@ -1369,7 +1380,8 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   const char kNewSearchURL[] = "http://other.com/search?t={searchTerms}";
   const char kNewSuggestURL[] = "http://other.com/suggest?t={searchTerms}";
   test_util_.SetManagedDefaultSearchPreferences(true, kNewName, kNewKeyword,
-      kNewSearchURL, kNewSuggestURL, std::string(), std::string());
+      kNewSearchURL, kNewSuggestURL, std::string(), std::string(),
+      std::string(), std::string());
   VerifyObserverFired();
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_EQ(initial_count + 2, model()->GetTemplateURLs().size());
@@ -1402,7 +1414,7 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   // Disable the default search provider through policy.
   test_util_.SetManagedDefaultSearchPreferences(false, std::string(),
       std::string(), std::string(), std::string(), std::string(),
-      std::string());
+      std::string(), std::string(), std::string());
   VerifyObserverFired();
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_TRUE(NULL == model()->GetDefaultSearchProvider());
@@ -1410,7 +1422,8 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
 
   // Re-enable it.
   test_util_.SetManagedDefaultSearchPreferences(true, kName, kKeyword,
-      kSearchURL, std::string(), kIconURL, kEncodings);
+      kSearchURL, std::string(), kIconURL, kEncodings, kAlternateURL,
+      kSearchTermsReplacementKey);
   VerifyObserverFired();
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_EQ(initial_count + 2, model()->GetTemplateURLs().size());
@@ -1437,7 +1450,7 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   test_util_.ResetModel(false);
   test_util_.SetManagedDefaultSearchPreferences(false, std::string(),
       std::string(), std::string(), std::string(), std::string(),
-      std::string());
+      std::string(), std::string(), std::string());
   test_util_.VerifyLoad();
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_TRUE(model()->GetDefaultSearchProvider() == NULL);

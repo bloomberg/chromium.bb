@@ -17,11 +17,13 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/automation/value_conversion_util.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/google/google_util_chromeos.h"
@@ -270,7 +272,9 @@ void TemplateURLServiceTestUtil::SetManagedDefaultSearchPreferences(
     const std::string& search_url,
     const std::string& suggest_url,
     const std::string& icon_url,
-    const std::string& encodings) {
+    const std::string& encodings,
+    const std::string& alternate_url,
+    const std::string& search_terms_replacement_key) {
   TestingPrefServiceSyncable* pref_service = profile_->GetTestingPrefService();
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderEnabled,
                                Value::CreateBooleanValue(enabled));
@@ -286,6 +290,12 @@ void TemplateURLServiceTestUtil::SetManagedDefaultSearchPreferences(
                                Value::CreateStringValue(icon_url));
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderEncodings,
                                Value::CreateStringValue(encodings));
+  pref_service->SetManagedPref(prefs::kDefaultSearchProviderAlternateURLs,
+      alternate_url.empty() ? new base::ListValue() :
+          CreateListValueFrom(alternate_url));
+  pref_service->SetManagedPref(
+      prefs::kDefaultSearchProviderSearchTermsReplacementKey,
+      Value::CreateStringValue(search_terms_replacement_key));
   model()->Observe(chrome::NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,
                    content::NotificationService::AllSources(),
                    content::NotificationService::NoDetails());
@@ -300,6 +310,9 @@ void TemplateURLServiceTestUtil::RemoveManagedDefaultSearchPreferences() {
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderSuggestURL);
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderIconURL);
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderEncodings);
+  pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderAlternateURLs);
+  pref_service->RemoveManagedPref(
+      prefs::kDefaultSearchProviderSearchTermsReplacementKey);
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderID);
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderPrepopulateID);
   model()->Observe(chrome::NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,

@@ -23,6 +23,11 @@ class WebDataService;
 // none is set. |profile| may be NULL.
 string16 GetDefaultSearchEngineName(Profile* profile);
 
+// Modifies |prepopulated_url| so that it contains user-modified fields from
+// |original_turl|. Both URLs must have the same prepopulate_id.
+void MergeIntoPrepopulatedEngineData(TemplateURLData* prepopulated_url,
+                                     const TemplateURL* original_turl);
+
 // Processes the results of WebDataService::GetKeywords, combining it with
 // prepopulated search providers to result in:
 //  * a set of template_urls (search providers). The caller owns the

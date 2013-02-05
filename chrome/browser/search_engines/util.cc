@@ -135,6 +135,20 @@ TemplateURL* GetTemplateURLByID(
   return NULL;
 }
 
+void MergeIntoPrepopulatedEngineData(TemplateURLData* prepopulated_url,
+                                     const TemplateURL* original_turl) {
+  DCHECK_EQ(original_turl->prepopulate_id(), prepopulated_url->prepopulate_id);
+  if (!original_turl->safe_for_autoreplace()) {
+    prepopulated_url->safe_for_autoreplace = false;
+    prepopulated_url->SetKeyword(original_turl->keyword());
+    prepopulated_url->short_name = original_turl->short_name();
+  }
+  prepopulated_url->id = original_turl->id();
+  prepopulated_url->sync_guid = original_turl->sync_guid();
+  prepopulated_url->date_created = original_turl->date_created();
+  prepopulated_url->last_modified = original_turl->last_modified();
+}
+
 // Loads engines from prepopulate data and merges them in with the existing
 // engines.  This is invoked when the version of the prepopulate data changes.
 // If |removed_keyword_guids| is not NULL, the Sync GUID of each item removed
@@ -183,17 +197,11 @@ void MergeEnginesFromPrepopulateData(
       TemplateURLData data(prepopulated_url->data());
       scoped_ptr<TemplateURL> existing_url(existing_url_iter->second);
       id_to_turl.erase(existing_url_iter);
-      if (!existing_url->safe_for_autoreplace()) {
-        data.safe_for_autoreplace = false;
-        data.SetKeyword(existing_url->keyword());
-        data.short_name = existing_url->short_name();
-      }
-      data.id = existing_url->id();
+      MergeIntoPrepopulatedEngineData(&data, existing_url.get());
       // Update last_modified to ensure that if this entry is later merged with
       // entries from Sync, the conflict resolution logic knows that this was
       // updated and propagates the new values to the server.
       data.last_modified = base::Time::Now();
-      data.sync_guid = existing_url->sync_guid();
       if (service)
         service->UpdateKeyword(data);
 

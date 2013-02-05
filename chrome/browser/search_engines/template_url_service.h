@@ -446,6 +446,13 @@ class TemplateURLService : public WebDataServiceConsumer,
                       const TemplateURL& new_values,
                       const SearchTermsData& old_search_terms_data);
 
+  // If the TemplateURL comes from a prepopulated URL available in the current
+  // country, update all its fields save for the keyword, short name and id so
+  // that they match the internal prepopulated URL. TemplateURLs not coming from
+  // a prepopulated URL are not modified.
+  static void UpdateTemplateURLIfPrepopulated(TemplateURL* existing_turl,
+                                              Profile* profile);
+
   // Returns the preferences we use.
   PrefService* GetPrefs();
 

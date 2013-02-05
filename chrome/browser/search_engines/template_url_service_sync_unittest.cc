@@ -225,6 +225,14 @@ class TemplateURLServiceSyncTest : public testing::Test {
   // Syntactic sugar.
   TemplateURL* Deserialize(const syncer::SyncData& sync_data);
 
+  // Creates a new TemplateURL copying the fields of |turl| but replacing
+  // the |url| and |guid| and initializing the date_created and last_modified
+  // timestamps to a default value of 100. The caller owns the returned
+  // TemplateURL*.
+  TemplateURL* CopyTemplateURL(const TemplateURL* turl,
+                               const std::string& url,
+                               const std::string& guid);
+
  protected:
   // We keep two TemplateURLServices to test syncing between them.
   TemplateURLServiceTestUtil test_util_a_;
@@ -361,6 +369,17 @@ TemplateURL* TemplateURLServiceSyncTest::Deserialize(
       NULL, sync_data, &dummy);
 }
 
+TemplateURL* TemplateURLServiceSyncTest::CopyTemplateURL(
+    const TemplateURL* turl,
+    const std::string& url,
+    const std::string& guid) {
+  TemplateURLData data (turl->data());
+  data.SetURL(url);
+  data.date_created = Time::FromTimeT(100);
+  data.last_modified = Time::FromTimeT(100);
+  data.sync_guid = guid;
+  return new TemplateURL(NULL, data);
+}
 
 // Actual tests ---------------------------------------------------------------
 
@@ -1690,8 +1709,12 @@ TEST_F(TemplateURLServiceSyncTest, SyncWithManagedDefaultSearch) {
   const char kSearchURL[] = "http://manageddefault.com/search?t={searchTerms}";
   const char kIconURL[] = "http://manageddefault.com/icon.jpg";
   const char kEncodings[] = "UTF-16;UTF-32";
+  const char kAlternateURL[] =
+      "http://manageddefault.com/search#t={searchTerms}";
+  const char kSearchTermsReplacementKey[] = "espv";
   test_util_a_.SetManagedDefaultSearchPreferences(true, kName, kName,
-      kSearchURL, std::string(), kIconURL, kEncodings);
+      kSearchURL, std::string(), kIconURL, kEncodings, kAlternateURL,
+      kSearchTermsReplacementKey);
   const TemplateURL* dsp_turl = model()->GetDefaultSearchProvider();
 
   EXPECT_TRUE(model()->is_default_search_managed());
@@ -2114,4 +2137,138 @@ TEST_F(TemplateURLServiceSyncTest, MergeInSyncTemplateURL) {
       model()->Remove(model()->GetTemplateURLForGUID(sync_guid));
     }
   }  // for
+}
+
+TEST_F(TemplateURLServiceSyncTest, MergePrepopulatedEngine) {
+  scoped_ptr<TemplateURL> default_turl(
+      TemplateURLPrepopulateData::GetPrepopulatedDefaultSearch(NULL));
+
+  // Merge with an initial list containing a prepopulated engine with a wrong
+  // URL.
+  syncer::SyncDataList list;
+  scoped_ptr<TemplateURL> sync_turl(CopyTemplateURL(default_turl.get(),
+      "http://wrong.url.com?q={searchTerms}", "default"));
+  list.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(*sync_turl));
+  syncer::SyncMergeResult merge_result = model()->MergeDataAndStartSyncing(
+      syncer::SEARCH_ENGINES, list, PassProcessor(),
+      CreateAndPassSyncErrorFactory());
+
+  const TemplateURL* result_turl = model()->GetTemplateURLForGUID("default");
+  EXPECT_TRUE(result_turl);
+  EXPECT_EQ(default_turl->keyword(), result_turl->keyword());
+  EXPECT_EQ(default_turl->short_name(), result_turl->short_name());
+  EXPECT_EQ(default_turl->url(), result_turl->url());
+}
+
+TEST_F(TemplateURLServiceSyncTest, AddPrepopulatedEngine) {
+  syncer::SyncMergeResult merge_result = model()->MergeDataAndStartSyncing(
+      syncer::SEARCH_ENGINES, syncer::SyncDataList(), PassProcessor(),
+      CreateAndPassSyncErrorFactory());
+
+  scoped_ptr<TemplateURL> default_turl(
+      TemplateURLPrepopulateData::GetPrepopulatedDefaultSearch(NULL));
+  TemplateURL* sync_turl = CopyTemplateURL(default_turl.get(),
+      "http://wrong.url.com?q={searchTerms}", "default");
+
+  // Add a prepopulated engine with a wrong URL.
+  syncer::SyncChangeList changes;
+  changes.push_back(CreateTestSyncChange(syncer::SyncChange::ACTION_ADD,
+                                         sync_turl));
+  model()->ProcessSyncChanges(FROM_HERE, changes);
+
+  const TemplateURL* result_turl = model()->GetTemplateURLForGUID("default");
+  EXPECT_TRUE(result_turl);
+  EXPECT_EQ(default_turl->keyword(), result_turl->keyword());
+  EXPECT_EQ(default_turl->short_name(), result_turl->short_name());
+  EXPECT_EQ(default_turl->url(), result_turl->url());
+}
+
+TEST_F(TemplateURLServiceSyncTest, UpdatePrepopulatedEngine) {
+  scoped_ptr<TemplateURL> default_turl(
+      TemplateURLPrepopulateData::GetPrepopulatedDefaultSearch(NULL));
+
+  TemplateURLData data(default_turl->data());
+  data.SetURL("http://old.wrong.url.com?q={searchTerms}");
+  data.sync_guid = "default";
+  model()->Add(new TemplateURL(NULL, data));
+
+  syncer::SyncMergeResult merge_result = model()->MergeDataAndStartSyncing(
+      syncer::SEARCH_ENGINES, syncer::SyncDataList(), PassProcessor(),
+      CreateAndPassSyncErrorFactory());
+
+  TemplateURL* sync_turl = CopyTemplateURL(default_turl.get(),
+      "http://new.wrong.url.com?q={searchTerms}", "default");
+
+  // Update the engine in the model, which is prepopulated, with a new one.
+  // Both have wrong URLs, but it should still get corrected.
+  syncer::SyncChangeList changes;
+  changes.push_back(CreateTestSyncChange(syncer::SyncChange::ACTION_UPDATE,
+                                         sync_turl));
+  model()->ProcessSyncChanges(FROM_HERE, changes);
+
+  const TemplateURL* result_turl = model()->GetTemplateURLForGUID("default");
+  EXPECT_TRUE(result_turl);
+  EXPECT_EQ(default_turl->keyword(), result_turl->keyword());
+  EXPECT_EQ(default_turl->short_name(), result_turl->short_name());
+  EXPECT_EQ(default_turl->url(), result_turl->url());
+}
+
+TEST_F(TemplateURLServiceSyncTest, MergeEditedPrepopulatedEngine) {
+  scoped_ptr<TemplateURL> default_turl(
+      TemplateURLPrepopulateData::GetPrepopulatedDefaultSearch(NULL));
+
+  TemplateURLData data(default_turl->data());
+  data.safe_for_autoreplace = false;
+  data.SetKeyword(ASCIIToUTF16("new_kw"));
+  data.short_name = ASCIIToUTF16("my name");
+  data.SetURL("http://wrong.url.com?q={searchTerms}");
+  data.date_created = Time::FromTimeT(50);
+  data.last_modified = Time::FromTimeT(50);
+  data.sync_guid = "default";
+  model()->Add(new TemplateURL(NULL, data));
+
+  data.date_created = Time::FromTimeT(100);
+  data.last_modified = Time::FromTimeT(100);
+  scoped_ptr<TemplateURL> sync_turl(new TemplateURL(NULL, data));
+  syncer::SyncDataList list;
+  list.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(*sync_turl));
+  syncer::SyncMergeResult merge_result = model()->MergeDataAndStartSyncing(
+      syncer::SEARCH_ENGINES, list, PassProcessor(),
+      CreateAndPassSyncErrorFactory());
+
+  const TemplateURL* result_turl = model()->GetTemplateURLForGUID("default");
+  EXPECT_TRUE(result_turl);
+  EXPECT_EQ(ASCIIToUTF16("new_kw"), result_turl->keyword());
+  EXPECT_EQ(ASCIIToUTF16("my name"), result_turl->short_name());
+  EXPECT_EQ(default_turl->url(), result_turl->url());
+}
+
+TEST_F(TemplateURLServiceSyncTest, MergeNonEditedPrepopulatedEngine) {
+  scoped_ptr<TemplateURL> default_turl(
+      TemplateURLPrepopulateData::GetPrepopulatedDefaultSearch(NULL));
+
+  TemplateURLData data(default_turl->data());
+  data.safe_for_autoreplace = true;  // Can be replaced with built-in values.
+  data.SetKeyword(ASCIIToUTF16("new_kw"));
+  data.short_name = ASCIIToUTF16("my name");
+  data.SetURL("http://wrong.url.com?q={searchTerms}");
+  data.date_created = Time::FromTimeT(50);
+  data.last_modified = Time::FromTimeT(50);
+  data.sync_guid = "default";
+  model()->Add(new TemplateURL(NULL, data));
+
+  data.date_created = Time::FromTimeT(100);
+  data.last_modified = Time::FromTimeT(100);
+  scoped_ptr<TemplateURL> sync_turl(new TemplateURL(NULL, data));
+  syncer::SyncDataList list;
+  list.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(*sync_turl));
+  syncer::SyncMergeResult merge_result = model()->MergeDataAndStartSyncing(
+      syncer::SEARCH_ENGINES, list, PassProcessor(),
+      CreateAndPassSyncErrorFactory());
+
+  const TemplateURL* result_turl = model()->GetTemplateURLForGUID("default");
+  EXPECT_TRUE(result_turl);
+  EXPECT_EQ(default_turl->keyword(), result_turl->keyword());
+  EXPECT_EQ(default_turl->short_name(), result_turl->short_name());
+  EXPECT_EQ(default_turl->url(), result_turl->url());
 }
