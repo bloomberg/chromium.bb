@@ -70,7 +70,7 @@ bool TrayEventFilter::ProcessLocatedEvent(ui::LocatedEvent* event) {
   if (wrapper_->tray()) {
     // If the user clicks on the parent tray, don't process the event here,
     // let the tray logic handle the event and determine show/hide behavior.
-    bounds = wrapper_->tray()->GetWidget()->GetClientAreaBoundsInScreen();
+    bounds = wrapper_->tray()->GetBoundsInScreen();
     if (bounds.Contains(screen_point))
       return false;
   }
