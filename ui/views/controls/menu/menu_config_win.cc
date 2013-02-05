@@ -99,13 +99,13 @@ void MenuConfig::Init(const NativeTheme* theme) {
     separator_height = GetSystemMetrics(SM_CYMENU) / 2 - 1;
   }
 
-  if (NativeTheme::IsNewMenuStyleEnabled())
-    AdjustForCommonTheme();
-
   // On Windows, having some menus use wider spacing than others looks wrong.
   // See http://crbug.com/88875
   item_no_icon_bottom_margin = item_bottom_margin;
   item_no_icon_top_margin = item_top_margin;
+
+  if (NativeTheme::IsNewMenuStyleEnabled())
+    AdjustForCommonTheme();
 
   BOOL show_cues;
   show_mnemonics =
