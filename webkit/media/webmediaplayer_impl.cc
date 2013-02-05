@@ -191,11 +191,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       new media::VideoRendererBase(
           media_thread_.message_loop_proxy(),
           set_decryptor_ready_cb,
-          base::Bind(&WebMediaPlayerProxy::Repaint, proxy_),
+          base::Bind(&WebMediaPlayerProxy::FrameReady, proxy_),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::SetOpaque),
           true);
   filter_collection_->AddVideoRenderer(video_renderer);
-  proxy_->set_frame_provider(video_renderer);
 
   // Create default audio renderer using the null sink if no sink was provided.
   audio_source_provider_ = new WebAudioSourceProviderImpl(
@@ -645,13 +644,7 @@ void WebMediaPlayerImpl::putCurrentFrame(
     DCHECK(frame_->view()->isAcceleratedCompositingActive());
     UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive", true);
   }
-  if (web_video_frame) {
-    WebVideoFrameImpl* impl = static_cast<WebVideoFrameImpl*>(web_video_frame);
-    proxy_->PutCurrentFrame(impl->video_frame);
-    delete web_video_frame;
-  } else {
-    proxy_->PutCurrentFrame(NULL);
-  }
+  delete web_video_frame;
 }
 
 #define COMPILE_ASSERT_MATCHING_STATUS_ENUM(webkit_name, chromium_name) \

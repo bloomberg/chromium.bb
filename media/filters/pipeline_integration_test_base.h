@@ -90,7 +90,7 @@ class PipelineIntegrationTestBase {
       const scoped_refptr<Demuxer>& demuxer, Decryptor* decryptor);
   void SetDecryptor(Decryptor* decryptor,
                     const DecryptorReadyCB& decryptor_ready_cb);
-  void OnVideoRendererPaint();
+  void OnVideoRendererPaint(const scoped_refptr<VideoFrame>& frame);
 
   MOCK_METHOD1(OnSetOpaque, void(bool));
   MOCK_METHOD1(OnBufferingState, void(Pipeline::BufferingState));

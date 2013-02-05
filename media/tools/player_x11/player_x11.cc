@@ -44,8 +44,6 @@ static bool g_running = false;
 
 media::AudioManager* g_audio_manager = NULL;
 
-media::VideoRendererBase* g_video_renderer = NULL;
-
 scoped_refptr<media::FileDataSource> CreateFileDataSource(
     const std::string& file_path) {
   scoped_refptr<media::FileDataSource> file_data_source(
@@ -83,18 +81,15 @@ void SetOpaque(bool /*opaque*/) {
 }
 
 typedef base::Callback<void(media::VideoFrame*)> PaintCB;
-void Paint(MessageLoop* message_loop, const PaintCB& paint_cb) {
+void Paint(MessageLoop* message_loop, const PaintCB& paint_cb,
+           const scoped_refptr<media::VideoFrame>& video_frame) {
   if (message_loop != MessageLoop::current()) {
     message_loop->PostTask(FROM_HERE, base::Bind(
-        &Paint, message_loop, paint_cb));
+        &Paint, message_loop, paint_cb, video_frame));
     return;
   }
 
-  scoped_refptr<media::VideoFrame> video_frame;
-  g_video_renderer->GetCurrentFrame(&video_frame);
-  if (video_frame)
-    paint_cb.Run(video_frame);
-  g_video_renderer->PutCurrentFrame(video_frame);
+  paint_cb.Run(video_frame);
 }
 
 static void OnBufferingState(media::Pipeline::BufferingState buffering_state) {}
@@ -116,13 +111,12 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
       message_loop));
 
   // Create our video renderer and save a reference to it for painting.
-  g_video_renderer = new media::VideoRendererBase(
+  collection->AddVideoRenderer(new media::VideoRendererBase(
       message_loop,
       media::SetDecryptorReadyCB(),
       base::Bind(&Paint, paint_message_loop, paint_cb),
       base::Bind(&SetOpaque),
-      true);
-  collection->AddVideoRenderer(g_video_renderer);
+      true));
 
   collection->AddAudioRenderer(new media::AudioRendererImpl(
       message_loop,

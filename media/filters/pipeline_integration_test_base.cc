@@ -242,14 +242,11 @@ void PipelineIntegrationTestBase::SetDecryptor(
   decryptor_ready_cb.Run(decryptor);
 }
 
-void PipelineIntegrationTestBase::OnVideoRendererPaint() {
+void PipelineIntegrationTestBase::OnVideoRendererPaint(
+    const scoped_refptr<VideoFrame>& frame) {
   if (!hashing_enabled_)
     return;
-  scoped_refptr<VideoFrame> frame;
-  renderer_->GetCurrentFrame(&frame);
-  if (frame)
-    frame->HashFrameForTesting(&md5_context_);
-  renderer_->PutCurrentFrame(frame);
+  frame->HashFrameForTesting(&md5_context_);
 }
 
 std::string PipelineIntegrationTestBase::GetVideoHash() {

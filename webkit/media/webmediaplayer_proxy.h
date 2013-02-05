@@ -44,20 +44,14 @@ class WebMediaPlayerProxy
     data_source_ = data_source;
   }
 
-  // TODO(scherkus): remove this once VideoRendererBase::PaintCB passes
-  // ownership of the VideoFrame http://crbug.com/108435
-  void set_frame_provider(media::VideoRendererBase* frame_provider) {
-    frame_provider_ = frame_provider;
-  }
-
-  // Methods for Filter -> WebMediaPlayerImpl communication.
-  void Repaint();
+  // Called by VideoRendererBase on its internal thread with the new frame to be
+  // painted.
+  void FrameReady(const scoped_refptr<media::VideoFrame>& frame);
 
   // Methods for WebMediaPlayerImpl -> Filter communication.
   void Paint(SkCanvas* canvas, const gfx::Rect& dest_rect, uint8_t alpha);
   void Detach();
   void GetCurrentFrame(scoped_refptr<media::VideoFrame>* frame_out);
-  void PutCurrentFrame(scoped_refptr<media::VideoFrame> frame);
   bool HasSingleOrigin();
   bool DidPassCORSAccessCheck() const;
 
@@ -75,10 +69,10 @@ class WebMediaPlayerProxy
   WebMediaPlayerImpl* webmediaplayer_;
 
   scoped_refptr<BufferedDataSource> data_source_;
-  scoped_refptr<media::VideoRendererBase> frame_provider_;
   media::SkCanvasVideoRenderer video_renderer_;
 
   base::Lock lock_;
+  scoped_refptr<media::VideoFrame> current_frame_;
   int outstanding_repaints_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerProxy);

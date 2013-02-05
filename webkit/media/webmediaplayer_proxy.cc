@@ -34,8 +34,11 @@ WebMediaPlayerProxy::~WebMediaPlayerProxy() {
   Detach();
 }
 
-void WebMediaPlayerProxy::Repaint() {
+void WebMediaPlayerProxy::FrameReady(
+    const scoped_refptr<media::VideoFrame>& frame) {
   base::AutoLock auto_lock(lock_);
+  current_frame_ = frame;
+
   if (outstanding_repaints_ < kMaxOutstandingRepaints) {
     ++outstanding_repaints_;
 
@@ -48,12 +51,11 @@ void WebMediaPlayerProxy::Paint(SkCanvas* canvas,
                                 const gfx::Rect& dest_rect,
                                 uint8_t alpha) {
   DCHECK(render_loop_->BelongsToCurrentThread());
-  if (frame_provider_) {
-    scoped_refptr<media::VideoFrame> video_frame;
-    frame_provider_->GetCurrentFrame(&video_frame);
-    video_renderer_.Paint(video_frame, canvas, dest_rect, alpha);
-    frame_provider_->PutCurrentFrame(video_frame);
-  }
+
+  // Use GetCurrentFrame() to avoid locking while painting in software.
+  scoped_refptr<media::VideoFrame> video_frame;
+  GetCurrentFrame(&video_frame);
+  video_renderer_.Paint(video_frame, canvas, dest_rect, alpha);
 }
 
 bool WebMediaPlayerProxy::HasSingleOrigin() {
@@ -80,7 +82,6 @@ void WebMediaPlayerProxy::Detach() {
   DCHECK(render_loop_->BelongsToCurrentThread());
   webmediaplayer_ = NULL;
   data_source_ = NULL;
-  frame_provider_ = NULL;
 }
 
 void WebMediaPlayerProxy::RepaintTask() {
@@ -97,14 +98,8 @@ void WebMediaPlayerProxy::RepaintTask() {
 
 void WebMediaPlayerProxy::GetCurrentFrame(
     scoped_refptr<media::VideoFrame>* frame_out) {
-  if (frame_provider_)
-    frame_provider_->GetCurrentFrame(frame_out);
-}
-
-void WebMediaPlayerProxy::PutCurrentFrame(
-    scoped_refptr<media::VideoFrame> frame) {
-  if (frame_provider_)
-    frame_provider_->PutCurrentFrame(frame);
+  base::AutoLock auto_lock(lock_);
+  *frame_out = current_frame_;
 }
 
 }  // namespace webkit_media
