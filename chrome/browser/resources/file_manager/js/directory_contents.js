@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 /**
- * @constructor
  * @param {MetadataCache} metadataCache Metadata cache service.
  * @param {cr.ui.ArrayDataModel} fileList The file list.
  * @param {boolean} showHidden If files starting with '.' are shown.
+ * @constructor
  */
 function FileListContext(metadataCache, fileList, showHidden) {
   /**
@@ -86,8 +86,9 @@ FileListContext.prototype.filter = function(entry) {
  * and filling the fileList. Different descendants handle various types of
  * directory contents shown: basic directory, drive search results, local search
  * results.
- * @constructor
  * @param {FileListContext} context The file list context.
+ * @constructor
+ * @extends {cr.EventTarget}
  */
 function DirectoryContents(context) {
   this.context_ = context;
@@ -102,7 +103,7 @@ function DirectoryContents(context) {
 }
 
 /**
- * DirectoryModel extends cr.EventTarget.
+ * DirectoryContents extends cr.EventTarget.
  */
 DirectoryContents.prototype.__proto__ = cr.EventTarget.prototype;
 
@@ -278,10 +279,10 @@ DirectoryContents.prototype.createDirectory = function(
 
 
 /**
- * @constructor
- * @extends {DirectoryContents}
  * @param {FileListContext} context File list context.
  * @param {DirectoryEntry} entry DirectoryEntry for current directory.
+ * @constructor
+ * @extends {DirectoryContents}
  */
 function DirectoryContentsBasic(context, entry) {
   DirectoryContents.call(this, context);
@@ -401,13 +402,13 @@ DirectoryContentsDriveSearch.SCAN_DELAY = 200;
 DirectoryContentsDriveSearch.MAX_RESULTS = 999;
 
 /**
- * @constructor
- * @extends {DirectoryContents}
  * @param {FileListContext} context File list context.
  * @param {DirectoryEntry} dirEntry Current directory.
  * @param {DirectoryEntry} previousDirEntry DirectoryEntry that was current
  *     before the search.
  * @param {string} query Search query.
+ * @constructor
+ * @extends {DirectoryContents}
  */
 function DirectoryContentsDriveSearch(context,
                                       dirEntry,
@@ -520,11 +521,11 @@ DirectoryContentsDriveSearch.prototype.readNextChunk = function() {
 
 
 /**
- * @constructor
- * @extends {DirectoryContents}
  * @param {FileListContext} context File list context.
  * @param {DirectoryEntry} dirEntry Current directory.
  * @param {string} query Search query.
+ * @constructor
+ * @extends {DirectoryContents}
  */
 function DirectoryContentsLocalSearch(context, dirEntry, query) {
   DirectoryContents.call(this, context);
