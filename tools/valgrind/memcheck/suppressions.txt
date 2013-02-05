@@ -6581,3 +6581,10 @@
   fun:_Znw*
   fun:_ZN5drive18SearchMetadataTest5SetUpEv
 }
+{
+  bug_174209
+  Memcheck:Leak
+  fun:_Znw*
+  fun:_ZNK6syncer15TrafficRecorder7ToValueEv
+  fun:_ZN6syncer45TrafficRecorderTest_ToValueTimestampTest_Test8TestBodyEv
+}
