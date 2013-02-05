@@ -1702,13 +1702,6 @@
    fun:EventUnittest_AddingFilterWithUrlFieldNotAListThrowsException_Test
 }
 {
-   bug_171547_a
-   Heapcheck:Leak
-   ...
-   fun:ManagedUserService::ManagedUserService
-   fun:ManagedUserServiceTest_ExtensionManagementPolicyProvider_Test::TestBody
-}
-{
    bug_171547_b
    Heapcheck:Leak
    ...
@@ -1721,12 +1714,6 @@
    ...
    fun:FilterBuilder::Build
    fun:::LoadWhitelistsOnBlockingPoolThread
-}
-{
-   bug_171547_d
-   Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
-   fun:ManagedUserServiceTest_ExtensionManagementPolicyProvider_Test::TestBody
 }
 {
    bug_172077

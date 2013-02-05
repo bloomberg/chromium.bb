@@ -72,6 +72,8 @@ TEST(ManagedUserServiceTest, ExtensionManagementPolicyProvider) {
   profile.GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
   {
     ManagedUserService managed_user_service(&profile);
+    ManagedModeURLFilterObserver observer(
+        managed_user_service.GetURLFilterForUIThread());
     EXPECT_TRUE(managed_user_service.ProfileIsManaged());
 
     string16 error_1;
@@ -83,8 +85,10 @@ TEST(ManagedUserServiceTest, ExtensionManagementPolicyProvider) {
     EXPECT_FALSE(error_2.empty());
 
 #ifndef NDEBUG
-  EXPECT_FALSE(managed_user_service.GetDebugPolicyProviderName().empty());
+    EXPECT_FALSE(managed_user_service.GetDebugPolicyProviderName().empty());
 #endif
+    // Wait for the initial update to finish (otherwise we'll get leaks).
+    observer.Wait();
   }
 }
 

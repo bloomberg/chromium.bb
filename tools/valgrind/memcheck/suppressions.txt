@@ -6420,14 +6420,6 @@
    fun:_ZN7WebCore14SQLTransaction13runStatementsEv
 }
 {
-   bug_171547
-   Memcheck:Leak
-   ...
-   fun:_ZN18ManagedUserService4InitEv
-   fun:_ZN18ManagedUserServiceC1EP7Profile
-   fun:_ZN61ManagedUserServiceTest_ExtensionManagementPolicyProvider_Test8TestBodyEv
-}
-{
    bug_171567
    Memcheck:Leak
    fun:_Znw*
