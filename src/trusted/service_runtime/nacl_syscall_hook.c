@@ -88,8 +88,8 @@ static void HandleStackContext(struct NaClAppThread *natp,
   *sp_user_out = sp_user;
 }
 
-NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
-  struct NaClAppThread      *natp;
+NORETURN void NaClSyscallCSegHook(struct NaClThreadContext *ntcp) {
+  struct NaClAppThread      *natp = NaClAppThreadFromThreadContext(ntcp);
   struct NaClApp            *nap;
   uintptr_t                 tramp_ret;
   size_t                    sysnum;
@@ -101,8 +101,6 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
    * so that we can report any crashes that occur after this point.
    */
   NaClStackSafetyNowOnTrustedStack();
-
-  natp = NaClAppThreadGetFromIndex(tls_idx);
 
   HandleStackContext(natp, &tramp_ret, &sp_user);
 

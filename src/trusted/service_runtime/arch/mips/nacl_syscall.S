@@ -94,35 +94,32 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   /* Fetch the thread-local variable holding the thread index. */
   rdhwr $v1, $29
   addu  $a3, $v1, $a3
-  lw    $a0, 0($a3)
+  lw    $a1, 0($a3)
 
   /*
    * Load the nacl_user entry of this thread.
-   * a1 = nacl_user[a0*4]
+   * a0 = nacl_user[a1*4]
    */
-  lw    $a1,%got(nacl_user)($28)
-  sll   $a0, $a0, 2
-  addu  $a1, $a1, $a0
-  lw    $a1, 0($a1)
+  lw    $a0,%got(nacl_user)($28)
+  sll   $a1, $a1, 2
+  addu  $a0, $a0, $a1
+  lw    $a0, 0($a0)
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
-  sw $s0, NACL_THREAD_CONTEXT_OFFSET_S0($a1)
-  sw $s1, NACL_THREAD_CONTEXT_OFFSET_S1($a1)
-  sw $s2, NACL_THREAD_CONTEXT_OFFSET_S2($a1)
-  sw $s3, NACL_THREAD_CONTEXT_OFFSET_S3($a1)
-  sw $s4, NACL_THREAD_CONTEXT_OFFSET_S4($a1)
-  sw $s5, NACL_THREAD_CONTEXT_OFFSET_S5($a1)
-  sw $s6, NACL_THREAD_CONTEXT_OFFSET_S6($a1)
-  sw $s7, NACL_THREAD_CONTEXT_OFFSET_S7($a1)
-  sw $t8, NACL_THREAD_CONTEXT_OFFSET_T8($a1)
-  sw $sp, NACL_THREAD_CONTEXT_OFFSET_STACK_PTR($a1)
-  sw $fp, NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR($a1)
-
-  /* Restore the thread index. */
-  srl   $a0, $a0, 2
+  sw $s0, NACL_THREAD_CONTEXT_OFFSET_S0($a0)
+  sw $s1, NACL_THREAD_CONTEXT_OFFSET_S1($a0)
+  sw $s2, NACL_THREAD_CONTEXT_OFFSET_S2($a0)
+  sw $s3, NACL_THREAD_CONTEXT_OFFSET_S3($a0)
+  sw $s4, NACL_THREAD_CONTEXT_OFFSET_S4($a0)
+  sw $s5, NACL_THREAD_CONTEXT_OFFSET_S5($a0)
+  sw $s6, NACL_THREAD_CONTEXT_OFFSET_S6($a0)
+  sw $s7, NACL_THREAD_CONTEXT_OFFSET_S7($a0)
+  sw $t8, NACL_THREAD_CONTEXT_OFFSET_T8($a0)
+  sw $sp, NACL_THREAD_CONTEXT_OFFSET_STACK_PTR($a0)
+  sw $fp, NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR($a0)
 
   /* Restore the trusted stack */
-  lw $sp, NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR($a1)
+  lw $sp, NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR($a0)
 
   lw    $t9,%call16(NaClSyscallCSegHook)($gp)
   jr    $t9

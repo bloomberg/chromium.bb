@@ -31,16 +31,14 @@
  */
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
-  /* Set r1 to the start of the NaClThreadContext struct. */
-  sub r1, r9, #NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE1
-
-  ldr r0, [r1, #NACL_THREAD_CONTEXT_OFFSET_TLS_IDX]
+  /* Set r0 to the start of the NaClThreadContext struct. */
+  sub r0, r9, #NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE1
 
   /*
    * Check that r9 points into a valid NaClThreadContext by checking
    * that the guard_token field matches nacl_guard_token.
    */
-  ldr r2, [r1, #NACL_THREAD_CONTEXT_OFFSET_GUARD_TOKEN]
+  ldr r2, [r0, #NACL_THREAD_CONTEXT_OFFSET_GUARD_TOKEN]
   ldr r3, .L.offset.nacl_guard_token
 .LPIC1:
   ldr r3, [pc, r3]
@@ -52,18 +50,18 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   /* Adjust the stack pointer to account for values pushed by trusted code. */
   add sp, sp, #0x18
   /* store thread state to the nacl_user entry */
-  stmia r1, NACL_CALLEE_SAVE_LIST
-  /* if r1 is NULL, we would have faulted here */
+  stmia r0, NACL_CALLEE_SAVE_LIST
+  /* if r0 is NULL, we would have faulted here */
 
   /*
    * Store the untrusted fpscr state and load the trusted fpscr into r2.
    */
   fmrx ip, fpscr
-  str ip, [r1, #NACL_THREAD_CONTEXT_OFFSET_FPSCR]
-  ldr r2, [r1, #NACL_THREAD_CONTEXT_OFFSET_SYS_FPSCR]
+  str ip, [r0, #NACL_THREAD_CONTEXT_OFFSET_FPSCR]
+  ldr r2, [r0, #NACL_THREAD_CONTEXT_OFFSET_SYS_FPSCR]
 
   /* Restore the trusted stack */
-  ldr  sp, [r1, #NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR]
+  ldr  sp, [r0, #NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR]
 
   /* Restore the trusted fpscr. */
   fmxr fpscr, r2

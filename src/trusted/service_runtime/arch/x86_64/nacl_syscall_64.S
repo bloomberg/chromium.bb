@@ -139,8 +139,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
         get_tls
 
         leaq    IDENTIFIER(nacl_user)(%rip), %rdx
-        leaq    (%rdx,%rax,8), %rdx
-        movq    0x0(%rdx), %rdx
+        movq    (%rdx,%rax,8), %rdx
         /*
          * Code below will segfault if %rdx is the NULL pointer, since
          * the zero page is unmapped.
@@ -178,9 +177,9 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
 
         movq    NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR(%rdx), %rsp
 #if NACL_LINUX || NACL_OSX
-        movq    %rax, %rdi
+        movq    %rdx, %rdi
 #elif NACL_WINDOWS
-        movq    %rax, %rcx
+        movq    %rdx, %rcx
 #else
 # error "What OS/compiler is the service runtime being compiled with?"
 #endif

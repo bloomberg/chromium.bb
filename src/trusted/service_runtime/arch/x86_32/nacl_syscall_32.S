@@ -124,7 +124,7 @@ MACROENTRY
 
         /* 'lss' sets %ss as well as %esp */
         lss     NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR(%edx), %esp
-        push    %eax
+        push    %edx
         call    IDENTIFIER(NaClSyscallCSegHook)
         /*
          * If stack usage in the above code changes, modify initial %esp
