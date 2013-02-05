@@ -22,16 +22,6 @@
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 
 
-uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext  *th_ctx) {
-  return (uintptr_t) th_ctx->stack_ptr;
-}
-
-
-void NaClSetThreadCtxSp(struct NaClThreadContext  *th_ctx, uintptr_t sp) {
-  th_ctx->stack_ptr = (uint32_t) sp;
-}
-
-
 uint16_t  nacl_global_cs = 0;
 uint16_t  nacl_global_ds = 0;
 

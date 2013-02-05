@@ -16,8 +16,11 @@
 
 #include <stddef.h>
 
+#include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
+
+EXTERN_C_BEGIN
 
 uint32_t NaClGetStackPtr(void);
 
@@ -63,6 +66,10 @@ struct NaClThreadContext {
   /*            48 */
 };
 
+static INLINE uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext *th_ctx) {
+  return th_ctx->stack_ptr;
+}
+
 #endif /* !defined(__ASSEMBLER__) */
 
 #define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR 0x30
@@ -94,6 +101,8 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
 
 #undef NACL_CHECK_FIELD
 }
+
+EXTERN_C_END
 
 #endif /* !defined(__ASSEMBLER__) */
 

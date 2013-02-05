@@ -28,8 +28,6 @@ void NaClInitGlobals(void);
 
 uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext *th_ctx);
 
-void NaClSetThreadCtxSp(struct NaClThreadContext *th_ctx, uintptr_t sp);
-
 void NaClThreadContextToSignalContext(const struct NaClThreadContext *th_ctx,
                                       struct NaClSignalContext *sig_ctx);
 

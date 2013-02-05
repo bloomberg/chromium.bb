@@ -24,15 +24,6 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 
 
-uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext  *th_ctx) {
-  return (uintptr_t) th_ctx->rsp;
-}
-
-
-void NaClSetThreadCtxSp(struct NaClThreadContext  *th_ctx, uintptr_t sp) {
-  th_ctx->rsp = (nacl_reg_t) sp;
-}
-
 void NaClInitGlobals(void) {
   /* no need to save segment registers */
   ;

@@ -16,10 +16,13 @@
 
 #include <stddef.h>
 
+#include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+
+EXTERN_C_BEGIN
 
 void NaClDoFnstcw(uint16_t *fcw);
 void NaClDoFxsave(void *fxsave);
@@ -74,6 +77,10 @@ struct NaClThreadContext {
   uint32_t    tls_value2;
   /*          0xb4 */
 };
+
+static INLINE uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext *th_ctx) {
+  return th_ctx->rsp;
+}
 
 #endif /* !defined(__ASSEMBLER__) */
 
@@ -152,6 +159,8 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
 
 #undef NACL_CHECK_FIELD
 }
+
+EXTERN_C_END
 
 #endif
 

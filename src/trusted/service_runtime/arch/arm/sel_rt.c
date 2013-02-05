@@ -58,16 +58,6 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 }
 
 
-uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext  *th_ctx) {
-  return (uintptr_t) th_ctx->stack_ptr;
-}
-
-
-void NaClSetThreadCtxSp(struct NaClThreadContext  *th_ctx, uintptr_t sp) {
-  th_ctx->stack_ptr = (uint32_t) sp;
-}
-
-
 void NaClThreadContextToSignalContext(const struct NaClThreadContext *th_ctx,
                                       struct NaClSignalContext *sig_ctx) {
   sig_ctx->r0        = 0;
