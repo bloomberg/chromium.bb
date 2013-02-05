@@ -68,7 +68,7 @@ const TestDeviceData kTestDeviceData[] = {
     MediaStorageUtil::FIXED_MASS_STORAGE, 17282 },
 };
 
-void GetDeviceInfo(const FilePath& device_path,
+void GetDeviceInfo(const base::FilePath& device_path,
                    std::string* id,
                    string16* name,
                    bool* removable,
@@ -137,7 +137,7 @@ string16 GetDeviceName(const std::string& device) {
 class RemovableDeviceNotificationsLinuxTestWrapper
     : public RemovableDeviceNotificationsLinux {
  public:
-  RemovableDeviceNotificationsLinuxTestWrapper(const FilePath& path,
+  RemovableDeviceNotificationsLinuxTestWrapper(const base::FilePath& path,
                                                MessageLoop* message_loop)
       : RemovableDeviceNotificationsLinux(path, &GetDeviceInfo),
         message_loop_(message_loop) {
@@ -149,7 +149,8 @@ class RemovableDeviceNotificationsLinuxTestWrapper
   // call this dtor will result in a compile-time error.
   ~RemovableDeviceNotificationsLinuxTestWrapper() {}
 
-  virtual void OnFilePathChanged(const FilePath& path, bool error) OVERRIDE {
+  virtual void OnFilePathChanged(const base::FilePath& path,
+                                 bool error) OVERRIDE {
     RemovableDeviceNotificationsLinux::OnFilePathChanged(path, error);
     message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
@@ -185,7 +186,7 @@ class RemovableDeviceNotificationLinuxTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     // Create and set up a temp dir with files for the test.
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
-    FilePath test_dir = scoped_temp_dir_.path().AppendASCII("test_etc");
+    base::FilePath test_dir = scoped_temp_dir_.path().AppendASCII("test_etc");
     ASSERT_TRUE(file_util::CreateDirectory(test_dir));
     mtab_file_ = test_dir.AppendASCII("test_mtab");
     MtabTestData initial_test_data[] = {
@@ -235,19 +236,19 @@ class RemovableDeviceNotificationLinuxTest : public testing::Test {
   // Create a directory named |dir| relative to the test directory.
   // It has a DCIM directory, so RemovableDeviceNotificationsLinux recognizes it
   // as a media directory.
-  FilePath CreateMountPointWithDCIMDir(const std::string& dir) {
+  base::FilePath CreateMountPointWithDCIMDir(const std::string& dir) {
     return CreateMountPoint(dir, true  /* create DCIM dir */);
   }
 
   // Create a directory named |dir| relative to the test directory.
   // It does not have a DCIM directory, so RemovableDeviceNotificationsLinux
   // does not recognizes it as a media directory.
-  FilePath CreateMountPointWithoutDCIMDir(const std::string& dir) {
+  base::FilePath CreateMountPointWithoutDCIMDir(const std::string& dir) {
     return CreateMountPoint(dir, false  /* do not create DCIM dir */);
   }
 
   void RemoveDCIMDirFromMountPoint(const std::string& dir) {
-    FilePath dcim =
+    base::FilePath dcim =
         scoped_temp_dir_.path().AppendASCII(dir).Append(kDCIMDirectoryName);
     file_util::Delete(dcim, false);
   }
@@ -266,14 +267,14 @@ class RemovableDeviceNotificationLinuxTest : public testing::Test {
   // subdirectory.
   // Returns the full path to the created directory on success, or an empty
   // path on failure.
-  FilePath CreateMountPoint(const std::string& dir, bool with_dcim_dir) {
-    FilePath return_path(scoped_temp_dir_.path());
+  base::FilePath CreateMountPoint(const std::string& dir, bool with_dcim_dir) {
+    base::FilePath return_path(scoped_temp_dir_.path());
     return_path = return_path.AppendASCII(dir);
-    FilePath path(return_path);
+    base::FilePath path(return_path);
     if (with_dcim_dir)
       path = path.Append(kDCIMDirectoryName);
     if (!file_util::CreateDirectory(path))
-      return FilePath();
+      return base::FilePath();
     return return_path;
   }
 
@@ -319,7 +320,7 @@ class RemovableDeviceNotificationLinuxTest : public testing::Test {
   // Temporary directory for created test data.
   base::ScopedTempDir scoped_temp_dir_;
   // Path to the test mtab file.
-  FilePath mtab_file_;
+  base::FilePath mtab_file_;
 
   scoped_refptr<RemovableDeviceNotificationsLinuxTestWrapper> notifications_;
 
@@ -328,7 +329,7 @@ class RemovableDeviceNotificationLinuxTest : public testing::Test {
 
 // Simple test case where we attach and detach a media device.
 TEST_F(RemovableDeviceNotificationLinuxTest, BasicAttachDetach) {
-  FilePath test_path = CreateMountPointWithDCIMDir(kMountPointA);
+  base::FilePath test_path = CreateMountPointWithDCIMDir(kMountPointA);
   ASSERT_FALSE(test_path.empty());
   MtabTestData test_data[] = {
     MtabTestData(kDeviceDCIM2, test_path.value(), kValidFS),
@@ -355,7 +356,7 @@ TEST_F(RemovableDeviceNotificationLinuxTest, BasicAttachDetach) {
 
 // Only removable devices are recognized.
 TEST_F(RemovableDeviceNotificationLinuxTest, Removable) {
-  FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
+  base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   ASSERT_FALSE(test_path_a.empty());
   MtabTestData test_data1[] = {
     MtabTestData(kDeviceDCIM1, test_path_a.value(), kValidFS),
@@ -372,7 +373,7 @@ TEST_F(RemovableDeviceNotificationLinuxTest, Removable) {
             observer().last_attached().location);
 
   // This should do nothing, since |kDeviceFixed| is not removable.
-  FilePath test_path_b = CreateMountPointWithoutDCIMDir(kMountPointB);
+  base::FilePath test_path_b = CreateMountPointWithoutDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_b.empty());
   MtabTestData test_data2[] = {
     MtabTestData(kDeviceFixed, test_path_b.value(), kValidFS),
@@ -409,8 +410,8 @@ TEST_F(RemovableDeviceNotificationLinuxTest, Removable) {
 
 // More complicated test case with multiple devices on multiple mount points.
 TEST_F(RemovableDeviceNotificationLinuxTest, SwapMountPoints) {
-  FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
-  FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
+  base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
+  base::FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_a.empty());
   ASSERT_FALSE(test_path_b.empty());
 
@@ -446,8 +447,8 @@ TEST_F(RemovableDeviceNotificationLinuxTest, SwapMountPoints) {
 
 // More complicated test case with multiple devices on multiple mount points.
 TEST_F(RemovableDeviceNotificationLinuxTest, MultiDevicesMultiMountPoints) {
-  FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
-  FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
+  base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
+  base::FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_a.empty());
   ASSERT_FALSE(test_path_b.empty());
 
@@ -514,8 +515,8 @@ TEST_F(RemovableDeviceNotificationLinuxTest, MultiDevicesMultiMountPoints) {
 
 TEST_F(RemovableDeviceNotificationLinuxTest,
        MultipleMountPointsWithNonDCIMDevices) {
-  FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
-  FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
+  base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
+  base::FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_a.empty());
   ASSERT_FALSE(test_path_b.empty());
 
@@ -600,9 +601,9 @@ TEST_F(RemovableDeviceNotificationLinuxTest,
 }
 
 TEST_F(RemovableDeviceNotificationLinuxTest, DeviceLookUp) {
-  FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
-  FilePath test_path_b = CreateMountPointWithoutDCIMDir(kMountPointB);
-  FilePath test_path_c = CreateMountPointWithoutDCIMDir(kMountPointC);
+  base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
+  base::FilePath test_path_b = CreateMountPointWithoutDCIMDir(kMountPointB);
+  base::FilePath test_path_c = CreateMountPointWithoutDCIMDir(kMountPointC);
   ASSERT_FALSE(test_path_a.empty());
   ASSERT_FALSE(test_path_b.empty());
   ASSERT_FALSE(test_path_c.empty());
@@ -638,11 +639,13 @@ TEST_F(RemovableDeviceNotificationLinuxTest, DeviceLookUp) {
   EXPECT_EQ(GetDeviceName(kDeviceFixed), device_info.name);
 
   // An invalid path.
-  EXPECT_FALSE(notifier()->GetDeviceInfoForPath(FilePath(kInvalidPath), NULL));
+  EXPECT_FALSE(
+      notifier()->GetDeviceInfoForPath(base::FilePath(kInvalidPath), NULL));
 
   // Test filling in of the mount point.
-  EXPECT_TRUE(notifier()->GetDeviceInfoForPath(
-      test_path_a.Append("some/other/path"), &device_info));
+  EXPECT_TRUE(
+      notifier()->GetDeviceInfoForPath(test_path_a.Append("some/other/path"),
+      &device_info));
   EXPECT_EQ(GetDeviceId(kDeviceDCIM1), device_info.device_id);
   EXPECT_EQ(test_path_a.value(), device_info.location);
   EXPECT_EQ(GetDeviceName(kDeviceDCIM1), device_info.name);
@@ -672,8 +675,8 @@ TEST_F(RemovableDeviceNotificationLinuxTest, DeviceLookUp) {
 }
 
 TEST_F(RemovableDeviceNotificationLinuxTest, DevicePartitionSize) {
-  FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
-  FilePath test_path_b = CreateMountPointWithoutDCIMDir(kMountPointB);
+  base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
+  base::FilePath test_path_b = CreateMountPointWithoutDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_a.empty());
   ASSERT_FALSE(test_path_b.empty());
 

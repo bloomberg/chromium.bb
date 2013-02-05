@@ -162,12 +162,12 @@ MediaTransferProtocolDeviceObserverLinux::GetInstance() {
 }
 
 bool MediaTransferProtocolDeviceObserverLinux::GetStorageInfoForPath(
-    const FilePath& path,
+    const base::FilePath& path,
     RemovableStorageNotifications::StorageInfo* storage_info) const {
   if (!path.IsAbsolute())
     return false;
 
-  std::vector<FilePath::StringType> path_components;
+  std::vector<base::FilePath::StringType> path_components;
   path.GetComponents(&path_components);
   if (path_components.size() < 2)
     return false;

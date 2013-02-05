@@ -67,7 +67,7 @@ class ImageCaptureDeviceListener {
 // Download the given |file| to the provided |local_path|. Completion notice
 // will be sent to the listener's DownloadedFile method.
 - (void)downloadFile:(const std::string&)name
-           localPath:(const FilePath&)localPath;
+           localPath:(const base::FilePath&)localPath;
 
 @end
 

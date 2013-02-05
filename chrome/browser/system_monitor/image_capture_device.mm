@@ -11,8 +11,8 @@
 
 namespace {
 
-void RenameFile(const FilePath& downloaded_filename,
-                const FilePath& desired_filename,
+void RenameFile(const base::FilePath& downloaded_filename,
+                const base::FilePath& desired_filename,
                 base::PlatformFileError* result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   bool success = file_util::ReplaceFile(downloaded_filename, desired_filename);
@@ -73,7 +73,7 @@ base::Time NSDateToBaseTime(NSDate* date) {
 }
 
 - (void)downloadFile:(const std::string&)name
-           localPath:(const FilePath&)localPath {
+           localPath:(const base::FilePath&)localPath {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // Find the file with that name and start download.
   for (ICCameraItem* item in [camera_ mediaFiles]) {
@@ -177,10 +177,10 @@ base::Time NSDateToBaseTime(NSDate* date) {
   // ImageCapture did not save the file into the name we gave it in the
   // options. It picks a new name according to its best lights, so we need
   // to rename the file.
-  FilePath saveDir(base::SysNSStringToUTF8(
+  base::FilePath saveDir(base::SysNSStringToUTF8(
       [[options objectForKey:ICDownloadsDirectoryURL] path]));
-  FilePath saveAsPath = saveDir.Append(saveAsFilename);
-  FilePath savedPath = saveDir.Append(savedFilename);
+  base::FilePath saveAsPath = saveDir.Append(saveAsFilename);
+  base::FilePath savedPath = saveDir.Append(savedFilename);
   // Shared result value from file-copy closure to tell-listener closure.
   base::PlatformFileError* copyResult = new base::PlatformFileError();
   content::BrowserThread::PostTaskAndReply(

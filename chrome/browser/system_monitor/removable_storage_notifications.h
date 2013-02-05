@@ -24,7 +24,7 @@ class RemovableStorageNotifications {
     StorageInfo();
     StorageInfo(const std::string& id,
                 const string16& device_name,
-                const FilePath::StringType& device_location);
+                const base::FilePath::StringType& device_location);
 
     // Unique device id - persists between device attachments.
     std::string device_id;
@@ -33,7 +33,7 @@ class RemovableStorageNotifications {
     string16 name;
 
     // Current attached removable storage device location.
-    FilePath::StringType location;
+    base::FilePath::StringType location;
   };
 
   virtual ~RemovableStorageNotifications();
@@ -46,7 +46,7 @@ class RemovableStorageNotifications {
   // Should be able to handle any path on the local system, not just removable
   // storage. Returns false if unable to find the device.
   virtual bool GetDeviceInfoForPath(
-      const FilePath& path,
+      const base::FilePath& path,
       StorageInfo* device_info) const = 0;
 
   // Returns the storage size of the device present at |location|. If the
@@ -85,7 +85,7 @@ class RemovableStorageNotifications {
 
   void ProcessAttach(const std::string& id,
                      const string16& name,
-                     const FilePath::StringType& location);
+                     const base::FilePath::StringType& location);
   void ProcessDetach(const std::string& id);
 
  private:

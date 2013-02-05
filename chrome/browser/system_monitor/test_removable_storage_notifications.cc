@@ -13,7 +13,7 @@ TestRemovableStorageNotifications::TestRemovableStorageNotifications()
 TestRemovableStorageNotifications::~TestRemovableStorageNotifications() {}
 
 bool TestRemovableStorageNotifications::GetDeviceInfoForPath(
-    const FilePath& path,
+    const base::FilePath& path,
     StorageInfo* device_info) const {
   return false;
 }

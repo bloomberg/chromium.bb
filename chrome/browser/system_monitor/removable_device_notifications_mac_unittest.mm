@@ -25,7 +25,7 @@ namespace {
 DiskInfoMac CreateDiskInfoMac(const std::string& unique_id,
                               const std::string& model_name,
                               const string16& display_name,
-                              const FilePath& mount_point,
+                              const base::FilePath& mount_point,
                               uint64 size_bytes) {
   NSMutableDictionary *dict = [NSMutableDictionary dictionary];
   [dict setObject:@"dummy_bsd_name"
@@ -66,7 +66,7 @@ class RemovableDeviceNotificationsMacTest : public testing::Test {
 
     unique_id_ = "test_id";
     display_name_ = ASCIIToUTF16("977 KB Test Display Name");
-    mount_point_ = FilePath("/unused_test_directory");
+    mount_point_ = base::FilePath("/unused_test_directory");
     device_id_ = MediaStorageUtil::MakeDeviceId(
         MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM, unique_id_);
     disk_info_ = CreateDiskInfoMac(unique_id_, "",
@@ -84,7 +84,7 @@ class RemovableDeviceNotificationsMacTest : public testing::Test {
   // Information about the disk.
   std::string unique_id_;
   string16 display_name_;
-  FilePath mount_point_;
+  base::FilePath mount_point_;
   std::string device_id_;
   DiskInfoMac disk_info_;
 
@@ -145,7 +145,7 @@ TEST_F(RemovableDeviceNotificationsMacTest, DCIM) {
   ASSERT_TRUE(file_util::CreateDirectory(
       temp_dir.path().Append(kDCIMDirectoryName)));
 
-  FilePath mount_point = temp_dir.path();
+  base::FilePath mount_point = temp_dir.path();
   DiskInfoMac info = CreateDiskInfoMac(
       unique_id_, "", ASCIIToUTF16("Test Display Name"), mount_point,
       kTestSize);
@@ -184,7 +184,7 @@ TEST_F(RemovableDeviceNotificationsMacTest, GetDeviceInfo) {
   EXPECT_EQ(info.location, mount_point_.value());
 
   EXPECT_FALSE(notifications_->GetDeviceInfoForPath(
-      FilePath("/non/matching/path"), &info));
+      base::FilePath("/non/matching/path"), &info));
 }
 
 TEST_F(RemovableDeviceNotificationsMacTest, GetStorageSize) {

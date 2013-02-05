@@ -29,7 +29,7 @@ string16 GetDeviceName(const disks::DiskMountManager::Disk& disk) {
     // (1) /media/removable/<volume_label>
     // (2) /media/removable/SD Card
     // If the volume label is available, mount path will be (1) else (2).
-    FilePath mount_point(disk.mount_path());
+    base::FilePath mount_point(disk.mount_path());
     const string16 display_name(mount_point.BaseName().LossyDisplayName());
     if (!display_name.empty())
       return display_name;
@@ -170,12 +170,12 @@ void RemovableDeviceNotificationsCros::OnFormatEvent(
 }
 
 bool RemovableDeviceNotificationsCros::GetDeviceInfoForPath(
-    const FilePath& path,
+    const base::FilePath& path,
     StorageInfo* device_info) const {
   if (!path.IsAbsolute())
     return false;
 
-  FilePath current = path;
+  base::FilePath current = path;
   while (!ContainsKey(mount_map_, current.value()) &&
          current != current.DirName()) {
     current = current.DirName();

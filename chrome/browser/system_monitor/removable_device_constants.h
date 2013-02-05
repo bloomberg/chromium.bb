@@ -24,7 +24,7 @@ extern const char kVendorModelVolumeStoragePrefix[];
 extern const char16 kWPDDevInterfaceGUID[];
 #endif
 
-extern const FilePath::CharType kDCIMDirectoryName[];
+extern const base::FilePath::CharType kDCIMDirectoryName[];
 
 }  // namespace chrome
 

@@ -107,9 +107,9 @@ void RemovableDeviceNotificationsWindowWinTest::PreAttachDevices() {
   volume_mount_watcher_->SetAttachedDevicesFake();
 
   int expect_attach_calls = 0;
-  std::vector<FilePath> initial_devices =
+  std::vector<base::FilePath> initial_devices =
       volume_mount_watcher_->GetAttachedDevices();
-  for (std::vector<FilePath>::const_iterator it = initial_devices.begin();
+  for (std::vector<base::FilePath>::const_iterator it = initial_devices.begin();
        it != initial_devices.end(); ++it) {
     std::string unique_id;
     string16 device_name;
@@ -133,7 +133,7 @@ void RemovableDeviceNotificationsWindowWinTest::PreAttachDevices() {
   volume_mount_watcher_->FlushWorkerPoolForTesting();
   RunUntilIdle();
 
-  std::vector<FilePath> checked_devices =
+  std::vector<base::FilePath> checked_devices =
       volume_mount_watcher_->devices_checked();
   sort(checked_devices.begin(), checked_devices.end());
   EXPECT_EQ(initial_devices, checked_devices);
@@ -276,23 +276,23 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesAttached) {
   string16 name;
   bool removable;
   EXPECT_TRUE(window_->volume_mount_watcher()->GetDeviceInfo(
-      FilePath(ASCIIToUTF16("F:\\")),
+      base::FilePath(ASCIIToUTF16("F:\\")),
       &location, &unique_id, &name, &removable));
   EXPECT_EQ(ASCIIToUTF16("F:\\"), location);
   EXPECT_EQ("\\\\?\\Volume{F0000000-0000-0000-0000-000000000000}\\", unique_id);
   EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), name);
 
   RemovableStorageNotifications::StorageInfo info;
-  EXPECT_FALSE(window_->GetDeviceInfoForPath(FilePath(ASCIIToUTF16("G:\\")),
-                                             &info));
-  EXPECT_TRUE(window_->GetDeviceInfoForPath(FilePath(ASCIIToUTF16("F:\\")),
-                                            &info));
+  EXPECT_FALSE(window_->GetDeviceInfoForPath(
+      base::FilePath(ASCIIToUTF16("G:\\")), &info));
+  EXPECT_TRUE(window_->GetDeviceInfoForPath(
+      base::FilePath(ASCIIToUTF16("F:\\")), &info));
   RemovableStorageNotifications::StorageInfo info1;
   EXPECT_TRUE(window_->GetDeviceInfoForPath(
-      FilePath(ASCIIToUTF16("F:\\subdir")), &info1));
+      base::FilePath(ASCIIToUTF16("F:\\subdir")), &info1));
   RemovableStorageNotifications::StorageInfo info2;
   EXPECT_TRUE(window_->GetDeviceInfoForPath(
-      FilePath(ASCIIToUTF16("F:\\subdir\\sub")), &info2));
+      base::FilePath(ASCIIToUTF16("F:\\subdir\\sub")), &info2));
   EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info.name);
   EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info1.name);
   EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info2.name);
@@ -370,7 +370,7 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest,
 TEST_F(RemovableDeviceNotificationsWindowWinTest,
        DuplicateAttachCheckSuppressed) {
   volume_mount_watcher_->BlockDeviceCheckForTesting();
-  FilePath kAttachedDevicePath =
+  base::FilePath kAttachedDevicePath =
       VolumeMountWatcherWin::DriveNumberToFilePath(8);  // I:
 
   DEV_BROADCAST_VOLUME volume_broadcast;
@@ -399,7 +399,7 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest,
   volume_mount_watcher_->FlushWorkerPoolForTesting();
   RunUntilIdle();
 
-  std::vector<FilePath> checked_devices =
+  std::vector<base::FilePath> checked_devices =
       volume_mount_watcher_->devices_checked();
   ASSERT_EQ(1u, checked_devices.size());
   EXPECT_EQ(kAttachedDevicePath, checked_devices[0]);
@@ -421,13 +421,13 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DeviceInfoForPath) {
   PreAttachDevices();
 
   // An invalid path.
-  EXPECT_FALSE(window_->GetDeviceInfoForPath(FilePath(L"COM1:\\"), NULL));
+  EXPECT_FALSE(window_->GetDeviceInfoForPath(base::FilePath(L"COM1:\\"), NULL));
 
   // An unconnected removable device.
-  EXPECT_FALSE(window_->GetDeviceInfoForPath(FilePath(L"E:\\"), NULL));
+  EXPECT_FALSE(window_->GetDeviceInfoForPath(base::FilePath(L"E:\\"), NULL));
 
   // A connected removable device.
-  FilePath removable_device(L"F:\\");
+  base::FilePath removable_device(L"F:\\");
   RemovableStorageNotifications::StorageInfo device_info;
   EXPECT_TRUE(window_->GetDeviceInfoForPath(removable_device, &device_info));
 
@@ -445,7 +445,7 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DeviceInfoForPath) {
   EXPECT_EQ(removable_device.value(), device_info.location);
 
   // A fixed device.
-  FilePath fixed_device(L"N:\\");
+  base::FilePath fixed_device(L"N:\\");
   EXPECT_TRUE(window_->GetDeviceInfoForPath(fixed_device, &device_info));
 
   ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(

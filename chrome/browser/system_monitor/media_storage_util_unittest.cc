@@ -29,7 +29,7 @@ class MediaStorageUtilTest : public testing::Test {
  public:
   void ProcessAttach(const std::string& id,
                      const string16& name,
-                     const FilePath::StringType& location) {
+                     const base::FilePath::StringType& location) {
     RemovableStorageNotifications::GetInstance()->ProcessAttach(
         id, name, location);
   }
@@ -67,11 +67,11 @@ TEST_F(MediaStorageUtilTest, TestImageCaptureDeviceId) {
 
 TEST_F(MediaStorageUtilTest, CanCreateFileSystemForImageCapture) {
   EXPECT_TRUE(MediaStorageUtil::CanCreateFileSystem(kImageCaptureDeviceId,
-                                                    FilePath()));
+                                                    base::FilePath()));
   EXPECT_FALSE(MediaStorageUtil::CanCreateFileSystem(
-      "dcim:xyz", FilePath(FILE_PATH_LITERAL("relative"))));
+      "dcim:xyz", base::FilePath(FILE_PATH_LITERAL("relative"))));
   EXPECT_FALSE(MediaStorageUtil::CanCreateFileSystem(
-      "dcim:xyz", FilePath(FILE_PATH_LITERAL("../refparent"))));
+      "dcim:xyz", base::FilePath(FILE_PATH_LITERAL("../refparent"))));
 }
 
 TEST_F(MediaStorageUtilTest, DetectDeviceFiltered) {

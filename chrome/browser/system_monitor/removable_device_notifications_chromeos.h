@@ -47,7 +47,7 @@ class RemovableDeviceNotificationsCros
   // Finds the device that contains |path| and populates |device_info|.
   // Returns false if unable to find the device.
   virtual bool GetDeviceInfoForPath(
-      const FilePath& path,
+      const base::FilePath& path,
       StorageInfo* device_info) const OVERRIDE;
 
   // Returns the storage size of the device present at |location|. If the

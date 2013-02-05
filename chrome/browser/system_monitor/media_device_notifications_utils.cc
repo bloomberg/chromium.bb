@@ -13,14 +13,15 @@
 
 namespace chrome {
 
-bool IsMediaDevice(const FilePath::StringType& mount_point) {
+bool IsMediaDevice(const base::FilePath::StringType& mount_point) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  FilePath dcim_path(mount_point);
-  FilePath::StringType dcim_dir(kDCIMDirectoryName);
+  base::FilePath dcim_path(mount_point);
+  base::FilePath::StringType dcim_dir(kDCIMDirectoryName);
   if (!file_util::DirectoryExists(dcim_path.Append(dcim_dir))) {
     // Check for lowercase 'dcim' as well.
-    FilePath dcim_path_lower(dcim_path.Append(StringToLowerASCII(dcim_dir)));
+    base::FilePath dcim_path_lower(
+        dcim_path.Append(StringToLowerASCII(dcim_dir)));
     if (!file_util::DirectoryExists(dcim_path_lower))
       return false;
   }

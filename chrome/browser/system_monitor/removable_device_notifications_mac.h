@@ -33,7 +33,7 @@ class RemovableDeviceNotificationsMac
   void UpdateDisk(const DiskInfoMac& info, UpdateType update_type);
 
   virtual bool GetDeviceInfoForPath(
-      const FilePath& path,
+      const base::FilePath& path,
       StorageInfo* device_info) const OVERRIDE;
 
   // Returns the storage size of the device present at |location|. If the
@@ -52,7 +52,7 @@ class RemovableDeviceNotificationsMac
                                              void *context);
 
   bool ShouldPostNotificationForDisk(const DiskInfoMac& info) const;
-  bool FindDiskWithMountPoint(const FilePath& mount_point,
+  bool FindDiskWithMountPoint(const base::FilePath& mount_point,
                               DiskInfoMac* info) const;
 
   base::mac::ScopedCFTypeRef<DASessionRef> session_;

@@ -101,14 +101,14 @@ const char kTestFileContents[] = "test";
            downloadDelegate:(id<ICCameraDeviceDownloadDelegate>)downloadDelegate
         didDownloadSelector:(SEL)selector
                 contextInfo:(void*)contextInfo {
-  FilePath saveDir(base::SysNSStringToUTF8(
+  base::FilePath saveDir(base::SysNSStringToUTF8(
       [[options objectForKey:ICDownloadsDirectoryURL] path]));
   std::string saveAsFilename =
       base::SysNSStringToUTF8([options objectForKey:ICSaveAsFilename]);
   // It appears that the ImageCapture library adds an extension to the requested
   // filename. Do that here to require a rename.
   saveAsFilename += ".jpg";
-  FilePath toBeSaved = saveDir.Append(saveAsFilename);
+  base::FilePath toBeSaved = saveDir.Append(saveAsFilename);
   ASSERT_EQ(static_cast<int>(strlen(kTestFileContents)),
             file_util::WriteFile(toBeSaved, kTestFileContents,
                                  strlen(kTestFileContents)));
@@ -341,7 +341,7 @@ TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
 
   // Test that a nonexistent file we ask to be downloaded will
   // return us a not-found error.
-  FilePath temp_file = temp_dir.path().Append("tempfile");
+  base::FilePath temp_file = temp_dir.path().Append("tempfile");
   [camera downloadFile:std::string("nonexistent") localPath:temp_file];
   message_loop_.RunUntilIdle();
   ASSERT_EQ(1U, listener_.downloads().size());

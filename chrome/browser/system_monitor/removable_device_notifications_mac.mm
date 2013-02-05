@@ -110,13 +110,13 @@ void RemovableDeviceNotificationsMac::UpdateDisk(
 }
 
 bool RemovableDeviceNotificationsMac::GetDeviceInfoForPath(
-    const FilePath& path,
+    const base::FilePath& path,
     StorageInfo* device_info) const {
   if (!path.IsAbsolute())
     return false;
 
-  FilePath current = path;
-  const FilePath root(FilePath::kSeparators);
+  base::FilePath current = path;
+  const base::FilePath root(base::FilePath::kSeparators);
   while (current != root) {
     DiskInfoMac info;
     if (FindDiskWithMountPoint(current, &info)) {
@@ -134,7 +134,7 @@ bool RemovableDeviceNotificationsMac::GetDeviceInfoForPath(
 uint64 RemovableDeviceNotificationsMac::GetStorageSize(
     const std::string& location) const {
   DiskInfoMac info;
-  if (!FindDiskWithMountPoint(FilePath(location), &info))
+  if (!FindDiskWithMountPoint(base::FilePath(location), &info))
     return 0;
   return info.total_size_in_bytes();
 }
@@ -187,7 +187,7 @@ bool RemovableDeviceNotificationsMac::ShouldPostNotificationForDisk(
 }
 
 bool RemovableDeviceNotificationsMac::FindDiskWithMountPoint(
-    const FilePath& mount_point,
+    const base::FilePath& mount_point,
     DiskInfoMac* info) const {
   for (std::map<std::string, DiskInfoMac>::const_iterator
       it = disk_info_map_.begin(); it != disk_info_map_.end(); ++it) {

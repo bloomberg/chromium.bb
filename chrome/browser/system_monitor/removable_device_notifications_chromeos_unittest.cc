@@ -86,7 +86,7 @@ class RemovableDeviceNotificationsCrosTest : public testing::Test {
   // subdirectory.
   // Returns the full path to the created directory on success, or an empty
   // path on failure.
-  FilePath CreateMountPoint(const std::string& dir, bool with_dcim_dir);
+  base::FilePath CreateMountPoint(const std::string& dir, bool with_dcim_dir);
 
   static void PostQuitToUIThread();
   static void WaitForFileThread();
@@ -182,15 +182,15 @@ uint64 RemovableDeviceNotificationsCrosTest::GetDeviceStorageSize(
   return notifications_->GetStorageSize(device_location);
 }
 
-FilePath RemovableDeviceNotificationsCrosTest::CreateMountPoint(
+base::FilePath RemovableDeviceNotificationsCrosTest::CreateMountPoint(
     const std::string& dir, bool with_dcim_dir) {
-  FilePath return_path(scoped_temp_dir_.path());
+  base::FilePath return_path(scoped_temp_dir_.path());
   return_path = return_path.AppendASCII(dir);
-  FilePath path(return_path);
+  base::FilePath path(return_path);
   if (with_dcim_dir)
     path = path.Append(chrome::kDCIMDirectoryName);
   if (!file_util::CreateDirectory(path))
-    return FilePath();
+    return base::FilePath();
   return return_path;
 }
 
@@ -209,7 +209,7 @@ void RemovableDeviceNotificationsCrosTest::WaitForFileThread() {
 
 // Simple test case where we attach and detach a media device.
 TEST_F(RemovableDeviceNotificationsCrosTest, BasicAttachDetach) {
-  FilePath mount_path1 = CreateMountPoint(kMountPointA, true);
+  base::FilePath mount_path1 = CreateMountPoint(kMountPointA, true);
   ASSERT_FALSE(mount_path1.empty());
   DiskMountManager::MountPointInfo mount_info(kDevice1,
                                               mount_path1.value(),
@@ -229,7 +229,7 @@ TEST_F(RemovableDeviceNotificationsCrosTest, BasicAttachDetach) {
   EXPECT_EQ(1, observer().detach_calls());
   EXPECT_EQ(GetDCIMDeviceId(kUniqueId1), observer().last_detached().device_id);
 
-  FilePath mount_path2 = CreateMountPoint(kMountPointB, true);
+  base::FilePath mount_path2 = CreateMountPoint(kMountPointB, true);
   ASSERT_FALSE(mount_path2.empty());
   DiskMountManager::MountPointInfo mount_info2(kDevice2,
                                                mount_path2.value(),
@@ -253,7 +253,7 @@ TEST_F(RemovableDeviceNotificationsCrosTest, BasicAttachDetach) {
 // Removable mass storage devices with no dcim folder are also recognized.
 TEST_F(RemovableDeviceNotificationsCrosTest, NoDCIM) {
   testing::Sequence mock_sequence;
-  FilePath mount_path = CreateMountPoint(kMountPointA, false);
+  base::FilePath mount_path = CreateMountPoint(kMountPointA, false);
   const std::string kUniqueId = "FFFF-FFFF";
   ASSERT_FALSE(mount_path.empty());
   DiskMountManager::MountPointInfo mount_info(kDevice1,
@@ -276,7 +276,7 @@ TEST_F(RemovableDeviceNotificationsCrosTest, NoDCIM) {
 // Non device mounts and mount errors are ignored.
 TEST_F(RemovableDeviceNotificationsCrosTest, Ignore) {
   testing::Sequence mock_sequence;
-  FilePath mount_path = CreateMountPoint(kMountPointA, true);
+  base::FilePath mount_path = CreateMountPoint(kMountPointA, true);
   const std::string kUniqueId = "FFFF-FFFF";
   ASSERT_FALSE(mount_path.empty());
 
@@ -307,7 +307,7 @@ TEST_F(RemovableDeviceNotificationsCrosTest, Ignore) {
 }
 
 TEST_F(RemovableDeviceNotificationsCrosTest, SDCardAttachDetach) {
-  FilePath mount_path1 = CreateMountPoint(kSDCardMountPoint1, true);
+  base::FilePath mount_path1 = CreateMountPoint(kSDCardMountPoint1, true);
   ASSERT_FALSE(mount_path1.empty());
   DiskMountManager::MountPointInfo mount_info1(kSDCardDeviceName1,
                                                mount_path1.value(),
@@ -327,7 +327,7 @@ TEST_F(RemovableDeviceNotificationsCrosTest, SDCardAttachDetach) {
   EXPECT_EQ(1, observer().detach_calls());
   EXPECT_EQ(GetDCIMDeviceId(kUniqueId2), observer().last_detached().device_id);
 
-  FilePath mount_path2 = CreateMountPoint(kSDCardMountPoint2, true);
+  base::FilePath mount_path2 = CreateMountPoint(kSDCardMountPoint2, true);
   ASSERT_FALSE(mount_path2.empty());
   DiskMountManager::MountPointInfo mount_info2(kSDCardDeviceName2,
                                                mount_path2.value(),
@@ -349,7 +349,7 @@ TEST_F(RemovableDeviceNotificationsCrosTest, SDCardAttachDetach) {
 }
 
 TEST_F(RemovableDeviceNotificationsCrosTest, AttachDeviceWithEmptyLabel) {
-  FilePath mount_path1 = CreateMountPoint(kMountPointA, true);
+  base::FilePath mount_path1 = CreateMountPoint(kMountPointA, true);
   ASSERT_FALSE(mount_path1.empty());
   DiskMountManager::MountPointInfo mount_info(kEmptyDeviceLabel,
                                               mount_path1.value(),
@@ -371,7 +371,7 @@ TEST_F(RemovableDeviceNotificationsCrosTest, AttachDeviceWithEmptyLabel) {
 }
 
 TEST_F(RemovableDeviceNotificationsCrosTest, GetStorageSize) {
-  FilePath mount_path1 = CreateMountPoint(kMountPointA, true);
+  base::FilePath mount_path1 = CreateMountPoint(kMountPointA, true);
   ASSERT_FALSE(mount_path1.empty());
   DiskMountManager::MountPointInfo mount_info(kEmptyDeviceLabel,
                                               mount_path1.value(),

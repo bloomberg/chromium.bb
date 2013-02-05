@@ -59,7 +59,7 @@ class MediaStorageUtil {
 
   // Returns true if we will be able to create a filesystem for this device.
   static bool CanCreateFileSystem(const std::string& device_id,
-                                  const FilePath& path);
+                                  const base::FilePath& path);
 
   // Determines if the device is attached to the computer.
   static void IsDeviceAttached(const std::string& device_id,
@@ -71,15 +71,15 @@ class MediaStorageUtil {
 
   // Given |path|, fill in |device_id|, |device_name|, and |relative_path|
   // (from the root of the device) if they are not NULL.
-  static bool GetDeviceInfoFromPath(const FilePath& path,
+  static bool GetDeviceInfoFromPath(const base::FilePath& path,
                                     std::string* device_id,
                                     string16* device_name,
-                                    FilePath* relative_path);
+                                    base::FilePath* relative_path);
 
   // Get a FilePath for the given |device_id|.  If the device isn't a mass
   // storage type, the FilePath will be empty.  This does not check that
   // the device is connected.
-  static FilePath FindDevicePathById(const std::string& device_id);
+  static base::FilePath FindDevicePathById(const std::string& device_id);
 
   // Record device information histogram for the given |device_uuid| and
   // |device_name|. |mass_storage| indicates whether the current device is a
@@ -89,10 +89,10 @@ class MediaStorageUtil {
                                         const string16& device_name);
 
  protected:
-  typedef bool (*GetDeviceInfoFromPathFunction)(const FilePath& path,
+  typedef bool (*GetDeviceInfoFromPathFunction)(const base::FilePath& path,
                                                 std::string* device_id,
                                                 string16* device_name,
-                                                FilePath* relative_path);
+                                                base::FilePath* relative_path);
 
   // Set the implementation of GetDeviceInfoFromPath for testing.
   static void SetGetDeviceInfoFromPathFunctionForTesting(

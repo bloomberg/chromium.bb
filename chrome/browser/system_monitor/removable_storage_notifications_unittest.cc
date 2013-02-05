@@ -19,7 +19,7 @@ class TestStorageNotifications : public RemovableStorageNotifications {
   ~TestStorageNotifications() {}
 
   virtual bool GetDeviceInfoForPath(
-      const FilePath& path,
+      const base::FilePath& path,
       StorageInfo* device_info) const OVERRIDE {
     return false;
   }
@@ -38,7 +38,7 @@ class TestStorageNotifications : public RemovableStorageNotifications {
 
   void ProcessAttach(const std::string& id,
                      const string16& name,
-                     const FilePath::StringType& location) {
+                     const base::FilePath::StringType& location) {
     RemovableStorageNotifications::ProcessAttach(id, name, location);
   }
 
@@ -108,7 +108,7 @@ TEST(RemovableStorageNotificationsTest,
   TestStorageNotifications notifications;
   const std::string kDeviceId1 = "42";
   const string16 kDeviceName1 = ASCIIToUTF16("test");
-  const FilePath kDevicePath1(FILE_PATH_LITERAL("/testfoo"));
+  const base::FilePath kDevicePath1(FILE_PATH_LITERAL("/testfoo"));
   notifications.ProcessAttach(kDeviceId1, kDeviceName1, kDevicePath1.value());
   message_loop.RunUntilIdle();
   std::vector<RemovableStorageNotifications::StorageInfo> devices =
@@ -120,7 +120,7 @@ TEST(RemovableStorageNotificationsTest,
 
   const std::string kDeviceId2 = "44";
   const string16 kDeviceName2 = ASCIIToUTF16("test2");
-  const FilePath kDevicePath2(FILE_PATH_LITERAL("/testbar"));
+  const base::FilePath kDevicePath2(FILE_PATH_LITERAL("/testbar"));
   notifications.ProcessAttach(kDeviceId2, kDeviceName2, kDevicePath2.value());
   message_loop.RunUntilIdle();
   devices = notifications.GetAttachedStorage();

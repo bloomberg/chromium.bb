@@ -61,8 +61,11 @@ bool IsLogicalVolumeStructure(LPARAM data) {
 // The following msdn blog entry is helpful for understanding disk volumes
 // and how they are treated in Windows:
 // http://blogs.msdn.com/b/adioltean/archive/2005/04/16/408947.aspx.
-bool GetDeviceDetails(const FilePath& device_path, string16* device_location,
-    std::string* unique_id, string16* name, bool* removable) {
+bool GetDeviceDetails(const base::FilePath& device_path,
+                      string16* device_location,
+                      std::string* unique_id,
+                      string16* name,
+                      bool* removable) {
   string16 mount_point;
   if (!GetVolumePathName(device_path.value().c_str(),
                          WriteInto(&mount_point, kMaxPathBufLen),
@@ -100,8 +103,8 @@ bool GetDeviceDetails(const FilePath& device_path, string16* device_location,
 
 // Returns a vector of all the removable mass storage devices that are
 // connected.
-std::vector<FilePath> GetAttachedDevices() {
-  std::vector<FilePath> result;
+std::vector<base::FilePath> GetAttachedDevices() {
+  std::vector<base::FilePath> result;
   string16 volume_name;
   HANDLE find_handle = FindFirstVolume(WriteInto(&volume_name, kMaxPathBufLen),
                                        kMaxPathBufLen);
@@ -115,7 +118,7 @@ std::vector<FilePath> GetAttachedDevices() {
                                         WriteInto(&volume_path, kMaxPathBufLen),
                                         kMaxPathBufLen, &return_count)) {
       if (IsRemovable(volume_path))
-        result.push_back(FilePath(volume_path));
+        result.push_back(base::FilePath(volume_path));
     } else {
       DPLOG(ERROR);
     }
@@ -147,12 +150,12 @@ VolumeMountWatcherWin::VolumeMountWatcherWin()
 }
 
 // static
-FilePath VolumeMountWatcherWin::DriveNumberToFilePath(int drive_number) {
+base::FilePath VolumeMountWatcherWin::DriveNumberToFilePath(int drive_number) {
   if (drive_number < 0 || drive_number > 25)
-    return FilePath();
+    return base::FilePath();
   string16 path(L"_:\\");
   path[0] = L'A' + drive_number;
-  return FilePath(path);
+  return base::FilePath(path);
 }
 
 // In order to get all the weak pointers created on the UI thread, and doing
@@ -175,9 +178,11 @@ void VolumeMountWatcherWin::Init() {
 
 // static
 void VolumeMountWatcherWin::FindExistingDevicesAndAdd(
-    base::Callback<std::vector<FilePath>(void)> get_attached_devices_callback,
+    base::Callback<std::vector<base::FilePath>(void)>
+        get_attached_devices_callback,
     base::WeakPtr<chrome::VolumeMountWatcherWin> volume_watcher) {
-  std::vector<FilePath> removable_devices = get_attached_devices_callback.Run();
+  std::vector<base::FilePath> removable_devices =
+      get_attached_devices_callback.Run();
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
       &chrome::VolumeMountWatcherWin::AddDevicesOnUIThread,
@@ -185,7 +190,7 @@ void VolumeMountWatcherWin::FindExistingDevicesAndAdd(
 }
 
 void VolumeMountWatcherWin::AddDevicesOnUIThread(
-    std::vector<FilePath> removable_devices) {
+    std::vector<base::FilePath> removable_devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_refptr<base::TaskRunner> runner =
@@ -205,8 +210,8 @@ void VolumeMountWatcherWin::AddDevicesOnUIThread(
 
 // static
 void VolumeMountWatcherWin::RetrieveInfoForDeviceAndAdd(
-    const FilePath& device_path,
-    base::Callback<bool(const FilePath&, string16*, std::string*,
+    const base::FilePath& device_path,
+    base::Callback<bool(const base::FilePath&, string16*, std::string*,
                         string16*, bool*)> get_device_details_callback,
     base::WeakPtr<chrome::VolumeMountWatcherWin> volume_watcher) {
   string16 device_location;
@@ -240,16 +245,17 @@ void VolumeMountWatcherWin::RetrieveInfoForDeviceAndAdd(
       volume_watcher, device_path, info));
 }
 
-void VolumeMountWatcherWin::DeviceCheckComplete(const FilePath& device_path) {
+void VolumeMountWatcherWin::DeviceCheckComplete(
+    const base::FilePath& device_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   pending_device_checks_.erase(device_path);
 }
 
 
-bool VolumeMountWatcherWin::GetDeviceInfo(const FilePath& device_path,
+bool VolumeMountWatcherWin::GetDeviceInfo(const base::FilePath& device_path,
     string16* device_location, std::string* unique_id, string16* name,
     bool* removable) const {
-  FilePath path(device_path);
+  base::FilePath path(device_path);
   MountPointDeviceMetadataMap::const_iterator iter =
       device_metadata_.find(path.value());
   while (iter == device_metadata_.end() && path.DirName() != path) {
@@ -277,7 +283,7 @@ void VolumeMountWatcherWin::OnWindowMessage(UINT event_type, LPARAM data) {
     case DBT_DEVICEARRIVAL: {
       if (IsLogicalVolumeStructure(data)) {
         DWORD unitmask = GetVolumeBitMaskFromBroadcastHeader(data);
-        std::vector<FilePath> paths;
+        std::vector<base::FilePath> paths;
         for (int i = 0; unitmask; ++i, unitmask >>= 1) {
           if (!(unitmask & 0x01))
             continue;
@@ -307,7 +313,7 @@ VolumeMountWatcherWin::~VolumeMountWatcherWin() {
 
 
 void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(
-    const FilePath& device_path,
+    const base::FilePath& device_path,
     const MountPointInfo& info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

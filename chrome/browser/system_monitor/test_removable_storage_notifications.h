@@ -19,7 +19,7 @@ class TestRemovableStorageNotifications
   virtual ~TestRemovableStorageNotifications();
 
   virtual bool GetDeviceInfoForPath(
-      const FilePath& path,
+      const base::FilePath& path,
       StorageInfo* device_info) const OVERRIDE;
 
   virtual uint64 GetStorageSize(const std::string& location) const OVERRIDE;

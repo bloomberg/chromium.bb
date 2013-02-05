@@ -17,6 +17,6 @@ const char kVendorModelVolumeStoragePrefix[] = "VendorModelVolumeStorage:";
 const char16 kWPDDevInterfaceGUID[] = L"{6ac27878-a6fa-4155-ba85-f98f491d4f33}";
 #endif
 
-const FilePath::CharType kDCIMDirectoryName[] = FILE_PATH_LITERAL("DCIM");
+const base::FilePath::CharType kDCIMDirectoryName[] = FILE_PATH_LITERAL("DCIM");
 
 }  // namespace chrome

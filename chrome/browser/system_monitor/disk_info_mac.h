@@ -26,7 +26,7 @@ class DiskInfoMac {
   const std::string& device_id() const { return device_id_; }
   const std::string& model_name() const { return model_name_; }
   const string16& device_name() const { return device_name_; }
-  const FilePath& mount_point() const { return mount_point_; }
+  const base::FilePath& mount_point() const { return mount_point_; }
   MediaStorageUtil::Type type() const { return type_; }
   uint64 total_size_in_bytes() const { return total_size_in_bytes_; }
 
@@ -35,7 +35,7 @@ class DiskInfoMac {
   std::string device_id_;
   std::string model_name_;
   string16 device_name_;
-  FilePath mount_point_;
+  base::FilePath mount_point_;
   MediaStorageUtil::Type type_;
   uint64 total_size_in_bytes_;
 };

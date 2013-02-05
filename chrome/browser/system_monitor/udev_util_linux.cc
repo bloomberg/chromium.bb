@@ -14,7 +14,7 @@ std::string GetUdevDevicePropertyValue(struct udev_device* udev_device,
   return value ? value : std::string();
 }
 
-bool GetUdevDevicePropertyValueByPath(const FilePath& device_path,
+bool GetUdevDevicePropertyValueByPath(const base::FilePath& device_path,
                                       const char* key,
                                       std::string* result) {
   ScopedUdevObject udev(udev_new());

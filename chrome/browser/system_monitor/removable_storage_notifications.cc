@@ -19,7 +19,7 @@ RemovableStorageNotifications::StorageInfo::StorageInfo() {
 RemovableStorageNotifications::StorageInfo::StorageInfo(
     const std::string& id,
     const string16& device_name,
-    const FilePath::StringType& device_location)
+    const base::FilePath::StringType& device_location)
     : device_id(id),
       name(device_name),
       location(device_location) {
@@ -40,7 +40,7 @@ RemovableStorageNotifications::~RemovableStorageNotifications() {
 void RemovableStorageNotifications::ProcessAttach(
     const std::string& id,
     const string16& name,
-    const FilePath::StringType& location) {
+    const base::FilePath::StringType& location) {
   StorageInfo info(id, name, location);
   {
     base::AutoLock lock(storage_lock_);
