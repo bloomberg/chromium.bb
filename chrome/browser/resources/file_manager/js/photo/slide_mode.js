@@ -1037,23 +1037,15 @@ SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
     cr.dispatchSimpleEvent(this, 'useraction');
 
   this.fullscreenBeforeSlideshow_ = false;
-  util.platform.getWindowStatus(function(info) {
-    if (info.state == 'maximized') {
-      this.resumeSlideshow_(opt_interval);
-      return;  // Do not go fullscreen if already maximized.
+  Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
+    this.fullscreenBeforeSlideshow_ = fullscreen;
+    if (!fullscreen) {
+      // Wait until the zoom animation from the mosaic mode is done.
+      setTimeout(Gallery.toggleFullscreen, ImageView.ZOOM_ANIMATION_DURATION);
+      opt_interval = (opt_interval || SlideMode.SLIDESHOW_INTERVAL) +
+          SlideMode.FULLSCREEN_TOGGLE_DELAY;
     }
-    // Wait until the zoom animation from the mosaic mode is done.
-    setTimeout(function() {
-      Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
-        this.fullscreenBeforeSlideshow_ = fullscreen;
-        if (!fullscreen) {
-          Gallery.toggleFullscreen();
-          opt_interval = (opt_interval || SlideMode.SLIDESHOW_INTERVAL) +
-              SlideMode.FULLSCREEN_TOGGLE_DELAY;
-        }
-        this.resumeSlideshow_(opt_interval);
-      }.bind(this));
-    }.bind(this), ImageView.ZOOM_ANIMATION_DURATION);
+    this.resumeSlideshow_(opt_interval);
   }.bind(this));
 };
 
