@@ -4,7 +4,6 @@
 
 #include "ui/message_center/message_center_bubble.h"
 
-#include "base/command_line.h"
 #include "grit/ui_strings.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -17,7 +16,7 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_constants.h"
-#include "ui/message_center/message_center_switches.h"
+#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/message_view.h"
 #include "ui/message_center/notification_view.h"
 #include "ui/views/background.h"
@@ -52,11 +51,6 @@ const SkColor kButtonTextHoverColor = SkColorSetRGB(0x32, 0x32, 0x32);
 // The focus color and focus-border logic is copied from ash tray.
 // TODO(mukai): unite those implementations.
 const SkColor kFocusBorderColor = SkColorSetRGB(0x40, 0x80, 0xfa);
-
-bool UseNewDesign() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableNewMessageCenterBubble);
-}
 
 gfx::Insets GetItemShadowInsets() {
   return gfx::Insets(kItemShadowBlur / 2 - kItemShadowOffset,
@@ -245,7 +239,7 @@ class FixedSizedScrollView : public views::ScrollView {
   FixedSizedScrollView() {
     set_focusable(true);
     set_notify_enter_exit_on_child(true);
-    if (UseNewDesign()) {
+    if (IsRichNotificationEnabled()) {
       set_background(views::Background::CreateSolidBackground(
           kMessageCenterBackgroundColor));
     }
@@ -298,7 +292,7 @@ class FixedSizedScrollView : public views::ScrollView {
 class ScrollContentView : public views::View {
  public:
   ScrollContentView() {
-    if (UseNewDesign()) {
+    if (IsRichNotificationEnabled()) {
       // Set the margin to 0 for the layout. BoxLayout assumes the same margin
       // for top and bottom, but the bottom margin here should be smaller
       // because of the shadow of message view. Use an empty border instead
@@ -378,7 +372,7 @@ class MessageCenterContentsView : public views::View {
                                      NotificationList::Delegate* list_delegate)
       : list_delegate_(list_delegate),
         bubble_(bubble) {
-    int between_child = UseNewDesign() ? 0 : 1;
+    int between_child = IsRichNotificationEnabled() ? 0 : 1;
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, between_child));
 
@@ -393,7 +387,7 @@ class MessageCenterContentsView : public views::View {
       scroller_->layer()->SetMasksToBounds(true);
     }
 
-    if (UseNewDesign())
+    if (IsRichNotificationEnabled())
       button_view_ = new WebNotificationButtonView2(list_delegate);
     else
       button_view_ = new WebNotificationButtonView(list_delegate);
@@ -414,7 +408,7 @@ class MessageCenterContentsView : public views::View {
           NotificationView::ViewForNotification(*iter, list_delegate_);
       view->set_scroller(scroller_);
       view->SetUpView();
-      if (UseNewDesign())
+      if (IsRichNotificationEnabled())
         view->set_border(new MessageViewShadowBorder());
       scroll_content_->AddChildView(view);
       if (++num_children >=
@@ -486,7 +480,7 @@ views::TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
     views::TrayBubbleView::AnchorAlignment anchor_alignment) {
   views::TrayBubbleView::InitParams init_params =
       GetDefaultInitParams(anchor_alignment);
-  if (UseNewDesign()) {
+  if (IsRichNotificationEnabled()) {
     init_params.min_width += kMarginBetweenItems * 2;
     init_params.max_width += kMarginBetweenItems * 2;
   }

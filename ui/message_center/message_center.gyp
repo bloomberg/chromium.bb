@@ -39,6 +39,8 @@
         'message_center_tray_delegate.h',
         'message_center_switches.cc',
         'message_center_switches.h',
+        'message_center_util.cc',
+        'message_center_util.h',
         'message_popup_bubble.cc',
         'message_popup_bubble.h',
         'message_simple_view.cc',

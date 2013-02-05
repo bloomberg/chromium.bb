@@ -4,13 +4,12 @@
 
 #include "chrome/browser/notifications/notification_ui_manager.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 
 #if defined(ENABLE_MESSAGE_CENTER)
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
-#include "ui/message_center/message_center_switches.h"
+#include "ui/message_center/message_center_util.h"
 #endif
 
 // static
@@ -20,8 +19,7 @@ bool NotificationUIManager::DelegatesToMessageCenter() {
 // be done by BalloonCollectionImplAsh through BalloonNotificationUIManager.
 // TODO(mukai): remove this |&& !defined(USE_ASH)| when that's no problem.
 #if defined(ENABLE_MESSAGE_CENTER) && !defined(USE_ASH)
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      message_center::switches::kEnableRichNotifications);
+  return message_center::IsRichNotificationEnabled();
 #endif
   return false;
 }
@@ -40,4 +38,3 @@ NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
   return balloon_manager;
 }
 #endif
-

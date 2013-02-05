@@ -5,8 +5,7 @@
 #include "ui/message_center/message_bubble_base.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
-#include "ui/message_center/message_center_switches.h"
+#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/message_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -59,10 +58,8 @@ bool MessageBubbleBase::IsVisible() const {
 
 void MessageBubbleBase::SetMaxHeight(int height) {
   // Maximum height makes sense only for the new design.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableNewMessageCenterBubble)) {
+  if (!message_center::IsRichNotificationEnabled())
     return;
-  }
 
   if (height == 0)
     height = kMessageBubbleBaseDefaultMaxHeight;

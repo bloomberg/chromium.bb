@@ -20,6 +20,7 @@
 #include "ui/message_center/message_bubble_base.h"
 #include "ui/message_center/message_center_bubble.h"
 #include "ui/message_center/message_center_tray_delegate.h"
+#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/message_popup_bubble.h"
 #include "ui/message_center/quiet_mode_bubble.h"
 #include "ui/views/bubble/tray_bubble_view.h"
@@ -213,10 +214,13 @@ void WebNotificationTray::ShowQuietModeBubble() {
 
 void WebNotificationTray::UpdateAfterLoginStatusChange(
     user::LoginStatus login_status) {
-  // The status icon should be always visible except for lock screen / login
-  // screen, to allow quiet mode and settings.
-  SetVisible((login_status != user::LOGGED_IN_NONE) &&
-             (login_status != user::LOGGED_IN_LOCKED));
+  if (message_center::IsRichNotificationEnabled()) {
+    // The status icon should be always visible except for lock screen / login
+    // screen, to allow quiet mode and settings. This is valid only when rich
+    // notification is enabled, since old UI doesn't have settings.
+    SetVisible((login_status != user::LOGGED_IN_NONE) &&
+               (login_status != user::LOGGED_IN_LOCKED));
+  }
 
   if (login_status == user::LOGGED_IN_LOCKED) {
     show_message_center_on_unlock_ =
@@ -368,6 +372,17 @@ void WebNotificationTray::OnMessageCenterTrayChanged() {
     button_->SetState(views::CustomButton::STATE_PRESSED);
   else
     button_->SetState(views::CustomButton::STATE_NORMAL);
+  // Change the visibility of the buttons here when rich notifications are not
+  // enabled. If rich notifications are enabled, the visibility is changed at
+  // UpdateAfterLoginStatusChange() since the visibility won't depend on the
+  // number of notifications.
+  if (!message_center::IsRichNotificationEnabled()) {
+    bool is_visible =
+        (status_area_widget()->login_status() != user::LOGGED_IN_NONE) &&
+        (status_area_widget()->login_status() != user::LOGGED_IN_LOCKED) &&
+        (message_center->NotificationCount() > 0);
+    SetVisible(is_visible);
+  }
   Layout();
   SchedulePaint();
 }
