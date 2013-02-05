@@ -204,7 +204,7 @@ void CrossOperationDelegate::DidFinishCopy(
   if (!src_operation)
     return;
   src_operation->Remove(
-      src_root_, true /* recursive */,
+      src, true /* recursive */,
       base::Bind(&CrossOperationDelegate::DidRemoveSourceForMove,
                  AsWeakPtr(), callback));
 }
