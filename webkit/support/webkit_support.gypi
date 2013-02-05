@@ -54,8 +54,6 @@
         'test_stream_texture_factory_android.h',
         'test_webkit_platform_support.cc',
         'test_webkit_platform_support.h',
-        'test_webidbfactory.cc',
-        'test_webidbfactory.h',
         'test_webmessageportchannel.cc',
         'test_webmessageportchannel.h',
         'test_webplugin_page_delegate.cc',
