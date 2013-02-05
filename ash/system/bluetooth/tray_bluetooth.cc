@@ -103,8 +103,12 @@ class BluetoothDetailedView : public TrayDetailsView,
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->system_tray_delegate();
     bool bluetooth_enabled = delegate->GetBluetoothEnabled();
-    if (!bluetooth_discovering_ && bluetooth_enabled)
+    if (!bluetooth_discovering_ && bluetooth_enabled) {
       delegate->BluetoothStartDiscovering();
+      throbber_->Start();
+    } else if(!bluetooth_enabled) {
+      throbber_->Stop();
+    }
     bluetooth_discovering_ = bluetooth_enabled;
   }
 
@@ -114,6 +118,7 @@ class BluetoothDetailedView : public TrayDetailsView,
     if (bluetooth_discovering_) {
       bluetooth_discovering_ = false;
       delegate->BluetoothStopDiscovering();
+      throbber_->Stop();
     }
   }
 
@@ -139,6 +144,11 @@ class BluetoothDetailedView : public TrayDetailsView,
 
     if (login_ == user::LOGGED_IN_LOCKED)
       return;
+
+    throbber_ = new ThrobberView;
+    throbber_->SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING));
+    footer()->AddThrobber(throbber_);
 
     // Do not allow toggling bluetooth in the lock screen.
     ash::SystemTrayDelegate* delegate =
@@ -322,6 +332,7 @@ class BluetoothDetailedView : public TrayDetailsView,
 
   std::map<views::View*, std::string> device_map_;
   views::View* add_device_;
+  ThrobberView* throbber_;
   TrayPopupHeaderButton* toggle_bluetooth_;
   HoverHighlightView* enable_bluetooth_;
   BluetoothDeviceList connected_devices_;
