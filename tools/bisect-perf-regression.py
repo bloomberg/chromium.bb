@@ -364,7 +364,11 @@ class BisectPerformanceMetrics(object):
       text: The text to parse the metric values from.
 
     Returns:
-      A list of floating point numbers found.
+      A dict of lists of floating point numbers found.
+
+      {
+        'list_name':[values]
+      }
     """
     # Format is: RESULT <graph>: <trace>= <value> <units>
     metric_formatted = 'RESULT %s: %s=' % (metric[0], metric[1])
@@ -393,7 +397,37 @@ class BisectPerformanceMetrics(object):
 
           values_list += metric_values.split(',')
 
-    return [float(v) for v in values_list if IsStringFloat(v)]
+    values_list = [float(v) for v in values_list if IsStringFloat(v)]
+    values_dict = {}
+
+    # If the metric is times/t, we need to group the timings by page or the
+    # results aren't very useful.
+    # Will make the assumption that if pages are supplied, and the metric
+    # is "times/t", that the results needs to be grouped.
+    metric_re = "Pages:(\s)*\[(\s)*(?P<values>[a-zA-Z0-9-_,.]+)\]"
+    metric_re = re.compile(metric_re)
+
+    regex_results = metric_re.search(text)
+    page_names = []
+
+    if regex_results:
+      page_names = regex_results.group('values')
+      page_names = page_names.split(',')
+
+    if not metric == ['times', 't'] or not page_names:
+      values_dict['%s: %s' % (metric[0], metric[1])] = values_list
+    else:
+      if not (len(values_list) % len(page_names)):
+        values_dict = dict([(k, []) for k in page_names])
+
+        num = len(values_list) / len(page_names)
+
+        for j in xrange(num):
+          for i in xrange(len(page_names)):
+            k = num * j + i
+            values_dict[page_names[i]].append(values_list[k])
+
+    return values_dict
 
   def RunPerformanceTestAndParseResults(self, command_to_run, metric):
     """Runs a performance test on the current revision by executing the
@@ -425,10 +459,13 @@ class BisectPerformanceMetrics(object):
 
     # Need to get the average value if there were multiple values.
     if metric_values:
-      average_metric_value = reduce(lambda x, y: float(x) + float(y),
-                                    metric_values) / len(metric_values)
+      for k, v in metric_values.iteritems():
+        average_metric_value = reduce(lambda x, y: float(x) + float(y),
+                                      v) / len(v)
 
-      return (average_metric_value, 0)
+        metric_values[k] = average_metric_value
+
+      return (metric_values, 0)
     else:
       return ('No values returned from performance test.', -1)
 
@@ -488,10 +525,19 @@ class BisectPerformanceMetrics(object):
       True if the current_value is closer to the known_good_value than the
       known_bad_value.
     """
-    dist_to_good_value = abs(current_value - known_good_value)
-    dist_to_bad_value = abs(current_value - known_bad_value)
+    passes = 0
+    fails = 0
 
-    return dist_to_good_value < dist_to_bad_value
+    for k in current_value.keys():
+      dist_to_good_value = abs(current_value[k] - known_good_value[k])
+      dist_to_bad_value = abs(current_value[k] - known_bad_value[k])
+
+      if dist_to_good_value < dist_to_bad_value:
+        passes += 1
+      else:
+        fails += 1
+
+    return passes > fails
 
   def ChangeToDepotWorkingDirectory(self, depot_name):
     """Given a depot, changes to the appropriate working directory.
@@ -594,7 +640,7 @@ class BisectPerformanceMetrics(object):
     print
     print 'Revisions to bisect on [src]:'
     for revision_id in revision_list:
-      print('  -> %s' % (revision_id, ))
+      print '  -> %s' % (revision_id, )
     print
 
   def Run(self, command_to_run, bad_revision_in, good_revision_in, metric):
@@ -800,7 +846,7 @@ class BisectPerformanceMetrics(object):
 
         # If the build is successful, check whether or not the metric
         # had regressed.
-        if run_results[1] == 0:
+        if not run_results[1]:
           if next_revision_depot == 'chromium':
             next_revision_data['external'] = run_results[2]
 
@@ -843,16 +889,11 @@ class BisectPerformanceMetrics(object):
     print 'Full results of bisection:'
     for current_id, current_data  in revision_data_sorted:
       build_status = current_data['passed']
-      metric_value = current_data['value']
 
       if type(build_status) is bool:
         build_status = int(build_status)
 
-      if metric_value is None:
-        metric_value = ''
-
-      print('  %8s  %s  %s %6s' %\
-            (current_data['depot'], current_id, build_status, metric_value))
+      print '  %8s  %s  %s' % (current_data['depot'], current_id, build_status)
     print
 
     # Find range where it possibly broke.
@@ -860,11 +901,11 @@ class BisectPerformanceMetrics(object):
     last_broken_revision = None
 
     for k, v in revision_data_sorted:
-      if v['passed'] == True:
+      if v['passed']:
         if first_working_revision is None:
           first_working_revision = k
 
-      if v['passed'] == False:
+      if not v['passed']:
         last_broken_revision = k
 
     if last_broken_revision != None and first_working_revision != None:
@@ -918,7 +959,8 @@ def main():
                     'bad revision. May be either a git or svn revision.')
   parser.add_option('-m', '--metric',
                     type='str',
-                    help='The desired metric to bisect on.')
+                    help='The desired metric to bisect on. For example ' +
+                    '"vm_rss_final_b/vm_rss_f_b"')
   parser.add_option('--use_goma',
                     action="store_true",
                     help='Add a bunch of extra threads for goma.')
@@ -974,7 +1016,7 @@ def main():
     return 1
 
   # gClient sync seems to fail if you're not in master branch.
-  if not source_control.IsInProperBranch():
+  if not source_control.IsInProperBranch() and not opts.debug_ignore_sync:
     print "You must switch to master branch to run bisection."
     print
     return 1
