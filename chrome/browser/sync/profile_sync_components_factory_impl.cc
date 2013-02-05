@@ -113,6 +113,20 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
 
 void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     ProfileSyncService* pss) {
+  // Autofill sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!command_line_->HasSwitch(switches::kDisableSyncAutofill)) {
+    pss->RegisterDataTypeController(
+        new AutofillDataTypeController(this, profile_, pss));
+  }
+
+  // Autofill profile sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!command_line_->HasSwitch(switches::kDisableSyncAutofillProfile)) {
+    pss->RegisterDataTypeController(
+        new AutofillProfileDataTypeController(this, profile_, pss));
+  }
+
   // Bookmark sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncBookmarks)) {
@@ -160,13 +174,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
         new ExtensionDataTypeController(syncer::APPS, this, profile_, pss));
   }
 
-  // Autofill sync is enabled by default.  Register unless explicitly
-  // disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncAutofill)) {
-    pss->RegisterDataTypeController(
-        new AutofillDataTypeController(this, profile_, pss));
-  }
-
   // Extension sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncExtensions)) {
@@ -211,11 +218,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
     pss->RegisterDataTypeController(
         new ExtensionSettingDataTypeController(
             syncer::APP_SETTINGS, this, profile_, pss));
-  }
-
-  if (!command_line_->HasSwitch(switches::kDisableSyncAutofillProfile)) {
-    pss->RegisterDataTypeController(
-        new AutofillProfileDataTypeController(this, profile_, pss));
   }
 
   // App notifications sync is enabled by default.  Register unless explicitly

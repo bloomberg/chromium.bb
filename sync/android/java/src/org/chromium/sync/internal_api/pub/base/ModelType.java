@@ -18,6 +18,14 @@ import java.util.Set;
  */
 public enum ModelType {
     /**
+     * An autofill object.
+     */
+    AUTOFILL("AUTOFILL"),
+    /**
+     * An autofill profile object.
+     */
+    AUTOFILL_PROFILE("AUTOFILL_PROFILE"),
+    /**
      * A bookmark folder or a bookmark URL object.
      */
     BOOKMARK("BOOKMARK"),
