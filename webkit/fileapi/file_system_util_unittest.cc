@@ -54,31 +54,6 @@ TEST_F(FileSystemUtilTest, VirtualPathBaseName) {
   }
 }
 
-TEST_F(FileSystemUtilTest, GetNormalizedFilePath) {
-  struct test_data {
-    const FilePath::StringType path;
-    const FilePath::StringType normalized_path;
-  } test_cases[] = {
-    { FILE_PATH_LITERAL(""), FILE_PATH_LITERAL("/") },
-    { FILE_PATH_LITERAL("/"), FILE_PATH_LITERAL("/") },
-    { FILE_PATH_LITERAL("foo/bar"), FILE_PATH_LITERAL("/foo/bar") },
-    { FILE_PATH_LITERAL("/foo/bar"), FILE_PATH_LITERAL("/foo/bar") }
-  };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
-    FilePath input = FilePath(test_cases[i].path);
-    FilePath::StringType normalized_path_string =
-        VirtualPath::GetNormalizedFilePath(input);
-    EXPECT_EQ(test_cases[i].normalized_path, normalized_path_string);
-  }
-}
-
-TEST_F(FileSystemUtilTest, IsAbsolutePath) {
-  EXPECT_TRUE(VirtualPath::IsAbsolute(FILE_PATH_LITERAL("/")));
-  EXPECT_TRUE(VirtualPath::IsAbsolute(FILE_PATH_LITERAL("/foo/bar")));
-  EXPECT_FALSE(VirtualPath::IsAbsolute(FILE_PATH_LITERAL("")));
-  EXPECT_FALSE(VirtualPath::IsAbsolute(FILE_PATH_LITERAL("foo/bar")));
-}
-
 TEST_F(FileSystemUtilTest, VirtualPathGetComponents) {
   struct test_data {
     const base::FilePath::StringType path;

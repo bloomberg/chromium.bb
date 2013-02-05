@@ -27,13 +27,9 @@ extern const char kTestDir[];
 
 class WEBKIT_STORAGE_EXPORT VirtualPath {
  public:
-  static const FilePath::CharType kRoot[];
-  static const FilePath::CharType kSeparator;
-
-  // Use this instead of base::FilePath::BaseName when operating on virtual
-  // paths. base::FilePath::BaseName will get confused by ':' on Windows when it
-  // looks like a drive letter separator; this will treat it as just another
-  // character.
+  // Use this instead of base::FilePath::BaseName when operating on virtual paths.
+  // base::FilePath::BaseName will get confused by ':' on Windows when it looks like a
+  // drive letter separator; this will treat it as just another character.
   static base::FilePath BaseName(const base::FilePath& virtual_path);
 
   // Likewise, use this instead of base::FilePath::GetComponents when operating on
@@ -42,13 +38,6 @@ class WEBKIT_STORAGE_EXPORT VirtualPath {
   // not evaluate '.' or '..' components.
   static void GetComponents(const base::FilePath& path,
       std::vector<base::FilePath::StringType>* components);
-
-  // Returns a path name ensuring that it begins with kRoot and all path
-  // separators are forward slashes /.
-  static FilePath::StringType GetNormalizedFilePath(const FilePath& path);
-
-  // Returns true if the given path begins with kRoot.
-  static bool IsAbsolute(const FilePath::StringType& path);
 };
 
 // Returns the root URI of the filesystem that can be specified by a pair of
