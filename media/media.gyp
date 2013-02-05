@@ -783,7 +783,6 @@
         'base/decoder_buffer_queue_unittest.cc',
         'base/decoder_buffer_unittest.cc',
         'base/djb2_unittest.cc',
-        'base/filter_collection_unittest.cc',
         'base/gmock_callback_support_unittest.cc',
         'base/multi_channel_resampler_unittest.cc',
         'base/pipeline_unittest.cc',

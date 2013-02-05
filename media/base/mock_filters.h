@@ -161,6 +161,7 @@ class MockVideoRenderer : public VideoRenderer {
 class MockAudioRenderer : public AudioRenderer {
  public:
   MockAudioRenderer();
+  virtual ~MockAudioRenderer();
 
   // AudioRenderer implementation.
   MOCK_METHOD9(Initialize, void(const scoped_refptr<DemuxerStream>& stream,
@@ -180,9 +181,6 @@ class MockAudioRenderer : public AudioRenderer {
   MOCK_METHOD2(Preroll, void(base::TimeDelta time, const PipelineStatusCB& cb));
   MOCK_METHOD1(SetVolume, void(float volume));
   MOCK_METHOD1(ResumeAfterUnderflow, void(bool buffer_more_audio));
-
- protected:
-  virtual ~MockAudioRenderer();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioRenderer);

@@ -223,17 +223,19 @@ PipelineIntegrationTestBase::CreateFilterCollection(
   collection->SetVideoRenderer(renderer.Pass());
 
   audio_sink_ = new NullAudioSink();
-  if (hashing_enabled_)
-    audio_sink_->StartAudioHashForTesting();
-  scoped_refptr<AudioRendererImpl> audio_renderer(new AudioRendererImpl(
+  AudioRendererImpl* audio_renderer_impl = new AudioRendererImpl(
       message_loop_.message_loop_proxy(),
       audio_sink_,
       base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
-                 base::Unretained(this), decryptor)));
+                 base::Unretained(this), decryptor));
   // Disable underflow if hashing is enabled.
-  if (hashing_enabled_)
-    audio_renderer->DisableUnderflowForTesting();
-  collection->AddAudioRenderer(audio_renderer);
+  if (hashing_enabled_) {
+    audio_sink_->StartAudioHashForTesting();
+    audio_renderer_impl->DisableUnderflowForTesting();
+  }
+  scoped_ptr<AudioRenderer> audio_renderer(audio_renderer_impl);
+  collection->SetAudioRenderer(audio_renderer.Pass());
+
   return collection.Pass();
 }
 

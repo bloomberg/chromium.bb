@@ -18,14 +18,16 @@ namespace media {
 class AudioDecoder;
 class DemuxerStream;
 
-class MEDIA_EXPORT AudioRenderer
-    : public base::RefCountedThreadSafe<AudioRenderer> {
+class MEDIA_EXPORT AudioRenderer {
  public:
   typedef std::list<scoped_refptr<AudioDecoder> > AudioDecoderList;
 
   // First parameter is the current time that has been rendered.
   // Second parameter is the maximum time value that the clock cannot exceed.
   typedef base::Callback<void(base::TimeDelta, base::TimeDelta)> TimeCB;
+
+  AudioRenderer();
+  virtual ~AudioRenderer();
 
   // Initialize a AudioRenderer with the given AudioDecoder, executing the
   // |init_cb| upon completion.
@@ -89,12 +91,6 @@ class MEDIA_EXPORT AudioRenderer
   // |buffer_more_audio| is set to true if you want to increase the size of the
   // decoded audio buffer.
   virtual void ResumeAfterUnderflow(bool buffer_more_audio) = 0;
-
- protected:
-  friend class base::RefCountedThreadSafe<AudioRenderer>;
-
-  AudioRenderer();
-  virtual ~AudioRenderer();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioRenderer);

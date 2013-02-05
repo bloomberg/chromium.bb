@@ -22,6 +22,7 @@
 #include <deque>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_renderer.h"
@@ -47,6 +48,7 @@ class MEDIA_EXPORT AudioRendererImpl
   AudioRendererImpl(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                     AudioRendererSink* sink,
                     const SetDecryptorReadyCB& set_decryptor_ready_cb);
+  virtual ~AudioRendererImpl();
 
   // AudioRenderer implementation.
   virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
@@ -79,9 +81,6 @@ class MEDIA_EXPORT AudioRendererImpl
   void set_now_cb_for_testing(const NowCB& now_cb) {
     now_cb_ = now_cb;
   }
-
- protected:
-  virtual ~AudioRendererImpl();
 
  private:
   friend class AudioRendererImplTest;
@@ -159,6 +158,8 @@ class MEDIA_EXPORT AudioRendererImpl
   void ResetDecoder(const base::Closure& callback);
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
+  base::WeakPtrFactory<AudioRendererImpl> weak_factory_;
+  base::WeakPtr<AudioRendererImpl> weak_this_;
 
   scoped_ptr<AudioSplicer> splicer_;
 

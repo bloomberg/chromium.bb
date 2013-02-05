@@ -97,6 +97,9 @@ void VideoRendererBase::Stop(const base::Closure& callback) {
     return;
   }
 
+  // TODO(scherkus): Consider invalidating |weak_factory_| and replacing
+  // task-running guards that check |state_| with DCHECK().
+
   state_ = kStopped;
 
   statistics_cb_.Reset();

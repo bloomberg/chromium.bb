@@ -332,7 +332,7 @@ class AudioRendererImplTest : public ::testing::Test {
 
   // Fixture members.
   MessageLoop message_loop_;
-  scoped_refptr<AudioRendererImpl> renderer_;
+  scoped_ptr<AudioRendererImpl> renderer_;
 
  private:
   Time GetTime() {
