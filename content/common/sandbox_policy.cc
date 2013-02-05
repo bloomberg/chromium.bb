@@ -746,11 +746,11 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   base::win::ScopedProcessInformation target;
   sandbox::TargetPolicy* policy = g_broker_services->CreatePolicy();
 
-  // TODO(jschuh): Make NaCl work with DEP and SEHOP. crbug.com/147752
+  // TODO(jschuh): Make Win64 work with DEP and SEHOP. crbug.com/147752
   sandbox::MitigationFlags mitigations = sandbox::MITIGATION_HEAP_TERMINATE |
                                          sandbox::MITIGATION_BOTTOM_UP_ASLR;
-#if !defined(NACL_WIN64)
-  // TODO(jschuh,bsy): Make NaCl work with HIGH_ENTROPY_ASLR. crbug.com/158133
+#if !defined(_WIN64)
+  // TODO(jschuh,bsy): Make Win64 work with HIGH_ENTROPY_ASLR. crbug.com/158133
   mitigations |= sandbox::MITIGATION_DEP |
                  sandbox::MITIGATION_DEP_NO_ATL_THUNK |
                  sandbox::MITIGATION_SEHOP |
@@ -766,7 +766,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
 
   mitigations = sandbox::MITIGATION_STRICT_HANDLE_CHECKS |
                 sandbox::MITIGATION_DLL_SEARCH_ORDER;
-#if defined(NACL_WIN64)
+#if defined(_WIN64)
   mitigations |= sandbox::MITIGATION_DEP |
                  sandbox::MITIGATION_DEP_NO_ATL_THUNK;
 #endif
