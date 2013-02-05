@@ -358,6 +358,14 @@ IPC_STRUCT_BEGIN(ViewHostMsg_TextInputState_Params)
   IPC_STRUCT_MEMBER(bool, show_ime_if_needed)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(ViewHostMsg_SelectionBounds_Params)
+  IPC_STRUCT_MEMBER(gfx::Rect, anchor_rect)
+  IPC_STRUCT_MEMBER(WebKit::WebTextDirection, anchor_dir)
+  IPC_STRUCT_MEMBER(gfx::Rect, focus_rect)
+  IPC_STRUCT_MEMBER(WebKit::WebTextDirection, focus_dir)
+  IPC_STRUCT_MEMBER(bool, is_anchor_first)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
   // URL for the worker script.
   IPC_STRUCT_MEMBER(GURL, url)
@@ -1954,11 +1962,8 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_SelectionChanged,
                     ui::Range /* selection range in the document */)
 
 // Notification that the selection bounds have changed.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_SelectionBoundsChanged,
-                    gfx::Rect /* start rect */,
-                    WebKit::WebTextDirection /* start text dir */,
-                    gfx::Rect /* end rect */,
-                    WebKit::WebTextDirection /* end text dir */)
+IPC_MESSAGE_ROUTED1(ViewHostMsg_SelectionBoundsChanged,
+                    ViewHostMsg_SelectionBounds_Params)
 
 // Asks the browser to open the color chooser.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_OpenColorChooser,

@@ -194,10 +194,7 @@ void RenderWidgetHostViewGuest::DidUpdateBackingStore(
 }
 
 void RenderWidgetHostViewGuest::SelectionBoundsChanged(
-    const gfx::Rect& start_rect,
-    WebKit::WebTextDirection start_direction,
-    const gfx::Rect& end_rect,
-    WebKit::WebTextDirection end_direction) {
+    const ViewHostMsg_SelectionBounds_Params& params) {
 }
 
 BackingStore* RenderWidgetHostViewGuest::AllocBackingStore(

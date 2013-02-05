@@ -95,10 +95,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
                                 size_t offset,
                                 const ui::Range& range) OVERRIDE;
   virtual void SelectionBoundsChanged(
-      const gfx::Rect& start_rect,
-      WebKit::WebTextDirection start_direction,
-      const gfx::Rect& end_rect,
-      WebKit::WebTextDirection end_direction) OVERRIDE;
+      const ViewHostMsg_SelectionBounds_Params& params) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,

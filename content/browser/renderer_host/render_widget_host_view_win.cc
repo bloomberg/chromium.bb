@@ -667,15 +667,12 @@ void RenderWidgetHostViewWin::TextInputStateChanged(
 }
 
 void RenderWidgetHostViewWin::SelectionBoundsChanged(
-    const gfx::Rect& start_rect,
-    WebKit::WebTextDirection start_direction,
-    const gfx::Rect& end_rect,
-    WebKit::WebTextDirection end_direction) {
+    const ViewHostMsg_SelectionBounds_Params& params) {
   bool is_enabled = (text_input_type_ != ui::TEXT_INPUT_TYPE_NONE &&
       text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD);
   // Only update caret position if the input method is enabled.
   if (is_enabled) {
-    caret_rect_ = gfx::UnionRects(start_rect, end_rect);
+    caret_rect_ = gfx::UnionRects(params.anchor_rect, params.focus_rect);
     ime_input_.UpdateCaretRect(m_hWnd, caret_rect_);
   }
 }

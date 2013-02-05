@@ -139,10 +139,7 @@ class RenderWidgetHostViewAura
                                 size_t offset,
                                 const ui::Range& range) OVERRIDE;
   virtual void SelectionBoundsChanged(
-      const gfx::Rect& start_rect,
-      WebKit::WebTextDirection start_direction,
-      const gfx::Rect& end_rect,
-      WebKit::WebTextDirection end_direction) OVERRIDE;
+      const ViewHostMsg_SelectionBounds_Params& params) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
@@ -380,9 +377,9 @@ class RenderWidgetHostViewAura
   ui::TextInputType text_input_type_;
   bool can_compose_inline_;
 
-  // Rectangles before and after the selection.
-  gfx::Rect selection_start_rect_;
-  gfx::Rect selection_end_rect_;
+  // Rectangles for the selection anchor and focus.
+  gfx::Rect selection_anchor_rect_;
+  gfx::Rect selection_focus_rect_;
 
   // The current composition character bounds.
   std::vector<gfx::Rect> composition_character_bounds_;

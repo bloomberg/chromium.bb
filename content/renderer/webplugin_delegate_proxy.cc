@@ -941,10 +941,13 @@ void WebPluginDelegateProxy::OnNotifyIMEStatus(int input_type,
       render_view_->routing_id(),
       params));
 
+  ViewHostMsg_SelectionBounds_Params bounds_params;
+  bounds_params.anchor_rect = bounds_params.focus_rect = caret_rect;
+  bounds_params.anchor_dir = bounds_params.focus_dir =
+      WebKit::WebTextDirectionLeftToRight;
   render_view_->Send(new ViewHostMsg_SelectionBoundsChanged(
       render_view_->routing_id(),
-      caret_rect, WebKit::WebTextDirectionLeftToRight,
-      caret_rect, WebKit::WebTextDirectionLeftToRight));
+      bounds_params));
 }
 #endif
 

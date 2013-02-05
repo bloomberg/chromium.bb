@@ -399,13 +399,14 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
 
   gfx::Rect caret_rect(10, 11, 0, 10);
   ui::Range caret_range(0, 0);
+  ViewHostMsg_SelectionBounds_Params params;
 
   NSRect rect;
   NSRange actual_range;
   rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
-  rwhv_mac_->SelectionBoundsChanged(
-       caret_rect, WebKit::WebTextDirectionLeftToRight,
-       caret_rect, WebKit::WebTextDirectionLeftToRight);
+  params.anchor_rect = params.focus_rect = caret_rect;
+  params.anchor_dir = params.focus_dir = WebKit::WebTextDirectionLeftToRight;
+  rwhv_mac_->SelectionBoundsChanged(params);
   EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
         caret_range.ToNSRange(),
         &rect,
@@ -429,10 +430,9 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
   // Caret moved.
   caret_rect = gfx::Rect(20, 11, 0, 10);
   caret_range = ui::Range(1, 1);
+  params.anchor_rect = params.focus_rect = caret_rect;
   rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
-  rwhv_mac_->SelectionBoundsChanged(
-       caret_rect, WebKit::WebTextDirectionLeftToRight,
-       caret_rect, WebKit::WebTextDirectionLeftToRight);
+  rwhv_mac_->SelectionBoundsChanged(params);
   EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
         caret_range.ToNSRange(),
         &rect,
@@ -456,9 +456,9 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
   // No caret.
   caret_range = ui::Range(1, 2);
   rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
-  rwhv_mac_->SelectionBoundsChanged(
-        caret_rect, WebKit::WebTextDirectionLeftToRight,
-        gfx::Rect(30, 11, 0, 10), WebKit::WebTextDirectionLeftToRight);
+  params.anchor_rect = caret_rect;
+  params.focus_rect = gfx::Rect(30, 11, 0, 10);
+  rwhv_mac_->SelectionBoundsChanged(params);
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
         ui::Range(0, 0).ToNSRange(),
         &rect,

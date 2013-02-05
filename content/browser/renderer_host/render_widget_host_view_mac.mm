@@ -707,12 +707,9 @@ void RenderWidgetHostViewMac::TextInputStateChanged(
 }
 
 void RenderWidgetHostViewMac::SelectionBoundsChanged(
-    const gfx::Rect& start_rect,
-    WebKit::WebTextDirection start_direction,
-    const gfx::Rect& end_rect,
-    WebKit::WebTextDirection end_direction) {
-  if (start_rect == end_rect)
-    caret_rect_ = start_rect;
+    const ViewHostMsg_SelectionBounds_Params& params) {
+  if (params.anchor_rect == params.focus_rect)
+    caret_rect_ = params.anchor_rect;
 }
 
 void RenderWidgetHostViewMac::ImeCancelComposition() {

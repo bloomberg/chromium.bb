@@ -689,15 +689,13 @@ void RenderWidgetHostViewAura::SelectionChanged(const string16& text,
 }
 
 void RenderWidgetHostViewAura::SelectionBoundsChanged(
-    const gfx::Rect& start_rect,
-    WebKit::WebTextDirection start_direction,
-    const gfx::Rect& end_rect,
-    WebKit::WebTextDirection end_direction) {
-  if (selection_start_rect_ == start_rect && selection_end_rect_ == end_rect)
+    const ViewHostMsg_SelectionBounds_Params& params) {
+  if (selection_anchor_rect_ == params.anchor_rect &&
+      selection_focus_rect_ == params.focus_rect)
     return;
 
-  selection_start_rect_ = start_rect;
-  selection_end_rect_ = end_rect;
+  selection_anchor_rect_ = params.anchor_rect;
+  selection_focus_rect_ = params.focus_rect;
 
   if (GetInputMethod())
     GetInputMethod()->OnCaretBoundsChanged(this);
@@ -1222,7 +1220,7 @@ gfx::Rect RenderWidgetHostViewAura::ConvertRectToScreen(const gfx::Rect& rect) {
 
 gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() {
   const gfx::Rect rect =
-      gfx::UnionRects(selection_start_rect_, selection_end_rect_);
+      gfx::UnionRects(selection_anchor_rect_, selection_focus_rect_);
   return ConvertRectToScreen(rect);
 }
 

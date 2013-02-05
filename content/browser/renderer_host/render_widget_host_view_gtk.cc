@@ -947,11 +947,9 @@ void RenderWidgetHostViewGtk::SelectionChanged(const string16& text,
 }
 
 void RenderWidgetHostViewGtk::SelectionBoundsChanged(
-    const gfx::Rect& start_rect,
-    WebKit::WebTextDirection start_direction,
-    const gfx::Rect& end_rect,
-    WebKit::WebTextDirection end_direction) {
-  im_context_->UpdateCaretBounds(gfx::UnionRects(start_rect, end_rect));
+    const ViewHostMsg_SelectionBounds_Params& params) {
+  im_context_->UpdateCaretBounds(
+      gfx::UnionRects(params.anchor_rect, params.focus_rect));
 }
 
 GdkEventButton* RenderWidgetHostViewGtk::GetLastMouseDown() {

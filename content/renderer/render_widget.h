@@ -560,8 +560,8 @@ class CONTENT_EXPORT RenderWidget
   bool can_compose_inline_;
 
   // Stores the current selection bounds.
-  gfx::Rect selection_start_rect_;
-  gfx::Rect selection_end_rect_;
+  gfx::Rect selection_focus_rect_;
+  gfx::Rect selection_anchor_rect_;
 
   // Stores the current composition character bounds.
   std::vector<gfx::Rect> composition_character_bounds_;

@@ -520,21 +520,20 @@ void ContentViewCoreImpl::OnSelectionChanged(const std::string& text) {
 }
 
 void ContentViewCoreImpl::OnSelectionBoundsChanged(
-    const gfx::Rect& start_rect, base::i18n::TextDirection start_dir,
-    const gfx::Rect& end_rect, base::i18n::TextDirection end_dir) {
+    const ViewHostMsg_SelectionBounds_Params& params) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  ScopedJavaLocalRef<jobject> java_start_rect(
-      java_object_->CreateJavaRect(env, start_rect, DpiScale()));
-  ScopedJavaLocalRef<jobject> java_end_rect(
-      java_object_->CreateJavaRect(env, end_rect, DpiScale()));
+  ScopedJavaLocalRef<jobject> anchor_rect(
+      java_object_->CreateJavaRect(env, params.anchor_rect, DpiScale()));
+  ScopedJavaLocalRef<jobject> focus_rect(
+      java_object_->CreateJavaRect(env, params.focus_rect, DpiScale()));
   Java_ContentViewCore_onSelectionBoundsChanged(env, obj.obj(),
-                                                java_start_rect.obj(),
-                                                start_dir,
-                                                java_end_rect.obj(),
-                                                end_dir);
+                                                anchor_rect.obj(),
+                                                params.anchor_dir,
+                                                focus_rect.obj(),
+                                                params.focus_dir);
 }
 
 void ContentViewCoreImpl::ShowPastePopup(int x, int y) {

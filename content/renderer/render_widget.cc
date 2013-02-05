@@ -1879,29 +1879,26 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime) {
   }
 }
 
-void RenderWidget::GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) {
-  WebRect start_webrect;
-  WebRect end_webrect;
-  webwidget_->selectionBounds(start_webrect, end_webrect);
-  *start = start_webrect;
-  *end = end_webrect;
+void RenderWidget::GetSelectionBounds(gfx::Rect* focus, gfx::Rect* anchor) {
+  WebRect focus_webrect;
+  WebRect anchor_webrect;
+  webwidget_->selectionBounds(focus_webrect, anchor_webrect);
+  *focus = focus_webrect;
+  *anchor = anchor_webrect;
 }
 
 void RenderWidget::UpdateSelectionBounds() {
   if (!webwidget_)
     return;
 
-  gfx::Rect start_rect;
-  gfx::Rect end_rect;
-  GetSelectionBounds(&start_rect, &end_rect);
-  if (selection_start_rect_ != start_rect || selection_end_rect_ != end_rect) {
-    selection_start_rect_ = start_rect;
-    selection_end_rect_ = end_rect;
-    WebTextDirection start_dir = WebKit::WebTextDirectionLeftToRight;
-    WebTextDirection end_dir = WebKit::WebTextDirectionLeftToRight;
-    webwidget_->selectionTextDirection(start_dir, end_dir);
-    Send(new ViewHostMsg_SelectionBoundsChanged(routing_id_,
-        selection_start_rect_, start_dir, selection_end_rect_, end_dir));
+  ViewHostMsg_SelectionBounds_Params params;
+  GetSelectionBounds(&params.anchor_rect, &params.focus_rect);
+  if (selection_anchor_rect_ != params.anchor_rect ||
+      selection_focus_rect_ != params.focus_rect) {
+    selection_anchor_rect_ = params.anchor_rect;
+    selection_focus_rect_ = params.focus_rect;
+    webwidget_->selectionTextDirection(params.focus_dir, params.anchor_dir);
+    Send(new ViewHostMsg_SelectionBoundsChanged(routing_id_, params));
   }
 
   std::vector<gfx::Rect> character_bounds;

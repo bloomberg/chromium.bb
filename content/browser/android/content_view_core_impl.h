@@ -245,8 +245,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void HasTouchEventHandlers(bool need_touch_events);
   void OnSelectionChanged(const std::string& text);
   void OnSelectionBoundsChanged(
-      const gfx::Rect& start_rect, base::i18n::TextDirection start_dir,
-      const gfx::Rect& end_rect, base::i18n::TextDirection end_dir);
+      const ViewHostMsg_SelectionBounds_Params& params);
 
   void StartContentIntent(const GURL& content_url);
 

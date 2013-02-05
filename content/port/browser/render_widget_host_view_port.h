@@ -24,6 +24,7 @@ struct AccessibilityHostMsg_NotificationParams;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 struct ViewHostMsg_TextInputState_Params;
+struct ViewHostMsg_SelectionBounds_Params;
 
 namespace webkit {
 namespace npapi {
@@ -142,10 +143,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // |start_rect| and |end_rect| are the bounds end of the selection in the
   // coordinate system of the render view. |start_direction| and |end_direction|
   // indicates the direction at which the selection was made on touch devices.
-  virtual void SelectionBoundsChanged(const gfx::Rect& start_rect,
-                                      WebKit::WebTextDirection start_direction,
-                                      const gfx::Rect& end_rect,
-                                      WebKit::WebTextDirection end_direction) {}
+  virtual void SelectionBoundsChanged(
+      const ViewHostMsg_SelectionBounds_Params& params) {}
 
   // Notifies the view that the scroll offset has changed.
   virtual void ScrollOffsetChanged() {}
