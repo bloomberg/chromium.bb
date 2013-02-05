@@ -846,6 +846,25 @@ TEST_F(MediaFileSystemRegistryTest, UserAddedGallery) {
                                 auto_galleries);
 }
 
+// Regression test to make sure erasing galleries does not result a crash.
+TEST_F(MediaFileSystemRegistryTest, EraseGalleries) {
+  CreateProfileState(1);
+  AssertAllAutoAddedGalleries();
+
+  ProfileState* profile_state = GetProfileState(0);
+  std::vector<MediaFileSystemInfo> auto_galleries =
+      GetAutoAddedGalleries(profile_state);
+  std::vector<MediaFileSystemInfo> empty_expectation;
+  profile_state->CheckGalleries("erase", empty_expectation, auto_galleries);
+
+  MediaGalleriesPreferences* prefs = profile_state->GetMediaGalleriesPrefs();
+  MediaGalleriesPrefInfoMap galleries = prefs->known_galleries();
+  for (MediaGalleriesPrefInfoMap::const_iterator it = galleries.begin();
+       it != galleries.end(); ++it) {
+    prefs->ForgetGalleryById(it->first);
+  }
+}
+
 TEST_F(MediaFileSystemRegistryTest, GalleryNameDefault) {
   FSInfoMap galleries_info;
   InitForGalleriesInfoTest(&galleries_info);

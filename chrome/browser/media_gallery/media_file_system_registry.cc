@@ -516,8 +516,7 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
     pref_registrar->Init(profile->GetPrefs());
     pref_registrar->Add(
         prefs::kMediaGalleriesRememberedGalleries,
-        base::Bind(&MediaFileSystemRegistry::
-                   OnMediaGalleriesRememberedGalleriesChanged,
+        base::Bind(&MediaFileSystemRegistry::OnRememberedGalleriesChanged,
                    base::Unretained(this),
                    pref_registrar->prefs()));
     pref_change_registrar_map_[profile] = pref_registrar;
@@ -719,7 +718,7 @@ MediaFileSystemRegistry::~MediaFileSystemRegistry() {
 #endif
 }
 
-void MediaFileSystemRegistry::OnMediaGalleriesRememberedGalleriesChanged(
+void MediaFileSystemRegistry::OnRememberedGalleriesChanged(
     PrefServiceBase* prefs) {
   // Find the Profile that contains the source PrefService.
   PrefChangeRegistrarMap::iterator pref_change_it =
@@ -744,14 +743,24 @@ void MediaFileSystemRegistry::OnMediaGalleriesRememberedGalleriesChanged(
 
   // Go through ExtensionsHosts, get the updated galleries list and use it to
   // revoke the old galleries.
-  for (ExtensionHostMap::const_iterator gallery_host_it =
-           extension_host_map.begin();
-       gallery_host_it != extension_host_map.end();
-       ++gallery_host_it) {
-    const extensions::Extension* extension =
-        extensions_set->GetByID(gallery_host_it->first);
+  // RevokeOldGalleries() may end up deleting from |extension_host_map| and
+  // even delete |extension_host_map| altogether. So do this in two loops to
+  // avoid using an invalidated iterator or deleted map.
+  std::vector<const extensions::Extension*> extensions;
+  for (ExtensionHostMap::const_iterator it = extension_host_map.begin();
+       it != extension_host_map.end();
+       ++it) {
+    extensions.push_back(extensions_set->GetByID(it->first));
+  }
+  for (size_t i = 0; i < extensions.size(); ++i) {
+    if (!ContainsKey(extension_hosts_map_, profile))
+      break;
+    ExtensionHostMap::const_iterator gallery_host_it =
+        extension_host_map.find(extensions[i]->id());
+    if (gallery_host_it == extension_host_map.end())
+      continue;
     gallery_host_it->second->RevokeOldGalleries(
-        preferences->GalleriesForExtension(*extension));
+        preferences->GalleriesForExtension(*extensions[i]));
   }
 }
 
