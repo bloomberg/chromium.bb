@@ -1,12 +1,5 @@
 sky@chromium.org
 
-# For media_browsertest.cc and encrypted_media_browsertest.cc
-per-file *media_browsertest.cc=acolwell@chromium.org
-per-file *media_browsertest.cc=dalecurtis@chromium.org
-per-file *media_browsertest.cc=ddorwin@chromium.org
-per-file *media_browsertest.cc=scherkus@chromium.org
-per-file *media_browsertest.cc=shadi@chromium.org
-per-file *media_browsertest.cc=xhwang@chromium.org
 per-file child_process_security_policy_impl.cc=tsepez@chromium.org
 per-file child_process_security_policy_impl.cc=creis@chromium.org
 per-file child_process_security_policy_impl.cc=cevans@chromium.org
