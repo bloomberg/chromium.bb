@@ -1568,7 +1568,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v7,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v7,
 //    baseline: Forbidden,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -1722,7 +1723,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {},
@@ -1759,7 +1761,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v6K,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6K,
 //    baseline: Forbidden,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -1819,7 +1822,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {},
@@ -1852,7 +1856,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v6K,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6K,
 //    baseline: Forbidden,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -1866,7 +1871,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v6K,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6K,
 //    baseline: Forbidden,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -4800,6 +4806,7 @@ class Actual_MRS_cccc00010r001111dddd000000000000_case_1
 // Baseline:
 //   {NZCV: 16,
 //    None: 32,
+//    actual: Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1,
 //    baseline: MoveImmediate12ToApsr,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -4940,7 +4947,8 @@ class Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: ['v6K', 'v6T2'],
+//   {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
+//    arch: ['v6K', 'v6T2'],
 //    baseline: CondDecoder,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -4952,7 +4960,8 @@ class Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v6K,
+//   {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
+//    arch: v6K,
 //    baseline: CondDecoder,
 //    cond: cond(31:28),
 //    constraints: ,

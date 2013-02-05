@@ -2152,7 +2152,8 @@ safety(Instruction inst) const {
 
 // DBG_cccc001100100000111100001111iiii_case_0:
 //
-//   {arch: v7,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v7,
 //    baseline: Forbidden,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -6552,6 +6553,7 @@ uses(Instruction inst) const {
 //
 //   {NZCV: 16,
 //    None: 32,
+//    actual: Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1,
 //    baseline: MoveImmediate12ToApsr,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -6604,7 +6606,8 @@ uses(Instruction inst) const {
 
 // MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0:
 //
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {},
@@ -7003,7 +7006,8 @@ uses(Instruction inst) const {
 
 // NOP_cccc0011001000001111000000000000_case_0:
 //
-//   {arch: ['v6K', 'v6T2'],
+//   {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
+//    arch: ['v6K', 'v6T2'],
 //    baseline: CondDecoder,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -9771,7 +9775,8 @@ uses(Instruction inst) const {
 
 // SEV_cccc0011001000001111000000000100_case_0:
 //
-//   {arch: v6K,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6K,
 //    baseline: Forbidden,
 //    cond: cond(31:28),
 //    constraints: ,

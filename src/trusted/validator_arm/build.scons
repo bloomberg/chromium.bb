@@ -95,6 +95,7 @@ ACTUAL_GEN_TABLES = ["ARMv7",
                      "saturating_addition_and_subtraction",
                      "halfword_multiply_and_multiply_accumulate",
                      "extra_load_store_instructions",
+                     "msr_immediate_and_hints",
                      ]
 
 # The list of tables in armv7.table that should test the automatically

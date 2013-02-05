@@ -5897,7 +5897,8 @@ uses(Instruction inst) const {
 
 // Unnamed_case_0:
 //
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {},

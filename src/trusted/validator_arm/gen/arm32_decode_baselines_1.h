@@ -1297,7 +1297,8 @@ class CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00
 
 // DBG_cccc001100100000111100001111iiii_case_0:
 //
-//   {arch: v7,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v7,
 //    baseline: Forbidden,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -3651,6 +3652,7 @@ class MRS_cccc00010r001111dddd000000000000_case_0
 //
 //   {NZCV: 16,
 //    None: 32,
+//    actual: Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1,
 //    baseline: MoveImmediate12ToApsr,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -3683,7 +3685,8 @@ class MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0
 
 // MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0:
 //
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {},
@@ -3910,7 +3913,8 @@ class MVN_register_shifted_register_cccc0001111s0000ddddssss0tt1mmmm_case_0
 
 // NOP_cccc0011001000001111000000000000_case_0:
 //
-//   {arch: ['v6K', 'v6T2'],
+//   {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
+//    arch: ['v6K', 'v6T2'],
 //    baseline: CondDecoder,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -5523,7 +5527,8 @@ class SETEND_1111000100000001000000i000000000_case_0
 
 // SEV_cccc0011001000001111000000000100_case_0:
 //
-//   {arch: v6K,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6K,
 //    baseline: Forbidden,
 //    cond: cond(31:28),
 //    constraints: ,

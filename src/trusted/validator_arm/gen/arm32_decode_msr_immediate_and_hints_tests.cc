@@ -35,7 +35,7 @@ namespace nacl_arm_test {
 
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000000 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: CondDecoder,
+//    = {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
 //       baseline: CondDecoder,
 //       constraints: ,
 //       defs: {},
@@ -90,7 +90,7 @@ bool CondDecoderTesterCase0
 }
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000001 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: CondDecoder,
+//    = {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
 //       baseline: CondDecoder,
 //       constraints: ,
 //       defs: {},
@@ -145,7 +145,7 @@ bool CondDecoderTesterCase1
 }
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000010 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -205,7 +205,7 @@ bool UnsafeCondDecoderTesterCase2
 }
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000011 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -265,7 +265,7 @@ bool UnsafeCondDecoderTesterCase3
 }
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000100 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -325,7 +325,7 @@ bool UnsafeCondDecoderTesterCase4
 }
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=1111xxxx & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -387,7 +387,7 @@ bool UnsafeCondDecoderTesterCase5
 // op(22)=0 & op1(19:16)=0100 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
-//       actual: MoveImmediate12ToApsr,
+//       actual: Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1,
 //       baseline: MoveImmediate12ToApsr,
 //       constraints: ,
 //       defs: {NZCV
@@ -457,7 +457,7 @@ bool MoveImmediate12ToApsrTesterCase6
 // op(22)=0 & op1(19:16)=1x00 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
-//       actual: MoveImmediate12ToApsr,
+//       actual: Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1,
 //       baseline: MoveImmediate12ToApsr,
 //       constraints: ,
 //       defs: {NZCV
@@ -525,7 +525,7 @@ bool MoveImmediate12ToApsrTesterCase7
 }
 
 // op(22)=0 & op1(19:16)=xx01 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -582,7 +582,7 @@ bool UnsafeCondDecoderTesterCase8
 }
 
 // op(22)=0 & op1(19:16)=xx1x & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -639,7 +639,7 @@ bool UnsafeCondDecoderTesterCase9
 }
 
 // op(22)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -698,7 +698,7 @@ bool UnsafeCondDecoderTesterCase10
 // to the corresponding instance in the generated DecoderState.
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000000 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: CondDecoder,
+//    = {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
 //       baseline: CondDecoder,
 //       constraints: ,
 //       defs: {},
@@ -715,7 +715,7 @@ class CondDecoderTester_Case0
 };
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000001 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: CondDecoder,
+//    = {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
 //       baseline: CondDecoder,
 //       constraints: ,
 //       defs: {},
@@ -732,7 +732,7 @@ class CondDecoderTester_Case1
 };
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000010 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -751,7 +751,7 @@ class ForbiddenTester_Case2
 };
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000011 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -770,7 +770,7 @@ class ForbiddenTester_Case3
 };
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000100 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -789,7 +789,7 @@ class ForbiddenTester_Case4
 };
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=1111xxxx & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -810,7 +810,7 @@ class ForbiddenTester_Case5
 // op(22)=0 & op1(19:16)=0100 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
-//       actual: MoveImmediate12ToApsr,
+//       actual: Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1,
 //       baseline: MoveImmediate12ToApsr,
 //       constraints: ,
 //       defs: {NZCV
@@ -835,7 +835,7 @@ class MoveImmediate12ToApsrTester_Case6
 // op(22)=0 & op1(19:16)=1x00 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
-//       actual: MoveImmediate12ToApsr,
+//       actual: Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1,
 //       baseline: MoveImmediate12ToApsr,
 //       constraints: ,
 //       defs: {NZCV
@@ -858,7 +858,7 @@ class MoveImmediate12ToApsrTester_Case7
 };
 
 // op(22)=0 & op1(19:16)=xx01 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -877,7 +877,7 @@ class ForbiddenTester_Case8
 };
 
 // op(22)=0 & op1(19:16)=xx1x & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -896,7 +896,7 @@ class ForbiddenTester_Case9
 };
 
 // op(22)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -924,7 +924,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // decoder tables.
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000000 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: CondDecoder,
+//    = {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
 //       baseline: CondDecoder,
 //       constraints: ,
 //       defs: {},
@@ -934,12 +934,14 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        CondDecoderTester_Case0_TestCase0) {
-  CondDecoderTester_Case0 tester;
-  tester.Test("cccc0011001000001111000000000000");
+  CondDecoderTester_Case0 baseline_tester;
+  NamedActual_NOP_cccc0011001000001111000000000000_case_1_NOP actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0011001000001111000000000000");
 }
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000001 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: CondDecoder,
+//    = {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
 //       baseline: CondDecoder,
 //       constraints: ,
 //       defs: {},
@@ -949,12 +951,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        CondDecoderTester_Case1_TestCase1) {
-  CondDecoderTester_Case1 tester;
-  tester.Test("cccc0011001000001111000000000001");
+  CondDecoderTester_Case1 baseline_tester;
+  NamedActual_NOP_cccc0011001000001111000000000000_case_1_YIELD actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0011001000001111000000000001");
 }
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000010 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -966,12 +970,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenTester_Case2_TestCase2) {
-  ForbiddenTester_Case2 tester;
-  tester.Test("cccc0011001000001111000000000010");
+  ForbiddenTester_Case2 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_WFE actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0011001000001111000000000010");
 }
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000011 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -983,12 +989,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenTester_Case3_TestCase3) {
-  ForbiddenTester_Case3 tester;
-  tester.Test("cccc0011001000001111000000000011");
+  ForbiddenTester_Case3 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_WFI actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0011001000001111000000000011");
 }
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000100 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -1000,12 +1008,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenTester_Case4_TestCase4) {
-  ForbiddenTester_Case4 tester;
-  tester.Test("cccc0011001000001111000000000100");
+  ForbiddenTester_Case4 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_SEV actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0011001000001111000000000100");
 }
 
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=1111xxxx & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -1017,14 +1027,16 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenTester_Case5_TestCase5) {
-  ForbiddenTester_Case5 tester;
-  tester.Test("cccc001100100000111100001111iiii");
+  ForbiddenTester_Case5 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_DBG actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc001100100000111100001111iiii");
 }
 
 // op(22)=0 & op1(19:16)=0100 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
-//       actual: MoveImmediate12ToApsr,
+//       actual: Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1,
 //       baseline: MoveImmediate12ToApsr,
 //       constraints: ,
 //       defs: {NZCV
@@ -1040,14 +1052,16 @@ TEST_F(Arm32DecoderStateTests,
 //       write_nzcvq: mask(1)=1}
 TEST_F(Arm32DecoderStateTests,
        MoveImmediate12ToApsrTester_Case6_TestCase6) {
-  MoveImmediate12ToApsrTester_Case6 tester;
-  tester.Test("cccc00110010mm001111iiiiiiiiiiii");
+  MoveImmediate12ToApsrTester_Case6 baseline_tester;
+  NamedActual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1_MSR_immediate actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00110010mm001111iiiiiiiiiiii");
 }
 
 // op(22)=0 & op1(19:16)=1x00 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
-//       actual: MoveImmediate12ToApsr,
+//       actual: Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1,
 //       baseline: MoveImmediate12ToApsr,
 //       constraints: ,
 //       defs: {NZCV
@@ -1063,12 +1077,14 @@ TEST_F(Arm32DecoderStateTests,
 //       write_nzcvq: mask(1)=1}
 TEST_F(Arm32DecoderStateTests,
        MoveImmediate12ToApsrTester_Case7_TestCase7) {
-  MoveImmediate12ToApsrTester_Case7 tester;
-  tester.Test("cccc00110010mm001111iiiiiiiiiiii");
+  MoveImmediate12ToApsrTester_Case7 baseline_tester;
+  NamedActual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1_MSR_immediate actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00110010mm001111iiiiiiiiiiii");
 }
 
 // op(22)=0 & op1(19:16)=xx01 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -1080,12 +1096,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenTester_Case8_TestCase8) {
-  ForbiddenTester_Case8 tester;
-  tester.Test("cccc00110r10mmmm1111iiiiiiiiiiii");
+  ForbiddenTester_Case8 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_MSR_immediate actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00110r10mmmm1111iiiiiiiiiiii");
 }
 
 // op(22)=0 & op1(19:16)=xx1x & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -1097,12 +1115,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenTester_Case9_TestCase9) {
-  ForbiddenTester_Case9 tester;
-  tester.Test("cccc00110r10mmmm1111iiiiiiiiiiii");
+  ForbiddenTester_Case9 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_MSR_immediate actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00110r10mmmm1111iiiiiiiiiiii");
 }
 
 // op(22)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -1114,8 +1134,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenTester_Case10_TestCase10) {
-  ForbiddenTester_Case10 tester;
-  tester.Test("cccc00110r10mmmm1111iiiiiiiiiiii");
+  ForbiddenTester_Case10 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_MSR_immediate actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00110r10mmmm1111iiiiiiiiiiii");
 }
 
 }  // namespace nacl_arm_test

@@ -21,6 +21,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1_instance_()
   , Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1_instance_()
   , Actual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1_instance_()
+  , Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_()
   , Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1_instance_()
   , Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1_instance_()
   , Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1_instance_()
@@ -35,7 +36,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1_instance_()
   , Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1_instance_()
   , Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1_instance_()
+  , Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1_instance_()
   , Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1_instance_()
+  , Actual_NOP_cccc0011001000001111000000000000_case_1_instance_()
   , Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1_instance_()
   , Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_instance_()
   , Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1_instance_()
@@ -59,7 +62,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , BranchImmediate24_instance_()
   , BranchToRegister_instance_()
   , BreakPointAndConstantPoolHead_instance_()
-  , CondDecoder_instance_()
   , CondVfpOp_instance_()
   , DataBarrier_instance_()
   , Deprecated_instance_()
@@ -76,7 +78,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , LoadVectorRegister_instance_()
   , LoadVectorRegisterList_instance_()
   , MoveDoubleVfpRegisterOp_instance_()
-  , MoveImmediate12ToApsr_instance_()
   , MoveVfpRegisterOp_instance_()
   , MoveVfpRegisterOpWithTypeSel_instance_()
   , PermanentlyUndefined_instance_()
@@ -1796,7 +1797,7 @@ const ClassDecoder& Arm32DecoderState::decode_msr_immediate_and_hints(
           0x00000004 /* op2(7:0)=00000100 */ &&
       (inst.Bits() & 0x0000FF00)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00400000)  ==
@@ -1807,7 +1808,7 @@ const ClassDecoder& Arm32DecoderState::decode_msr_immediate_and_hints(
           0x00000000 /* op2(7:0)=0000000x */ &&
       (inst.Bits() & 0x0000FF00)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx */) {
-    return CondDecoder_instance_;
+    return Actual_NOP_cccc0011001000001111000000000000_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00400000)  ==
@@ -1818,7 +1819,7 @@ const ClassDecoder& Arm32DecoderState::decode_msr_immediate_and_hints(
           0x00000002 /* op2(7:0)=0000001x */ &&
       (inst.Bits() & 0x0000FF00)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00400000)  ==
@@ -1829,7 +1830,7 @@ const ClassDecoder& Arm32DecoderState::decode_msr_immediate_and_hints(
           0x000000F0 /* op2(7:0)=1111xxxx */ &&
       (inst.Bits() & 0x0000FF00)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00400000)  ==
@@ -1838,7 +1839,7 @@ const ClassDecoder& Arm32DecoderState::decode_msr_immediate_and_hints(
           0x00040000 /* op1(19:16)=0100 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return MoveImmediate12ToApsr_instance_;
+    return Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00400000)  ==
@@ -1847,7 +1848,7 @@ const ClassDecoder& Arm32DecoderState::decode_msr_immediate_and_hints(
           0x00080000 /* op1(19:16)=1x00 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return MoveImmediate12ToApsr_instance_;
+    return Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00400000)  ==
@@ -1856,7 +1857,7 @@ const ClassDecoder& Arm32DecoderState::decode_msr_immediate_and_hints(
           0x00010000 /* op1(19:16)=xx01 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00400000)  ==
@@ -1865,18 +1866,18 @@ const ClassDecoder& Arm32DecoderState::decode_msr_immediate_and_hints(
           0x00020000 /* op1(19:16)=xx1x */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00400000)  ==
           0x00400000 /* op(22)=1 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if (true) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...

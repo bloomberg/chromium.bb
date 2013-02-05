@@ -8332,7 +8332,8 @@ class VZIP_111100111d11ss10dddd00011qm0mmmm_case_0
 
 // WFE_cccc0011001000001111000000000010_case_0:
 //
-//   {arch: v6K,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6K,
 //    baseline: Forbidden,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -8359,7 +8360,8 @@ class WFE_cccc0011001000001111000000000010_case_0
 
 // WFI_cccc0011001000001111000000000011_case_0:
 //
-//   {arch: v6K,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6K,
 //    baseline: Forbidden,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -8386,7 +8388,8 @@ class WFI_cccc0011001000001111000000000011_case_0
 
 // YIELD_cccc0011001000001111000000000001_case_0:
 //
-//   {arch: v6K,
+//   {actual: Actual_NOP_cccc0011001000001111000000000000_case_1,
+//    arch: v6K,
 //    baseline: CondDecoder,
 //    cond: cond(31:28),
 //    constraints: ,
