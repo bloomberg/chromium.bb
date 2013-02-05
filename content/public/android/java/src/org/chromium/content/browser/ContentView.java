@@ -821,6 +821,13 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
         mContentViewCore.stopCurrentAccessibilityNotifications();
     }
 
+    /**
+     * Inform WebKit that Fullscreen mode has been exited by the user.
+     */
+    public void exitFullscreen() {
+        mContentViewCore.exitFullscreen();
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     //              Start Implementation of ContentViewCore.InternalAccessDelegate               //
     ///////////////////////////////////////////////////////////////////////////////////////////////

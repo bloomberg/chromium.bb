@@ -2373,6 +2373,13 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     }
 
     /**
+     * Inform WebKit that Fullscreen mode has been exited by the user.
+     */
+    public void exitFullscreen() {
+        nativeExitFullscreen(mNativeContentViewCore);
+    }
+
+    /**
      * @See android.webkit.WebView#pageDown(boolean)
      */
     public boolean pageDown(boolean bottom) {
@@ -2599,4 +2606,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private native void nativeSetSize(int nativeContentViewCoreImpl, int width, int height);
 
     private native boolean nativeIsRenderWidgetHostViewReady(int nativeContentViewCoreImpl);
+
+    private native void nativeExitFullscreen(int nativeContentViewCoreImpl);
 }

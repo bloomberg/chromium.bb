@@ -205,6 +205,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                                         jobject jbitmap);
   void SetSize(JNIEnv* env, jobject obj, jint width, jint height);
   jboolean IsRenderWidgetHostViewReady(JNIEnv* env, jobject obj);
+  void ExitFullscreen(JNIEnv* env, jobject obj);
 
   void ShowInterstitialPage(JNIEnv* env,
                             jobject obj,
