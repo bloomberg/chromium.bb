@@ -337,12 +337,7 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   canvas->DrawImageInt(*toolbar_left, left_x, y);
 
   // Draw center edge.
-  int edge_y = y;
-    // TODO(beng): figure out why this is necessary to render correctly.
-#if defined(USE_AURA)
-  edge_y -= 2;
-#endif
-  canvas->TileImageInt(*toolbar_center, left_x + toolbar_left->width(), edge_y,
+  canvas->TileImageInt(*toolbar_center, left_x + toolbar_left->width(), y,
       right_x - (left_x + toolbar_left->width()), toolbar_center->height());
 
   // Right edge.

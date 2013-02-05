@@ -7,7 +7,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/theme_image_mapper.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -22,8 +24,8 @@ ThemeBackground::ThemeBackground(BrowserView* browser_view)
 void ThemeBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   gfx::ImageSkia* background;
 
-  // Never theme app and popup windows.
   if (!browser_view_->IsBrowserTypeNormal()) {
+    // Never theme app and popup windows.
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     if (browser_view_->IsActive())
       background = rb.GetImageSkiaNamed(IDR_FRAME);
@@ -31,7 +33,8 @@ void ThemeBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
       background = rb.GetImageSkiaNamed(IDR_THEME_FRAME_INACTIVE);
   } else {
     Profile* profile = browser_view_->browser()->profile();
-    ui::ThemeProvider* theme = ThemeServiceFactory::GetForProfile(profile);
+    ui::ThemeProvider* theme = view->GetThemeProvider();
+    DCHECK(theme);  // Should be parented to a Widget when painting.
 
     if (browser_view_->IsActive()) {
       background = theme->GetImageSkiaNamed(
@@ -44,10 +47,10 @@ void ThemeBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
     }
   }
 
-  gfx::Point origin(0, 0);
+  gfx::Point origin;
   views::View::ConvertPointToTarget(view,
-                                  browser_view_->frame()->GetFrameView(),
-                                  &origin);
+                                    browser_view_->frame()->GetFrameView(),
+                                    &origin);
   canvas->TileImageInt(*background,
                        origin.x(), origin.y(), 0, 0,
                        view->width(), view->height());

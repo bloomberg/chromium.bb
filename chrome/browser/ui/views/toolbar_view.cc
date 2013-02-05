@@ -85,13 +85,11 @@ const int kRightEdgeSpacing = 2;
 // The buttons to the left of the omnibox are close together.
 const int kButtonSpacing = 0;
 
-#if defined(USE_ASH)
 // Ash doesn't use a rounded content area and its top edge has an extra shadow.
-const int kContentShadowHeight = 2;
-#else
-// Windows uses a rounded content area with no shadow in the assets.
+const int kContentShadowHeightAsh = 2;
+
+// Non-ash uses a rounded content area with no shadow in the assets.
 const int kContentShadowHeight = 0;
-#endif
 
 const int kPopupTopSpacingNonGlass = 3;
 const int kPopupBottomSpacingNonGlass = 2;
@@ -620,15 +618,10 @@ gfx::Size ToolbarView::GetPreferredSize() {
         location_bar_->GetPreferredSize().width() +
         browser_actions_->GetPreferredSize().width() +
         app_menu_->GetPreferredSize().width() + kRightEdgeSpacing;
-
-    CR_DEFINE_STATIC_LOCAL(gfx::ImageSkia, normal_background, ());
-    if (normal_background.isNull()) {
-      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      normal_background = *rb.GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER);
-    }
-
+    gfx::ImageSkia* normal_background =
+        GetThemeProvider()->GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER);
     return gfx::Size(min_width,
-                     normal_background.height() - kContentShadowHeight);
+                     normal_background->height() - content_shadow_height());
   }
 
   int vertical_spacing = PopupTopSpacing() +
@@ -723,7 +716,7 @@ void ToolbarView::Layout() {
 bool ToolbarView::HitTestRect(const gfx::Rect& rect) const {
   // Don't take hits in our top shadow edge.  Let them fall through to the
   // tab strip above us.
-  if (rect.y() < kContentShadowHeight)
+  if (rect.y() < content_shadow_height())
     return false;
   // Otherwise let our superclass take care of it.
   return AccessiblePaneView::HitTestRect(rect);
@@ -910,4 +903,9 @@ void ToolbarView::UpdateAppMenuState() {
 void ToolbarView::OnShowHomeButtonChanged() {
   Layout();
   SchedulePaint();
+}
+
+int ToolbarView::content_shadow_height() const {
+  return browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH ?
+      kContentShadowHeightAsh : kContentShadowHeight;
 }

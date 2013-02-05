@@ -14,6 +14,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/theme_image_mapper.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/navigation_controller.h"
@@ -433,7 +434,10 @@ void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   frame_background_->set_frame_color(ThemeService::GetDefaultColor(
       ThemeService::COLOR_FRAME));
-  gfx::ImageSkia* theme_frame = rb.GetImageSkiaNamed(IDR_THEME_FRAME);
+  chrome::HostDesktopType desktop_type =
+      chrome::GetHostDesktopTypeForNativeView(GetWidget()->GetNativeView());
+  gfx::ImageSkia* theme_frame = rb.GetImageSkiaNamed(
+      chrome::MapThemeImage(desktop_type, IDR_THEME_FRAME));
   frame_background_->set_theme_image(theme_frame);
   frame_background_->set_theme_overlay_image(NULL);
   frame_background_->set_top_area_height(theme_frame->height());

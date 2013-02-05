@@ -42,7 +42,9 @@ BrowserFrame::BrowserFrame(BrowserView* browser_view)
     : native_browser_frame_(NULL),
       root_view_(NULL),
       browser_frame_view_(NULL),
-      browser_view_(browser_view) {
+      browser_view_(browser_view),
+      theme_provider_(ThemeServiceFactory::GetForProfile(
+                          browser_view_->browser()->profile())) {
   browser_view_->set_frame(this);
   set_is_secondary_widget(false);
   // Don't focus anything on creation, selecting a tab will set the focus.
@@ -84,6 +86,11 @@ void BrowserFrame::InitBrowserFrame() {
     DCHECK(non_client_view());
     non_client_view()->set_context_menu_controller(this);
   }
+}
+
+void BrowserFrame::SetThemeProvider(scoped_ptr<ui::ThemeProvider> provider) {
+  owned_theme_provider_ = provider.Pass();
+  theme_provider_ = owned_theme_provider_.get();
 }
 
 int BrowserFrame::GetMinimizeButtonOffset() const {
@@ -140,8 +147,7 @@ bool BrowserFrame::GetAccelerator(int command_id,
 }
 
 ui::ThemeProvider* BrowserFrame::GetThemeProvider() const {
-  return ThemeServiceFactory::GetForProfile(
-      browser_view_->browser()->profile());
+  return theme_provider_;
 }
 
 void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {

@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/tabs/tab_resources.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
+#include "chrome/browser/ui/views/theme_image_mapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -170,23 +171,16 @@ static const int kTouchWidth = 120;
 
 static const int kToolbarOverlap = 1;
 static const int kFaviconTitleSpacing = 4;
-#if defined(USE_ASH)
 // Additional vertical offset for title text relative to top of tab.
 // Ash text rendering may be different than Windows.
-// TODO(jamescook): Make this Chrome OS or Linux only?
-static const int kTitleTextOffsetY = 1;
-#else
+static const int kTitleTextOffsetYAsh = 1;
 static const int kTitleTextOffsetY = 0;
-#endif
 static const int kTitleCloseButtonSpacing = 3;
 static const int kStandardTitleWidth = 175;
-#if defined(USE_ASH)
 // Additional vertical offset for close button relative to top of tab.
 // Ash needs this to match the text vertical position.
-static const int kCloseButtonVertFuzz = 1;
-#else
+static const int kCloseButtonVertFuzzAsh = 1;
 static const int kCloseButtonVertFuzz = 0;
-#endif
 // Additional horizontal offset for close button relative to title text.
 static const int kCloseButtonHorzFuzz = 3;
 
@@ -269,6 +263,13 @@ void DrawIconCenter(gfx::Canvas* canvas,
                        dst_x, dst_y, icon_width, icon_height,
                        filter, paint);
   canvas->Restore();
+}
+
+chrome::HostDesktopType GetHostDesktopType(views::View* view) {
+  // Widget is NULL when tabs are detached.
+  views::Widget* widget = view->GetWidget();
+  return chrome::GetHostDesktopTypeForNativeView(
+      widget ? widget->GetNativeView() : NULL);
 }
 
 }  // namespace
@@ -744,8 +745,12 @@ void Tab::Layout() {
 
   // Size the Close button.
   showing_close_button_ = ShouldShowCloseBox();
+  const bool is_host_desktop_type_ash =
+      GetHostDesktopType(this) == chrome::HOST_DESKTOP_TYPE_ASH;
   if (showing_close_button_) {
-    int close_button_top = top_padding() + kCloseButtonVertFuzz +
+    const int close_button_vert_fuzz = is_host_desktop_type_ash ?
+        kCloseButtonVertFuzzAsh : kCloseButtonVertFuzz;
+    int close_button_top = top_padding() + close_button_vert_fuzz +
         (content_height - close_button_size.height()) / 2;
     // If the ratio of the close button size to tab width exceeds the maximum.
     // The close button should be as large as possible so that there is a larger
@@ -771,8 +776,10 @@ void Tab::Layout() {
     close_button_->SetVisible(false);
   }
 
+  const int title_text_offset = is_host_desktop_type_ash ?
+      kTitleTextOffsetYAsh : kTitleTextOffsetY;
   int title_left = favicon_bounds_.right() + kFaviconTitleSpacing;
-  int title_top = top_padding() + kTitleTextOffsetY +
+  int title_top = top_padding() + title_text_offset +
       (content_height - font_height_) / 2;
   // Size the Title text to fill the remaining space.
   if (!data().mini || width() >= kMiniTabRendererAsNormalTabWidth) {
@@ -1147,7 +1154,8 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(
 
 void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   int tab_id;
-  if (GetWidget() && GetWidget()->GetTopLevelWidget()->ShouldUseNativeFrame()) {
+  views::Widget* widget = GetWidget();
+  if (widget && widget->GetTopLevelWidget()->ShouldUseNativeFrame()) {
     tab_id = IDR_THEME_TAB_BACKGROUND_V;
   } else if (data().incognito) {
     tab_id = IDR_THEME_TAB_BACKGROUND_INCOGNITO;
@@ -1158,6 +1166,9 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   } else {
     tab_id = IDR_THEME_TAB_BACKGROUND;
   }
+  // Explicitly map the id so we cache correctly.
+  const chrome::HostDesktopType host_desktop_type = GetHostDesktopType(this);
+  tab_id = chrome::MapThemeImage(host_desktop_type, tab_id);
 
   const bool can_cache = !GetThemeProvider()->HasCustomImage(tab_id) &&
       !hover_controller_.ShouldDraw();

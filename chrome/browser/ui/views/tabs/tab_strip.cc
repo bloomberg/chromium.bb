@@ -69,11 +69,9 @@ static const int kNativeFrameInactiveTabAlpha = 200;
 // even more transparent.
 static const int kNativeFrameInactiveTabAlphaMultiSelection = 150;
 
-#if defined(USE_ASH)
-static const int kInactiveTabAndNewTabButtonAlpha = 230;
-#else
+// Alpha applied to all elements save the selected tabs.
+static const int kInactiveTabAndNewTabButtonAlphaAsh = 230;
 static const int kInactiveTabAndNewTabButtonAlpha = 255;
-#endif
 
 // Inverse ratio of the width of a tab edge to the width of the tab. When
 // hovering over the left or right edge of a tab, the drop indicator will
@@ -1229,8 +1227,15 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   const bool stacking = (layout_type_ == TAB_STRIP_LAYOUT_STACKED) ||
       IsStackingDraggedTabs();
 
-  if (kInactiveTabAndNewTabButtonAlpha < 255)
-    canvas->SaveLayerAlpha(kInactiveTabAndNewTabButtonAlpha);
+  const chrome::HostDesktopType host_desktop_type =
+      chrome::GetHostDesktopTypeForNativeView(GetWidget()->GetNativeView());
+  const int inactive_tab_alpha =
+      host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH ?
+      kInactiveTabAndNewTabButtonAlphaAsh :
+      kInactiveTabAndNewTabButtonAlpha;
+
+  if (inactive_tab_alpha < 255)
+    canvas->SaveLayerAlpha(inactive_tab_alpha);
 
   PaintClosingTabs(canvas, tab_count());
 
@@ -1272,7 +1277,7 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
       tab->Paint(canvas);
     }
   }
-  if (kInactiveTabAndNewTabButtonAlpha < 255)
+  if (inactive_tab_alpha < 255)
     canvas->Restore();
 
   if (GetWidget()->ShouldUseNativeFrame()) {
@@ -1300,10 +1305,10 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
     active_tab->Paint(canvas);
 
   // Paint the New Tab button.
-  if (kInactiveTabAndNewTabButtonAlpha < 255)
-    canvas->SaveLayerAlpha(kInactiveTabAndNewTabButtonAlpha);
+  if (inactive_tab_alpha < 255)
+    canvas->SaveLayerAlpha(inactive_tab_alpha);
   newtab_button_->Paint(canvas);
-  if (kInactiveTabAndNewTabButtonAlpha < 255)
+  if (inactive_tab_alpha < 255)
     canvas->Restore();
 
   // And the dragged tabs.

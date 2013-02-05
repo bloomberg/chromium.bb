@@ -269,7 +269,8 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
   } else {
     DetachableToolbarView::PaintBackgroundAttachedMode(canvas, host_view_,
         browser_view_->OffsetPointForToolbarBackgroundImage(
-            gfx::Point(host_view_->GetMirroredX(), host_view_->y())));
+            gfx::Point(host_view_->GetMirroredX(), host_view_->y())),
+        browser_->host_desktop_type());
     if (host_view_->height() >= toolbar_overlap)
       DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
   }
@@ -551,10 +552,7 @@ WebContents* BrowserView::GetActiveWebContents() const {
 }
 
 gfx::ImageSkia BrowserView::GetOTRAvatarIcon() const {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::ImageSkia* otr_avatar =
-      rb.GetNativeImageNamed(GetOTRIconResourceID()).ToImageSkia();
-  return *otr_avatar;
+  return *GetThemeProvider()->GetImageSkiaNamed(GetOTRIconResourceID());
 }
 
 bool BrowserView::IsPositionInWindowCaption(const gfx::Point& point) {

@@ -195,6 +195,8 @@ class ToolbarView : public views::AccessiblePaneView,
 
   void OnShowHomeButtonChanged();
 
+  int content_shadow_height() const;
+
   // The model that contains the security level, text, icon to display...
   ToolbarModel* model_;
 
