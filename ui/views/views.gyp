@@ -224,11 +224,10 @@
         'controls/textfield/textfield_views_model.h',
         'controls/throbber.cc',
         'controls/throbber.h',
+        'controls/tree/tree_view.cc',
         'controls/tree/tree_view.h',
         'controls/tree/tree_view_controller.cc',
         'controls/tree/tree_view_controller.h',
-        'controls/tree/tree_view_views.cc',
-        'controls/tree/tree_view_views.h',
         'corewm/base_focus_rules.cc',
         'corewm/base_focus_rules.h',
         'corewm/compound_event_filter.cc',
@@ -657,7 +656,7 @@
         'controls/table/test_table_model.h',
         'controls/textfield/native_textfield_views_unittest.cc',
         'controls/textfield/textfield_views_model_unittest.cc',
-        'controls/tree/tree_view_views_unittest.cc',
+        'controls/tree/tree_view_unittest.cc',
         'corewm/compound_event_filter_unittest.cc',
         'corewm/focus_controller_unittest.cc',
         'corewm/image_grid_unittest.cc',
@@ -700,7 +699,6 @@
         ['use_aura==0 and OS=="win"', {
           'sources/': [
             ['exclude', 'controls/combobox/native_combobox_views_unittest.cc'],
-            ['exclude', 'controls/tree/tree_view_views_unittest.cc'],
           ],
         }],
         [ 'use_aura==1', {
