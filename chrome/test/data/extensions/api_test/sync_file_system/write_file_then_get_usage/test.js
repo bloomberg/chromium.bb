@@ -9,7 +9,7 @@ var testData = "12345";
 
 var testStep = [
   function () {
-    chrome.syncFileSystem.requestFileSystem('drive', testStep.shift());
+    chrome.syncFileSystem.requestFileSystem(testStep.shift());
   },
   // Create empty file.
   function(fs) {

@@ -39,7 +39,6 @@ const char* const kDriveCloudService =
     sync_file_system::DriveFileSyncService::kServiceName;
 
 // Error messages.
-const char kNotSupportedService[] = "Cloud service %s not supported.";
 const char kFileError[] = "File error %d.";
 const char kQuotaError[] = "Quota error %d.";
 
@@ -72,15 +71,6 @@ sync_file_system::SyncFileSystemService* GetSyncFileSystemService(
   return service;
 }
 
-bool IsValidServiceName(const std::string& service_name, std::string* error) {
-  DCHECK(error);
-  if (service_name != std::string(kDriveCloudService)) {
-    *error = base::StringPrintf(kNotSupportedService, service_name.c_str());
-    return false;
-  }
-  return true;
-}
-
 }  // namespace
 
 bool SyncFileSystemDeleteFileSystemFunction::RunImpl() {
@@ -93,9 +83,6 @@ bool SyncFileSystemDeleteFileSystemFunction::RunImpl() {
           render_view_host()->GetSiteInstance())->GetFileSystemContext();
   fileapi::FileSystemURL file_system_url(
       file_system_context->CrackURL(GURL(url)));
-
-  if (!IsValidServiceName(file_system_url.filesystem_id(), &error_))
-    return false;
 
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -135,12 +122,12 @@ void SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem(
 }
 
 bool SyncFileSystemRequestFileSystemFunction::RunImpl() {
-  std::string service_name;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &service_name));
-  if (!IsValidServiceName(service_name, &error_)) {
-    return false;
-  }
-
+  // Please note that Google Drive is the only supported cloud backend at this
+  // time. However other functions which have already been written to
+  // accommodate different service names are being left as is to allow easier
+  // future support for other backend services. (http://crbug.com/172562).
+  const std::string service_name = sync_file_system::DriveFileSyncService::
+      kServiceName;
   // Initializes sync context for this extension and continue to open
   // a new file system.
   GetSyncFileSystemService(profile())->
@@ -218,9 +205,6 @@ bool SyncFileSystemGetUsageAndQuotaFunction::RunImpl() {
           render_view_host()->GetSiteInstance())->GetFileSystemContext();
   fileapi::FileSystemURL file_system_url(
       file_system_context->CrackURL(GURL(url)));
-
-  if (!IsValidServiceName(file_system_url.filesystem_id(), &error_))
-    return false;
 
   scoped_refptr<quota::QuotaManager> quota_manager =
       BrowserContext::GetStoragePartition(

@@ -4,7 +4,7 @@
 
 function setupListener() {
   chrome.syncFileSystem.onFileSynced.addListener(fileSyncEventReceived);
-  chrome.syncFileSystem.requestFileSystem('drive', function() {});
+  chrome.syncFileSystem.requestFileSystem(function() {});
 }
 
 function fileSyncEventReceived(file_entry_path, sync_operation_result) {

@@ -4,7 +4,7 @@
 
 function setupListener() {
   chrome.syncFileSystem.onSyncStateChanged.addListener(checkEventReceived);
-  chrome.syncFileSystem.requestFileSystem('drive', function() {});
+  chrome.syncFileSystem.requestFileSystem(function() {});
 }
 
 function checkEventReceived(syncState) {

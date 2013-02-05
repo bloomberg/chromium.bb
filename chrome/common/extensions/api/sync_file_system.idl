@@ -70,11 +70,12 @@ namespace syncFileSystem {
   callback GetFileSyncStatusCallback = void (FileSyncStatus status);
 
   interface Functions {
-    // Get a sync file system backed by |serviceName|.
-    // Calling this multiple times from the same app with the same |serviceName|
-    // will return the same handle to the same file system.
-    static void requestFileSystem(DOMString serviceName,
-                                  GetFileSystemCallback callback);
+    // Returns a syncable filesystem backed by Google Drive. 
+    // The returned DOMFileSystem instance can be operated on in the same way as
+    // the Temporary and Persistant file systems.
+    // (http://www.w3.org/TR/file-system-api/). Calling this multiple times from
+    // the same app will return the same handle to the same file system. 
+    static void requestFileSystem(GetFileSystemCallback callback);
 
     // Get usage and quota in bytes for sync file system with |serviceName|.
     static void getUsageAndQuota([instanceOf=DOMFileSystem] object fileSystem,

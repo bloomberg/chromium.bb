@@ -4,7 +4,7 @@
 
 var testStep = [
   function () {
-    chrome.syncFileSystem.requestFileSystem('drive', testStep.shift());
+    chrome.syncFileSystem.requestFileSystem(testStep.shift());
   },
   function(fs) {
     chrome.syncFileSystem.getUsageAndQuota(fs, testStep.shift());

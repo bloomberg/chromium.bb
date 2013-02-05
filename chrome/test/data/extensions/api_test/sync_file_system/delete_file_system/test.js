@@ -7,7 +7,7 @@ var fileSystem;
 var testStep = [
   // First get the file system.
   function () {
-    chrome.syncFileSystem.requestFileSystem('drive', testStep.shift());
+    chrome.syncFileSystem.requestFileSystem(testStep.shift());
   },
   // Add a couple of test files.
   function(fs) {
