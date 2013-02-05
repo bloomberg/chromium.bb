@@ -104,7 +104,10 @@ ACTUAL_GEN_TABLES = ["ARMv7",
 # generated baseline decoders. This list is used to allow us to incrementally
 # switch tables over to using automatically generated baselines, as they
 # pass the appropriate tests.
-BASELINE_TEST_TABLES = ["data_processing_register"]
+BASELINE_TEST_TABLES = [
+  "data_processing_and_miscellaneous_instructions",
+  "data_processing_register",
+  ]
 
 # The separators to use for splitting up automatically generated actual
 # classes.

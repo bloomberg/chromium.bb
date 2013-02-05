@@ -422,6 +422,62 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc00110100iiiiddddiiiiiiiiiiii");
 }
 
+// op(25)=1 & op1(24:20)=10000
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
+//       baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       dynamic_code_replace_immediates: {imm4, imm12},
+//       fields: [S(20), imm4(19:16), Rd(15:12), imm12(11:0)],
+//       generated_baseline: MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0,
+//       imm12: imm12(11:0),
+//       imm4: imm4(19:16),
+//       pattern: cccc00110000iiiiddddiiiiiiiiiiii,
+//       rule: MOVW,
+//       safety: [Rd(15:12)=1111 => UNPREDICTABLE],
+//       uses: {}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Unary1RegisterImmediateOpDynCodeReplaceTester_Case2_TestCase2) {
+  Unary1RegisterImmediateOpDynCodeReplaceTester_Case2 old_baseline_tester;
+  NamedMOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc00110000iiiiddddiiiiiiiiiiii");
+}
+
+// op(25)=1 & op1(24:20)=10100
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
+//       baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       dynamic_code_replace_immediates: {imm4, imm12},
+//       fields: [S(20), imm4(19:16), Rd(15:12), imm12(11:0)],
+//       generated_baseline: MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0,
+//       imm12: imm12(11:0),
+//       imm4: imm4(19:16),
+//       pattern: cccc00110100iiiiddddiiiiiiiiiiii,
+//       rule: MOVT,
+//       safety: [Rd(15:12)=1111 => UNPREDICTABLE],
+//       uses: {}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Unary1RegisterImmediateOpDynCodeReplaceTester_Case3_TestCase3) {
+  Unary1RegisterImmediateOpDynCodeReplaceTester_Case3 old_baseline_tester;
+  NamedMOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc00110100iiiiddddiiiiiiiiiiii");
+}
+
 }  // namespace nacl_arm_test
 
 int main(int argc, char* argv[]) {
