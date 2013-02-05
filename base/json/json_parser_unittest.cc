@@ -210,9 +210,22 @@ TEST_F(JSONParserTest, ErrorMessages) {
   EXPECT_EQ(0, error_code);
 
   // Test line and column counting
-  const char* big_json = "[\n0,\n1,\n2,\n3,4,5,6 7,\n8,\n9\n]";
-  // error here ---------------------------------^
+  const char big_json[] = "[\n0,\n1,\n2,\n3,4,5,6 7,\n8,\n9\n]";
+  // error here ----------------------------------^
   root.reset(JSONReader::ReadAndReturnError(big_json, JSON_PARSE_RFC,
+                                            &error_code, &error_message));
+  EXPECT_FALSE(root.get());
+  EXPECT_EQ(JSONParser::FormatErrorMessage(5, 10, JSONReader::kSyntaxError),
+            error_message);
+  EXPECT_EQ(JSONReader::JSON_SYNTAX_ERROR, error_code);
+
+  error_code = 0;
+  error_message = "";
+  // Test line and column counting with "\r\n" line ending
+  const char big_json_crlf[] =
+      "[\r\n0,\r\n1,\r\n2,\r\n3,4,5,6 7,\r\n8,\r\n9\r\n]";
+  // error here ----------------------^
+  root.reset(JSONReader::ReadAndReturnError(big_json_crlf, JSON_PARSE_RFC,
                                             &error_code, &error_message));
   EXPECT_FALSE(root.get());
   EXPECT_EQ(JSONParser::FormatErrorMessage(5, 10, JSONReader::kSyntaxError),

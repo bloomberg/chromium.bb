@@ -404,7 +404,9 @@ void JSONParser::EatWhitespaceAndComments() {
       case '\r':
       case '\n':
         index_last_line_ = index_;
-        ++line_number_;
+        // Don't increment line_number_ twice for "\r\n".
+        if (!(*pos_ == '\n' && pos_ > start_pos_ && *(pos_ - 1) == '\r'))
+          ++line_number_;
         // Fall through.
       case ' ':
       case '\t':
