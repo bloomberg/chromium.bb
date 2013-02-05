@@ -174,9 +174,12 @@ body {
   background-color: rgba(18, 18, 18, 0.875);
   border-top: 1px solid rgba(31, 31, 31, 0.875);
   bottom: 0;
+  box-sizing: border-box;
   display: -webkit-box;
   height: 55px;
+  min-width: 800px;
   opacity: 0;
+  padding: 0 8px;
   pointer-events: none;
   position: absolute;
   width: 100%;
@@ -288,7 +291,6 @@ body {
 .gallery .filename-spacer > * {
   -webkit-transition: visibility 0 linear 180ms, all 180ms linear;
   background-color: transparent;
-  left: 10px;
   overflow: hidden;
   position: absolute;
   width: 260px;
@@ -435,7 +437,8 @@ body {
   -webkit-box-flex: 0;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
-  -webkit-transition: opacity 180ms linear;
+  -webkit-transition: opacity 180ms linear,
+                      visibility 0 linear;
   display: -webkit-box;
   height: 100%;
   overflow: hidden;
@@ -443,7 +446,9 @@ body {
 }
 
 .gallery[editing] .toolbar .ribbon {
+  -webkit-transition-delay: 0, 180ms;
   opacity: 0;
+  visibility: hidden;
 }
 
 .gallery .ribbon-image {
@@ -504,37 +509,34 @@ body {
 
 /* Editor buttons */
 
-.gallery .toolbar .edit-bar {
+.gallery .edit-bar-spacer {
+  -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
-  -webkit-transition: opacity 180ms linear, visibility 180ms linear 180ms;
+  -webkit-transition: opacity 180ms linear, visibility 0 linear 180ms;
+  display: -webkit-box;
+  height: 100%;
+  left: 280px;
+  opacity: 0;
+  position: absolute;
+  right: 280px;
+  visibility: hidden;
+}
+
+.gallery .toolbar .edit-main {
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
   color: white;
   display: -webkit-box;
   height: 55px;
-  opacity: 0;
-  overflow: hidden;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  visibility: hidden;
-  width: 100%;
+  overflow: visible;
 }
 
-.gallery[editing] .toolbar .edit-bar {
-  opacity: 1;
-  visibility: visible;
-}
-
-.gallery .edit-main {
-  -webkit-box-orient: horizontal;
-  -webkit-transition: opacity 250ms ease-in-out;
-  display: -webkit-box;
-  opacity: 0;
-}
-
-.gallery[editing] .edit-main {
+.gallery[editing] .edit-bar-spacer {
+  -webkit-transition-delay: 100ms, 100ms;
   opacity: 1.0;
   pointer-events: auto;
+  visibility: visible;
 }
 
 .gallery > .toolbar button {
@@ -543,7 +545,7 @@ body {
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
   background-color: rgba(0, 0, 0, 0);
-  background-position: 5px center;
+  background-position: center;
   background-repeat: no-repeat;
   border: none;
   box-sizing: content-box;
@@ -552,10 +554,33 @@ body {
   display: -webkit-box;
   height: 40px;
   margin: 8px 0 7px 3px;
-  max-width: 90px;
-  min-width: 0;
+  min-width: 40px;  /* Reset. */
   opacity: 0.99;  /* Workaround for http://crosbug.com/21065 */
-  padding: 0 10px 0 35px;
+  padding: 0;
+  position: relative;
+  width: 40px;
+  z-index: 10;
+}
+
+/* By default, labels are hidden. */
+.gallery > .toolbar button span {
+  display: none;
+}
+
+/* Show labels if there is enough space. */
+@media (min-width: 1000px) {
+
+  .gallery .edit-main button {
+    background-position: 5px center;
+    min-width: 0;  /* Reset. */
+    padding: 0 10px 0 35px;
+    width: auto;
+  }
+
+  .gallery > .toolbar button span {
+    display: inline;
+  }
+
 }
 
 .gallery > .toolbar button:hover {
@@ -657,14 +682,6 @@ body {
   display: none;
 }
 
-.gallery > .toolbar > button {
-  background-position: center;
-  padding: 0;
-  position: relative;
-  width: 40px;
-  z-index: 10;
-}
-
 .gallery[mode='slide'] > .toolbar > button.mode {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_mosaic.png') 1x,
@@ -743,12 +760,8 @@ body {
   pointer-events: none;
 }
 
-.gallery > .toolbar > button.share {
-  margin-right: 8px;
-}
-
 .gallery > .toolbar > button.share[disabled] {
-  width: 0;
+  display: none;
 }
 
 /* Secondary toolbar (mode-specific tools) */
@@ -1113,7 +1126,7 @@ body {
   display: -webkit-box;
 }
 
-.gallery[video] > .toolbar .edit-bar {
+.gallery[video] > .toolbar .edit-main {
   display: none;
 }
 

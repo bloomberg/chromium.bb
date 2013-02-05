@@ -190,8 +190,8 @@ SlideMode.prototype.initDom_ = function() {
   this.editButton_.title = this.displayStringFunction_('edit');
   this.editButton_.addEventListener('click', this.toggleEditor.bind(this));
 
-  this.editBar_ = util.createChild(this.toolbar_, 'edit-bar');
-  this.editBarMain_ = util.createChild(this.editBar_, 'edit-main');
+  this.editBarSpacer_ = util.createChild(this.toolbar_, 'edit-bar-spacer');
+  this.editBarMain_ = util.createChild(this.editBarSpacer_, 'edit-main');
 
   this.editBarMode_ = util.createChild(this.container_, 'edit-modal');
   this.editBarModeWrapper_ = util.createChild(

@@ -406,6 +406,7 @@ ImageEditor.prototype.createToolButtons = function() {
     var mode = this.modes_[i];
     mode.bind(this, createButton(mode.name, this.enterMode.bind(this, mode)));
   }
+
   this.undoButton_ = createButton('undo', this.undo.bind(this));
   this.registerAction_('undo');
 
@@ -927,7 +928,10 @@ ImageEditor.Toolbar.prototype.addButton = function(
     name, handler, opt_class) {
   var button = this.create_('button');
   if (opt_class) button.classList.add(opt_class);
-  button.textContent = this.displayStringFunction_(name);
+  var label = this.create_('span');
+  label.textContent = this.displayStringFunction_(name);
+  button.appendChild(label);
+  button.label = this.displayStringFunction_(name);
   button.addEventListener('click', handler, false);
   return this.add(button);
 };
