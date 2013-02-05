@@ -184,7 +184,6 @@ class DriveFileSystemTest : public testing::Test {
  protected:
   DriveFileSystemTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        io_thread_(content::BrowserThread::IO),
         cache_(NULL),
         file_system_(NULL),
         fake_drive_service_(NULL),
@@ -201,8 +200,6 @@ class DriveFileSystemTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    io_thread_.StartIOThread();
-
     profile_.reset(new TestingProfile);
 
     // Allocate and keep a pointer to the mock, and inject it into the
@@ -721,7 +718,6 @@ class DriveFileSystemTest : public testing::Test {
   // The order of the test threads is important, do not change the order.
   // See also content/browser/browser_thread_impl.cc.
   content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
   DriveCache* cache_;

@@ -87,7 +87,6 @@ class DriveSyncClientTest : public testing::Test {
  public:
   DriveSyncClientTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        io_thread_(content::BrowserThread::IO),
         profile_(new TestingProfile),
         mock_file_system_(new StrictMock<MockDriveFileSystem>) {
   }
@@ -283,7 +282,6 @@ class DriveSyncClientTest : public testing::Test {
  protected:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<StrictMock<MockDriveFileSystem> > mock_file_system_;

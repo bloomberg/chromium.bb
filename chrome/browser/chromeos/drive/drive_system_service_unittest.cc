@@ -19,7 +19,6 @@ class DriveSystemServiceTest : public testing::Test {
  public:
   DriveSystemServiceTest() :
       ui_thread_(content::BrowserThread::UI, &message_loop_),
-      io_thread_(content::BrowserThread::IO),
       file_system_(NULL),
       system_service_(NULL) {}
 
@@ -44,7 +43,6 @@ class DriveSystemServiceTest : public testing::Test {
   // The order of the test threads is important, do not change the order.
   // See also content/browser/browser_thread_impl.cc.
   content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
   scoped_ptr<TestingProfile> profile_;
 
   MockDriveFileSystem* file_system_;
