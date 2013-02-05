@@ -244,6 +244,92 @@ void AddInstallAppCommandWorkItems(const InstallerState& installer_state,
   }
 }
 
+// Returns the basic CommandLine to setup.exe for a quick-enable operation on
+// the binaries. This will unconditionally include --multi-install as well as
+// --system-level and/or --verbose-logging as appropriate.  |setup_path| and
+// |new_version| are optional only when the operation is an uninstall.
+CommandLine GetGenericQuickEnableCommand(
+    const InstallerState& installer_state,
+    const InstallationState& machine_state,
+    const FilePath& setup_path,
+    const Version& new_version) {
+  // Only valid for multi-install operations.
+  DCHECK(installer_state.is_multi_install());
+  // Only valid when Chrome Binaries aren't being uninstalled.
+  DCHECK(installer_state.operation() != InstallerState::UNINSTALL ||
+         !installer_state.FindProduct(BrowserDistribution::CHROME_BINARIES));
+  // setup_path and new_version are required when not uninstalling.
+  DCHECK(installer_state.operation() == InstallerState::UNINSTALL ||
+         (!setup_path.empty() && new_version.IsValid()));
+
+  // The path to setup.exe contains the version of the Chrome Binaries, so it
+  // takes a little work to get it right.
+  FilePath binaries_setup_path;
+  if (installer_state.operation() == InstallerState::UNINSTALL) {
+    // One or more products are being uninstalled, but not Chrome Binaries.
+    // Use the path to the currently installed Chrome Binaries' setup.exe.
+    const ProductState* product_state = machine_state.GetProductState(
+        installer_state.system_install(),
+        BrowserDistribution::CHROME_BINARIES);
+    DCHECK(product_state);
+    binaries_setup_path = product_state->uninstall_command().GetProgram();
+  } else {
+    // Chrome Binaries are being installed, updated, or otherwise operated on.
+    // Use the path to the given |setup_path| in the normal location of
+    // multi-install Chrome Binaries of the given |version|.
+    binaries_setup_path = installer_state.GetInstallerDirectory(new_version)
+                              .Append(setup_path.BaseName());
+  }
+  DCHECK(!binaries_setup_path.empty());
+
+  CommandLine cmd_line(binaries_setup_path);
+  cmd_line.AppendSwitch(switches::kMultiInstall);
+  if (installer_state.system_install())
+    cmd_line.AppendSwitch(switches::kSystemLevel);
+  if (installer_state.verbose_logging())
+    cmd_line.AppendSwitch(switches::kVerboseLogging);
+  return cmd_line;
+}
+
+// Adds work items to add the "quick-enable-application-host" command to the
+// multi-installer binaries' version key on the basis of the current operation
+// (represented in |installer_state|) and the pre-existing machine configuration
+// (represented in |machine_state|).
+void AddQuickEnableApplicationLauncherWorkItems(
+    const InstallerState& installer_state,
+    const InstallationState& machine_state,
+    const FilePath& setup_path,
+    const Version& new_version,
+    WorkItemList* work_item_list) {
+  DCHECK(work_item_list);
+
+  bool will_have_chrome_binaries =
+      WillProductBePresentAfterSetup(installer_state, machine_state,
+                                     BrowserDistribution::CHROME_BINARIES);
+
+  // For system-level binaries there is no way to keep the command state in sync
+  // with the installation/uninstallation of the Application Launcher (which is
+  // always at user-level).  So we do not try to remove the command, i.e., it
+  // will always be installed if the Chrome Binaries are installed.
+  if (will_have_chrome_binaries) {
+    string16 cmd_key(GetRegCommandKey(
+                         BrowserDistribution::GetSpecificDistribution(
+                             BrowserDistribution::CHROME_BINARIES),
+                         kCmdQuickEnableApplicationHost));
+    CommandLine cmd_line(GetGenericQuickEnableCommand(installer_state,
+                                                      machine_state,
+                                                      setup_path,
+                                                      new_version));
+    // kMultiInstall, kSystemLevel, and kVerboseLogging were processed above.
+    cmd_line.AppendSwitch(switches::kChromeAppLauncher);
+    cmd_line.AppendSwitch(switches::kEnsureGoogleUpdatePresent);
+    AppCommand cmd(cmd_line.GetCommandLineString());
+    cmd.set_sends_pings(true);
+    cmd.set_is_web_accessible(true);
+    cmd.AddWorkItems(installer_state.root_key(), cmd_key, work_item_list);
+  }
+}
+
 void AddProductSpecificWorkItems(const InstallationState& original_state,
                                  const InstallerState& installer_state,
                                  const FilePath& setup_path,
@@ -266,8 +352,12 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
                             list);
     }
     if (p.is_chrome_binaries()) {
-      AddQueryEULAAcceptanceWorkItems(installer_state, setup_path, new_version,
-                                      p, list);
+      AddQueryEULAAcceptanceWorkItems(
+          installer_state, setup_path, new_version, p, list);
+      AddQuickEnableChromeFrameWorkItems(
+          installer_state, original_state, setup_path, new_version, list);
+      AddQuickEnableApplicationLauncherWorkItems(
+          installer_state, original_state, setup_path, new_version, list);
     }
   }
 }
@@ -468,46 +558,6 @@ bool ProbeCommandExecuteCallback(const string16& command_execute_id,
   }
 
   return true;
-}
-
-CommandLine GetGenericQuickEnableCommand(
-    const InstallerState& installer_state,
-    const InstallationState& machine_state,
-    const FilePath& setup_path,
-    const Version& new_version) {
-  // Only valid for multi-install operations.
-  DCHECK(installer_state.is_multi_install());
-  // Only valid when Chrome Binaries aren't being uninstalled.
-  DCHECK(installer_state.operation() != InstallerState::UNINSTALL ||
-         !installer_state.FindProduct(BrowserDistribution::CHROME_BINARIES));
-
-  // The path to setup.exe contains the version of the Chrome Binaries, so it
-  // takes a little work to get it right.
-  FilePath binaries_setup_path;
-  if (installer_state.operation() == InstallerState::UNINSTALL) {
-    // One or more products are being uninstalled, but not Chrome Binaries.
-    // Use the path to the currently installed Chrome Binaries' setup.exe.
-    const ProductState* product_state = machine_state.GetProductState(
-        installer_state.system_install(),
-        BrowserDistribution::CHROME_BINARIES);
-    DCHECK(product_state);
-    binaries_setup_path = product_state->uninstall_command().GetProgram();
-  } else {
-    // Chrome Binaries are being installed, updated, or otherwise operated on.
-    // Use the path to the given |setup_path| in the normal location of
-    // multi-install Chrome Binaries of the given |version|.
-    binaries_setup_path = installer_state.GetInstallerDirectory(new_version)
-                              .Append(setup_path.BaseName());
-  }
-  DCHECK(!binaries_setup_path.empty());
-
-  CommandLine cmd_line(binaries_setup_path);
-  cmd_line.AppendSwitch(switches::kMultiInstall);
-  if (installer_state.system_install())
-    cmd_line.AppendSwitch(switches::kSystemLevel);
-  if (installer_state.verbose_logging())
-    cmd_line.AppendSwitch(switches::kVerboseLogging);
-  return cmd_line;
 }
 
 void AddUninstallDelegateExecuteWorkItems(HKEY root,
@@ -1134,13 +1184,6 @@ void AddInstallWorkItems(const InstallationState& original_state,
   // Copy over brand, usagestats, and other values.
   AddGoogleUpdateWorkItems(original_state, installer_state, install_list);
 
-  AddQuickEnableApplicationLauncherWorkItems(installer_state, original_state,
-                                             setup_path, new_version,
-                                             install_list);
-
-  AddQuickEnableChromeFrameWorkItems(installer_state, original_state,
-                                     setup_path, new_version, install_list);
-
   // Append the tasks that run after the installation.
   AppendPostInstallTasks(installer_state,
                          setup_path,
@@ -1545,41 +1588,6 @@ void AddQuickEnableChromeFrameWorkItems(const InstallerState& installer_state,
                                                       new_version));
     // kMultiInstall, kSystemLevel, and kVerboseLogging were processed above.
     cmd_line.AppendSwitch(switches::kChromeFrameQuickEnable);
-    AppCommand cmd(cmd_line.GetCommandLineString());
-    cmd.set_sends_pings(true);
-    cmd.set_is_web_accessible(true);
-    cmd.AddWorkItems(installer_state.root_key(), cmd_key, work_item_list);
-  }
-}
-
-void AddQuickEnableApplicationLauncherWorkItems(
-    const InstallerState& installer_state,
-    const InstallationState& machine_state,
-    const FilePath& setup_path,
-    const Version& new_version,
-    WorkItemList* work_item_list) {
-  DCHECK(work_item_list);
-
-  bool will_have_chrome_binaries =
-      WillProductBePresentAfterSetup(installer_state, machine_state,
-                                     BrowserDistribution::CHROME_BINARIES);
-
-  // For system-level binaries there is no way to keep the command state in sync
-  // with the installation/uninstallation of the Application Launcher (which is
-  // always at user-level).  So we do not try to remove the command, i.e.,
-  // it will always be installed if the Chrome Binaries are installed.
-  if (will_have_chrome_binaries) {
-    string16 cmd_key(GetRegCommandKey(
-                         BrowserDistribution::GetSpecificDistribution(
-                             BrowserDistribution::CHROME_BINARIES),
-                         kCmdQuickEnableApplicationHost));
-    CommandLine cmd_line(GetGenericQuickEnableCommand(installer_state,
-                                                      machine_state,
-                                                      setup_path,
-                                                      new_version));
-    // kMultiInstall, kSystemLevel, and kVerboseLogging were processed above.
-    cmd_line.AppendSwitch(switches::kChromeAppLauncher);
-    cmd_line.AppendSwitch(switches::kEnsureGoogleUpdatePresent);
     AppCommand cmd(cmd_line.GetCommandLineString());
     cmd.set_sends_pings(true);
     cmd.set_is_web_accessible(true);

@@ -166,9 +166,6 @@ void ProcessQuickEnableWorkItems(
   AddQuickEnableChromeFrameWorkItems(installer_state, machine_state, FilePath(),
                                      Version(), work_item_list.get());
 
-  AddQuickEnableApplicationLauncherWorkItems(installer_state, machine_state,
-                                             FilePath(), Version(),
-                                             work_item_list.get());
   if (!work_item_list->Do())
     LOG(ERROR) << "Failed to update quick-enable-cf command.";
 }
@@ -1244,10 +1241,11 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
                                 product);
   }
 
-  if (installer_state.is_multi_install())
+  if (installer_state.is_multi_install()) {
     ProcessGoogleUpdateItems(original_state, installer_state, product);
 
-  ProcessQuickEnableWorkItems(installer_state, original_state);
+    ProcessQuickEnableWorkItems(installer_state, original_state);
+  }
 
   // Get the state of the installed product (if any)
   const ProductState* product_state =
