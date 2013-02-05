@@ -56,10 +56,25 @@ crbug.com/170082 platform/chromium/virtual/gpu/fast/canvas/canvas-imageSmoothing
 # gpu-based oval drawing has improved this image
 crbug.com/171664 platform/chromium/virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
 
-# the roll to r7483 caused these minor image differences, the root cause is still TBD
+# the roll to r7483 caused these minor image differences, the root cause was changes to Skia's sorting 
+# algorithm
 crbug.com/173368 svg/batik/text/smallFonts.svg [ ImageOnlyFailure ]
 crbug.com/173368 svg/batik/text/textDecoration.svg [ ImageOnlyFailure ]
 crbug.com/173368 svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
 crbug.com/173368 svg/text/selection-styles.xhtml [ ImageOnlyFailure ]
+
+# in r7552 (https://codereview.appspot.com/7273048/) Skia's sorting 
+# algorithm was changed (again). This caused some imperceptible changes in
+# some of the Japanese font layout tests
+crbug.com/174338 fast/repaint/japanese-rl-selection-clear.html [ ImageOnlyFailure ]
+crbug.com/174338 fast/repaint/japanese-rl-selection-repaint-in-regions.html [ ImageOnlyFailure ]
+crbug.com/174338 fast/repaint/japanese-rl-selection-repaint.html [ ImageOnlyFailure ]
+crbug.com/174338 fast/text/justify-ideograph-vertical.html [ ImageOnlyFailure ]
+crbug.com/174338 fast/writing-mode/border-vertical-lr.html [ ImageOnlyFailure ]
+crbug.com/174338 fast/writing-mode/japanese-lr-selection.html [ ImageOnlyFailure ]
+crbug.com/174338 fast/writing-mode/japanese-lr-text.html [ ImageOnlyFailure ]
+crbug.com/174338 fast/writing-mode/japanese-rl-selection.html [ ImageOnlyFailure ]
+crbug.com/174338 fast/writing-mode/japanese-rl-text.html [ ImageOnlyFailure ]
+crbug.com/174338 svg/custom/shapes-supporting-markers.svg [ ImageOnlyFailure ]
 
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)

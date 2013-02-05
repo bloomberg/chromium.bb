@@ -545,7 +545,7 @@ bool VectorPlatformDeviceEmf::ApplyPaint(const SkPaint& paint) {
 
   SkPaint::Style style = paint.getStyle();
   if (!paint.getAlpha())
-    style = SkPaint::kStyleCount;
+      style = (SkPaint::Style) SkPaint::kStyleCount;
 
   switch (style) {
     case SkPaint::kFill_Style:
