@@ -29,7 +29,7 @@
 #ifndef _armSP_H_
 #define _armSP_H_
 
-#include "omxtypes.h"
+#include "dl/api/omxtypes.h"
 
 #ifdef __cplusplus
 extern "C" {

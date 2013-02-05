@@ -25,11 +25,11 @@
  * Compute the size of the specification structure required
  */
 
-#include "omxtypes.h"
-#include "armOMX.h"
-#include "omxSP.h"
+#include "dl/api/armOMX.h"
+#include "dl/api/omxtypes.h"
+#include "dl/sp/api/armSP.h"
+#include "dl/sp/api/omxSP.h"
 
-#include "armSP.h"
 
 /**
  * Function:  omxSP_FFTGetBufSize_C_SC32   (2.2.4.1.6)

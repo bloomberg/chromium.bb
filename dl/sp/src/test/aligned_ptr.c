@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "aligned_ptr.h"
+#include "dl/sp/src/test/aligned_ptr.h"
 
 #include <stdlib.h>
 

@@ -11,6 +11,8 @@
 #ifndef WEBRTC_ARM_FFT_TEST_COMPARE_H_
 #define WEBRTC_ARM_FFT_TEST_COMPARE_H_
 
+#include "dl/api/omxtypes.h"
+
 struct SnrResult {
   /* SNR (in dB) for real component (for complex signals) */
   float real_snr_;

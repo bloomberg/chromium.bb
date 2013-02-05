@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "gensig.h"
+#include "dl/sp/src/test/gensig.h"
 
 #include <stdio.h>
 #include <math.h>

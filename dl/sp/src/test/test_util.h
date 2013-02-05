@@ -11,6 +11,10 @@
 #ifndef WEBRTC_ARM_FFT_TEST_UTIL_H_
 #define WEBRTC_ARM_FFT_TEST_UTIL_H_
 
+#include <stdio.h>
+
+#include "dl/sp/src/test/compare.h"
+
 /* Command line options */
 struct Options {
     /*

@@ -20,7 +20,7 @@
  * We use the negative to be consistent with the S32 version.
 **/
 
-#include "omxtypes.h"
+#include "dl/api/omxtypes.h"
 
 #define TWIDDLE_TABLE_ENTRIES ((1 << TWIDDLE_TABLE_ORDER) / 8)
 

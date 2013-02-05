@@ -15,11 +15,10 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include "aligned_ptr.h"
-#include "armCOMM.h"
-#include "armSP.h"
-#include "gensig.h"
-#include "omxSP.h"
+#include "dl/sp/api/armSP.h"
+#include "dl/sp/api/omxSP.h"
+#include "dl/sp/src/test/aligned_ptr.h"
+#include "dl/sp/src/test/gensig.h"
 
 #define MAX_FFT_ORDER   TWIDDLE_TABLE_ORDER
 #define MAX_FFT_ORDER_FIXED_POINT 12

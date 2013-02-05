@@ -11,11 +11,11 @@
  *  instead of S32.
  */
 
-#include "armCOMM.h"
-#include "armOMX.h"
-#include "armSP.h"
-#include "omxSP.h"
-#include "omxtypes.h"
+#include "dl/api/armCOMM.h"
+#include "dl/api/armOMX.h"
+#include "dl/api/omxtypes.h"
+#include "dl/sp/api/armSP.h"
+#include "dl/sp/api/omxSP.h"
 
 /**
  * Function: omxSP_FFTInit_R_F32

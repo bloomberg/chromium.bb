@@ -46,7 +46,7 @@
 #ifndef _OMXSP_H_
 #define _OMXSP_H_
 
-#include "omxtypes.h"
+#include "dl/api/omxtypes.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -33,7 +33,7 @@
  * represented as Q31 in 32 bits. 
 **/
 
-#include "omxtypes.h"
+#include "dl/api/omxtypes.h"
 
 
 const OMX_S32 armSP_FFT_S32TwiddleTable[1026] ={

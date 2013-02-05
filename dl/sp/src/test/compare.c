@@ -8,10 +8,10 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include <stdio.h>
+#include "dl/sp/src/test/compare.h"
+
 #include <math.h>
-#include "armSP.h"
-#include "compare.h"
+#include <stdio.h>
 
 extern int verbose;
 

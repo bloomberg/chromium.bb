@@ -25,12 +25,11 @@
  * Initializes the specification structures required
  */
 
-#include "omxtypes.h"
-#include "armOMX.h"
-#include "omxSP.h"
-
-#include "armCOMM.h"
-#include "armSP.h"
+#include "dl/api/armCOMM.h"
+#include "dl/api/armOMX.h"
+#include "dl/api/omxtypes.h"
+#include "dl/sp/api/armSP.h"
+#include "dl/sp/api/omxSP.h"
 
 
 /**

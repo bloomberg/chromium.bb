@@ -11,16 +11,29 @@
     # Override this value to build with small float FFT tables
     'big_float_fft%' : 1,
   },
+  'target_defaults': {
+    'include_dirs': [
+      '../../../../',
+    ],
+    'dependencies' : [
+      '../../../dl.gyp:arm_fft',
+      'test_utilities'
+    ],
+    'conditions': [
+      ['big_float_fft == 1', {
+        'defines': [
+          'BIG_FFT_TABLE',
+        ],
+      }],
+    ],
+  },
   'targets': [
     {
       # Test utilities
       'target_name': 'test_utilities',
       'type' : '<(component)',
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies' : [
-        '../arm_fft.gyp:arm_fft',
+      'dependencies!' : [
+        'test_utilities'
       ],
       'sources' : [
         'aligned_ptr.c',
@@ -33,13 +46,6 @@
       # Test complex fixed-point 32-bit FFT
       'target_name': 'test_fft32',
       'type': 'executable',
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies' : [
-        '../arm_fft.gyp:arm_fft',
-        'test_utilities'
-      ],
       'sources': [
         'test_fft32.c',
       ],
@@ -48,12 +54,6 @@
       # Test real 32-bit fixed-point FFT
       'target_name': 'test_rfft32',
       'type': 'executable',
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies' : [
-        'test_utilities'
-      ],
       'sources': [
         'test_rfft32.c',
       ],
@@ -62,12 +62,6 @@
       # Test real 16-bit fixed-point FFT
       'target_name': 'test_rfft16',
       'type': 'executable',
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies' : [
-        'test_utilities'
-      ],
       'sources': [
         'test_rfft16.c',
       ],
@@ -76,63 +70,24 @@
       # Test complex floating-point FFT
       'target_name': 'test_float_fft',
       'type': 'executable',
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies' : [
-        'test_utilities'
-      ],
       'sources': [
         'test_float_fft.c',
-      ],
-      'conditions': [
-        ['big_float_fft == 1', {
-          'defines': [
-            'BIG_FFT_TABLE',
-          ],
-        }],
       ],
     },
     {
       # Test real floating-point FFT
       'target_name': 'test_float_rfft',
       'type': 'executable',
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies' : [
-        'test_utilities'
-      ],
       'sources': [
         'test_float_rfft.c',
-      ],
-      'conditions': [
-        ['big_float_fft == 1', {
-          'defines': [
-            'BIG_FFT_TABLE',
-          ],
-        }],
       ],
     },
     {
       # Simple timing test of FFTs
       'target_name': 'test_fft_time',
       'type': 'executable',
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies' : [
-        'test_utilities'
-      ],
       'sources': [
         'test_fft_time.c',
-      ],
-      'conditions': [
-        ['big_float_fft == 1', {
-          'defines': [
-            'BIG_FFT_TABLE',
-          ],
-        }],
       ],
     },
     {

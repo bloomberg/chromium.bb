@@ -7,15 +7,15 @@
  *  in the file PATENTS.  All contributing project authors may
  *  be found in the AUTHORS file in the root of the source tree.
  */
+#include "dl/sp/src/test/test_util.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include "armSP.h"
-#include "compare.h"
-#include "test_util.h"
+#include "dl/sp/api/armSP.h"
+#include "dl/sp/src/test/compare.h"
 
 /*
  * Test resuls from running either forward or inverse FFT tests

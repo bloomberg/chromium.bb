@@ -14,13 +14,12 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "aligned_ptr.h"
-#include "armCOMM.h"
-#include "armSP.h"
-#include "compare.h"
-#include "gensig.h"
-#include "omxSP.h"
-#include "test_util.h"
+#include "dl/sp/api/armSP.h"
+#include "dl/sp/api/omxSP.h"
+#include "dl/sp/src/test/aligned_ptr.h"
+#include "dl/sp/src/test/compare.h"
+#include "dl/sp/src/test/gensig.h"
+#include "dl/sp/src/test/test_util.h"
 
 #define MAX_FFT_ORDER   TWIDDLE_TABLE_ORDER
 

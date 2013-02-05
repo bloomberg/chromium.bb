@@ -8,18 +8,18 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <math.h>
 #include <unistd.h>
 
-#include "aligned_ptr.h"
-#include "armSP.h"
-#include "compare.h"
-#include "gensig.h"
-#include "omxSP.h"
-#include "test_util.h"
+#include "dl/sp/api/armSP.h"
+#include "dl/sp/api/omxSP.h"
+#include "dl/sp/src/test/aligned_ptr.h"
+#include "dl/sp/src/test/compare.h"
+#include "dl/sp/src/test/gensig.h"
+#include "dl/sp/src/test/test_util.h"
 
 #define MAX_FFT_ORDER   12
 
