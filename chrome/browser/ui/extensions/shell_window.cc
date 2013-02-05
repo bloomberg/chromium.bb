@@ -542,7 +542,16 @@ void ShellWindow::NavigationStateChanged(
 void ShellWindow::ToggleFullscreenModeForTab(content::WebContents* source,
                                              bool enter_fullscreen) {
   DCHECK(source == web_contents_.get());
-  native_app_window_->SetFullscreen(enter_fullscreen);
+  if (source != web_contents_.get())
+    return;
+
+  bool has_permission = IsExtensionWithPermissionOrSuggestInConsole(
+      APIPermission::kFullscreen,
+      extension_,
+      web_contents_->GetRenderViewHost());
+
+  if (has_permission)
+    native_app_window_->SetFullscreen(enter_fullscreen);
 }
 
 bool ShellWindow::IsFullscreenForTabOrPending(

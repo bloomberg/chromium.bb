@@ -356,6 +356,7 @@ void APIPermissionInfo::RegisterAllPermissions(
       PermissionMessage::kSystemIndicator },
     { APIPermission::kSystemInfoDisplay, "systemInfo.display" },
     { APIPermission::kPointerLock, "pointerLock" },
+    { APIPermission::kFullscreen, "fullscreen" },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(PermissionsToRegister); ++i) {

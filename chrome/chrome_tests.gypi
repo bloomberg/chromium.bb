@@ -186,6 +186,7 @@
         'browser/extensions/extension_keybinding_apitest.cc',
         'browser/extensions/notifications_apitest.cc',
         'browser/extensions/window_open_interactive_apitest.cc',
+        'browser/extensions/extension_fullscreen_apitest.cc',
         'browser/extensions/extension_pointer_lock_apitest.cc',
         'browser/instant/instant_browsertest.cc',
         'browser/instant/instant_extended_browsertest.cc',

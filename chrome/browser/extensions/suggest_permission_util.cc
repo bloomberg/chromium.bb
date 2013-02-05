@@ -30,6 +30,7 @@ void SuggestAPIPermissionInDevToolsConsole(APIPermission::ID permission,
 
   const APIPermissionInfo* permission_info =
       PermissionsInfo::GetInstance()->GetByID(permission);
+  CHECK(permission_info);
 
   // Note, intentionally not internationalizing this string, as it is output
   // as a log message to developers in the developer tools console.

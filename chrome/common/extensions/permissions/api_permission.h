@@ -75,6 +75,7 @@ class APIPermission {
     kFileSystem,
     kFileSystemWrite,
     kFontSettings,
+    kFullscreen,
     kGeolocation,
     kHistory,
     kIdle,
