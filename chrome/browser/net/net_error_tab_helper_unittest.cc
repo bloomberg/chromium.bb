@@ -26,61 +26,101 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
  public:
   TestNetErrorTabHelper()
       : NetErrorTabHelper(NULL),
-        probe_start_count_(0),
-        probes_allowed_(true) {
-  }
-
-  // NetErrorTabHelper implementation:
-
-  virtual void PostStartDnsProbeTask() OVERRIDE {
-    ++probe_start_count_;
-  }
-
-  virtual bool ProbesAllowed() const OVERRIDE {
-    return probes_allowed_;
-  }
-
-  // Methods to control mock behavior and verify things:
-
-  void set_probes_allowed(bool probes_allowed) {
-    probes_allowed_ = probes_allowed;
+        probe_count_(0),
+        send_count_(0) {
   }
 
   void SimulateProbeResult(DnsProbeResult result) {
-    OnDnsProbeFinished(result);
+    OnDnsProbeFinishedForTesting(result);
   }
 
-  bool dns_probe_running() {
-    return NetErrorTabHelper::dns_probe_running();
-  }
+  int probe_count() { return probe_count_; }
+  int send_count() { return send_count_; }
+  DnsProbeResult send_result() { return send_result_; }
 
-  int probe_start_count() {
-    return probe_start_count_;
+ private:
+  // NetErrorTabHelper implementation:
+
+  virtual void PostStartDnsProbeTask() OVERRIDE { ++probe_count_; }
+  virtual void SendInfo() OVERRIDE {
+    ++send_count_;
+    send_result_ = dns_probe_result();
   }
 
  private:
-  int probe_start_count_;
-  bool probes_allowed_;
+  int probe_count_;
+  int send_count_;
+  DnsProbeResult send_result_;
 };
 
 class NetErrorTabHelperTest : public testing::Test {
  public:
   NetErrorTabHelperTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {
+    NetErrorTabHelper::set_state_for_testing(
+        NetErrorTabHelper::TESTING_FORCE_ENABLED);
   }
 
  protected:
-  void SimulateFailure(bool is_main_frame, int error_code) {
+  enum MainFrame { NOT_MAIN_FRAME, MAIN_FRAME };
+  enum ErrorPage { NORMAL_PAGE, ERROR_PAGE };
+
+  void SimulateStart(MainFrame main_frame, ErrorPage error_page) {
+    GURL validated_url;
+
+    tab_helper_.DidStartProvisionalLoadForFrame(
+        1 /* frame_id */,
+        0 /* parent_frame_id */,
+        (main_frame == MAIN_FRAME),
+        validated_url,
+        (error_page == ERROR_PAGE),
+        false /* is_iframe_srcdoc */,
+        NULL /* render_view_host */);
+  }
+
+  void SimulateCommit(MainFrame main_frame) {
+    GURL url;
+
+    tab_helper_.DidCommitProvisionalLoadForFrame(
+        1 /* frame_id */,
+        (main_frame == MAIN_FRAME),
+        url,
+        content::PAGE_TRANSITION_TYPED,
+        NULL /* render_view_host */);
+  }
+
+  void SimulateFail(MainFrame main_frame, int error_code) {
     GURL url;
     string16 error_description;
 
     tab_helper_.DidFailProvisionalLoad(
         1 /* frame_id */,
-        is_main_frame,
+        (main_frame == MAIN_FRAME),
         url,
         error_code,
         error_description,
         NULL /* render_view_host */);
+  }
+
+  void SimulateFinish(MainFrame main_frame) {
+    GURL validated_url;
+
+    tab_helper_.DidFinishLoad(
+        1 /* frame_id */,
+        validated_url,
+        (main_frame == MAIN_FRAME),
+        NULL /* render_view_host */);
+  }
+
+  void SimulateMainFrameDnsError() {
+    SimulateStart(MAIN_FRAME, NORMAL_PAGE);
+    SimulateFail(MAIN_FRAME, net::ERR_NAME_NOT_RESOLVED);
+  }
+
+  void SimulateMainFrameErrorPageLoad() {
+    SimulateStart(MAIN_FRAME, ERROR_PAGE);
+    SimulateCommit(MAIN_FRAME);
+    SimulateFinish(MAIN_FRAME);
   }
 
   MessageLoop message_loop_;
@@ -89,66 +129,123 @@ class NetErrorTabHelperTest : public testing::Test {
   TestNetErrorTabHelper tab_helper_;
 };
 
+const DnsProbeResult kSampleResult = chrome_common_net::DNS_PROBE_NXDOMAIN;
+const DnsProbeResult kUnknownResult = chrome_common_net::DNS_PROBE_UNKNOWN;
+
 TEST_F(NetErrorTabHelperTest, InitialState) {
-  EXPECT_FALSE(tab_helper_.dns_probe_running());
-  EXPECT_EQ(0, tab_helper_.probe_start_count());
+  EXPECT_EQ(0, tab_helper_.probe_count());
 }
 
 TEST_F(NetErrorTabHelperTest, NoProbeOnNonDnsError) {
-  SimulateFailure(true, net::ERR_FAILED);
-  EXPECT_FALSE(tab_helper_.dns_probe_running());
-  EXPECT_EQ(0, tab_helper_.probe_start_count());
+  SimulateStart(MAIN_FRAME, NORMAL_PAGE);
+  SimulateFail(MAIN_FRAME, net::ERR_FAILED);
+  EXPECT_EQ(0, tab_helper_.probe_count());
+}
+
+TEST_F(NetErrorTabHelperTest, NoSendOnNonDnsError) {
+  SimulateStart(MAIN_FRAME, NORMAL_PAGE);
+  SimulateFail(MAIN_FRAME, net::ERR_FAILED);
+  SimulateStart(MAIN_FRAME, ERROR_PAGE);
+  SimulateCommit(MAIN_FRAME);
+  SimulateFinish(MAIN_FRAME);
+  EXPECT_EQ(0, tab_helper_.send_count());
 }
 
 TEST_F(NetErrorTabHelperTest, NoProbeOnNonMainFrameError) {
-  SimulateFailure(false, net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_FALSE(tab_helper_.dns_probe_running());
-  EXPECT_EQ(0, tab_helper_.probe_start_count());
+  SimulateStart(MAIN_FRAME, NORMAL_PAGE);
+  SimulateFail(NOT_MAIN_FRAME, net::ERR_NAME_NOT_RESOLVED);
+  EXPECT_EQ(0, tab_helper_.probe_count());
 }
 
 TEST_F(NetErrorTabHelperTest, ProbeOnDnsError) {
-  SimulateFailure(true, net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_TRUE(tab_helper_.dns_probe_running());
-  EXPECT_EQ(1, tab_helper_.probe_start_count());
+  SimulateMainFrameDnsError();
+  EXPECT_EQ(1, tab_helper_.probe_count());
 }
 
 TEST_F(NetErrorTabHelperTest, NoProbeWhenNotAllowed) {
-  tab_helper_.set_probes_allowed(false);
-  SimulateFailure(true, net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_FALSE(tab_helper_.dns_probe_running());
-  EXPECT_EQ(0, tab_helper_.probe_start_count());
+  NetErrorTabHelper::set_state_for_testing(
+      NetErrorTabHelper::TESTING_FORCE_DISABLED);
+
+  SimulateMainFrameDnsError();
+  EXPECT_EQ(0, tab_helper_.probe_count());
+}
+
+TEST_F(NetErrorTabHelperTest, HandleProbeResponseBeforeErrorPage) {
+  SimulateMainFrameDnsError();
+  SimulateMainFrameErrorPageLoad();
+  EXPECT_EQ(0, tab_helper_.send_count());
+
+  // Get probe result
+  tab_helper_.SimulateProbeResult(kSampleResult);
+  EXPECT_EQ(1, tab_helper_.send_count());
+  EXPECT_EQ(kSampleResult, tab_helper_.send_result());
+}
+
+TEST_F(NetErrorTabHelperTest, HandleProbeResponseAfterErrorPage) {
+  SimulateMainFrameDnsError();
+
+  // Get probe result
+  tab_helper_.SimulateProbeResult(kSampleResult);
+
+  // Load error page; should send IPC only once it finishes.
+  SimulateStart(MAIN_FRAME, ERROR_PAGE);
+  SimulateCommit(MAIN_FRAME);
+  EXPECT_EQ(0, tab_helper_.send_count());
+  SimulateFinish(MAIN_FRAME);
+  EXPECT_EQ(1, tab_helper_.send_count());
+  EXPECT_EQ(kSampleResult, tab_helper_.send_result());
+}
+
+TEST_F(NetErrorTabHelperTest, DiscardObsoleteProbeResponse) {
+  SimulateMainFrameDnsError();
+  EXPECT_EQ(1, tab_helper_.probe_count());
+  SimulateMainFrameErrorPageLoad();
+  SimulateStart(MAIN_FRAME, NORMAL_PAGE);
+  tab_helper_.SimulateProbeResult(kSampleResult);
+  SimulateCommit(MAIN_FRAME);
+  SimulateFinish(MAIN_FRAME);
+  EXPECT_EQ(0, tab_helper_.send_count());
 }
 
 TEST_F(NetErrorTabHelperTest, CoalesceFailures) {
   // We should only start one probe for three failures.
-  SimulateFailure(true, net::ERR_NAME_NOT_RESOLVED);
-  SimulateFailure(true, net::ERR_NAME_NOT_RESOLVED);
-  SimulateFailure(true, net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_TRUE(tab_helper_.dns_probe_running());
-  EXPECT_EQ(1, tab_helper_.probe_start_count());
+  SimulateMainFrameDnsError();
+  SimulateMainFrameDnsError();
+  SimulateMainFrameDnsError();
+  EXPECT_EQ(1, tab_helper_.probe_count());
+  SimulateMainFrameErrorPageLoad();
+  tab_helper_.SimulateProbeResult(kSampleResult);
+  EXPECT_EQ(1, tab_helper_.send_count());
 }
 
-TEST_F(NetErrorTabHelperTest, HandleProbeResponse) {
-  SimulateFailure(true, net::ERR_NAME_NOT_RESOLVED);
-
-  // Make sure we handle probe response.
-  tab_helper_.SimulateProbeResult(chrome_common_net::DNS_PROBE_UNKNOWN);
-  EXPECT_FALSE(tab_helper_.dns_probe_running());
-  EXPECT_EQ(1, tab_helper_.probe_start_count());
-}
-
-TEST_F(NetErrorTabHelperTest, MultipleProbes) {
-  SimulateFailure(true, net::ERR_NAME_NOT_RESOLVED);
-  tab_helper_.SimulateProbeResult(chrome_common_net::DNS_PROBE_UNKNOWN);
+TEST_F(NetErrorTabHelperTest, MultipleProbesWithoutErrorPage) {
+  SimulateMainFrameDnsError();
+  EXPECT_EQ(1, tab_helper_.probe_count());
+  tab_helper_.SimulateProbeResult(kSampleResult);
 
   // Make sure we can run a new probe after the previous one returned.
-  SimulateFailure(true, net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_TRUE(tab_helper_.dns_probe_running());
-  EXPECT_EQ(2, tab_helper_.probe_start_count());
+  SimulateMainFrameDnsError();
+  EXPECT_EQ(2, tab_helper_.probe_count());
+}
 
-  tab_helper_.SimulateProbeResult(chrome_common_net::DNS_PROBE_UNKNOWN);
-  EXPECT_FALSE(tab_helper_.dns_probe_running());
-  EXPECT_EQ(2, tab_helper_.probe_start_count());
+TEST_F(NetErrorTabHelperTest, MultipleProbesWithErrorPage) {
+  SimulateMainFrameDnsError();
+  EXPECT_EQ(1, tab_helper_.probe_count());
+  tab_helper_.SimulateProbeResult(kSampleResult);
+  SimulateMainFrameErrorPageLoad();
+  EXPECT_EQ(1, tab_helper_.send_count());
+  EXPECT_EQ(kSampleResult, tab_helper_.send_result());
+
+  // Try a different probe result to make sure we send the new one.
+  const DnsProbeResult kOtherResult = chrome_common_net::DNS_PROBE_NO_INTERNET;
+
+  // Make sure we can run a new probe after the previous one returned.
+  SimulateMainFrameDnsError();
+  EXPECT_EQ(2, tab_helper_.probe_count());
+  tab_helper_.SimulateProbeResult(kOtherResult);
+  SimulateMainFrameErrorPageLoad();
+  EXPECT_EQ(2, tab_helper_.send_count());
+  EXPECT_EQ(kOtherResult, tab_helper_.send_result());
 }
 
 }  // namespace

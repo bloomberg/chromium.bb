@@ -31,7 +31,25 @@ class NetErrorTabHelper
 
   virtual ~NetErrorTabHelper();
 
+  static void set_state_for_testing(TestingState testing_state);
+
   // content::WebContentsObserver implementation.
+  virtual void DidStartProvisionalLoadForFrame(
+      int64 frame_id,
+      int64 parent_frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      bool is_error_page,
+      bool is_iframe_srcdoc,
+      content::RenderViewHost* render_view_host) OVERRIDE;
+
+  virtual void DidCommitProvisionalLoadForFrame(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& url,
+      content::PageTransition transition_type,
+      content::RenderViewHost* render_view_host) OVERRIDE;
+
   virtual void DidFailProvisionalLoad(
       int64 frame_id,
       bool is_main_frame,
@@ -40,9 +58,11 @@ class NetErrorTabHelper
       const string16& error_description,
       content::RenderViewHost* render_view_host) OVERRIDE;
 
-  void OnDnsProbeFinished(chrome_common_net::DnsProbeResult result);
-
-  static void set_state_for_testing(TestingState testing_state);
+  virtual void DidFinishLoad(
+      int64 frame_id,
+      const GURL& validated_url,
+      bool is_main_frame,
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
  protected:
   friend class content::WebContentsUserData<NetErrorTabHelper>;
@@ -51,24 +71,39 @@ class NetErrorTabHelper
   // attached to.
   explicit NetErrorTabHelper(content::WebContents* contents);
 
-  // Posts a task to the IO thread that will start a DNS probe.
-  virtual void PostStartDnsProbeTask();
+  void OnDnsProbeFinishedForTesting(chrome_common_net::DnsProbeResult result);
 
-  // Checks if probes are allowed by enabled_for_testing and "use web service"
-  // pref.
-  virtual bool ProbesAllowed() const;
-
-  bool dns_probe_running() { return dns_probe_running_; }
-  void set_dns_probe_running(bool running) { dns_probe_running_ = running; }
+  chrome_common_net::DnsProbeResult dns_probe_result() const {
+    return dns_probe_result_;
+  }
 
  private:
-  void InitializePref(content::WebContents* contents);
+  enum DnsProbeState {
+    DNS_PROBE_NONE,
+    DNS_PROBE_STARTED,
+    DNS_PROBE_FINISHED
+  };
+
+  enum ErrorPageState {
+    ERROR_PAGE_NONE,
+    ERROR_PAGE_STARTED,
+    ERROR_PAGE_COMMITTED,
+    ERROR_PAGE_LOADED
+  };
 
   void OnMainFrameDnsError();
+  virtual void PostStartDnsProbeTask();
+  void OnDnsProbeFinished(chrome_common_net::DnsProbeResult result);
+  void MaybeSendInfo();
+  virtual void SendInfo();
 
-  // Whether the tab helper has started a DNS probe that has not yet returned
-  // a result.
-  bool dns_probe_running_;
+  void InitializePref(content::WebContents* contents);
+  bool ProbesAllowed() const;
+
+  DnsProbeState dns_probe_state_;
+  ErrorPageState error_page_state_;
+  chrome_common_net::DnsProbeResult dns_probe_result_;
+
   // Whether we are enabled to run by the DnsProbe-Enable field trial.
   const bool enabled_by_trial_;
   // "Use a web service to resolve navigation errors" preference is required
