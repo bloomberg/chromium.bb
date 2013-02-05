@@ -47,6 +47,7 @@ class ContentViewCore {
   virtual unsigned int GetScaledContentTexture(
       float scale,
       gfx::Size* out_size) = 0;
+  virtual float GetDpiScale() const = 0;
 
  protected:
   virtual ~ContentViewCore() {};

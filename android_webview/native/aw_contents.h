@@ -193,6 +193,7 @@ class AwContents : public FindHelper::Listener,
   bool view_visible_;
   bool compositor_visible_;
   bool is_composite_pending_;
+  float dpi_scale_;
   OnNewPictureMode on_new_picture_mode_;
 
   // Used only for detecting Android View System context changes.

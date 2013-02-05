@@ -170,6 +170,7 @@ AwContents::AwContents(JNIEnv* env,
       view_visible_(false),
       compositor_visible_(false),
       is_composite_pending_(false),
+      dpi_scale_(1.0f),
       on_new_picture_mode_(kOnNewPictureDisabled),
       last_frame_context_(NULL) {
   RendererPictureMap::CreateInstance();
@@ -506,6 +507,8 @@ void AwContents::DidInitializeContentViewCore(JNIEnv* env, jobject obj,
                                               jint content_view_core) {
   ContentViewCore* core = reinterpret_cast<ContentViewCore*>(content_view_core);
   DCHECK(core == ContentViewCore::FromWebContents(web_contents_.get()));
+
+  dpi_scale_ = core->GetDpiScale();
 
   // Ensures content keeps clipped within the view during transformations.
   view_clip_layer_ = cc::Layer::create();
@@ -1017,6 +1020,9 @@ bool AwContents::RenderPicture(SkCanvas* canvas) {
   skia::RefPtr<SkPicture> picture = GetLastCapturedPicture();
   if (!picture)
     return false;
+
+  // Correct device scale.
+  canvas->scale(dpi_scale_, dpi_scale_);
 
   picture->draw(canvas);
   return true;

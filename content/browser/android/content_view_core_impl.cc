@@ -393,8 +393,8 @@ void ContentViewCoreImpl::UpdateScrollOffsetAndPageScaleFactor(int x, int y,
   if (obj.is_null())
     return;
   Java_ContentViewCore_updateScrollOffsetAndPageScaleFactor(
-      env, obj.obj(), static_cast<int>(x * DpiScale()),
-      static_cast<int>(y * DpiScale()), scale);
+      env, obj.obj(), static_cast<int>(x * GetDpiScale()),
+      static_cast<int>(y * GetDpiScale()), scale);
 }
 
 void ContentViewCoreImpl::UpdatePageScaleLimits(float minimum_scale,
@@ -526,9 +526,9 @@ void ContentViewCoreImpl::OnSelectionBoundsChanged(
   if (obj.is_null())
     return;
   ScopedJavaLocalRef<jobject> anchor_rect(
-      java_object_->CreateJavaRect(env, params.anchor_rect, DpiScale()));
+      java_object_->CreateJavaRect(env, params.anchor_rect, GetDpiScale()));
   ScopedJavaLocalRef<jobject> focus_rect(
-      java_object_->CreateJavaRect(env, params.focus_rect, DpiScale()));
+      java_object_->CreateJavaRect(env, params.focus_rect, GetDpiScale()));
   Java_ContentViewCore_onSelectionBoundsChanged(env, obj.obj(),
                                                 anchor_rect.obj(),
                                                 params.anchor_dir,
@@ -605,7 +605,8 @@ gfx::Size ContentViewCoreImpl::GetPhysicalSize() const {
 }
 
 gfx::Size ContentViewCoreImpl::GetDIPSize() const {
-  return gfx::ToCeiledSize(gfx::ScaleSize(GetPhysicalSize(), 1 / DpiScale()));
+  return gfx::ToCeiledSize(
+      gfx::ScaleSize(GetPhysicalSize(), 1 / GetDpiScale()));
 }
 
 void ContentViewCoreImpl::AttachLayer(scoped_refptr<cc::Layer> layer) {
@@ -771,7 +772,8 @@ jboolean ContentViewCoreImpl::SendTouchEvent(JNIEnv* env,
   if (rwhv) {
     using WebKit::WebTouchEvent;
     WebKit::WebTouchEvent event;
-    TouchPoint::BuildWebTouchEvent(env, type, time_ms, DpiScale(), pts, event);
+    TouchPoint::BuildWebTouchEvent(env, type, time_ms, GetDpiScale(), pts,
+        event);
     UpdateVSyncFlagOnInputEvent(&event);
     rwhv->SendTouchEvent(event);
     return true;
@@ -785,7 +787,7 @@ int ContentViewCoreImpl::GetTouchPadding()
   return 48;
 }
 
-float ContentViewCoreImpl::DpiScale() const {
+float ContentViewCoreImpl::GetDpiScale() const {
   return dpi_scale_;
 }
 
@@ -801,7 +803,7 @@ jboolean ContentViewCoreImpl::SendMouseMoveEvent(JNIEnv* env,
   WebKit::WebMouseEvent event = WebInputEventFactory::mouseEvent(
       WebInputEventFactory::MouseEventTypeMove,
       WebKit::WebMouseEvent::ButtonNone,
-      time_ms / 1000.0, x / DpiScale(), y / DpiScale(), 0, 1);
+      time_ms / 1000.0, x / GetDpiScale(), y / GetDpiScale(), 0, 1);
 
   rwhv->SendMouseEvent(event);
   return true;
@@ -826,7 +828,7 @@ jboolean ContentViewCoreImpl::SendMouseWheelEvent(JNIEnv* env,
     return false;
   }
   WebKit::WebMouseWheelEvent event = WebInputEventFactory::mouseWheelEvent(
-      type, time_ms / 1000.0, x / DpiScale(), y / DpiScale());
+      type, time_ms / 1000.0, x / GetDpiScale(), y / GetDpiScale());
 
   rwhv->SendMouseWheelEvent(event);
   return true;
@@ -837,8 +839,8 @@ WebGestureEvent ContentViewCoreImpl::MakeGestureEvent(WebInputEvent::Type type,
                                                       int x, int y) const {
   WebGestureEvent event;
   event.type = type;
-  event.x = x / DpiScale();
-  event.y = y / DpiScale();
+  event.x = x / GetDpiScale();
+  event.y = y / GetDpiScale();
   event.timeStampSeconds = time_ms / 1000.0;
   event.sourceDevice = WebGestureEvent::Touchscreen;
   UpdateVSyncFlagOnInputEvent(&event);
@@ -880,8 +882,8 @@ void ContentViewCoreImpl::ScrollBy(JNIEnv* env, jobject obj, jlong time_ms,
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureScrollUpdate, time_ms, x, y);
 
-  event.data.scrollUpdate.deltaX = -dx / DpiScale();
-  event.data.scrollUpdate.deltaY = -dy / DpiScale();
+  event.data.scrollUpdate.deltaX = -dx / GetDpiScale();
+  event.data.scrollUpdate.deltaY = -dy / GetDpiScale();
 
   SendGestureEvent(event);
 }
@@ -890,8 +892,8 @@ void ContentViewCoreImpl::FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
                                      jint x, jint y, jint vx, jint vy) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureFlingStart, time_ms, x, y);
-  event.data.flingStart.velocityX = vx / DpiScale();
-  event.data.flingStart.velocityY = vy / DpiScale();
+  event.data.flingStart.velocityX = vx / GetDpiScale();
+  event.data.flingStart.velocityY = vy / GetDpiScale();
 
   SendGestureEvent(event);
 }
@@ -911,8 +913,8 @@ void ContentViewCoreImpl::SingleTap(JNIEnv* env, jobject obj, jlong time_ms,
   event.data.tap.tapCount = 1;
   if (!disambiguation_popup_tap) {
     int touchPadding = GetTouchPadding();
-    event.data.tap.width = touchPadding / DpiScale();
-    event.data.tap.height = touchPadding / DpiScale();
+    event.data.tap.width = touchPadding / GetDpiScale();
+    event.data.tap.height = touchPadding / GetDpiScale();
   }
 
   SendGestureEvent(event);
@@ -952,7 +954,7 @@ void ContentViewCoreImpl::LongPress(JNIEnv* env, jobject obj, jlong time_ms,
   if (!disambiguation_popup_tap) {
     int touchPadding = GetTouchPadding();
     event.data.longPress.width = event.data.longPress.height =
-        touchPadding / DpiScale();
+        touchPadding / GetDpiScale();
   }
 
   SendGestureEvent(event);
@@ -967,7 +969,7 @@ void ContentViewCoreImpl::LongTap(JNIEnv* env, jobject obj, jlong time_ms,
   if (!disambiguation_popup_tap) {
     int touchPadding = GetTouchPadding();
     event.data.longPress.width = event.data.longPress.height =
-        touchPadding / DpiScale();
+        touchPadding / GetDpiScale();
   }
 
   SendGestureEvent(event);
@@ -1000,8 +1002,8 @@ void ContentViewCoreImpl::SelectBetweenCoordinates(JNIEnv* env, jobject obj,
                                                    jint x2, jint y2) {
   if (GetRenderWidgetHostViewAndroid()) {
     GetRenderWidgetHostViewAndroid()->SelectRange(
-        gfx::Point(x1 / DpiScale(), y1 / DpiScale()),
-        gfx::Point(x2 / DpiScale(), y2 / DpiScale()));
+        gfx::Point(x1 / GetDpiScale(), y1 / GetDpiScale()),
+        gfx::Point(x2 / GetDpiScale(), y2 / GetDpiScale()));
   }
 }
 
@@ -1009,7 +1011,7 @@ void ContentViewCoreImpl::MoveCaret(JNIEnv* env, jobject obj,
                                     jint x, jint y) {
   if (GetRenderWidgetHostViewAndroid()) {
     GetRenderWidgetHostViewAndroid()->MoveCaret(
-        gfx::Point(x / DpiScale(), y / DpiScale()));
+        gfx::Point(x / GetDpiScale(), y / GetDpiScale()));
   }
 }
 
