@@ -14,6 +14,7 @@
 #include "chrome/browser/google_apis/drive_upload_mode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/power_save_blocker.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 
@@ -63,7 +64,10 @@ struct DriveUploader::UploadFileInfo {
         next_send_position(0),
         file_stream(new net::FileStream(NULL)),
         buf(new net::IOBuffer(kUploadChunkSize)),
-        blocking_task_runner(task_runner) {
+        blocking_task_runner(task_runner),
+        power_save_blocker(content::PowerSaveBlocker::Create(
+            content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+            "Upload in progress")) {
   }
 
   ~UploadFileInfo() {
@@ -133,6 +137,9 @@ struct DriveUploader::UploadFileInfo {
 
   // Runner for net::FileStream tasks.
   const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner;
+
+  // Blocks system suspend while upload is in progress.
+  scoped_ptr<content::PowerSaveBlocker> power_save_blocker;
 };
 
 DriveUploader::DriveUploader(DriveServiceInterface* drive_service)
