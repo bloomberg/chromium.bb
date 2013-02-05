@@ -213,6 +213,7 @@ function onSandboxInit() {
     oldAEL(type, listener, useCapture);
   };
 
+  remoting.settings = new remoting.Settings();
   remoting.sandboxContent = new remoting.WcsSandboxContent();
 }
 

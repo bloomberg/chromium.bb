@@ -6,8 +6,6 @@
 
 namespace remoting {
 
-const char kChromotingBotJid[] = "remoting@bot.talk.google.com";
-
 const char kChromotingTokenDefaultServiceName[] = "chromiumsync";
 
 const char kChromotingXmlNamespace[] = "google:remoting";

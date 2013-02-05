@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
@@ -31,9 +32,11 @@
 #include "remoting/host/plugin/host_log_handler.h"
 #include "remoting/host/policy_hack/policy_watcher.h"
 #include "remoting/host/register_support_host_request.h"
+#include "remoting/host/service_urls.h"
 #include "remoting/host/session_manager_factory.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/it2me_host_authenticator_factory.h"
+#include "third_party/npapi/bindings/npruntime.h"
 
 namespace remoting {
 
@@ -51,6 +54,9 @@ const char* kAttrNameLogDebugInfo = "logDebugInfo";
 const char* kAttrNameOnNatTraversalPolicyChanged =
     "onNatTraversalPolicyChanged";
 const char* kAttrNameOnStateChanged = "onStateChanged";
+const char* kAttrNameXmppServerAddress = "xmppServerAddress";
+const char* kAttrNameXmppServerUseTls = "xmppServerUseTls";
+const char* kAttrNameDirectoryBotJid = "directoryBotJid";
 const char* kFuncNameConnect = "connect";
 const char* kFuncNameDisconnect = "disconnect";
 const char* kFuncNameLocalize = "localize";
@@ -86,7 +92,9 @@ class HostNPScriptObject::It2MeImpl
   It2MeImpl(
       scoped_ptr<ChromotingHostContext> context,
       scoped_refptr<base::SingleThreadTaskRunner> plugin_task_runner,
-      base::WeakPtr<HostNPScriptObject> script_object);
+      base::WeakPtr<HostNPScriptObject> script_object,
+      const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
+      const std::string& directory_bot_jid);
 
   // Methods called by the script object, from the plugin thread.
 
@@ -145,9 +153,12 @@ class HostNPScriptObject::It2MeImpl
   void UpdateNatPolicy(bool nat_traversal_enabled);
   void UpdateHostDomainPolicy(const std::string& host_domain);
 
+  // Caller supplied fields.
   scoped_ptr<ChromotingHostContext> host_context_;
   scoped_refptr<base::SingleThreadTaskRunner> plugin_task_runner_;
   base::WeakPtr<HostNPScriptObject> script_object_;
+  XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
+  std::string directory_bot_jid_;
 
   State state_;
 
@@ -187,10 +198,14 @@ class HostNPScriptObject::It2MeImpl
 HostNPScriptObject::It2MeImpl::It2MeImpl(
     scoped_ptr<ChromotingHostContext> host_context,
     scoped_refptr<base::SingleThreadTaskRunner> plugin_task_runner,
-    base::WeakPtr<HostNPScriptObject> script_object)
+    base::WeakPtr<HostNPScriptObject> script_object,
+    const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
+    const std::string& directory_bot_jid)
   : host_context_(host_context.Pass()),
     plugin_task_runner_(plugin_task_runner),
     script_object_(script_object),
+    xmpp_server_config_(xmpp_server_config),
+    directory_bot_jid_(directory_bot_jid),
     state_(kDisconnected),
     failed_login_attempts_(0),
     nat_traversal_enabled_(false),
@@ -334,12 +349,13 @@ void HostNPScriptObject::It2MeImpl::FinishConnect(
   // Create XMPP connection.
   scoped_ptr<SignalStrategy> signal_strategy(
       new XmppSignalStrategy(host_context_->url_request_context_getter(),
-                             uid, auth_token, auth_service));
+                             uid, auth_token, auth_service,
+                             xmpp_server_config_));
 
   // Request registration of the host for support.
   scoped_ptr<RegisterSupportHostRequest> register_request(
       new RegisterSupportHostRequest(
-          signal_strategy.get(), &host_key_pair_,
+          signal_strategy.get(), &host_key_pair_, directory_bot_jid_,
           base::Bind(&It2MeImpl::OnReceivedSupportID,
                      base::Unretained(this))));
 
@@ -372,7 +388,8 @@ void HostNPScriptObject::It2MeImpl::FinishConnect(
       host_context_->ui_task_runner());
   host_->AddStatusObserver(this);
   log_to_server_.reset(
-      new LogToServer(host_, ServerLogEntry::IT2ME, signal_strategy_.get()));
+      new LogToServer(host_, ServerLogEntry::IT2ME, signal_strategy_.get(),
+                      directory_bot_jid_));
 
   // Disable audio by default.
   // TODO(sergeyu): Add UI to enable it.
@@ -658,6 +675,14 @@ HostNPScriptObject::HostNPScriptObject(
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       weak_ptr_(weak_factory_.GetWeakPtr()) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
+  ServiceUrls* service_urls = ServiceUrls::GetInstance();
+  bool xmpp_server_valid = net::ParseHostAndPort(
+      service_urls->xmpp_server_address(),
+      &xmpp_server_config_.host, &xmpp_server_config_.port);
+  // For the plugin, this is always the default address, which must be valid.
+  DCHECK(xmpp_server_valid);
+  xmpp_server_config_.use_tls = service_urls->xmpp_server_use_tls();
+  directory_bot_jid_ = service_urls->directory_bot_jid();
 
   // Create worker thread for encryption key generation.
   worker_thread_ = AutoThread::Create("ChromotingWorkerThread",
@@ -755,7 +780,10 @@ bool HostNPScriptObject::HasProperty(const std::string& property_name) {
           property_name == kAttrNameReceivedAccessCode ||
           property_name == kAttrNameConnected ||
           property_name == kAttrNameDisconnecting ||
-          property_name == kAttrNameError);
+          property_name == kAttrNameError ||
+          property_name == kAttrNameXmppServerAddress ||
+          property_name == kAttrNameXmppServerUseTls ||
+          property_name == kAttrNameDirectoryBotJid);
 }
 
 bool HostNPScriptObject::GetProperty(const std::string& property_name,
@@ -815,6 +843,16 @@ bool HostNPScriptObject::GetProperty(const std::string& property_name,
   } else if (property_name == kAttrNameInvalidDomainError) {
     INT32_TO_NPVARIANT(kInvalidDomainError, *result);
     return true;
+  } else if (property_name == kAttrNameXmppServerAddress) {
+    *result = NPVariantFromString(base::StringPrintf(
+        "%s:%u", xmpp_server_config_.host.c_str(), xmpp_server_config_.port));
+    return true;
+  } else if (property_name == kAttrNameXmppServerUseTls) {
+    BOOLEAN_TO_NPVARIANT(xmpp_server_config_.use_tls, *result);
+    return true;
+  } else if (property_name == kAttrNameDirectoryBotJid) {
+    *result = NPVariantFromString(directory_bot_jid_);
+    return true;
   } else {
     SetException("GetProperty: unsupported property " + property_name);
     return false;
@@ -864,6 +902,48 @@ bool HostNPScriptObject::SetProperty(const std::string& property_name,
     return false;
   }
 
+#if !defined(NDEBUG)
+  if (property_name == kAttrNameXmppServerAddress) {
+    if (NPVARIANT_IS_STRING(*value)) {
+      std::string address = StringFromNPVariant(*value);
+      bool xmpp_server_valid = net::ParseHostAndPort(
+          address, &xmpp_server_config_.host, &xmpp_server_config_.port);
+      if (xmpp_server_valid) {
+        return true;
+      } else {
+        SetException("SetProperty: invalid value for property " +
+                     property_name);
+      }
+    } else {
+      SetException("SetProperty: unexpected type for property " +
+                   property_name);
+    }
+    return false;
+  }
+
+  if (property_name == kAttrNameXmppServerUseTls) {
+    if (NPVARIANT_IS_BOOLEAN(*value)) {
+      xmpp_server_config_.use_tls = NPVARIANT_TO_BOOLEAN(*value);
+      return true;
+    } else {
+      SetException("SetProperty: unexpected type for property " +
+                   property_name);
+    }
+    return false;
+  }
+
+  if (property_name == kAttrNameDirectoryBotJid) {
+    if (NPVARIANT_IS_STRING(*value)) {
+      directory_bot_jid_ = StringFromNPVariant(*value);
+      return true;
+    } else {
+      SetException("SetProperty: unexpected type for property " +
+                   property_name);
+    }
+    return false;
+  }
+#endif  // !defined(NDEBUG)
+
   return false;
 }
 
@@ -888,6 +968,9 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
     kAttrNameConnected,
     kAttrNameDisconnecting,
     kAttrNameError,
+    kAttrNameXmppServerAddress,
+    kAttrNameXmppServerUseTls,
+    kAttrNameDirectoryBotJid,
     kFuncNameConnect,
     kFuncNameDisconnect,
     kFuncNameLocalize,
@@ -951,7 +1034,8 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
 
   // Create the It2Me host implementation and start connecting.
   it2me_impl_ = new It2MeImpl(
-      host_context.Pass(), plugin_task_runner_, weak_ptr_);
+      host_context.Pass(), plugin_task_runner_, weak_ptr_,
+      xmpp_server_config_, directory_bot_jid_);
   it2me_impl_->Connect(uid, auth_token, auth_service, ui_strings_);
 
   return true;

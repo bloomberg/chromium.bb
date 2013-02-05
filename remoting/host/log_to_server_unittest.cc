@@ -28,6 +28,7 @@ ACTION_P(QuitMainMessageLoop, message_loop) {
 
 const char kJabberClientNamespace[] = "jabber:client";
 const char kChromotingNamespace[] = "google:remoting";
+const char kTestBotJid[] = "remotingunittest@bot.talk.google.com";
 const char kClientJid1[] = "client@domain.com/1234";
 const char kClientJid2[] = "client@domain.com/5678";
 const char kHostJid[] = "host@domain.com/1234";
@@ -125,7 +126,8 @@ class LogToServerTest : public testing::Test {
     message_loop_proxy_ = base::MessageLoopProxy::current();
     EXPECT_CALL(signal_strategy_, AddListener(_));
     log_to_server_.reset(
-        new LogToServer(NULL, ServerLogEntry::ME2ME, &signal_strategy_));
+        new LogToServer(NULL, ServerLogEntry::ME2ME, &signal_strategy_,
+                        kTestBotJid));
     EXPECT_CALL(signal_strategy_, RemoveListener(_));
   }
 

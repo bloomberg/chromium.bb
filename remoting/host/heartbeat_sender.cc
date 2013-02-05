@@ -49,11 +49,13 @@ HeartbeatSender::HeartbeatSender(
     Listener* listener,
     const std::string& host_id,
     SignalStrategy* signal_strategy,
-    HostKeyPair* key_pair)
+    HostKeyPair* key_pair,
+    const std::string& directory_bot_jid)
     : listener_(listener),
       host_id_(host_id),
       signal_strategy_(signal_strategy),
       key_pair_(key_pair),
+      directory_bot_jid_(directory_bot_jid),
       interval_ms_(kDefaultHeartbeatIntervalMs),
       sequence_id_(0),
       sequence_id_was_set_(false),
@@ -107,9 +109,9 @@ void HeartbeatSender::ResendStanza() {
 }
 
 void HeartbeatSender::DoSendStanza() {
-  VLOG(1) << "Sending heartbeat stanza to " << kChromotingBotJid;
+  VLOG(1) << "Sending heartbeat stanza to " << directory_bot_jid_;
   request_ = iq_sender_->SendIq(
-      buzz::STR_SET, kChromotingBotJid, CreateHeartbeatMessage(),
+      buzz::STR_SET, directory_bot_jid_, CreateHeartbeatMessage(),
       base::Bind(&HeartbeatSender::ProcessResponse,
                  base::Unretained(this)));
   ++sequence_id_;

@@ -13,6 +13,8 @@
 
 'use strict';
 
+var remoting = remoting || {};
+
 function retrieveRefreshToken() {
   var query = window.location.search.substring(1);
   var parts = query.split('&');
@@ -23,6 +25,7 @@ function retrieveRefreshToken() {
   }
 
   if ('code' in queryArgs && 'state' in queryArgs) {
+    remoting.settings = new remoting.Settings();
     var oauth2 = new remoting.OAuth2();
     oauth2.exchangeCodeForToken(queryArgs['code'], queryArgs['state'],
       function() {

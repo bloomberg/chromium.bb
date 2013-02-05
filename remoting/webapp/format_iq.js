@@ -21,13 +21,6 @@ remoting.FormatIq = function() {
 };
 
 /**
- * JID for the remoting bot which is used to bridge communication between
- * the Talk network and the Remoting directory service.
- */
-remoting.FormatIq.prototype.REMOTING_DIRECTORY_SERVICE_BOT =
-    'remoting@bot.talk.google.com';
-
-/**
  * Verify that the only attributes on the given |node| are those specified
  * in the |attrs| string.
  *
@@ -628,7 +621,7 @@ remoting.FormatIq.prototype.prettyIq = function(send, message) {
     var to = iq.getAttribute('to');
     var from = iq.getAttribute('from');
     var action = '';
-    var bot = remoting.FormatIq.prototype.REMOTING_DIRECTORY_SERVICE_BOT;
+    var bot = remoting.settings.DIRECTORY_BOT_JID;
     if (send) {
       if (to && to != this.hostJid && to != bot) {
         console.warn('FormatIq: bad to: ' + to);

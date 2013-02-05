@@ -133,7 +133,7 @@ remoting.HostList.prototype.refresh = function(onDone) {
   var getHosts = function(token) {
     var headers = { 'Authorization': 'OAuth ' + token };
     remoting.xhr.get(
-        'https://www.googleapis.com/chromoting/v1/@me/hosts',
+        remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts',
         parseHostListResponse, '', headers);
   };
   /** @param {remoting.Error} error */
@@ -303,7 +303,7 @@ remoting.HostList.prototype.renameHost_ = function(hostTableEntry) {
         publicKey: hostTableEntry.host.publicKey
       } };
       remoting.xhr.put(
-          'https://www.googleapis.com/chromoting/v1/@me/hosts/' +
+          remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' +
           hostTableEntry.host.hostId,
           function(xhr) {},
           JSON.stringify(newHostDetails),
@@ -325,7 +325,7 @@ remoting.HostList.unregisterHostById = function(hostId) {
   var deleteHost = function(token) {
     var headers = { 'Authorization': 'OAuth ' + token };
     remoting.xhr.remove(
-        'https://www.googleapis.com/chromoting/v1/@me/hosts/' + hostId,
+        remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' + hostId,
         function() {}, '', headers);
   }
   remoting.identity.callWithToken(deleteHost, remoting.showErrorMessage);

@@ -63,6 +63,7 @@
 #include "remoting/host/network_settings.h"
 #include "remoting/host/policy_hack/policy_watcher.h"
 #include "remoting/host/resizing_host_observer.h"
+#include "remoting/host/service_urls.h"
 #include "remoting/host/session_manager_factory.h"
 #include "remoting/host/signaling_connector.h"
 #include "remoting/host/ui_strings.h"
@@ -275,6 +276,10 @@ class HostProcess
   // Accessed on the UI thread.
   scoped_ptr<IPC::ChannelProxy> daemon_channel_;
 
+  // XMPP server/remoting bot configuration (initialized from the command line).
+  XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
+  std::string directory_bot_jid_;
+
   // Created on the UI thread but used from the network thread.
   base::FilePath host_config_path_;
   scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
@@ -412,6 +417,17 @@ bool HostProcess::InitWithCommandLine(const CommandLine* cmd_line) {
   }
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
+  ServiceUrls* service_urls = ServiceUrls::GetInstance();
+  bool xmpp_server_valid = net::ParseHostAndPort(
+      service_urls->xmpp_server_address(),
+      &xmpp_server_config_.host, &xmpp_server_config_.port);
+  if (!xmpp_server_valid) {
+    LOG(ERROR) << "Invalid XMPP server: " <<
+        service_urls->xmpp_server_address();
+    return false;
+  }
+  xmpp_server_config_.use_tls = service_urls->xmpp_server_use_tls();
+  directory_bot_jid_ = service_urls->directory_bot_jid();
   return true;
 }
 
@@ -867,7 +883,7 @@ void HostProcess::StartHost() {
   signal_strategy_.reset(
       new XmppSignalStrategy(context_->url_request_context_getter(),
                              xmpp_login_, xmpp_auth_token_,
-                             xmpp_auth_service_));
+                             xmpp_auth_service_, xmpp_server_config_));
 
   scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker(
       new DnsBlackholeChecker(context_->url_request_context_getter(),
@@ -913,13 +929,14 @@ void HostProcess::StartHost() {
 #endif
 
   heartbeat_sender_.reset(new HeartbeatSender(
-      this, host_id_, signal_strategy_.get(), &key_pair_));
+      this, host_id_, signal_strategy_.get(), &key_pair_, directory_bot_jid_));
 
   host_change_notification_listener_.reset(new HostChangeNotificationListener(
-      this, host_id_, signal_strategy_.get()));
+      this, host_id_, signal_strategy_.get(), directory_bot_jid_));
 
   log_to_server_.reset(
-      new LogToServer(host_, ServerLogEntry::ME2ME, signal_strategy_.get()));
+      new LogToServer(host_, ServerLogEntry::ME2ME, signal_strategy_.get(),
+                      directory_bot_jid_));
   host_event_logger_ = HostEventLogger::Create(host_, kApplicationName);
 
   resizing_host_observer_.reset(

@@ -35,7 +35,8 @@ class HostChangeNotificationListener : public SignalStrategy::Listener {
   // Both listener and signal_strategy are expected to outlive this object.
   HostChangeNotificationListener(Listener* listener,
                                  const std::string& host_id,
-                                 SignalStrategy* signal_strategy);
+                                 SignalStrategy* signal_strategy,
+                                 const std::string& directory_bot_jid);
   virtual ~HostChangeNotificationListener();
 
   // SignalStrategy::Listener interface.
@@ -50,6 +51,7 @@ class HostChangeNotificationListener : public SignalStrategy::Listener {
   Listener* listener_;
   std::string host_id_;
   SignalStrategy* signal_strategy_;
+  std::string directory_bot_jid_;
   base::WeakPtrFactory<HostChangeNotificationListener> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(HostChangeNotificationListener);
 };

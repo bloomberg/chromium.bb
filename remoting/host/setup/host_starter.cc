@@ -34,12 +34,15 @@ HostStarter::~HostStarter() {
 }
 
 scoped_ptr<HostStarter> HostStarter::Create(
+    const std::string& oauth2_token_url,
+    const std::string& chromoting_hosts_url,
     net::URLRequestContextGetter* url_request_context_getter) {
   scoped_ptr<gaia::GaiaOAuthClient> oauth_client(
-      new gaia::GaiaOAuthClient(gaia::kGaiaOAuth2Url,
-                                url_request_context_getter));
+      new gaia::GaiaOAuthClient(
+          oauth2_token_url, url_request_context_getter));
   scoped_ptr<remoting::ServiceClient> service_client(
-      new remoting::ServiceClient(url_request_context_getter));
+      new remoting::ServiceClient(
+          chromoting_hosts_url, url_request_context_getter));
   scoped_ptr<remoting::DaemonController> daemon_controller(
       remoting::DaemonController::Create());
   return scoped_ptr<HostStarter>(

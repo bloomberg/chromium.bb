@@ -7,8 +7,6 @@
 
 namespace remoting {
 
-extern const char kChromotingBotJid[];
-
 // Service name used for authentication.
 // TODO(ajwong): Remove this once we've killed off XmppToken usage.
 // BUG:83897

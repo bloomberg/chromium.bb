@@ -28,6 +28,7 @@ namespace remoting {
 namespace {
 const char kHostId[] = "0";
 const char kTestJid[] = "user@gmail.com/chromoting123";
+const char kTestBotJid[] = "remotingunittest@bot.talk.google.com";
 }  // namespace
 
 ACTION_P(AddListener, list) {
@@ -56,7 +57,7 @@ class HostChangeNotificationListenerTest : public testing::Test {
         .WillRepeatedly(Return(kTestJid));
 
     host_change_notification_listener_.reset(new HostChangeNotificationListener(
-        &mock_listener_, kHostId, &signal_strategy_));
+        &mock_listener_, kHostId, &signal_strategy_, kTestBotJid));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -91,7 +92,7 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveValidNotification) {
   EXPECT_CALL(mock_listener_, OnHostDeleted())
       .WillOnce(Return());
   scoped_ptr<XmlElement> stanza = GetNotificationStanza(
-      "delete", kHostId, kChromotingBotJid);
+      "delete", kHostId, kTestBotJid);
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
   message_loop_.PostTask(FROM_HERE, base::Bind(MessageLoop::QuitClosure()));
@@ -102,7 +103,7 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveNotificationBeforeDelete) {
   EXPECT_CALL(mock_listener_, OnHostDeleted())
       .Times(0);
   scoped_ptr<XmlElement> stanza = GetNotificationStanza(
-      "delete", kHostId, kChromotingBotJid);
+      "delete", kHostId, kTestBotJid);
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
   host_change_notification_listener_.reset();
@@ -115,7 +116,7 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveInvalidHostIdNotification) {
   EXPECT_CALL(mock_listener_, OnHostDeleted())
       .Times(0);
   scoped_ptr<XmlElement> stanza = GetNotificationStanza(
-      "delete", "1", kChromotingBotJid);
+      "delete", "1", kTestBotJid);
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
   message_loop_.PostTask(FROM_HERE, base::Bind(MessageLoop::QuitClosure()));
@@ -137,7 +138,7 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveNonDeleteNotification) {
   EXPECT_CALL(mock_listener_, OnHostDeleted())
       .Times(0);
   scoped_ptr<XmlElement> stanza = GetNotificationStanza(
-      "update", kHostId, kChromotingBotJid);
+      "update", kHostId, kTestBotJid);
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
   message_loop_.PostTask(FROM_HERE, base::Bind(MessageLoop::QuitClosure()));

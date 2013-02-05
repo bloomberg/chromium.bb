@@ -22,10 +22,12 @@ namespace remoting {
 
 LogToServer::LogToServer(ChromotingHost* host,
                          ServerLogEntry::Mode mode,
-                         SignalStrategy* signal_strategy)
+                         SignalStrategy* signal_strategy,
+                         const std::string& directory_bot_jid)
     : host_(host),
       mode_(mode),
-      signal_strategy_(signal_strategy) {
+      signal_strategy_(signal_strategy),
+      directory_bot_jid_(directory_bot_jid) {
   signal_strategy_->AddListener(this);
 
   // |host| may be NULL in tests.
@@ -113,7 +115,7 @@ void LogToServer::SendPendingEntries() {
   }
   // Send the stanza to the server.
   scoped_ptr<IqRequest> req = iq_sender_->SendIq(
-      buzz::STR_SET, kChromotingBotJid, stanza.Pass(),
+      buzz::STR_SET, directory_bot_jid_, stanza.Pass(),
       IqSender::ReplyCallback());
   // We ignore any response, so let the IqRequest be destroyed.
   return;

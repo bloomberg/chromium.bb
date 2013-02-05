@@ -37,9 +37,11 @@ const char kSupportIdLifetimeTag[] = "support-id-lifetime";
 RegisterSupportHostRequest::RegisterSupportHostRequest(
     SignalStrategy* signal_strategy,
     HostKeyPair* key_pair,
+    const std::string& directory_bot_jid,
     const RegisterCallback& callback)
     : signal_strategy_(signal_strategy),
       key_pair_(key_pair),
+      directory_bot_jid_(directory_bot_jid),
       callback_(callback) {
   DCHECK(signal_strategy_);
   DCHECK(key_pair_);
@@ -58,7 +60,7 @@ void RegisterSupportHostRequest::OnSignalStrategyStateChange(
     DCHECK(!callback_.is_null());
 
     request_ = iq_sender_->SendIq(
-        buzz::STR_SET, kChromotingBotJid,
+        buzz::STR_SET, directory_bot_jid_,
         CreateRegistrationRequest(signal_strategy_->GetLocalJid()).Pass(),
         base::Bind(&RegisterSupportHostRequest::ProcessResponse,
                    base::Unretained(this)));

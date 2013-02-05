@@ -392,6 +392,8 @@
             'host/server_log_entry.h',
             'host/service_client.cc',
             'host/service_client.h',
+            'host/service_urls.cc',
+            'host/service_urls.h',
             'host/session_manager_factory.cc',
             'host/session_manager_factory.h',
             'host/signaling_connector.cc',

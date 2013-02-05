@@ -180,7 +180,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
        publicKey: publicKey
     } };
     remoting.xhr.post(
-        'https://www.googleapis.com/chromoting/v1/@me/hosts/',
+        remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/',
         /** @param {XMLHttpRequest} xhr */
         function (xhr) { onRegistered(publicKey, privateKey, xhr); },
         JSON.stringify(newHostDetails),

@@ -100,3 +100,7 @@ remoting.HostPlugin.prototype.daemonState;
 
 /** @type {function(boolean):void} */
 remoting.HostPlugin.prototype.onNatTraversalPolicyChanged;
+
+/** @type {string} */ remoting.HostPlugin.prototype.xmppServerAddress;
+/** @type {boolean} */ remoting.HostPlugin.prototype.xmppServerUseTls;
+/** @type {string} */ remoting.HostPlugin.prototype.directoryBotJid;

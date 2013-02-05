@@ -39,7 +39,8 @@ class LogToServer : public base::NonThreadSafe,
  public:
   explicit LogToServer(ChromotingHost* host,
                        ServerLogEntry::Mode mode,
-                       SignalStrategy* signal_strategy);
+                       SignalStrategy* signal_strategy,
+                       const std::string& directory_bot_jid);
   virtual ~LogToServer();
 
   // Logs a session state change. Currently, this is either
@@ -68,6 +69,8 @@ class LogToServer : public base::NonThreadSafe,
   ServerLogEntry::Mode mode_;
   SignalStrategy* signal_strategy_;
   scoped_ptr<IqSender> iq_sender_;
+  std::string directory_bot_jid_;
+
   // A map from client JID to the route type of that client's connection to
   // this host.
   std::map<std::string, protocol::TransportRoute::RouteType>

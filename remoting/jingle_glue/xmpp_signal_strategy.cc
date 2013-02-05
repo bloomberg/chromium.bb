@@ -38,15 +38,20 @@ XmppSignalStrategy::XmppSignalStrategy(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     const std::string& username,
     const std::string& auth_token,
-    const std::string& auth_token_service)
-   : request_context_getter_(request_context_getter),
-     username_(username),
-     auth_token_(auth_token),
-     auth_token_service_(auth_token_service),
-     resource_name_(kDefaultResourceName),
-     xmpp_client_(NULL),
-     state_(DISCONNECTED),
-     error_(OK) {
+    const std::string& auth_token_service,
+    const XmppSignalStrategy::XmppServerConfig& xmpp_server_config)
+    : request_context_getter_(request_context_getter),
+      username_(username),
+      auth_token_(auth_token),
+      auth_token_service_(auth_token_service),
+      resource_name_(kDefaultResourceName),
+      xmpp_client_(NULL),
+      xmpp_server_config_(xmpp_server_config),
+      state_(DISCONNECTED),
+      error_(OK) {
+#if defined(NDEBUG)
+  CHECK(xmpp_server_config_.use_tls);
+#endif
 }
 
 XmppSignalStrategy::~XmppSignalStrategy() {
@@ -70,10 +75,12 @@ void XmppSignalStrategy::Connect() {
   settings.set_user(login_jid.node());
   settings.set_host(login_jid.domain());
   settings.set_resource(resource_name_);
-  settings.set_use_tls(buzz::TLS_ENABLED);
   settings.set_token_service(auth_token_service_);
   settings.set_auth_token(buzz::AUTH_MECHANISM_GOOGLE_TOKEN, auth_token_);
-  settings.set_server(talk_base::SocketAddress("talk.google.com", 5222));
+  settings.set_server(talk_base::SocketAddress(
+      xmpp_server_config_.host, xmpp_server_config_.port));
+  settings.set_use_tls(
+      xmpp_server_config_.use_tls ? buzz::TLS_ENABLED : buzz::TLS_DISABLED);
 
   scoped_ptr<jingle_glue::XmppClientSocketFactory> socket_factory(
       new jingle_glue::XmppClientSocketFactory(

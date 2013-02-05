@@ -46,7 +46,7 @@ remoting.HostSession.State = {
  */
 remoting.HostSession.createPlugin = function() {
   var plugin = document.createElement('embed');
-  plugin.type = remoting.PLUGIN_MIMETYPE;
+  plugin.type = remoting.settings.PLUGIN_MIMETYPE;
   // Hiding the plugin means it doesn't load, so make it size zero instead.
   plugin.width = 0;
   plugin.height = 0;
@@ -74,6 +74,9 @@ remoting.HostSession.prototype.createPluginAndConnect =
   this.plugin.onStateChanged = onStateChanged;
   this.plugin.logDebugInfo = logDebugInfo;
   this.plugin.localize(chrome.i18n.getMessage);
+  this.plugin.xmppServerAddress = remoting.settings.XMPP_SERVER_ADDRESS;
+  this.plugin.xmppServerUseTls = remoting.settings.XMPP_SERVER_USE_TLS;
+  this.plugin.directoryBotJid = remoting.settings.DIRECTORY_BOT_JID;
   this.plugin.connect(email, 'oauth2:' + accessToken);
 };
 

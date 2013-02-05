@@ -50,6 +50,7 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
   // response.
   RegisterSupportHostRequest(SignalStrategy* signal_strategy,
                              HostKeyPair* key_pair,
+                             const std::string& directory_bot_jid,
                              const RegisterCallback& callback);
   virtual ~RegisterSupportHostRequest();
 
@@ -75,6 +76,7 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
 
   SignalStrategy* signal_strategy_;
   HostKeyPair* key_pair_;
+  std::string directory_bot_jid_;
   RegisterCallback callback_;
 
   scoped_ptr<IqSender> iq_sender_;

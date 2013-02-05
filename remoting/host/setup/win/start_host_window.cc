@@ -11,6 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "remoting/host/service_urls.h"
 #include "remoting/host/setup/oauth_helper.h"
 #include "remoting/host/setup/pin_validator.h"
 #include "remoting/host/setup/win/load_string_from_resource.h"
@@ -19,7 +21,10 @@ namespace remoting {
 
 StartHostWindow::StartHostWindow(
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter)
-    : host_starter_(remoting::HostStarter::Create(url_request_context_getter)),
+    : host_starter_(remoting::HostStarter::Create(
+          GaiaUrls::GetInstance()->oauth2_token_url(),
+          remoting::ServiceUrls::GetInstance()->directory_hosts_url(),
+          url_request_context_getter)),
       consent_to_collect_data_(true),
       mem_mgr_(GetProcessHeap()),
       string_mgr_(&mem_mgr_),

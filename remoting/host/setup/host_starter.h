@@ -33,6 +33,8 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
 
   // Creates a HostStarter.
   static scoped_ptr<HostStarter> Create(
+      const std::string& oauth2_token_url,
+      const std::string& chromoting_hosts_url,
       net::URLRequestContextGetter* url_request_context_getter);
 
   // Registers a new host with the Chromoting service, and starts it.

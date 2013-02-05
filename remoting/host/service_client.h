@@ -34,7 +34,8 @@ class ServiceClient {
    protected:
     virtual ~Delegate() {}
   };
-  ServiceClient(net::URLRequestContextGetter* context_getter);
+  ServiceClient(const std::string& chromoting_hosts_url,
+                net::URLRequestContextGetter* context_getter);
   ~ServiceClient();
 
   // Register a host.

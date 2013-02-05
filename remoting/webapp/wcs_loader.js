@@ -30,14 +30,6 @@ remoting.WcsLoader = function() {
 };
 
 /**
- * The URL of the GTalk gadget.
- * @type {string}
- * @private
- */
-remoting.WcsLoader.prototype.TALK_GADGET_URL_ =
-    'https://chromoting-client.talkgadget.google.com/talkgadget/';
-
-/**
  * The id of the script node.
  * @type {string}
  * @private
@@ -69,7 +61,7 @@ remoting.WcsLoader.prototype.start = function(token, onReady, onError) {
   // Create a script node to load the WCS driver.
   node = document.createElement('script');
   node.id = this.SCRIPT_NODE_ID_;
-  node.src = this.TALK_GADGET_URL_ + 'iq?access_token=' + token;
+  node.src = remoting.settings.TALK_GADGET_URL + 'iq?access_token=' + token;
   node.type = 'text/javascript';
   document.body.insertBefore(node, document.body.firstChild);
 
@@ -114,10 +106,6 @@ remoting.WcsLoader.prototype.constructWcs_ = function(token, onReady) {
       remoting.wcsLoader.wcsIqClient, token, onReady);
 };
 
-/** @private */
-remoting.WcsLoader.prototype.OAUTH2_VALIDATE_TOKEN_ENDPOINT_ =
-    'https://www.googleapis.com/oauth2/v1/tokeninfo';
-
 /**
  * Validates an OAuth2 access token.
  *
@@ -151,6 +139,8 @@ remoting.WcsLoader.prototype.validateToken = function(token, onOk, onError) {
     }
   };
   var parameters = '?access_token=' + encodeURIComponent(token);
-  xhr.open('GET', this.OAUTH2_VALIDATE_TOKEN_ENDPOINT_ + parameters, true);
+  xhr.open('GET',
+           remoting.settings.OAUTH2_API_BASE_URL + '/v1/tokeninfo' + parameters,
+           true);
   xhr.send(null);
 };

@@ -92,7 +92,8 @@ class HeartbeatSender : public SignalStrategy::Listener {
   HeartbeatSender(Listener* listener,
                   const std::string& host_id,
                   SignalStrategy* signal_strategy,
-                  HostKeyPair* key_pair);
+                  HostKeyPair* key_pair,
+                  const std::string& directory_bot_jid);
   virtual ~HeartbeatSender();
 
   // SignalStrategy::Listener interface.
@@ -125,6 +126,7 @@ class HeartbeatSender : public SignalStrategy::Listener {
   std::string host_id_;
   SignalStrategy* signal_strategy_;
   HostKeyPair* key_pair_;
+  std::string directory_bot_jid_;
   scoped_ptr<IqSender> iq_sender_;
   scoped_ptr<IqRequest> request_;
   int interval_ms_;

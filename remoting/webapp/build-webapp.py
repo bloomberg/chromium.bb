@@ -55,6 +55,14 @@ def createZip(zip_path, directory):
   zip.close()
 
 
+def replaceUrl(destination, url_name, url_value):
+  """Updates a URL in both plugin_settings.json and manifest.js."""
+  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
+                 "'" + url_name + "'", "'" + url_value + "'")
+  findAndReplace(os.path.join(destination, 'manifest.json'),
+                 url_name, url_value)
+
+
 def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
                 files, locales, patches):
   """Does the main work of building the webapp directory and zipfile.
@@ -183,26 +191,82 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
                  'HOST_PLUGIN_MIMETYPE',
                  mimetype)
 
-  # Set the correct OAuth2 redirect URL.
-  scheme = 'https://'
-  urlSuffix = '.talkgadget.google.com/talkgadget/oauth/chrome-remote-desktop'
-  url = scheme + 'chromoting-oauth' + urlSuffix
-  urlPattern = scheme + '*' + urlSuffix
-  if (buildtype == 'Official'):
-    oauth2RedirectUrlJs = (
-        "'" + url + "/rel/' + chrome.i18n.getMessage('@@extension_id')")
-    oauth2RedirectUrlJson = urlPattern + '/rel/*'
-  else:
-    oauth2RedirectUrlJs = "'" + url + "/dev'"
-    oauth2RedirectUrlJson = urlPattern  + '/dev*'
-  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
-                 "'OAUTH2_REDIRECT_URL'",
-                 oauth2RedirectUrlJs)
+  # Allow host names for google services/apis to be overriden via env vars.
+  oauth2AccountsHost = os.environ.get(
+      'OAUTH2_ACCOUNTS_HOST', 'https://accounts.google.com')
+  oauth2ApiHost = os.environ.get(
+      'OAUTH2_API_HOST', 'https://www.googleapis.com')
+  directoryApiHost = os.environ.get(
+      'DIRECTORY_API_HOST', 'https://www.googleapis.com')
+  oauth2BaseUrl = oauth2AccountsHost + '/o/oauth2'
+  oauth2ApiBaseUrl = oauth2ApiHost + '/oauth2'
+  directoryApiBaseUrl = directoryApiHost + '/chromoting/v1'
+  replaceUrl(destination, 'OAUTH2_BASE_URL', oauth2BaseUrl)
+  replaceUrl(destination, 'OAUTH2_API_BASE_URL', oauth2ApiBaseUrl)
+  replaceUrl(destination, 'DIRECTORY_API_BASE_URL', directoryApiBaseUrl)
+  # Substitute hosts in the manifest's CSP list.
   findAndReplace(os.path.join(destination, 'manifest.json'),
-                 "OAUTH2_REDIRECT_URL",
-                 oauth2RedirectUrlJson)
+                 'OAUTH2_ACCOUNTS_HOST', oauth2AccountsHost)
+  # Ensure we list the API host only once if it's the same for multiple APIs.
+  googleApiHosts = ' '.join(set([oauth2ApiHost, directoryApiHost]))
+  findAndReplace(os.path.join(destination, 'manifest.json'),
+                 'GOOGLE_API_HOSTS', googleApiHosts)
+
+  # WCS and the OAuth trampoline are both hosted on talkgadget. Split them into
+  # separate suffix/prefix variables to allow for wildcards in manifest.json.
+  talkGadgetHostSuffix = os.environ.get(
+      'TALK_GADGET_HOST_SUFFIX', 'talkgadget.google.com')
+  talkGadgetHostPrefix = os.environ.get(
+      'TALK_GADGET_HOST_PREFIX', 'https://chromoting-client.')
+  oauth2RedirectHostPrefix = os.environ.get(
+      'OAUTH2_REDIRECT_HOST_PREFIX', 'https://chromoting-oauth.')
+
+  # Use a wildcard in the manifest.json host specs if the prefixes differ.
+  talkGadgetHostJs = talkGadgetHostPrefix + talkGadgetHostSuffix
+  talkGadgetBaseUrl = talkGadgetHostJs + '/talkgadget/'
+  if talkGadgetHostPrefix == oauth2RedirectHostPrefix:
+    talkGadgetHostJson = talkGadgetHostJs
+  else:
+    talkGadgetHostJson = 'https://*.' + talkGadgetHostSuffix
+
+  # Set the correct OAuth2 redirect URL.
+  oauth2RedirectHostJs = oauth2RedirectHostPrefix + talkGadgetHostSuffix
+  oauth2RedirectHostJson = talkGadgetHostJson
+  oauth2RedirectPath = '/talkgadget/oauth/chrome-remote-desktop'
+  oauth2RedirectBaseUrlJs = oauth2RedirectHostJs + oauth2RedirectPath
+  oauth2RedirectBaseUrlJson = oauth2RedirectHostJson + oauth2RedirectPath
+  if buildtype == 'Official':
+    oauth2RedirectUrlJs = ("'" + oauth2RedirectBaseUrlJs +
+                           "/rel/' + chrome.i18n.getMessage('@@extension_id')")
+    oauth2RedirectUrlJson = oauth2RedirectBaseUrlJson + '/rel/*'
+  else:
+    oauth2RedirectUrlJs = "'" + oauth2RedirectBaseUrlJs + "/dev'"
+    oauth2RedirectUrlJson = oauth2RedirectBaseUrlJson + '/dev*'
+  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
+                 "'TALK_GADGET_URL'", "'" + talkGadgetBaseUrl + "'")
+  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
+                 "'OAUTH2_REDIRECT_URL'", oauth2RedirectUrlJs)
+  findAndReplace(os.path.join(destination, 'manifest.json'),
+                 'TALK_GADGET_HOST', talkGadgetHostJson)
+  findAndReplace(os.path.join(destination, 'manifest.json'),
+                 'OAUTH2_REDIRECT_URL', oauth2RedirectUrlJson)
+
+  # Configure xmpp server and directory bot settings in the plugin.
+  xmppServerAddress = os.environ.get(
+      'XMPP_SERVER_ADDRESS', 'talk.google.com:5222')
+  xmppServerUseTls = os.environ.get('XMPP_SERVER_USE_TLS', 'true')
+  directoryBotJid = os.environ.get(
+      'DIRECTORY_BOT_JID', 'remoting@bot.talk.google.com')
+
+  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
+                 "'XMPP_SERVER_ADDRESS'", "'" + xmppServerAddress + "'")
+  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
+                 "Boolean('XMPP_SERVER_USE_TLS')", xmppServerUseTls)
+  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
+                 "'DIRECTORY_BOT_JID'", "'" + directoryBotJid + "'")
 
   # Set the correct API keys.
+  # For overriding the client ID/secret via env vars, see google_api_keys.py.
   apiClientId = google_api_keys.GetClientID('REMOTING')
   apiClientSecret = google_api_keys.GetClientSecret('REMOTING')
 

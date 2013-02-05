@@ -22,11 +22,12 @@
       "js": [ "cs_oauth2_trampoline.js" ]
     }
   ],
-  "content_security_policy": "default-src 'self'; script-src 'self' https://*.talkgadget.google.com; style-src 'self' https://fonts.googleapis.com; img-src 'self' https://*.talkgadget.google.com; font-src *; connect-src 'self' https://accounts.google.com https://www.googleapis.com https://*.talkgadget.google.com https://relay.google.com",
+  "content_security_policy": "default-src 'self'; script-src 'self' TALK_GADGET_HOST; style-src 'self' https://fonts.googleapis.com; img-src 'self' TALK_GADGET_HOST; font-src *; connect-src 'self' OAUTH2_ACCOUNTS_HOST GOOGLE_API_HOSTS TALK_GADGET_HOST https://relay.google.com",
   "permissions": [
-    "https://accounts.google.com/*",
-    "https://www.googleapis.com/chromoting/*",
-    "https://*.talkgadget.google.com/talkgadget/*",
+    "OAUTH2_ACCOUNTS_HOST/*",
+    "OAUTH2_API_BASE_URL/*",
+    "DIRECTORY_API_BASE_URL/*",
+    "TALK_GADGET_HOST/talkgadget/*",
     "https://relay.google.com/*",
     "clipboardRead",
     "clipboardWrite"

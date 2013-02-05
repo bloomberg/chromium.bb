@@ -13,21 +13,18 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 
-namespace {
-const char kServiceUrl[] =
-    "https://www.googleapis.com/chromoting/v1/@me/hosts/";
-}  // namespace
-
 namespace remoting {
 
 class ServiceClient::Core
     : public base::RefCountedThreadSafe<ServiceClient::Core>,
       public net::URLFetcherDelegate {
  public:
-  Core(net::URLRequestContextGetter* request_context_getter)
+  Core(const std::string& chromoting_hosts_url,
+       net::URLRequestContextGetter* request_context_getter)
            : request_context_getter_(request_context_getter),
              delegate_(NULL),
-             pending_request_type_(PENDING_REQUEST_NONE) {
+             pending_request_type_(PENDING_REQUEST_NONE),
+             chromoting_hosts_url_(chromoting_hosts_url) {
   }
 
   void RegisterHost(const std::string& host_id,
@@ -64,6 +61,7 @@ class ServiceClient::Core
   ServiceClient::Delegate* delegate_;
   scoped_ptr<net::URLFetcher> request_;
   PendingRequestType pending_request_type_;
+  std::string chromoting_hosts_url_;
 };
 
 void ServiceClient::Core::RegisterHost(
@@ -102,7 +100,7 @@ void ServiceClient::Core::MakeGaiaRequest(
     ServiceClient::Delegate* delegate) {
   delegate_ = delegate;
   request_.reset(net::URLFetcher::Create(
-      0, GURL(kServiceUrl + url_suffix), request_type, this));
+      0, GURL(chromoting_hosts_url_ + url_suffix), request_type, this));
   request_->SetRequestContext(request_context_getter_);
   request_->SetUploadData("application/json; charset=UTF-8", request_body);
   request_->AddExtraRequestHeader("Authorization: OAuth " + oauth_access_token);
@@ -140,8 +138,9 @@ void ServiceClient::Core::HandleResponse(const net::URLFetcher* source) {
   delegate_->OnNetworkError(source->GetResponseCode());
 }
 
-ServiceClient::ServiceClient(net::URLRequestContextGetter* context_getter) {
-  core_ = new Core(context_getter);
+ServiceClient::ServiceClient(const std::string& chromoting_hosts_url,
+                             net::URLRequestContextGetter* context_getter) {
+  core_ = new Core(chromoting_hosts_url, context_getter);
 }
 
 ServiceClient::~ServiceClient() {

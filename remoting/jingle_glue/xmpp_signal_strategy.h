@@ -38,11 +38,19 @@ class XmppSignalStrategy : public base::NonThreadSafe,
                            public buzz::XmppStanzaHandler,
                            public sigslot::has_slots<> {
  public:
+  // XMPP Server configuration for XmppSignalStrategy.
+  struct XmppServerConfig {
+    std::string host;
+    int port;
+    bool use_tls;
+  };
+
   XmppSignalStrategy(
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       const std::string& username,
       const std::string& auth_token,
-      const std::string& auth_token_service);
+      const std::string& auth_token_service,
+      const XmppServerConfig& xmpp_server_config);
   virtual ~XmppSignalStrategy();
 
   // SignalStrategy interface.
@@ -86,6 +94,7 @@ class XmppSignalStrategy : public base::NonThreadSafe,
   std::string resource_name_;
   scoped_ptr<talk_base::TaskRunner> task_runner_;
   buzz::XmppClient* xmpp_client_;
+  XmppServerConfig xmpp_server_config_;
 
   State state_;
   Error error_;

@@ -26,6 +26,7 @@
 #include "remoting/host/plugin/host_plugin_utils.h"
 #include "remoting/host/setup/daemon_controller.h"
 #include "remoting/host/ui_strings.h"
+#include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npfunctions.h"
 #include "third_party/npapi/bindings/npruntime.h"
@@ -273,6 +274,12 @@ class HostNPScriptObject {
 
   // Localized strings for use by the |it2me_impl_| UI.
   UiStrings ui_strings_;
+
+  // IT2Me Talk server configuration used by |it2me_impl_| to connect.
+  XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
+
+  // Chromoting Bot JID used by |it2me_impl_| to register the host.
+  std::string directory_bot_jid_;
 
   // Callbacks to notify in response to |it2me_impl_| events.
   ScopedRefNPObject on_nat_traversal_policy_changed_func_;

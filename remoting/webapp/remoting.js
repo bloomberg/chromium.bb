@@ -41,6 +41,7 @@ remoting.init = function() {
   remoting.logExtensionInfoAsync_();
   l10n.localize();
   // Create global objects.
+  remoting.settings = new remoting.Settings();
   remoting.oauth2 = new remoting.OAuth2();
   // TODO(jamiewalch): Reinstate this when we migrate to apps v2
   // (http://crbug.com/ 134213).

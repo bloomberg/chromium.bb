@@ -23,10 +23,12 @@ namespace remoting {
 HostChangeNotificationListener::HostChangeNotificationListener(
     Listener* listener,
     const std::string& host_id,
-    SignalStrategy* signal_strategy)
+    SignalStrategy* signal_strategy,
+    const std::string& directory_bot_jid)
     : listener_(listener),
       host_id_(host_id),
       signal_strategy_(signal_strategy),
+      directory_bot_jid_(directory_bot_jid),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(signal_strategy_);
 
@@ -55,7 +57,7 @@ bool HostChangeNotificationListener::OnSignalStrategyIncomingStanza(
       host_changed_element->Attr(QName(kChromotingXmlNamespace, "hostid"));
   const std::string& from = stanza->Attr(buzz::QN_FROM);
   const std::string& to = stanza->Attr(buzz::QN_TO);
-  if (host_id == host_id_ && from == kChromotingBotJid &&
+  if (host_id == host_id_ && from == directory_bot_jid_ &&
       to == signal_strategy_->GetLocalJid()) {
     const std::string& operation =
         host_changed_element->Attr(QName(kChromotingXmlNamespace, "operation"));

@@ -437,7 +437,7 @@ function resolveSupportId(clientJid, supportId, token) {
   };
 
   remoting.supportHostsXhr_ = remoting.xhr.get(
-      'https://www.googleapis.com/chromoting/v1/support-hosts/' +
+      remoting.settings.DIRECTORY_API_BASE_URL + '/support-hosts/' +
           encodeURIComponent(supportId),
       parseServerResponse_.bind(null, clientJid),
       '',

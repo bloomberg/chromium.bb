@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -59,8 +60,9 @@ SignalingConnector::~SignalingConnector() {
 void SignalingConnector::EnableOAuth(
     scoped_ptr<OAuthCredentials> oauth_credentials) {
   oauth_credentials_ = oauth_credentials.Pass();
-  gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(
-      gaia::kGaiaOAuth2Url, url_request_context_getter_));
+  gaia_oauth_client_.reset(
+      new gaia::GaiaOAuthClient(GaiaUrls::GetInstance()->oauth2_token_url(),
+                                url_request_context_getter_));
 }
 
 void SignalingConnector::OnSignalStrategyStateChange(
