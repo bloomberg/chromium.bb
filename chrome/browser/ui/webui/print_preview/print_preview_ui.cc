@@ -394,23 +394,16 @@ void PrintPreviewUI::SetInitiatorTabTitle(
 }
 
 // static
-void PrintPreviewUI::SetSourceIsModifiable(WebContents* print_preview_dialog,
-                                           bool source_is_modifiable) {
+void PrintPreviewUI::SetInitialParams(
+    content::WebContents* print_preview_dialog,
+    const PrintHostMsg_RequestPrintPreview_Params& params) {
   if (!print_preview_dialog || !print_preview_dialog->GetWebUI())
     return;
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
       print_preview_dialog->GetWebUI()->GetController());
-  print_preview_ui->source_is_modifiable_ = source_is_modifiable;
-}
-
-// static
-void PrintPreviewUI::SetSourceHasSelection(WebContents* print_preview_dialog,
-                                           bool source_has_selection) {
-    if (!print_preview_dialog || !print_preview_dialog->GetWebUI())
-      return;
-    PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-        print_preview_dialog->GetWebUI()->GetController());
-    print_preview_ui->source_has_selection_ = source_has_selection;
+  print_preview_ui->source_is_modifiable_ = params.is_modifiable;
+  print_preview_ui->source_has_selection_ = params.has_selection;
+  print_preview_ui->print_selection_only_ = params.selection_only;
 }
 
 // static

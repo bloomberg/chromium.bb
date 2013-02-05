@@ -130,15 +130,17 @@ bool PrintViewManager::PrintToDestination() {
   return PrintNowInternal(new PrintMsg_PrintPages(routing_id()));
 }
 
-bool PrintViewManager::PrintPreviewNow() {
+bool PrintViewManager::PrintPreviewNow(bool selection_only) {
   // Users can send print commands all they want and it is beyond
   // PrintViewManager's control. Just ignore the extra commands.
   // See http://crbug.com/136842 for example.
   if (print_preview_state_ != NOT_PREVIEWING)
     return false;
 
-  if (!PrintNowInternal(new PrintMsg_InitiatePrintPreview(routing_id())))
+  if (!PrintNowInternal(new PrintMsg_InitiatePrintPreview(routing_id(),
+                                                          selection_only))) {
     return false;
+  }
 
   print_preview_state_ = USER_INITIATED_PREVIEW;
   return true;
@@ -342,11 +344,10 @@ void PrintViewManager::OnScriptedPrintPreview(bool source_is_modifiable,
   scripted_print_preview_rph_ = rph;
 
   dialog_controller->PrintPreview(web_contents());
-  PrintPreviewUI::SetSourceIsModifiable(
-      dialog_controller->GetPrintPreviewForContents(web_contents()),
-      source_is_modifiable);
-  PrintPreviewUI::SetSourceHasSelection(
-      dialog_controller->GetPrintPreviewForTab(web_contents()), false);
+  PrintHostMsg_RequestPrintPreview_Params params;
+  params.is_modifiable = source_is_modifiable;
+  PrintPreviewUI::SetInitialParams(
+      dialog_controller->GetPrintPreviewForContents(web_contents()), params);
 }
 
 void PrintViewManager::OnScriptedPrintPreviewReply(IPC::Message* reply_msg) {

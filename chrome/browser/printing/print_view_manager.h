@@ -59,7 +59,7 @@ class PrintViewManager : public content::NotificationObserver,
   // renderer. Since this happens asynchronous, the print preview dialog
   // creation will not be completed on the return of this function. Returns
   // false if print preview is impossible at the moment.
-  bool PrintPreviewNow();
+  bool PrintPreviewNow(bool selection_only);
 
   // Notify PrintViewManager that print preview is starting in the renderer for
   // a particular WebNode.

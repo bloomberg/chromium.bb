@@ -487,8 +487,10 @@ void RenderViewContextMenu::InitMenu() {
   else if (has_selection)
     AppendCopyItem();
 
-  if (has_selection)
+  if (has_selection) {
+    AppendPrintItem();
     AppendSearchProvider();
+  }
 
   if (!IsDevToolsURL(params_.page_url))
     AppendAllExtensionItems();
@@ -532,7 +534,7 @@ void RenderViewContextMenu::AppendPlatformAppItems() {
 
   int index = 0;
   extension_items_.AppendExtensionItems(platform_app->id(),
-                                     PrintableSelectionText(), &index);
+                                        PrintableSelectionText(), &index);
 
   // Add dev tools for unpacked extensions.
   if (platform_app->location() == extensions::Manifest::LOAD ||
@@ -803,6 +805,14 @@ void RenderViewContextMenu::AppendFrameItems() {
 void RenderViewContextMenu::AppendCopyItem() {
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPY,
                                   IDS_CONTENT_CONTEXT_COPY);
+}
+
+void RenderViewContextMenu::AppendPrintItem() {
+  if (profile_->GetPrefs()->GetBoolean(prefs::kPrintingEnabled) &&
+      (params_.media_type == WebContextMenuData::MediaTypeNone ||
+       params_.media_flags & WebContextMenuData::MediaCanPrint)) {
+    menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
+  }
 }
 
 void RenderViewContextMenu::AppendSearchProvider() {
@@ -1563,7 +1573,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         if (profile_->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled)) {
           print_view_manager->PrintNow();
         } else {
-          print_view_manager->PrintPreviewNow();
+          print_view_manager->PrintPreviewNow(!params_.selection_text.empty());
         }
       } else {
         rvh->Send(new PrintMsg_PrintNodeUnderContextMenu(rvh->GetRoutingID()));

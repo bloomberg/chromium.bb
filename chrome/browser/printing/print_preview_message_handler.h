@@ -13,6 +13,7 @@ class PrintPreviewUI;
 struct PrintHostMsg_DidGetPreviewPageCount_Params;
 struct PrintHostMsg_DidPreviewDocument_Params;
 struct PrintHostMsg_DidPreviewPage_Params;
+struct PrintHostMsg_RequestPrintPreview_Params;
 
 namespace content {
 class WebContents;
@@ -47,9 +48,8 @@ class PrintPreviewMessageHandler
   PrintPreviewUI* GetPrintPreviewUI();
 
   // Message handlers.
-  void OnRequestPrintPreview(bool source_is_modifiable,
-                             bool webnode_only,
-                             bool source_has_selection);
+  void OnRequestPrintPreview(
+      const PrintHostMsg_RequestPrintPreview_Params& params);
   void OnDidGetDefaultPageLayout(
       const printing::PageSizeMargins& page_layout_in_points,
       const gfx::Rect& printable_area_in_points,

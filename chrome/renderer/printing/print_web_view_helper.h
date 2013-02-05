@@ -84,6 +84,7 @@ class PrintWebViewHelper
 
   enum PrintPreviewRequestType {
     PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME,
+    PRINT_PREVIEW_USER_INITIATED_SELECTION,
     PRINT_PREVIEW_USER_INITIATED_CONTEXT_NODE,
     PRINT_PREVIEW_SCRIPTED  // triggered by window.print().
   };
@@ -133,7 +134,7 @@ class PrintWebViewHelper
       const PrintMsg_Print_Params& params);
 
   // Initiate print preview.
-  void OnInitiatePrintPreview();
+  void OnInitiatePrintPreview(bool selection_only);
 
   // Start the process of generating a print preview using |settings|.
   void OnPrintPreview(const base::DictionaryValue& settings);

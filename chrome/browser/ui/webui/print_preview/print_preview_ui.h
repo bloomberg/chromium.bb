@@ -15,6 +15,7 @@
 class PrintPreviewDataService;
 class PrintPreviewHandler;
 struct PrintHostMsg_DidGetPreviewPageCount_Params;
+struct PrintHostMsg_RequestPrintPreview_Params;
 
 namespace base {
 class RefCountedBytes;
@@ -60,13 +61,12 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   bool source_has_selection() { return source_has_selection_; }
 
-  // Set |source_is_modifiable_| for |print_preview_dialog|'s PrintPreviewUI.
-  static void SetSourceIsModifiable(content::WebContents* print_preview_dialog,
-                                    bool source_is_modifiable);
+  bool print_selection_only() { return print_selection_only_; }
 
-  // Set |source_has_selection_| for |print_preview_dialog|'s PrintPreviewUI.
-  static void SetSourceHasSelection(content::WebContents* print_preview_dialog,
-                                    bool source_has_selection);
+  // Set initial settings for PrintPreviewUI.
+  static void SetInitialParams(
+      content::WebContents* print_preview_dialog,
+      const PrintHostMsg_RequestPrintPreview_Params& params);
 
   // Determines whether to cancel a print preview request based on
   // |preview_ui_id| and |request_id|.
@@ -177,6 +177,9 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   // Indicates whether the source document has selection.
   bool source_has_selection_;
+
+  // Indicates whether only the selection should be printed.
+  bool print_selection_only_;
 
   // Store the initiator tab title, used for populating the print preview dialog
   // title.

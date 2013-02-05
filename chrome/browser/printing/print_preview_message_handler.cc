@@ -90,18 +90,13 @@ PrintPreviewUI* PrintPreviewMessageHandler::GetPrintPreviewUI() {
 }
 
 void PrintPreviewMessageHandler::OnRequestPrintPreview(
-    bool source_is_modifiable,
-    bool webnode_only,
-    bool source_has_selection) {
-  if (webnode_only) {
+    const PrintHostMsg_RequestPrintPreview_Params& params) {
+  if (params.webnode_only) {
     printing::PrintViewManager::FromWebContents(web_contents())->
         PrintPreviewForWebNode();
   }
   PrintPreviewDialogController::PrintPreview(web_contents());
-  PrintPreviewUI::SetSourceIsModifiable(GetPrintPreviewTab(),
-                                        source_is_modifiable);
-  PrintPreviewUI::SetSourceHasSelection(GetPrintPreviewTab(),
-                                        source_has_selection);
+  PrintPreviewUI::SetInitialParams(GetPrintPreviewTab(), params);
 }
 
 void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(

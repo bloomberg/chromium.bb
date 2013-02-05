@@ -76,7 +76,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
 
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(initiator_tab);
-  print_view_manager->PrintPreviewNow();
+  print_view_manager->PrintPreviewNow(false);
   WebContents* preview_dialog =
       controller->GetOrCreatePreviewDialog(initiator_tab);
 
@@ -131,7 +131,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
 
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(initiator_tab);
-  print_view_manager->PrintPreviewNow();
+  print_view_manager->PrintPreviewNow(false);
   WebContents* preview_dialog =
       controller->GetOrCreatePreviewDialog(initiator_tab);
 
@@ -193,7 +193,7 @@ TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
 
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(initiator_tab);
-  print_view_manager->PrintPreviewNow();
+  print_view_manager->PrintPreviewNow(false);
   WebContents* preview_dialog =
       controller->GetOrCreatePreviewDialog(initiator_tab);
 
@@ -256,7 +256,7 @@ TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewDialogClose) {
 
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(initiator_tab);
-  print_view_manager->PrintPreviewNow();
+  print_view_manager->PrintPreviewNow(false);
   WebContents* preview_dialog =
       controller->GetOrCreatePreviewDialog(initiator_tab);
 

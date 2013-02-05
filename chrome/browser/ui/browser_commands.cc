@@ -731,7 +731,7 @@ void Print(Browser* browser) {
       prefs::kPrintPreviewDisabled))
     print_view_manager->PrintNow();
   else
-    print_view_manager->PrintPreviewNow();
+    print_view_manager->PrintPreviewNow(false);
 }
 
 bool CanPrint(const Browser* browser) {

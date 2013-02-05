@@ -1106,12 +1106,14 @@ void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
   PrintNode(render_view()->GetContextMenuNode());
 }
 
-void PrintWebViewHelper::OnInitiatePrintPreview() {
+void PrintWebViewHelper::OnInitiatePrintPreview(bool selection_only) {
   DCHECK(is_preview_enabled_);
   WebKit::WebFrame* frame;
   if (GetPrintFrame(&frame)) {
     print_preview_context_.InitWithFrame(frame);
-    RequestPrintPreview(PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME);
+    RequestPrintPreview(selection_only ?
+                        PRINT_PREVIEW_USER_INITIATED_SELECTION :
+                        PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME);
   } else {
     // This should not happen. Let's add a CHECK here to see how often this
     // gets hit.
@@ -1577,22 +1579,27 @@ void PrintWebViewHelper::RequestPrintPreview(PrintPreviewRequestType type) {
   const bool is_modifiable = print_preview_context_.IsModifiable();
   const bool has_selection = print_preview_context_.HasSelection();
   old_print_pages_params_.reset();
+  PrintHostMsg_RequestPrintPreview_Params params;
+  params.is_modifiable = is_modifiable;
+  params.has_selection = has_selection;
   switch (type) {
-    case PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME: {
-      Send(new PrintHostMsg_RequestPrintPreview(routing_id(), is_modifiable,
-                                                false, has_selection));
-      break;
-    }
-    case PRINT_PREVIEW_USER_INITIATED_CONTEXT_NODE: {
-      Send(new PrintHostMsg_RequestPrintPreview(routing_id(), is_modifiable,
-                                                true, has_selection));
-      break;
-    }
     case PRINT_PREVIEW_SCRIPTED: {
       IPC::SyncMessage* msg =
           new PrintHostMsg_ScriptedPrintPreview(routing_id(), is_modifiable);
       msg->EnableMessagePumping();
       Send(msg);
+      return;
+    }
+    case PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME: {
+      break;
+    }
+    case PRINT_PREVIEW_USER_INITIATED_SELECTION: {
+      DCHECK(has_selection);
+      params.selection_only = has_selection;
+      break;
+    }
+    case PRINT_PREVIEW_USER_INITIATED_CONTEXT_NODE: {
+      params.webnode_only = true;
       break;
     }
     default: {
@@ -1600,6 +1607,7 @@ void PrintWebViewHelper::RequestPrintPreview(PrintPreviewRequestType type) {
       return;
     }
   }
+  Send(new PrintHostMsg_RequestPrintPreview(routing_id(), params));
 }
 
 bool PrintWebViewHelper::CheckForCancel() {

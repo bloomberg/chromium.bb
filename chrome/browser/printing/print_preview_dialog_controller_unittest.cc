@@ -47,7 +47,8 @@ TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_GetOrCreatePreviewTab) {
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
-  printing::PrintViewManager::FromWebContents(initiator_tab)->PrintPreviewNow();
+  printing::PrintViewManager::FromWebContents(initiator_tab)->
+      PrintPreviewNow(false);
   WebContents* preview_tab =
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
@@ -92,7 +93,7 @@ TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_MultiplePreviewTabs) {
 
   // Create preview tab for |tab_contents_1|
   printing::PrintViewManager::FromWebContents(web_contents_1)->
-      PrintPreviewNow();
+      PrintPreviewNow(false);
   WebContents* preview_tab_1 =
       tab_controller->GetOrCreatePreviewTab(web_contents_1);
 
@@ -101,7 +102,7 @@ TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_MultiplePreviewTabs) {
 
   // Create preview tab for |tab_contents_2|
   printing::PrintViewManager::FromWebContents(web_contents_2)->
-      PrintPreviewNow();
+      PrintPreviewNow(false);
   WebContents* preview_tab_2 =
       tab_controller->GetOrCreatePreviewTab(web_contents_2);
 
@@ -142,7 +143,8 @@ TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_ClearInitiatorTabDetails) {
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
-  printing::PrintViewManager::FromWebContents(initiator_tab)->PrintPreviewNow();
+  printing::PrintViewManager::FromWebContents(initiator_tab)->
+      PrintPreviewNow(false);
   WebContents* preview_tab =
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
 

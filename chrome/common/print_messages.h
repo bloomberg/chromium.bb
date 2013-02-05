@@ -62,6 +62,15 @@ struct PrintMsg_PrintPages_Params {
   std::vector<int> pages;
 };
 
+struct PrintHostMsg_RequestPrintPreview_Params {
+  PrintHostMsg_RequestPrintPreview_Params();
+  ~PrintHostMsg_RequestPrintPreview_Params();
+  bool is_modifiable;
+  bool webnode_only;
+  bool has_selection;
+  bool selection_only;
+};
+
 #endif  // CHROME_COMMON_PRINT_MESSAGES_H_
 
 #define IPC_MESSAGE_START PrintMsgStart
@@ -150,6 +159,13 @@ IPC_STRUCT_BEGIN(PrintMsg_PrintPage_Params)
   // according to the layout specified in PrintMsg_Print_Params.
   IPC_STRUCT_MEMBER(int, page_number)
 IPC_STRUCT_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PrintHostMsg_RequestPrintPreview_Params)
+  IPC_STRUCT_TRAITS_MEMBER(is_modifiable)
+  IPC_STRUCT_TRAITS_MEMBER(webnode_only)
+  IPC_STRUCT_TRAITS_MEMBER(has_selection)
+  IPC_STRUCT_TRAITS_MEMBER(selection_only)
+IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(printing::PageSizeMargins)
   IPC_STRUCT_TRAITS_MEMBER(content_width)
@@ -265,7 +281,7 @@ IPC_STRUCT_END()
 // Messages sent from the browser to the renderer.
 
 // Tells the render view to initiate print preview for the entire document.
-IPC_MESSAGE_ROUTED0(PrintMsg_InitiatePrintPreview)
+IPC_MESSAGE_ROUTED1(PrintMsg_InitiatePrintPreview, bool /* selection_only */)
 
 // Tells the render view to initiate printing or print preview for a particular
 // node, depending on which mode the render view is in.
@@ -362,14 +378,8 @@ IPC_MESSAGE_CONTROL2(PrintHostMsg_TempFileForPrintingWritten,
 #endif
 
 // Asks the browser to do print preview.
-// |is_modifiable| is set to true when the request is for a web page, and false
-// for a PDF.
-// |webnode_only| is set to true if the document being printed is a specific
-// WebNode, and false if the document is a full WebFrame.
-IPC_MESSAGE_ROUTED3(PrintHostMsg_RequestPrintPreview,
-                    bool /* is_modifiable */,
-                    bool /* webnode_only */,
-                    bool /* has_selection */)
+IPC_MESSAGE_ROUTED1(PrintHostMsg_RequestPrintPreview,
+                    PrintHostMsg_RequestPrintPreview_Params /* params */)
 
 // Notify the browser the number of pages in the print preview document.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_DidGetPreviewPageCount,

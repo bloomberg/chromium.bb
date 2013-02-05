@@ -218,6 +218,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   void AppendPageItems();
   void AppendFrameItems();
   void AppendCopyItem();
+  void AppendPrintItem();
   void AppendEditableItems();
   void AppendSearchProvider();
   void AppendAllExtensionItems();

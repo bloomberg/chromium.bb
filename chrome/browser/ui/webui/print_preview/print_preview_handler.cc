@@ -774,7 +774,7 @@ void PrintPreviewHandler::SendInitialSettings(
   initial_settings.SetBoolean(kDocumentHasSelection,
                               print_preview_ui->source_has_selection());
   initial_settings.SetBoolean(printing::kSettingShouldPrintSelectionOnly,
-                              false);
+                              print_preview_ui->print_selection_only());
   printing::StickySettings* sticky_settings = GetStickySettings();
   sticky_settings->RestoreFromPrefs(Profile::FromBrowserContext(
       preview_web_contents()->GetBrowserContext())->GetPrefs());
