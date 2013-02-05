@@ -453,7 +453,8 @@ void VideoRendererBase::PutCurrentFrame(scoped_refptr<VideoFrame> frame) {
 
 VideoRendererBase::~VideoRendererBase() {
   base::AutoLock auto_lock(lock_);
-  DCHECK(state_ == kUninitialized || state_ == kStopped) << state_;
+  CHECK(state_ == kUninitialized || state_ == kStopped) << state_;
+  CHECK_EQ(thread_, base::kNullThreadHandle);
 }
 
 void VideoRendererBase::FrameReady(VideoDecoder::Status status,
