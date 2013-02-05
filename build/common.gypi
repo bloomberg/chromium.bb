@@ -157,9 +157,9 @@
 
           ['OS!="android" and OS!="ios"', {
             # Enable Web Intents support in WebKit.
-            'enable_web_intents%': '1',
+            'enable_web_intents%': 1,
           }, {
-            'enable_web_intents%': '0',
+            'enable_web_intents%': 0,
           }],
         ],
       },
