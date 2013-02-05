@@ -71,6 +71,9 @@ bool FileDownloader::Open(
   buffer_.clear();
   pp::URLRequestInfo url_request(instance_);
 
+  // Allow CORS.
+  url_request.SetAllowCrossOriginRequests(true);
+
   do {
     // Reset the url loader and file reader.
     // Note that we have the only reference to the underlying objects, so
@@ -78,12 +81,7 @@ bool FileDownloader::Open(
     url_loader_ = pp::URLLoader(instance_);
     url_scheme_ = instance_->GetUrlScheme(url);
     bool grant_universal_access = false;
-    if (url_scheme_ == SCHEME_CHROME_EXTENSION) {
-      // Use CORS to access URLs in the chrome extension scheme. If the files
-      // are truly restricted, then they should not be listed as a
-      // web_accessible_resource in the extension manifest.
-      url_request.SetAllowCrossOriginRequests(true);
-    } else if (url_scheme_ == SCHEME_DATA) {
+    if (url_scheme_ == SCHEME_DATA) {
       // TODO(elijahtaylor) Remove this when data URIs can be read without
       // universal access.
       // https://bugs.webkit.org/show_bug.cgi?id=17352

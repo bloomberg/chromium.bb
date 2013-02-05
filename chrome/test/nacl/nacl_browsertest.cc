@@ -12,10 +12,14 @@ namespace {
 #define MAYBE_ExitStatus DISABLED_ExitStatus
 #define MAYBE_PPAPICore DISABLED_PPAPICore
 #define MAYBE_ProgressEvents DISABLED_ProgressEvents
+#define MAYBE_CrossOriginCORS DISABLED_CrossOriginCORS
+#define MAYBE_CrossOriginFail DISABLED_CrossOriginFail
 #else
 #define MAYBE_SimpleLoad SimpleLoad
 #define MAYBE_PPAPICore PPAPICore
 #define MAYBE_ProgressEvents ProgressEvents
+#define MAYBE_CrossOriginCORS CrossOriginCORS
+#define MAYBE_CrossOriginFail CrossOriginFail
 #if defined(OS_WIN) && !defined(NDEBUG)
 // http://crbug.com/174380
 #define MAYBE_ExitStatus DISABLED_ExitStatus
@@ -46,5 +50,13 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_PPAPICore, {
 NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_ProgressEvents, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_progress_events.html"));
 })
+
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, MAYBE_CrossOriginCORS) {
+  RunLoadTest(FILE_PATH_LITERAL("cross_origin/cors.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, MAYBE_CrossOriginFail) {
+  RunLoadTest(FILE_PATH_LITERAL("cross_origin/fail.html"));
+}
 
 }  // namespace anonymous

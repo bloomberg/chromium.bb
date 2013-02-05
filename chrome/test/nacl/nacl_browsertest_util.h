@@ -71,6 +71,9 @@ class NaClBrowserTestBase : public InProcessBrowserTest {
   // also be used to affect the behavior of the test.
   virtual FilePath::StringType Variant() = 0;
 
+  // Where are the files for this class of test located on disk?
+  virtual bool GetDocumentRoot(FilePath* document_root);
+
   virtual bool IsPnacl();
 
   // Map a file relative to the variant directory to a URL served by the test
@@ -118,6 +121,13 @@ class NaClBrowserTestPnacl : public NaClBrowserTestBase {
   virtual FilePath::StringType Variant() OVERRIDE;
 
   virtual bool IsPnacl() OVERRIDE;
+};
+
+// A NaCl browser test only using static files.
+class NaClBrowserTestStatic : public NaClBrowserTestBase {
+ public:
+  virtual FilePath::StringType Variant() OVERRIDE;
+  virtual bool GetDocumentRoot(FilePath* document_root) OVERRIDE;
 };
 
 #if defined(ARCH_CPU_ARM_FAMILY)

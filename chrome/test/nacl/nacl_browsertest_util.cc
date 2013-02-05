@@ -197,6 +197,10 @@ void NaClBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   ASSERT_TRUE(StartTestServer()) << "Cannot start test server.";
 }
 
+bool NaClBrowserTestBase::GetDocumentRoot(FilePath* document_root) {
+  return GetNaClVariantRoot(Variant(), document_root);
+}
+
 bool NaClBrowserTestBase::IsPnacl() {
   return false;
 }
@@ -234,7 +238,7 @@ void NaClBrowserTestBase::RunNaClIntegrationTest(
 bool NaClBrowserTestBase::StartTestServer() {
   // Launch the web server.
   FilePath document_root;
-  if (!GetNaClVariantRoot(Variant(), &document_root))
+  if (!GetDocumentRoot(&document_root))
     return false;
   test_server_.reset(new net::TestServer(net::TestServer::TYPE_HTTP,
                                          net::TestServer::kLocalhost,
@@ -261,4 +265,13 @@ bool NaClBrowserTestPnacl::IsPnacl() {
 void NaClBrowserTestPnacl::SetUpCommandLine(CommandLine* command_line) {
   NaClBrowserTestBase::SetUpCommandLine(command_line);
   command_line->AppendSwitch(switches::kEnablePnacl);
+}
+
+FilePath::StringType NaClBrowserTestStatic::Variant() {
+  return FILE_PATH_LITERAL("static");
+}
+
+bool NaClBrowserTestStatic::GetDocumentRoot(FilePath* document_root) {
+  *document_root = FilePath(FILE_PATH_LITERAL("chrome/test/data/nacl"));
+  return true;
 }
