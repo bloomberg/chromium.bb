@@ -70,7 +70,8 @@ class CreateApplicationShortcutsDialogGtk
   // ShortcutInfo for the new shortcut.
   ShellIntegration::ShortcutInfo shortcut_info_;
 
-  // Image associated with the site.
+  // Image associated with the site or app, scaled to the appropriate size to
+  // display in the dialog box.
   GdkPixbuf* favicon_pixbuf_;
 
   // Dialog box that allows the user to create an application shortcut.

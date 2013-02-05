@@ -40,8 +40,16 @@ using extensions::Extension;
 
 namespace {
 
+// Maximum size (in pixels) of the icon when the shortcut is saved.
+// Apps usually have 128x128 icons, this value is much larger because if there
+// happens to be a bigger icon, we want to use it.
+const int kShortcutIconSizePixels = 1024;
+
 // Size (in pixels) of the icon preview.
 const int kIconPreviewSizePixels = 32;
+
+// Minimum width (in pixels) of the shortcut description label.
+const int kDescriptionLabelMinimumWidthPixels = 200;
 
 // Height (in lines) of the shortcut description label.
 const int kDescriptionLabelHeightLines = 3;
@@ -86,12 +94,10 @@ void CreateApplicationShortcutsDialogGtk::CreateIconPixBuf(
       static_cast<GdkPixbuf*>(g_object_ref(image.ToGdkPixbuf()));
   int pixbuf_width = gdk_pixbuf_get_width(pixbuf);
   int pixbuf_height = gdk_pixbuf_get_height(pixbuf);
-  if (pixbuf_width == pixbuf_height && pixbuf_width < kIconPreviewSizePixels) {
+  if (pixbuf_width == pixbuf_height) {
     // Only scale the pixbuf if it's a square (for simplicity).
     // Generally it should be square, if it's a favicon or app icon.
-    // Use the highest quality interpolation. The scaling is
-    // going to have low quality anyway, because the initial image
-    // is likely small.
+    // Use the highest quality interpolation.
     favicon_pixbuf_ = gdk_pixbuf_scale_simple(pixbuf,
                                               kIconPreviewSizePixels,
                                               kIconPreviewSizePixels,
@@ -151,6 +157,10 @@ void CreateApplicationShortcutsDialogGtk::CreateDialogBox(GtkWindow* parent) {
       IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS, -1, &label_width, NULL);
   label_width -= ui::kControlSpacing * 3 +
       gdk_pixbuf_get_width(favicon_pixbuf_);
+  // Enforce a minimum width, so that very large icons do not cause the label
+  // width to shrink to unreadable size, or become negative (which would crash).
+  if (label_width < kDescriptionLabelMinimumWidthPixels)
+    label_width = kDescriptionLabelMinimumWidthPixels;
   gtk_util::SetLabelWidth(description_label, label_width);
 
   std::string description(UTF16ToUTF8(shortcut_info_.description));
@@ -322,16 +332,10 @@ CreateChromeApplicationShortcutsDialogGtk::
   // Get shortcut information now, it's needed for our UI.
   web_app::UpdateShortcutInfoForApp(*app, profile, &shortcut_info_);
 
-  // Get the icon.
-  const gfx::Size max_size(kIconPreviewSizePixels, kIconPreviewSizePixels);
+  // Get the largest icon available less than the maximum size.
+  const gfx::Size max_size(kShortcutIconSizePixels, kShortcutIconSizePixels);
   ExtensionResource icon_resource = app_->GetIconResource(
-      kIconPreviewSizePixels, ExtensionIconSet::MATCH_BIGGER);
-
-  // If no icon exists that is the desired size or larger, get the
-  // largest icon available:
-  if (icon_resource.empty())
-    icon_resource = app_->GetIconResource(
-        kIconPreviewSizePixels, ExtensionIconSet::MATCH_SMALLER);
+      kShortcutIconSizePixels, ExtensionIconSet::MATCH_SMALLER);
 
   // Load icon asynchronously
   extensions::ImageLoader* loader = extensions::ImageLoader::Get(profile);
