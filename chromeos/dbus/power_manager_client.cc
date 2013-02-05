@@ -52,6 +52,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::kPowerManagerServiceName,
         dbus::ObjectPath(power_manager::kPowerManagerServicePath));
 
+    power_manager_proxy_->SetNameOwnerChangedCallback(
+        base::Bind(&PowerManagerClientImpl::NameOwnerChangedReceived,
+                   weak_ptr_factory_.GetWeakPtr()));
+
     // Monitor the D-Bus signal for brightness changes. Only the power
     // manager knows the actual brightness level. We don't cache the
     // brightness level in Chrome as it'll make things less reliable.
@@ -121,29 +125,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
-    // Register to powerd for suspend notifications.
-    dbus::MethodCall method_call(
-        power_manager::kPowerManagerInterface,
-        power_manager::kRegisterSuspendDelayMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    power_manager::RegisterSuspendDelayRequest protobuf_request;
-    base::TimeDelta timeout =
-        base::TimeDelta::FromMilliseconds(kSuspendDelayTimeoutMs);
-    protobuf_request.set_timeout(timeout.ToInternalValue());
-    protobuf_request.set_description(kSuspendDelayDescription);
-
-    if (!writer.AppendProtoAsArrayOfBytes(protobuf_request)) {
-      LOG(ERROR) << "Error constructing message for "
-                 << power_manager::kRegisterSuspendDelayMethod;
-      return;
-    }
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(
-            &PowerManagerClientImpl::OnRegisterSuspendDelayReply,
-            weak_ptr_factory_.GetWeakPtr()));
+    RegisterSuspendDelay();
   }
 
   virtual ~PowerManagerClientImpl() {
@@ -384,6 +366,12 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
+  void NameOwnerChangedReceived(dbus::Signal* signal) {
+    VLOG(1) << "Power manager restarted";
+    RegisterSuspendDelay();
+    FOR_EACH_OBSERVER(Observer, observers_, PowerManagerRestarted());
+  }
+
   void BrightnessChangedReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     int32 brightness_level = 0;
@@ -517,6 +505,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
                  << power_manager::kRegisterSuspendDelayMethod;
       return;
     }
+
     dbus::MessageReader reader(response);
     power_manager::RegisterSuspendDelayReply protobuf;
     if (!reader.PopArrayOfBytesAsProto(&protobuf)) {
@@ -524,8 +513,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
                  << power_manager::kRegisterSuspendDelayMethod;
       return;
     }
+
     suspend_delay_id_ = protobuf.delay_id();
     has_suspend_delay_id_ = true;
+    VLOG(1) << "Registered suspend delay " << suspend_delay_id_;
   }
 
   void IdleNotifySignalReceived(dbus::Signal* signal) {
@@ -650,6 +641,38 @@ class PowerManagerClientImpl : public PowerManagerClient {
             SystemResumed(wall_time - last_suspend_wall_time_));
         break;
     }
+  }
+
+  // Registers a suspend delay with the power manager.  This is usually
+  // only called at startup, but if the power manager restarts, we need to
+  // create a new delay.
+  void RegisterSuspendDelay() {
+    // Throw out any old delay that was registered.
+    suspend_delay_id_ = -1;
+    has_suspend_delay_id_ = false;
+
+    dbus::MethodCall method_call(
+        power_manager::kPowerManagerInterface,
+        power_manager::kRegisterSuspendDelayMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    power_manager::RegisterSuspendDelayRequest protobuf_request;
+    base::TimeDelta timeout =
+        base::TimeDelta::FromMilliseconds(kSuspendDelayTimeoutMs);
+    protobuf_request.set_timeout(timeout.ToInternalValue());
+    protobuf_request.set_description(kSuspendDelayDescription);
+
+    if (!writer.AppendProtoAsArrayOfBytes(protobuf_request)) {
+      LOG(ERROR) << "Error constructing message for "
+                 << power_manager::kRegisterSuspendDelayMethod;
+      return;
+    }
+    power_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(
+            &PowerManagerClientImpl::OnRegisterSuspendDelayReply,
+            weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Records the fact that an observer has finished doing asynchronous work

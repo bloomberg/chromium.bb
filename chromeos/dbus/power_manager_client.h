@@ -44,6 +44,9 @@ class CHROMEOS_EXPORT PowerManagerClient {
 
     virtual ~Observer() {}
 
+    // Called if the power manager process restarts.
+    virtual void PowerManagerRestarted() {}
+
     // Called when the brightness is changed.
     // |level| is of the range [0, 100].
     // |user_initiated| is true if the action is initiated by the user.
