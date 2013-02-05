@@ -90,6 +90,10 @@ class ShellWindowRegistry : public ProfileKeyedService,
   // newly created |render_view_host|.
   bool HadDevToolsAttached(content::RenderViewHost* render_view_host) const;
 
+  // Returns the shell window for |window|, looking in all profiles.
+  static ShellWindow* GetShellWindowForNativeWindowAnyProfile(
+      gfx::NativeWindow window);
+
  protected:
   // content::NotificationObserver:
   virtual void Observe(int type,

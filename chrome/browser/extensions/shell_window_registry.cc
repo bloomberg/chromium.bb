@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/extension.h"
@@ -144,6 +146,24 @@ bool ShellWindowRegistry::HadDevToolsAttached(
     content::RenderViewHost* render_view_host) const {
   std::string key = GetWindowKeyForRenderViewHost(this, render_view_host);
   return key.empty() ? false : inspected_windows_.count(key) != 0;
+}
+
+// static
+ShellWindow* ShellWindowRegistry::GetShellWindowForNativeWindowAnyProfile(
+    gfx::NativeWindow window) {
+  std::vector<Profile*> profiles =
+      g_browser_process->profile_manager()->GetLoadedProfiles();
+  for (std::vector<Profile*>::const_iterator i(profiles.begin());
+       i < profiles.end(); ++i) {
+    extensions::ShellWindowRegistry* registry =
+        extensions::ShellWindowRegistry::Get(*i);
+    DCHECK(registry);
+    ShellWindow* shell_window = registry->GetShellWindowForNativeWindow(window);
+    if (shell_window)
+      return shell_window;
+  }
+
+  return NULL;
 }
 
 void ShellWindowRegistry::Observe(int type,

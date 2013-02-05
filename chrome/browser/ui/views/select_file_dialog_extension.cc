@@ -11,14 +11,12 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/browser.h"
@@ -262,43 +260,44 @@ void SelectFileDialogExtension::SelectFileImpl(
   // The web contents to associate the dialog with.
   content::WebContents* web_contents = NULL;
 
-  // First try to find a Browser using the supplied owner_window. If no owner
-  // window has been supplied, this is running from a background page and should
-  // be associated with the last active browser.
-  Browser* owner_browser = owner_window ?
-      chrome::FindBrowserWithWindow(owner_window) :
-      chrome::FindLastActiveWithHostDesktopType(chrome::GetActiveDesktop());
-  if (owner_browser) {
-    base_window = owner_browser->window();
-    web_contents = owner_browser->tab_strip_model()->GetActiveWebContents();
-    profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  } else if (owner_window) {
-    // If an owner_window was supplied but we couldn't find a browser, this
-    // could be for a shell window.
-    // TODO(benwells): Find a better way to get a shell window from a native
-    // window.
-    std::vector<Profile*> profiles =
-        g_browser_process->profile_manager()->GetLoadedProfiles();
-    for (std::vector<Profile*>::const_iterator i(profiles.begin());
-         i < profiles.end(); ++i) {
-      extensions::ShellWindowRegistry* registry =
-          extensions::ShellWindowRegistry::Get(*i);
-      DCHECK(registry);
-      ShellWindow* shell_window = registry->GetShellWindowForNativeWindow(
-          owner_window);
-      if (shell_window) {
-        base_window = shell_window->GetBaseWindow();
-        web_contents = shell_window->web_contents();
-        profile_ = *i;
-        break;
-      }
+  // To get the base_window and profile, either a Browser or ShellWindow is
+  // needed.
+  Browser* owner_browser =  NULL;
+  ShellWindow* shell_window = NULL;
+
+  // If owner_window is supplied, use that to find a browser or a shell window.
+  if (owner_window) {
+    owner_browser = chrome::FindBrowserWithWindow(owner_window);
+    if (!owner_browser) {
+      // If an owner_window was supplied but we couldn't find a browser, this
+      // could be for a shell window.
+      shell_window = extensions::ShellWindowRegistry::
+          GetShellWindowForNativeWindowAnyProfile(owner_window);
     }
   }
 
-  if (!base_window) {
-    NOTREACHED() << "Can't find owning window.";
-    return;
+  if (shell_window) {
+    base_window = shell_window->GetBaseWindow();
+    web_contents = shell_window->web_contents();
+  } else {
+    // If the owning window is still unknown, this could be a background page or
+    // and extension popup. Use the last active browser.
+    if (!owner_browser) {
+      owner_browser =
+          chrome::FindLastActiveWithHostDesktopType(chrome::GetActiveDesktop());
+    }
+    DCHECK(owner_browser);
+    if (!owner_browser) {
+      LOG(ERROR) << "Could not find browser or shell window for popup.";
+      return;
+    }
+    base_window = owner_browser->window();
+    web_contents = owner_browser->tab_strip_model()->GetActiveWebContents();
   }
+
+  DCHECK(base_window);
+  DCHECK(web_contents);
+  profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
   DCHECK(profile_);
 
   // Check if we have another dialog opened for the contents. It's unlikely, but
