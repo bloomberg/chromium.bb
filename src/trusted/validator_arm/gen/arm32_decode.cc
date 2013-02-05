@@ -28,6 +28,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_1_instance_()
   , Actual_LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_1_instance_()
   , Actual_LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_1_instance_()
+  , Actual_LDREXB_cccc00011101nnnntttt111110011111_case_1_instance_()
+  , Actual_LDREXD_cccc00011011nnnntttt111110011111_case_1_instance_()
   , Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1_instance_()
   , Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_instance_()
   , Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_instance_()
@@ -47,6 +49,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1_instance_()
   , Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1_instance_()
   , Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1_instance_()
+  , Actual_STREXB_cccc00011100nnnndddd11111001tttt_case_1_instance_()
+  , Actual_STREXD_cccc00011010nnnndddd11111001tttt_case_1_instance_()
   , Actual_STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_1_instance_()
   , Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1_instance_()
   , Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1_instance_()
@@ -72,8 +76,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , LdrImmediateOp_instance_()
   , Load2RegisterImm12Op_instance_()
   , Load3RegisterImm5Op_instance_()
-  , LoadExclusive2RegisterDoubleOp_instance_()
-  , LoadExclusive2RegisterOp_instance_()
   , LoadRegisterList_instance_()
   , LoadVectorRegister_instance_()
   , LoadVectorRegisterList_instance_()
@@ -85,8 +87,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , PreloadRegisterPairOp_instance_()
   , Store2RegisterImm12Op_instance_()
   , Store3RegisterImm5Op_instance_()
-  , StoreExclusive3RegisterDoubleOp_instance_()
-  , StoreExclusive3RegisterOp_instance_()
   , StoreRegisterList_instance_()
   , StoreVectorRegister_instance_()
   , StoreVectorRegisterList_instance_()
@@ -2989,28 +2989,28 @@ const ClassDecoder& Arm32DecoderState::decode_synchronization_primitives(
           0x00A00000 /* op(23:20)=1010 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return StoreExclusive3RegisterDoubleOp_instance_;
+    return Actual_STREXD_cccc00011010nnnndddd11111001tttt_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00F00000)  ==
           0x00B00000 /* op(23:20)=1011 */ &&
       (inst.Bits() & 0x00000F0F)  ==
           0x00000F0F /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111 */) {
-    return LoadExclusive2RegisterDoubleOp_instance_;
+    return Actual_LDREXD_cccc00011011nnnntttt111110011111_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00F00000)  ==
           0x00E00000 /* op(23:20)=1110 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return StoreExclusive3RegisterOp_instance_;
+    return Actual_STREXB_cccc00011100nnnndddd11111001tttt_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00F00000)  ==
           0x00F00000 /* op(23:20)=1111 */ &&
       (inst.Bits() & 0x00000F0F)  ==
           0x00000F0F /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111 */) {
-    return LoadExclusive2RegisterOp_instance_;
+    return Actual_LDREXB_cccc00011101nnnntttt111110011111_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
@@ -3024,14 +3024,14 @@ const ClassDecoder& Arm32DecoderState::decode_synchronization_primitives(
           0x00800000 /* op(23:20)=1x00 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return StoreExclusive3RegisterOp_instance_;
+    return Actual_STREXB_cccc00011100nnnndddd11111001tttt_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00900000 /* op(23:20)=1x01 */ &&
       (inst.Bits() & 0x00000F0F)  ==
           0x00000F0F /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111 */) {
-    return LoadExclusive2RegisterOp_instance_;
+    return Actual_LDREXB_cccc00011101nnnntttt111110011111_case_1_instance_;
   }
 
   if (true) {

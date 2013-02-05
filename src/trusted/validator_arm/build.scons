@@ -95,6 +95,7 @@ ACTUAL_GEN_TABLES = ["ARMv7",
                      "saturating_addition_and_subtraction",
                      "halfword_multiply_and_multiply_accumulate",
                      "extra_load_store_instructions",
+                     "synchronization_primitives",
                      "msr_immediate_and_hints",
                      ]
 

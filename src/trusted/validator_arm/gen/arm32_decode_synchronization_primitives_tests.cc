@@ -39,7 +39,7 @@ namespace nacl_arm_test {
 //       Rd: Rd(15:12),
 //       Rn: Rn(19:16),
 //       Rt: Rt(3:0),
-//       actual: StoreExclusive3RegisterOp,
+//       actual: Actual_STREXB_cccc00011100nnnndddd11111001tttt_case_1,
 //       base: Rn,
 //       baseline: StoreExclusive3RegisterOp,
 //       constraints: ,
@@ -105,7 +105,7 @@ bool StoreExclusive3RegisterOpTesterCase0
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
-//       actual: LoadExclusive2RegisterOp,
+//       actual: Actual_LDREXB_cccc00011101nnnntttt111110011111_case_1,
 //       base: Rn,
 //       baseline: LoadExclusive2RegisterOp,
 //       constraints: ,
@@ -168,7 +168,7 @@ bool LoadExclusive2RegisterOpTesterCase1
 //       Rn: Rn(19:16),
 //       Rt: Rt(3:0),
 //       Rt2: Rt + 1,
-//       actual: StoreExclusive3RegisterDoubleOp,
+//       actual: Actual_STREXD_cccc00011010nnnndddd11111001tttt_case_1,
 //       base: Rn,
 //       baseline: StoreExclusive3RegisterDoubleOp,
 //       constraints: ,
@@ -245,7 +245,7 @@ bool StoreExclusive3RegisterDoubleOpTesterCase2
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
-//       actual: LoadExclusive2RegisterDoubleOp,
+//       actual: Actual_LDREXD_cccc00011011nnnntttt111110011111_case_1,
 //       base: Rn,
 //       baseline: LoadExclusive2RegisterDoubleOp,
 //       constraints: ,
@@ -317,7 +317,7 @@ bool LoadExclusive2RegisterDoubleOpTesterCase3
 //       Rd: Rd(15:12),
 //       Rn: Rn(19:16),
 //       Rt: Rt(3:0),
-//       actual: StoreExclusive3RegisterOp,
+//       actual: Actual_STREXB_cccc00011100nnnndddd11111001tttt_case_1,
 //       base: Rn,
 //       baseline: StoreExclusive3RegisterOp,
 //       constraints: ,
@@ -383,7 +383,7 @@ bool StoreExclusive3RegisterOpTesterCase4
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
-//       actual: LoadExclusive2RegisterOp,
+//       actual: Actual_LDREXB_cccc00011101nnnntttt111110011111_case_1,
 //       base: Rn,
 //       baseline: LoadExclusive2RegisterOp,
 //       constraints: ,
@@ -444,7 +444,7 @@ bool LoadExclusive2RegisterOpTesterCase5
 //       Rd: Rd(15:12),
 //       Rn: Rn(19:16),
 //       Rt: Rt(3:0),
-//       actual: StoreExclusive3RegisterOp,
+//       actual: Actual_STREXB_cccc00011100nnnndddd11111001tttt_case_1,
 //       base: Rn,
 //       baseline: StoreExclusive3RegisterOp,
 //       constraints: ,
@@ -510,7 +510,7 @@ bool StoreExclusive3RegisterOpTesterCase6
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
-//       actual: LoadExclusive2RegisterOp,
+//       actual: Actual_LDREXB_cccc00011101nnnntttt111110011111_case_1,
 //       base: Rn,
 //       baseline: LoadExclusive2RegisterOp,
 //       constraints: ,
@@ -608,7 +608,7 @@ bool UnsafeCondDecoderTesterCase8
 //       Rd: Rd(15:12),
 //       Rn: Rn(19:16),
 //       Rt: Rt(3:0),
-//       actual: StoreExclusive3RegisterOp,
+//       actual: Actual_STREXB_cccc00011100nnnndddd11111001tttt_case_1,
 //       base: Rn,
 //       baseline: StoreExclusive3RegisterOp,
 //       constraints: ,
@@ -632,7 +632,7 @@ class StoreExclusive3RegisterOpTester_Case0
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
-//       actual: LoadExclusive2RegisterOp,
+//       actual: Actual_LDREXB_cccc00011101nnnntttt111110011111_case_1,
 //       base: Rn,
 //       baseline: LoadExclusive2RegisterOp,
 //       constraints: ,
@@ -658,7 +658,7 @@ class LoadExclusive2RegisterOpTester_Case1
 //       Rn: Rn(19:16),
 //       Rt: Rt(3:0),
 //       Rt2: Rt + 1,
-//       actual: StoreExclusive3RegisterDoubleOp,
+//       actual: Actual_STREXD_cccc00011010nnnndddd11111001tttt_case_1,
 //       base: Rn,
 //       baseline: StoreExclusive3RegisterDoubleOp,
 //       constraints: ,
@@ -687,7 +687,7 @@ class StoreExclusive3RegisterDoubleOpTester_Case2
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
-//       actual: LoadExclusive2RegisterDoubleOp,
+//       actual: Actual_LDREXD_cccc00011011nnnntttt111110011111_case_1,
 //       base: Rn,
 //       baseline: LoadExclusive2RegisterDoubleOp,
 //       constraints: ,
@@ -715,7 +715,7 @@ class LoadExclusive2RegisterDoubleOpTester_Case3
 //       Rd: Rd(15:12),
 //       Rn: Rn(19:16),
 //       Rt: Rt(3:0),
-//       actual: StoreExclusive3RegisterOp,
+//       actual: Actual_STREXB_cccc00011100nnnndddd11111001tttt_case_1,
 //       base: Rn,
 //       baseline: StoreExclusive3RegisterOp,
 //       constraints: ,
@@ -739,7 +739,7 @@ class StoreExclusive3RegisterOpTester_Case4
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
-//       actual: LoadExclusive2RegisterOp,
+//       actual: Actual_LDREXB_cccc00011101nnnntttt111110011111_case_1,
 //       base: Rn,
 //       baseline: LoadExclusive2RegisterOp,
 //       constraints: ,
@@ -763,7 +763,7 @@ class LoadExclusive2RegisterOpTester_Case5
 //       Rd: Rd(15:12),
 //       Rn: Rn(19:16),
 //       Rt: Rt(3:0),
-//       actual: StoreExclusive3RegisterOp,
+//       actual: Actual_STREXB_cccc00011100nnnndddd11111001tttt_case_1,
 //       base: Rn,
 //       baseline: StoreExclusive3RegisterOp,
 //       constraints: ,
@@ -787,7 +787,7 @@ class StoreExclusive3RegisterOpTester_Case6
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
-//       actual: LoadExclusive2RegisterOp,
+//       actual: Actual_LDREXB_cccc00011101nnnntttt111110011111_case_1,
 //       base: Rn,
 //       baseline: LoadExclusive2RegisterOp,
 //       constraints: ,
@@ -834,7 +834,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Rd: Rd(15:12),
 //       Rn: Rn(19:16),
 //       Rt: Rt(3:0),
-//       actual: StoreExclusive3RegisterOp,
+//       actual: Actual_STREXB_cccc00011100nnnndddd11111001tttt_case_1,
 //       base: Rn,
 //       baseline: StoreExclusive3RegisterOp,
 //       constraints: ,
@@ -848,15 +848,17 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       uses: {Rn, Rt}}
 TEST_F(Arm32DecoderStateTests,
        StoreExclusive3RegisterOpTester_Case0_TestCase0) {
-  StoreExclusive3RegisterOpTester_Case0 tester;
-  tester.Test("cccc00011000nnnndddd11111001tttt");
+  StoreExclusive3RegisterOpTester_Case0 baseline_tester;
+  NamedActual_STREXB_cccc00011100nnnndddd11111001tttt_case_1_STREX actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00011000nnnndddd11111001tttt");
 }
 
 // op(23:20)=1001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
-//       actual: LoadExclusive2RegisterOp,
+//       actual: Actual_LDREXB_cccc00011101nnnntttt111110011111_case_1,
 //       base: Rn,
 //       baseline: LoadExclusive2RegisterOp,
 //       constraints: ,
@@ -869,8 +871,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn}}
 TEST_F(Arm32DecoderStateTests,
        LoadExclusive2RegisterOpTester_Case1_TestCase1) {
-  LoadExclusive2RegisterOpTester_Case1 tester;
-  tester.Test("cccc00011001nnnntttt111110011111");
+  LoadExclusive2RegisterOpTester_Case1 baseline_tester;
+  NamedActual_LDREXB_cccc00011101nnnntttt111110011111_case_1_LDREX actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00011001nnnntttt111110011111");
 }
 
 // op(23:20)=1010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -880,7 +884,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(19:16),
 //       Rt: Rt(3:0),
 //       Rt2: Rt + 1,
-//       actual: StoreExclusive3RegisterDoubleOp,
+//       actual: Actual_STREXD_cccc00011010nnnndddd11111001tttt_case_1,
 //       base: Rn,
 //       baseline: StoreExclusive3RegisterDoubleOp,
 //       constraints: ,
@@ -897,8 +901,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rt, Rt2}}
 TEST_F(Arm32DecoderStateTests,
        StoreExclusive3RegisterDoubleOpTester_Case2_TestCase2) {
-  StoreExclusive3RegisterDoubleOpTester_Case2 tester;
-  tester.Test("cccc00011010nnnndddd11111001tttt");
+  StoreExclusive3RegisterDoubleOpTester_Case2 baseline_tester;
+  NamedActual_STREXD_cccc00011010nnnndddd11111001tttt_case_1_STREXD actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00011010nnnndddd11111001tttt");
 }
 
 // op(23:20)=1011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
@@ -907,7 +913,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
-//       actual: LoadExclusive2RegisterDoubleOp,
+//       actual: Actual_LDREXD_cccc00011011nnnntttt111110011111_case_1,
 //       base: Rn,
 //       baseline: LoadExclusive2RegisterDoubleOp,
 //       constraints: ,
@@ -924,8 +930,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn}}
 TEST_F(Arm32DecoderStateTests,
        LoadExclusive2RegisterDoubleOpTester_Case3_TestCase3) {
-  LoadExclusive2RegisterDoubleOpTester_Case3 tester;
-  tester.Test("cccc00011011nnnntttt111110011111");
+  LoadExclusive2RegisterDoubleOpTester_Case3 baseline_tester;
+  NamedActual_LDREXD_cccc00011011nnnntttt111110011111_case_1_LDREXD actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00011011nnnntttt111110011111");
 }
 
 // op(23:20)=1100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -933,7 +941,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rn: Rn(19:16),
 //       Rt: Rt(3:0),
-//       actual: StoreExclusive3RegisterOp,
+//       actual: Actual_STREXB_cccc00011100nnnndddd11111001tttt_case_1,
 //       base: Rn,
 //       baseline: StoreExclusive3RegisterOp,
 //       constraints: ,
@@ -947,15 +955,17 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rt}}
 TEST_F(Arm32DecoderStateTests,
        StoreExclusive3RegisterOpTester_Case4_TestCase4) {
-  StoreExclusive3RegisterOpTester_Case4 tester;
-  tester.Test("cccc00011100nnnndddd11111001tttt");
+  StoreExclusive3RegisterOpTester_Case4 baseline_tester;
+  NamedActual_STREXB_cccc00011100nnnndddd11111001tttt_case_1_STREXB actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00011100nnnndddd11111001tttt");
 }
 
 // op(23:20)=1101 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
-//       actual: LoadExclusive2RegisterOp,
+//       actual: Actual_LDREXB_cccc00011101nnnntttt111110011111_case_1,
 //       base: Rn,
 //       baseline: LoadExclusive2RegisterOp,
 //       constraints: ,
@@ -968,8 +978,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn}}
 TEST_F(Arm32DecoderStateTests,
        LoadExclusive2RegisterOpTester_Case5_TestCase5) {
-  LoadExclusive2RegisterOpTester_Case5 tester;
-  tester.Test("cccc00011101nnnntttt111110011111");
+  LoadExclusive2RegisterOpTester_Case5 baseline_tester;
+  NamedActual_LDREXB_cccc00011101nnnntttt111110011111_case_1_LDREXB actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00011101nnnntttt111110011111");
 }
 
 // op(23:20)=1110 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -977,7 +989,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rn: Rn(19:16),
 //       Rt: Rt(3:0),
-//       actual: StoreExclusive3RegisterOp,
+//       actual: Actual_STREXB_cccc00011100nnnndddd11111001tttt_case_1,
 //       base: Rn,
 //       baseline: StoreExclusive3RegisterOp,
 //       constraints: ,
@@ -991,15 +1003,17 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rt}}
 TEST_F(Arm32DecoderStateTests,
        StoreExclusive3RegisterOpTester_Case6_TestCase6) {
-  StoreExclusive3RegisterOpTester_Case6 tester;
-  tester.Test("cccc00011110nnnndddd11111001tttt");
+  StoreExclusive3RegisterOpTester_Case6 baseline_tester;
+  NamedActual_STREXB_cccc00011100nnnndddd11111001tttt_case_1_STREXH actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00011110nnnndddd11111001tttt");
 }
 
 // op(23:20)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
-//       actual: LoadExclusive2RegisterOp,
+//       actual: Actual_LDREXB_cccc00011101nnnntttt111110011111_case_1,
 //       base: Rn,
 //       baseline: LoadExclusive2RegisterOp,
 //       constraints: ,
@@ -1012,8 +1026,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn}}
 TEST_F(Arm32DecoderStateTests,
        LoadExclusive2RegisterOpTester_Case7_TestCase7) {
-  LoadExclusive2RegisterOpTester_Case7 tester;
-  tester.Test("cccc00011111nnnntttt111110011111");
+  LoadExclusive2RegisterOpTester_Case7 baseline_tester;
+  NamedActual_LDREXB_cccc00011101nnnntttt111110011111_case_1_STREXH actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00011111nnnntttt111110011111");
 }
 
 // op(23:20)=0x00 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
