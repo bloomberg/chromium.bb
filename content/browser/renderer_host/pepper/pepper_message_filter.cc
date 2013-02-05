@@ -255,7 +255,9 @@ void PepperMessageFilter::DoTCPConnect(bool allowed,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   TCPSocketMap::iterator iter = tcp_sockets_.find(socket_id);
   if (iter == tcp_sockets_.end()) {
-    NOTREACHED();
+    // Due to current permission check process (IO -> UI -> IO) some
+    // calls to TCPSocketPrivate interface can be intermixed (like
+    // Connect and Close). So, NOTREACHED() is not needed there.
     return;
   }
 
@@ -287,7 +289,10 @@ void PepperMessageFilter::DoTCPConnectWithNetAddress(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   TCPSocketMap::iterator iter = tcp_sockets_.find(socket_id);
   if (iter == tcp_sockets_.end()) {
-    NOTREACHED();
+    // Due to current permission check process (IO -> UI -> IO) some
+    // calls to TCPSocketPrivate interface can be intermixed (like
+    // ConnectWithNetAddress and Close). So, NOTREACHED() is not
+    // needed there.
     return;
   }
 
