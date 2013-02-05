@@ -835,6 +835,7 @@ def run_test_cases(
           # TODO(maruel): It would automatically add 0, 1, 2 when a previous
           # one exists.
           gtest_output = os.path.join(gtest_output, 'test_detail.xml')
+        print('Saving gtest compatible XML file to: %s' % gtest_output)
         with open(gtest_output, 'w') as f:
           result.writexml(f)
       else:
