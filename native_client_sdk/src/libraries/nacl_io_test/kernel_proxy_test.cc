@@ -1,0 +1,244 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#include <errno.h>
+#include <fcntl.h>
+#include <pthread.h>
+#include <sys/stat.h>
+
+#include <map>
+#include <string>
+
+#include "nacl_io/kernel_handle.h"
+#include "nacl_io/kernel_intercept.h"
+#include "nacl_io/kernel_proxy.h"
+#include "nacl_io/mount.h"
+#include "nacl_io/mount_mem.h"
+#include "nacl_io/path.h"
+
+#include "gtest/gtest.h"
+
+
+class KernelProxyTest : public ::testing::Test {
+ public:
+  KernelProxyTest()
+      : kp_(new KernelProxy) {
+    ki_init(kp_);
+  }
+
+  ~KernelProxyTest() {
+    ki_uninit();
+    delete kp_;
+  }
+
+ private:
+  KernelProxy* kp_;
+};
+
+
+TEST_F(KernelProxyTest, WorkingDirectory) {
+  char text[1024];
+
+  text[0] = 0;
+  ki_getcwd(text, sizeof(text));
+  EXPECT_STREQ("/", text);
+
+  char* alloc = ki_getwd(NULL);
+  EXPECT_EQ((char *) NULL, alloc);
+  EXPECT_EQ(EFAULT, errno);
+
+  text[0] = 0;
+  alloc = ki_getwd(text);
+  EXPECT_STREQ("/", alloc);
+
+  EXPECT_EQ(-1, ki_chdir("/foo"));
+  EXPECT_EQ(ENOENT, errno);
+
+  EXPECT_EQ(0, ki_chdir("/"));
+
+  EXPECT_EQ(0, ki_mkdir("/foo", S_IREAD | S_IWRITE));
+  EXPECT_EQ(-1, ki_mkdir("/foo", S_IREAD | S_IWRITE));
+  EXPECT_EQ(EEXIST, errno);
+
+  memset(text, 0, sizeof(text));
+  EXPECT_EQ(0, ki_chdir("foo"));
+  EXPECT_EQ(text, ki_getcwd(text, sizeof(text)));
+  EXPECT_STREQ("/foo", text);
+
+  memset(text, 0, sizeof(text));
+  EXPECT_EQ(-1, ki_chdir("foo"));
+  EXPECT_EQ(ENOENT, errno);
+  EXPECT_EQ(0, ki_chdir(".."));
+  EXPECT_EQ(0, ki_chdir("/foo"));
+  EXPECT_EQ(text, ki_getcwd(text, sizeof(text)));
+  EXPECT_STREQ("/foo", text);
+}
+
+TEST_F(KernelProxyTest, MemMountIO) {
+  char text[1024];
+  int fd1, fd2, fd3;
+  int len;
+
+  // Create "/foo"
+  EXPECT_EQ(0, ki_mkdir("/foo", S_IREAD | S_IWRITE));
+
+  // Fail to open "/foo/bar"
+  EXPECT_EQ(-1, ki_open("/foo/bar", O_RDONLY));
+  EXPECT_EQ(ENOENT, errno);
+
+  // Create bar "/foo/bar"
+  fd1 = ki_open("/foo/bar", O_RDONLY | O_CREAT);
+  EXPECT_NE(-1, fd1);
+
+  // Open (optionally create) bar "/foo/bar"
+  fd2 = ki_open("/foo/bar", O_RDONLY | O_CREAT);
+  EXPECT_NE(-1, fd2);
+
+  // Fail to exclusively create bar "/foo/bar"
+  EXPECT_EQ(-1, ki_open("/foo/bar", O_RDONLY | O_CREAT | O_EXCL));
+  EXPECT_EQ(EEXIST, errno);
+
+  // Write hello and world to same node with different descriptors
+  // so that we overwrite each other
+  EXPECT_EQ(5, ki_write(fd2, "WORLD", 5));
+  EXPECT_EQ(5, ki_write(fd1, "HELLO", 5));
+
+  fd3 = ki_open("/foo/bar", O_WRONLY);
+  EXPECT_NE(-1, fd3);
+
+  len = ki_read(fd3, text, sizeof(text));
+  if (len > -0) text[len] = 0;
+  EXPECT_EQ(5, len);
+  EXPECT_STREQ("HELLO", text);
+  EXPECT_EQ(0, ki_close(fd1));
+  EXPECT_EQ(0, ki_close(fd2));
+
+  fd1 = ki_open("/foo/bar", O_WRONLY | O_APPEND);
+  EXPECT_NE(-1, fd1);
+  EXPECT_EQ(5, ki_write(fd1, "WORLD", 5));
+
+  len = ki_read(fd3, text, sizeof(text));
+  if (len >= 0) text[len] = 0;
+
+  EXPECT_EQ(5, len);
+  EXPECT_STREQ("WORLD", text);
+
+  fd2 = ki_open("/foo/bar", O_RDONLY);
+  EXPECT_NE(-1, fd2);
+  len = ki_read(fd2, text, sizeof(text));
+  if (len > 0) text[len] = 0;
+  EXPECT_EQ(10, len);
+  EXPECT_STREQ("HELLOWORLD", text);
+}
+
+TEST_F(KernelProxyTest, MemMountLseek) {
+  int fd = ki_open("/foo", O_CREAT | O_RDWR);
+  EXPECT_EQ(9, ki_write(fd, "Some text", 9));
+
+  EXPECT_EQ(9, ki_lseek(fd, 0, SEEK_CUR));
+  EXPECT_EQ(9, ki_lseek(fd, 0, SEEK_END));
+  EXPECT_EQ(-1, ki_lseek(fd, -1, SEEK_SET));
+  EXPECT_EQ(EINVAL, errno);
+
+  // Seek past end of file.
+  EXPECT_EQ(13, ki_lseek(fd, 13, SEEK_SET));
+  char buffer[4];
+  memset(&buffer[0], 0xfe, 4);
+  EXPECT_EQ(9, ki_lseek(fd, -4, SEEK_END));
+  EXPECT_EQ(4, ki_read(fd, &buffer[0], 4));
+  EXPECT_EQ(0, memcmp("\0\0\0\0", buffer, 4));
+}
+
+TEST_F(KernelProxyTest, CloseTwice) {
+  int fd = ki_open("/foo", O_CREAT | O_RDWR);
+  EXPECT_EQ(9, ki_write(fd, "Some text", 9));
+
+  int fd2 = ki_dup(fd);
+  EXPECT_NE(-1, fd2);
+
+  EXPECT_EQ(0, ki_close(fd));
+  EXPECT_EQ(0, ki_close(fd2));
+}
+
+TEST_F(KernelProxyTest, MemMountDup) {
+  int fd = ki_open("/foo", O_CREAT | O_RDWR);
+
+  int dup_fd = ki_dup(fd);
+  EXPECT_NE(-1, dup_fd);
+
+  EXPECT_EQ(9, ki_write(fd, "Some text", 9));
+  EXPECT_EQ(9, ki_lseek(fd, 0, SEEK_CUR));
+  EXPECT_EQ(9, ki_lseek(dup_fd, 0, SEEK_CUR));
+
+  int dup2_fd = 123;
+  EXPECT_EQ(dup2_fd, ki_dup2(fd, dup2_fd));
+  EXPECT_EQ(9, ki_lseek(dup2_fd, 0, SEEK_CUR));
+
+  int new_fd = ki_open("/bar", O_CREAT | O_RDWR);
+
+  EXPECT_EQ(fd, ki_dup2(new_fd, fd));
+  // fd, new_fd -> "/bar"
+  // dup_fd, dup2_fd -> "/foo"
+
+  // We should still be able to write to dup_fd (i.e. it should not be closed).
+  EXPECT_EQ(4, ki_write(dup_fd, "more", 4));
+
+  EXPECT_EQ(0, ki_close(dup2_fd));
+  // fd, new_fd -> "/bar"
+  // dup_fd -> "/foo"
+
+  EXPECT_EQ(dup_fd, ki_dup2(fd, dup_fd));
+  // fd, new_fd, dup_fd -> "/bar"
+}
+
+
+StringMap_t g_StringMap;
+
+class MountMockInit : public MountMem {
+ public:
+  virtual bool Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
+    g_StringMap = args;
+    if (args.find("false") != args.end())
+      return false;
+    return true;
+  };
+};
+
+class KernelProxyMountMock : public KernelProxy {
+  virtual void Init(PepperInterface* ppapi) {
+    KernelProxy::Init(NULL);
+    factories_["initfs"] = MountMockInit::Create<MountMockInit>;
+  }
+};
+
+class KernelProxyMountTest : public ::testing::Test {
+ public:
+  KernelProxyMountTest()
+      : kp_(new KernelProxyMountMock) {
+    ki_init(kp_);
+  }
+
+  ~KernelProxyMountTest() {
+    ki_uninit();
+    delete kp_;
+  }
+
+ private:
+  KernelProxy* kp_;
+};
+
+
+
+TEST_F(KernelProxyMountTest, MountInit) {
+  int res1 = ki_mount("/", "/mnt1", "initfs", 0, "false,foo=bar");
+
+  EXPECT_EQ("bar", g_StringMap["foo"]);
+  EXPECT_EQ(-1, res1);
+  EXPECT_EQ(EINVAL, errno);
+
+  int res2 = ki_mount("/", "/mnt2", "initfs", 0, "true,bar=foo,x=y");
+  EXPECT_NE(-1, res2);
+  EXPECT_EQ("y", g_StringMap["x"]);
+}

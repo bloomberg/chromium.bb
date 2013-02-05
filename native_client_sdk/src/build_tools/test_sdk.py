@@ -26,7 +26,7 @@ import getos
 
 
 TEST_EXAMPLE_LIST = [
-  'nacl_mounts_test',
+  'nacl_io_test',
 ]
 
 TEST_LIBRARY_LIST = [

@@ -54,7 +54,7 @@ SOURCES=hello_world.c
 # We break this list down into two parts, the set we need to rebuild (DEPS)
 # and the set we do not.
 #
-DEPS=ppapi_main nacl_mounts
+DEPS=ppapi_main nacl_io
 LIBS=$(DEPS) ppapi_cpp ppapi pthread
 
 

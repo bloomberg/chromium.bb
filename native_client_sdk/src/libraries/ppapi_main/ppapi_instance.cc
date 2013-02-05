@@ -15,8 +15,8 @@
 #include <string>
 #include <vector>
 
-#include "nacl_mounts/kernel_wrap.h"
-#include "nacl_mounts/nacl_mounts.h"
+#include "nacl_io/kernel_wrap.h"
+#include "nacl_io/nacl_io.h"
 
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/message_loop.h"
@@ -157,7 +157,7 @@ bool PPAPIInstance::ProcessProperties() {
   if (queue_size_int < 4) queue_size_int = 4;
   event_queue_.SetSize(queue_size_int);
 
-  nacl_mounts_init_ppapi(PPAPI_GetInstanceId(), PPAPI_GetInterface);
+  nacl_io_init_ppapi(PPAPI_GetInstanceId(), PPAPI_GetInterface);
   int fd0 = open(stdin_path, O_RDONLY);
   int fd1 = open(stdout_path, O_WRONLY);
   int fd2 = open(stderr_path, O_WRONLY);

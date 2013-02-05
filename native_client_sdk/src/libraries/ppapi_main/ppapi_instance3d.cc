@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#include "nacl_mounts/nacl_mounts.h"
+#include "nacl_io/nacl_io.h"
 
 #include "ppapi/cpp/fullscreen.h"
 #include "ppapi/cpp/graphics_3d.h"

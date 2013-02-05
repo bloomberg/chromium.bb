@@ -9,7 +9,7 @@
         '-I../../src',
         '-I../../src/ppapi/lib/gl'
       ],
-      'LIBS': ['ppapi_main', 'nacl_mounts', 'ppapi_gles2', 'ppapi_cpp', 'ppapi',
+      'LIBS': ['ppapi_main', 'nacl_io', 'ppapi_gles2', 'ppapi_cpp', 'ppapi',
                'pthread']
     }
   ],

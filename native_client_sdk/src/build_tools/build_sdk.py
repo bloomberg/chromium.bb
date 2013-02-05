@@ -603,7 +603,7 @@ EXAMPLE_LIST = [
   'file_io',
   'gamepad',
   'geturl',
-  'hello_nacl_mounts',
+  'hello_nacl_io',
   'hello_world_stdio',
   'hello_world',
   'hello_world_gles',
@@ -619,7 +619,7 @@ EXAMPLE_LIST = [
 
 LIBRARY_LIST = [
   'libjpeg',
-  'nacl_mounts',
+  'nacl_io',
   'ppapi',
   'ppapi_cpp',
   'ppapi_gles2',
