@@ -1264,6 +1264,8 @@ void DriveFileSyncService::DidDeleteFileForLocalSync(
                      AsWeakPtr(), base::Passed(&token), url, error, callback));
       return;
     }
+    case google_apis::HTTP_PRECONDITION:
+      // FALLTHROUGH
     case google_apis::HTTP_CONFLICT: {
       // Mark the file as conflicted.
       DriveMetadata metadata;
