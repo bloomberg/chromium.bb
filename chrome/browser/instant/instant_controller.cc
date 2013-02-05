@@ -264,7 +264,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
   // If we have an |instant_tab_| use it, else ensure we have a loader that is
   // current or is using local preview.
   if (!instant_tab_ && !(loader_ && loader_->IsUsingLocalPreview()) &&
-      !EnsureLoaderIsCurrent()) {
+      !EnsureLoaderIsCurrent(false)) {
     HideLoader();
     return false;
   }
@@ -645,7 +645,7 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
 
   // Try to create another loader immediately so that it is ready for the next
   // user interaction.
-  EnsureLoaderIsCurrent();
+  EnsureLoaderIsCurrent(false);
 
   LOG_INSTANT_DEBUG_EVENT(this, "Committed");
   return true;
@@ -679,10 +679,13 @@ void InstantController::OmniboxFocusChanged(
   // If focus went from outside the omnibox to the omnibox, preload the default
   // search engine, in anticipation of the user typing a query. If the reverse
   // happened, commit or discard the preview.
-  if (state != OMNIBOX_FOCUS_NONE && old_focus_state == OMNIBOX_FOCUS_NONE)
-    EnsureLoaderIsCurrent();
-  else if (state == OMNIBOX_FOCUS_NONE && old_focus_state != OMNIBOX_FOCUS_NONE)
+  if (state != OMNIBOX_FOCUS_NONE && old_focus_state == OMNIBOX_FOCUS_NONE) {
+    // On explicit user actions, ignore the Instant blacklist.
+    EnsureLoaderIsCurrent(reason == OMNIBOX_FOCUS_CHANGE_EXPLICIT);
+  } else if (state == OMNIBOX_FOCUS_NONE &&
+             old_focus_state != OMNIBOX_FOCUS_NONE) {
     OmniboxLostFocus(view_gaining_focus);
+  }
 }
 
 void InstantController::SearchModeChanged(
@@ -733,7 +736,7 @@ void InstantController::SetInstantEnabled(bool instant_enabled) {
   HideInternal();
   loader_.reset();
   if (extended_enabled_ || instant_enabled_)
-    EnsureLoaderIsCurrent();
+    EnsureLoaderIsCurrent(false);
   if (instant_tab_)
     instant_tab_->SetDisplayInstantResults(instant_enabled_);
 }
@@ -876,7 +879,7 @@ void InstantController::InstantSupportDetermined(
       HideInternal();
       delete loader_->ReleaseContents();
       MessageLoop::current()->DeleteSoon(FROM_HERE, loader_.release());
-      EnsureLoaderIsCurrent();
+      EnsureLoaderIsCurrent(false);
     }
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
@@ -925,7 +928,7 @@ void InstantController::InstantLoaderRenderViewGone() {
   delete loader_->ReleaseContents();
   // Delay deletion as we have gotten here from an InstantLoader method.
   MessageLoop::current()->DeleteSoon(FROM_HERE, loader_.release());
-  EnsureLoaderIsCurrent();
+  EnsureLoaderIsCurrent(false);
 }
 
 void InstantController::InstantLoaderAboutToNavigateMainFrame(const GURL& url) {
@@ -1018,14 +1021,14 @@ void InstantController::LogDebugEvent(const std::string& info) const {
     debug_events_.pop_back();
 }
 
-bool InstantController::EnsureLoaderIsCurrent() {
+bool InstantController::EnsureLoaderIsCurrent(bool ignore_blacklist) {
   // If there's no active tab, the browser is closing.
   const content::WebContents* active_tab = browser_->GetActiveWebContents();
   if (!active_tab)
     return false;
 
   std::string instant_url;
-  if (!GetInstantURL(active_tab, &instant_url)) {
+  if (!GetInstantURL(active_tab, ignore_blacklist, &instant_url)) {
     // If we are in extended mode, fallback to the local popup.
     if (extended_enabled_)
       instant_url = kLocalOmniboxPopupURL;
@@ -1069,7 +1072,7 @@ void InstantController::OnStaleLoader() {
       omnibox_focus_state_ == OMNIBOX_FOCUS_NONE &&
       model_.mode().is_default()) {
     loader_.reset();
-    EnsureLoaderIsCurrent();
+    EnsureLoaderIsCurrent(false);
   }
 }
 
@@ -1079,7 +1082,7 @@ void InstantController::MaybeSwitchToRemoteLoader() {
     return;
   }
 
-  EnsureLoaderIsCurrent();
+  EnsureLoaderIsCurrent(false);
 }
 
 void InstantController::ResetInstantTab() {
@@ -1210,6 +1213,7 @@ void InstantController::SendPopupBoundsToPage() {
 }
 
 bool InstantController::GetInstantURL(const content::WebContents* active_tab,
+                                      bool ignore_blacklist,
                                       std::string* instant_url) const {
   DCHECK(active_tab);
   instant_url->clear();
@@ -1287,15 +1291,17 @@ bool InstantController::GetInstantURL(const content::WebContents* active_tab,
     }
   }
 
-  std::map<std::string, int>::const_iterator iter =
-      blacklisted_urls_.find(*instant_url);
-  if (iter != blacklisted_urls_.end() &&
-      iter->second > kMaxInstantSupportFailures) {
-    RecordEventHistogram(INSTANT_CONTROLLER_EVENT_URL_BLOCKED_BY_BLACKLIST);
-    LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
-        "GetInstantURL: Instant URL blacklisted: url=%s",
-        instant_url->c_str()));
-    return false;
+  if (!ignore_blacklist) {
+    std::map<std::string, int>::const_iterator iter =
+        blacklisted_urls_.find(*instant_url);
+    if (iter != blacklisted_urls_.end() &&
+        iter->second > kMaxInstantSupportFailures) {
+      RecordEventHistogram(INSTANT_CONTROLLER_EVENT_URL_BLOCKED_BY_BLACKLIST);
+      LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+          "GetInstantURL: Instant URL blacklisted: url=%s",
+          instant_url->c_str()));
+      return false;
+    }
   }
 
   return true;

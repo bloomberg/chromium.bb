@@ -209,7 +209,8 @@ class InstantController {
   // creating a new loader if necessary. In extended mode, will fallback to
   // using the kLocalOmniboxPopupURL as the Instant URL in case GetInstantURL()
   // returns false. Returns true if an Instant URL could be determined.
-  bool EnsureLoaderIsCurrent();
+  // For |ignore_blacklist| look at comments in |GetInstantURL|.
+  bool EnsureLoaderIsCurrent(bool ignore_blacklist);
 
   // Recreates the |loader_| with the input |instant_url|. The caller should
   // ensure that the |loader_| is not already on the stack since it is deleted
@@ -257,8 +258,12 @@ class InstantController {
   //   - If the Instant URL is specified by command line, returns it, else
   //   - If the default Instant URL is present returns it.
   //
+  // If |ignore_blacklist| is set to true, Instant URLs are not filtered through
+  // the blacklist.
+  //
   // Returns true if a valid Instant URL could be found that is not blacklisted.
   bool GetInstantURL(const content::WebContents* active_tab,
+                     bool ignore_blacklist,
                      std::string* instant_url) const;
 
   chrome::BrowserInstantController* const browser_;
