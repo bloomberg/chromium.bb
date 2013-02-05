@@ -45,8 +45,46 @@ import optparse
 import subprocess
 
 
-DEPOT_DEPS_NAME = { 'webkit' : "src/third_party/WebKit",
-                    'v8' : 'src/v8' }
+# The additional repositories that might need to be bisected.
+# If the repository has any dependant repositories (such as skia/src needs
+# skia/include and skia/gyp to be updated), specify them in the 'depends'
+# so that they're synced appropriately.
+# Format is:
+# src: path to the working directory.
+# recurse: True if this repositry will get bisected.
+# depends: A list of other repositories that are actually part of the same
+#   repository in svn.
+# svn: Needed for git workflow to resolve hashes to svn revisions.
+DEPOT_DEPS_NAME = { 'webkit' : {
+                      "src" : "src/third_party/WebKit",
+                      "recurse" : True,
+                      "depends" : None
+                    },
+                    'v8' : {
+                      "src" : "src/v8",
+                      "recurse" : True,
+                      "depends" : None
+                    },
+                    'skia/src' : {
+                      "src" : "src/third_party/skia/src",
+                      "recurse" : True,
+                      "svn" : "http://skia.googlecode.com/svn/trunk/src",
+                      "depends" : ['skia/include', 'skia/gyp']
+                    },
+                    'skia/include' : {
+                      "src" : "src/third_party/skia/include",
+                      "recurse" : False,
+                      "svn" : "http://skia.googlecode.com/svn/trunk/include",
+                      "depends" : None
+                    },
+                    'skia/gyp' : {
+                      "src" : "src/third_party/skia/gyp",
+                      "recurse" : False,
+                      "svn" : "http://skia.googlecode.com/svn/trunk/gyp",
+                      "depends" : None
+                    }
+                  }
+
 DEPOT_NAMES = DEPOT_DEPS_NAME.keys()
 
 FILE_DEPS_GIT = '.DEPS.git'
@@ -150,6 +188,9 @@ class GitSourceControl(SourceControl):
   def __init__(self):
     super(GitSourceControl, self).__init__()
 
+  def IsGit(self):
+    return True
+
   def GetRevisionList(self, revision_range_end, revision_range_start):
     """Retrieves a list of revisions between |revision_range_start| and
     |revision_range_end|.
@@ -193,12 +234,15 @@ class GitSourceControl(SourceControl):
 
     return not results[1]
 
-  def ResolveToRevision(self, revision_to_check):
+  def ResolveToRevision(self, revision_to_check, depot, search=1):
     """If an SVN revision is supplied, try to resolve it to a git SHA1.
 
     Args:
       revision_to_check: The user supplied revision string that may need to be
         resolved to a git SHA1.
+      depot: The depot the revision_to_check is from.
+      search: The number of changelists to try if the first fails to resolve
+        to a git hash.
 
     Returns:
       A string containing a git SHA1 hash, otherwise None.
@@ -206,20 +250,33 @@ class GitSourceControl(SourceControl):
     if not IsStringInt(revision_to_check):
       return revision_to_check
 
-    svn_pattern = 'SVN changes up to revision ' + revision_to_check
-    cmd = ['log', '--format=%H', '-1', '--grep', svn_pattern, 'origin/master']
+    depot_svn = 'svn://svn.chromium.org/chrome/trunk/src'
 
-    (log_output, return_code) = RunGit(cmd)
+    if depot != 'src':
+      depot_svn = DEPOT_DEPS_NAME[depot]['svn']
 
-    assert not return_code, 'An error occurred while running'\
-                            ' "git %s"' % ' '.join(cmd)
+    svn_revision = int(revision_to_check)
+    git_revision = None
 
-    revision_hash_list = log_output.split()
+    for i in xrange(svn_revision, svn_revision - search, -1):
+      svn_pattern = 'git-svn-id: %s@%d' %\
+                    (depot_svn, i)
+      cmd = ['log', '--format=%H', '-1', '--grep', svn_pattern, 'origin/master']
 
-    if revision_hash_list:
-      return revision_hash_list[0]
+      (log_output, return_code) = RunGit(cmd)
 
-    return None
+      assert not return_code, 'An error occurred while running'\
+                              ' "git %s"' % ' '.join(cmd)
+
+      if not return_code:
+        log_output = log_output.strip()
+
+        if log_output:
+          git_revision = log_output
+
+          break
+
+    return git_revision
 
   def IsInProperBranch(self):
     """Confirms they're in the master branch for performing the bisection.
@@ -237,6 +294,30 @@ class GitSourceControl(SourceControl):
     log_output = log_output.strip()
 
     return log_output == "master"
+
+  def SVNFindRev(self, revision):
+    """Maps directly to the 'git svn find-rev' command.
+
+    Args:
+      revision: The git SHA1 to use.
+
+    Returns:
+      An integer changelist #, otherwise None.
+    """
+
+    cmd = ['svn', 'find-rev', revision]
+
+    (output, return_code) = RunGit(cmd)
+
+    assert not return_code, 'An error occurred while running'\
+                            ' "git %s"' % ' '.join(cmd)
+
+    svn_revision = output.strip()
+
+    if IsStringInt(svn_revision):
+      return int(svn_revision)
+
+    return None
 
 
 
@@ -257,7 +338,7 @@ class BisectPerformanceMetrics(object):
       # The working directory of each depot is just the path to the depot, but
       # since we're already in 'src', we can skip that part.
 
-      self.depot_cwd[d] = self.src_cwd + DEPOT_DEPS_NAME[d][3:]
+      self.depot_cwd[d] = self.src_cwd + DEPOT_DEPS_NAME[d]['src'][3:]
 
   def GetRevisionList(self, bad_revision, good_revision):
     """Retrieves a list of all the commits between the bad revision and
@@ -289,15 +370,16 @@ class BisectPerformanceMetrics(object):
     rxp = re.compile(".git@(?P<revision>[a-fA-F0-9]+)")
 
     for d in DEPOT_NAMES:
-      if locals['deps'].has_key(DEPOT_DEPS_NAME[d]):
-        re_results = rxp.search(locals['deps'][DEPOT_DEPS_NAME[d]])
+      if DEPOT_DEPS_NAME[d]['recurse']:
+        if locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src']):
+          re_results = rxp.search(locals['deps'][DEPOT_DEPS_NAME[d]['src']])
 
-        if re_results:
-          results[d] = re_results.group('revision')
+          if re_results:
+            results[d] = re_results.group('revision')
+          else:
+            return None
         else:
           return None
-      else:
-        return None
 
     return results
 
@@ -443,7 +525,7 @@ class BisectPerformanceMetrics(object):
     """
 
     if self.opts.debug_ignore_perf_test:
-      return (0.0, 0)
+      return ({'debug' : 0.0}, 0)
 
     args = shlex.split(command_to_run)
 
@@ -469,6 +551,53 @@ class BisectPerformanceMetrics(object):
     else:
       return ('No values returned from performance test.', -1)
 
+  def FindAllRevisionsToSync(self, revision, depot):
+    """Finds all dependant revisions and depots that need to be synced for a
+    given revision. This is only useful in the git workflow, as an svn depot
+    may be split into multiple mirrors.
+
+    ie. skia is broken up into 3 git mirrors over skia/src, skia/gyp, and
+    skia/include. To sync skia/src properly, one has to find the proper
+    revisions in skia/gyp and skia/include.
+
+    Args:
+      revision: The revision to sync to.
+      depot: The depot in use at the moment (probably skia).
+
+    Returns:
+      A list of [depot, revision] pairs that need to be synced.
+    """
+    revisions_to_sync = [[depot, revision]]
+
+    use_gclient = (depot == 'chromium')
+
+    # Some SVN depots were split into multiple git depots, so we need to
+    # figure out for each mirror which git revision to grab. There's no
+    # guarantee that the SVN revision will exist for each of the dependant
+    # depots, so we have to grep the git logs and grab the next earlier one.
+    if not use_gclient and\
+       DEPOT_DEPS_NAME[depot]['depends'] and\
+       self.source_control.IsGit():
+      svn_rev = self.source_control.SVNFindRev(revision)
+
+      for d in DEPOT_DEPS_NAME[depot]['depends']:
+        self.ChangeToDepotWorkingDirectory(d)
+
+        dependant_rev = self.source_control.ResolveToRevision(svn_rev, d, 1000)
+
+        if dependant_rev:
+          revisions_to_sync.append([d, dependant_rev])
+
+      num_resolved = len(revisions_to_sync)
+      num_needed = len(DEPOT_DEPS_NAME[depot]['depends'])
+
+      self.ChangeToDepotWorkingDirectory(depot)
+
+      if not ((num_resolved - 1) == num_needed):
+        return None
+
+    return revisions_to_sync
+
   def SyncBuildAndRunRevision(self, revision, depot, command_to_run, metric):
     """Performs a full sync/build/run of the specified revision.
 
@@ -484,10 +613,23 @@ class BisectPerformanceMetrics(object):
     """
     use_gclient = (depot == 'chromium')
 
-    if self.opts.debug_ignore_sync or\
-       self.source_control.SyncToRevision(revision, use_gclient):
+    revisions_to_sync = self.FindAllRevisionsToSync(revision, depot)
 
-      success = True
+    if not revisions_to_sync:
+      return ('Failed to resolve dependant depots.', 1)
+
+    success = True
+
+    if not self.opts.debug_ignore_sync:
+      for r in revisions_to_sync:
+        self.ChangeToDepotWorkingDirectory(r[0])
+
+        if not self.source_control.SyncToRevision(r[1], use_gclient):
+          success = False
+
+          break
+
+    if success:
       if not(use_gclient):
         success = self.RunGClientHooks()
 
@@ -638,7 +780,7 @@ class BisectPerformanceMetrics(object):
 
   def PrintRevisionsToBisectMessage(self, revision_list, depot):
     print
-    print 'Revisions to bisect on [src]:'
+    print 'Revisions to bisect on [%s]:' % depot
     for revision_id in revision_list:
       print '  -> %s' % (revision_id, )
     print
@@ -691,8 +833,10 @@ class BisectPerformanceMetrics(object):
                'error' : None}
 
     # If they passed SVN CL's, etc... we can try match them to git SHA1's.
-    bad_revision = self.source_control.ResolveToRevision(bad_revision_in)
-    good_revision = self.source_control.ResolveToRevision(good_revision_in)
+    bad_revision = self.source_control.ResolveToRevision(bad_revision_in,
+                                                         'src')
+    good_revision = self.source_control.ResolveToRevision(good_revision_in,
+                                                          'src')
 
     if bad_revision is None:
       results['error'] = 'Could\'t resolve [%s] to SHA1.' % (bad_revision_in,)
@@ -769,6 +913,9 @@ class BisectPerformanceMetrics(object):
       good_revision_data['value'] = known_good_value
 
       while True:
+        if not revision_list:
+          break
+
         min_revision_data = revision_data[revision_list[min_revision]]
         max_revision_data = revision_data[revision_list[max_revision]]
 
@@ -783,11 +930,12 @@ class BisectPerformanceMetrics(object):
             external_depot = None
 
             for current_depot in DEPOT_NAMES:
-              if min_revision_data['external'][current_depot] !=\
-                 max_revision_data['external'][current_depot]:
-                external_depot = current_depot
+              if DEPOT_DEPS_NAME[current_depot]["recurse"]:
+                if min_revision_data['external'][current_depot] !=\
+                   max_revision_data['external'][current_depot]:
+                  external_depot = current_depot
 
-                break
+                  break
 
             # If there was no change in any of the external depots, the search
             # is over.
