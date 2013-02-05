@@ -69,7 +69,7 @@ void ChromePluginServiceFilter::UnrestrictPlugin(
   restricted_plugins_.erase(plugin_path);
 }
 
-bool ChromePluginServiceFilter::IsPluginEnabled(
+bool ChromePluginServiceFilter::IsPluginAvailable(
     int render_process_id,
     int render_view_id,
     const void* context,
@@ -87,10 +87,9 @@ bool ChromePluginServiceFilter::IsPluginEnabled(
            details->overridden_plugins[i].url.is_empty())) {
 
         bool use = details->overridden_plugins[i].plugin.path == plugin->path;
-        if (!use)
-          return false;
-        *plugin = details->overridden_plugins[i].plugin;
-        break;
+        if (use)
+          *plugin = details->overridden_plugins[i].plugin;
+        return use;
       }
     }
   }

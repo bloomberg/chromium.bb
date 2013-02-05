@@ -133,7 +133,7 @@ void PluginInfoMessageFilter::PluginsLoaded(
     output.group_name = plugin_metadata->name();
   }
 
-  context_.GrantAccess(output.status, output.plugin.path);
+  context_.MaybeGrantAccess(output.status, output.plugin.path);
 
   ChromeViewHostMsg_GetPluginInfo::WriteReplyParams(reply_msg, output);
   Send(reply_msg);
@@ -228,12 +228,12 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
       PluginService::GetInstance()->GetFilter();
   size_t i = 0;
   for (; i < matching_plugins.size(); ++i) {
-    if (!filter || filter->IsPluginEnabled(render_process_id_,
-                                           render_view_id,
-                                           resource_context_,
-                                           url,
-                                           top_origin_url,
-                                           &matching_plugins[i])) {
+    if (!filter || filter->IsPluginAvailable(render_process_id_,
+                                             render_view_id,
+                                             resource_context_,
+                                             url,
+                                             top_origin_url,
+                                             &matching_plugins[i])) {
       break;
     }
   }
@@ -293,7 +293,7 @@ void PluginInfoMessageFilter::Context::GetPluginContentSetting(
       info.secondary_pattern == ContentSettingsPattern::Wildcard();
 }
 
-void PluginInfoMessageFilter::Context::GrantAccess(
+void PluginInfoMessageFilter::Context::MaybeGrantAccess(
     const ChromeViewHostMsg_GetPluginInfo_Status& status,
     const FilePath& path) const {
   if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed ||

@@ -673,12 +673,12 @@ void RenderMessageFilter::GetPluginsCallback(
   for (size_t i = 0; i < all_plugins.size(); ++i) {
     // Copy because the filter can mutate.
     webkit::WebPluginInfo plugin(all_plugins[i]);
-    if (!filter || filter->IsPluginEnabled(child_process_id,
-                                           routing_id,
-                                           resource_context_,
-                                           GURL(),
-                                           GURL(),
-                                           &plugin)) {
+    if (!filter || filter->IsPluginAvailable(child_process_id,
+                                             routing_id,
+                                             resource_context_,
+                                             GURL(),
+                                             GURL(),
+                                             &plugin)) {
       plugins.push_back(plugin);
     }
   }
