@@ -852,6 +852,14 @@ RenderWidgetHostView* WebContentsImpl::GetRenderWidgetHostView() const {
   return render_manager_.GetRenderWidgetHostView();
 }
 
+RenderWidgetHostViewPort* WebContentsImpl::GetRenderWidgetHostViewPort() const {
+  BrowserPluginGuest* guest = GetBrowserPluginGuest();
+  if (guest && guest->embedder_web_contents()) {
+    return guest->embedder_web_contents()->GetRenderWidgetHostViewPort();
+  }
+  return RenderWidgetHostViewPort::FromRWHV(GetRenderWidgetHostView());
+}
+
 WebContentsView* WebContentsImpl::GetView() const {
   return view_.get();
 }
@@ -1173,17 +1181,33 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   if (view_.get()) {
     CHECK(render_view_host_delegate_view_);
   } else {
-    if (browser_plugin_guest_.get() &&
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableBrowserPluginCompositing)) {
+    WebContentsViewDelegate* delegate =
+        GetContentClient()->browser()->GetWebContentsViewDelegate(this);
+
+    bool enable_browser_plugin_compositing = false;
+    bool enable_browser_plugin_guest_views = false;
+    if (browser_plugin_guest_.get()) {
+      enable_browser_plugin_compositing =
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableBrowserPluginCompositing);
+      enable_browser_plugin_guest_views = enable_browser_plugin_compositing ||
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableBrowserPluginGuestViews);
+    }
+
+    if (enable_browser_plugin_guest_views) {
+      WebContentsView* platform_view = CreateWebContentsView(
+          this, delegate, &render_view_host_delegate_view_);
+
       WebContentsViewGuest* rv = new WebContentsViewGuest(
           this,
-          browser_plugin_guest_.get());
+          browser_plugin_guest_.get(),
+          enable_browser_plugin_compositing,
+          platform_view);
       render_view_host_delegate_view_ = rv;
       view_.reset(rv);
     } else {
-      WebContentsViewDelegate* delegate =
-          GetContentClient()->browser()->GetWebContentsViewDelegate(this);
+      // Regular WebContentsView.
       view_.reset(CreateWebContentsView(
           this, delegate, &render_view_host_delegate_view_));
     }
@@ -1491,11 +1515,10 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
       RenderWidgetHostViewPort::FromRWHV(GetCreatedWidget(route_id));
   if (!widget_host_view)
     return;
-  if (is_fullscreen) {
-    widget_host_view->InitAsFullscreen(GetRenderWidgetHostView());
-  } else {
-    widget_host_view->InitAsPopup(GetRenderWidgetHostView(), initial_pos);
-  }
+  if (is_fullscreen)
+    widget_host_view->InitAsFullscreen(GetRenderWidgetHostViewPort());
+  else
+    widget_host_view->InitAsPopup(GetRenderWidgetHostViewPort(), initial_pos);
 
   RenderWidgetHostImpl* render_widget_host_impl =
       RenderWidgetHostImpl::From(widget_host_view->GetRenderWidgetHost());
@@ -3450,11 +3473,11 @@ RenderViewHostImpl* WebContentsImpl::GetRenderViewHostImpl() {
   return static_cast<RenderViewHostImpl*>(GetRenderViewHost());
 }
 
-BrowserPluginGuest* WebContentsImpl::GetBrowserPluginGuest() {
+BrowserPluginGuest* WebContentsImpl::GetBrowserPluginGuest() const {
   return browser_plugin_guest_.get();
 }
 
-BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() {
+BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {
   return browser_plugin_embedder_.get();
 }
 

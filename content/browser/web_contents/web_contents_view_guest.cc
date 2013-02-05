@@ -5,6 +5,7 @@
 #include "content/browser/web_contents/web_contents_view_guest.h"
 
 #include "build/build_config.h"
+#include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_guest.h"
@@ -24,9 +25,13 @@ namespace content {
 
 WebContentsViewGuest::WebContentsViewGuest(
     WebContentsImpl* web_contents,
-    BrowserPluginGuest* guest)
+    BrowserPluginGuest* guest,
+    bool enable_compositing,
+    WebContentsView* platform_view)
     : web_contents_(web_contents),
-      guest_(guest) {
+      guest_(guest),
+      enable_compositing_(enable_compositing),
+      platform_view_(platform_view) {
 }
 
 WebContentsViewGuest::~WebContentsViewGuest() {
@@ -34,7 +39,7 @@ WebContentsViewGuest::~WebContentsViewGuest() {
 
 void WebContentsViewGuest::CreateView(const gfx::Size& initial_size,
                                       gfx::NativeView context) {
-  requested_size_ = initial_size;
+  platform_view_->CreateView(initial_size, context);
 }
 
 RenderWidgetHostView* WebContentsViewGuest::CreateViewForWidget(
@@ -49,9 +54,14 @@ RenderWidgetHostView* WebContentsViewGuest::CreateViewForWidget(
     return render_widget_host->GetView();
   }
 
+  RenderWidgetHostView* platform_widget = NULL;
+  platform_widget = platform_view_->CreateViewForWidget(render_widget_host);
+
   RenderWidgetHostView* view = new RenderWidgetHostViewGuest(
       render_widget_host,
-      guest_);
+      guest_,
+      enable_compositing_,
+      platform_widget);
 
   return view;
 }
@@ -73,34 +83,28 @@ gfx::NativeView WebContentsViewGuest::GetContentNativeView() const {
 }
 
 gfx::NativeWindow WebContentsViewGuest::GetTopLevelNativeWindow() const {
-  return NULL;
+  return guest_->embedder_web_contents()->GetView()->GetTopLevelNativeWindow();
 }
 
 void WebContentsViewGuest::GetContainerBounds(gfx::Rect* out) const {
-  out->SetRect(0, 0, requested_size_.width(), requested_size_.height());
+  platform_view_->GetContainerBounds(out);
 }
 
 void WebContentsViewGuest::SizeContents(const gfx::Size& size) {
-  requested_size_ = size;
-  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
-  if (rwhv)
-    rwhv->SetSize(size);
+  platform_view_->SizeContents(size);
 }
 
 void WebContentsViewGuest::SetInitialFocus() {
-  if (web_contents_->FocusLocationBarByDefault())
-    web_contents_->SetFocusToLocationBar(false);
-  else
-    Focus();
+  platform_view_->SetInitialFocus();
 }
 
 gfx::Rect WebContentsViewGuest::GetViewBounds() const {
-  gfx::Rect rect(0, 0, requested_size_.width(), requested_size_.height());
-  return rect;
+  return platform_view_->GetViewBounds();
 }
 
 #if defined(OS_MACOSX)
 void WebContentsViewGuest::SetAllowOverlappingViews(bool overlapping) {
+  platform_view_->SetAllowOverlappingViews(overlapping);
 }
 #endif
 
@@ -109,6 +113,7 @@ WebContents* WebContentsViewGuest::web_contents() {
 }
 
 void WebContentsViewGuest::RenderViewCreated(RenderViewHost* host) {
+  platform_view_->RenderViewCreated(host);
 }
 
 bool WebContentsViewGuest::IsEventTracking() const {
@@ -116,7 +121,7 @@ bool WebContentsViewGuest::IsEventTracking() const {
 }
 
 void WebContentsViewGuest::RestoreFocus() {
-  SetInitialFocus();
+  platform_view_->RestoreFocus();
 }
 
 void WebContentsViewGuest::SetPageTitle(const string16& title) {
@@ -127,9 +132,11 @@ void WebContentsViewGuest::OnTabCrashed(base::TerminationStatus status,
 }
 
 void WebContentsViewGuest::Focus() {
+  platform_view_->Focus();
 }
 
 void WebContentsViewGuest::StoreFocus() {
+  platform_view_->StoreFocus();
 }
 
 WebDropData* WebContentsViewGuest::GetDropData() const {

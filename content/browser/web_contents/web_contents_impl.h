@@ -51,6 +51,7 @@ class RenderViewHost;
 class RenderViewHostDelegateView;
 class RenderViewHostImpl;
 class RenderWidgetHostImpl;
+class RenderWidgetHostViewPort;
 class SavePackage;
 class SessionStorageNamespaceImpl;
 class SiteInstance;
@@ -170,10 +171,10 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Returns guest browser plugin object, or NULL if this WebContents is not a
   // guest.
-  BrowserPluginGuest* GetBrowserPluginGuest();
+  BrowserPluginGuest* GetBrowserPluginGuest() const;
   // Returns embedder browser plugin object, or NULL if this WebContents is not
   // an embedder.
-  BrowserPluginEmbedder* GetBrowserPluginEmbedder();
+  BrowserPluginEmbedder* GetBrowserPluginEmbedder() const;
 
   // Gets the current fullscreen render widget's routing ID. Returns
   // MSG_ROUTING_NONE when there is no fullscreen render widget.
@@ -666,6 +667,13 @@ class CONTENT_EXPORT WebContentsImpl
   // renderer-initiated creation, and returns it. Note that this can only be
   // called once as this call also removes it from the internal map.
   WebContentsImpl* GetCreatedWindow(int route_id);
+
+  // Returns the RenderWidgetHostView that is associated with a native window
+  // and can be used in showing created widgets.
+  // If this WebContents belongs to a browser plugin guest, there is no native
+  // window 'view' associated with this WebContents. This method returns the
+  // 'view' of the embedder instead.
+  RenderWidgetHostViewPort* GetRenderWidgetHostViewPort() const;
 
   // Misc non-view stuff -------------------------------------------------------
 

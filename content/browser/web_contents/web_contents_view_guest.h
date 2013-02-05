@@ -25,11 +25,13 @@ class CONTENT_EXPORT WebContentsViewGuest
  public:
   // The corresponding WebContentsImpl is passed in the constructor, and manages
   // our lifetime. This doesn't need to be the case, but is this way currently
-  // because that's what was easiest when they were split. We optionally take
-  // |wrapper| which creates an intermediary widget layer for features from the
-  // Embedding layer that lives with the WebContentsView.
+  // because that's what was easiest when they were split.
+  // WebContentsViewGuest always has a backing platform dependent view,
+  // |platform_view|.
   WebContentsViewGuest(WebContentsImpl* web_contents,
-                       BrowserPluginGuest* guest);
+                       BrowserPluginGuest* guest,
+                       bool enable_compositing,
+                       WebContentsView* platform_view);
   virtual ~WebContentsViewGuest();
 
   WebContents* web_contents();
@@ -84,11 +86,13 @@ class CONTENT_EXPORT WebContentsViewGuest
   virtual void TakeFocus(bool reverse) OVERRIDE;
 
  private:
-
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;
-  gfx::Size requested_size_;
   BrowserPluginGuest* guest_;
+  bool enable_compositing_;
+  // The platform dependent view backing this WebContentsView.
+  // Calls to this WebContentsViewGuest are forwarded to |platform_view_|.
+  WebContentsView* platform_view_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewGuest);
 };

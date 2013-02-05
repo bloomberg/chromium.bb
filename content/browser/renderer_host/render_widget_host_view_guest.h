@@ -37,7 +37,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
     : public RenderWidgetHostViewBase {
  public:
   RenderWidgetHostViewGuest(RenderWidgetHost* widget,
-                            BrowserPluginGuest* guest);
+                            BrowserPluginGuest* guest,
+                            bool enable_compositing,
+                            RenderWidgetHostView* platform_view);
   virtual ~RenderWidgetHostViewGuest();
 
   // RenderWidgetHostView implementation.
@@ -180,11 +182,12 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   // The model object.
   RenderWidgetHostImpl* host_;
 
-  // Whether or not this widget is hidden.
-  bool is_hidden_;
-
   BrowserPluginGuest *guest_;
-  gfx::Size size_;
+  bool enable_compositing_;
+  // The platform view for this RenderWidgetHostView.
+  // RenderWidgetHostViewGuest mostly only cares about stuff related to
+  // compositing, the rest are directly forwared to this |platform_view_|.
+  RenderWidgetHostViewPort* platform_view_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewGuest);
 };

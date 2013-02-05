@@ -262,6 +262,12 @@ const char kEnableBrowserPluginCompositing[] =
 const char kEnableBrowserPluginForAllViewTypes[] =
     "enable-browser-plugin-for-all-view-types";
 
+// Enables using experimental 'guest' view classes for browser plugin.
+// Browser plugin would use WebContentsViewGuest and RenderWidgetHostViewGuest,
+// which wraps the actual *View implementations.
+const char kEnableBrowserPluginGuestViews[] =
+    "enable-browser-plugin-guest-views";
+
 // Enables the creation of compositing layers for fixed position elements.
 const char kEnableCompositingForFixedPosition[] =
      "enable-fixed-position-compositing";
