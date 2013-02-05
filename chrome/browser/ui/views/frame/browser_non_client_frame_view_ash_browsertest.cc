@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 
 #include "ash/ash_constants.h"
+#include "ash/ash_switches.h"
+#include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/immersive_mode_controller.h"
@@ -15,7 +17,19 @@
 
 using views::Widget;
 
-typedef InProcessBrowserTest BrowserNonClientFrameViewAshTest;
+class BrowserNonClientFrameViewAshTest : public InProcessBrowserTest {
+ public:
+  BrowserNonClientFrameViewAshTest() {}
+  virtual ~BrowserNonClientFrameViewAshTest() {}
+
+  // content::BrowserTestBase overrides:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(ash::switches::kAshImmersiveMode);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAshTest);
+};
 
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, WindowHeader) {
   // We know we're using Views, so static cast.
