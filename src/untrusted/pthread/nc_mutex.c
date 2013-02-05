@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/pthread/futex.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
@@ -95,7 +96,7 @@ static int mutex_lock_nonrecursive(pthread_mutex_t *mutex, int try_only) {
    */
   int old_state = __sync_val_compare_and_swap(&mutex->mutex_state, UNLOCKED,
                                               LOCKED_WITHOUT_WAITERS);
-  if (old_state != UNLOCKED) {
+  if (NACL_UNLIKELY(old_state != UNLOCKED)) {
     if (try_only) {
       return EBUSY;
     }
@@ -124,7 +125,7 @@ static int mutex_lock_nonrecursive(pthread_mutex_t *mutex, int try_only) {
 }
 
 static int mutex_lock(pthread_mutex_t *mutex, int try_only) {
-  if (mutex->mutex_type == PTHREAD_MUTEX_FAST_NP) {
+  if (NACL_LIKELY(mutex->mutex_type == PTHREAD_MUTEX_FAST_NP)) {
     return mutex_lock_nonrecursive(mutex, try_only);
   }
 
@@ -168,7 +169,7 @@ int pthread_mutex_lock(pthread_mutex_t *mutex) {
 }
 
 int pthread_mutex_unlock(pthread_mutex_t *mutex) {
-  if (mutex->mutex_type != PTHREAD_MUTEX_FAST_NP) {
+  if (NACL_UNLIKELY(mutex->mutex_type != PTHREAD_MUTEX_FAST_NP)) {
     if ((PTHREAD_MUTEX_RECURSIVE_NP == mutex->mutex_type) &&
         (0 != (--mutex->recursion_counter))) {
       /*
@@ -193,7 +194,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex) {
    * execute.
    */
   int old_state = __sync_fetch_and_sub(&mutex->mutex_state, 1);
-  if (old_state != LOCKED_WITHOUT_WAITERS) {
+  if (NACL_UNLIKELY(old_state != LOCKED_WITHOUT_WAITERS)) {
     if (old_state == UNLOCKED) {
       /*
        * The mutex was not locked.  mutex_state is now -1 and the

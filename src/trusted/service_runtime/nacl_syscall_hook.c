@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
@@ -142,7 +143,7 @@ NORETURN void NaClSyscallCSegHook(struct NaClThreadContext *ntcp) {
   natp->usr_syscall_args = NaClRawUserStackAddrNormalize(sp_user +
                                                          NACL_SYSARGS_FIX);
 
-  if (sysnum >= NACL_MAX_SYSCALLS) {
+  if (NACL_UNLIKELY(sysnum >= NACL_MAX_SYSCALLS)) {
     NaClLog(2, "INVALID system call %"NACL_PRIdS"\n", sysnum);
     sysret = -NACL_ABI_EINVAL;
     NaClCopyInDropLock(nap);

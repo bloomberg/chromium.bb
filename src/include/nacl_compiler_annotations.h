@@ -83,4 +83,19 @@
 # define NACL_ALLOW_THIS_IN_INITIALIZER_LIST(code) code
 #endif
 
+/*
+ * NACL_LIKELY(x) returns the boolean x and tells the compiler that x
+ * is likely to be true.
+ *
+ * Similarly, NACL_UNLIKELY(x) returns the boolean x and tells the
+ * compiler that x is likely to be false.
+ */
+#if defined(__GNUC__)
+# define NACL_LIKELY(x) (__builtin_expect((x) != 0, 1))
+# define NACL_UNLIKELY(x) (__builtin_expect((x) != 0, 0))
+#else
+# define NACL_LIKELY(x) (x)
+# define NACL_UNLIKELY(x) (x)
+#endif
+
 #endif

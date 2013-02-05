@@ -7,6 +7,7 @@
 /*
  * NaCl Server Runtime logging code.
  */
+#include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_process.h"
@@ -670,7 +671,7 @@ void NaClLog(int         detail_level,
   va_list ap;
 
 #if !THREAD_SAFE_DETAIL_CHECK
-  if (detail_level > verbosity) {
+  if (NACL_LIKELY(detail_level > verbosity)) {
     return;
   }
 #endif
