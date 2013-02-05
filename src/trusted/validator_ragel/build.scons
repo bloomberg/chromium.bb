@@ -86,45 +86,41 @@ env.AddNodeToTestSuite(
     ['small_tests', 'validator_tests'],
     'run_gen_dfa_test')
 
+dll_env = env.Clone(COMPONENT_STATIC=False)
+
+if env.Bit('windows'):
+  # On windows we don't need to recompile specifically for dynamic linking.
+  validator32_dll = validator32
+  validator64_dll = validator64
+  features_dll = features
+else:
+  dll_env.Append(CCFLAGS=['-fPIC'])
+  validator32_dll = dll_env.ComponentObject('gen/validator_x86_32.c')
+  validator64_dll = dll_env.ComponentObject('gen/validator_x86_64.c')
+
+  features_dll = [
+      dll_env.ComponentObject('unreviewed/validator_features_all.c'),
+      dll_env.ComponentObject('unreviewed/validator_features_validator.c')
+  ]
+
+nacl_log_for_dll_dll = dll_env.ComponentObject('nacl_log_for_dll.c')
+
+validator_dll = dll_env.ComponentLibrary(
+    'rdfa_validator_dll',
+    [validator32_dll, validator64_dll, nacl_log_for_dll_dll] + features_dll)
+
 # Here for simplicity we make assumption that python used to run scons
 # is the same as the one invoked by scons to run tests.
 python_bitness = {2**31 - 1: 32, 2**63 - 1: 64}[sys.maxsize]
-
 bitness = int(env.get('TARGET_SUBARCH'))
 assert bitness in [32, 64]
+# Note that it is possible that we build on one machine and run tests on another
+# one, so we build DLL even if python bitness does not match target bitness.
+# Asan does not instrument DLLs (only executables), so we will be unable to
+# run tests under asan.
+python_can_load_dll = python_bitness == bitness and not env.Bit('asan')
 
-if python_bitness != bitness:
-  # Python will be unable to load library anyway.
-  print 'python has wrong bitness'
-  validator_dll = None
-elif env.Bit('asan'):
-  print 'python will be unable to load DLL under asan'
-  validator_dll = None
-else:
-  dll_env = env.Clone(COMPONENT_STATIC=False)
-
-  if env.Bit('windows'):
-    # On windows we don't need to recompile specifically for dynamic linking.
-    validator32_dll = validator32
-    validator64_dll = validator64
-    features_dll = features
-  else:
-    dll_env.Append(CCFLAGS=['-fPIC'])
-    validator32_dll = dll_env.ComponentObject('gen/validator_x86_32.c')
-    validator64_dll = dll_env.ComponentObject('gen/validator_x86_64.c')
-
-    features_dll = [
-        dll_env.ComponentObject('unreviewed/validator_features_all.c'),
-        dll_env.ComponentObject('unreviewed/validator_features_validator.c')
-    ]
-
-  nacl_log_for_dll_dll = dll_env.ComponentObject('nacl_log_for_dll.c')
-
-  validator_dll = dll_env.ComponentLibrary(
-      'rdfa_validator_dll',
-      [validator32_dll, validator64_dll, nacl_log_for_dll_dll] + features_dll)
-
-if validator_dll is not None:
+if python_can_load_dll:
   validator_py_test = env.AutoDepsCommand(
         'validator_py_out',
         ['${PYTHON}',
