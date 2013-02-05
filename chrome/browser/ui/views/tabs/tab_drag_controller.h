@@ -73,6 +73,12 @@ class TabDragController : public content::WebContentsDelegate,
     REORDER
   };
 
+  // Indicates the event source that initiated the drag.
+  enum EventSource {
+    EVENT_SOURCE_MOUSE,
+    EVENT_SOURCE_TOUCH,
+  };
+
   // Amount above or below the tabstrip the user has to drag before detaching.
   static const int kTouchVerticalDetachMagnetism;
   static const int kVerticalDetachMagnetism;
@@ -95,7 +101,8 @@ class TabDragController : public content::WebContentsDelegate,
             int source_tab_offset,
             const ui::ListSelectionModel& initial_selection_model,
             DetachBehavior detach_behavior,
-            MoveBehavior move_behavior);
+            MoveBehavior move_behavior,
+            EventSource event_source);
 
   // Returns true if there is a drag underway and the drag is attached to
   // |tab_strip|.
@@ -468,6 +475,8 @@ class TabDragController : public content::WebContentsDelegate,
 
   // Handles registering for notifications.
   content::NotificationRegistrar registrar_;
+
+  EventSource event_source_;
 
   // The TabStrip the drag originated from.
   TabStrip* source_tabstrip_;

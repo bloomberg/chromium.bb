@@ -1102,9 +1102,12 @@ void TabStrip::MaybeStartDrag(
   if (event.type() == ui::ET_GESTURE_BEGIN)
     GetWidget()->SetCapture(this);
   drag_controller_.reset(new TabDragController);
+  TabDragController::EventSource event_source = event.IsGestureEvent() ?
+      TabDragController::EVENT_SOURCE_TOUCH :
+      TabDragController::EVENT_SOURCE_MOUSE;
   drag_controller_->Init(
-      this, tab, tabs, gfx::Point(x, y), event.x(),
-      selection_model, detach_behavior, move_behavior);
+      this, tab, tabs, gfx::Point(x, y), event.x(), selection_model,
+      detach_behavior, move_behavior, event_source);
 }
 
 void TabStrip::ContinueDrag(views::View* view, const gfx::Point& location) {

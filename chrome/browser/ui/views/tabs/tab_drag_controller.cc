@@ -360,6 +360,7 @@ const int TabDragController::kVerticalDetachMagnetism = 15;
 
 TabDragController::TabDragController()
     : detach_into_browser_(ShouldDetachIntoNewBrowser()),
+      event_source_(EVENT_SOURCE_MOUSE),
       source_tabstrip_(NULL),
       attached_tabstrip_(NULL),
       screen_(NULL),
@@ -422,7 +423,8 @@ void TabDragController::Init(
     int source_tab_offset,
     const ui::ListSelectionModel& initial_selection_model,
     DetachBehavior detach_behavior,
-    MoveBehavior move_behavior) {
+    MoveBehavior move_behavior,
+    EventSource event_source) {
   DCHECK(!tabs.empty());
   DCHECK(std::find(tabs.begin(), tabs.end(), source_tab) != tabs.end());
   source_tabstrip_ = source_tabstrip;
@@ -432,6 +434,7 @@ void TabDragController::Init(
       source_tabstrip->GetWidget()->GetNativeView());
   start_point_in_screen_ = gfx::Point(source_tab_offset, mouse_offset.y());
   views::View::ConvertPointToScreen(source_tab, &start_point_in_screen_);
+  event_source_ = event_source;
   mouse_offset_ = mouse_offset;
   detach_behavior_ = detach_behavior;
   move_behavior_ = move_behavior;
@@ -2020,19 +2023,19 @@ Browser* TabDragController::CreateBrowserForDrag(
 
 gfx::Point TabDragController::GetCursorScreenPoint() {
 #if defined(USE_ASH)
-  if (host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH) {
+  if (host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH &&
+      event_source_ == EVENT_SOURCE_TOUCH &&
+      aura::Env::GetInstance()->is_touch_down()) {
     views::Widget* widget = GetAttachedBrowserWidget();
     DCHECK(widget);
-    if (aura::Env::GetInstance()->is_touch_down()) {
-      aura::Window* widget_window = widget->GetNativeWindow();
-      DCHECK(widget_window->GetRootWindow());
-      gfx::Point touch_point;
-      bool got_touch_point = widget_window->GetRootWindow()->
-          gesture_recognizer()->GetLastTouchPointForTarget(widget_window,
-                                                           &touch_point);
-      DCHECK(got_touch_point);
-      return touch_point;
-    }
+    aura::Window* widget_window = widget->GetNativeWindow();
+    DCHECK(widget_window->GetRootWindow());
+    gfx::Point touch_point;
+    bool got_touch_point = widget_window->GetRootWindow()->
+        gesture_recognizer()->GetLastTouchPointForTarget(widget_window,
+                                                         &touch_point);
+    DCHECK(got_touch_point);
+    return touch_point;
   }
 #endif
   return screen_->GetCursorScreenPoint();
