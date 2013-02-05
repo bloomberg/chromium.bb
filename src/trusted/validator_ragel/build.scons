@@ -97,6 +97,9 @@ if python_bitness != bitness:
   # Python will be unable to load library anyway.
   print 'python has wrong bitness'
   validator_dll = None
+elif env.Bit('asan'):
+  print 'python will be unable to load DLL under asan'
+  validator_dll = None
 else:
   dll_env = env.Clone(COMPONENT_STATIC=False)
 
