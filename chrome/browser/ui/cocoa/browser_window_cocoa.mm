@@ -567,9 +567,8 @@ void BrowserWindowCocoa::ShowCreateChromeAppShortcutsDialog(
     Profile* profile, const extensions::Extension* app) {
   // Normally we would show a dialog, but since we always create the app
   // shortcut in /Applications there are no options for the user to choose.
-  ShellIntegration::ShortcutInfo shortcut_info;
-  web_app::UpdateShortcutInfoForApp(*app, profile, &shortcut_info);
-  web_app::CreateShortcuts(shortcut_info);
+  web_app::UpdateShortcutInfoAndIconForApp(*app, profile,
+      base::Bind(&web_app::CreateShortcuts));
 }
 
 void BrowserWindowCocoa::Cut() {

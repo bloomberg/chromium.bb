@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "chrome/browser/shell_integration.h"
 
 namespace content {
@@ -21,6 +22,12 @@ class Profile;
 
 namespace web_app {
 
+typedef base::Callback<void(const ShellIntegration::ShortcutInfo&)>
+    ShortcutInfoCallback;
+
+ShellIntegration::ShortcutInfo ShortcutInfoForExtensionAndProfile(
+    const extensions::Extension* extension, Profile* profile);
+
 // Extracts shortcut info of the given WebContents.
 void GetShortcutInfoForTab(content::WebContents* web_contents,
                            ShellIntegration::ShortcutInfo* info);
@@ -33,11 +40,16 @@ void GetShortcutInfoForTab(content::WebContents* web_contents,
 void UpdateShortcutForTabContents(content::WebContents* web_contents);
 
 // Updates the shortcut info for |extension| and |profile|.
-// TODO(benwells): make this download the icon as well to remove boilerplate
-// code from call sites.
 void UpdateShortcutInfoForApp(const extensions::Extension& extension,
                               Profile* profile,
                               ShellIntegration::ShortcutInfo* shortcut_info);
+
+// Fetches the icon for |extension| and calls |callback| with shortcut info
+// filled out as by UpdateShortcutInfoForApp.
+void UpdateShortcutInfoAndIconForApp(
+    const extensions::Extension& extension,
+    Profile* profile,
+    const ShortcutInfoCallback& callback);
 
 }  // namespace web_app
 

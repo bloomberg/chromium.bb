@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/favicon/favicon_util.h"
@@ -23,7 +24,10 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
+#include "grit/theme_resources.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/environment.h"
@@ -39,6 +43,12 @@ using content::NavigationController;
 using content::WebContents;
 
 namespace {
+
+#if defined(OS_MACOSX)
+const int kDesiredSizes[] = {16, 32, 128, 256, 512};
+#else
+const int kDesiredSizes[] = {32};
+#endif
 
 #if defined(OS_WIN)
 // UpdateShortcutWorker holds all context data needed for update shortcut.
@@ -311,9 +321,39 @@ void UpdateShortcutWorker::DeleteMeOnUIThread() {
 }
 #endif  // defined(OS_WIN)
 
+void OnImageLoaded(ShellIntegration::ShortcutInfo shortcut_info,
+                   web_app::ShortcutInfoCallback callback,
+                   const gfx::Image& image) {
+  // If the image failed to load (e.g. if the resource being loaded was empty)
+  // use the standard application icon.
+  if (image.IsEmpty()) {
+    gfx::Image default_icon =
+        ResourceBundle::GetSharedInstance().GetImageNamed(IDR_APP_DEFAULT_ICON);
+    int size = kDesiredSizes[arraysize(kDesiredSizes) - 1];
+    SkBitmap bmp = skia::ImageOperations::Resize(
+          *default_icon.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST,
+          size, size);
+    shortcut_info.favicon = gfx::Image::CreateFrom1xBitmap(bmp);
+  } else {
+    shortcut_info.favicon = image;
+  }
+
+  callback.Run(shortcut_info);
+}
+
 }  // namespace
 
 namespace web_app {
+
+ShellIntegration::ShortcutInfo ShortcutInfoForExtensionAndProfile(
+    const extensions::Extension* extension, Profile* profile) {
+  ShellIntegration::ShortcutInfo shortcut_info;
+  web_app::UpdateShortcutInfoForApp(*extension, profile, &shortcut_info);
+  shortcut_info.create_in_applications_menu = true;
+  shortcut_info.create_in_quick_launch_bar = true;
+  shortcut_info.create_on_desktop = true;
+  return shortcut_info;
+}
 
 void GetShortcutInfoForTab(WebContents* web_contents,
                            ShellIntegration::ShortcutInfo* info) {
@@ -357,6 +397,54 @@ void UpdateShortcutInfoForApp(const extensions::Extension& app,
   shortcut_info->description = UTF8ToUTF16(app.description());
   shortcut_info->extension_path = app.path();
   shortcut_info->profile_path = profile->GetPath();
+}
+
+void UpdateShortcutInfoAndIconForApp(
+    const extensions::Extension& extension,
+    Profile* profile,
+    const web_app::ShortcutInfoCallback& callback) {
+  ShellIntegration::ShortcutInfo shortcut_info =
+      ShortcutInfoForExtensionAndProfile(&extension, profile);
+
+  std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
+  for (size_t i = 0; i < arraysize(kDesiredSizes); ++i) {
+    int size = kDesiredSizes[i];
+    ExtensionResource resource = extension.GetIconResource(
+        size, ExtensionIconSet::MATCH_EXACTLY);
+    if (!resource.empty()) {
+      info_list.push_back(extensions::ImageLoader::ImageRepresentation(
+          resource,
+          extensions::ImageLoader::ImageRepresentation::RESIZE_WHEN_LARGER,
+          gfx::Size(size, size),
+          ui::SCALE_FACTOR_100P));
+    }
+  }
+
+  if (info_list.empty()) {
+    size_t i = arraysize(kDesiredSizes) - 1;
+    int size = kDesiredSizes[i];
+
+    // If there is no icon at the desired sizes, we will resize what we can get.
+    // Making a large icon smaller is preferred to making a small icon larger,
+    // so look for a larger icon first:
+    ExtensionResource resource = extension.GetIconResource(
+        size, ExtensionIconSet::MATCH_BIGGER);
+    if (resource.empty()) {
+      resource = extension.GetIconResource(
+          size, ExtensionIconSet::MATCH_SMALLER);
+    }
+    info_list.push_back(extensions::ImageLoader::ImageRepresentation(
+        resource,
+        extensions::ImageLoader::ImageRepresentation::RESIZE_WHEN_LARGER,
+        gfx::Size(size, size),
+        ui::SCALE_FACTOR_100P));
+  }
+
+  // |info_list| may still be empty at this point, in which case LoadImage
+  // will call the OnImageLoaded callback with an empty image and exit
+  // immediately.
+  extensions::ImageLoader::Get(profile)->LoadImagesAsync(&extension, info_list,
+      base::Bind(&OnImageLoaded, shortcut_info, callback));
 }
 
 }  // namespace web_app

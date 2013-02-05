@@ -30,12 +30,6 @@ class AppShortcutManager : public content::NotificationObserver {
  private:
   void UpdateApplicationShortcuts(const Extension* extension);
 
-  // Implement ImageLoadingTracker::Observer. |tracker_| is used to
-  // load the application's icon, which is done when we start creating an
-  // application's shortcuts. This method receives the icon, and completes
-  // the process of installing the shortcuts.
-  void OnImageLoaded(const gfx::Image& image);
-
 #if defined(OS_WIN)
   void OnAppHostInstallationComplete(scoped_refptr<Extension> extension,
                                      bool app_host_install_success);
@@ -47,8 +41,6 @@ class AppShortcutManager : public content::NotificationObserver {
   Profile* profile_;
 
   // Fields used when installing application shortcuts.
-  ShellIntegration::ShortcutInfo shortcut_info_;
-
   base::WeakPtrFactory<AppShortcutManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShortcutManager);
