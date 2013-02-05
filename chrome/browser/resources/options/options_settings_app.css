@@ -45,32 +45,3 @@ html.settings-app .language-options-right {
   height: 300px;
   width: 288px;
 }
-
-/* Hide all sections by default. */
-html.settings-app section {
-  display: none;
-}
-
-/* Sections white-listed for Settings App. */
-html.settings-app #advanced-settings,
-html.settings-app #handlers-section,
-html.settings-app #languages-section,
-html.settings-app #media-galleries-section,
-html.settings-app #network-section,
-html.settings-app #notifications-section,
-html.settings-app #privacy-section,
-html.settings-app #sync-section,
-html.settings-app #sync-users-section {
-  display: inline;
-}
-
-/* Hide irrelevant parts of privacy section. */
-html.settings-app #privacy-section > div > .checkbox,
-html.settings-app #privacy-section > div > #privacy-explanation {
-  display: none;
-}
-
-/* Hide Import bookmarks and settings button. */
-html.settings-app #import-data {
-  display: none;
-}

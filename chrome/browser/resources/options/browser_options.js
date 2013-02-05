@@ -946,7 +946,8 @@ cr.define('options', function() {
       var hasSingleProfile = numProfiles == 1;
       $('profiles-list').hidden = hasSingleProfile;
       $('profiles-single-message').hidden = !hasSingleProfile;
-      $('profiles-manage').hidden = hasSingleProfile;
+      $('profiles-manage').hidden =
+          hasSingleProfile || OptionsPage.isSettingsApp();
       $('profiles-delete').textContent = hasSingleProfile ?
           loadTimeData.getString('profilesDeleteSingle') :
           loadTimeData.getString('profilesDelete');

@@ -11,5 +11,42 @@
   // Override the offset in the options page.
   OptionsPage.setHorizontalOffset(38);
 
+  document.addEventListener('DOMContentLoaded', function() {
+    // Hide everything by default.
+    var sections = document.querySelectorAll('section');
+    for (var i = 0; i < sections.length; i++)
+      sections[i].hidden = true;
+
+    var whitelistedSections = [
+      'advanced-settings',
+      'handlers-section',
+      'languages-section',
+      'media-galleries-section',
+      'network-section',
+      'notifications-section',
+      'privacy-section',
+      'sync-section',
+      'sync-users-section'
+    ];
+
+    for (var i = 0; i < whitelistedSections.length; i++)
+      $(whitelistedSections[i]).hidden = false;
+
+    // Hide irrelevant parts of privacy section.
+    document.querySelector(
+        '#privacy-section > div > .checkbox').hidden = true;
+    document.querySelector(
+        '#privacy-section > div > #privacy-explanation').
+            hidden = true;
+
+    // Hide Import bookmarks and settings button.
+    $('import-data').hidden = true;
+
+    // Hide create / edit / delete profile buttons.
+    $('profiles-create').hidden = true;
+    $('profiles-delete').hidden = true;
+    $('profiles-manage').hidden = true;
+  });
+
   loadTimeData.overrideValues(loadTimeData.getValue('settingsApp'));
 }());
