@@ -117,8 +117,11 @@ void RenderWidgetHostViewAndroid::WasHidden() {
 }
 
 void RenderWidgetHostViewAndroid::SetSize(const gfx::Size& size) {
-  if (surface_texture_transport_.get())
-    surface_texture_transport_->SetSize(size);
+  if (surface_texture_transport_.get()) {
+    // Temporary workaround: crbug.com/174405.
+    surface_texture_transport_->SetSize(
+        content_view_core_ ? content_view_core_->GetPhysicalSize() : size);
+  }
 
   host_->WasResized();
 }
