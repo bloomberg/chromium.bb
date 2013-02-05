@@ -217,6 +217,8 @@ class BASE_EXPORT TraceLog {
   // on-demand.
   class EnabledStateChangedObserver {
    public:
+    virtual ~EnabledStateChangedObserver() { }
+
     // Called just before the tracing system becomes
     // enabled. TraceLog::IsEnabled will return false at this point and trace
     // macros and methods called within the observer will deadlock.

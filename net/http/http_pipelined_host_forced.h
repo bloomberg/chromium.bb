@@ -32,7 +32,7 @@ struct SSLConfig;
 // test the user's connection for pipelining compatibility.
 class NET_EXPORT_PRIVATE HttpPipelinedHostForced
     : public HttpPipelinedHost,
-      public HttpPipelinedConnection::Delegate {
+      public NON_EXPORTED_BASE(HttpPipelinedConnection::Delegate) {
  public:
   HttpPipelinedHostForced(HttpPipelinedHost::Delegate* delegate,
                           const Key& key,

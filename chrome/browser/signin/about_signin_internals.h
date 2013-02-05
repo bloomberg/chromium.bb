@@ -27,6 +27,8 @@ class AboutSigninInternals
  public:
   class Observer {
    public:
+    virtual ~Observer() { }
+
     // |info| will contain the dictionary of signin_status_ values as indicated
     // in the comments for GetSigninStatus() below.
     virtual void OnSigninStateChanged(scoped_ptr<DictionaryValue> info) = 0;

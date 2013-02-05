@@ -43,6 +43,8 @@ class ActivityLog : public ProfileKeyedService,
   // Observers can listen for activity events.
   class Observer {
    public:
+    virtual ~Observer() { }
+
     virtual void OnExtensionActivity(
         const Extension* extension,
         Activity activity,

@@ -11,6 +11,8 @@ class JavaScriptAppModalDialog;
 
 class NativeAppModalDialog {
  public:
+  virtual ~NativeAppModalDialog() { }
+
   // Returns the buttons to be shown. See ui::DialogButton for which buttons can
   // be returned.
   virtual int GetAppModalDialogButtons() const = 0;

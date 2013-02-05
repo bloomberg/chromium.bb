@@ -67,6 +67,8 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   // Interface to implement for dictionary load and change observers.
   class Observer {
    public:
+    virtual ~Observer() { }
+
     // Called when the custom dictionary has been loaded.
     virtual void OnCustomDictionaryLoaded() = 0;
 

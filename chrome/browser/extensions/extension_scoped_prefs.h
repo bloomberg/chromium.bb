@@ -8,7 +8,7 @@
 class ExtensionScopedPrefs {
  public:
   ExtensionScopedPrefs() {}
-  ~ExtensionScopedPrefs() {}
+  virtual ~ExtensionScopedPrefs() {}
 
   // Sets the pref |key| for extension |id| to |value|.
   virtual void UpdateExtensionPref(const std::string& id,

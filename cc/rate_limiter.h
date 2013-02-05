@@ -18,6 +18,9 @@ class Thread;
 class RateLimiterClient {
 public:
     virtual void rateLimit() = 0;
+
+protected:
+    virtual ~RateLimiterClient() { }
 };
 
 // A RateLimiter can be used to make sure that a single context does not dominate all execution time.

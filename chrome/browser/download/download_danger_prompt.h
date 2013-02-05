@@ -27,6 +27,8 @@ class DownloadDangerPrompt {
     CANCEL
   };
 
+  virtual ~DownloadDangerPrompt() { }
+
   // Return a new self-deleting DownloadDangerPrompt. |accepted| or |canceled|
   // will be run when the the respective action is invoked. |canceled| may also
   // be called when |item| is either no longer dangerous or no longer in

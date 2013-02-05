@@ -21,6 +21,8 @@ class PermissionMenuModel : public ui::SimpleMenuModel,
 
   class Delegate {
    public:
+    virtual ~Delegate() { }
+
     // Executes the command with the given |command_id|.
     virtual void ExecuteCommand(int command_id) = 0;
     // Returns true if the command with the given |command_id| should be

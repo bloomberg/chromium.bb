@@ -10,6 +10,9 @@ namespace cc {
 class CC_EXPORT LayerAnimationEventObserver {
  public:
   virtual void OnAnimationStarted(const AnimationEvent& event) = 0;
+
+ protected:
+  virtual ~LayerAnimationEventObserver() { }
 };
 
 } // namespace cc

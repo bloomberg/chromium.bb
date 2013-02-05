@@ -266,6 +266,8 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   // A delegate for use in testing, to intercept the call to SendResponse.
   class DelegateForTests {
    public:
+    virtual ~DelegateForTests() { }
+
     virtual void OnSendResponse(UIThreadExtensionFunction* function,
                                 bool success,
                                 bool bad_message) = 0;

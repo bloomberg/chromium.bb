@@ -23,6 +23,8 @@ namespace content {
 // Note that this interface does not deal with cross-thread lifetime issues.
 class DownloadDestinationObserver {
  public:
+  virtual ~DownloadDestinationObserver() { }
+
   virtual void DestinationUpdate(int64 bytes_so_far,
                                  int64 bytes_per_sec,
                                  const std::string& hash_state) = 0;

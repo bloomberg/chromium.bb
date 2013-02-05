@@ -27,10 +27,12 @@ class HttpServerProperties;
 // HTTP requests. Manages connection jobs, constructs pipelined streams, and
 // assigns requests to the least loaded pipelined connection.
 class NET_EXPORT_PRIVATE HttpPipelinedHostPool
-    : public HttpPipelinedHost::Delegate {
+    : public NON_EXPORTED_BASE(HttpPipelinedHost::Delegate) {
  public:
   class Delegate {
    public:
+    virtual ~Delegate() {}
+
     // Called when a HttpPipelinedHost has new capacity. Attempts to allocate
     // any pending pipeline-capable requests to pipelines.
     virtual void OnHttpPipelinedHostHasAdditionalCapacity(

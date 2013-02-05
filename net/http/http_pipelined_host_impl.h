@@ -33,7 +33,7 @@ struct SSLConfig;
 // assigns requests to the least loaded pipelined connection.
 class NET_EXPORT_PRIVATE HttpPipelinedHostImpl
     : public HttpPipelinedHost,
-      public HttpPipelinedConnection::Delegate {
+      public NON_EXPORTED_BASE(HttpPipelinedConnection::Delegate) {
  public:
   HttpPipelinedHostImpl(HttpPipelinedHost::Delegate* delegate,
                         const HttpPipelinedHost::Key& key,

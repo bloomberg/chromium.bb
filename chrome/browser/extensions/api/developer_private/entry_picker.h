@@ -18,6 +18,8 @@ namespace api {
 
 class EntryPickerClient {
  public:
+  virtual ~EntryPickerClient() { }
+
   virtual void FileSelected(const FilePath& path) = 0;
   virtual void FileSelectionCanceled() = 0;
 };

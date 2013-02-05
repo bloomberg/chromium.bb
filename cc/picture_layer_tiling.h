@@ -31,6 +31,9 @@ class PictureLayerTilingClient {
   virtual gfx::Size CalculateTileSize(
     gfx::Size current_tile_size,
     gfx::Size content_bounds) = 0;
+
+ protected:
+  virtual ~PictureLayerTilingClient() { }
 };
 
 class CC_EXPORT PictureLayerTiling {

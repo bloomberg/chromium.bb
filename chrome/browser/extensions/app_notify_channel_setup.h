@@ -51,6 +51,8 @@ class AppNotifyChannelSetup
 
   class Delegate {
    public:
+    virtual ~Delegate() { }
+
     // If successful, |channel_id| will be non-empty. On failure, |channel_id|
     // will be empty and |error| will contain an error to report to the JS
     // callback.
@@ -64,6 +66,8 @@ class AppNotifyChannelSetup
   // forcing the return of a certain result to the delegate.
   class InterceptorForTests {
    public:
+    virtual ~InterceptorForTests() { }
+
     virtual void DoIntercept(
         const AppNotifyChannelSetup* setup,
         std::string* result_channel_id,

@@ -31,6 +31,8 @@ class SpellcheckHunspellDictionary
   // Interface to implement for observers of the Hunspell dictionary.
   class Observer {
    public:
+    virtual ~Observer() { }
+
     // The dictionary has been initialized.
     virtual void OnHunspellDictionaryInitialized() = 0;
 

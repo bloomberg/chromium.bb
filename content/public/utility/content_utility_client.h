@@ -12,6 +12,8 @@ namespace content {
 // Embedder API for participating in renderer logic.
 class CONTENT_EXPORT ContentUtilityClient {
  public:
+  virtual ~ContentUtilityClient() {}
+
   // Notifies us that the UtilityThread has been created.
   virtual void UtilityThreadStarted() {}
 

@@ -39,6 +39,8 @@ class ManagedModeURLFilter
 
   class Observer {
    public:
+    virtual ~Observer() { }
+
     virtual void OnSiteListUpdated() = 0;
   };
 

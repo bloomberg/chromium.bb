@@ -18,8 +18,9 @@ namespace cc {
 struct AppendQuadsData;
 class QuadSink;
 
-class CC_EXPORT PictureLayerImpl : public LayerImpl,
-                                   public PictureLayerTilingClient {
+class CC_EXPORT PictureLayerImpl
+    : public LayerImpl,
+      public NON_EXPORTED_BASE(PictureLayerTilingClient) {
 public:
   static scoped_ptr<PictureLayerImpl> create(LayerTreeImpl* treeImpl, int id)
   {

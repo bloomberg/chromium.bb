@@ -16,6 +16,8 @@ class NavigationEntry;
 // about changes.
 class FaviconHandlerDelegate {
  public:
+  virtual ~FaviconHandlerDelegate() { }
+
   // Returns the current NavigationEntry.
   virtual content::NavigationEntry* GetActiveEntry() = 0;
 

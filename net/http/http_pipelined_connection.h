@@ -30,6 +30,8 @@ class NET_EXPORT_PRIVATE HttpPipelinedConnection {
 
   class Delegate {
    public:
+    virtual ~Delegate() {}
+
     // Called when a pipeline has newly available capacity. This may be because
     // the first request has been sent and the pipeline is now active. Or, it
     // may be because a request successfully completed.

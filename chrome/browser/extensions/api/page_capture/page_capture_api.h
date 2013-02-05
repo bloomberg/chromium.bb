@@ -29,6 +29,8 @@ class PageCaptureSaveAsMHTMLFunction : public AsyncExtensionFunction {
   // Test specific delegate used to test that the temporary file gets deleted.
   class TestDelegate {
    public:
+    virtual ~TestDelegate() { }
+
     // Called on the UI thread when the temporary file that contains the
     // generated data has been created.
     virtual void OnTemporaryFileCreated(const base::FilePath& temp_file) = 0;

@@ -133,6 +133,7 @@ class PropertySet;
 class PropertyBase {
  public:
   PropertyBase() : property_set_(NULL) {}
+  virtual ~PropertyBase() {}
 
   // Initializes the |property_set| and property |name| so that method
   // calls may be made from this class. This method is called by

@@ -41,6 +41,8 @@ class ResourceRequestAllowedNotifier :
   // Observes resource request allowed state changes.
   class Observer {
    public:
+    virtual ~Observer() { }
+
     virtual void OnResourceRequestsAllowed() = 0;
   };
 

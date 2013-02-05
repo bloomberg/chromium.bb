@@ -27,6 +27,8 @@ typedef base::Callback<void(GDataErrorCode error,
 // All functions must be called on UI thread.
 class AuthServiceInterface {
  public:
+  virtual ~AuthServiceInterface() { }
+
   // Adds and removes the observer. AddObserver() should be called before
   // Initialize() as it can change the refresh token.
   virtual void AddObserver(AuthServiceObserver* observer) = 0;

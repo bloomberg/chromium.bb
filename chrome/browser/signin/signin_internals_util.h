@@ -125,6 +125,8 @@ struct SigninStatus {
 // An Observer class for authentication and token diagnostic information.
 class SigninDiagnosticsObserver {
  public:
+  virtual ~SigninDiagnosticsObserver() {}
+
   // Credentials and signin related changes.
   virtual void NotifySigninValueChanged(const UntimedSigninStatusField& field,
                                         const std::string& value) {}
@@ -138,7 +140,6 @@ class SigninDiagnosticsObserver {
   virtual void NotifyTokenReceivedFailure(const std::string& token_name,
                                           const std::string& error) {}
   virtual void NotifyClearStoredToken(const std::string& token_name) {}
-
 };
 
 } // namespace

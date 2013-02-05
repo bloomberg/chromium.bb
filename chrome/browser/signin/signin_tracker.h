@@ -52,6 +52,8 @@ class SigninTracker : public ProfileSyncServiceObserver,
  public:
   class Observer {
    public:
+    virtual ~Observer() { }
+
     // The GAIA credentials entered by the user have been validated.
     virtual void GaiaCredentialsValid() = 0;
 

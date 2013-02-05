@@ -24,6 +24,8 @@ class AvatarMenuItemGtk : public content::NotificationObserver {
   // Delegates opening or editing a profile.
   class Delegate {
    public:
+    virtual ~Delegate() { }
+
     // Open a new browser window using the profile at |profile_index|.
     virtual void OpenProfile(size_t profile_index) = 0;
 

@@ -25,7 +25,7 @@ class SpdySession;
 
 class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
     public HttpStreamFactory,
-    public HttpPipelinedHostPool::Delegate {
+    public NON_EXPORTED_BASE(HttpPipelinedHostPool::Delegate) {
  public:
   explicit HttpStreamFactoryImpl(HttpNetworkSession* session);
   virtual ~HttpStreamFactoryImpl();

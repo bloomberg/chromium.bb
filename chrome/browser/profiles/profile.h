@@ -121,6 +121,8 @@ class Profile : public content::BrowserContext {
 
   class Delegate {
    public:
+    virtual ~Delegate() {}
+
     // Called when creation of the profile is finished.
     virtual void OnProfileCreated(Profile* profile,
                                   bool success,

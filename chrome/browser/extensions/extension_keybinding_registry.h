@@ -32,6 +32,8 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
 
   class Delegate {
    public:
+    virtual ~Delegate() { }
+
     // Gets the ActiveTabPermissionGranter for the active tab, if any.
     // If there is no active tab then returns NULL.
     virtual ActiveTabPermissionGranter* GetActiveTabPermissionGranter() = 0;
