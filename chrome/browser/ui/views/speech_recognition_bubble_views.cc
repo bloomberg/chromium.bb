@@ -360,7 +360,8 @@ void SpeechRecognitionBubbleImpl::Show() {
     views::View* icon = NULL;
 
     // Anchor to the location icon view, in case |element_rect| is offscreen.
-    Browser* browser = chrome::FindBrowserWithWebContents(GetWebContents());
+    WebContents* web_contents = GetWebContents();
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
     if (browser) {
       BrowserView* browser_view =
           BrowserView::GetBrowserViewForBrowser(browser);
@@ -369,7 +370,15 @@ void SpeechRecognitionBubbleImpl::Show() {
     }
 
     bubble_ = new SpeechRecognitionBubbleView(delegate_, icon, element_rect_,
-                                              GetWebContents());
+                                              web_contents);
+
+    if (!icon) {
+      // We dont't have an icon to attach to. Manually specify the web contents
+      // window as the parent.
+      bubble_->set_parent_window(
+          web_contents->GetView()->GetTopLevelNativeWindow());
+    }
+
     views::BubbleDelegateView::CreateBubble(bubble_);
     UpdateLayout();
   }
