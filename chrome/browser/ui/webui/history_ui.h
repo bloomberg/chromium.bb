@@ -51,7 +51,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // - WEEK: the last 7 days.
   // - MONTH: the last calendar month.
   enum Range {
-    ALLTIME = 0,
+    ALL_TIME = 0,
     WEEK = 1,
     MONTH = 2
   };
@@ -93,11 +93,11 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   bool ExtractIntegerValueAtIndex(
       const base::ListValue* value, int index, int* out_int);
 
-  // Set the query options for a month-wide query.
-  void SetQueryTimeInMonths(history::QueryOptions* options);
+  // Set the query options for a week-wide query, |offset| weeks ago.
+  void SetQueryTimeInWeeks(int offset, history::QueryOptions* options);
 
-  // Set the query options for a week-wide query.
-  void SetQueryTimeInWeeks(history::QueryOptions* options);
+  // Sets the query options for a monthly query, |offset| months ago.
+  void SetQueryTimeInMonths(int offset, history::QueryOptions* options);
 
   content::NotificationRegistrar registrar_;
 

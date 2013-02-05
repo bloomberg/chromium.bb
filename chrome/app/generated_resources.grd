@@ -471,7 +471,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_HISTORY_RANGE_LABEL" desc="Label for the combo box that selects the time range.">
         Show
       </message>
-      <message name="IDS_HISTORY_RANGE_ALLTIME" desc="Option in the history range combo box. Does not set any time restraints and enables pagination.">
+      <message name="IDS_HISTORY_RANGE_ALL_TIME" desc="Option in the history range combo box. Does not set any time restraints and enables pagination.">
         all time visits
       </message>
       <message name="IDS_HISTORY_RANGE_WEEK" desc="Option in the history range combo box. Sets the range to week.">
@@ -479,6 +479,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_HISTORY_RANGE_MONTH" desc="Option in the history range combo box. Sets the range to month.">
         monthly visits
+      </message>
+      <message name="IDS_HISTORY_RANGE_TODAY" desc="The text on the button that sets the current time range back to today.">
+        Today
       </message>
       <message name="IDS_HISTORY_NUMBER_VISITS" desc="Format string for the number of visits of a site.">
         (<ph name="NUMBER_VISITS">$1</ph>)

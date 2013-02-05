@@ -139,10 +139,10 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource() {
   source->AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
   source->AddLocalizedString("displayfiltersites", IDS_GROUP_BY_DOMAIN_LABEL);
   source->AddLocalizedString("rangelabel", IDS_HISTORY_RANGE_LABEL);
-  source->AddLocalizedString("rangealltime", IDS_HISTORY_RANGE_ALLTIME);
+  source->AddLocalizedString("rangealltime", IDS_HISTORY_RANGE_ALL_TIME);
   source->AddLocalizedString("rangeweek", IDS_HISTORY_RANGE_WEEK);
   source->AddLocalizedString("rangemonth", IDS_HISTORY_RANGE_MONTH);
-  source->AddLocalizedString("displayfiltersites", IDS_GROUP_BY_DOMAIN_LABEL);
+  source->AddLocalizedString("rangetoday", IDS_HISTORY_RANGE_TODAY);
   source->AddLocalizedString("numbervisits", IDS_HISTORY_NUMBER_VISITS);
   source->AddBoolean("groupByDomain",
       CommandLine::ForCurrentProcess()->HasSwitch(
@@ -170,6 +170,15 @@ string16 getRelativeDateLocalized(const base::Time& visit_time) {
         base::TimeFormatFriendlyDate(visit_time));
   }
   return date_str;
+}
+
+// Sets the correct year when substracting months from a date.
+void normalizeMonths(base::Time::Exploded* exploded) {
+  // Decrease a year at a time until we have a proper date.
+  while (exploded->month < 1) {
+    exploded->month += 12;
+    exploded->year--;
+  }
 }
 
 }  // namespace
@@ -265,39 +274,46 @@ void BrowsingHistoryHandler::QueryHistory(
 void BrowsingHistoryHandler::HandleQueryHistory(const ListValue* args) {
   history::QueryOptions options;
 
-  // Parse the arguments from JavaScript. There are four required arguments:
+  // Parse the arguments from JavaScript. There are five required arguments:
   // - the text to search for (may be empty)
+  // - the offset from which the search should start (in multiples of week or
+  //   month, set by the next argument).
   // - the range (BrowsingHistoryHandler::Range) Enum value that sets the range
-  // of the query.
+  //   of the query.
   // - the search cursor, an opaque value from a previous query result, which
   //   allows this query to pick up where the previous one left off. May be
   //   null or undefined.
   // - the maximum number of results to return (may be 0, meaning that there
   //   is no maximum).
   string16 search_text = ExtractStringValue(args);
-  int range;
-  if (!args->GetInteger(1, &range)) {
+  int offset;
+  if (!args->GetInteger(1, &offset)) {
     NOTREACHED() << "Failed to convert argument 1. ";
     return;
   }
-
-  if (range == BrowsingHistoryHandler::MONTH)
-    SetQueryTimeInMonths(&options);
-  else if (range == BrowsingHistoryHandler::WEEK)
-    SetQueryTimeInWeeks(&options);
-
-  const Value* cursor_value;
-
-  // Get the cursor. It must be either null, or a list.
-  if (!args->Get(2, &cursor_value) ||
-      (!cursor_value->IsType(Value::TYPE_NULL) &&
-      !history::QueryCursor::FromValue(cursor_value, &options.cursor))) {
+  int range;
+  if (!args->GetInteger(2, &range)) {
     NOTREACHED() << "Failed to convert argument 2. ";
     return;
   }
 
-  if (!ExtractIntegerValueAtIndex(args, 3, &options.max_count)) {
-    NOTREACHED() << "Failed to convert argument 3.";
+  if (range == BrowsingHistoryHandler::MONTH)
+    SetQueryTimeInMonths(offset, &options);
+  else if (range == BrowsingHistoryHandler::WEEK)
+    SetQueryTimeInWeeks(offset, &options);
+
+  const Value* cursor_value;
+
+  // Get the cursor. It must be either null, or a list.
+  if (!args->Get(3, &cursor_value) ||
+      (!cursor_value->IsType(Value::TYPE_NULL) &&
+      !history::QueryCursor::FromValue(cursor_value, &options.cursor))) {
+    NOTREACHED() << "Failed to convert argument 3. ";
+    return;
+  }
+
+  if (!ExtractIntegerValueAtIndex(args, 4, &options.max_count)) {
+    NOTREACHED() << "Failed to convert argument 4.";
     return;
   }
 
@@ -541,28 +557,47 @@ void BrowsingHistoryHandler::RemoveWebHistoryComplete(
 }
 
 void BrowsingHistoryHandler::SetQueryTimeInWeeks(
-    history::QueryOptions* options) {
+    int offset, history::QueryOptions* options) {
   // LocalMidnight returns the beginning of the current day so get the
   // beginning of the next one.
   base::Time midnight = base::Time::Now().LocalMidnight() +
                               base::TimeDelta::FromDays(1);
-  options->end_time = midnight;
-  options->begin_time = midnight - base::TimeDelta::FromDays(7);
+  options->end_time = midnight -
+      base::TimeDelta::FromDays(7 * offset);
+  options->begin_time = midnight -
+      base::TimeDelta::FromDays(7 * (offset + 1));
 }
 
 void BrowsingHistoryHandler::SetQueryTimeInMonths(
-    history::QueryOptions* options) {
+    int offset, history::QueryOptions* options) {
   // Configure the begin point of the search to the start of the
   // current month.
   base::Time::Exploded exploded;
   base::Time::Now().LocalMidnight().LocalExplode(&exploded);
   exploded.day_of_month = 1;
-  options->begin_time = base::Time::FromLocalExploded(exploded);
 
-  // Set the end time of this first search to null (which will
-  // show results from the future, should the user's clock have
-  // been set incorrectly).
-  options->end_time = base::Time();
+  if (offset == 0) {
+    options->begin_time = base::Time::FromLocalExploded(exploded);
+
+    // Set the end time of this first search to null (which will
+    // show results from the future, should the user's clock have
+    // been set incorrectly).
+    options->end_time = base::Time();
+  } else {
+    // Go back |offset| months in the past. The end time is not inclusive, so
+    // use the first day of the |offset| - 1 and |offset| months (e.g. for
+    // the last month, |offset| = 1, use the first days of the last month and
+    // the current month.
+    exploded.month -= offset - 1;
+    // Set the correct year.
+    normalizeMonths(&exploded);
+    options->end_time = base::Time::FromLocalExploded(exploded);
+
+    exploded.month -= 1;
+    // Set the correct year
+    normalizeMonths(&exploded);
+    options->begin_time = base::Time::FromLocalExploded(exploded);
+  }
 }
 
 // Helper function for Observe that determines if there are any differences
