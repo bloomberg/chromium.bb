@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/synchronization/waitable_event_watcher.h"
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/synchronization/waitable_event_watcher.h"
 #include "base/threading/platform_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -94,7 +96,7 @@ void RunTest_CancelAfterSet(MessageLoop::Type message_loop_type) {
 
   watcher.StopWatching();
 
-  MessageLoop::current()->RunUntilIdle();
+  RunLoop().RunUntilIdle();
 
   // Our delegate should not have fired.
   EXPECT_EQ(1, counter);

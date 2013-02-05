@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/time.h"
 #include "base/threading/thread_checker_impl.h"
@@ -103,7 +104,7 @@ TEST_F(WorkerPoolTest, MAYBE_PostTaskAndReply) {
     // device.
     pthread_yield_np();
 #endif
-    MessageLoop::current()->RunUntilIdle();
+    RunLoop().RunUntilIdle();
   }
   EXPECT_TRUE(tester->finished());
 }

@@ -993,7 +993,7 @@ void FuncThatPumps(TaskList* order, int cookie) {
   order->RecordStart(PUMPS, cookie);
   {
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-    MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
   order->RecordEnd(PUMPS, cookie);
 }

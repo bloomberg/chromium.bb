@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/win/object_watcher.h"
+
 #include <process.h>
 
 #include "base/message_loop.h"
-#include "base/win/object_watcher.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -91,7 +93,7 @@ void RunTest_CancelAfterSet(MessageLoop::Type message_loop_type) {
 
   watcher.StopWatching();
 
-  MessageLoop::current()->RunUntilIdle();
+  RunLoop().RunUntilIdle();
 
   // Our delegate should not have fired.
   EXPECT_EQ(1, counter);

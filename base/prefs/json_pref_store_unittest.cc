@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -152,7 +153,7 @@ void RunBasicJsonPrefStoreTest(JsonPrefStore* pref_store,
   // Serialize and compare to expected output.
   ASSERT_TRUE(file_util::PathExists(golden_output_file));
   pref_store->CommitPendingWrite();
-  MessageLoop::current()->RunUntilIdle();
+  RunLoop().RunUntilIdle();
   EXPECT_TRUE(file_util::TextContentsEqual(golden_output_file, output_file));
   ASSERT_TRUE(file_util::Delete(output_file, false));
 }
@@ -288,7 +289,7 @@ TEST_F(JsonPrefStoreTest, NeedsEmptyValue) {
 
   // Write to file.
   pref_store->CommitPendingWrite();
-  MessageLoop::current()->RunUntilIdle();
+  RunLoop().RunUntilIdle();
 
   // Compare to expected output.
   FilePath golden_output_file =
