@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -398,8 +399,9 @@ void ServerBoundCertService::RequestHandle::RequestStarted(
 
 void ServerBoundCertService::RequestHandle::OnRequestComplete(int result) {
   request_ = NULL;
-  callback_.Run(result);
-  callback_.Reset();
+  // Running the callback might delete |this|, so we can't touch any of our
+  // members afterwards. Reset callback_ first.
+  base::ResetAndReturn(&callback_).Run(result);
 }
 
 ServerBoundCertService::ServerBoundCertService(
