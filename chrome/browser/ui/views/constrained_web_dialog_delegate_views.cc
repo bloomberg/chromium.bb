@@ -32,15 +32,7 @@ class ConstrainedWebDialogDelegateViews
       views::WebView* view)
       : ConstrainedWebDialogDelegateBase(
             browser_context, delegate, tab_delegate),
-        view_(view) {
-    WebContents* web_contents = GetWebContents();
-    if (tab_delegate) {
-      set_override_tab_delegate(tab_delegate);
-      web_contents->SetDelegate(tab_delegate);
-    } else {
-      web_contents->SetDelegate(this);
-    }
-  }
+        view_(view) {}
 
   virtual ~ConstrainedWebDialogDelegateViews() {}
 

@@ -46,10 +46,6 @@ class ConstrainedWebDialogDelegateBase
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
- protected:
-  void set_override_tab_delegate(
-      WebDialogWebContentsDelegate* override_tab_delegate);
-
  private:
   scoped_ptr<ui::WebDialogDelegate> web_dialog_delegate_;
 

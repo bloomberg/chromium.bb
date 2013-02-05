@@ -71,11 +71,6 @@ void ConstrainedWebDialogDelegateBase::set_window(
   window_ = window;
 }
 
-void ConstrainedWebDialogDelegateBase::set_override_tab_delegate(
-    WebDialogWebContentsDelegate* override_tab_delegate) {
-  override_tab_delegate_.reset(override_tab_delegate);
-}
-
 bool ConstrainedWebDialogDelegateBase::closed_via_webui() const {
   return closed_via_webui_;
 }
