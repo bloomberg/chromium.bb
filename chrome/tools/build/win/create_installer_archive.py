@@ -452,7 +452,7 @@ def DoComponentBuildTasks(staging_dir, build_dir, current_version):
         "<dependency>"
         "<dependentAssembly>"
         "<assemblyIdentity type='win32' name='chrome.{dll_name}' "
-        "version='0.0.0.0' processorArchitecture='x86' language='*'/>"
+        "version='0.0.0.0' processorArchitecture='*' language='*'/>"
         "</dependentAssembly>"
         "</dependency>".format(dll_name=name))
 
@@ -476,7 +476,7 @@ def DoComponentBuildTasks(staging_dir, build_dir, current_version):
         "<assembly\n"
         "    xmlns='urn:schemas-microsoft-com:asm.v1' manifestVersion='1.0'>\n"
         "  <assemblyIdentity name='chrome.{dll_name}' version='0.0.0.0'\n"
-        "      type='win32' processorArchitecture='x86'/>\n"
+        "      type='win32' processorArchitecture='*'/>\n"
         "  <file name='{dll_name}.dll'/>\n"
         "</assembly>".format(dll_name=name))
 
