@@ -187,14 +187,14 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   }
 
   // Create default video renderer.
-  scoped_refptr<media::VideoRendererBase> video_renderer =
+  scoped_ptr<media::VideoRenderer> video_renderer(
       new media::VideoRendererBase(
           media_thread_.message_loop_proxy(),
           set_decryptor_ready_cb,
           base::Bind(&WebMediaPlayerProxy::FrameReady, proxy_),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::SetOpaque),
-          true);
-  filter_collection_->AddVideoRenderer(video_renderer);
+          true));
+  filter_collection_->SetVideoRenderer(video_renderer.Pass());
 
   // Create default audio renderer using the null sink if no sink was provided.
   audio_source_provider_ = new WebAudioSourceProviderImpl(

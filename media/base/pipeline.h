@@ -452,7 +452,7 @@ class MEDIA_EXPORT Pipeline
   // Renderer references used for setting the volume, playback rate, and
   // determining when playback has finished.
   scoped_refptr<AudioRenderer> audio_renderer_;
-  scoped_refptr<VideoRenderer> video_renderer_;
+  scoped_ptr<VideoRenderer> video_renderer_;
 
   // Demuxer reference used for setting the preload value.
   scoped_refptr<Demuxer> demuxer_;

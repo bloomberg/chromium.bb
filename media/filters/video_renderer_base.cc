@@ -29,6 +29,7 @@ VideoRendererBase::VideoRendererBase(
     const SetOpaqueCB& set_opaque_cb,
     bool drop_frames)
     : message_loop_(message_loop),
+      weak_factory_(this),
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
       frame_available_(&lock_),
       state_(kUninitialized),
@@ -40,6 +41,12 @@ VideoRendererBase::VideoRendererBase(
       set_opaque_cb_(set_opaque_cb),
       last_timestamp_(kNoTimestamp()) {
   DCHECK(!paint_cb_.is_null());
+}
+
+VideoRendererBase::~VideoRendererBase() {
+  base::AutoLock auto_lock(lock_);
+  CHECK(state_ == kUninitialized || state_ == kStopped) << state_;
+  CHECK_EQ(thread_, base::kNullThreadHandle);
 }
 
 void VideoRendererBase::Play(const base::Closure& callback) {
@@ -67,17 +74,19 @@ void VideoRendererBase::Flush(const base::Closure& callback) {
 
   if (decrypting_demuxer_stream_) {
     decrypting_demuxer_stream_->Reset(base::Bind(
-        &VideoRendererBase::ResetDecoder, this));
+        &VideoRendererBase::ResetDecoder, weak_this_));
     return;
   }
 
-  decoder_->Reset(base::Bind(&VideoRendererBase::OnDecoderResetDone, this));
+  decoder_->Reset(base::Bind(
+      &VideoRendererBase::OnDecoderResetDone, weak_this_));
 }
 
 void VideoRendererBase::ResetDecoder() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
-  decoder_->Reset(base::Bind(&VideoRendererBase::OnDecoderResetDone, this));
+  decoder_->Reset(base::Bind(
+      &VideoRendererBase::OnDecoderResetDone, weak_this_));
 }
 
 void VideoRendererBase::Stop(const base::Closure& callback) {
@@ -110,7 +119,7 @@ void VideoRendererBase::Stop(const base::Closure& callback) {
 
   if (decrypting_demuxer_stream_) {
     decrypting_demuxer_stream_->Reset(base::Bind(
-        &VideoRendererBase::StopDecoder, this, callback));
+        &VideoRendererBase::StopDecoder, weak_this_, callback));
     return;
   }
 
@@ -168,6 +177,7 @@ void VideoRendererBase::Initialize(const scoped_refptr<DemuxerStream>& stream,
   DCHECK(!get_duration_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
 
+  weak_this_ = weak_factory_.GetWeakPtr();
   init_cb_ = init_cb;
   statistics_cb_ = statistics_cb;
   max_time_cb_ = max_time_cb;
@@ -189,7 +199,7 @@ void VideoRendererBase::Initialize(const scoped_refptr<DemuxerStream>& stream,
   decoder_selector_ptr->SelectVideoDecoder(
       stream,
       statistics_cb,
-      base::Bind(&VideoRendererBase::OnDecoderSelected, this,
+      base::Bind(&VideoRendererBase::OnDecoderSelected, weak_this_,
                  base::Passed(&decoder_selector)));
 }
 
@@ -337,7 +347,7 @@ void VideoRendererBase::PaintNextReadyFrame_Locked() {
   paint_cb_.Run(next_frame);
 
   message_loop_->PostTask(FROM_HERE, base::Bind(
-      &VideoRendererBase::AttemptRead, this));
+      &VideoRendererBase::AttemptRead, weak_this_));
 }
 
 void VideoRendererBase::DropNextReadyFrame_Locked() {
@@ -351,13 +361,7 @@ void VideoRendererBase::DropNextReadyFrame_Locked() {
   statistics_cb_.Run(statistics);
 
   message_loop_->PostTask(FROM_HERE, base::Bind(
-      &VideoRendererBase::AttemptRead, this));
-}
-
-VideoRendererBase::~VideoRendererBase() {
-  base::AutoLock auto_lock(lock_);
-  CHECK(state_ == kUninitialized || state_ == kStopped) << state_;
-  CHECK_EQ(thread_, base::kNullThreadHandle);
+      &VideoRendererBase::AttemptRead, weak_this_));
 }
 
 void VideoRendererBase::FrameReady(VideoDecoder::Status status,
@@ -504,7 +508,7 @@ void VideoRendererBase::AttemptRead_Locked() {
     case kPrerolling:
     case kPlaying:
       pending_read_ = true;
-      decoder_->Read(base::Bind(&VideoRendererBase::FrameReady, this));
+      decoder_->Read(base::Bind(&VideoRendererBase::FrameReady, weak_this_));
       return;
 
     case kUninitialized:

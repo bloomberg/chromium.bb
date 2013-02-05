@@ -44,12 +44,12 @@ class VideoRendererBaseTest : public ::testing::Test {
         demuxer_stream_(new MockDemuxerStream()),
         video_config_(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
                       kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false) {
-    renderer_ = new VideoRendererBase(
+    renderer_.reset(new VideoRendererBase(
         message_loop_.message_loop_proxy(),
         media::SetDecryptorReadyCB(),
         base::Bind(&VideoRendererBaseTest::OnPaint, base::Unretained(this)),
         base::Bind(&VideoRendererBaseTest::OnSetOpaque, base::Unretained(this)),
-        true);
+        true));
 
     EXPECT_CALL(*demuxer_stream_, type())
         .WillRepeatedly(Return(DemuxerStream::VIDEO));
@@ -290,7 +290,7 @@ class VideoRendererBaseTest : public ::testing::Test {
 
  protected:
   // Fixture members.
-  scoped_refptr<VideoRendererBase> renderer_;
+  scoped_ptr<VideoRendererBase> renderer_;
   scoped_refptr<MockVideoDecoder> decoder_;
   scoped_refptr<MockDemuxerStream> demuxer_stream_;
   MockStatisticsCB statistics_cb_object_;

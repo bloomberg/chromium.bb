@@ -29,15 +29,20 @@ void FilterCollection::AddAudioRenderer(AudioRenderer* audio_renderer) {
   audio_renderers_.push_back(audio_renderer);
 }
 
-void FilterCollection::AddVideoRenderer(VideoRenderer* video_renderer) {
-  video_renderers_.push_back(video_renderer);
+void FilterCollection::SetVideoRenderer(
+    scoped_ptr<VideoRenderer> video_renderer) {
+  video_renderer_ = video_renderer.Pass();
+}
+
+scoped_ptr<VideoRenderer> FilterCollection::GetVideoRenderer() {
+  return video_renderer_.Pass();
 }
 
 void FilterCollection::Clear() {
   audio_decoders_.clear();
   video_decoders_.clear();
   audio_renderers_.clear();
-  video_renderers_.clear();
+  video_renderer_.reset();
 }
 
 void FilterCollection::SelectAudioRenderer(scoped_refptr<AudioRenderer>* out) {
@@ -47,15 +52,6 @@ void FilterCollection::SelectAudioRenderer(scoped_refptr<AudioRenderer>* out) {
   }
   *out = audio_renderers_.front();
   audio_renderers_.pop_front();
-}
-
-void FilterCollection::SelectVideoRenderer(scoped_refptr<VideoRenderer>* out) {
-  if (video_renderers_.empty()) {
-    *out = NULL;
-    return;
-  }
-  *out = video_renderers_.front();
-  video_renderers_.pop_front();
 }
 
 FilterCollection::AudioDecoderList* FilterCollection::GetAudioDecoders() {

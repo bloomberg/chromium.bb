@@ -111,12 +111,13 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
       message_loop));
 
   // Create our video renderer and save a reference to it for painting.
-  collection->AddVideoRenderer(new media::VideoRendererBase(
+  scoped_ptr<media::VideoRenderer> video_renderer(new media::VideoRendererBase(
       message_loop,
       media::SetDecryptorReadyCB(),
       base::Bind(&Paint, paint_message_loop, paint_cb),
       base::Bind(&SetOpaque),
       true));
+  collection->SetVideoRenderer(video_renderer.Pass());
 
   collection->AddAudioRenderer(new media::AudioRendererImpl(
       message_loop,

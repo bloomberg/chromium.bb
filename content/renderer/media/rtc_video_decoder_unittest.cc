@@ -189,7 +189,6 @@ class RTCVideoDecoderTest : public testing::Test {
     decoder_ = new RTCVideoDecoder(message_loop_.message_loop_proxy(),
                                    message_loop_.message_loop_proxy(),
                                    video_track_);
-    renderer_ = new MockVideoRenderer();
     read_cb_ = base::Bind(&RTCVideoDecoderTest::FrameReady,
                           base::Unretained(this));
 
@@ -237,7 +236,6 @@ class RTCVideoDecoderTest : public testing::Test {
   // Fixture members.
   scoped_refptr<MockVideoTrack> video_track_;
   scoped_refptr<RTCVideoDecoder> decoder_;
-  scoped_refptr<MockVideoRenderer> renderer_;
   MockStatisticsCB statistics_cb_;
   MessageLoop message_loop_;
   media::VideoDecoder::ReadCB read_cb_;

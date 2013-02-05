@@ -74,7 +74,6 @@ class PipelineIntegrationTestBase {
   base::MD5Context md5_context_;
   bool hashing_enabled_;
   scoped_refptr<Pipeline> pipeline_;
-  scoped_refptr<VideoRendererBase> renderer_;
   scoped_refptr<NullAudioSink> audio_sink_;
   bool ended_;
   PipelineStatus pipeline_status_;

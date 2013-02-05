@@ -211,7 +211,7 @@ PipelineIntegrationTestBase::CreateFilterCollection(
   collection->GetVideoDecoders()->push_back(vpx_decoder);
 
   // Disable frame dropping if hashing is enabled.
-  renderer_ = new VideoRendererBase(
+  scoped_ptr<VideoRenderer> renderer(new VideoRendererBase(
       message_loop_.message_loop_proxy(),
       base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
                  base::Unretained(this), decryptor),
@@ -219,8 +219,9 @@ PipelineIntegrationTestBase::CreateFilterCollection(
                  base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnSetOpaque,
                  base::Unretained(this)),
-      !hashing_enabled_);
-  collection->AddVideoRenderer(renderer_);
+      !hashing_enabled_));
+  collection->SetVideoRenderer(renderer.Pass());
+
   audio_sink_ = new NullAudioSink();
   if (hashing_enabled_)
     audio_sink_->StartAudioHashForTesting();

@@ -8,6 +8,7 @@
 #include <deque>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
@@ -60,6 +61,7 @@ class MEDIA_EXPORT VideoRendererBase
                     const PaintCB& paint_cb,
                     const SetOpaqueCB& set_opaque_cb,
                     bool drop_frames);
+  virtual ~VideoRendererBase();
 
   // VideoRenderer implementation.
   virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
@@ -82,9 +84,6 @@ class MEDIA_EXPORT VideoRendererBase
 
   // PlatformThread::Delegate implementation.
   virtual void ThreadMain() OVERRIDE;
-
- protected:
-  virtual ~VideoRendererBase();
 
  private:
   // Called when |decoder_selector_| selected the |selected_decoder|.
@@ -158,6 +157,8 @@ class MEDIA_EXPORT VideoRendererBase
                          PipelineStatus status);
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
+  base::WeakPtrFactory<VideoRendererBase> weak_factory_;
+  base::WeakPtr<VideoRendererBase> weak_this_;
 
   // Used for accessing data members.
   base::Lock lock_;

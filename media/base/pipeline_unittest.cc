@@ -91,7 +91,8 @@ class PipelineTest : public ::testing::Test {
     filter_collection_->GetAudioDecoders()->push_back(audio_decoder_);
 
     video_renderer_ = new MockVideoRenderer();
-    filter_collection_->AddVideoRenderer(video_renderer_);
+    scoped_ptr<VideoRenderer> video_renderer(video_renderer_);
+    filter_collection_->SetVideoRenderer(video_renderer.Pass());
 
     audio_renderer_ = new MockAudioRenderer();
     filter_collection_->AddAudioRenderer(audio_renderer_);
@@ -299,7 +300,7 @@ class PipelineTest : public ::testing::Test {
   scoped_refptr<MockDemuxer> demuxer_;
   scoped_refptr<MockVideoDecoder> video_decoder_;
   scoped_refptr<MockAudioDecoder> audio_decoder_;
-  scoped_refptr<MockVideoRenderer> video_renderer_;
+  MockVideoRenderer* video_renderer_;
   scoped_refptr<MockAudioRenderer> audio_renderer_;
   scoped_refptr<StrictMock<MockDemuxerStream> > audio_stream_;
   scoped_refptr<StrictMock<MockDemuxerStream> > video_stream_;

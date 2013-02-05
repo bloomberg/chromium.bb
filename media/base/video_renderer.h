@@ -22,8 +22,7 @@ namespace media {
 class DemuxerStream;
 class VideoDecoder;
 
-class MEDIA_EXPORT VideoRenderer
-    : public base::RefCountedThreadSafe<VideoRenderer> {
+class MEDIA_EXPORT VideoRenderer {
  public:
   typedef std::list<scoped_refptr<VideoDecoder> > VideoDecoderList;
 
@@ -36,6 +35,9 @@ class MEDIA_EXPORT VideoRenderer
 
   // Used to query the current time or duration of the media.
   typedef base::Callback<base::TimeDelta()> TimeDeltaCB;
+
+  VideoRenderer();
+  virtual ~VideoRenderer();
 
   // Initialize a VideoRenderer with the given DemuxerStream and
   // VideoDecoderList, executing |init_cb| callback upon completion.
@@ -90,12 +92,6 @@ class MEDIA_EXPORT VideoRenderer
 
   // Updates the current playback rate.
   virtual void SetPlaybackRate(float playback_rate) = 0;
-
- protected:
-  friend class base::RefCountedThreadSafe<VideoRenderer>;
-
-  VideoRenderer();
-  virtual ~VideoRenderer();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoRenderer);

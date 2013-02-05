@@ -8,6 +8,7 @@
 #include <list>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -36,9 +37,10 @@ class MEDIA_EXPORT FilterCollection {
   const scoped_refptr<Demuxer>& GetDemuxer();
 
   // Adds a filter to the collection.
-  void AddAudioDecoder(AudioDecoder* audio_decoder);
   void AddAudioRenderer(AudioRenderer* audio_renderer);
-  void AddVideoRenderer(VideoRenderer* video_renderer);
+
+  void SetVideoRenderer(scoped_ptr<VideoRenderer> video_renderer);
+  scoped_ptr<VideoRenderer> GetVideoRenderer();
 
   // Remove remaining filters.
   void Clear();
@@ -48,7 +50,6 @@ class MEDIA_EXPORT FilterCollection {
   // If a filter is returned it is removed from the collection.
   // Filters are selected in FIFO order.
   void SelectAudioRenderer(scoped_refptr<AudioRenderer>* out);
-  void SelectVideoRenderer(scoped_refptr<VideoRenderer>* out);
 
   AudioDecoderList* GetAudioDecoders();
   VideoDecoderList* GetVideoDecoders();
@@ -58,7 +59,7 @@ class MEDIA_EXPORT FilterCollection {
   AudioDecoderList audio_decoders_;
   VideoDecoderList video_decoders_;
   std::list<scoped_refptr<AudioRenderer> > audio_renderers_;
-  std::list<scoped_refptr<VideoRenderer> > video_renderers_;
+  scoped_ptr<VideoRenderer> video_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(FilterCollection);
 };
