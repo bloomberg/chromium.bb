@@ -489,12 +489,12 @@ bool PluginServiceImpl::GetPluginInfo(int render_process_id,
     *is_stale = stale;
 
   for (size_t i = 0; i < plugins.size(); ++i) {
-    if (!filter_ || filter_->IsPluginAvailable(render_process_id,
-                                               render_view_id,
-                                               context,
-                                               url,
-                                               page_url,
-                                               &plugins[i])) {
+    if (!filter_ || filter_->IsPluginEnabled(render_process_id,
+                                             render_view_id,
+                                             context,
+                                             url,
+                                             page_url,
+                                             &plugins[i])) {
       *info = plugins[i];
       if (actual_mime_type)
         *actual_mime_type = mime_types[i];

@@ -27,12 +27,12 @@ class FakePluginServiceFilter : public content::PluginServiceFilter {
   FakePluginServiceFilter() {}
   virtual ~FakePluginServiceFilter() {}
 
-  virtual bool IsPluginAvailable(int render_process_id,
-                                 int render_view_id,
-                                 const void* context,
-                                 const GURL& url,
-                                 const GURL& policy_url,
-                                 webkit::WebPluginInfo* plugin) OVERRIDE;
+  virtual bool IsPluginEnabled(int render_process_id,
+                               int render_view_id,
+                               const void* context,
+                               const GURL& url,
+                               const GURL& policy_url,
+                               webkit::WebPluginInfo* plugin) OVERRIDE;
 
   virtual bool CanLoadPlugin(int render_process_id,
                              const FilePath& path) OVERRIDE;
@@ -45,12 +45,12 @@ class FakePluginServiceFilter : public content::PluginServiceFilter {
   std::map<FilePath, bool> plugin_state_;
 };
 
-bool FakePluginServiceFilter::IsPluginAvailable(int render_process_id,
-                                                int render_view_id,
-                                                const void* context,
-                                                const GURL& url,
-                                                const GURL& policy_url,
-                                                webkit::WebPluginInfo* plugin) {
+bool FakePluginServiceFilter::IsPluginEnabled(int render_process_id,
+                                              int render_view_id,
+                                              const void* context,
+                                              const GURL& url,
+                                              const GURL& policy_url,
+                                              webkit::WebPluginInfo* plugin) {
   std::map<FilePath, bool>::iterator it = plugin_state_.find(plugin->path);
   if (it == plugin_state_.end()) {
     ADD_FAILURE() << "No plug-in state for '" << plugin->path.value() << "'";

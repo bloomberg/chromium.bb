@@ -121,7 +121,7 @@ class MockPluginServiceFilter : public content::PluginServiceFilter {
  public:
   MockPluginServiceFilter() {}
 
-  virtual bool IsPluginAvailable(
+  virtual bool IsPluginEnabled(
       int render_process_id,
       int render_view_id,
       const void* context,

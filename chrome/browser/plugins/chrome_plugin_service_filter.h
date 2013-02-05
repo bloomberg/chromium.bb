@@ -58,7 +58,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   void AuthorizeAllPlugins(int render_process_id);
 
   // PluginServiceFilter implementation:
-  virtual bool IsPluginAvailable(
+  virtual bool IsPluginEnabled(
       int render_process_id,
       int render_view_id,
       const void* context,

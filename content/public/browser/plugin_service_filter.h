@@ -20,16 +20,16 @@ class PluginServiceFilter {
  public:
   virtual ~PluginServiceFilter() {}
 
-  // Whether |plugin| is available. The client can return false to hide the
+  // Whether |plugin| is enabled. The client can return false to hide the
   // plugin, or return true and optionally change the passed in plugin.
-  virtual bool IsPluginAvailable(int render_process_id,
-                                 int render_view_id,
-                                 const void* context,
-                                 const GURL& url,
-                                 const GURL& policy_url,
-                                 webkit::WebPluginInfo* plugin) = 0;
+  virtual bool IsPluginEnabled(int render_process_id,
+                               int render_view_id,
+                               const void* context,
+                               const GURL& url,
+                               const GURL& policy_url,
+                               webkit::WebPluginInfo* plugin) = 0;
 
-  // Whether the renderer has permission to load available |plugin|.
+  // Whether the renderer has permission to load enabled |plugin|.
   virtual bool CanLoadPlugin(int render_process_id,
                              const FilePath& path) = 0;
 };
