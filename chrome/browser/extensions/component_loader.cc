@@ -34,7 +34,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
-#if defined(USE_ASH)
+#if defined(ENABLE_APP_LIST)
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #endif
@@ -296,7 +296,7 @@ void ComponentLoader::AddOrReloadEnterpriseWebStore() {
 }
 
 void ComponentLoader::AddChromeApp() {
-#if defined(USE_ASH)
+#if defined(ENABLE_APP_LIST)
   std::string manifest_contents =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_CHROME_APP_MANIFEST).as_string();
@@ -363,9 +363,7 @@ void ComponentLoader::AddDefaultComponentExtensions(
     // the browser process has started.
     AddOrReloadEnterpriseWebStore();
 
-#if defined(USE_ASH)
     AddChromeApp();
-#endif
   }
 
   AddDefaultComponentExtensionsWithBackgroundPages(skip_session_components);

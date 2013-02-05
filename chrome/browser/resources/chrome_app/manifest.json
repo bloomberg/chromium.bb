@@ -12,5 +12,7 @@
       // Note this will be changed by special case to become chrome://newtab.
       "web_url": "http://THIS-WILL-BE-REPLACED"
     }
-  }
+  },
+  "display_in_launcher": true,
+  "display_in_new_tab_page": false
 }

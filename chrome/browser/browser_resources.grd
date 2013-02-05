@@ -80,6 +80,9 @@
         <include name="IDR_CERTIFICATE_VIEWER_JS" file="resources\certificate_viewer.js" type="BINDATA" />
         <include name="IDR_CERTIFICATE_VIEWER_CSS" file="resources\certificate_viewer.css" type="BINDATA" />
       </if>
+      <if expr="pp_ifdef('enable_app_list')">
+        <include name="IDR_CHROME_APP_MANIFEST" file="resources\chrome_app\manifest.json" type="BINDATA" />
+      </if>
       <if expr="pp_ifdef('enable_printing')">
         <include name="IDR_CLOUDPRINT_MANIFEST" file="resources\cloud_print_app\manifest.json" type="BINDATA" />
         <include name="IDR_CLOUD_PRINT_SETUP_DONE_HTML" file="resources\cloud_print\cloud_print_setup_done.html" flattenhtml="true" type="BINDATA" />
@@ -239,7 +242,6 @@
         <include name="IDR_TASK_MANAGER_JS" file="resources\task_manager\main.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_TASK_MANAGER_MEASURE_TIME_JS" file="resources\task_manager\measure_time.js" type="BINDATA" /> 
         <include name="IDR_TASK_MANAGER_MEASURE_TIME_END_JS" file="resources\task_manager\measure_time_end.js" type="BINDATA" /> 
-        <include name="IDR_CHROME_APP_MANIFEST" file="resources\chrome_app\manifest.json" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('chromeos')">
         <include name="IDR_SYNC_PROMO_JS" file="resources\sync_promo\sync_promo.js" flattenhtml="true" type="BINDATA" />
