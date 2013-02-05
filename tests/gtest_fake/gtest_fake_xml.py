@@ -120,8 +120,11 @@ def main():
     parser.error('Failed to process args %s' % args)
   if options.gtest_output:
     if not options.gtest_output.startswith('xml:'):
-      parser.error('--gtest_output value must start with xm:')
+      parser.error('--gtest_output value must start with xml:')
     options.gtest_output = options.gtest_output[len('xml:'):]
+    if (not os.path.isabs(options.gtest_output) or
+        not options.gtest_output[-1] == os.path.sep):
+      parser.error('Require strict absolute path ending with %s' % os.path.sep)
 
   if options.trim_xml:
     trim_xml()

@@ -766,7 +766,9 @@ def run_test_cases(
       if gtest_output.startswith('xml'):
         # Have each shard write an XML file and them merge them all.
         tempdir = tempfile.mkdtemp(prefix='run_test_cases')
-        cmd.append('--gtest_output=xml:' + tempdir)
+        # The real google-test requires a trailing os.path.sep when a directory
+        # is used.
+        cmd.append('--gtest_output=xml:' + tempdir + os.path.sep)
         # Figure out the result filepath in case we can't parse it, it'd be
         # annoying to error out after running the tests.
         if gtest_output == 'xml':
@@ -835,7 +837,8 @@ def run_test_cases(
           # TODO(maruel): It would automatically add 0, 1, 2 when a previous
           # one exists.
           gtest_output = os.path.join(gtest_output, 'test_detail.xml')
-        print('Saving gtest compatible XML file to: %s' % gtest_output)
+        sys.stdout.write(
+          '\nSaving gtest compatible XML file to: %s\n' % gtest_output)
         with open(gtest_output, 'w') as f:
           result.writexml(f)
       else:
