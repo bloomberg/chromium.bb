@@ -142,7 +142,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestNewTab) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestDeclarative) {
+#if defined(OS_WIN) && !defined(NDEBUG)
+// http://crbug.com/174363
+#define MAYBE_WebRequestDeclarative DISABLED_WebRequestDeclarative
+#else
+#define MAYBE_WebRequestDeclarative WebRequestDeclarative
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       MAYBE_WebRequestDeclarative) {
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_declarative.html")) <<
       message_;
 }
