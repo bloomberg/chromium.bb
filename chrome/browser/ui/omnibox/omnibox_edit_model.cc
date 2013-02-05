@@ -329,7 +329,7 @@ bool OmniboxEditModel::UseVerbatimInstant() {
   // interfere with #2). So, we don't need to care about the value of
   // input.prevent_inline_autocomplete() here.
   return view_->DeleteAtEndPressed() || popup_->selected_line() != 0 ||
-         just_deleted_text_;
+      just_deleted_text_;
 }
 
 string16 OmniboxEditModel::GetDesiredTLD() const {
@@ -855,16 +855,6 @@ void OmniboxEditModel::OnControlKeyChanged(bool pressed) {
 }
 
 void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
-  // If Instant handles the key press, it's showing a list of suggestions that
-  // it's stepping through. In that case, our popup model is irrelevant, so
-  // don't process the key press ourselves. However, do stop the autocomplete
-  // system from changing the results.
-  InstantController* instant = controller_->GetInstant();
-  if (instant && instant->OnUpOrDownKeyPressed(count)) {
-    autocomplete_controller_->Stop(false);
-    return;
-  }
-
   // NOTE: This purposefully doesn't trigger any code that resets paste_state_.
   if (!popup_->IsOpen()) {
     if (!query_in_progress()) {
@@ -884,9 +874,18 @@ void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
       // should force it to open immediately.
     }
   } else {
-    // The popup is open, so the user should be able to interact with it
-    // normally.
-    popup_->Move(count);
+    InstantController* instant = controller_->GetInstant();
+    if (instant && instant->OnUpOrDownKeyPressed(count)) {
+      // If Instant handles the key press, it's showing a list of suggestions
+      // that it's stepping through. In that case, our popup model is
+      // irrelevant, so don't process the key press ourselves. However, do stop
+      // the autocomplete system from changing the results.
+      autocomplete_controller_->Stop(false);
+    } else {
+      // The popup is open, so the user should be able to interact with it
+      // normally.
+      popup_->Move(count);
+    }
   }
 }
 
