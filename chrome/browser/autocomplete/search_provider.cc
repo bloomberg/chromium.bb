@@ -227,11 +227,13 @@ void SearchProvider::Start(const AutocompleteInput& input,
     return;
   }
 
-  keyword_input_text_.clear();
+  keyword_input_ = input;
   const TemplateURL* keyword_provider =
-      KeywordProvider::GetSubstitutingTemplateURLForInput(profile_, input,
-                                                          &keyword_input_text_);
-  if (keyword_input_text_.empty())
+      KeywordProvider::GetSubstitutingTemplateURLForInput(model,
+                                                          &keyword_input_);
+  if (keyword_provider == NULL)
+    keyword_input_.Clear();
+  else if (keyword_input_.text().empty())
     keyword_provider = NULL;
 
   const TemplateURL* default_provider = model->GetDefaultSearchProvider();
@@ -330,9 +332,9 @@ void SearchProvider::Run() {
   time_suggest_request_sent_ = base::TimeTicks::Now();
 
   default_fetcher_.reset(CreateSuggestFetcher(kDefaultProviderURLFetcherID,
-      providers_.GetDefaultProviderURL(), input_.text()));
+      providers_.GetDefaultProviderURL(), input_));
   keyword_fetcher_.reset(CreateSuggestFetcher(kKeywordProviderURLFetcherID,
-      providers_.GetKeywordProviderURL(), keyword_input_text_));
+      providers_.GetKeywordProviderURL(), keyword_input_));
 
   // Both the above can fail if the providers have been modified or deleted
   // since the query began.
@@ -474,7 +476,7 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
   if (keyword_url) {
     url_db->GetMostRecentKeywordSearchTerms(keyword_url->id(),
-        keyword_input_text_, num_matches, &keyword_history_results_);
+        keyword_input_.text(), num_matches, &keyword_history_results_);
   }
 }
 
@@ -595,11 +597,11 @@ void SearchProvider::ClearResults() {
 }
 
 void SearchProvider::RemoveStaleResults() {
-  // Keyword provider results should match |keyword_input_text_|, unless
+  // Keyword provider results should match |keyword_input_.text()|, unless
   // the input was just changed to non-keyword mode; in that case, compare
   // against |input_.text()|.
   const string16& keyword_input =
-      !keyword_input_text_.empty() ? keyword_input_text_ : input_.text();
+      !keyword_input_.text().empty() ? keyword_input_.text() : input_.text();
   RemoveStaleSuggestResults(&keyword_suggest_results_, keyword_input);
   RemoveStaleSuggestResults(&default_suggest_results_, input_.text());
   RemoveStaleNavigationResults(&keyword_navigation_results_, keyword_input);
@@ -650,13 +652,13 @@ void SearchProvider::ApplyCalculatedNavigationRelevance(NavigationResults* list,
 net::URLFetcher* SearchProvider::CreateSuggestFetcher(
     int id,
     const TemplateURL* template_url,
-    const string16& text) {
+    const AutocompleteInput& input) {
   if (!template_url || template_url->suggestions_url().empty())
     return NULL;
 
   // Bail if the suggestion URL is invalid with the given replacements.
-  TemplateURLRef::SearchTermsArgs search_term_args(text);
-  search_term_args.cursor_position = input_.cursor_position();
+  TemplateURLRef::SearchTermsArgs search_term_args(input.text());
+  search_term_args.cursor_position = input.cursor_position();
   GURL suggest_url(template_url->suggestions_url_ref().ReplaceSearchTerms(
       search_term_args));
   if (!suggest_url.is_valid())
@@ -685,7 +687,8 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
   string16 query;
   ListValue* root_list = NULL;
   ListValue* results = NULL;
-  const string16& input_text = is_keyword ? keyword_input_text_ : input_.text();
+  const string16& input_text =
+      is_keyword ? keyword_input_.text() : input_.text();
   if (!root_val->GetAsList(&root_list) || !root_list->GetString(0, &query) ||
       (query != input_text) || !root_list->GetList(1, &results))
     return false;
@@ -950,7 +953,8 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
 
   bool prevent_inline_autocomplete = input_.prevent_inline_autocomplete() ||
       (input_.type() == AutocompleteInput::URL);
-  const string16& input_text = is_keyword ? keyword_input_text_ : input_.text();
+  const string16& input_text =
+      is_keyword ? keyword_input_.text() : input_.text();
   bool input_multiple_words = HasMultipleWords(input_text);
 
   SuggestResults scored_results;
@@ -1043,7 +1047,8 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
 void SearchProvider::AddSuggestResultsToMap(const SuggestResults& results,
                                             bool is_keyword,
                                             MatchMap* map) {
-  const string16& input_text = is_keyword ? keyword_input_text_ : input_.text();
+  const string16& input_text =
+      is_keyword ? keyword_input_.text() : input_.text();
   for (size_t i = 0; i < results.size(); ++i) {
     AddMatchToMap(results[i].suggestion(), input_text, results[i].relevance(),
                   AutocompleteMatch::SEARCH_SUGGEST, i, is_keyword, map);
@@ -1241,7 +1246,7 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
 AutocompleteMatch SearchProvider::NavigationToMatch(
     const NavigationResult& navigation,
     bool is_keyword) {
-  const string16& input = is_keyword ? keyword_input_text_ : input_.text();
+  const string16& input = is_keyword ? keyword_input_.text() : input_.text();
   AutocompleteMatch match(this, navigation.relevance(), false,
                           AutocompleteMatch::NAVSUGGEST);
   match.destination_url = navigation.url();

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
@@ -136,29 +137,49 @@ string16 KeywordProvider::SplitReplacementStringFromInput(
 
 // static
 const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
-    Profile* profile,
-    const AutocompleteInput& input,
-    string16* remaining_input) {
-  if (!input.allow_exact_keyword_match())
+    TemplateURLService* model,
+    AutocompleteInput* input) {
+  if (!input->allow_exact_keyword_match())
     return NULL;
 
-  string16 keyword;
-  if (!ExtractKeywordFromInput(input, &keyword, remaining_input))
+  string16 keyword, remaining_input;
+  if (!ExtractKeywordFromInput(*input, &keyword, &remaining_input))
     return NULL;
 
-  // Make sure the model is loaded. This is cheap and quickly bails out if
-  // the model is already loaded.
-  TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(profile);
   DCHECK(model);
-  model->Load();
-
   const TemplateURL* template_url = model->GetTemplateURLForKeyword(keyword);
-  return (template_url && template_url->SupportsReplacement()) ?
-      template_url : NULL;
+  if (template_url && template_url->SupportsReplacement()) {
+    // Adjust cursor position iff it was set before, otherwise leave it as is.
+    size_t cursor_position = string16::npos;
+    // The adjustment assumes that the keyword was stripped from the beginning
+    // of the original input.
+    if (input->cursor_position() != string16::npos &&
+        !remaining_input.empty() &&
+        EndsWith(input->text(), remaining_input, true)) {
+      int offset = input->text().length() - input->cursor_position();
+      // The cursor should never be past the last character.
+      DCHECK_GE(offset, 0);
+      // The cursor should never be in the keyword part, which is guaranteed
+      // by OmniboxEditModel implementation (see omnibox_edit_model.cc).
+      DCHECK_LE(offset, static_cast<int>(remaining_input.length()));
+      if (offset <= 0) {
+        // Normalize the cursor to be exactly after the last character.
+        cursor_position = remaining_input.length();
+      } else {
+        // If somehow the cursor was before the remaining text, set it to 0,
+        // otherwise adjust it relative to the remaining text.
+        cursor_position = offset > static_cast<int>(remaining_input.length()) ?
+            0u : remaining_input.length() - offset;
+      }
+    }
+    input->UpdateText(remaining_input, cursor_position, input->parts());
+    return template_url;
+  }
+
+  return NULL;
 }
 
-string16 KeywordProvider::GetKeywordForText(
-    const string16& text) const {
+string16 KeywordProvider::GetKeywordForText(const string16& text) const {
   const string16 keyword(TemplateURLService::CleanUserInputKeyword(text));
 
   if (keyword.empty())

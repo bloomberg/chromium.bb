@@ -224,3 +224,60 @@ TEST_F(KeywordProviderTest, GetKeywordForInput) {
   EXPECT_EQ(string16(),
       kw_provider_->GetKeywordForText(ASCIIToUTF16("aa foo")));
 }
+
+TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
+  struct {
+    const std::string text;
+    const size_t cursor_position;
+    const bool allow_exact_keyword_match;
+    const std::string expected_url;
+    const std::string updated_text;
+    const size_t updated_cursor_position;
+  } cases[] = {
+    { "foo", string16::npos, true, "", "foo", string16::npos },
+    { "aa foo", string16::npos, true, "aa.com?foo={searchTerms}", "foo",
+      string16::npos },
+
+    // Cursor adjustment.
+    { "aa foo", string16::npos, true, "aa.com?foo={searchTerms}", "foo",
+      string16::npos },
+    { "aa foo", 4u, true, "aa.com?foo={searchTerms}", "foo", 1u },
+    // Cursor at the end.
+    { "aa foo", 6u, true, "aa.com?foo={searchTerms}", "foo", 3u },
+    // Cursor before the first character of the remaining text.
+    { "aa foo", 3u, true, "aa.com?foo={searchTerms}", "foo", 0u },
+
+    // Trailing space.
+    { "aa foo ", 7u, true, "aa.com?foo={searchTerms}", "foo", string16::npos },
+    // Trailing space without remaining text, cursor in the middle.
+    { "aa  ", 3u, true, "aa.com?foo={searchTerms}", "", string16::npos },
+    // Trailing space without remaining text, cursor at the end.
+    { "aa  ", 4u, true, "aa.com?foo={searchTerms}", "", string16::npos },
+    // Extra space after keyword, cursor at the end.
+    { "aa  foo ", 8u, true, "aa.com?foo={searchTerms}", "foo", string16::npos },
+    // Extra space after keyword, cursor in the middle.
+    { "aa  foo ", 3u, true, "aa.com?foo={searchTerms}", "foo", string16::npos },
+    // Extra space after keyword, no trailing space, cursor at the end.
+    { "aa  foo", 7u, true, "aa.com?foo={searchTerms}", "foo", 3u },
+    // Extra space after keyword, no trailing space, cursor in the middle.
+    { "aa  foo", 5u, true, "aa.com?foo={searchTerms}", "foo", 1u },
+
+    // Disallow exact keyword match.
+    { "aa foo", string16::npos, false, "", "aa foo", string16::npos },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
+    AutocompleteInput input(ASCIIToUTF16(cases[i].text),
+                            cases[i].cursor_position, string16(),
+                            false, false, cases[i].allow_exact_keyword_match,
+                            AutocompleteInput::ALL_MATCHES);
+    const TemplateURL* url =
+        KeywordProvider::GetSubstitutingTemplateURLForInput(model_.get(),
+                                                            &input);
+    if (cases[i].expected_url.empty())
+      EXPECT_FALSE(url);
+    else
+      EXPECT_EQ(cases[i].expected_url, url->url());
+    EXPECT_EQ(ASCIIToUTF16(cases[i].updated_text), input.text());
+    EXPECT_EQ(cases[i].updated_cursor_position, input.cursor_position());
+  }
+}

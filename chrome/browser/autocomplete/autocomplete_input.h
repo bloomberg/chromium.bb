@@ -171,13 +171,12 @@ class AutocompleteInput {
   // See description of enum for details.
   MatchesRequested matches_requested() const { return matches_requested_; }
 
-  // operator==() by another name.
-  bool Equals(const AutocompleteInput& other) const;
-
   // Resets all internal variables to the null-constructed state.
   void Clear();
 
  private:
+  // NOTE: Whenever adding a new field here, please make sure to update Clear()
+  // method.
   string16 text_;
   size_t cursor_position_;
   string16 desired_tld_;

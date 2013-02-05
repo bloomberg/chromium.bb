@@ -241,7 +241,7 @@ class SearchProvider : public AutocompleteProvider,
   // callers own the returned URLFetcher, which is NULL for invalid providers.
   net::URLFetcher* CreateSuggestFetcher(int id,
                                         const TemplateURL* template_url,
-                                        const string16& text);
+                                        const AutocompleteInput& input);
 
   // Parses results from the suggest server and updates the appropriate suggest
   // and navigation result lists, depending on whether |is_keyword| is true.
@@ -331,8 +331,8 @@ class SearchProvider : public AutocompleteProvider,
   // The user's input.
   AutocompleteInput input_;
 
-  // Input text when searching against the keyword provider.
-  string16 keyword_input_text_;
+  // Input when searching against the keyword provider.
+  AutocompleteInput keyword_input_;
 
   // Searches in the user's history that begin with the input text.
   HistoryResults keyword_history_results_;

@@ -50,7 +50,8 @@ AutocompleteInput::AutocompleteInput(const string16& text,
       prefer_keyword_(prefer_keyword),
       allow_exact_keyword_match_(allow_exact_keyword_match),
       matches_requested_(matches_requested) {
-  DCHECK(cursor_position <= text.length() || cursor_position == string16::npos);
+  DCHECK(cursor_position <= text.length() || cursor_position == string16::npos)
+      << "Text: '" << text << "', cp: " << cursor_position;
   // None of the providers care about leading white space so we always trim it.
   // Providers that care about trailing white space handle trimming themselves.
   if ((TrimWhitespace(text, TRIM_LEADING, &text_) & TRIM_LEADING) != 0)
@@ -492,30 +493,23 @@ int AutocompleteInput::NumNonHostComponents(const url_parse::Parsed& parts) {
 void AutocompleteInput::UpdateText(const string16& text,
                                    size_t cursor_position,
                                    const url_parse::Parsed& parts) {
-  DCHECK(cursor_position <= text.length() || cursor_position == string16::npos);
+  DCHECK(cursor_position <= text.length() || cursor_position == string16::npos)
+      << "Text: '" << text << "', cp: " << cursor_position;
   text_ = text;
   cursor_position_ = cursor_position;
   parts_ = parts;
 }
 
-bool AutocompleteInput::Equals(const AutocompleteInput& other) const {
-  return (text_ == other.text_) &&
-         (cursor_position_ == other.cursor_position_) &&
-         (type_ == other.type_) &&
-         (desired_tld_ == other.desired_tld_) &&
-         (scheme_ == other.scheme_) &&
-         (prevent_inline_autocomplete_ == other.prevent_inline_autocomplete_) &&
-         (prefer_keyword_ == other.prefer_keyword_) &&
-         (matches_requested_ == other.matches_requested_);
-}
-
 void AutocompleteInput::Clear() {
   text_.clear();
   cursor_position_ = string16::npos;
+  desired_tld_.clear();
   type_ = INVALID;
   parts_ = url_parse::Parsed();
   scheme_.clear();
-  desired_tld_.clear();
+  canonicalized_url_ = GURL();
   prevent_inline_autocomplete_ = false;
   prefer_keyword_ = false;
+  allow_exact_keyword_match_ = false;
+  matches_requested_ = ALL_MATCHES;
 }

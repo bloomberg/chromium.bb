@@ -72,11 +72,11 @@ class KeywordProvider : public AutocompleteProvider,
                                                   bool trim_leading_whitespace);
 
   // Returns the matching substituting keyword for |input|, or NULL if there
-  // is no keyword for the specified input.
+  // is no keyword for the specified input.  If the matching keyword was found,
+  // updates |input|'s text and cursor position.
   static const TemplateURL* GetSubstitutingTemplateURLForInput(
-                                              Profile* profile,
-                                              const AutocompleteInput& input,
-                                              string16* remaining_input);
+      TemplateURLService* model,
+      AutocompleteInput* input);
 
   // If |text| corresponds (in the sense of
   // TemplateURLModel::CleanUserInputKeyword()) to an enabled, substituting
