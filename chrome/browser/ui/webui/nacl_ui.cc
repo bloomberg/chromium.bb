@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/string16.h"
@@ -232,7 +233,10 @@ void NaClDOMHandler::PopulatePageInformation(DictionaryValue* naclInfo) {
   // Obtain the version of the PNaCl translator.
   FilePath pnacl_path;
   bool got_path = PathService::Get(chrome::DIR_PNACL_COMPONENT, &pnacl_path);
-  if (!got_path || pnacl_path.empty()) {
+  // The PathService may return an empty string if PNaCl is not yet installed.
+  // However, do not trust that the path returned by the PathService exists.
+  // Check for existence here.
+  if (!got_path || pnacl_path.empty() || !file_util::PathExists(pnacl_path)) {
     AddPair(list.get(),
             ASCIIToUTF16("PNaCl translator"),
             ASCIIToUTF16("Not installed"));
