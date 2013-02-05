@@ -24,6 +24,7 @@ Extensions\*.*: %(VersionDir)s\Extensions\
 ffmpegsumo.dll: %(VersionDir)s\
 pdf.dll: %(VersionDir)s\
 D3DCompiler_43.dll: %(VersionDir)s\
+d3dcompiler_46.dll: %(VersionDir)s\
 libEGL.dll: %(VersionDir)s\
 libGLESv2.dll: %(VersionDir)s\
 xinput1_3.dll: %(VersionDir)s\
