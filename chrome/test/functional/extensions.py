@@ -254,9 +254,10 @@ class ExtensionsTest(pyauto.PyUITest):
 
     permissions_api = ext['api_permissions']
     print permissions_api
-    self.assertTrue(len(permissions_api) == 4 and
+    self.assertTrue(len(permissions_api) == 5 and
                     'bookmarks' in permissions_api and
                     'bookmarkManagerPrivate' in permissions_api and
+                    'metricsPrivate' in permissions_api and
                     'systemPrivate' in permissions_api and
                     'tabs' in permissions_api,
                     msg='Unexpected API permissions information.')
