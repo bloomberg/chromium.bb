@@ -252,6 +252,9 @@ const char kXdgSettings[] = "xdg-settings";
 const char kXdgSettingsDefaultBrowser[] = "default-web-browser";
 const char kXdgSettingsDefaultSchemeHandler[] = "default-url-scheme-handler";
 
+// Regex to match a localized key name such as "Name[en_AU]".
+const char kLocalizedKeyRegex[] = "^[A-Za-z0-9\\-]+\\[[^\\]]*\\]$";
+
 }  // namespace
 
 namespace {
@@ -567,6 +570,20 @@ std::string GetDesktopFileContents(
        ++current_key) {
     g_key_file_remove_key(key_file, kDesktopEntry, *current_key, NULL);
   }
+  // Remove all localized keys.
+  GRegex* localized_key_regex = g_regex_new(kLocalizedKeyRegex,
+                                            static_cast<GRegexCompileFlags>(0),
+                                            static_cast<GRegexMatchFlags>(0),
+                                            NULL);
+  gchar** keys = g_key_file_get_keys(key_file, kDesktopEntry, NULL, NULL);
+  for (gchar** keys_ptr = keys; *keys_ptr; ++keys_ptr) {
+    if (g_regex_match(localized_key_regex, *keys_ptr,
+                      static_cast<GRegexMatchFlags>(0), NULL)) {
+      g_key_file_remove_key(key_file, kDesktopEntry, *keys_ptr, NULL);
+    }
+  }
+  g_strfreev(keys);
+  g_regex_unref(localized_key_regex);
 
   // Set the "Name" key.
   std::string final_title = UTF16ToUTF8(title);
