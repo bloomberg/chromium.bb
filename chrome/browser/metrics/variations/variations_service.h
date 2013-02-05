@@ -15,6 +15,7 @@
 #include "base/timer.h"
 #include "chrome/browser/metrics/proto/study.pb.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
+#include "chrome/browser/metrics/variations/network_time_tracker.h"
 #include "chrome/browser/metrics/variations/resource_request_allowed_notifier.h"
 #include "chrome/common/chrome_version_info.h"
 #include "googleurl/src/gurl.h"
@@ -46,6 +47,11 @@ class VariationsService
   // implementation for details on the period. Must be called after
   // |CreateTrialsFromSeed|.
   void StartRepeatedVariationsSeedFetch();
+
+  // TODO(mad): Remove this once NetworkTimeTracker is available as a global
+  // service.
+  bool GetNetworkTime(base::Time* network_time,
+                      base::TimeDelta* uncertainty) const;
 
 #if defined(OS_WIN)
   // Starts syncing Google Update Variation IDs with the registry.
@@ -182,6 +188,9 @@ class VariationsService
   // The start time of the last seed request. This is used to measure the
   // latency of seed requests. Initially zero.
   base::TimeTicks last_request_started_time_;
+
+  // TODO(mad): Eventually remove this.
+  NetworkTimeTracker network_time_tracker_;
 
 #if defined(OS_WIN)
   // Helper that handles synchronizing Variations with the Registry.

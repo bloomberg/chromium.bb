@@ -25,6 +25,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
@@ -40,6 +41,10 @@ const int kMaxRetrySeedFetch = 5;
 
 // Time between seed fetches, in hours.
 const int kSeedFetchPeriodHours = 5;
+
+// TODO(mad): To be removed when we stop updating the NetworkTimeTracker.
+// For the HTTP date headers, the resolution of the server time is 1 second.
+const int64 kServerTimeResolutionMs = 1000;
 
 // Maps Study_Channel enum values to corresponding chrome::VersionInfo::Channel
 // enum values.
@@ -187,6 +192,11 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
                this, &VariationsService::FetchVariationsSeed);
 }
 
+bool VariationsService::GetNetworkTime(base::Time* network_time,
+                                       base::TimeDelta* uncertainty) const {
+  return network_time_tracker_.GetNetworkTime(network_time, uncertainty);
+}
+
 #if defined(OS_WIN)
 void VariationsService::StartGoogleUpdateRegistrySync() {
   registry_syncer_.RequestRegistrySync();
@@ -256,17 +266,30 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   // Log the response code.
+  const int response_code = request->GetResponseCode();
   UMA_HISTOGRAM_CUSTOM_ENUMERATION("Variations.SeedFetchResponseCode",
-      net::HttpUtil::MapStatusCodeForHistogram(request->GetResponseCode()),
+      net::HttpUtil::MapStatusCodeForHistogram(response_code),
       net::HttpUtil::GetStatusCodesForHistogram());
 
   const base::TimeDelta latency =
       base::TimeTicks::Now() - last_request_started_time_;
 
-  if (request->GetResponseCode() != 200) {
-    DVLOG(1) << "Variations server request returned non-200 response code: "
-             << request->GetResponseCode();
-    if (request->GetResponseCode() == 304)
+  base::Time response_date;
+  if (response_code == net::HTTP_OK ||
+      response_code == net::HTTP_NOT_MODIFIED) {
+    bool success = request->GetResponseHeaders()->GetDateValue(&response_date);
+    DCHECK(success || response_date.is_null());
+
+    if (!response_date.is_null()) {
+      network_time_tracker_.UpdateNetworkTime(
+          response_date,
+          base::TimeDelta::FromMilliseconds(kServerTimeResolutionMs),
+          latency);
+    }
+  } else if (response_code != net::HTTP_OK) {
+    DVLOG(1) << "Variations server request returned non-HTTP_OK response code: "
+             << response_code;
+    if (response_code == net::HTTP_NOT_MODIFIED)
       UMA_HISTOGRAM_MEDIUM_TIMES("Variations.FetchNotModifiedLatency", latency);
     else
       UMA_HISTOGRAM_MEDIUM_TIMES("Variations.FetchOtherLatency", latency);
@@ -277,10 +300,6 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string seed_data;
   bool success = request->GetResponseAsString(&seed_data);
   DCHECK(success);
-
-  base::Time response_date;
-  success = request->GetResponseHeaders()->GetDateValue(&response_date);
-  DCHECK(success || response_date.is_null());
 
   StoreSeedData(seed_data, response_date, g_browser_process->local_state());
 }
