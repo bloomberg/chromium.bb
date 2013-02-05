@@ -70,6 +70,9 @@ const char kAshDisablePerAppLauncher[] = "ash-disable-per-app-launcher";
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
 
+// Disable the new launcher version temporarily by default for the M25 release.
+const char kAshEnablePerAppLauncher[] = "ash-enable-per-app-launcher";
+
 // Enables showing the tray bubble by dragging on the shelf.
 const char kAshEnableTrayDragging[] = "ash-enable-tray-dragging";
 

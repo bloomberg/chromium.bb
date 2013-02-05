@@ -713,11 +713,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableAutoWindowPlacement)
   },
   {
-    "ash-disable-per-app-launcher",
-    IDS_FLAGS_ASH_DISABLE_PER_APP_LAUNCHER_NAME,
-    IDS_FLAGS_ASH_DISABLE_PER_APP_LAUNCHER_DESCRIPTION,
+    "ash-enable-per-app-launcher",
+    IDS_FLAGS_ASH_ENABLE_PER_APP_LAUNCHER_NAME,
+    IDS_FLAGS_ASH_ENABLE_PER_APP_LAUNCHER_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshDisablePerAppLauncher)
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnablePerAppLauncher)
   },
 #endif
   {
