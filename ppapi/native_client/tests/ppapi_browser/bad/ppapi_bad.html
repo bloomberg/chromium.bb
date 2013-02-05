@@ -50,7 +50,7 @@ function declareTests(tester) {
       tester,
       'bad_magic',
       'ppapi_bad_magic.nmf',
-      'NaCl module load failed: Too many program header entries in ELF file');
+      'NaCl module load failed: Bad ELF header magic number');
 
   // 'cross_origin' loads a manifest, then tries to load a cross-origin nexe.
   badLoadTest(
