@@ -42,9 +42,12 @@ class CONTENT_EXPORT BrowserPlugin :
   // |attribute_value|.
   void UpdateDOMAttribute(const std::string& attribute_name,
                           const std::string& attribute_value);
-
+  // Remove the DOM Node attribute with the name |attribute_name|.
+  void RemoveDOMAttribute(const std::string& attribute_name);
   // Get Browser Plugin's DOM Node attribute |attribute_name|'s value.
   std::string GetDOMAttributeValue(const std::string& attribute_name) const;
+  // Checks if the attribute |attribute_name| exists in the DOM.
+  bool HasDOMAttribute(const std::string& attribute_name) const;
 
   // Get the name attribute value.
   std::string GetNameAttribute() const;
@@ -74,6 +77,8 @@ class CONTENT_EXPORT BrowserPlugin :
   // this instance of BrowserPlugin. If an error occurs, the |error_message| is
   // set appropriately to indicate the failure reason.
   bool ParsePartitionAttribute(std::string* error_message);
+  // True if the partition attribute can be removed.
+  bool CanRemovePartitionAttribute(std::string* error_message);
 
   bool InAutoSizeBounds(const gfx::Size& size) const;
 
