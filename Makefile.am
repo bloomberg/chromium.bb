@@ -20,8 +20,6 @@
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
-DISTCHECK_CONFIGURE_FLAGS = --enable-nouveau-experimental-api --enable-radeon-experimental-api
-
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm.pc
 
