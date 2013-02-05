@@ -768,9 +768,13 @@ void TileManager::RunRasterTask(uint8* buffer,
   if (stats)
     begin_time = base::TimeTicks::Now();
 
-  picture_pile->Raster(&canvas, rect, contents_scale, stats);
+  int64 total_pixels_rasterized = 0;
+  picture_pile->Raster(&canvas, rect, contents_scale,
+                       &total_pixels_rasterized);
 
   if (stats) {
+    stats->totalPixelsRasterized += total_pixels_rasterized;
+
     base::TimeTicks end_time = base::TimeTicks::Now();
     base::TimeDelta duration = end_time - begin_time;
     stats->totalRasterizeTime += duration;

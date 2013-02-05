@@ -34,7 +34,7 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
       SkCanvas* canvas,
       gfx::Rect content_rect,
       float contents_scale,
-      RenderingStats* stats);
+      int64* total_pixels_rasterized);
 
   void GatherPixelRefs(
       gfx::Rect content_rect,

@@ -61,7 +61,7 @@ void PicturePileImpl::Raster(
     SkCanvas* canvas,
     gfx::Rect content_rect,
     float contents_scale,
-    RenderingStats* stats) {
+    int64* total_pixels_rasterized) {
 
   DCHECK(contents_scale >= min_contents_scale_);
 
@@ -110,9 +110,8 @@ void PicturePileImpl::Raster(
           SkRegion::kDifference_Op);
       unclipped.Subtract(content_clip);
 
-      if (stats)
-        stats->totalPixelsRasterized +=
-            content_clip.width() * content_clip.height();
+      total_pixels_rasterized +=
+          content_clip.width() * content_clip.height();
     }
   }
   canvas->restore();
@@ -161,8 +160,8 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
       layer_rect.height(),
       SkPicture::kUsePathBoundsForClip_RecordingFlag);
 
-  RenderingStats stats;
-  Raster(canvas, layer_rect, 1.0, &stats);
+  int64 total_pixels_rasterized = 0;
+  Raster(canvas, layer_rect, 1.0, &total_pixels_rasterized);
   picture->endRecording();
 
   return picture;
