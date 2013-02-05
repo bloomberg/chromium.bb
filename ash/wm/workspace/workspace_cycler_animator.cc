@@ -1,0 +1,710 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ash/wm/workspace/workspace_cycler_animator.h"
+
+#include <algorithm>
+#include <cmath>
+
+#include "ash/launcher/launcher.h"
+#include "ash/root_window_controller.h"
+#include "ash/screen_ash.h"
+#include "ash/shell_window_ids.h"
+#include "ash/wm/property_util.h"
+#include "ash/wm/shelf_layout_manager.h"
+#include "ash/wm/workspace/colored_window_controller.h"
+#include "ash/wm/workspace/workspace.h"
+#include "ui/aura/window.h"
+#include "ui/base/events/event_utils.h"
+#include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/transform_util.h"
+#include "ui/views/widget/widget.h"
+
+namespace {
+
+// The maximum number of visible workspaces deeper than the selected workspace.
+const int kMinVisibleOffsetFromSelected = -2;
+
+// The maximum number of visible workspaces shallower than the selected
+// workspace.
+const int kMaxVisibleOffsetFromSelected = 3;
+
+// The scale of the selected workspace when it is completely selected.
+const double kSelectedWorkspaceScale = 0.95;
+
+// The minimum scale for workspaces in the top stack. The scales of the
+// workspaces in the top stack decrease as you go deeper into the stack.
+const double kMinTopStackScale = 0.9;
+
+// The maximum scale for workspaces in the bottom stack. The scales of the
+// workspaces in the bottom stack increase as you go up the stack.
+const double kMaxBottomStackScale = 1.0;
+
+// The minimum workspace brightness.
+const float kMinBrightness = -0.4f;
+
+// The required vertical scroll amount to cycle to the next / previous
+// workspace.
+const double kScrollAmountToCycleToNextWorkspace = 10;
+
+// The ratio of the duration of the animation to the amount that the user has
+// scrolled.
+// The duration of an animation is computed by:
+//   distance scrolled * |kCyclerStepAnimationDurationRatio|.
+const double kCyclerStepAnimationDurationRatio = 10;
+
+// The duration of the animations when animating starting the cycler.
+const int kStartCyclerAnimationDuration = 100;
+
+// The duration of the animations when animating stopping the cycler.
+const int kStopCyclerAnimationDuration = 100;
+
+// The background opacity.
+const float kBackgroundOpacity = .8f;
+
+}  // namespace
+
+namespace ash {
+namespace internal {
+
+// Class which computes the transform, brightness, and visbility of workspaces
+// on behalf of the animator.
+class StyleCalculator {
+ public:
+  StyleCalculator(const gfx::Rect& screen_bounds,
+                  const gfx::Rect& maximized_bounds,
+                  size_t num_workspaces);
+  ~StyleCalculator();
+
+  // Returns the transform, brightness, and visibility that the workspace at
+  // |workspace_index| should be animated to when the user has stopped cycling
+  // through workspaces given |selected_workspace_index|.
+  // Unlike GetTargetProperties(), the method does not have a |scroll_delta|
+  // argument as stopping the workspace cycler always results in complately
+  // selecting a workspace.
+  void GetStoppedTargetProperties(size_t selected_workspace_index,
+                                  size_t workspace_index,
+                                  gfx::Transform* transform,
+                                  float* brightness,
+                                  bool* visible) const;
+
+  // Returns the transform, brightness, and visibility that the workspace at
+  // |workspace_index| should be animated to when the user is cycling through
+  // workspaces given |selected_workspace_index| and |scroll_delta|.
+  // |scroll_delta| is the amount of pixels that the user has scrolled
+  // vertically since completely selecting the workspace at
+  // |selected_workspace_index|.
+  void GetTargetProperties(size_t selected_workspace_index,
+                           size_t workspace_index,
+                           double scroll_delta,
+                           gfx::Transform* transform,
+                           float* brightness,
+                           bool* visible) const;
+
+ private:
+  // Returns the target animation transform of the workspace which is at
+  // |offset_from_selected| from the selected workspace when the user is not
+  // cycling through workspaces.
+  // This method assumes |scroll_delta| == 0.
+  gfx::Transform GetStoppedTargetTransformForOffset(
+      int offset_from_selected) const;
+
+  // Returns the target animation transform of the workspace which is at
+  // |offset_from_selected| from the selected workspace.
+  // This method like all the methods below assumes |scroll_delta| == 0 for the
+  // sake of simplicity. The transform for |scroll_delta| != 0 can be obtained
+  // via interpolation.
+  gfx::DecomposedTransform GetTargetTransformForOffset(
+      int offset_from_selected) const;
+
+  // Returns the target animation brightness of the workspace which is at
+  // |offset_from_selected| from the selected workspace.
+  // This method assumes |scroll_delta| == 0.
+  float GetTargetBrightnessForOffset(int offset_from_selected) const;
+
+  // Returns the target animation visibility of the workspace with the given
+  // parameters.
+  // This method assumes |scroll_delta| == 0.
+  bool GetTargetVisibilityForOffset(int offset_from_selected,
+                                    size_t workspace_index) const;
+
+  // The bounds of the display containing the workspaces in workspace
+  // coordinates, including the shelf if any.
+  const gfx::Rect screen_bounds_;
+
+  // The bounds of a maximized window. This excludes the shelf if any.
+  const gfx::Rect maximized_bounds_;
+
+  // The combined number of visible and hidden workspaces.
+  size_t num_workspaces_;
+
+  DISALLOW_COPY_AND_ASSIGN(StyleCalculator);
+};
+
+StyleCalculator::StyleCalculator(const gfx::Rect& screen_bounds,
+                                 const gfx::Rect& maximized_bounds,
+                                 size_t num_workspaces)
+    : screen_bounds_(screen_bounds),
+      maximized_bounds_(maximized_bounds),
+      num_workspaces_(num_workspaces) {
+}
+
+StyleCalculator::~StyleCalculator() {
+}
+
+void StyleCalculator::GetStoppedTargetProperties(
+    size_t selected_workspace_index,
+    size_t workspace_index,
+    gfx::Transform* transform,
+    float* brightness,
+    bool* visible) const {
+  DCHECK_LT(selected_workspace_index, num_workspaces_);
+  DCHECK_LT(workspace_index, num_workspaces_);
+  int offset_from_selected = static_cast<int>(
+      workspace_index - selected_workspace_index);
+  if (transform)
+    *transform = GetStoppedTargetTransformForOffset(offset_from_selected);
+
+  if (brightness)
+    *brightness = GetTargetBrightnessForOffset(offset_from_selected);
+
+  // All the workspaces other than the selected workspace are either occluded by
+  // the selected workspace or off screen.
+  if (visible)
+    *visible = (selected_workspace_index == workspace_index);
+}
+
+void StyleCalculator::GetTargetProperties(
+    size_t selected_workspace_index,
+    size_t workspace_index,
+    double scroll_delta,
+    gfx::Transform* transform,
+    float* brightness,
+    bool* visible) const {
+  DCHECK_LT(selected_workspace_index, num_workspaces_);
+  DCHECK_LT(workspace_index, num_workspaces_);
+
+  int offset_from_selected = static_cast<int>(
+      workspace_index - selected_workspace_index);
+
+  int first_offset_from_selected = offset_from_selected;
+  int second_offset_from_selected = offset_from_selected;
+  if (scroll_delta < 0) {
+    // The user is part of the way to selecting the workspace at
+    // |selected_workspace_index| - 1 -> |offset_from_selected| + 1.
+    second_offset_from_selected = offset_from_selected + 1;
+  } else if (scroll_delta > 0) {
+    // The user is part of the way to selecting the workspace at
+    // |selected_workspace_index| + 1 -> |offset_from_selected| - 1.
+    second_offset_from_selected = offset_from_selected - 1;
+  }
+
+  double progress = fabs(scroll_delta / kScrollAmountToCycleToNextWorkspace);
+  DCHECK_GT(1.0, progress);
+
+  if (transform) {
+    gfx::DecomposedTransform first_transform = GetTargetTransformForOffset(
+        first_offset_from_selected);
+
+    gfx::DecomposedTransform interpolated_transform;
+    if (first_offset_from_selected == second_offset_from_selected) {
+      interpolated_transform = first_transform;
+    } else {
+      gfx::DecomposedTransform second_transform = GetTargetTransformForOffset(
+          second_offset_from_selected);
+      gfx::BlendDecomposedTransforms(&interpolated_transform,
+                                     second_transform,
+                                     first_transform,
+                                     progress);
+    }
+    *transform = gfx::ComposeTransform(interpolated_transform);
+  }
+
+  if (brightness) {
+    float first_brightness = GetTargetBrightnessForOffset(
+        first_offset_from_selected);
+    float second_brightness = GetTargetBrightnessForOffset(
+        second_offset_from_selected);
+    *brightness = first_brightness + progress *
+        (second_brightness - first_brightness);
+  }
+
+  if (visible) {
+    bool first_visible = GetTargetVisibilityForOffset(
+        first_offset_from_selected, workspace_index);
+    bool second_visible = GetTargetVisibilityForOffset(
+        second_offset_from_selected, workspace_index);
+    *visible = (first_visible || second_visible);
+  }
+}
+
+gfx::Transform StyleCalculator::GetStoppedTargetTransformForOffset(
+    int offset_from_selected) const {
+  if (offset_from_selected <= 0) {
+    // The selected workspace takes up the entire screen. The workspaces deeper
+    // than the selected workspace are stacked exactly under the selected
+    // workspace and are completely occluded by it.
+    return gfx::Transform();
+  }
+
+  // The workspaces shallower than the selected workspace are stacked exactly
+  // on top of each other offscreen.
+  gfx::Transform transform;
+  transform.Translate(0, screen_bounds_.height());
+  transform.Scale(kMaxBottomStackScale, kMaxBottomStackScale);
+  return transform;
+}
+
+gfx::DecomposedTransform StyleCalculator::GetTargetTransformForOffset(
+    int offset_from_selected) const {
+  // When cycling, the workspaces are spread out from the positions computed by
+  // GetStoppedTargetTransformForOffset(). The transforms are computed so that
+  // on screen the workspaces look like this:
+  //  ____________________________________________
+  // |          ________________________          |
+  // |         |    deepest workpace    |_________|_
+  // |        _|________________________|_        | |
+  // |       |                            |       | |
+  // |      _|____________________________|_      | |_ top stack.
+  // |     | selected / shallowest workspace|     | |
+  // |     |                                |     | |
+  // |     |                                |_____|_|
+  // |     |                                |     |
+  // |     |                                |     |
+  // |    _|________________________________|_    |
+  // |   |           deepest workspace        |___|_
+  // |  _|____________________________________|_  | |_ bottom stack.
+  // | |           shallowest workspace         |_|_|
+  // |_|________________________________________|_|
+  // The selected workspace is the most visible workspace. It is the workspace
+  // which will be activated if the user does not do any more cycling.
+  bool in_top_stack = (offset_from_selected <= 0);
+
+  // Give workspaces with offsets below |kMinVisibleOffsetFromSelected| the
+  // same transform as the workspace at |kMinVisibleOffsetFromSelected|. As
+  // the workspace at |kMinVisibleOffsetFromSelected| completely occludes
+  // these extra workspaces, they can be hidden.
+  // |kMaxVisibleOffsetFromSelected| is dealt with similarly.
+  if (offset_from_selected < kMinVisibleOffsetFromSelected)
+    offset_from_selected = kMinVisibleOffsetFromSelected;
+  else if (offset_from_selected > kMaxVisibleOffsetFromSelected)
+    offset_from_selected = kMaxVisibleOffsetFromSelected;
+
+  double scale = kSelectedWorkspaceScale;
+  if (in_top_stack) {
+    scale -= static_cast<double>(offset_from_selected) /
+        kMinVisibleOffsetFromSelected *
+        (kSelectedWorkspaceScale - kMinTopStackScale);
+  } else {
+    scale += static_cast<double>(offset_from_selected) /
+        kMaxVisibleOffsetFromSelected *
+        (kMaxBottomStackScale - kSelectedWorkspaceScale);
+  }
+
+  // Compute the workspace's y offset. As abs(|offset_from_selected|) increases,
+  // the amount of the top of the workspace which is visible from beneath the
+  // shallower workspaces decreases exponentially.
+  double y_offset = 0;
+  if (in_top_stack) {
+    const double kTopStackYOffsets[-kMinVisibleOffsetFromSelected + 1] =
+        { 40, 28, 20 };
+    y_offset = kTopStackYOffsets[
+        static_cast<size_t>(std::abs(offset_from_selected))];
+  } else {
+    const double kBottomStackYOffsets[kMaxVisibleOffsetFromSelected] =
+        { -40, -32, -20 };
+    y_offset = maximized_bounds_.height() +
+        kBottomStackYOffsets[static_cast<size_t>(offset_from_selected - 1)];
+  }
+
+  // Center the workspace horizontally.
+  double x_offset = maximized_bounds_.width() * (1 - scale) / 2;
+
+  gfx::DecomposedTransform transform;
+  transform.translate[0] = x_offset;
+  transform.translate[1] = y_offset;
+  transform.scale[0] = scale;
+  transform.scale[1] = scale;
+  return transform;
+}
+
+float StyleCalculator::GetTargetBrightnessForOffset(
+    int offset_from_selected) const {
+  int max_visible_distance_from_selected = std::max(
+      std::abs(kMinVisibleOffsetFromSelected), kMaxVisibleOffsetFromSelected);
+  return kMinBrightness * std::min(
+      1.0,
+      static_cast<double>(std::abs(offset_from_selected)) /
+          max_visible_distance_from_selected);
+}
+
+bool StyleCalculator::GetTargetVisibilityForOffset(
+    int offset_from_selected,
+    size_t workspace_index) const {
+  // The workspace at the highest possible index is the shallowest workspace
+  // out of both stacks and is always visible.
+  // The workspace at |kMaxVisibleWorkspaceFromSelected| is hidden because
+  // it has the same transform as the shallowest workspace and is completely
+  // occluded by it.
+  if (workspace_index == num_workspaces_ - 1)
+    return true;
+
+  return offset_from_selected >= kMinVisibleOffsetFromSelected &&
+      offset_from_selected < kMaxVisibleOffsetFromSelected;
+}
+
+WorkspaceCyclerAnimator::WorkspaceCyclerAnimator(Delegate* delegate)
+    : delegate_(delegate),
+      initial_active_workspace_index_(0),
+      selected_workspace_index_(0),
+      scroll_delta_(0),
+      animation_type_(NONE),
+      launcher_background_controller_(NULL),
+      style_calculator_(NULL) {
+}
+
+WorkspaceCyclerAnimator::~WorkspaceCyclerAnimator() {
+  StopObservingImplicitAnimations();
+  animation_type_ = NONE;
+}
+
+void WorkspaceCyclerAnimator::Init(const std::vector<Workspace*>& workspaces,
+                                   Workspace* initial_active_workspace) {
+  workspaces_ = workspaces;
+
+  std::vector<Workspace*>::iterator it = std::find(workspaces_.begin(),
+      workspaces_.end(), initial_active_workspace);
+  DCHECK(it != workspaces_.end());
+  initial_active_workspace_index_ = it - workspaces_.begin();
+  selected_workspace_index_ = initial_active_workspace_index_;
+
+  screen_bounds_ = ScreenAsh::GetDisplayBoundsInParent(
+      workspaces_[0]->window());
+  maximized_bounds_ = ScreenAsh::GetMaximizedWindowBoundsInParent(
+      workspaces_[0]->window());
+  style_calculator_.reset(new StyleCalculator(
+      screen_bounds_, maximized_bounds_, workspaces_.size()));
+}
+
+void WorkspaceCyclerAnimator::AnimateStartingCycler() {
+  // Ensure that the workspaces are stacked with respect to their order
+  // in |workspaces_|.
+  aura::Window* parent = workspaces_[0]->window()->parent();
+  DCHECK(parent);
+  for (size_t i = 0; i < workspaces_.size() - 1; ++i) {
+    parent->StackChildAbove(workspaces_[i + 1]->window(),
+                            workspaces_[i]->window());
+  }
+
+  // Set the initial transform and brightness of the workspaces such that they
+  // animate correctly when AnimateToUpdatedState() is called after the loop.
+  // Start at index 1 as the desktop workspace is not animated.
+  for (size_t i = 1; i < workspaces_.size(); ++i) {
+    aura::Window* window = workspaces_[i]->window();
+    ui::Layer* layer = window->layer();
+
+    gfx::Transform transform;
+    float brightness = 0.0f;
+    style_calculator_->GetStoppedTargetProperties(selected_workspace_index_, i,
+        &transform, &brightness, NULL);
+    layer->SetTransform(transform);
+    layer->SetLayerBrightness(brightness);
+  }
+
+  scroll_delta_ = 0;
+  animation_type_ = CYCLER_START;
+  AnimateToUpdatedState(kStartCyclerAnimationDuration);
+
+  aura::Window* background = GetDesktopBackground();
+  if (background) {
+    ui::Layer* layer = background->layer();
+
+    if (!background->IsVisible()) {
+      background->Show();
+      layer->SetOpacity(0.0f);
+    }
+
+    {
+      ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+      settings.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+          kStartCyclerAnimationDuration));
+
+      layer->SetOpacity(kBackgroundOpacity);
+    }
+  }
+
+  // Create a window to simulate a fully opaque launcher. This prevents
+  // workspaces from showing from behind the launcher.
+  CreateLauncherBackground();
+}
+
+void WorkspaceCyclerAnimator::AnimateStoppingCycler() {
+  if (scroll_delta_ != 0) {
+    // Completely select the workspace at |selected_workspace_index_|.
+    int animation_duration = GetAnimationDurationForChangeInScrollDelta(
+        -scroll_delta_);
+    scroll_delta_ = 0;
+    animation_type_ = CYCLER_COMPLETELY_SELECT;
+    AnimateToUpdatedState(animation_duration);
+    return;
+  }
+
+  animation_type_ = CYCLER_END;
+  AnimateToUpdatedState(kStopCyclerAnimationDuration);
+
+  aura::Window* background = GetDesktopBackground();
+  if (background) {
+    ui::Layer* layer = background->layer();
+    ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+        kStopCyclerAnimationDuration));
+
+    layer->SetOpacity((selected_workspace_index_ == 0) ? 1.0f : 0.0f);
+  }
+}
+
+void WorkspaceCyclerAnimator::AbortAnimations() {
+  StopObservingImplicitAnimations();
+  animation_type_ = NONE;
+  CyclerStopped(initial_active_workspace_index_);
+}
+
+void WorkspaceCyclerAnimator::AnimateCyclingByScrollDelta(float scroll_delta) {
+  if (scroll_delta == 0.0f)
+    return;
+
+  // Drop any updates received while an animation is running.
+  // TODO(pkotwicz): Do something better.
+  if (animation_type_ != NONE)
+    return;
+
+  if (ui::IsNaturalScrollEnabled())
+    scroll_delta *= -1;
+
+  double old_scroll_delta = scroll_delta_;
+  scroll_delta_ += scroll_delta;
+
+  double min_scroll_delta = -1 *
+      static_cast<double>(selected_workspace_index_) *
+      kScrollAmountToCycleToNextWorkspace;
+  double max_scroll_delta = static_cast<double>(
+      workspaces_.size() - 1 - selected_workspace_index_) *
+      kScrollAmountToCycleToNextWorkspace;
+
+  if (scroll_delta_ < min_scroll_delta)
+    scroll_delta_ = min_scroll_delta;
+  else if (scroll_delta_ > max_scroll_delta)
+    scroll_delta_ = max_scroll_delta;
+
+  if (scroll_delta_ == old_scroll_delta)
+    return;
+
+  // Set the selected workspace to the workspace that the user is closest to
+  // selecting completely. A workspace is completely selected when the user
+  // has scrolled the exact amount to select the workspace with no undershoot /
+  // overshoot.
+  int workspace_change = floor(scroll_delta_ /
+      kScrollAmountToCycleToNextWorkspace + .5);
+  selected_workspace_index_ += workspace_change;
+
+  // Set |scroll_delta_| to the amount of undershoot / overshoot.
+  scroll_delta_ -= workspace_change * kScrollAmountToCycleToNextWorkspace;
+
+  int animation_duration = GetAnimationDurationForChangeInScrollDelta(
+      scroll_delta_ - old_scroll_delta);
+
+  animation_type_ = CYCLER_UPDATE;
+  AnimateToUpdatedState(animation_duration);
+}
+
+void WorkspaceCyclerAnimator::AnimateToUpdatedState(int animation_duration) {
+  DCHECK_NE(NONE, animation_type_);
+
+  bool animator_to_wait_for_selected = false;
+
+  // Start at index 1, as the animator does not animate the desktop workspace.
+  for (size_t i = 1; i < workspaces_.size(); ++i) {
+    gfx::Transform transform;
+    float brightness = 0.0f;
+    bool visible = false;
+    if (animation_type_ == CYCLER_END) {
+      DCHECK_EQ(0, scroll_delta_);
+      style_calculator_->GetStoppedTargetProperties(selected_workspace_index_,
+          i, &transform, &brightness, &visible);
+    } else {
+      style_calculator_->GetTargetProperties(selected_workspace_index_, i,
+          scroll_delta_, &transform, &brightness, &visible);
+    }
+
+    aura::Window* window = workspaces_[i]->window();
+    int workspace_animation_duration = animation_duration;
+    if (!window->IsVisible()) {
+      if (visible) {
+        // The workspace's previous state is unknown, set the state immediately.
+        workspace_animation_duration = 0;
+      } else {
+        // Don't bother animating workspaces which aren't visible.
+        continue;
+      }
+    }
+    // Hide the workspace after |animation_duration| in the case of
+    // |visible| == false as the workspace to be hidden may not be completely
+    // occluded till the animation has completed.
+
+    bool wait_for_animator = false;
+    if (!animator_to_wait_for_selected && workspace_animation_duration != 0) {
+      // The completion of the animations for this workspace will be used to
+      // indicate that the animations for all workspaces have completed.
+      wait_for_animator = true;
+      animator_to_wait_for_selected = true;
+    }
+
+    AnimateTo(i, wait_for_animator, workspace_animation_duration,
+              transform, brightness, visible);
+  }
+
+  // All of the animations started by this method were of zero duration.
+  // Call the animation callback.
+  if (!animator_to_wait_for_selected)
+    OnImplicitAnimationsCompleted();
+}
+
+void WorkspaceCyclerAnimator::CyclerStopped(size_t visible_workspace_index) {
+  // Start at index 1 as the animator does not animate the desktop workspace.
+  for(size_t i = 1; i < workspaces_.size(); ++i) {
+    aura::Window* window = workspaces_[i]->window();
+    ui::Layer* layer = window->layer();
+    layer->SetLayerBrightness(0.0f);
+    layer->SetTransform(gfx::Transform());
+
+    if (i == visible_workspace_index)
+      window->Show();
+    else
+      window->Hide();
+  }
+
+  aura::Window* background = GetDesktopBackground();
+  if (background) {
+    background->layer()->SetOpacity(1.0);
+    if (visible_workspace_index != 0u)
+      background->Hide();
+  }
+
+  launcher_background_controller_.reset();
+}
+
+void WorkspaceCyclerAnimator::AnimateTo(size_t workspace_index,
+                                        bool wait_for_animation_to_complete,
+                                        int animation_duration,
+                                        const gfx::Transform& target_transform,
+                                        float target_brightness,
+                                        bool target_visibility) {
+  aura::Window* window = workspaces_[workspace_index]->window();
+  ui::Layer* layer = window->layer();
+  ui::LayerAnimator* animator = layer->GetAnimator();
+  ui::ScopedLayerAnimationSettings settings(animator);
+
+  if (wait_for_animation_to_complete) {
+    StopObservingImplicitAnimations();
+    DCHECK_NE(animation_type_, NONE);
+    settings.AddObserver(this);
+  }
+
+  settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+      animation_duration));
+
+  if (target_visibility) {
+    window->Show();
+
+    // Set the opacity in case the layer has some weird initial state.
+    layer->SetOpacity(1.0f);
+  } else {
+    window->Hide();
+  }
+
+  layer->SetTransform(target_transform);
+  layer->SetLayerBrightness(target_brightness);
+}
+
+int WorkspaceCyclerAnimator::GetAnimationDurationForChangeInScrollDelta(
+    double change) const {
+  return static_cast<int>(
+      fabs(change) * kCyclerStepAnimationDurationRatio);
+}
+
+void WorkspaceCyclerAnimator::CreateLauncherBackground() {
+  if (screen_bounds_ == maximized_bounds_)
+    return;
+
+  aura::Window* random_workspace_window = workspaces_[0]->window();
+  ash::Launcher* launcher = ash::Launcher::ForWindow(random_workspace_window);
+  aura::Window* launcher_window = launcher->widget()->GetNativeWindow();
+
+  // TODO(pkotwicz): Figure out what to do when the launcher visible state is
+  // SHELF_AUTO_HIDE.
+  ShelfLayoutManager* shelf_layout_manager =
+      ShelfLayoutManager::ForLauncher(launcher_window);
+  if (!shelf_layout_manager->IsVisible())
+    return;
+
+  gfx::Rect shelf_bounds = shelf_layout_manager->GetIdealBounds();
+
+  launcher_background_controller_.reset(new ColoredWindowController(
+      launcher_window->parent(), "LauncherBackground"));
+  launcher_background_controller_->SetColor(SK_ColorBLACK);
+  aura::Window* tint_window =
+      launcher_background_controller_->GetWidget()->GetNativeWindow();
+  tint_window->SetBounds(shelf_bounds);
+  launcher_window->parent()->StackChildBelow(tint_window, launcher_window);
+  tint_window->Show();
+}
+
+aura::Window* WorkspaceCyclerAnimator::GetDesktopBackground() const {
+  RootWindowController* root_controller = GetRootWindowController(
+      workspaces_[0]->window()->GetRootWindow());
+  if (!root_controller)
+    return NULL;
+
+  return root_controller->GetContainer(
+      kShellWindowId_DesktopBackgroundContainer);
+}
+
+void WorkspaceCyclerAnimator::NotifyDelegate(
+    AnimationType completed_animation) {
+  if (completed_animation == CYCLER_START)
+    delegate_->StartWorkspaceCyclerAnimationFinished();
+  else if (completed_animation == CYCLER_END)
+    delegate_->StopWorkspaceCyclerAnimationFinished();
+}
+
+void WorkspaceCyclerAnimator::OnImplicitAnimationsCompleted() {
+  AnimationType completed_animation = animation_type_;
+  animation_type_ = NONE;
+
+  if (completed_animation == CYCLER_COMPLETELY_SELECT)
+    AnimateStoppingCycler();
+  else if (completed_animation == CYCLER_END)
+    CyclerStopped(selected_workspace_index_);
+
+  if (completed_animation == CYCLER_START ||
+      completed_animation == CYCLER_END) {
+    // Post a task to notify the delegate of the animation completion because
+    // the delegate may delete |this| as a result of getting notified.
+    MessageLoopForUI::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&WorkspaceCyclerAnimator::NotifyDelegate,
+                   AsWeakPtr(),
+                   completed_animation));
+  }
+}
+
+}  // namespace internal
+}  // namespace ash

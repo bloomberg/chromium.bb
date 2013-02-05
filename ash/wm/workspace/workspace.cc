@@ -48,6 +48,17 @@ Workspace::~Workspace() {
   DCHECK(!window_);
 }
 
+aura::Window* Workspace::GetTopmostActivatableWindow() {
+  for (aura::Window::Windows::const_reverse_iterator i =
+           window_->children().rbegin();
+       i != window_->children().rend();
+       ++i) {
+    if (wm::CanActivateWindow(*i))
+      return (*i);
+  }
+  return NULL;
+}
+
 aura::Window* Workspace::ReleaseWindow() {
   // Remove the LayoutManager and EventFilter as they refer back to us and/or
   // WorkspaceManager.

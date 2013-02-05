@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <functional>
 
+#include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -20,9 +21,12 @@
 #include "ash/wm/workspace/auto_window_management.h"
 #include "ash/wm/workspace/desktop_background_fade_controller.h"
 #include "ash/wm/workspace/workspace_animations.h"
+#include "ash/wm/workspace/workspace_cycler.h"
+#include "ash/wm/workspace/workspace_cycler_animator.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace.h"
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -112,7 +116,8 @@ WorkspaceManager::WorkspaceManager(Window* contents_view)
           clear_unminimizing_workspace_factory_(this)),
       unminimizing_workspace_(NULL),
       app_terminating_(false),
-      creating_fade_(false) {
+      creating_fade_(false),
+      workspace_cycler_(NULL) {
   // Clobber any existing event filter.
   contents_view->SetEventFilter(NULL);
   // |contents_view| takes ownership of LayoutManagerImpl.
@@ -121,6 +126,11 @@ WorkspaceManager::WorkspaceManager(Window* contents_view)
   workspaces_.push_back(active_workspace_);
   active_workspace_->window()->Show();
   Shell::GetInstance()->AddShellObserver(this);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshEnableWorkspaceScrubbing)) {
+    workspace_cycler_.reset(new WorkspaceCycler(this));
+  }
 }
 
 WorkspaceManager::~WorkspaceManager() {
@@ -266,31 +276,28 @@ Window* WorkspaceManager::GetParentForNewWindow(Window* window) {
   return desktop_workspace()->window();
 }
 
-bool WorkspaceManager::CycleToWorkspace(CycleDirection direction) {
-  aura::Window* active_window = wm::GetActiveWindow();
-  if (!active_workspace_->window()->Contains(active_window))
-    active_window = NULL;
+bool WorkspaceManager::CanStartCyclingThroughWorkspaces() const {
+  return workspace_cycler_.get() && workspaces_.size() > 1u;
+}
 
-  Workspaces::const_iterator workspace_i(FindWorkspace(active_workspace_));
-  int workspace_offset = 0;
-  if (direction == CYCLE_PREVIOUS) {
-    workspace_offset = 1;
-    if (workspace_i == workspaces_.end() - 1)
-      return false;
-  } else {
-    workspace_offset = -1;
-    if (workspace_i == workspaces_.begin())
-      return false;
-  }
+void WorkspaceManager::InitWorkspaceCyclerAnimatorWithCurrentState(
+    WorkspaceCyclerAnimator* animator) {
+  if (animator)
+    animator->Init(workspaces_, active_workspace_);
+}
 
-  Workspaces::const_iterator next_workspace_i(workspace_i + workspace_offset);
-  SetActiveWorkspace(*next_workspace_i, SWITCH_OTHER, base::TimeDelta());
+void WorkspaceManager::SetActiveWorkspaceFromCycler(Workspace* workspace) {
+  if (!workspace || workspace == active_workspace_)
+    return;
 
-  // The activation controller will pick a window from the just activated
-  // workspace to activate as a result of DeactivateWindow().
-  if (active_window)
-    wm::DeactivateWindow(active_window);
-  return true;
+  SetActiveWorkspace(workspace, SWITCH_WORKSPACE_CYCLER, base::TimeDelta());
+
+  // Activate the topmost window in the newly activated workspace as
+  // SetActiveWorkspace() does not do so.
+  aura::Window* topmost_activatable_window =
+      workspace->GetTopmostActivatableWindow();
+  if (topmost_activatable_window)
+    wm::ActivateWindow(topmost_activatable_window);
 }
 
 void WorkspaceManager::DoInitialAnimation() {
@@ -333,6 +340,11 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace,
   DCHECK(workspace);
   if (active_workspace_ == workspace)
     return;
+
+  // It is possible for a user to use accelerator keys to restore windows etc
+  // while the user is cycling through workspaces.
+  if (workspace_cycler_.get())
+    workspace_cycler_->AbortCycling();
 
   pending_workspaces_.erase(workspace);
 
@@ -409,6 +421,11 @@ void WorkspaceManager::MoveWorkspaceToPendingOrDelete(
     return;
 
   DCHECK_NE(desktop_workspace(), workspace);
+
+  // The user may have closed or minimized a window via accelerator keys while
+  // cycling through workspaces.
+  if (workspace_cycler_.get())
+    workspace_cycler_->AbortCycling();
 
   if (workspace == active_workspace_)
     SelectNextWorkspace(reason);
@@ -524,12 +541,26 @@ void WorkspaceManager::ShowOrHideDesktopBackground(
     base::TimeDelta duration,
     bool show) const {
   WorkspaceAnimationDetails details;
-  details.animate = true;
   details.direction = show ? WORKSPACE_ANIMATE_UP : WORKSPACE_ANIMATE_DOWN;
-  details.animate_scale = reason != SWITCH_MAXIMIZED_OR_RESTORED;
-  details.duration = duration;
-  if (reason == SWITCH_INITIAL)
-    details.pause_time_ms = kInitialPauseTimeMS;
+
+  switch (reason) {
+    case SWITCH_WORKSPACE_CYCLER:
+      // The workspace cycler has already animated the desktop background's
+      // opacity. Do not do any further animation.
+      break;
+    case SWITCH_MAXIMIZED_OR_RESTORED:
+      // Do not do any animations.
+      break;
+    case SWITCH_INITIAL:
+      details.animate = true;
+      details.animate_scale = true;
+      details.pause_time_ms = kInitialPauseTimeMS;
+      break;
+    default:
+      details.animate = true;
+      details.animate_scale = true;
+      break;
+  }
   if (show)
     ash::internal::ShowWorkspace(window, details);
   else

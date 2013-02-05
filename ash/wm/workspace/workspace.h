@@ -36,6 +36,10 @@ class ASH_EXPORT Workspace {
             bool is_maximized);
   ~Workspace();
 
+  // Returns the topmost activatable window. This corresponds to the most
+  // recently activated window in the workspace.
+  aura::Window* GetTopmostActivatableWindow();
+
   // Resets state. This should be used before destroying the Workspace.
   aura::Window* ReleaseWindow();
 
