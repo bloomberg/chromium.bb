@@ -9,8 +9,6 @@
 
 #include <windows.h>
 #include <d3d9.h>
-#include <d3d11.h>
-#include <dxgi.h>
 #include <setupapi.h>
 
 #include "base/command_line.h"
@@ -18,15 +16,13 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/stringprintf.h"
 #include "base/metrics/histogram.h"
 #include "base/scoped_native_library.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
-#include "base/win/windows_version.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -166,131 +162,9 @@ AMDVideoCardType GetAMDVideocardType() {
 AMDVideoCardType GetAMDVideocardType();
 #endif
 
-// Collects information about the level of D3D11 support and records it in
-// the UMA stats. Records no stats when D3D11 in not supported at all.
-void CollectD3D11Support() {
-  TRACE_EVENT0("gpu", "CollectD3D11Support");
-
-  typedef HRESULT (WINAPI *D3D11CreateDeviceFunc)(
-      IDXGIAdapter* adapter,
-      D3D_DRIVER_TYPE driver_type,
-      HMODULE software,
-      UINT flags,
-      const D3D_FEATURE_LEVEL* feature_levels,
-      UINT num_feature_levels,
-      UINT sdk_version,
-      ID3D11Device** device,
-      D3D_FEATURE_LEVEL* feature_level,
-      ID3D11DeviceContext** immediate_context);
-
-  // This enumeration must be kept in sync with histograms.xml. Do not reorder
-  // the members; always add to the end.
-  enum FeatureLevel {
-    FEATURE_LEVEL_UNKNOWN,
-    FEATURE_LEVEL_NO_D3D11_DLL,
-    FEATURE_LEVEL_NO_CREATE_DEVICE_ENTRY_POINT,
-    FEATURE_LEVEL_DEVICE_CREATION_FAILED,
-    FEATURE_LEVEL_9_1,
-    FEATURE_LEVEL_9_2,
-    FEATURE_LEVEL_9_3,
-    FEATURE_LEVEL_10_0,
-    FEATURE_LEVEL_10_1,
-    FEATURE_LEVEL_11_0,
-    NUM_FEATURE_LEVELS
-  };
-
-  // Windows XP is expected to not support D3D11.
-  if (base::win::GetVersion() <= base::win::VERSION_XP)
-    return;
-
-  FeatureLevel feature_level = FEATURE_LEVEL_UNKNOWN;
-  UINT bgra_support = 0;
-
-  base::ScopedNativeLibrary module(FilePath(L"d3d11.dll"));
-  if (!module.is_valid()) {
-    feature_level = FEATURE_LEVEL_NO_D3D11_DLL;
-  } else {
-    D3D11CreateDeviceFunc create_func =
-        reinterpret_cast<D3D11CreateDeviceFunc>(
-            module.GetFunctionPointer("D3D11CreateDevice"));
-    if (!create_func) {
-      feature_level = FEATURE_LEVEL_NO_CREATE_DEVICE_ENTRY_POINT;
-    } else {
-      static const D3D_FEATURE_LEVEL d3d_feature_levels[] = {
-        D3D_FEATURE_LEVEL_11_0,
-        D3D_FEATURE_LEVEL_10_1,
-        D3D_FEATURE_LEVEL_10_0,
-        D3D_FEATURE_LEVEL_9_3,
-        D3D_FEATURE_LEVEL_9_2,
-        D3D_FEATURE_LEVEL_9_1
-      };
-
-      base::win::ScopedComPtr<ID3D11Device> device;
-      D3D_FEATURE_LEVEL d3d_feature_level;
-      base::win::ScopedComPtr<ID3D11DeviceContext> device_context;
-      HRESULT hr = create_func(NULL,
-                               D3D_DRIVER_TYPE_HARDWARE,
-                               NULL,
-                               0,
-                               d3d_feature_levels,
-                               arraysize(d3d_feature_levels),
-                               D3D11_SDK_VERSION,
-                               device.Receive(),
-                               &d3d_feature_level,
-                               device_context.Receive());
-      if (FAILED(hr)) {
-        feature_level = FEATURE_LEVEL_DEVICE_CREATION_FAILED;
-      } else {
-        switch (d3d_feature_level) {
-          case D3D_FEATURE_LEVEL_11_0:
-            feature_level = FEATURE_LEVEL_11_0;
-            break;
-          case D3D_FEATURE_LEVEL_10_1:
-            feature_level = FEATURE_LEVEL_10_1;
-            break;
-          case D3D_FEATURE_LEVEL_10_0:
-            feature_level = FEATURE_LEVEL_10_0;
-            break;
-          case D3D_FEATURE_LEVEL_9_3:
-            feature_level = FEATURE_LEVEL_9_3;
-            break;
-          case D3D_FEATURE_LEVEL_9_2:
-            feature_level = FEATURE_LEVEL_9_2;
-            break;
-          case D3D_FEATURE_LEVEL_9_1:
-            feature_level = FEATURE_LEVEL_9_1;
-            break;
-          default:
-            NOTREACHED();
-            break;
-        }
-      }
-
-      hr = device->CheckFormatSupport(DXGI_FORMAT_B8G8R8A8_UNORM,
-                                      &bgra_support);
-      DCHECK(SUCCEEDED(hr));
-    }
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("GPU.D3D11_FeatureLevel",
-                            feature_level,
-                            NUM_FEATURE_LEVELS);
-  UMA_HISTOGRAM_BOOLEAN(
-      "GPU.D3D11_B8G8R8A8_Texture2DSupport",
-      (bgra_support & D3D11_FORMAT_SUPPORT_TEXTURE2D) != 0);
-  UMA_HISTOGRAM_BOOLEAN(
-      "GPU.D3D11_B8G8R8A8_RenderTargetSupport",
-      (bgra_support & D3D11_FORMAT_SUPPORT_RENDER_TARGET) != 0);
-}
-
 bool CollectDriverInfoD3D(const std::wstring& device_id,
                           content::GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoD3D");
-
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(CollectD3D11Support),
-      base::TimeDelta::FromSeconds(10));
 
   // create device info for the display device
   HDEVINFO device_info = SetupDiGetClassDevsW(
