@@ -538,6 +538,11 @@ const WebKit::WebTimeRanges& WebMediaPlayerImpl::buffered() {
 float WebMediaPlayerImpl::maxTimeSeekable() const {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
+  // If we haven't even gotten to ReadyStateHaveMetadata yet then just
+  // return 0 so that the seekable range is empty.
+  if (ready_state_ < WebMediaPlayer::ReadyStateHaveMetadata)
+    return 0.0f;
+
   // We don't support seeking in streaming media.
   if (proxy_ && proxy_->data_source() && proxy_->data_source()->IsStreaming())
     return 0.0f;
