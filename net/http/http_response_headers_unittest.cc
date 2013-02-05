@@ -922,6 +922,40 @@ TEST(HttpResponseHeadersTest, Update) {
       "Cache-control: max-age=10001\n"
       "Content-Length: 450\n"
     },
+    { "HTTP/1.1 200 OK\n"
+      "X-Frame-Options: DENY\n",
+
+      "HTTP/1/1 304 Not Modified\n"
+      "X-Frame-Options: ALLOW\n",
+
+      "HTTP/1.1 200 OK\n"
+      "X-Frame-Options: DENY\n",
+    },
+    { "HTTP/1.1 200 OK\n"
+      "X-WebKit-CSP: default-src 'none'\n",
+
+      "HTTP/1/1 304 Not Modified\n"
+      "X-WebKit-CSP: default-src *\n",
+
+      "HTTP/1.1 200 OK\n"
+      "X-WebKit-CSP: default-src 'none'\n",
+    },
+    { "HTTP/1.1 200 OK\n"
+      "X-XSS-Protection: 1\n",
+
+      "HTTP/1/1 304 Not Modified\n"
+      "X-XSS-Protection: 0\n",
+
+      "HTTP/1.1 200 OK\n"
+      "X-XSS-Protection: 1\n",
+    },
+    { "HTTP/1.1 200 OK\n",
+
+      "HTTP/1/1 304 Not Modified\n"
+      "X-Content-Type-Options: nosniff\n",
+
+      "HTTP/1.1 200 OK\n"
+    },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {

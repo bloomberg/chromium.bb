@@ -78,22 +78,29 @@ const char* const kNonUpdatedHeaders[] = {
   "trailer",
   "transfer-encoding",
   "upgrade",
-  // these should never change:
-  "content-location",
-  "content-md5",
   "etag",
-  // assume cache-control: no-transform
-  "content-encoding",
-  "content-range",
-  "content-type",
-  // some broken microsoft servers send 'content-length: 0' with 304s
-  "content-length"
+  "x-frame-options",
+  "x-xss-protection",
+};
+
+// Some header prefixes mean "Don't copy this header from a 304 response.".
+// Rather than listing all the relevant headers, we can consolidate them into
+// this list:
+const char* const kNonUpdatedHeaderPrefixes[] = {
+  "content-",
+  "x-content-",
+  "x-webkit-"
 };
 
 bool ShouldUpdateHeader(const std::string::const_iterator& name_begin,
                         const std::string::const_iterator& name_end) {
   for (size_t i = 0; i < arraysize(kNonUpdatedHeaders); ++i) {
     if (LowerCaseEqualsASCII(name_begin, name_end, kNonUpdatedHeaders[i]))
+      return false;
+  }
+  for (size_t i = 0; i < arraysize(kNonUpdatedHeaderPrefixes); ++i) {
+    if (StartsWithASCII(std::string(name_begin, name_end),
+                        kNonUpdatedHeaderPrefixes[i], false))
       return false;
   }
   return true;
