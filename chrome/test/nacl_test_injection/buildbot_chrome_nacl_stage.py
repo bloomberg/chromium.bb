@@ -254,8 +254,6 @@ def BuildAndTest(options):
     RunTests('nacl-glibc', cmd + ['--nacl_glibc'], nacl_dir, env)
 
   if options.enable_pnacl:
-    # TODO(dschuff): remove this when streaming is the default
-    os.environ['NACL_STREAMING_TRANSLATION'] = 'true'
     RunTests('pnacl', cmd + ['bitcode=1'], nacl_dir, env)
 
 
