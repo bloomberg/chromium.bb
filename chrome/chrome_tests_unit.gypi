@@ -1442,7 +1442,6 @@
         'browser/ui/webui/options/language_options_handler_unittest.cc',
         'browser/ui/webui/options/pepper_flash_content_settings_utils_unittest.cc',
         'browser/ui/webui/performance_monitor/performance_monitor_ui_util_unittest.cc',
-        'browser/ui/webui/policy_ui_unittest.cc',
         'browser/ui/webui/print_preview/print_preview_ui_unittest.cc',
         'browser/ui/webui/signin/login_ui_service_unittest.cc',
         'browser/ui/webui/sync_internals_ui_unittest.cc',
@@ -1830,7 +1829,6 @@
           'sources!': [
             'browser/extensions/api/storage/policy_value_store_unittest.cc',
             'browser/prefs/proxy_policy_unittest.cc',
-            'browser/ui/webui/policy_ui_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/policy/'],

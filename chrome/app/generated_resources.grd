@@ -5917,92 +5917,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Unknown error
       </message>
 
-      <!-- about:policy -->
-      <message name="IDS_POLICY_TITLE" desc="The title for the about:policies page.">
-        Policies
-      </message>
-      <message name="IDS_POLICY_FETCH" desc="The label for the button that reloads policies.">
-        Reload policies
-      </message>
-      <message name="IDS_POLICY_STATUS_TITLE" desc="The title for the status section.">
-        Status
-      </message>
-      <message name="IDS_POLICY_DEVICE_POLICIES" desc="The title for the device policies status box.">
-        Device Policies
-      </message>
-      <message name="IDS_POLICY_USER_POLICIES" desc="The title for the user policies status box.">
-        User policies
-      </message>
-      <message name="IDS_POLICY_ENROLLMENT_DOMAIN" desc="The label for the enrollment domain in the device policies status box.">
-        Enrollment domain:
-      </message>
-      <message name="IDS_POLICY_CLIENT_ID" desc="The label for the client ids in the status boxes.">
-        Client Id:
-      </message>
-      <message name="IDS_POLICY_USERNAME" desc="The label for the username in the user policies status box.">
-        User:
-      </message>
-      <message name="IDS_POLICY_LAST_FETCHED" desc="The label for the last fetched time in the status boxes.">
-        Last fetched:
-      </message>
-      <message name="IDS_POLICY_FETCH_INTERVAL" desc="The label for the fetch interval in the status boxes.">
-        Fetch interval:
-      </message>
-      <message name="IDS_POLICY_SERVER_STATUS" desc="The label for the server status in the status boxes.">
-        Status:
-      </message>
-      <message name="IDS_POLICY_SHOW_UNSENT" desc="The label for the checkbox that enables/disables the display of policies not sent by the server.">
-        Also show policies not sent by the server
-      </message>
-      <message name="IDS_POLICY_FILTER" desc="The placeholder for the search box.">
-        Filter policies by name
-      </message>
-      <message name="IDS_POLICY_NO_POLICIES_SET" desc="The text that appears if no policies were received
-      by the client.">
-        No policies are currently active!
-      </message>
-      <message name="IDS_POLICY_APPLIES_TO" desc="The table header for the column in the policy table that details whether a policy is a user or a device policy.">
-        Applies To
-      </message>
-      <message name="IDS_POLICY_LEVEL" desc="The table header for the column in the policy table that details whether a policy is mandatory or recommended.">
-        Level
-      </message>
-      <message name="IDS_POLICY_ENTRY_NAME" desc="The table header for the column in the policy table that contains the name of the policy.">
-        Policy Name
-      </message>
-      <message name="IDS_POLICY_ENTRY_VALUE" desc="The table header for the column in the policy table that contains the value of the policy.">
-        Policy Value
-      </message>
-      <message name="IDS_POLICY_ENTRY_STATUS" desc="The table header for the column in policy table that contains the status of the policy.">
-        Status
-      </message>
-      <message name="IDS_POLICY_SHOW_MORE" desc="The text for the link that expands a policy value or policy status table cell.">
-        Show more
-      </message>
-      <message name="IDS_POLICY_HIDE" desc="The text for the link that hides overflowing text in a policy value or policy status table cell.">
-        Hide
-      </message>
-      <message name="IDS_POLICY_NEVER_FETCHED" desc="Indicates that a policy fetch was never performed before.">
-        Never
-      </message>
-      <message name="IDS_POLICY_STATUS_OK" desc="Indicates that a policy fetch was successfully completed.">
-        OK
-      </message>
-      <message name="IDS_POLICY_STATUS_NETWORK_ERROR" desc="Indicates that a policy fetch failed due to a network error.">
-        Network error
-      </message>
-      <message name="IDS_POLICY_STATUS_DMTOKEN_ERROR" desc="Indicates that a policy fetch failed because the DMToken was rejected.">
-        Bad DMToken
-      </message>
-      <message name="IDS_POLICY_STATUS_LOCAL_ERROR" desc="Indicates that a policy fetch failed due to a local error.">
-        Local error
-      </message>
-      <message name="IDS_POLICY_STATUS_SIGNATURE_ERROR" desc="Indicates that a policy fetch failed because a signature verification failed.">
-        Signature mismatch
-      </message>
-      <message name="IDS_POLICY_STATUS_SERIAL_ERROR" desc="Indicates that a policy fetch failed because the serial number was invalid.">
-        Invalid serial number
-      </message>
       <message name="IDS_POLICY_TYPE_ERROR" desc="The text displayed in the status column when a policy value has the wrong type.">
         Expected <ph name="VALUE_TYPE">$1<ex>boolean</ex></ph> value.
       </message>
@@ -6069,31 +5983,107 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POLICY_NETWORK_CONFIG_IMPORT_FAILED" desc="The text displayed in the status column when the corresponding network configuration policy is invalid.">
         The network configuration is invalid and couldn't be imported.
       </message>
-      <message name="IDS_POLICY_NOT_SET" desc="The text displayed in the status column when the corresponding policy has not been set by the administrator.">
+      <message name="IDS_POLICY_OK" desc="Text displayed in the status column when a valid value is set for a policy.">
+        OK
+      </message>
+      <message name="IDS_POLICY_UNSET" desc="Text displayed in the status column when no value is set for a policy.">
         Not set.
       </message>
-      <message name="IDS_POLICY_UNKNOWN" desc="The text displayed in the status column when a policy was found but is not recognized.">
+      <message name="IDS_POLICY_UNKNOWN" desc="Text displayed in the status column when a policy name is not recognized.">
         Unknown policy.
       </message>
-      <message name="IDS_POLICY_LEVEL_MANDATORY" desc="The text displayed in the Level column, indicating that a policy is mandatory.">
-        Mandatory
+
+      <!-- chrome://policy -->
+      <message name="IDS_POLICY_TITLE" desc="Page title and the title of the section that lists policies.">
+        Policies
       </message>
-      <message name="IDS_POLICY_LEVEL_RECOMMENDED" desc="The text displayed in the Level column, indicating that a policy is recommended.">
-        Recommended
+      <message name="IDS_POLICY_FILTER_PLACEHOLDER" desc="Placeholder for the input field that lets the user filter policies by name.">
+        Filter policies by name
       </message>
-      <message name="IDS_POLICY_SCOPE_USER" desc="The text displayed in the Applies To column, indicating that a policy applies to the current user.">
+      <message name="IDS_POLICY_RELOAD_POLICIES" desc="Label for the button that reloads policies.">
+        Reload policies
+      </message>
+      <message name="IDS_POLICY_STATUS" desc="Title of the status section.">
+        Status
+      </message>
+      <message name="IDS_POLICY_STATUS_DEVICE" desc="Title for the device policy status box.">
+        Device policies
+      </message>
+      <message name="IDS_POLICY_STATUS_USER" desc="Title for the user policy status box.">
+        User policies
+      </message>
+      <message name="IDS_POLICY_LABEL_DOMAIN" desc="Label for the enrollment domain in the device policy status box.">
+        Enrollment domain:
+      </message>
+      <message name="IDS_POLICY_LABEL_USERNAME" desc="Label for the username in the user policy status box.">
+        User:
+      </message>
+      <message name="IDS_POLICY_LABEL_CLIENT_ID" desc="Label for the client IDs in the policy status boxes.">
+        Client ID:
+      </message>
+      <message name="IDS_POLICY_LABEL_TIME_SINCE_LAST_REFRESH" desc="Label for the time since the last refresh in the policy status boxes.">
+        Last fetched:
+      </message>
+      <message name="IDS_POLICY_NEVER_FETCHED" desc="Indicates that a policy fetch was never performed before.">
+        Never
+      </message>
+      <message name="IDS_POLICY_LABEL_REFRESH_INTERVAL" desc="Label for the refresh interval in the policy status boxes.">
+        Fetch interval:
+      </message>
+      <message name="IDS_POLICY_LABEL_STATUS" desc="Label for the actual status in the policy status boxes.">
+        Status:
+      </message>
+      <message name="IDS_POLICY_SHOW_UNSET" desc="Label for the checkbox that determines whether policies whose value has not been set are shown.">
+        Show policies with no value set
+      </message>
+      <message name="IDS_POLICY_NO_POLICIES_SET" desc="Text displayed when none of the policies have been set.">
+        No policies set
+      </message>
+      <message name="IDS_POLICY_HEADER_SCOPE" desc="Table header for the column in the policy table that details whether a policy is a user or a device policy.">
+        Applies to
+      </message>
+      <message name="IDS_POLICY_HEADER_LEVEL" desc="Table header for the column in the policy table that details whether a policy is mandatory or recommended.">
+        Level
+      </message>
+      <message name="IDS_POLICY_HEADER_NAME" desc="Table header for the column in the policy table that contains the policy name.">
+        Policy name
+      </message>
+      <message name="IDS_POLICY_HEADER_VALUE" desc="Table header for the column in the policy table that contains the policy value.">
+        Policy value
+      </message>
+      <message name="IDS_POLICY_HEADER_STATUS" desc="Table header for the column in policy table that contains the policy status.">
+        Status
+      </message>
+      <message name="IDS_POLICY_SHOW_EXPANDED_VALUE" desc="Text for the link that shows the policy value. Used when the policy value is too long to be always visible.">
+        Show value
+      </message>
+      <message name="IDS_POLICY_HIDE_EXPANDED_VALUE" desc="Text for the link that hides the policy value. Used when the policy value is too long to be always visible.">
+        Hide value
+      </message>
+      <message name="IDS_POLICY_SCOPE_USER" desc="Text displayed in the Applies to column when a policy applies to the current user only.">
         Current user
       </message>
-      <if expr="pp_ifdef('android')">
-        <message name="IDS_POLICY_SCOPE_MACHINE" desc="Mobile: The text displayed in the Applies To column, indicating that a policy applies to everyone on the mobile device.">
-          Mobile device
-        </message>
-      </if>
-      <if expr="not pp_ifdef('android')">
-        <message name="IDS_POLICY_SCOPE_MACHINE" desc="The text displayed in the Applies To column, indicating that a policy applies to everyone on the local machine.">
+      <if expr="not pp_ifdef('android') and not pp_ifdef('chromeos')">
+        <message name="IDS_POLICY_SCOPE_DEVICE" desc="Text displayed in the Applies to column when a policy applies to everyone on the machine.">
           Machine
         </message>
       </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_POLICY_SCOPE_DEVICE" desc="Mobile: Text displayed in the Applies to column when a policy applies to the entire Chrome OS device.">
+          Device
+        </message>
+      </if>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_POLICY_SCOPE_DEVICE" desc="Mobile: Text displayed in the Applies To column when a policy applies to everyone on the mobile device.">
+          Mobile device
+        </message>
+      </if>
+      <message name="IDS_POLICY_LEVEL_RECOMMENDED" desc="Text displayed in the Level column when a policy is recommended.">
+        Recommended
+      </message>
+      <message name="IDS_POLICY_LEVEL_MANDATORY" desc="Text displayed in the Level column when a policy is mandatory.">
+        Mandatory
+      </message>
 
       <!-- about:flags -->
       <message name="IDS_FLAGS_LONG_TITLE" desc="Long version of the title for the about:flags page.">

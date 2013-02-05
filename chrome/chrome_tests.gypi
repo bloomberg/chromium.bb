@@ -1365,6 +1365,7 @@
         'browser/ui/webui/options/preferences_browsertest.h',
         'browser/ui/webui/options/search_engine_manager_browsertest.js',
         'browser/ui/webui/options/settings_format_browsertest.js',
+        'browser/ui/webui/policy_ui_browsertest.cc',
         'browser/ui/webui/print_preview/print_preview_ui_browsertest.cc',
         'browser/ui/webui/sync_setup_browsertest.js',
         'browser/ui/webui/web_ui_test_handler.cc',
@@ -1556,6 +1557,9 @@
         ['configuration_policy==0', {
           'sources/': [
             ['exclude', '^browser/policy/'],
+          ],
+          'sources!': [
+            'browser/ui/webui/policy_ui_browsertest.cc',
           ],
         }],
         ['input_speech==0', {
