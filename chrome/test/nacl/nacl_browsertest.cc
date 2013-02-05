@@ -14,9 +14,14 @@ namespace {
 #define MAYBE_ProgressEvents DISABLED_ProgressEvents
 #else
 #define MAYBE_SimpleLoad SimpleLoad
-#define MAYBE_ExitStatus ExitStatus
 #define MAYBE_PPAPICore PPAPICore
 #define MAYBE_ProgressEvents ProgressEvents
+#if defined(OS_WIN) && !defined(NDEBUG)
+// http://crbug.com/174380
+#define MAYBE_ExitStatus DISABLED_ExitStatus
+#else
+#define MAYBE_ExitStatus ExitStatus
+#endif
 #endif
 
 NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_SimpleLoad, {
