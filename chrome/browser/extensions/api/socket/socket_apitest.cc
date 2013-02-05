@@ -186,13 +186,16 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPServerExtension) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-#if defined(OS_WIN)
-// Failing flakily on Windows, http://crbug.com/169646
-#define MAYBE_SocketTCPServerUnbindOnUnload DISABLED_SocketTCPServerUnbindOnUnload
-#else
-#define MAYBE_SocketTCPServerUnbindOnUnload SocketTCPServerUnbindOnUnload
-#endif
-IN_PROC_BROWSER_TEST_F(SocketApiTest, MAYBE_SocketTCPServerUnbindOnUnload) {
-  ASSERT_TRUE(RunExtensionTest("socket/unload")) << message_;
-  ASSERT_TRUE(RunExtensionTest("socket/unload")) << message_;
+IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPServerUnbindOnUnload) {
+  ResultCatcher catcher;
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("socket/unload"));
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  UnloadExtension(extension->id());
+
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("socket/unload")))
+      << message_;
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

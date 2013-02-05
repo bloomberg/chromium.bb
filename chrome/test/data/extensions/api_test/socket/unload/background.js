@@ -11,7 +11,7 @@ var onListen = function(result) {
 
 var onCreate = function(socketInfo) {
   sid = socketInfo.socketId;
-  socket.listen(sid, '127.0.0.1', 1234, onListen);
+  socket.listen(sid, '0.0.0.0', 1234, onListen);
 };
 
 chrome.test.runTests([
