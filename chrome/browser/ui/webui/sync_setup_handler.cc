@@ -591,7 +591,7 @@ void SyncSetupHandler::DisplayGaiaLogin(bool fatal_error) {
     // configuring sync, CloseSyncSetup() will ensure they are logged out.
     configuring_sync_ = false;
 
-    DisplayGaiaLoginInNewTab();
+    DisplayGaiaLoginInNewTabOrWindow();
     signin_tracker_.reset(
         new SigninTracker(GetProfile(), this,
                           SigninTracker::WAITING_FOR_GAIA_VALIDATION));
@@ -601,16 +601,20 @@ void SyncSetupHandler::DisplayGaiaLogin(bool fatal_error) {
   }
 }
 
-void SyncSetupHandler::DisplayGaiaLoginInNewTab() {
+void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
   DCHECK(!active_gaia_signin_tab_);
   GURL url(SyncPromoUI::GetSyncPromoURL(GURL(),
       SyncPromoUI::SOURCE_SETTINGS, false));
   Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
+  if (!browser) {
+    // Settings is not displayed in a browser window. Open a new window.
+    browser = new Browser(Browser::CreateParams(
+        Browser::TYPE_TABBED, GetProfile(), chrome::GetActiveDesktop()));
+  }
   active_gaia_signin_tab_ = browser->OpenURL(
       content::OpenURLParams(url, content::Referrer(), SINGLETON_TAB,
-                              content::PAGE_TRANSITION_AUTO_BOOKMARK,
-                              false));
+                             content::PAGE_TRANSITION_AUTO_BOOKMARK, false));
   content::WebContentsObserver::Observe(active_gaia_signin_tab_);
 }
 

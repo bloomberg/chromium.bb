@@ -143,7 +143,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
 
   // When web-flow is enabled, displays the Gaia login form in a new tab.
   // This function is virtual so that tests can override.
-  virtual void DisplayGaiaLoginInNewTab();
+  virtual void DisplayGaiaLoginInNewTabOrWindow();
 
   // Displays the GAIA login form with a custom error message (used for errors
   // like "email address already in use by another profile"). No message

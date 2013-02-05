@@ -340,7 +340,7 @@ class TestingSyncSetupHandler : public SyncSetupHandler {
   using SyncSetupHandler::have_signin_tracker;
 
  private:
-  void DisplayGaiaLoginInNewTab() OVERRIDE {}
+  void DisplayGaiaLoginInNewTabOrWindow() OVERRIDE {}
 
   // Weak pointer to parent profile.
   Profile* profile_;
