@@ -529,8 +529,11 @@ std::string GetDesktopFileContents(
     const string16& title,
     const std::string& icon_name,
     const FilePath& profile_path) {
+  // Although not required by the spec, Nautilus on Ubuntu Karmic creates its
+  // launchers with an xdg-open shebang. Follow that convention.
+  std::string output_buffer = std::string(kXdgOpenShebang) + "\n";
   if (template_contents.empty())
-    return std::string(kXdgOpenShebang) + "\n";
+    return output_buffer;
 
   // See http://standards.freedesktop.org/desktop-entry-spec/latest/
   // http://developer.gnome.org/glib/unstable/glib-Key-value-file-parser.html
@@ -546,7 +549,7 @@ std::string GetDesktopFileContents(
           &err)) {
     NOTREACHED() << "Unable to read desktop file template:" << err->message;
     g_error_free(err);
-    return std::string(kXdgOpenShebang) + "\n";
+    return output_buffer;
   }
 
   // Remove all sections except for the Desktop Entry
@@ -618,13 +621,17 @@ std::string GetDesktopFileContents(
                         wmclass.c_str());
 #endif
 
-  // Although not required by the spec, Nautilus on Ubuntu Karmic creates its
-  // launchers with an xdg-open shebang. Follow that convention.
-  std::string output_buffer = kXdgOpenShebang;
   length = 0;
   gchar* data_dump = g_key_file_to_data(key_file, &length, NULL);
   if (data_dump) {
-    output_buffer += data_dump;
+    // If strlen(data_dump[0]) == 0, this check will fail.
+    if (data_dump[0] == '\n') {
+      // Older versions of glib produce a leading newline. If this is the case,
+      // remove it to avoid double-newline after the shebang.
+      output_buffer += (data_dump + 1);
+    } else {
+      output_buffer += data_dump;
+    }
     g_free(data_dump);
   }
 
