@@ -19,6 +19,7 @@ using webkit_glue::WebIntentServiceData;
 
 namespace {
 
+#if defined(ENABLE_WEB_INTENTS)
 bool ExtractIntents(sql::Statement* s,
                     std::vector<WebIntentServiceData>* services) {
   DCHECK(s);
@@ -40,6 +41,7 @@ bool ExtractIntents(sql::Statement* s,
   }
   return s->Succeeded();
 }
+#endif  // defined(ENABLE_WEB_INTENTS)
 
 }  // namespace
 
