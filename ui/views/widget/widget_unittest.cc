@@ -868,7 +868,7 @@ class WidgetObserverTest : public WidgetTest, public WidgetObserver {
   virtual ~WidgetObserverTest() {}
 
   // Overridden from WidgetObserver:
-  virtual void OnWidgetClosing(Widget* widget) OVERRIDE {
+  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE {
     if (active_ == widget)
       active_ = NULL;
     widget_closed_ = widget;

@@ -343,7 +343,7 @@ void WebNotificationTray::ButtonPressed(views::Button* sender,
   PerformAction(event);
 }
 
-void WebNotificationTray::OnWidgetClosing(views::Widget* widget) {
+void WebNotificationTray::OnWidgetDestroying(views::Widget* widget) {
   if (quiet_mode_bubble() && quiet_mode_bubble()->GetBubbleWidget() == widget) {
     widget->RemoveObserver(this);
   }

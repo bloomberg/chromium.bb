@@ -50,7 +50,7 @@ class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
 
   // Overridden from views::WidgetObserver:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
   static const int kMaxTouchPoints = 32;
 

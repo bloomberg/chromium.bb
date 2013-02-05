@@ -295,7 +295,7 @@ TouchObserverHUD::TouchObserverHUD() {
   widget_->Show();
 
   // The TouchObserverHUD's lifetime is always more than |widget_|. The
-  // |widget_| is unset from the OnWidgetClosing callback.
+  // |widget_| is unset from the OnWidgetDestroying callback.
   widget_->AddObserver(this);
 }
 
@@ -374,7 +374,7 @@ void TouchObserverHUD::OnTouchEvent(ui::TouchEvent* event) {
   label_container_->SetSize(label_container_->GetPreferredSize());
 }
 
-void TouchObserverHUD::OnWidgetClosing(views::Widget* widget) {
+void TouchObserverHUD::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(widget, widget_);
   widget_ = NULL;
 }

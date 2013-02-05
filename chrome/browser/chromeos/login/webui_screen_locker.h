@@ -95,7 +95,7 @@ class WebUIScreenLocker : public WebUILoginView,
       OVERRIDE;
 
   // WidgetObserver override.
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
   // PowerManagerClient::Observer overrides:
   virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE;

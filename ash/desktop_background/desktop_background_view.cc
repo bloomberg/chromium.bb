@@ -82,7 +82,7 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
   }
 
   // Overridden from views::WidgetObserver.
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE {
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
     desktop_widget_->RemoveObserver(this);
     desktop_widget_ = NULL;
   }

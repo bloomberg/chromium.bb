@@ -133,7 +133,7 @@ class VIEWS_EXPORT MenuController
   void UpdateSubmenuSelection(SubmenuView* source);
 
   // WidgetObserver overrides:
-  virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE;
 
  private:
   friend class internal::MenuRunnerImpl;

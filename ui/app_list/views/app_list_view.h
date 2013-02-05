@@ -66,7 +66,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   virtual void Layout() OVERRIDE;
 
   // Overridden from views::WidgetObserver:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
   virtual void OnWidgetVisibilityChanged(
       views::Widget* widget, bool visible) OVERRIDE;
   virtual void OnWidgetActivationChanged(

@@ -268,7 +268,7 @@ void OverflowBubble::Hide() {
   launcher_view_ = NULL;
 }
 
-void OverflowBubble::OnWidgetClosing(views::Widget* widget) {
+void OverflowBubble::OnWidgetDestroying(views::Widget* widget) {
   DCHECK(widget == bubble_->GetWidget());
   bubble_ = NULL;
   launcher_view_ = NULL;

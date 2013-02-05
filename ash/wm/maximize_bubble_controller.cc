@@ -236,7 +236,7 @@ class MaximizeBubbleController::Bubble : public views::BubbleDelegateView,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Overridden from views::Widget::Observer.
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
   // Called from the controller class to indicate that the menu should get
   // destroyed.
@@ -522,7 +522,8 @@ gfx::Size MaximizeBubbleController::Bubble::GetPreferredSize() {
   return contents_view_->GetPreferredSize();
 }
 
-void MaximizeBubbleController::Bubble::OnWidgetClosing(views::Widget* widget) {
+void MaximizeBubbleController::Bubble::OnWidgetDestroying(
+    views::Widget* widget) {
   if (bubble_widget_ == widget) {
     mouse_watcher_->Stop();
 
@@ -535,7 +536,7 @@ void MaximizeBubbleController::Bubble::OnWidgetClosing(views::Widget* widget) {
       owner_ = NULL;
     }
   }
-  BubbleDelegateView::OnWidgetClosing(widget);
+  BubbleDelegateView::OnWidgetDestroying(widget);
 }
 
 void MaximizeBubbleController::Bubble::ControllerRequestsCloseAndDelete() {

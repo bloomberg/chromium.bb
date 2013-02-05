@@ -38,7 +38,7 @@ class OverflowBubble : public views::WidgetObserver {
 
  private:
   // Overridden from views::WidgetObserver:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
   views::View* bubble_;  // Owned by views hierarchy.
   LauncherView* launcher_view_;  // Owned by |bubble_|.

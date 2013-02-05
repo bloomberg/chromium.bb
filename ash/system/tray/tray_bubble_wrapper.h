@@ -28,7 +28,7 @@ class TrayBubbleWrapper : public views::WidgetObserver {
   virtual ~TrayBubbleWrapper();
 
   // views::WidgetObserver overrides:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
   TrayBackgroundView* tray() { return tray_; }
   views::TrayBubbleView* bubble_view() { return bubble_view_; }

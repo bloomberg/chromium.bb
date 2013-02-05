@@ -73,7 +73,7 @@ class PartialMagnificationController
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // Overridden from WidgetObserver:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
   // True if the magnified window is in motion of zooming or un-zooming effect.
   // Otherwise, false.

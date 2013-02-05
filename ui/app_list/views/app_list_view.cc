@@ -174,8 +174,8 @@ void AppListView::Layout() {
   app_list_main_view_->SetBounds(0, 0, width(), height());
 }
 
-void AppListView::OnWidgetClosing(views::Widget* widget) {
-  BubbleDelegateView::OnWidgetClosing(widget);
+void AppListView::OnWidgetDestroying(views::Widget* widget) {
+  BubbleDelegateView::OnWidgetDestroying(widget);
   if (delegate_.get() && widget == GetWidget())
     delegate_->ViewClosing();
 }

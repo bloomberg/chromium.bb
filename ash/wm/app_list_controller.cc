@@ -276,7 +276,7 @@ void AppListController::OnImplicitAnimationsCompleted() {
 ////////////////////////////////////////////////////////////////////////////////
 // AppListController, views::WidgetObserver implementation:
 
-void AppListController::OnWidgetClosing(views::Widget* widget) {
+void AppListController::OnWidgetDestroying(views::Widget* widget) {
   DCHECK(view_->GetWidget() == widget);
   if (is_visible_)
     SetVisible(false, widget->GetNativeView());

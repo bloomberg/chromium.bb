@@ -158,7 +158,7 @@ class AppNonClientFrameViewAsh::FrameObserver : public views::WidgetObserver {
   virtual ~FrameObserver() {}
 
   // views::WidgetObserver:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE {
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
     owner_->CloseControlWidget();
   }
 

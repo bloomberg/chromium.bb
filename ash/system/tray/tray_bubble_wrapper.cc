@@ -37,7 +37,7 @@ TrayBubbleWrapper::~TrayBubbleWrapper() {
   }
 }
 
-void TrayBubbleWrapper::OnWidgetClosing(views::Widget* widget) {
+void TrayBubbleWrapper::OnWidgetDestroying(views::Widget* widget) {
   CHECK_EQ(bubble_widget_, widget);
   bubble_widget_ = NULL;
   tray_->HideBubbleWithView(bubble_view_);  // May destroy |bubble_view_|

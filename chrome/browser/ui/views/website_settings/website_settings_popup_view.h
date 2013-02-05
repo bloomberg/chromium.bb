@@ -64,7 +64,7 @@ class WebsiteSettingsPopupView
       PermissionSelectorView* selector) OVERRIDE;
 
   // views::BubbleDelegate implementation.
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* button,

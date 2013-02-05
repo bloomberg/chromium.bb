@@ -96,7 +96,7 @@ void CaptivePortalWindowProxy::OnOriginalURLLoaded() {
   Close();
 }
 
-void CaptivePortalWindowProxy::OnWidgetClosing(views::Widget* widget) {
+void CaptivePortalWindowProxy::OnWidgetDestroying(views::Widget* widget) {
   DCHECK(widget == widget_);
   DCHECK(captive_portal_view_.get() == NULL);
   widget->RemoveObserver(this);

@@ -104,7 +104,7 @@ void PartialMagnificationController::OnWindowDestroying(
     SwitchTargetRootWindow(new_root_window);
 }
 
-void PartialMagnificationController::OnWidgetClosing(
+void PartialMagnificationController::OnWidgetDestroying(
     views::Widget* widget) {
   DCHECK_EQ(widget, zoom_widget_);
   RemoveZoomWidgetObservers();

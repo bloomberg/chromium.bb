@@ -46,7 +46,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   virtual NonClientFrameView* CreateNonClientFrameView(Widget* widget) OVERRIDE;
 
   // WidgetObserver overrides:
-  virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE;
   virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) OVERRIDE;
   virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE;
   virtual void OnWidgetBoundsChanged(Widget* widget,

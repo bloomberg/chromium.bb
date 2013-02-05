@@ -20,7 +20,7 @@ TestWidgetObserver::~TestWidgetObserver() {
     widget_->RemoveObserver(this);
 }
 
-void TestWidgetObserver::OnWidgetClosing(Widget* widget) {
+void TestWidgetObserver::OnWidgetDestroying(Widget* widget) {
   DCHECK_EQ(widget_, widget);
   widget_ = NULL;
 }

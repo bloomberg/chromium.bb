@@ -61,7 +61,7 @@ class PartialScreenshotView::OverlayDelegate
   }
 
   // Overridden from views::WidgetObserver:
-  virtual void OnWidgetClosing(views::Widget* widget) {
+  virtual void OnWidgetDestroying(views::Widget* widget) {
     widget->RemoveObserver(this);
     widgets_.erase(std::remove(widgets_.begin(), widgets_.end(), widget));
     if (widgets_.empty())

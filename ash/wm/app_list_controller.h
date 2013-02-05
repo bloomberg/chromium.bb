@@ -92,7 +92,7 @@ class AppListController : public ui::EventHandler,
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;
 
   // views::WidgetObserver overrides:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
   // ShellObserver overrides:
   virtual void OnShelfAlignmentChanged(aura::RootWindow* root_window) OVERRIDE;

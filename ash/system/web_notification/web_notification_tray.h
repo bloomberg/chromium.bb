@@ -89,7 +89,7 @@ class ASH_EXPORT WebNotificationTray
                              const ui::Event& event) OVERRIDE;
 
   // Overridden from WidgetObserver.
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
   // Overridden from MessageCenterTrayDelegate.
   virtual void OnMessageCenterTrayChanged() OVERRIDE;

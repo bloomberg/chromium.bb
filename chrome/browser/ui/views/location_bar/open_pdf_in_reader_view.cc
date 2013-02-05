@@ -81,7 +81,7 @@ bool OpenPDFInReaderView::OnKeyPressed(const ui::KeyEvent& event) {
   return true;
 }
 
-void OpenPDFInReaderView::OnWidgetClosing(views::Widget* widget) {
+void OpenPDFInReaderView::OnWidgetDestroying(views::Widget* widget) {
   if (!bubble_)
     return;
 

@@ -238,7 +238,7 @@ void PageActionImageView::InspectPopup(ExtensionAction* action) {
   ExecuteAction(ExtensionPopup::SHOW_AND_INSPECT);
 }
 
-void PageActionImageView::OnWidgetClosing(views::Widget* widget) {
+void PageActionImageView::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(popup_->GetWidget(), widget);
   popup_->GetWidget()->RemoveObserver(this);
   popup_ = NULL;

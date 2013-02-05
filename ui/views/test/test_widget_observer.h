@@ -24,7 +24,7 @@ class TestWidgetObserver : public WidgetObserver {
 
  private:
   // WidgetObserver overrides:
-  virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE;
 
   Widget* widget_;
 

@@ -197,7 +197,7 @@ class BrowserActionsContainer
       BrowserActionOverflowMenuController* controller) OVERRIDE;
 
   // Overridden from views::WidgetObserver:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
   // Overridden from BrowserActionView::Delegate:
   virtual void InspectPopup(ExtensionAction* action) OVERRIDE;

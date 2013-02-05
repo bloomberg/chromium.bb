@@ -715,7 +715,7 @@ void MenuController::UpdateSubmenuSelection(SubmenuView* submenu) {
   }
 }
 
-void MenuController::OnWidgetClosing(Widget* widget) {
+void MenuController::OnWidgetDestroying(Widget* widget) {
   DCHECK_EQ(owner_, widget);
   owner_->RemoveObserver(this);
   owner_ = NULL;

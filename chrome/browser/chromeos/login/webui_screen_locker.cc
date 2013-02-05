@@ -272,7 +272,7 @@ void WebUIScreenLocker::OnSessionStateEvent(
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetObserver override.
 
-void WebUIScreenLocker::OnWidgetClosing(views::Widget* widget) {
+void WebUIScreenLocker::OnWidgetDestroying(views::Widget* widget) {
   lock_window_->RemoveObserver(this);
   lock_window_ = NULL;
 }

@@ -457,7 +457,7 @@ void BrowserActionsContainer::NotifyMenuDeleted(
   overflow_menu_ = NULL;
 }
 
-void BrowserActionsContainer::OnWidgetClosing(views::Widget* widget) {
+void BrowserActionsContainer::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(popup_->GetWidget(), widget);
   popup_->GetWidget()->RemoveObserver(this);
   popup_ = NULL;
@@ -520,7 +520,7 @@ void BrowserActionsContainer::MoveBrowserAction(const std::string& extension_id,
 
 void BrowserActionsContainer::HidePopup() {
   // Remove this as an observer and clear |popup_| and |popup_button_| here,
-  // since we might change them before OnWidgetClosing() gets called.
+  // since we might change them before OnWidgetDestroying() gets called.
   if (popup_) {
     popup_->GetWidget()->RemoveObserver(this);
     popup_->GetWidget()->Close();

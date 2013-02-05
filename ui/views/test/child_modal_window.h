@@ -48,7 +48,7 @@ class ChildModalParent : public WidgetDelegateView,
                              const ui::Event& event) OVERRIDE;
 
   // Overridden from WidgetObserver:
-  virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE;
 
   // The button to toggle showing and hiding the child window. The child window
   // does not block input to this button.

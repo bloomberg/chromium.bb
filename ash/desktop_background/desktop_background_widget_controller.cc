@@ -43,7 +43,8 @@ DesktopBackgroundWidgetController::~DesktopBackgroundWidgetController() {
     layer_.reset(NULL);
 }
 
-void DesktopBackgroundWidgetController::OnWidgetClosing(views::Widget* widget) {
+void DesktopBackgroundWidgetController::OnWidgetDestroying(
+    views::Widget* widget) {
   widget_->RemoveObserver(this);
   widget_ = NULL;
 }

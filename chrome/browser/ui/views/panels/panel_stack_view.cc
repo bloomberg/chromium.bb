@@ -158,7 +158,7 @@ void PanelStackView::DeleteDelegate() {
   delete this;
 }
 
-void PanelStackView::OnWidgetClosing(views::Widget* widget) {
+void PanelStackView::OnWidgetDestroying(views::Widget* widget) {
   window_ = NULL;
 }
 

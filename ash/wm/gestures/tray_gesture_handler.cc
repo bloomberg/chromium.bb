@@ -100,7 +100,7 @@ void TrayGestureHandler::CompleteGestureDrag(const ui::GestureEvent& event) {
   }
 }
 
-void TrayGestureHandler::OnWidgetClosing(views::Widget* widget) {
+void TrayGestureHandler::OnWidgetDestroying(views::Widget* widget) {
   CHECK_EQ(widget_, widget);
   widget_ = NULL;
 }

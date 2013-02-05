@@ -359,7 +359,7 @@ void WebsiteSettingsPopupView::OnPermissionChanged(
                                       permission_selector->current_setting());
 }
 
-void WebsiteSettingsPopupView::OnWidgetClosing(views::Widget* widget) {
+void WebsiteSettingsPopupView::OnWidgetDestroying(views::Widget* widget) {
   presenter_->OnUIClosing();
 }
 

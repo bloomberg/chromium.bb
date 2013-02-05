@@ -40,7 +40,7 @@ class OpenPDFInReaderView : public views::ImageView,
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
   // views::WidgetObserver override:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
   // The LocationBarView hosting this view.
   LocationBarView* location_bar_view_;

@@ -71,7 +71,7 @@ class BubbleBorderDelegate : public WidgetDelegate,
   }
 
   // WidgetObserver overrides:
-  virtual void OnWidgetClosing(Widget* widget) OVERRIDE {
+  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE {
     bubble_ = NULL;
     widget_->Close();
   }
@@ -191,7 +191,7 @@ NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView(
   return frame;
 }
 
-void BubbleDelegateView::OnWidgetClosing(Widget* widget) {
+void BubbleDelegateView::OnWidgetDestroying(Widget* widget) {
   if (anchor_widget() == widget) {
     anchor_widget_->RemoveObserver(this);
     anchor_view_ = NULL;

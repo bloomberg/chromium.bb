@@ -29,7 +29,7 @@ class NotificationBubbleWrapperWin
   virtual ~NotificationBubbleWrapperWin();
 
   // Overridden from views::WidgetObserver.
-  void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
   // TrayBubbleView::Delegate implementation.
   virtual void BubbleViewDestroyed() OVERRIDE;

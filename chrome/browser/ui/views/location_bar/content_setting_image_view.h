@@ -31,7 +31,7 @@ class ContentSettingImageView : public LocationBarDecorationView,
 
 
   // views::WidgetObserver override:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
  protected:
   // Invoked when the user clicks on the control.

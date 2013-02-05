@@ -773,7 +773,7 @@ bool PanelView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return panel_->ExecuteCommandIfEnabled(iter->second);
 }
 
-void PanelView::OnWidgetClosing(views::Widget* widget) {
+void PanelView::OnWidgetDestroying(views::Widget* widget) {
   window_ = NULL;
 }
 

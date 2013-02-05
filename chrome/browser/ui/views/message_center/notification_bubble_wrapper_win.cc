@@ -65,7 +65,7 @@ NotificationBubbleWrapperWin::~NotificationBubbleWrapperWin() {
   }
 }
 
-void NotificationBubbleWrapperWin::OnWidgetClosing(views::Widget* widget) {
+void NotificationBubbleWrapperWin::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(widget, bubble_widget_);
   bubble_widget_->RemoveObserver(this);
   bubble_widget_ = NULL;
