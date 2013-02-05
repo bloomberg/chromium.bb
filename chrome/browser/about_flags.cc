@@ -230,6 +230,14 @@ const Experiment::Choice kChromeCaptivePortalDetectionChoices[] = {
 };
 #endif
 
+#if defined(USE_ASH)
+const Experiment::Choice kAshImmersiveModeChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+  { IDS_FLAGS_ASH_IMMERSIVE_HIDE_TAB_INDICATORS,
+    ash::switches::kAshImmersiveHideTabIndicators, ""}
+};
+#endif
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1104,7 +1112,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ASH_IMMERSIVE_MODE_NAME,
     IDS_FLAGS_ASH_IMMERSIVE_MODE_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshImmersiveMode),
+    MULTI_VALUE_TYPE(kAshImmersiveModeChoices),
   },
 #if defined(OS_LINUX)
   { "ash-enable-memory-monitor",

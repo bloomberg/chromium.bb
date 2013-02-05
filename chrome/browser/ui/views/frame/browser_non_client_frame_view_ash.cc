@@ -4,10 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 
-#include "ash/ash_switches.h"
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/workspace/frame_maximize_button.h"
-#include "base/command_line.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
@@ -34,8 +32,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-
-using ash::switches::kAshImmersiveMode;
 
 namespace {
 
@@ -121,18 +117,16 @@ void BrowserNonClientFrameViewAsh::Init() {
   frame_painter_->Init(frame(), window_icon_, size_button_, close_button_,
                        size_button_behavior);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kAshImmersiveMode)) {
-    // Button to toggle immersive mode.
-    immersive_button_ = new views::ToggleImageButton(this);
-    immersive_button_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_ACCNAME_IMMERSIVE));
-    immersive_button_->SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_TOOLTIP_IMMERSIVE));
-    immersive_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
-                                         views::ImageButton::ALIGN_BOTTOM);
-    AddChildView(immersive_button_);
-    frame_painter_->AddImmersiveButton(immersive_button_);
-  }
+  // Button to toggle immersive mode.
+  immersive_button_ = new views::ToggleImageButton(this);
+  immersive_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_IMMERSIVE));
+  immersive_button_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_IMMERSIVE));
+  immersive_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
+                                       views::ImageButton::ALIGN_BOTTOM);
+  AddChildView(immersive_button_);
+  frame_painter_->AddImmersiveButton(immersive_button_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -203,23 +197,21 @@ void BrowserNonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
 }
 
 void BrowserNonClientFrameViewAsh::ResetWindowControls() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kAshImmersiveMode)) {
-    // Hide the caption buttons in immersive mode because it's confusing when
-    // the user hovers or clicks in the top-right of the screen and hits one.
-    // Only show them during a reveal.
-    ImmersiveModeController* controller =
-        browser_view()->immersive_mode_controller();
-    if (controller->enabled()) {
-      bool revealed = controller->IsRevealed();
-      immersive_button_->SetVisible(revealed);
-      size_button_->SetVisible(revealed);
-      close_button_->SetVisible(revealed);
-    } else {
-      // Only show immersive button for maximized windows.
-      immersive_button_->SetVisible(frame()->IsMaximized());
-      size_button_->SetVisible(true);
-      close_button_->SetVisible(true);
-    }
+  // Hide the caption buttons in immersive mode because it's confusing when
+  // the user hovers or clicks in the top-right of the screen and hits one.
+  // Only show them during a reveal.
+  ImmersiveModeController* controller =
+      browser_view()->immersive_mode_controller();
+  if (controller->enabled()) {
+    bool revealed = controller->IsRevealed();
+    immersive_button_->SetVisible(revealed);
+    size_button_->SetVisible(revealed);
+    close_button_->SetVisible(revealed);
+  } else {
+    // Only show immersive button for maximized windows.
+    immersive_button_->SetVisible(frame()->IsMaximized());
+    size_button_->SetVisible(true);
+    close_button_->SetVisible(true);
   }
 
   size_button_->SetState(views::CustomButton::STATE_NORMAL);
@@ -327,8 +319,7 @@ void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
     // |this| may be deleted - some windows delete their frames on maximize.
   } else if (sender == close_button_) {
     frame()->Close();
-  } else if (CommandLine::ForCurrentProcess()->HasSwitch(kAshImmersiveMode) &&
-      sender == immersive_button_) {
+  } else if (sender == immersive_button_) {
     // Toggle immersive mode.
     ImmersiveModeController* controller =
         browser_view()->immersive_mode_controller();

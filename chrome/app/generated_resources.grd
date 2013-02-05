@@ -6775,10 +6775,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enables workspace switching via 3 finger vertical scroll.
       </message>
       <message name="IDS_FLAGS_ASH_IMMERSIVE_MODE_NAME" desc="Title for the flag to set the immersive mode style.">
-        Immersive mode
+        Immersive window style
       </message>
       <message name="IDS_FLAGS_ASH_IMMERSIVE_MODE_DESCRIPTION" desc="Description for the flag to enable immersive mode.">
-        Adds an "immersive mode" for browser windows that gives more space to web content. Activate immersive mode by maximizing a window then clicking on the button in the top right corner.
+        Sets the style of an "immersive mode" for browser windows that gives more space to web content. Activate immersive mode by maximizing a window then clicking on the button in the top right corner.
+      </message>
+      <message name="IDS_FLAGS_ASH_IMMERSIVE_HIDE_TAB_INDICATORS" desc="Description a selection in the immersive mode popup menu.">
+        Hide tab indicators
       </message>
       <message name="IDS_FLAGS_ENABLE_MEMORY_MONITOR_NAME" desc="Title for the flag to enable advanced gestures.">
         Enable memory monitor

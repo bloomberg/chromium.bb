@@ -76,11 +76,7 @@ const char kAshEnablePerAppLauncher[] = "ash-enable-per-app-launcher";
 // Enables showing the tray bubble by dragging on the shelf.
 const char kAshEnableTrayDragging[] = "ash-enable-tray-dragging";
 
-// Enables immersive mode.
-const char kAshImmersiveMode[] = "ash-immersive-mode";
-
-// Enables immersive mode and hides the small tab indicators at the top of the
-// screen.
+// Hides the small tab indicators at the top of the screen.
 const char kAshImmersiveHideTabIndicators[] =
     "ash-immersive-hide-tab-indicators";
 
