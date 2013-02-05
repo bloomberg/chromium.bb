@@ -2188,6 +2188,7 @@ class Decoder(object):
   Fields are:
       primary - The entry parse table to find a class decoder.
       tables - The (sorted) set of tables defined by a decoder.
+      value_map - Saved values of the decoder.
 
   Note: maintains restriction that tables have unique names.
   """
@@ -2197,6 +2198,16 @@ class Decoder(object):
     self._is_sorted = False
     self._tables = []
     self._class_defs = {}
+    self._value_map = {}
+
+  def define_value(self, name, value):
+      """Associate value with name, for the given decoder."""
+      self._value_map[name] = value
+
+  def get_value(self, name, default_value=None):
+      """Returns the associated value with the given name. Use the
+         default if the name is not bound."""
+      return self._value_map.get(name, default_value)
 
   def add(self, table):
     """Adds the table to the set of tables. Returns true if successful.
@@ -2278,6 +2289,7 @@ class Decoder(object):
                         self.primary.name)
     decoder._tables = sorted(tables, key=lambda(tbl): tbl.name)
     decoder._class_defs = self._class_defs.copy()
+    decoder._value_map = decoder._value_map.copy()
     return decoder
 
   def action_filter(self, names):

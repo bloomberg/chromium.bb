@@ -120,16 +120,8 @@ def generate_h(decoder, decoder_name, filename, out, cl_args):
         cl_args: A dictionary of additional command line arguments.
     """
     global _cl_args
-    if not decoder.primary: raise Exception('No tables provided.')
     assert filename.endswith('.h')
     _cl_args = cl_args
-
-    # Generate actuals from descriptions in tables, for each of the
-    # tables that should automatically generate the corresponding
-    # needed actual class decoders.
-    actuals = cl_args.get('auto-actual')
-    if actuals:
-      decoder = dgen_actuals.AddAutoActualsToDecoder(decoder, actuals)
 
     # Before starting, remove all testing information from the parsed tables.
     decoder = decoder.action_filter(['actual'])
@@ -240,16 +232,8 @@ def generate_cc(decoder, decoder_name, filename, out, cl_args):
         cl_args: A dictionary of additional command line arguments.
     """
     global _cl_args
-    if not decoder.primary: raise Exception('No tables provided.')
     assert filename.endswith('.cc')
     _cl_args = cl_args
-
-    # Generate actuals from descriptions in tables, for each of the
-    # tables that should automatically generate the corresponding
-    # needed actual class decoders.
-    actuals = cl_args.get('auto-actual')
-    if actuals:
-      decoder = dgen_actuals.AddAutoActualsToDecoder(decoder, actuals)
 
     # Before starting, remove all testing information from the parsed
     # tables.

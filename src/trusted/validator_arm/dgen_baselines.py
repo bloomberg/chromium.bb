@@ -44,33 +44,47 @@ import dgen_core
 import dgen_decoder
 import dgen_output
 
-# Holds the decoder that the baselines are defined on.
-# Note: only one decoder can be handled by this code.
-BASELINE_DECODER = None
+# Holds the sorted list of installed baseline decoders.
+BASELINE_DECODERS = None
 
 # Holds the map from a baseline decoder name, to the corresponding
 # (sorted) list of baseline decoders with that name. Used to figure
 # out which baseline decoders have the same name, and add a suffix
 # that makes the name unique.
-BASELINE_NAME_TO_BASELINES_MAP = {}
+BASELINE_NAME_TO_BASELINES_MAP = None
 
 # Holds the map from the baseline, to the unique name we will use for
 # it.
-BASELINE_TO_NAME_MAP = {}
+BASELINE_TO_NAME_MAP = None
 
+# Holds the decoder value name that baseline decoder information is
+# stored on.
+_BASELINE_DECODERS = 'baseline-decoders'
 
 def GetBaselineDecoders(decoder):
   """Takes the given decoder table, and builds the corresponding
      internal maps, so that we can consistently name baseline classes.
      Returns the (sorted) list of baseline classes to build.
      """
-  global BASELINE_DECODER
 
-  # Verify whether baseline classes have already been recorded.
-  if BASELINE_DECODER:
-    raise Exception("GetBaselineDecoders: Multiple decoders not allowed.")
+  # See if aready defined, and update accordingly.
+  maps = decoder.get_value(_BASELINE_DECODERS)
+  if maps:
+    _ReintsallBaselineMaps(maps)
+  else:
+    _BuildBaselineMaps(decoder)
+  return BASELINE_DECODERS
 
-  BASELINE_DECODER = decoder
+def _BuildBaselineMaps(decoder):
+  """Takes the given decoder table, and builds the corresponding
+     internal maps, so that we can consistently name baseline classees.
+     """
+  global BASELINE_DECODERS
+  global BASELINE_NAME_TO_BASELINES_MAP
+  global BASELINE_TO_NAME_MAP
+  BASELINE_NAME_TO_BASELINES_MAP = {}
+  BASELINE_TO_NAME_MAP = {}
+
   baselines = set()
 
   # Get the list of decoder actions defined for the decoder table, and
@@ -83,7 +97,21 @@ def GetBaselineDecoders(decoder):
 
   _FixBaselineNameToBaselinesMap()
   _DefineBaselineNames()
-  return sorted(baselines, key=BaselineName)
+  BASELINE_DECODERS = sorted(baselines, key=BaselineName)
+  decoder.define_value(_BASELINE_DECODERS,
+                       (BASELINE_DECODERS,
+                        BASELINE_NAME_TO_BASELINES_MAP,
+                        BASELINE_TO_NAME_MAP))
+
+def _ReinstallBaselineMaps(maps):
+  assert len(maps) == 3
+  global BASELINE_DECODERS
+  global BASELINE_NAME_TO_BASELINES_MAP
+  global BASELINE_TO_NAME_MAP
+
+  BASELINE_DECODERS = maps[0]
+  BASELINE_NAME_TO_BASELINES_MAP = maps[1]
+  BASELINE_TO_NAME_MAP = maps[2]
 
 BASELINE_BASE_H_HEADER="""%(FILE_HEADER)s
 #ifndef %(IFDEF_NAME)s
@@ -112,7 +140,6 @@ def generate_baselines_base_h(decoder, decoder_name,
         out: a COutput object to write to.
         cl_args: A dictionary of additional command line arguments.
         """
-  if not decoder.primary: raise Exception('No tables provided.')
 
   separators = cl_args['auto-baseline-sep']
   num_blocks = dgen_output.GetNumberCodeBlocks(separators)
@@ -158,8 +185,6 @@ def generate_baselines_h(decoder, decoder_name,
         out: a COutput object to write to.
         cl_args: A dictionary of additional command line arguments.
         """
-  if not decoder.primary: raise Exception('No tables provided.')
-
   separators = cl_args['auto-baseline-sep']
   num_blocks = dgen_output.GetNumberCodeBlocks(separators)
 
@@ -198,9 +223,6 @@ def generate_baselines_cc(decoder, decoder_name, filename,
         out: a COutput object to write to.
         cl_args: A dictionary of additional command line arguments.
         """
-
-  if not decoder.primary: raise Exception('No tables provided.')
-
   separators = cl_args['auto-baseline-sep']
   num_blocks = dgen_output.GetNumberCodeBlocks(separators)
 

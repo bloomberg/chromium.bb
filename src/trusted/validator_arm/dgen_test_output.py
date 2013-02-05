@@ -333,11 +333,8 @@ def generate_named_bases_h(decoder, decoder_name, filename, out, cl_args):
     cl_args: A dictionary of additional command line arguments.
   """
   global _cl_args
-  if not decoder.primary: raise Exception('No tables provided.')
   assert filename.endswith(NAMED_BASES_H_SUFFIX)
   _cl_args = cl_args
-
-  decoder = dgen_baselines.AddBaselinesToDecoder(decoder)
 
   values = {
       'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
@@ -457,16 +454,8 @@ def generate_named_classes_h(decoder, decoder_name, filename, out, cl_args):
     cl_args: A dictionary of additional command line arguments.
   """
   global _cl_args
-  if not decoder.primary: raise Exception('No tables provided.')
   assert filename.endswith('_named_classes.h')
   _cl_args = cl_args
-
-  # Generate actuals from descriptions in tables, for each of the
-  # tables that should automatically generate the corresponding
-  # needed actual class decoders.
-  actuals = cl_args.get('auto-actual')
-  if actuals:
-    decoder = dgen_actuals.AddAutoActualsToDecoder(decoder, actuals)
 
   values = {
       'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
@@ -559,16 +548,8 @@ def generate_named_decoder_h(decoder, decoder_name, filename, out, cl_args):
         cl_args: A dictionary of additional command line arguments.
     """
     global _cl_args
-    if not decoder.primary: raise Exception('No tables provided.')
     assert filename.endswith('_named_decoder.h')
     _cl_args = cl_args
-
-    # Generate actuals from descriptions in tables, for each of the
-    # tables that should automatically generate the corresponding
-    # needed actual class decoders.
-    actuals = cl_args.get('auto-actual')
-    if actuals:
-      decoder = dgen_actuals.AddAutoActualsToDecoder(decoder, actuals)
 
     values = {
         'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
@@ -663,16 +644,8 @@ def generate_named_cc(decoder, decoder_name, filename, out, cl_args):
         cl_args: A dictionary of additional command line arguments.
     """
     global _cl_args
-    if not decoder.primary: raise Exception('No tables provided.')
     assert filename.endswith('.cc')
     _cl_args = cl_args
-
-    # Generate actuals from descriptions in tables, for each of the
-    # tables that should automatically generate the corresponding
-    # needed actual class decoders.
-    actuals = cl_args.get('auto-actual')
-    if actuals:
-      decoder = dgen_actuals.AddAutoActualsToDecoder(decoder, actuals)
 
     values = {
         'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
@@ -919,21 +892,10 @@ def generate_tests_cc(decoder, decoder_name, out, cl_args, tables):
   """Generates pattern tests for the rows in the given list of tables
      in the given decoder."""
   global _cl_args
-  if not decoder.primary: raise Exception('No tables provided.')
   _cl_args = cl_args
-
-  # Generate actuals from descriptions in tables, for each of the
-  # tables that should automatically generate the corresponding
-  # needed actual class decoders.
-  actuals = cl_args.get('auto-actual')
-  if actuals:
-    decoder = dgen_actuals.AddAutoActualsToDecoder(decoder, actuals)
-
-  decoder = dgen_baselines.AddBaselinesToDecoder(decoder, tables)
 
   baselines = cl_args.get('test-base')
   if not baselines: baselines = []
-
   decoder = _decoder_restricted_to_tables(decoder, tables)
 
   values = {

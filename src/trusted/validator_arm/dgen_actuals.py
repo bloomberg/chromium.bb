@@ -53,36 +53,56 @@ import dgen_core
 import dgen_decoder
 import dgen_output
 
-# Holds the decoder that actuals are defined on.
-ACTUAL_DECODER = None
+# Holds the sorted list of actual decoders.
+ACTUAL_DECODERS = None
 
 # Holds the map from baseline decoder to the corresponding
 # actual decoder.
-BASELINE_TO_ACTUAL_MAP = {}
+BASELINE_TO_ACTUAL_MAP = None
 
 # Holds the map from an actual decoder to the corresponding
 # (sorted) set of baseline decoders.
-ACTUAL_TO_BASELINE_MAP = {}
+ACTUAL_TO_BASELINE_MAP = None
 
 # Holds the map from baseline decoder name, to the corresponding
 # (sorted) list of baseline decoders with that name.
-BASELINE_NAME_TO_BASELINE_MAP = {}
+BASELINE_NAME_TO_BASELINE_MAP = None
 
 # Holds the map from an actual, to the name we will use for it.
 ACTUAL_TO_NAME_MAP = {}
+
+# Holds the decoder value name that actual decoder information is
+# stored on.
+_ACTUAL_DECODERS = 'actual-decoders'
 
 def GetActualDecoders(decoder):
   """Takes the given decoder table, and builds the corresponding
      internal maps, so that we can consistently name actual classes.
      Returns the (sorted) list of actual decoders to build.
      """
-  global ACTUAL_DECODER
 
-  # Verify whether actual classes have already been recorded.
-  if ACTUAL_DECODER:
-    raise Exception("GetActualDecoders: Multiple decoders not allowed.")
+  # See if already defined, and update accordingly.
+  maps = decoder.get_value(_ACTUAL_DECODERS)
+  if maps:
+    _ReinstallActualMaps(maps)
+  else:
+    _BuildActualMaps(decoder)
+  return ACTUAL_DECODERS
 
-  ACTUAL_DECODER = decoder
+def _BuildActualMaps(decoder):
+  """Takes the given decoder table, and builds the corresponding
+     internal maps, so that we can consistently name actual classes.
+     """
+  global ACTUAL_DECODERS
+  global BASELINE_TO_ACTUAL_MAP
+  global ACTUAL_TO_BASELINE_MAP
+  global BASELINE_NAME_TO_BASELINE_MAP
+  global ACTUAL_TO_NAME_MAP
+  BASELINE_TO_ACTUAL_MAP = {}
+  ACTUAL_TO_BASELINE_MAP = {}
+  BASELINE_NAME_TO_BASELINE_MAP = {}
+  ACTUAL_TO_NAME_MAP = {}
+
   actuals = set()
 
   # Get the list of decoder (actions) defined in the decoder table.
@@ -99,7 +119,26 @@ def GetActualDecoders(decoder):
   _FixActualToBaselineMap()
   _FixBaselineNameToBaselineMap()
   _DefineActualNames(actuals)
-  return sorted(actuals, key=ActualName)
+  ACTUAL_DECODERS = sorted(actuals, key=ActualName)
+  decoder.define_value(_ACTUAL_DECODERS,
+                       (ACTUAL_DECODERS,
+                        BASELINE_TO_ACTUAL_MAP,
+                        ACTUAL_TO_BASELINE_MAP,
+                        BASELINE_NAME_TO_BASELINE_MAP,
+                        ACTUAL_TO_NAME_MAP))
+
+def _ReinstallActualMaps(maps):
+  assert len(maps) == 5
+  global ACTUAL_DECODERS
+  global BASELINE_TO_ACTUAL_MAP
+  global ACTUAL_TO_BASELINE_MAP
+  global BASELINE_NAME_TO_BASELINE_MAP
+  global ACTUAL_TO_NAME_MAP
+  ACTUAL_DECODERS = maps[0]
+  BASELINE_TO_ACTUAL_MAP = maps[1]
+  ACTUAL_TO_BASELINE_MAP = maps[2]
+  BASELINE_NAME_TO_BASELINE_MAP = maps[3]
+  ACTUAL_TO_NAME_MAP = maps[4]
 
 def _DefineActualNames(actuals):
   """Installs a unique name for each actual, based on the baseline decoders
@@ -182,7 +221,6 @@ def generate_actuals_base_h(decoder, decoder_name,
         out: a COutput object to write to.
         cl_args: A dictionary of additional command line arguments.
         """
-  if not decoder.primary: raise Exception('No tables provided.')
 
   num_blocks = dgen_output.GetNumberCodeBlocks(cl_args['auto-actual-sep'])
 
@@ -226,7 +264,6 @@ def generate_actuals_h(decoder, decoder_name, filename, out, cl_args):
         out: a COutput object to write to.
         cl_args: A dictionary of additional command line arguments.
         """
-  if not decoder.primary: raise Exception('No tables provided.')
 
   separators = cl_args['auto-actual-sep']
   num_blocks = dgen_output.GetNumberCodeBlocks(separators)
@@ -265,8 +302,6 @@ def generate_actuals_cc(decoder, decoder_name, filename, out, cl_args):
         out: a COutput object to write to.
         cl_args: A dictionary of additional command line arguments.
         """
-
-  if not decoder.primary: raise Exception('No tables provided.')
 
   separators = cl_args['auto-actual-sep']
   num_blocks = dgen_output.GetNumberCodeBlocks(separators)

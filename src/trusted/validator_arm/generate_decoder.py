@@ -54,6 +54,23 @@ def _localize_filename(filename):
     # Don't know localized
     return filename
 
+def install_actuals_and_baselines(decoder, cl_args):
+    if not decoder.primary: raise Exception('No tables provided')
+
+    # Generate baselines form descriptions in tables.
+    decoder = dgen_baselines.AddBaselinesToDecoder(decoder)
+
+    # Generate actuals from descriptions in tables, for each of the
+    # tables that should automatically generate the corresponding
+    # needed actual class decoders.
+    actuals = cl_args.get('auto-actual')
+    if not actuals: actuals = []
+    decoder = dgen_actuals.AddAutoActualsToDecoder(decoder, actuals)
+
+    print "Installed generated actuals and baselines."
+
+    return decoder
+
 def main(argv):
     table_filename = argv[1]
     output_filename = argv[2]
@@ -117,6 +134,8 @@ def main(argv):
     f.close()
 
     print "Successful - got %d tables." % len(decoder.tables())
+
+    decoder = install_actuals_and_baselines(decoder, cl_args)
 
     print "Generating %s..." % output_filename
     f = open(output_filename, 'w')

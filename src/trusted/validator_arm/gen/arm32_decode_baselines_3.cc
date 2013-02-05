@@ -42,6 +42,7 @@ namespace nacl_arm_dec {
 //      size(7:6),
 //      align(5:4),
 //      Rm(3:0)],
+//    generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //    m: Rm,
 //    n: Rn,
 //    pattern: 111101000d10nnnnddddttttssaammmm,
@@ -229,6 +230,7 @@ uses(Instruction inst) const {
 //      T(5),
 //      a(4),
 //      Rm(3:0)],
+//    generated_baseline: VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0,
 //    m: Rm,
 //    n: Rn,
 //    pattern: 111101001d10nnnndddd1100sstammmm,
@@ -368,6 +370,7 @@ uses(Instruction inst) const {
 //      size(11:10),
 //      index_align(7:4),
 //      Rm(3:0)],
+//    generated_baseline: VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0,
 //    inc: 1
 //         if size(11:10)=00
 //         else (1
@@ -545,6 +548,7 @@ uses(Instruction inst) const {
 //      size(7:6),
 //      align(5:4),
 //      Rm(3:0)],
+//    generated_baseline: VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //    inc: 1
 //         if type(11:8)=1000
 //         else 2,
@@ -709,6 +713,7 @@ uses(Instruction inst) const {
 //      T(5),
 //      a(4),
 //      Rm(3:0)],
+//    generated_baseline: VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0,
 //    inc: 1
 //         if T(5)=0
 //         else 2,
@@ -843,6 +848,7 @@ uses(Instruction inst) const {
 //      size(11:10),
 //      index_align(7:4),
 //      Rm(3:0)],
+//    generated_baseline: VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0,
 //    inc: 1
 //         if size(11:10)=00
 //         else (1
@@ -1017,6 +1023,7 @@ uses(Instruction inst) const {
 //      size(7:6),
 //      align(5:4),
 //      Rm(3:0)],
+//    generated_baseline: VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //    inc: 1
 //         if type(11:8)=0100
 //         else 2,
@@ -1162,6 +1169,7 @@ uses(Instruction inst) const {
 //      T(5),
 //      a(4),
 //      Rm(3:0)],
+//    generated_baseline: VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0,
 //    inc: 1
 //         if T(5)=0
 //         else 2,
@@ -1294,6 +1302,7 @@ uses(Instruction inst) const {
 //      size(11:10),
 //      index_align(7:4),
 //      Rm(3:0)],
+//    generated_baseline: VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0,
 //    inc: 1
 //         if size(11:10)=00
 //         else (1
@@ -1514,6 +1523,7 @@ uses(Instruction inst) const {
 //      size(7:6),
 //      align(5:4),
 //      Rm(3:0)],
+//    generated_baseline: VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //    inc: 1
 //         if type(11:8)=0000
 //         else 2,
@@ -1669,6 +1679,7 @@ uses(Instruction inst) const {
 //      T(5),
 //      a(4),
 //      Rm(3:0)],
+//    generated_baseline: VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0,
 //    inc: 1
 //         if T(5)=0
 //         else 2,
@@ -1819,6 +1830,7 @@ uses(Instruction inst) const {
 //      size(11:10),
 //      index_align(7:4),
 //      Rm(3:0)],
+//    generated_baseline: VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0,
 //    inc: 1
 //         if size(11:10)=00
 //         else (1
@@ -2039,6 +2051,7 @@ uses(Instruction inst) const {
 //      Rn(19:16),
 //      Vd(15:12),
 //      imm8(7:0)],
+//    generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //    imm32: ZeroExtend(imm8:'00'(1:0), 32),
 //    imm8: imm8(7:0),
 //    n: Rn,
@@ -2202,6 +2215,7 @@ uses(Instruction inst) const {
 //      Rn(19:16),
 //      Vd(15:12),
 //      imm8(7:0)],
+//    generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //    imm32: ZeroExtend(imm8:'00'(1:0), 32),
 //    imm8: imm8(7:0),
 //    n: Rn,
@@ -2365,6 +2379,7 @@ uses(Instruction inst) const {
 //    d: D:Vd,
 //    defs: {},
 //    fields: [cond(31:28), U(23), D(22), Rn(19:16), Vd(15:12), imm8(7:0)],
+//    generated_baseline: VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0,
 //    imm32: ZeroExtend(imm8:'00'(1:0), 32),
 //    imm8: imm8(7:0),
 //    is_literal_load: Rn  ==
@@ -2430,6 +2445,7 @@ uses(Instruction inst) const {
 //    defs: {},
 //    false: false,
 //    fields: [cond(31:28), U(23), D(22), Rn(19:16), Vd(15:12), imm8(7:0)],
+//    generated_baseline: VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0,
 //    imm32: ZeroExtend(imm8:'00'(1:0), 32),
 //    imm8: imm8(7:0),
 //    is_literal_load: Rn  ==
@@ -2504,6 +2520,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMAX_1111001u0dssnnnndddd0110nqm0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -2588,6 +2605,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMAX_floating_point_111100100dssnnnndddd1111nqm0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -2670,6 +2688,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMIN_1111001u0dssnnnndddd0110nqm1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -2754,6 +2773,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMIN_floating_point_111100100dssnnnndddd1111nqm0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -2833,6 +2853,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(8),
@@ -2901,6 +2922,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -2982,6 +3004,7 @@ uses(Instruction inst) const {
 //      op(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -3048,6 +3071,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //    index: M,
 //    m: Vm,
 //    n: N:Vn,
@@ -3138,6 +3162,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -3228,6 +3253,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMLA_floating_point_A1_111100100dpsnnnndddd1101nqm1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -3310,6 +3336,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMLA_integer_A1_1111001u0dssnnnndddd1001nqm0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -3394,6 +3421,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -3473,6 +3501,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //    index: M,
 //    m: Vm,
 //    n: N:Vn,
@@ -3563,6 +3592,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -3653,6 +3683,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMLS_floating_point_A1_111100100dpsnnnndddd1101nqm1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -3735,6 +3766,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMLS_integer_A1_1111001u0dssnnnndddd1001nqm0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -3815,6 +3847,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMOVN_111100111d11ss10dddd001000m0mmmm_case_0,
 //    m: M:Vm,
 //    op: op(8:7),
 //    pattern: 111100111d11ss10dddd001000m0mmmm,
@@ -3883,6 +3916,7 @@ uses(Instruction inst) const {
 //      Rt(15:12),
 //      D(7),
 //      opc2(6:5)],
+//    generated_baseline: VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0,
 //    index: opc1(0):opc2
 //         if opc1:opc2(3:0)=1xxx
 //         else opc1(0):opc2(1)
@@ -3948,6 +3982,7 @@ uses(Instruction inst) const {
 //         if to_arm_register
 //         else None},
 //    fields: [cond(31:28), op(20), Vn(19:16), Rt(15:12), N(7)],
+//    generated_baseline: VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_0,
 //    n: Vn:N,
 //    op: op(20),
 //    pattern: cccc1110000onnnntttt1010n0010000,
@@ -4013,6 +4048,7 @@ uses(Instruction inst) const {
 //         if to_arm_register
 //         else None},
 //    fields: [cond(31:28), op(20), Vn(19:16), Rt(15:12), N(7)],
+//    generated_baseline: VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xnnnntttt1010n0010000_case_0,
 //    n: Vn:N,
 //    op: op(20),
 //    pattern: cccc1110000xnnnntttt1010n0010000,
@@ -4078,6 +4114,7 @@ uses(Instruction inst) const {
 //         if to_arm_registers
 //         else {},
 //    fields: [cond(31:28), op(20), Rt2(19:16), Rt(15:12), M(5), Vm(3:0)],
+//    generated_baseline: VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_0,
 //    m: M:Vm,
 //    op: op(20),
 //    pattern: cccc1100010otttttttt101100m1mmmm,
@@ -4159,6 +4196,7 @@ uses(Instruction inst) const {
 //         if to_arm_registers
 //         else {},
 //    fields: [cond(31:28), op(20), Rt2(19:16), Rt(15:12), M(5), Vm(3:0)],
+//    generated_baseline: VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_0,
 //    m: Vm:M,
 //    op: op(20),
 //    pattern: cccc1100010otttttttt101000m1mmmm,
@@ -4249,6 +4287,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      op(5),
 //      imm4(3:0)],
+//    generated_baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //    i: i(24),
 //    imm3: imm3(18:16),
 //    imm4: imm4(3:0),
@@ -4316,6 +4355,7 @@ safety(Instruction inst) const {
 //            Pc
 //         else Rt},
 //    fields: [cond(31:28), Rt(15:12)],
+//    generated_baseline: VMRS_cccc111011110001tttt101000010000_case_0,
 //    pattern: cccc111011110001tttt101000010000,
 //    rule: VMRS,
 //    t: Rt}
@@ -4350,6 +4390,7 @@ safety(Instruction inst) const {
 //    constraints: ,
 //    defs: {},
 //    fields: [cond(31:28), Rt(15:12)],
+//    generated_baseline: VMSR_cccc111011100001tttt101000010000_case_0,
 //    pattern: cccc111011100001tttt101000010000,
 //    rule: VMSR,
 //    safety: [t  ==
@@ -4411,6 +4452,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -4487,6 +4529,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(8),
@@ -4552,6 +4595,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(8),
@@ -4631,6 +4675,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0,
 //    index: M,
 //    m: Vm,
 //    n: N:Vn,
@@ -4721,6 +4766,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -4811,6 +4857,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMUL_floating_point_A1_111100110d0snnnndddd1101nqm1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -4893,6 +4940,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -4958,6 +5006,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMUL_integer_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -5043,6 +5092,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMUL_polynomial_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -5118,6 +5168,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      op(5),
 //      imm4(3:0)],
+//    generated_baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //    i: i(24),
 //    imm3: imm3(18:16),
 //    imm4: imm4(3:0),
@@ -5183,6 +5234,7 @@ safety(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0,
 //    m: M:Vm,
 //    op: op(8:7),
 //    pattern: 111100111d11ss00dddd01011qm0mmmm,
@@ -5257,6 +5309,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0,
 //    m: M:Vm,
 //    op: op(8:7),
 //    pattern: 111100111d11ss01dddd0f111qm0mmmm,
@@ -5331,6 +5384,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1,
 //    m: M:Vm,
 //    op: op(8:7),
 //    pattern: 111100111d11ss01dddd0f111qm0mmmm,
@@ -5410,6 +5464,7 @@ uses(Instruction inst) const {
 //      op(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -5478,6 +5533,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -5542,6 +5598,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VORN_register_111100100d11nnnndddd0001nqm1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -5610,6 +5667,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      op(5),
 //      imm4(3:0)],
+//    generated_baseline: VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0,
 //    i: i(24),
 //    imm3: imm3(18:16),
 //    imm4: imm4(3:0),
@@ -5673,6 +5731,7 @@ safety(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VORR_register_or_VMOV_register_A1_111100100d10nnnndddd0001nqm1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -5746,6 +5805,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0,
 //    m: M:Vm,
 //    op: op(8:7),
 //    pattern: 111100111d11ss00dddd0110p1m0mmmm,
@@ -5821,6 +5881,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0,
 //    m: M:Vm,
 //    op: op(8:7),
 //    pattern: 111100111d11ss00dddd0010p1m0mmmm,
@@ -5900,6 +5961,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -5968,6 +6030,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VPADD_integer_111100100dssnnnndddd1011n0m1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -6036,6 +6099,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VPMAX_111100110dssnnnndddd1111nqm0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -6104,6 +6168,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VPMAX_1111001u0dssnnnndddd1010n0m0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -6172,6 +6237,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VPMIN_111100110dssnnnndddd1111nqm0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -6240,6 +6306,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VPMIN_1111001u0dssnnnndddd1010n0m1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -6294,6 +6361,7 @@ uses(Instruction inst) const {
 //    d: Vd:D,
 //    defs: {Sp},
 //    fields: [cond(31:28), D(22), Vd(15:12), imm8(7:0)],
+//    generated_baseline: VPOP_cccc11001d111101dddd1010iiiiiiii_case_0,
 //    imm32: ZeroExtend(imm8:'00'(1:0), 32),
 //    imm8: imm8(7:0),
 //    pattern: cccc11001d111101dddd1010iiiiiiii,
@@ -6368,6 +6436,7 @@ uses(Instruction inst) const {
 //    defs: {Sp},
 //    false: false,
 //    fields: [cond(31:28), D(22), Vd(15:12), imm8(7:0)],
+//    generated_baseline: VPOP_cccc11001d111101dddd1011iiiiiiii_case_0,
 //    imm32: ZeroExtend(imm8:'00'(1:0), 32),
 //    imm8: imm8(7:0),
 //    pattern: cccc11001d111101dddd1011iiiiiiii,
@@ -6456,6 +6525,7 @@ uses(Instruction inst) const {
 //    d: Vd:D,
 //    defs: {Sp},
 //    fields: [cond(31:28), D(22), Vd(15:12), imm8(7:0)],
+//    generated_baseline: VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0,
 //    imm32: ZeroExtend(imm8:'00'(1:0), 32),
 //    imm8: imm8(7:0),
 //    pattern: cccc11010d101101dddd1010iiiiiiii,
@@ -6530,6 +6600,7 @@ uses(Instruction inst) const {
 //    defs: {Sp},
 //    false: false,
 //    fields: [cond(31:28), D(22), Vd(15:12), imm8(7:0)],
+//    generated_baseline: VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0,
 //    imm32: ZeroExtend(imm8:'00'(1:0), 32),
 //    imm8: imm8(7:0),
 //    pattern: cccc11010d101101dddd1011iiiiiiii,
@@ -6628,6 +6699,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQABS_111100111d11ss00dddd01110qm0mmmm_case_0,
 //    m: M:Vm,
 //    op: op(8:7),
 //    pattern: 111100111d11ss00dddd01110qm0mmmm,
@@ -6706,6 +6778,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQADD_1111001u0dssnnnndddd0000nqm1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -6784,6 +6857,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -6861,6 +6935,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0,
 //    m: Vm(2:0)
 //         if size(21:20)=01
 //         else Vm,
@@ -6936,6 +7011,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -7015,6 +7091,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQDMULH_A1_111100100dssnnnndddd1011nqm0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -7103,6 +7180,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -7191,6 +7269,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0,
 //    m: Vm(2:0)
 //         if size(21:20)=01
 //         else Vm,
@@ -7266,6 +7345,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -7330,6 +7410,7 @@ uses(Instruction inst) const {
 //    d: D:Vd,
 //    dest_unsigned: op(0)=1,
 //    fields: [D(22), size(19:18), Vd(15:12), op(7:6), M(5), Vm(3:0)],
+//    generated_baseline: VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //    m: M:Vm,
 //    op: op(7:6),
 //    pattern: 111100111d11ss10dddd0010ppm0mmmm,
@@ -7372,6 +7453,7 @@ safety(Instruction inst) const {
 //    d: D:Vd,
 //    dest_unsigned: op(0)=1,
 //    fields: [D(22), size(19:18), Vd(15:12), op(7:6), M(5), Vm(3:0)],
+//    generated_baseline: VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //    m: M:Vm,
 //    op: op(7:6),
 //    pattern: 111100111d11ss10dddd0010ppm0mmmm,
@@ -7425,6 +7507,7 @@ safety(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0,
 //    m: M:Vm,
 //    op: op(8:7),
 //    pattern: 111100111d11ss00dddd01111qm0mmmm,
@@ -7503,6 +7586,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -7593,6 +7677,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQRDMULH_A1_111100110dssnnnndddd1011nqm0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -7681,6 +7766,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQRSHL_1111001u0dssnnnndddd0101nqm1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -7770,6 +7856,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_0,
 //    imm6: imm6(21:16),
 //    n: M:Vm,
 //    op: op(8),
@@ -7870,6 +7957,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQRSHRUN_1111001u1diiiiiidddd100p00m1mmmm_case_0,
 //    imm6: imm6(21:16),
 //    n: M:Vm,
 //    op: op(8),
@@ -7970,6 +8058,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQRSHRUN_1111001u1diiiiiidddd100p01m1mmmm_case_0,
 //    imm6: imm6(21:16),
 //    n: M:Vm,
 //    op: op(8),
@@ -8074,6 +8163,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQSHL_VQSHLU_immediate_1111001u1diiiiiidddd011plqm1mmmm_case_0,
 //    imm6: imm6(21:16),
 //    n: M:Vm,
 //    op: op(8),
@@ -8174,6 +8264,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQSHL_register_1111001u0dssnnnndddd0100nqm1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -8263,6 +8354,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQSHRN_1111001u1diiiiiidddd100p00m1mmmm_case_0,
 //    imm6: imm6(21:16),
 //    n: M:Vm,
 //    op: op(8),
@@ -8363,6 +8455,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQSHRUN_1111001u1diiiiiidddd100p00m1mmmm_case_0,
 //    imm6: imm6(21:16),
 //    n: M:Vm,
 //    op: op(8),
@@ -8452,6 +8545,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VQSUB_1111001u0dssnnnndddd0010nqm1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -8527,6 +8621,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(8),
@@ -8597,6 +8692,7 @@ uses(Instruction inst) const {
 //      M(5),
 //      Vm(3:0)],
 //    floating_point: F(10)=1,
+//    generated_baseline: VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0,
 //    m: M:Vm,
 //    op: op(8:7),
 //    pattern: 111100111d11ss11dddd010f0qm0mmmm,
@@ -8675,6 +8771,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VRECPS_111100100d0snnnndddd1111nqm1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -8753,6 +8850,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //    groupsize: rev_groupsize(op, size),
 //    m: M:Vm,
 //    op: op(8:7),
@@ -8830,6 +8928,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //    groupsize: rev_groupsize(op, size),
 //    m: M:Vm,
 //    op: op(8:7),
@@ -8907,6 +9006,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //    groupsize: rev_groupsize(op, size),
 //    m: M:Vm,
 //    op: op(8:7),
@@ -8988,6 +9088,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VRHADD_1111001u0dssnnnndddd0001nqm0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -9072,6 +9173,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VRSHL_1111001u0dssnnnndddd0101nqm0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -9160,6 +9262,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VRSHRN_111100101diiiiiidddd100001m1mmmm_case_0,
 //    imm6: imm6(21:16),
 //    n: M:Vm,
 //    op: op(8),
@@ -9250,6 +9353,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_0,
 //    imm6: imm6(21:16),
 //    n: M:Vm,
 //    op: op(8),
@@ -9331,6 +9435,7 @@ uses(Instruction inst) const {
 //      M(5),
 //      Vm(3:0)],
 //    floating_point: F(10)=1,
+//    generated_baseline: VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0,
 //    m: M:Vm,
 //    op: op(8:7),
 //    pattern: 111100111d11ss11dddd010f1qm0mmmm,
@@ -9409,6 +9514,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VRSQRTS_111100100d1snnnndddd1111nqm1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -9505,6 +9611,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VRSRA_1111001u1diiiiiidddd0011lqm1mmmm_case_0,
 //    imm6: imm6(21:16),
 //    n: M:Vm,
 //    op: op(8),
@@ -9586,6 +9693,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(8),
@@ -9669,6 +9777,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VSHLL_A1_or_VMOVL_1111001u1diiiiiidddd101000m1mmmm_case_0,
 //    imm6: imm6(21:16),
 //    n: M:Vm,
 //    op: op(8),
@@ -9741,6 +9850,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0,
 //    m: M:Vm,
 //    op: op(8:7),
 //    pattern: 111100111d11ss10dddd001100m0mmmm,
@@ -9824,6 +9934,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VSHL_immediate_111100101diiiiiidddd0101lqm1mmmm_case_0,
 //    imm6: imm6(21:16),
 //    n: M:Vm,
 //    op: op(8),
@@ -9912,6 +10023,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VSHL_register_1111001u0dssnnnndddd0100nqm0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -10000,6 +10112,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VSHRN_111100101diiiiiidddd100000m1mmmm_case_0,
 //    imm6: imm6(21:16),
 //    n: M:Vm,
 //    op: op(8),
@@ -10090,6 +10203,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VSHR_1111001u1diiiiiidddd0000lqm1mmmm_case_0,
 //    imm6: imm6(21:16),
 //    n: M:Vm,
 //    op: op(8),
@@ -10188,6 +10302,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VSLI_111100111diiiiiidddd0101lqm1mmmm_case_0,
 //    imm6: imm6(21:16),
 //    n: M:Vm,
 //    op: op(8),
@@ -10290,6 +10405,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VSRA_1111001u1diiiiiidddd0001lqm1mmmm_case_0,
 //    imm6: imm6(21:16),
 //    n: M:Vm,
 //    op: op(8),
@@ -10388,6 +10504,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VSRI_111100111diiiiiidddd0100lqm1mmmm_case_0,
 //    imm6: imm6(21:16),
 //    n: M:Vm,
 //    op: op(8),
@@ -10476,6 +10593,7 @@ uses(Instruction inst) const {
 //      size(7:6),
 //      align(5:4),
 //      Rm(3:0)],
+//    generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //    m: Rm,
 //    n: Rn,
 //    pattern: 111101000d00nnnnddddttttssaammmm,
@@ -10668,6 +10786,7 @@ uses(Instruction inst) const {
 //      size(11:10),
 //      index_align(7:4),
 //      Rm(3:0)],
+//    generated_baseline: VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0,
 //    inc: 1
 //         if size(11:10)=00
 //         else (1
@@ -10845,6 +10964,7 @@ uses(Instruction inst) const {
 //      size(7:6),
 //      align(5:4),
 //      Rm(3:0)],
+//    generated_baseline: VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //    inc: 1
 //         if type(11:8)=1000
 //         else 2,
@@ -11016,6 +11136,7 @@ uses(Instruction inst) const {
 //      size(11:10),
 //      index_align(7:4),
 //      Rm(3:0)],
+//    generated_baseline: VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0,
 //    inc: 1
 //         if size(11:10)=00
 //         else (1
@@ -11190,6 +11311,7 @@ uses(Instruction inst) const {
 //      size(7:6),
 //      align(5:4),
 //      Rm(3:0)],
+//    generated_baseline: VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //    inc: 1
 //         if type(11:8)=0100
 //         else 2,
@@ -11332,6 +11454,7 @@ uses(Instruction inst) const {
 //      size(11:10),
 //      index_align(7:4),
 //      Rm(3:0)],
+//    generated_baseline: VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0,
 //    inc: 1
 //         if size(11:10)=00
 //         else (1
@@ -11552,6 +11675,7 @@ uses(Instruction inst) const {
 //      size(7:6),
 //      align(5:4),
 //      Rm(3:0)],
+//    generated_baseline: VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //    inc: 1
 //         if type(11:8)=0000
 //         else 2,
@@ -11708,6 +11832,7 @@ uses(Instruction inst) const {
 //      size(11:10),
 //      index_align(7:4),
 //      Rm(3:0)],
+//    generated_baseline: VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0,
 //    inc: 1
 //         if size(11:10)=00
 //         else (1
@@ -11928,6 +12053,7 @@ uses(Instruction inst) const {
 //      Rn(19:16),
 //      Vd(15:12),
 //      imm8(7:0)],
+//    generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //    imm32: ZeroExtend(imm8:'00'(1:0), 32),
 //    imm8: imm8(7:0),
 //    n: Rn,
@@ -12091,6 +12217,7 @@ uses(Instruction inst) const {
 //      Rn(19:16),
 //      Vd(15:12),
 //      imm8(7:0)],
+//    generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //    imm32: ZeroExtend(imm8:'00'(1:0), 32),
 //    imm8: imm8(7:0),
 //    n: Rn,
@@ -12253,6 +12380,7 @@ uses(Instruction inst) const {
 //    d: Vd:D,
 //    defs: {},
 //    fields: [cond(31:28), U(23), D(22), Rn(19:16), Vd(15:12), imm8(7:0)],
+//    generated_baseline: VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0,
 //    imm32: ZeroExtend(imm8:'00'(1:0), 32),
 //    imm8: imm8(7:0),
 //    n: Rn,
@@ -12307,6 +12435,7 @@ uses(Instruction inst) const {
 //    defs: {},
 //    false: false,
 //    fields: [cond(31:28), U(23), D(22), Rn(19:16), Vd(15:12), imm8(7:0)],
+//    generated_baseline: VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0,
 //    imm32: ZeroExtend(imm8:'00'(1:0), 32),
 //    imm8: imm8(7:0),
 //    n: Rn,
@@ -12368,6 +12497,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(8),
@@ -12438,6 +12568,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0,
 //    is_w: op(8)=1,
 //    m: M:Vm,
 //    n: N:Vn,
@@ -12516,6 +12647,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VSUB_floating_point_A1_111100100d1snnnndddd1101nqm0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -12598,6 +12730,7 @@ uses(Instruction inst) const {
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -12663,6 +12796,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VSUB_integer_111100110dssnnnndddd1000nqm0mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -12737,6 +12871,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VSWP_111100111d11ss10dddd00000qm0mmmm_case_0,
 //    m: M:Vm,
 //    op: op(8:7),
 //    pattern: 111100111d11ss10dddd00000qm0mmmm,
@@ -12818,6 +12953,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VTRN_111100111d11ss10dddd00001qm0mmmm_case_0,
 //    m: M:Vm,
 //    op: op(8:7),
 //    pattern: 111100111d11ss10dddd00001qm0mmmm,
@@ -12904,6 +13040,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VTST_111100100dssnnnndddd1000nqm1mmmm_case_0,
 //    m: M:Vm,
 //    n: N:Vn,
 //    op: op(9),
@@ -12984,6 +13121,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VUZP_111100111d11ss10dddd00010qm0mmmm_case_0,
 //    m: M:Vm,
 //    op: op(8:7),
 //    pattern: 111100111d11ss10dddd00010qm0mmmm,
@@ -13074,6 +13212,7 @@ uses(Instruction inst) const {
 //      Q(6),
 //      M(5),
 //      Vm(3:0)],
+//    generated_baseline: VZIP_111100111d11ss10dddd00011qm0mmmm_case_0,
 //    m: M:Vm,
 //    op: op(8:7),
 //    pattern: 111100111d11ss10dddd00011qm0mmmm,
@@ -13149,6 +13288,7 @@ uses(Instruction inst) const {
 //    constraints: ,
 //    defs: {},
 //    fields: [cond(31:28)],
+//    generated_baseline: WFE_cccc0011001000001111000000000010_case_0,
 //    pattern: cccc0011001000001111000000000010,
 //    rule: WFE,
 //    safety: [true => FORBIDDEN],
@@ -13188,6 +13328,7 @@ uses(Instruction inst) const {
 //    constraints: ,
 //    defs: {},
 //    fields: [cond(31:28)],
+//    generated_baseline: WFI_cccc0011001000001111000000000011_case_0,
 //    pattern: cccc0011001000001111000000000011,
 //    rule: WFI,
 //    safety: [true => FORBIDDEN],
@@ -13227,6 +13368,7 @@ uses(Instruction inst) const {
 //    constraints: ,
 //    defs: {},
 //    fields: [cond(31:28)],
+//    generated_baseline: YIELD_cccc0011001000001111000000000001_case_0,
 //    pattern: cccc0011001000001111000000000001,
 //    rule: YIELD,
 //    uses: {}}
