@@ -49,7 +49,7 @@ class ScopedMTPDeviceMapEntry;
 
 struct MediaFileSystemInfo {
   MediaFileSystemInfo(const std::string& fs_name,
-                      const FilePath& fs_path,
+                      const base::FilePath& fs_path,
                       const std::string& filesystem_id,
                       MediaGalleryPrefId pref_id,
                       uint64 transient_device_id,
@@ -58,7 +58,7 @@ struct MediaFileSystemInfo {
   MediaFileSystemInfo();
 
   std::string name;  // JSON string, must not contain slashes.
-  FilePath path;
+  base::FilePath path;
   std::string fsid;
   MediaGalleryPrefId pref_id;
   uint64 transient_device_id;
@@ -120,7 +120,7 @@ class MediaFileSystemRegistry : public RemovableStorageObserver {
   // Map a MTP or PTP device location to the raw pointer of
   // ScopedMTPDeviceMapEntry. It is safe to store a raw pointer in this
   // map.
-  typedef std::map<const FilePath::StringType, ScopedMTPDeviceMapEntry*>
+  typedef std::map<const base::FilePath::StringType, ScopedMTPDeviceMapEntry*>
       MTPDeviceDelegateMap;
 #endif
 
@@ -129,12 +129,12 @@ class MediaFileSystemRegistry : public RemovableStorageObserver {
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // Returns ScopedMTPDeviceMapEntry object for the given |device_location|.
   scoped_refptr<ScopedMTPDeviceMapEntry> GetOrCreateScopedMTPDeviceMapEntry(
-      const FilePath::StringType& device_location);
+      const base::FilePath::StringType& device_location);
 
   // Removes the ScopedMTPDeviceMapEntry associated with the given
   // |device_location|.
   void RemoveScopedMTPDeviceMapEntry(
-      const FilePath::StringType& device_location);
+      const base::FilePath::StringType& device_location);
 #endif
 
   void OnExtensionGalleriesHostEmpty(Profile* profile,

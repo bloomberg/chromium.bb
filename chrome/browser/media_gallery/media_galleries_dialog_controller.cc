@@ -116,7 +116,7 @@ bool MediaGalleriesDialogController::HasPermittedGalleries() const {
 }
 
 void MediaGalleriesDialogController::OnAddFolderClicked() {
-  FilePath user_data_dir;
+  base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   select_folder_dialog_ =
       ui::SelectFileDialog::Create(this, new ChromeSelectFilePolicy(NULL));
@@ -169,7 +169,7 @@ content::WebContents* MediaGalleriesDialogController::web_contents() {
   return web_contents_;
 }
 
-void MediaGalleriesDialogController::FileSelected(const FilePath& path,
+void MediaGalleriesDialogController::FileSelected(const base::FilePath& path,
                                                   int /*index*/,
                                                   void* /*params*/) {
   // Try to find it in |known_galleries_|.

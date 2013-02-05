@@ -23,7 +23,7 @@ class MediaGalleryDatabase {
 
   // Must call this function to complete initialization. Will return true on
   // success. On false, no other function should be called.
-  sql::InitStatus Init(const FilePath& database_path);
+  sql::InitStatus Init(const base::FilePath& database_path);
 
   // Returns the current version that we will generate media gallery databases
   // with.

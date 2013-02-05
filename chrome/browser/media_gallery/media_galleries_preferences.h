@@ -49,7 +49,7 @@ struct MediaGalleryPrefInfo {
   ~MediaGalleryPrefInfo();
 
   // The absolute path of the gallery.
-  FilePath AbsolutePath() const;
+  base::FilePath AbsolutePath() const;
 
   // The ID that identifies this gallery in this Profile.
   MediaGalleryPrefId pref_id;
@@ -62,7 +62,7 @@ struct MediaGalleryPrefInfo {
   std::string device_id;
 
   // The root of the gallery, relative to the root of the device.
-  FilePath path;
+  base::FilePath path;
 
   // The type of gallery.
   Type type;
@@ -94,8 +94,9 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
   // If the media gallery does not already exist, fill in as much of the
   // MediaGalleryPrefInfo struct as we can and return false.
   // TODO(vandebo) figure out if we want this to be async, in which case:
-  // void LookUpGalleryByPath(FilePath&path, callback(const MediaGalleryInfo&))
-  bool LookUpGalleryByPath(const FilePath& path,
+  // void LookUpGalleryByPath(base::FilePath& path,
+  //                          callback(const MediaGalleryInfo&))
+  bool LookUpGalleryByPath(const base::FilePath& path,
                            MediaGalleryPrefInfo* gallery) const;
 
   MediaGalleryPrefIdSet LookUpGalleriesByDeviceId(
@@ -105,12 +106,12 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
   // Returns the gallery's pref id.
   MediaGalleryPrefId AddGallery(const std::string& device_id,
                                 const string16& display_name,
-                                const FilePath& relative_path,
+                                const base::FilePath& relative_path,
                                 bool user_added);
 
   // Teach the registry about a user added registry simply from the path.
   // Returns the gallery's pref id.
-  MediaGalleryPrefId AddGalleryByPath(const FilePath& path);
+  MediaGalleryPrefId AddGalleryByPath(const base::FilePath& path);
 
   // Removes the gallery identified by |id| from the store.
   void ForgetGalleryById(MediaGalleryPrefId id);

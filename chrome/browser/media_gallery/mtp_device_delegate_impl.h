@@ -24,7 +24,7 @@ namespace chrome {
 typedef base::Callback<void(fileapi::MTPDeviceDelegate*)>
     CreateMTPDeviceDelegateCallback;
 
-void CreateMTPDeviceDelegate(const FilePath::StringType& device_location,
+void CreateMTPDeviceDelegate(const base::FilePath::StringType& device_location,
                              base::SequencedTaskRunner* media_task_runner,
                              const CreateMTPDeviceDelegateCallback& callback);
 

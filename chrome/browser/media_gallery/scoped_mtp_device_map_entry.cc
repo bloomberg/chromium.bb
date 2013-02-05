@@ -36,7 +36,7 @@ scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() {
 }  // namespace
 
 ScopedMTPDeviceMapEntry::ScopedMTPDeviceMapEntry(
-    const FilePath::StringType& device_location,
+    const base::FilePath::StringType& device_location,
     const base::Closure& on_destruction_callback)
     : device_location_(device_location),
       on_destruction_callback_(on_destruction_callback) {

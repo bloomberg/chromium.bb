@@ -28,7 +28,7 @@ class ScopedMTPDeviceMapEntry
   // |on_destruction_callback| is called when ScopedMTPDeviceMapEntry gets
   // destroyed.
   // Created on the UI thread.
-  ScopedMTPDeviceMapEntry(const FilePath::StringType& device_location,
+  ScopedMTPDeviceMapEntry(const base::FilePath::StringType& device_location,
                           const base::Closure& on_destruction_callback);
 
   // Most be called after creating the ScopedMTPDeviceMapEntry.
@@ -53,7 +53,7 @@ class ScopedMTPDeviceMapEntry
   void OnMTPDeviceDelegateCreated(fileapi::MTPDeviceDelegate* delegate);
 
   // The MTP or PTP device location.
-  const FilePath::StringType device_location_;
+  const base::FilePath::StringType device_location_;
 
   // Called when the object is destroyed.
   base::Closure on_destruction_callback_;

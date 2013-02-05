@@ -79,7 +79,7 @@ bool IsMTPDeviceMediaOperationsEnabled() {
 }  // namespace
 
 MediaFileSystemInfo::MediaFileSystemInfo(const std::string& fs_name,
-                                         const FilePath& fs_path,
+                                         const base::FilePath& fs_path,
                                          const std::string& filesystem_id,
                                          MediaGalleryPrefId pref_id,
                                          uint64 transient_device_id,
@@ -350,7 +350,7 @@ class ExtensionGalleriesHost
         continue;
       }
 
-      FilePath path = gallery_info.AbsolutePath();
+      base::FilePath path = gallery_info.AbsolutePath();
       if (!MediaStorageUtil::CanCreateFileSystem(device_id, path))
         continue;
 
@@ -415,9 +415,9 @@ class ExtensionGalleriesHost
     string16 sanitized_name;
     string16 separators =
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
-        FilePath::kSeparators
+        base::FilePath::kSeparators
 #else
-        ASCIIToUTF16(FilePath::kSeparators)
+        ASCIIToUTF16(base::FilePath::kSeparators)
 #endif
         ;  // NOLINT
     ReplaceChars(name, separators.c_str(), ASCIIToUTF16("_"), &sanitized_name);
@@ -556,7 +556,7 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
     if (!MediaStorageUtil::IsMediaDevice(existing_devices[i].device_id))
       continue;
     preferences->AddGallery(existing_devices[i].device_id,
-                            existing_devices[i].name, FilePath(),
+                            existing_devices[i].name, base::FilePath(),
                             false /*not user added*/);
   }
   return preferences;
@@ -574,7 +574,7 @@ void MediaFileSystemRegistry::OnRemovableStorageAttached(
        profile_it != extension_hosts_map_.end();
        ++profile_it) {
     MediaGalleriesPreferences* preferences = GetPreferences(profile_it->first);
-    preferences->AddGallery(info.device_id, info.name, FilePath(),
+    preferences->AddGallery(info.device_id, info.name, base::FilePath(),
                             false /*not user added*/);
   }
 }
@@ -650,7 +650,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   // Registers and returns the file system id for the mass storage device
   // specified by |device_id| and |path|.
   virtual std::string RegisterFileSystemForMassStorage(
-      const std::string& device_id, const FilePath& path) OVERRIDE {
+      const std::string& device_id, const base::FilePath& path) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(MediaStorageUtil::IsMassStorageDevice(device_id));
 
@@ -667,7 +667,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   virtual std::string RegisterFileSystemForMTPDevice(
-      const std::string& device_id, const FilePath& path,
+      const std::string& device_id, const base::FilePath& path,
       scoped_refptr<ScopedMTPDeviceMapEntry>* entry) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!MediaStorageUtil::IsMassStorageDevice(device_id));
@@ -758,7 +758,7 @@ void MediaFileSystemRegistry::OnMediaGalleriesRememberedGalleriesChanged(
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 scoped_refptr<ScopedMTPDeviceMapEntry>
 MediaFileSystemRegistry::GetOrCreateScopedMTPDeviceMapEntry(
-    const FilePath::StringType& device_location) {
+    const base::FilePath::StringType& device_location) {
   MTPDeviceDelegateMap::iterator delegate_it =
       mtp_device_delegate_map_.find(device_location);
   if (delegate_it != mtp_device_delegate_map_.end())
@@ -775,7 +775,7 @@ MediaFileSystemRegistry::GetOrCreateScopedMTPDeviceMapEntry(
 }
 
 void MediaFileSystemRegistry::RemoveScopedMTPDeviceMapEntry(
-    const FilePath::StringType& device_location) {
+    const base::FilePath::StringType& device_location) {
   MTPDeviceDelegateMap::iterator delegate_it =
       mtp_device_delegate_map_.find(device_location);
   DCHECK(delegate_it != mtp_device_delegate_map_.end());

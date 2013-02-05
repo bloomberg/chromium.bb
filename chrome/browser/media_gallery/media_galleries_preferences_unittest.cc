@@ -35,16 +35,16 @@ class MediaStorageUtilTest : public MediaStorageUtil {
         &GetDeviceInfoFromPathTestFunction);
   }
 
-  static bool GetDeviceInfoFromPathTestFunction(const FilePath& path,
+  static bool GetDeviceInfoFromPathTestFunction(const base::FilePath& path,
                                                 std::string* device_id,
                                                 string16* device_name,
-                                                FilePath* relative_path) {
+                                                base::FilePath* relative_path) {
     if (device_id)
       *device_id = MakeDeviceId(FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
     if (device_name)
       *device_name = path.BaseName().LossyDisplayName();
     if (relative_path)
-      *relative_path = FilePath();
+      *relative_path = base::FilePath();
     return true;
   }
 };
@@ -97,7 +97,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
         static_cast<extensions::TestExtensionSystem*>(
             extensions::ExtensionSystem::Get(profile_.get())));
     extension_system->CreateExtensionService(
-        CommandLine::ForCurrentProcess(), FilePath(), false);
+        CommandLine::ForCurrentProcess(), base::FilePath(), false);
 
     gallery_prefs_.reset(new MediaGalleriesPreferences(profile_.get()));
 
@@ -186,7 +186,8 @@ class MediaGalleriesPreferencesTest : public testing::Test {
   }
 
   void AddGalleryExpectation(MediaGalleryPrefId id, string16 display_name,
-                             std::string device_id, FilePath relative_path,
+                             std::string device_id,
+                             base::FilePath relative_path,
                              MediaGalleryPrefInfo::Type type) {
     expected_galleries_[id].pref_id = id;
     expected_galleries_[id].display_name = display_name;
@@ -225,11 +226,11 @@ class MediaGalleriesPreferencesTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPreferencesTest);
 };
 
-FilePath MakePath(std::string dir) {
+base::FilePath MakePath(std::string dir) {
 #if defined(OS_WIN)
-  return FilePath(FILE_PATH_LITERAL("C:\\")).Append(UTF8ToWide(dir));
+  return base::FilePath(FILE_PATH_LITERAL("C:\\")).Append(UTF8ToWide(dir));
 #elif defined(OS_POSIX)
-  return FilePath(FILE_PATH_LITERAL("/")).Append(dir);
+  return base::FilePath(FILE_PATH_LITERAL("/")).Append(dir);
 #else
   NOTREACHED();
 #endif
@@ -237,10 +238,10 @@ FilePath MakePath(std::string dir) {
 
 TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
   MediaGalleryPrefId auto_id, user_added_id, id;
-  FilePath path;
+  base::FilePath path;
   std::string device_id;
   string16 device_name;
-  FilePath relative_path;
+  base::FilePath relative_path;
   Verify();
 
   // Add a new auto detected gallery.
@@ -319,10 +320,10 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
 // "AutoDetected" type.
 TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryType) {
   MediaGalleryPrefId auto_id, id;
-  FilePath path;
+  base::FilePath path;
   std::string device_id;
   string16 device_name;
-  FilePath relative_path;
+  base::FilePath relative_path;
   Verify();
 
   // Add a new auto detect gallery to test with.
@@ -354,10 +355,10 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryType) {
 
 TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
   MediaGalleryPrefId auto_id, user_added_id, to_blacklist_id, id;
-  FilePath path;
+  base::FilePath path;
   std::string device_id;
   string16 device_name;
-  FilePath relative_path;
+  base::FilePath relative_path;
   Verify();
 
   // Add some galleries to test with.
@@ -476,10 +477,10 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
 // accordingly.
 TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryDetails) {
   MediaGalleryPrefId auto_id, id;
-  FilePath path;
+  base::FilePath path;
   std::string device_id;
   string16 device_name;
-  FilePath relative_path;
+  base::FilePath relative_path;
   Verify();
 
   // Add a new auto detect gallery to test with.
@@ -506,10 +507,10 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryDetails) {
 }
 
 TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
-  FilePath path;
+  base::FilePath path;
   std::string device_id;
   string16 device_name;
-  FilePath relative_path;
+  base::FilePath relative_path;
   Verify();
 
   // Add a regular gallery
@@ -537,7 +538,7 @@ TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
   EXPECT_EQ(0U, pref_id_set.size());
 
   // Add some galleries on the same device.
-  relative_path = FilePath(FILE_PATH_LITERAL("path1/on/device1"));
+  relative_path = base::FilePath(FILE_PATH_LITERAL("path1/on/device1"));
   device_name = ASCIIToUTF16("Device1Path1");
   device_id = "device1";
   MediaGalleryPrefId dev1_path1_id = gallery_prefs()->AddGallery(
@@ -547,7 +548,7 @@ TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
                         MediaGalleryPrefInfo::kUserAdded);
   Verify();
 
-  relative_path = FilePath(FILE_PATH_LITERAL("path2/on/device1"));
+  relative_path = base::FilePath(FILE_PATH_LITERAL("path2/on/device1"));
   device_name = ASCIIToUTF16("Device1Path2");
   MediaGalleryPrefId dev1_path2_id = gallery_prefs()->AddGallery(
       device_id, device_name, relative_path, true /*user*/);
@@ -556,7 +557,7 @@ TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
                         MediaGalleryPrefInfo::kUserAdded);
   Verify();
 
-  relative_path = FilePath(FILE_PATH_LITERAL("path1/on/device2"));
+  relative_path = base::FilePath(FILE_PATH_LITERAL("path1/on/device2"));
   device_name = ASCIIToUTF16("Device2Path1");
   device_id = "device2";
   MediaGalleryPrefId dev2_path1_id = gallery_prefs()->AddGallery(
@@ -566,7 +567,7 @@ TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
                         MediaGalleryPrefInfo::kUserAdded);
   Verify();
 
-  relative_path = FilePath(FILE_PATH_LITERAL("path2/on/device2"));
+  relative_path = base::FilePath(FILE_PATH_LITERAL("path2/on/device2"));
   device_name = ASCIIToUTF16("Device2Path2");
   MediaGalleryPrefId dev2_path2_id = gallery_prefs()->AddGallery(
       device_id, device_name, relative_path, true /*user*/);
@@ -589,9 +590,9 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryChangeObserver) {
 
   // Add a new auto detected gallery.
   string16 device_name = ASCIIToUTF16("NewAutoGallery");
-  FilePath path = MakePath("new_auto");
+  base::FilePath path = MakePath("new_auto");
   std::string device_id;
-  FilePath relative_path;
+  base::FilePath relative_path;
   MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, NULL,
                                           &relative_path);
   MediaGalleryPrefId auto_id =

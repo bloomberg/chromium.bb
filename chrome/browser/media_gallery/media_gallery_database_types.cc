@@ -11,7 +11,7 @@ CollectionRow::CollectionRow()
       entry_count(0),
       all_parsed(false) { }
 
-CollectionRow::CollectionRow(const FilePath& path,
+CollectionRow::CollectionRow(const base::FilePath& path,
               base::Time last_modified_time,
               int entry_count,
               bool all_parsed)

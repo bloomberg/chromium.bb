@@ -27,7 +27,8 @@ class MediaGalleryDatabaseTest : public testing::Test,
   // Test setup.
   void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    FilePath db_file = temp_dir_.path().AppendASCII("MediaGalleryTest.db");
+    base::FilePath db_file =
+        temp_dir_.path().AppendASCII("MediaGalleryTest.db");
 
     ASSERT_TRUE(db_.Open(db_file));
 
@@ -48,7 +49,7 @@ TEST_F(MediaGalleryDatabaseTest, Init) {
 }
 
 TEST_F(MediaGalleryDatabaseTest, AddCollection) {
-  CollectionRow row1(FilePath(FILE_PATH_LITERAL("path1")),
+  CollectionRow row1(base::FilePath(FILE_PATH_LITERAL("path1")),
                      base::Time::FromDoubleT(12345),
                      123,
                      false);
@@ -61,7 +62,7 @@ TEST_F(MediaGalleryDatabaseTest, AddCollection) {
 }
 
 TEST_F(MediaGalleryDatabaseTest, StandardizePath) {
-  FilePath path(FILE_PATH_LITERAL("path1"));
+  base::FilePath path(FILE_PATH_LITERAL("path1"));
   path = path.AppendASCII("path2");
   CollectionRow row1(path,
                      base::Time::FromDoubleT(12345),

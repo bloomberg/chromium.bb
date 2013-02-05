@@ -16,7 +16,7 @@ typedef int CollectionId;
 struct CollectionRow {
  public:
   CollectionRow();
-  CollectionRow(const FilePath& path,
+  CollectionRow(const base::FilePath& path,
                 base::Time last_modified_time,
                 int entry_count,
                 bool all_parsed);
@@ -24,7 +24,7 @@ struct CollectionRow {
   bool operator==(const CollectionRow& row2) const;
 
   CollectionId id;
-  FilePath path;
+  base::FilePath path;
   base::Time last_modified_time;
   int entry_count;
   bool all_parsed;

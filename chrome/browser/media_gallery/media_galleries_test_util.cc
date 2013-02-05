@@ -42,7 +42,7 @@ scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
   manifest->Set(extension_manifest_keys::kPermissions, permission_list);
 
 
-  FilePath path = profile->GetPath().AppendASCII(name);
+  base::FilePath path = profile->GetPath().AppendASCII(name);
   std::string errors;
   scoped_refptr<extensions::Extension> extension =
       extensions::Extension::Create(path, extensions::Manifest::INTERNAL,
@@ -91,7 +91,7 @@ void EnsureMediaDirectoriesExists::Init() {
     PathService::OverrideAndCreateIfNeeded(
         kDirectoryKeys[i], fake_dir_.path().AppendASCII(kDirectoryNames[i]),
         true /*create*/);
-    FilePath path;
+    base::FilePath path;
     if (PathService::Get(kDirectoryKeys[i], &path) &&
         file_util::DirectoryExists(path)) {
       ++num_galleries_;

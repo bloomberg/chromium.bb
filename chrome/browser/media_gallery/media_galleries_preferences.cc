@@ -71,7 +71,7 @@ bool PopulateGalleryPrefInfoFromDictionary(
   MediaGalleryPrefId pref_id;
   string16 display_name;
   std::string device_id;
-  FilePath::StringType path;
+  base::FilePath::StringType path;
   MediaGalleryPrefInfo::Type type = MediaGalleryPrefInfo::kAutoDetected;
   if (!GetPrefId(dict, &pref_id) ||
       !dict.GetString(kMediaGalleriesDisplayNameKey, &display_name) ||
@@ -84,7 +84,7 @@ bool PopulateGalleryPrefInfoFromDictionary(
   out_gallery_info->pref_id = pref_id;
   out_gallery_info->display_name = display_name;
   out_gallery_info->device_id = device_id;
-  out_gallery_info->path = FilePath(path);
+  out_gallery_info->path = base::FilePath(path);
   out_gallery_info->type = type;
   return true;
 }
@@ -131,8 +131,8 @@ MediaGalleryPrefInfo::MediaGalleryPrefInfo()
 }
 MediaGalleryPrefInfo::~MediaGalleryPrefInfo() {}
 
-FilePath MediaGalleryPrefInfo::AbsolutePath() const {
-  FilePath base_path = MediaStorageUtil::FindDevicePathById(device_id);
+base::FilePath MediaGalleryPrefInfo::AbsolutePath() const {
+  base::FilePath base_path = MediaStorageUtil::FindDevicePathById(device_id);
   return base_path.empty() ? base_path : base_path.Append(path);
 }
 
@@ -159,13 +159,13 @@ void MediaGalleriesPreferences::AddDefaultGalleriesIfFreshProfile() {
   };
 
   for (size_t i = 0; i < arraysize(kDirectoryKeys); ++i) {
-    FilePath path;
+    base::FilePath path;
     if (!PathService::Get(kDirectoryKeys[i], &path))
       continue;
 
     std::string device_id;
     string16 display_name;
-    FilePath relative_path;
+    base::FilePath relative_path;
     if (MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, &display_name,
                                                 &relative_path)) {
       AddGallery(device_id, display_name, relative_path, false /*user added*/);
@@ -216,18 +216,18 @@ void MediaGalleriesPreferences::RemoveGalleryChangeObserver(
 }
 
 bool MediaGalleriesPreferences::LookUpGalleryByPath(
-    const FilePath& path,
+    const base::FilePath& path,
     MediaGalleryPrefInfo* gallery_info) const {
   std::string device_id;
   string16 device_name;
-  FilePath relative_path;
+  base::FilePath relative_path;
   if (!MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, &device_name,
                                                &relative_path)) {
     if (gallery_info) {
       gallery_info->pref_id = kInvalidMediaGalleryPrefId;
       gallery_info->display_name = string16();
       gallery_info->device_id = std::string();
-      gallery_info->path = FilePath();
+      gallery_info->path = base::FilePath();
       gallery_info->type = MediaGalleryPrefInfo::kInvalidType;
     }
     return false;
@@ -267,9 +267,10 @@ MediaGalleryPrefIdSet MediaGalleriesPreferences::LookUpGalleriesByDeviceId(
 
 MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
     const std::string& device_id, const string16& display_name,
-    const FilePath& relative_path, bool user_added) {
+    const base::FilePath& relative_path, bool user_added) {
   DCHECK_GT(display_name.size(), 0U);
-  FilePath normalized_relative_path = relative_path.NormalizePathSeparators();
+  base::FilePath normalized_relative_path =
+      relative_path.NormalizePathSeparators();
   MediaGalleryPrefIdSet galleries_on_device =
     LookUpGalleriesByDeviceId(device_id);
   for (MediaGalleryPrefIdSet::const_iterator it = galleries_on_device.begin();
@@ -330,7 +331,7 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
 }
 
 MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryByPath(
-    const FilePath& path) {
+    const base::FilePath& path) {
   MediaGalleryPrefInfo gallery_info;
   if (LookUpGalleryByPath(path, &gallery_info) &&
       gallery_info.type != MediaGalleryPrefInfo::kBlackListed) {

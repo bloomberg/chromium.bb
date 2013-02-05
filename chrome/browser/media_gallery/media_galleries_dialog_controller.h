@@ -97,7 +97,7 @@ class MediaGalleriesDialogController
   typedef std::list<GalleryPermission> NewGalleryPermissions;
 
   // SelectFileDialog::Listener implementation:
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE;
 
