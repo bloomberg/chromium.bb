@@ -121,7 +121,8 @@ TEST_F(BrowserAccessibilityTest, InvalidHitTestCoordsTest) {
 }
 
 // Test to ensure querying standard attributes works.
-TEST_F(BrowserAccessibilityTest, BasicAttributeTest) {
+// http://crbug.com/173983 Test fails on Mac ASan bot
+TEST_F(BrowserAccessibilityTest, DISABLED_BasicAttributeTest) {
   NSString* helpText = [accessibility_
       accessibilityAttributeValue:NSAccessibilityHelpAttribute];
   EXPECT_NSEQ(@"HelpText", helpText);
