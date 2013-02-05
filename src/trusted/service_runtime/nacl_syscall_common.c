@@ -1525,11 +1525,7 @@ int32_t NaClSysMmap(struct NaClAppThread  *natp,
 
   NaClLog(4, " offset = 0x%08"NACL_PRIxNACL_OFF"\n", offset);
 
-  retval = NaClSysMmapIntern(nap,
-                                   start, length,
-                                   prot,
-                                   flags,
-                                   d, offset);
+  retval = NaClSysMmapIntern(nap, start, length, prot, flags, d, offset);
 cleanup:
   return retval;
 }
