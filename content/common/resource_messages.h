@@ -144,6 +144,9 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   // object).
   IPC_STRUCT_MEMBER(ResourceType::Type, resource_type)
 
+  // The priority of this request.
+  IPC_STRUCT_MEMBER(WebKit::WebURLRequest::Priority, priority)
+
   // Used by plugin->browser requests to get the correct net::URLRequestContext.
   IPC_STRUCT_MEMBER(uint32, request_context)
 

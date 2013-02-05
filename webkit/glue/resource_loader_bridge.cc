@@ -51,6 +51,7 @@ ResourceLoaderBridge::RequestInfo::RequestInfo()
       load_flags(0),
       requestor_pid(0),
       request_type(ResourceType::MAIN_FRAME),
+      priority(WebKit::WebURLRequest::PriorityUnresolved),
       request_context(0),
       appcache_host_id(0),
       routing_id(0),

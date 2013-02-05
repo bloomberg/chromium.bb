@@ -432,6 +432,7 @@ void WebURLLoaderImpl::Context::Start(
   request_info.requestor_pid = request.requestorProcessID();
   request_info.request_type =
       ResourceType::FromTargetType(request.targetType());
+  request_info.priority = request.priority();
   request_info.appcache_host_id = request.appCacheHostID();
   request_info.routing_id = request.requestorID();
   request_info.download_to_file = request.downloadToFile();

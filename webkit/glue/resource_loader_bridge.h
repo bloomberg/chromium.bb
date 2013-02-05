@@ -246,6 +246,9 @@ class ResourceLoaderBridge {
     // load, or a sub objects load.
     ResourceType::Type request_type;
 
+    // Indicates the priority of this request, as determined by WebKit.
+    WebKit::WebURLRequest::Priority priority;
+
     // Used for plugin to browser requests.
     uint32 request_context;
 
