@@ -11,7 +11,7 @@
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
+#include "native_client/src/trusted/validator_ragel/validator.h"
 
 /* Used as an argument to copy_func when unsupported instruction must be
    replaced with HLTs.  */

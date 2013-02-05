@@ -23,7 +23,7 @@
 #include "native_client/src/trusted/validator/driver/elf_load.h"
 #include "native_client/src/trusted/validator_arm/problem_reporter.h"
 #include "native_client/src/trusted/validator_arm/validator.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
+#include "native_client/src/trusted/validator_ragel/validator.h"
 
 using std::set;
 using std::string;

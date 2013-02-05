@@ -14,7 +14,7 @@
 #include "native_client/src/include/elf64.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/decoder.h"
+#include "native_client/src/trusted/validator_ragel/decoder.h"
 
 /* This is a copy of NaClLog from shared/platform/nacl_log.c to avoid
  * linking in code in NaCl shared code in the unreviewed/Makefile and be able to

@@ -18,8 +18,8 @@
 #include "native_client/src/trusted/validator/types_memory_model.h"
 #include "native_client/src/trusted/validator/x86/ncinstbuffer.h"
 #include "native_client/src/trusted/validator/x86/testing/enuminsts/str_utils.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/decoder.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
+#include "native_client/src/trusted/validator_ragel/decoder.h"
+#include "native_client/src/trusted/validator_ragel/validator.h"
 
 #define kBufferSize 1024
 

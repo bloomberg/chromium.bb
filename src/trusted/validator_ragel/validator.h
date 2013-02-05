@@ -7,12 +7,20 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_VALIDATOR_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_VALIDATOR_H_
 
-#include "native_client/src/trusted/validator_ragel/unreviewed/decoder.h"
+#include "native_client/src/trusted/validator_ragel/decoder.h"
 
 EXTERN_C_BEGIN
 
 enum validation_callback_info {
-  /* Anyfield info mask: you can use to parse information about anyfields.  */
+  /*
+   * Anyfield info mask: you can use to parse information about anyfields.
+   * Anyfields are immediates, displacement (offset in memory operand) and
+   * relative offset (address in jump-like instructions).
+   *
+   * Constants for anyfields are combined with "+" which means that you need
+   * to use complex logic to parse this byte (see helper defines under this
+   * type).
+   */
   ANYFIELD_INFO_MASK            = 0x000000ff,
   /* Immediate sizes (immediates always come at the end of instruction).  */
   IMMEDIATES_SIZE_MASK          = 0x0000000f,
@@ -32,7 +40,7 @@ enum validation_callback_info {
   DISPLACEMENT_8BIT             = 0x00000021,
   DISPLACEMENT_16BIT            = 0x00000042,
   DISPLACEMENT_32BIT            = 0x00000064,
-  /* Relative size (relative fields always come at the end if instriction).  */
+  /* Relative size (relative fields always come at the end of instriction).  */
   RELATIVE_PRESENT              = 0x00000080,
   RELATIVE_8BIT                 = 0x00000081,
   RELATIVE_16BIT                = 0x00000082,
@@ -42,7 +50,7 @@ enum validation_callback_info {
   /* Last restricted register.  */
   RESTRICTED_REGISTER_MASK      = 0x00001f00,
   RESTRICTED_REGISTER_SHIFT     =          8,
-  /* Was restricted from previous instruction used in the current one?  */
+  /* Was restricted_register from previous instruction used in this one?  */
   RESTRICTED_REGISTER_USED      = 0x00002000,
   /* Mask to select all validation errors.  */
   VALIDATION_ERRORS_MASK        = 0x01ffc000,
@@ -57,6 +65,7 @@ enum validation_callback_info {
   /* Index must be restricted if present.  */
   UNRESTRICTED_INDEX_REGISTER   = 0x00040000,
   BAD_RSP_RBP_PROCESSING_MASK   = 0x00380000,
+  /* Next 4 errors can not happen simultaneously.  */
   /* Operations with %ebp must be followed with sandboxing immediately.  */
   RESTRICTED_RBP_UNPROCESSED    = 0x00080000,
   /* Attemp to "sandbox" %rbp without restricting it first.  */
@@ -67,7 +76,7 @@ enum validation_callback_info {
   UNRESTRICTED_RSP_PROCESSED    = 0x00380000,
   /* Operations with %r15 are forbidden.  */
   R15_MODIFIED                  = 0x00400000,
-  /* Operations with SPL are forbidden for compatibility with old validator.  */
+  /* Operations with BPL are forbidden for compatibility with old validator.  */
   BPL_MODIFIED                  = 0x00800000,
   /* Operations with SPL are forbidden for compatibility with old validator.  */
   SPL_MODIFIED                  = 0x01000000,
@@ -85,13 +94,22 @@ enum validation_callback_info {
 
 #define INFO_IMMEDIATES_SIZE(info) \
   ((info) & IMMEDIATES_SIZE_MASK)
+/*
+ * 0: no displacement
+ * 1: 1-byte displacement
+ * 2: 2-byte displacement
+ * 3: 4-byte displacement
+ */
+#define INFO_DISPLACEMENT_CODE(info) \
+  (((info) & DISPLACEMENT_SIZE_MASK) >> DISPLACEMENT_SIZE_SHIFT)
 #define INFO_DISPLACEMENT_SIZE(info) \
-  ((1 << (((info) & DISPLACEMENT_SIZE_MASK) >> DISPLACEMENT_SIZE_SHIFT)) >> 1)
+  ((1 << INFO_DISPLACEMENT_CODE(info)) >> 1)
 #define INFO_RELATIVE_SIZE(info) \
   ((info) & RELATIVE_PRESENT ? INFO_IMMEDIATES_SIZE(info) : 0)
+/* If we have the second immediate, the first immediate is always one byte.  */
 #define INFO_SECOND_IMMEDIATE_SIZE(info) \
   ((info) & IMMEDIATE_2BIT == SECOND_IMMEDIATE_PRESENT ? \
-    INFO_IMMEDIATES_SIZE(info) - 1 : 0)
+    INFO_IMMEDIATES_SIZE(info) - INFO_DISPLACEMENT_SIZE(info) - 1 : 0)
 #define INFO_IMMEDIATE_SIZE(info) \
   INFO_IMMEDIATES_SIZE(info) - \
   INFO_DISPLACEMENT_SIZE(info) - \
@@ -110,6 +128,7 @@ enum ValidationOptions {
   PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM   = 0x00000200
 };
 
+/* NO_REG is default value for restricted register */
 #define RESTRICTED_REGISTER_INITIAL_VALUE(option) \
   (((option) & RESTRICTED_REGISTER_INITIAL_VALUE_MASK) ^ NO_REG)
 
@@ -123,13 +142,18 @@ enum ValidationOptions {
  * When callback is called for invalid jump tagret,
  *   instruction_start = instruction_end = jump target
  *
- * Minimal user_callback looks like this:
+ * Minimal user_callback for CALL_USER_CALLBACK_ON_EACH_INSTRUCTION looks like
+ * this:
  *   ...
  *   if (validation_info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET))
  *     return FALSE;
  *   else
  *     return TRUE;
  *   ...
+ *
+ * Note that when superinstructions are processed this callback will be first
+ * called for the sandboxing instructions (just as if they were regular
+ * instructions) and then it'll be called again for the full superinstruction.
  */
 typedef Bool (*ValidationCallbackFunc) (const uint8_t *instruction_start,
                                         const uint8_t *instruction_end,

@@ -14,7 +14,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator/driver/elf_load.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
+#include "native_client/src/trusted/validator_ragel/validator.h"
 
 
 Bool ProcessError(

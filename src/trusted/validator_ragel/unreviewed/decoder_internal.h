@@ -13,7 +13,6 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODER_INTERNAL_H_
 
 #include "native_client/src/trusted/validator_ragel/unreviewed/decoding.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/decoder.h"
 
 /*
  * Set of macroses used in actions defined in parse_instruction.rl to pull

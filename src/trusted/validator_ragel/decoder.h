@@ -153,11 +153,21 @@ struct Instruction {
   const char* att_instruction_suffix;
 };
 
+/*
+ * "begin" points to first byte of the instruction
+ * "end" points to the last byte of the instruction
+ *   for single-byte instruction “begin” == “end”
+ * "instruction" is detailed information about instruction
+ */
 typedef void (*ProcessInstructionFunc) (const uint8_t *begin,
                                         const uint8_t *end,
                                         struct Instruction *instruction,
                                         void *userdata);
 
+/*
+ * "ptr" points to the first byte rejected by DFA and can be used in more
+ * advanced decoders to try to do some kind of recovery.
+ */
 typedef void (*ProcessDecodingErrorFunc) (const uint8_t *ptr,
                                           void *userdata);
 
