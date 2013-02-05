@@ -82,9 +82,12 @@ class Submit(webapp2.RequestHandler):
             return self.fail('You must rank ALL treatments to submit.')
 
         participant = str(users.get_current_user())
+        feedback = self.request.get('feedback')
         if str(users.get_current_user()) not in exp.participants:
             exp.participants.append(participant)
+            exp.feedback.append('')
         participant_number = exp.participants.index(participant)
+        exp.feedback[participant_number] = feedback
 
         score = 0
         updated_treatments = []
@@ -166,7 +169,7 @@ class DownloadCSV(webapp2.RequestHandler):
         writer.writerow([''] + [treatment.name for treatment in treatments])
         for i, participant in enumerate(exp.participants):
             results = [treatment.scores[i] for treatment in treatments]
-            writer.writerow([participant] + results)
+            writer.writerow([participant] + results + [exp.feedback[i]])
 
         writer.writerow([])
         writer.writerow(['Sign-test P-values:'])

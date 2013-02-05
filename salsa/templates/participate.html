@@ -40,6 +40,10 @@
           ranking = ranking + ties.slice(0, -1) + '>';
       }
 
+      // Grab their feedback if they left any
+      var feedback_box = document.getElementById('feedback');
+      var feedback = encodeURIComponent(feedback_box.value);
+
       // Make sure that all of the treatments got ranked
       if (num_ranked != keys.length) {
         alert('Please rank all of the treatments to continue.');
@@ -49,6 +53,7 @@
       // Build up a submit url and redirect to it
       var submit_url = '/submit?exp_key={{ experiment.key() }}'
       submit_url = submit_url + '&ranking=' + ranking.slice(0, -1);
+      submit_url = submit_url + '&feedback=' + feedback;
       window.location = submit_url;
     }
 
@@ -245,6 +250,16 @@
       </table>
     </td>
   </tr></table>
+
+  <p>
+    (Optional) If you have any comments you would like to include you may do
+    so below.  Useful things include odd behavior you encountered or peculiar
+    touchpad habits you may have such as extremely high speed settings --
+    anything you think might be useful.
+  </p>
+  <p>
+    <textarea rows="3" cols="40" id="feedback"></textarea>
+  </p>
 
   <p><button name="submit" onclick="submitReview()">Submit</button></p>
 

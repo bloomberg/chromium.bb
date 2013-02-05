@@ -50,6 +50,9 @@
                 {{ treatment.scores[participant_number] }}
               </td>
             {% endfor %}
+            <td>
+              {{ experiment.feedback[loop.index0] }}
+            </td>
           </tr>
         {% endfor %}
 
