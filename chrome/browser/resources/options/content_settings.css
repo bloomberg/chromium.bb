@@ -68,12 +68,12 @@ div[role='listitem'][controlled-by] {
   position: relative;
 }
 
-div[role='section-header'] {
+.section-header {
   -webkit-margin-start: -18px;
   margin-bottom: 0.8em;
 }
 
-div[role='section-header'] > h3 {
+.section-header > h3 {
   display: inline;
 }
 
