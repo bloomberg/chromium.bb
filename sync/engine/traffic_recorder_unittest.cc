@@ -4,6 +4,7 @@
 
 #include "sync/engine/traffic_recorder.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "sync/protocol/sync.pb.h"
@@ -108,7 +109,9 @@ TEST(TrafficRecorderTest, ToValueTimestampTest) {
   recorder.set_time(sample_time);
   recorder.RecordClientToServerResponse(response);
 
-  ListValue* value = recorder.ToValue();
+  scoped_ptr<ListValue> value;
+  value.reset(recorder.ToValue());
+
   DictionaryValue* record_value;
   std::string time_str;
 
