@@ -416,7 +416,7 @@ ImageUtil.setClass = function(element, className, on) {
  */
 ImageUtil.ImageLoader = function(document) {
   this.document_ = document;
-  this.image_ = null;
+  this.image_ = new Image();
   this.generation_ = 0;
 };
 
@@ -463,10 +463,11 @@ ImageUtil.ImageLoader.prototype.load = function(
     this.timeout_ = null;
     // The clients of this class sometimes request the same url repeatedly.
     // The onload fires only if the src is different from the previous value.
-    // To work around that we create a new Image every time.
-    this.image_ = new Image();
+    // To work around that we reset the src temporarily.
+    this.image_.src = '';
     var errorCallback = function(error) {
-      this.image_ = null;
+      this.image_.onerror = null;
+      this.image_.onload = null;
       var tmpCallback = this.callback_;
       this.callback_ = null;
       var emptyCanvas = this.document_.createElement('canvas');
@@ -475,6 +476,8 @@ ImageUtil.ImageLoader.prototype.load = function(
       tmpCallback(emptyCanvas, error);
     }.bind(this);
     this.image_.onload = function(e) {
+      this.image_.onerror = null;
+      this.image_.onload = null;
       if (ImageUtil.ImageLoader.isTooLarge(this.image_)) {
         errorCallback('IMAGE_TOO_BIG_ERROR');
         return;
@@ -527,7 +530,8 @@ ImageUtil.ImageLoader.prototype.cancel = function() {
   }
   if (this.image_) {
     this.image_.onload = function() {};
-    this.image_ = null;
+    this.image_.onerror = function() {};
+    this.image_.src = '';
   }
   if (this.remoteLoader_) {
     this.remoteLoader_.cancel();

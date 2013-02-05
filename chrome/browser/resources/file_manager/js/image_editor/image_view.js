@@ -797,6 +797,9 @@ ImageView.Cache.prototype.putItem = function(id, item, opt_keepLRU) {
   if ((pos >= 0) != (id in this.map_))
     throw new Error('Inconsistent cache state');
 
+  if ((pos >= 0) && (item != this.map_[id]))
+    this.deleteItem_(this.map_[id]);
+
   if (id in this.map_) {
     if (!opt_keepLRU) {
       // Move to the end (most recently used).
@@ -820,6 +823,7 @@ ImageView.Cache.prototype.putItem = function(id, item, opt_keepLRU) {
 ImageView.Cache.prototype.evictLRU = function() {
   if (this.order_.length == this.capacity_) {
     var id = this.order_.shift();
+    this.deleteItem_(this.map_[id]);
     delete this.map_[id];
   }
 };
@@ -840,6 +844,21 @@ ImageView.Cache.prototype.renameItem = function(oldId, newId) {
   this.order_[pos] = newId;
   this.map_[newId] = this.map_[oldId];
   delete this.map_[oldId];
+};
+
+/**
+ * Disposes an object.
+ * @param {object} item The item object.
+ * @private
+ */
+ImageView.Cache.prototype.deleteItem_ = function(item) {
+  // Trick to reduce memory usage without waiting for gc.
+  if (item instanceof HTMLCanvasElement) {
+    // If the canvas is being used somewhere else (eg. displayed on the screen),
+    // it will be cleared.
+    item.width = 0;
+    item.height = 0;
+  }
 };
 
 /* Transition effects */
