@@ -24,7 +24,9 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_browser_thread.h"
+#include "grit/chromium_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 
@@ -286,7 +288,7 @@ TEST_F(ProfileShortcutManagerTest, ShortcutFilename) {
   const string16 kProfileName = L"Harry";
   BrowserDistribution* distribution = GetDistribution();
   const string16 expected_name = kProfileName + L" - " +
-      distribution->GetAppShortCutName() + installer::kLnkExt;
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME) + installer::kLnkExt;
   EXPECT_EQ(expected_name,
             profiles::internal::GetShortcutFilenameForProfile(kProfileName,
                                                               distribution));

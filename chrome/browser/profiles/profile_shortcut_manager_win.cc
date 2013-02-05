@@ -27,8 +27,10 @@
 #include "chrome/installer/util/shell_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chrome_unscaled_resources.h"
+#include "grit/chromium_strings.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
@@ -509,8 +511,10 @@ string16 GetShortcutFilenameForProfile(const string16& profile_name,
   if (!profile_name.empty()) {
     shortcut_name.append(SanitizeShortcutProfileNameString(profile_name));
     shortcut_name.append(L" - ");
+    shortcut_name.append(l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+  } else {
+    shortcut_name.append(distribution->GetAppShortCutName());
   }
-  shortcut_name.append(distribution->GetAppShortCutName());
   return shortcut_name + installer::kLnkExt;
 }
 
