@@ -70,8 +70,7 @@ MACROENTRY
         test    %eax, %eax  /* zero is illegal (and default) */
         jz      1f
 
-        movl    0(%ecx), %edx
-        movl    0(%edx,%eax,4), %edx
+        movl    (%ecx,%eax,4), %edx
         test    %edx, %edx
         jz      1f
 

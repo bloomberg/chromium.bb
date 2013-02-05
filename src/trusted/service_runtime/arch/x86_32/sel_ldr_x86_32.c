@@ -17,12 +17,6 @@
 #include "native_client/src/trusted/service_runtime/arch/x86_32/tramp_32.h"
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 
-struct NaClPcrelThunkGlobals {
-  struct NaClThreadContext **user;
-};
-
-static struct NaClPcrelThunkGlobals nacl_pcrel_globals;
-
 /*
  * Create thunk for use by syscall trampoline code.
  */
@@ -35,9 +29,6 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
   /* TODO(mcgrathr): Use a safe cast here. */
   NaClCPUFeaturesX86    *features = (NaClCPUFeaturesX86 *) nap->cpu_features;
   uintptr_t             naclsyscallseg;
-
-  /* idempotent */
-  nacl_pcrel_globals.user = nacl_user;
 
   if (0 != (error = NaCl_page_alloc_randomized(&thunk_addr,
                                                NACL_MAP_PAGESIZE))) {
@@ -68,7 +59,7 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
   patch_abs32[0].target = ((uintptr_t) &NaClPcrelThunk_dseg_patch) - 4;
   patch_abs32[0].value = NaClGetGlobalDs();
   patch_abs32[1].target = ((uintptr_t) &NaClPcrelThunk_globals_patch) - 4;
-  patch_abs32[1].value = (uintptr_t) &nacl_pcrel_globals;
+  patch_abs32[1].value = (uintptr_t) &nacl_user;
   patch_abs32[2].target = ((uintptr_t) &NaClPcrelThunk_end) - 4;
   patch_abs32[2].value = naclsyscallseg - ((uintptr_t) thunk_addr +
                                            ((uintptr_t) &NaClPcrelThunk_end
