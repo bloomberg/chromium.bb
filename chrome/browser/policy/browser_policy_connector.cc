@@ -270,7 +270,7 @@ void BrowserPolicyConnector::InitializeUserPolicy(
     scoped_ptr<CloudPolicyStore> store(
         new UserCloudPolicyStoreChromeOS(
             chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
-            user_name, policy_cache_file, token_cache_file));
+            user_name, token_cache_file, policy_cache_file));
     user_cloud_policy_manager_.reset(
         new UserCloudPolicyManagerChromeOS(store.Pass(),
                                            wait_for_policy_fetch));
