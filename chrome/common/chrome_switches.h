@@ -250,7 +250,6 @@ extern const char kNoProxyServer[];
 extern const char kNoPings[];
 extern const char kNoServiceAutorun[];
 extern const char kNoStartupWindow[];
-extern const char kNotifyCloudPrintTokenExpired[];
 extern const char kNtpAppInstallHint[];
 extern const char kNumPacThreads[];
 extern const char kOmniboxHistoryQuickProviderNewScoring[];

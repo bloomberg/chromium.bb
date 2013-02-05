@@ -509,14 +509,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   }
 #endif  // defined(ENABLE_AUTOMATION)
 
-  // If we have been invoked to display a desktop notification on behalf of
-  // the service process, we do not want to open any browser windows.
-  if (command_line.HasSwitch(switches::kNotifyCloudPrintTokenExpired)) {
-    silent_launch = true;
-    CloudPrintProxyServiceFactory::GetForProfile(last_used_profile)->
-        ShowTokenExpiredNotification();
-  }
-
   // If we are just displaying a print dialog we shouldn't open browser
   // windows.
   if (command_line.HasSwitch(switches::kCloudPrintFile) &&

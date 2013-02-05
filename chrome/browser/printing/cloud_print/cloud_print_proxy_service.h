@@ -55,7 +55,6 @@ class CloudPrintProxyService
   // not set or the connector was not enabled.
   bool EnforceCloudPrintConnectorPolicyAndQuit();
 
-  bool ShowTokenExpiredNotification();
   std::string proxy_id() const { return proxy_id_; }
 
   // CloudPrintSetupHandler::Delegate implementation.
@@ -67,8 +66,6 @@ class CloudPrintProxyService
   friend class TokenExpiredNotificationDelegate;
 
   Profile* profile_;
-  scoped_refptr<TokenExpiredNotificationDelegate> token_expired_delegate_;
-  scoped_ptr<CloudPrintSetupHandler> cloud_print_setup_handler_;
   std::string proxy_id_;
 
   // Methods that send an IPC to the service.
@@ -90,11 +87,6 @@ class CloudPrintProxyService
   // launches. The task typically involves sending an IPC to the service
   // process.
   bool InvokeServiceTask(const base::Closure& task);
-
-  void OnTokenExpiredNotificationError();
-  void OnTokenExpiredNotificationClosed(bool by_user);
-  void OnTokenExpiredNotificationClick();
-  void TokenExpiredNotificationDone(bool keep_alive);
 
   // Checks the policy. Returns true if nothing needs to be done (the policy is
   // not set or the connector is not enabled).

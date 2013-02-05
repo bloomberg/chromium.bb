@@ -52,13 +52,6 @@ void LaunchBrowserProcessWithSwitch(const std::string& switch_string) {
 #endif
 }
 
-// This method is invoked on the IO thread to launch the browser process to
-// display a desktop notification that the Cloud Print token is invalid and
-// needs re-authentication.
-void ShowTokenExpiredNotificationInBrowser() {
-  LaunchBrowserProcessWithSwitch(switches::kNotifyCloudPrintTokenExpired);
-}
-
 void CheckCloudPrintProxyPolicyInBrowser() {
   LaunchBrowserProcessWithSwitch(switches::kCheckCloudPrintConnectorPolicy);
 }
@@ -240,20 +233,11 @@ void CloudPrintProxy::OnAuthenticated(
 
 void CloudPrintProxy::OnAuthenticationFailed() {
   DCHECK(CalledOnValidThread());
-  // If authenticated failed, we will disable the cloud print proxy.
-  // We can't delete printers at this point.
-  DisableForUser();
-  // Also delete the cached robot credentials since they may not be valid any
-  // longer.
-  service_prefs_->RemovePref(prefs::kCloudPrintRobotRefreshToken);
-  service_prefs_->RemovePref(prefs::kCloudPrintRobotEmail);
-  service_prefs_->WritePrefs();
-
-  // Launch the browser to display a notification that the credentials have
-  // expired (unless error dialogs are disabled).
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoErrorDialogs))
-    g_service_process->io_thread()->message_loop_proxy()->PostTask(
-        FROM_HERE, base::Bind(&ShowTokenExpiredNotificationInBrowser));
+  // Don't disable permanently. Could be just connection issue.
+  ShutdownBackend();
+  if (client_) {
+    client_->OnCloudPrintProxyDisabled(false);
+  }
 }
 
 void CloudPrintProxy::OnPrintSystemUnavailable() {

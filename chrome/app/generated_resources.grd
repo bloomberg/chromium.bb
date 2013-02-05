@@ -15016,11 +15016,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Custom Files
     </message>
 
-    <!-- Cloud Print Strings -->
-    <message name="IDS_CLOUD_PRINT_TOKEN_EXPIRED_MESSAGE" desc="The message to display when the cloud print token has expired.">
-      The credentials used to share your printers to  <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> have expired. Please click here to re-enter your username and password.
-    </message>
-
     <!-- Strings for the new-style OAuth-based enterprise enrollment page -->
     <if expr="pp_ifdef('chromeos')">
       <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_FAILED" desc="Error message shown on the enrollment screen upon failed device registration.">
