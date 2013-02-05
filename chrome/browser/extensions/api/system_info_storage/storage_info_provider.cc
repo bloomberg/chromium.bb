@@ -26,18 +26,18 @@ const int kDefaultPollingIntervalMs = 1000;
 const char kWatchingTokenName[] = "_storage_info_watching_token_";
 
 StorageInfoProvider::StorageInfoProvider()
-    : observers_(new ObserverListThreadSafe<Observer>()),
+    : observers_(new ObserverListThreadSafe<StorageInfoObserver>()),
       watching_interval_(kDefaultPollingIntervalMs) {
 }
 
 StorageInfoProvider::~StorageInfoProvider() {
 }
 
-void StorageInfoProvider::AddObserver(Observer* obs) {
+void StorageInfoProvider::AddObserver(StorageInfoObserver* obs) {
   observers_->AddObserver(obs);
 }
 
-void StorageInfoProvider::RemoveObserver(Observer* obs) {
+void StorageInfoProvider::RemoveObserver(StorageInfoObserver* obs) {
   observers_->RemoveObserver(obs);
 }
 
@@ -110,7 +110,7 @@ void StorageInfoProvider::CheckWatchedStoragesOnBlockingPool() {
       continue;
     }
     if (it->second != info.available_capacity) {
-      observers_->Notify(&Observer::OnStorageFreeSpaceChanged,
+      observers_->Notify(&StorageInfoObserver::OnStorageFreeSpaceChanged,
                          it->first, /* storage id */
                          it->second, /* old free space value */
                          info.available_capacity /* new value */);

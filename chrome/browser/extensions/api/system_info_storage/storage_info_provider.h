@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/timer.h"
+#include "chrome/browser/extensions/api/system_info_storage/storage_info_observer.h"
 #include "chrome/browser/extensions/system_info_provider.h"
 #include "chrome/common/extensions/api/experimental_system_info_storage.h"
 #include "content/public/browser/notification_observer.h"
@@ -35,22 +36,12 @@ typedef std::vector<linked_ptr<
 
 class StorageInfoProvider : public SystemInfoProvider<StorageInfo> {
  public:
-  class Observer {
-   public:
-    virtual ~Observer() {}
-
-    // Called when the storage free space changes.
-    virtual void OnStorageFreeSpaceChanged(const std::string& id,
-                                           double old_value,
-                                           double new_value) = 0;
-  };
-
   // Get the single shared instance of StorageInfoProvider.
   static StorageInfoProvider* Get();
 
   // Add and remove observer, both can be called from any thread.
-  void AddObserver(Observer* obs);
-  void RemoveObserver(Observer* obs);
+  void AddObserver(StorageInfoObserver* obs);
+  void RemoveObserver(StorageInfoObserver* obs);
 
   // Start and stop watching the given storage |id|.
   virtual void StartWatching(const std::string& id);
@@ -102,7 +93,7 @@ class StorageInfoProvider : public SystemInfoProvider<StorageInfo> {
 
   // The thread-safe observer list that observe the changes happening on the
   // storages.
-  scoped_refptr<ObserverListThreadSafe<Observer> > observers_;
+  scoped_refptr<ObserverListThreadSafe<StorageInfoObserver> > observers_;
 
   // The time interval for watching the free space change, in milliseconds.
   size_t watching_interval_;

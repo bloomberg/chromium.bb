@@ -44,7 +44,7 @@ const size_t kWatchingIntervalMs = 1u;
 // The number of times of checking watched storages.
 const int kCheckTimes = 10;
 
-class MockStorageObserver : public StorageInfoProvider::Observer {
+class MockStorageObserver : public StorageInfoObserver {
  public:
   MockStorageObserver() {}
   virtual ~MockStorageObserver() {}
@@ -59,7 +59,7 @@ class MockStorageObserver : public StorageInfoProvider::Observer {
 // A testing observer used to provide the statistics of how many times
 // that the storage free space has been changed and check the change against
 // our expectation.
-class TestStorageObserver : public StorageInfoProvider::Observer {
+class TestStorageObserver : public StorageInfoObserver {
  public:
   TestStorageObserver() {
     for (size_t i = 0; i < arraysize(kTestingData); ++i)

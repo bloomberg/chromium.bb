@@ -63,15 +63,41 @@ SystemInfoEventRouter::SystemInfoEventRouter() {
 SystemInfoEventRouter::~SystemInfoEventRouter() {
 }
 
+void SystemInfoEventRouter::StartWatchingStorages(
+    const StorageInfo& info, bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!success)
+    return;
+
+  for (StorageInfo::const_iterator it = info.begin(); it != info.end(); ++it) {
+    StorageInfoProvider::Get()->StartWatching((*it)->id);
+  }
+}
+
+void SystemInfoEventRouter::StopWatchingStorages(
+    const StorageInfo& info, bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!success)
+    return;
+
+  for (StorageInfo::const_iterator it = info.begin(); it != info.end(); ++it) {
+    StorageInfoProvider::Get()->StopWatching((*it)->id);
+  }
+}
+
 void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   watching_event_set_.insert(event_name);
   if (watching_event_set_.count(event_name) > 1)
     return;
   // Start watching the |event_name| event if the first event listener arrives.
   // For systemInfo.storage event.
   if (IsStorageEvent(event_name)) {
-    // TODO (hongbo): Start watching storage device information via calling
-    // SystemMonitor::StartWatchingStorage.
+    StorageInfoProvider::Get()->AddObserver(this);
+    StorageInfoProvider::Get()->StartQueryInfo(
+        base::Bind(&SystemInfoEventRouter::StartWatchingStorages,
+                   base::Unretained(this)));
     return;
   }
 
@@ -93,6 +119,8 @@ void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
 
 void SystemInfoEventRouter::RemoveEventListener(
     const std::string& event_name) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   watching_event_set_.erase(event_name);
   if (watching_event_set_.count(event_name) > 0)
     return;
@@ -100,10 +128,12 @@ void SystemInfoEventRouter::RemoveEventListener(
   // In case of the last event listener is removed, we need to stop watching
   // it to avoid unnecessary overhead.
   if (IsStorageEvent(event_name)) {
-    // TODO(hongbo): Stop watching storage device information via calling
-    // SystemMonitor::StopWatchingStorage.
-    return;
+    StorageInfoProvider::Get()->StartQueryInfo(
+        base::Bind(&SystemInfoEventRouter::StopWatchingStorages,
+                   base::Unretained(this)));
+    StorageInfoProvider::Get()->RemoveObserver(this);
   }
+
   if (IsCpuEvent(event_name)) {
     CpuInfoProvider::Get()->StopSampling();
   }
@@ -123,19 +153,12 @@ bool SystemInfoEventRouter::IsSystemInfoEvent(const std::string& event_name) {
                           true));
 }
 
-void SystemInfoEventRouter::OnStorageAvailableCapacityChanged(
-    const std::string& id, int64 available_capacity) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&SystemInfoEventRouter::OnStorageAvailableCapacityChanged,
-                   base::Unretained(this), id, available_capacity));
-    return;
-  }
-
-  // We are on the UI thread now.
+// Called on UI thread since the observer is added from UI thread.
+void SystemInfoEventRouter::OnStorageFreeSpaceChanged(
+    const std::string& id, double new_value, double old_value) {
   StorageChangeInfo info;
   info.id = id;
-  info.available_capacity = static_cast<double>(available_capacity);
+  info.available_capacity = static_cast<double>(new_value);
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(info.ToValue().release());

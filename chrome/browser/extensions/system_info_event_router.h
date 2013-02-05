@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
 #include "ui/gfx/display_observer.h"
 
 namespace extensions {
@@ -30,7 +31,9 @@ struct CpuUpdateInfo;
 // Since the system_monitor will be refactored along with media_gallery, once
 // http://crbug.com/145400 is fixed, we need to update SystemInfoEventRouter
 // accordingly.
-class SystemInfoEventRouter: public gfx::DisplayObserver {
+class SystemInfoEventRouter
+    : public gfx::DisplayObserver,
+      public StorageInfoObserver {
  public:
   static SystemInfoEventRouter* GetInstance();
 
@@ -41,11 +44,14 @@ class SystemInfoEventRouter: public gfx::DisplayObserver {
   // Return true if the |event_name| is an event from systemInfo namespace.
   static bool IsSystemInfoEvent(const std::string& event_name);
 
+  // StorageInfoObserver implementation:
+  virtual void OnStorageFreeSpaceChanged(const std::string& id,
+                                         double new_value,
+                                         double old_value) OVERRIDE;
+
   // TODO(hongbo): The following methods should be likely overriden from
   // SystemMonitor::DevicesChangedObserver once the http://crbug.com/145400
   // is fixed.
-  void OnStorageAvailableCapacityChanged(const std::string& id,
-                                         int64 available_capacity);
   void OnRemovableStorageAttached(const std::string& id,
                                   const string16& name,
                                   const FilePath::StringType& location);
@@ -66,6 +72,11 @@ class SystemInfoEventRouter: public gfx::DisplayObserver {
   // processes cross multiple profiles.
   void DispatchEvent(const std::string& event_name,
       scoped_ptr<base::ListValue> args);
+
+  // The callbacks of querying storage info to start and stop watching the
+  // storages. Called from UI thread.
+  void StartWatchingStorages(const StorageInfo& info, bool success);
+  void StopWatchingStorages(const StorageInfo& info, bool success);
 
   // The callback for CPU sampling cycle. Called from FILE thread.
   void OnNextCpuSampling(

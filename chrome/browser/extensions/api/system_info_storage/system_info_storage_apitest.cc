@@ -13,71 +13,59 @@
 
 namespace extensions {
 
+using api::experimental_system_info_storage::ParseStorageUnitType;
 using api::experimental_system_info_storage::StorageUnitInfo;
 
-const int kDefaultIntervalMs = 200;
-const int kAvailableCapacityBytes = 10000;
-const int kChangeDelta = 10;
+struct TestUnitInfo {
+  std::string id;
+  std::string type;
+  double capacity;
+  double available_capacity;
+  // The change step of free space.
+  int change_step;
+};
 
-class MockStorageInfoProvider : public StorageInfoProvider {
+struct TestUnitInfo testing_data[] = {
+  {"0xbeaf", "unknown", 4098, 1000, 0},
+  {"/home","harddisk", 4098, 1000, 10},
+  {"/data", "harddisk", 10000, 1000, 4097}
+};
+
+const size_t kTestingIntervalMS = 10;
+
+class TestStorageInfoProvider : public StorageInfoProvider {
  public:
-  MockStorageInfoProvider() : is_watching_(false) {
-  }
+  TestStorageInfoProvider() {}
+
+ private:
+  virtual ~TestStorageInfoProvider() {}
 
   virtual bool QueryInfo(StorageInfo* info) OVERRIDE {
     info->clear();
 
-    linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
-    unit->id = "0xbeaf";
-    unit->type =
-        api::experimental_system_info_storage::STORAGE_UNIT_TYPE_UNKNOWN;
-    unit->capacity = 4098;
-    unit->available_capacity = 1024;
-
-    info->push_back(unit);
+    for (size_t i = 0; i < arraysize(testing_data); i++) {
+      linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
+      QueryUnitInfo(testing_data[i].id, unit.get());
+      info->push_back(unit);
+    }
     return true;
   }
 
   virtual bool QueryUnitInfo(const std::string& id,
                              StorageUnitInfo* info) OVERRIDE {
+    for (size_t i = 0; i < arraysize(testing_data); i++) {
+      if (testing_data[i].id == id) {
+        info->id = testing_data[i].id;
+        info->type = ParseStorageUnitType(testing_data[i].type);
+        info->capacity = testing_data[i].capacity;
+        info->available_capacity = testing_data[i].available_capacity;
+        // Increase the available capacity with a fixed change step.
+        testing_data[i].available_capacity += testing_data[i].change_step;
+        return true;
+      }
+    }
     return false;
   }
-
-  bool Start() {
-    if (is_watching_) return false;
-
-    // Start the timer to emulate storage.onChanged event.
-    timer_.Start(FROM_HERE,
-                  base::TimeDelta::FromMilliseconds(kDefaultIntervalMs),
-                  this, &MockStorageInfoProvider::OnTimeoutEvent);
-
-    is_watching_ = true;
-    return true;
-  }
-
-  bool Stop() {
-    if (!is_watching_) return false;
-    is_watching_ = false;
-    timer_.Stop();
-    return true;
-  }
-
- private:
-  virtual ~MockStorageInfoProvider() {
-    Stop();
-  }
-
-  void OnTimeoutEvent() {
-    static int count;
-    SystemInfoEventRouter::GetInstance()->
-      OnStorageAvailableCapacityChanged("/dev/sda1",
-          kAvailableCapacityBytes - count * kChangeDelta);
-    count++;
-  }
-
-  // Use a repeating timer to emulate storage free space change event.
-  base::RepeatingTimer<MockStorageInfoProvider> timer_;
-  bool is_watching_;
 };
 
 class SystemInfoStorageApiTest: public ExtensionApiTest {
@@ -100,21 +88,10 @@ class SystemInfoStorageApiTest: public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SystemInfoStorageApiTest, Storage) {
-  ResultCatcher catcher;
-  scoped_refptr<MockStorageInfoProvider> provider =
-      new MockStorageInfoProvider();
+  TestStorageInfoProvider* provider = new TestStorageInfoProvider();
+  provider->set_watching_interval(kTestingIntervalMS);
   StorageInfoProvider::InitializeForTesting(provider);
-
-  ExtensionTestMessageListener listener("ready", true);
-  const extensions::Extension* extension =
-    LoadExtension(test_data_dir_.AppendASCII("systeminfo/storage"));
-  GURL page_url = extension->GetResourceURL("test_storage_api.html");
-  ui_test_utils::NavigateToURL(browser(), page_url);
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-
-  provider->Start();
-  listener.Reply("go");
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  ASSERT_TRUE(RunPlatformAppTest("systeminfo/storage")) << message_;
 }
 
 } // namespace extensions

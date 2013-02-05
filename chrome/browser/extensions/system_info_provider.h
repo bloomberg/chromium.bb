@@ -76,23 +76,21 @@ class SystemInfoProvider
     worker_pool->PostSequencedWorkerTaskWithShutdownBehavior(
           worker_pool_token_,
           FROM_HERE,
-          base::Bind(&SystemInfoProvider<T>::QueryOnWorkerPool,
-                     base::Unretained(this)),
+          base::Bind(&SystemInfoProvider<T>::QueryOnWorkerPool, this),
           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
   }
 
+ protected:
   // Query the system information synchronously and output the result to the
   // |info| parameter. The |info| contents MUST be reset firstly in its
   // platform specific implementation. Return true if it succeeds, otherwise
   // false is returned.
   virtual bool QueryInfo(T* info) = 0;
 
- protected:
   virtual void QueryOnWorkerPool() {
     bool success = QueryInfo(&info_);
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&SystemInfoProvider<T>::OnQueryCompleted,
-        base::Unretained(this), success));
+        base::Bind(&SystemInfoProvider<T>::OnQueryCompleted, this, success));
   }
 
   // Called on UI thread. The |success| parameter means whether it succeeds
