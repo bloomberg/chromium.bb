@@ -290,9 +290,6 @@ GoogleChromeDistribution::GoogleChromeDistribution()
       product_guid_(kChromeGuid) {
 }
 
-// The functions below are not used by the 64-bit Windows binary -
-// see the comment in google_chrome_distribution_dummy.cc
-#ifndef _WIN64
 bool GoogleChromeDistribution::BuildUninstallMetricsString(
     const DictionaryValue* uninstall_metrics_dict, string16* metrics) {
   DCHECK(NULL != metrics);
@@ -357,7 +354,6 @@ bool GoogleChromeDistribution::ExtractUninstallMetrics(
 
   return true;
 }
-#endif
 
 void GoogleChromeDistribution::DoPostUninstallOperations(
     const Version& version,
@@ -572,9 +568,6 @@ void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,
       product_guid());
 }
 
-// The functions below are not used by the 64-bit Windows binary -
-// see the comment in google_chrome_distribution_dummy.cc
-#ifndef _WIN64
 // A helper function that writes to HKLM if the handle was passed through the
 // command line, but HKCU otherwise. |experiment_group| is the value to write
 // and |last_write| is used when writing to HKLM to determine whether to close
@@ -872,7 +865,6 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
                                                      GetType()));
   base::LaunchProcess(cmd, base::LaunchOptions(), NULL);
 }
-#endif  // ifndef _WIN64
 
 bool GoogleChromeDistribution::ShouldSetExperimentLabels() {
   return true;
