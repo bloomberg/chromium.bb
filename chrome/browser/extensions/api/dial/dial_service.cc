@@ -381,7 +381,7 @@ void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
 
   // TODO(mfoltz): Support IPV6 multicast.  http://crbug.com/165286
   for (NetworkInterfaceList::const_iterator iter = networks.begin();
-       iter != networks.end(); iter++) {
+       iter != networks.end(); ++iter) {
     DVLOG(1) << "Found " << iter->name << ", "
              << net::IPAddressToString(iter->address);
     if (iter->address.size() == net::kIPv4AddressSize) {
@@ -402,7 +402,6 @@ void DialServiceImpl::DoGetNetworkList() {
   bool success = net::GetNetworkList(&list);
   if (!success) {
     DVLOG(1) << "Could not retrieve network list!";
-    return;
   }
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
       &DialServiceImpl::SendNetworkList, this, list));
