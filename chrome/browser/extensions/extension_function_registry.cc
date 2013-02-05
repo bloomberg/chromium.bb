@@ -150,6 +150,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::BeginInstallWithManifestFunction>();
   RegisterFunction<extensions::CompleteInstallFunction>();
   RegisterFunction<extensions::GetWebGLStatusFunction>();
+  RegisterFunction<extensions::GetIsLauncherEnabledFunction>();
 
   // WebRequest.
   RegisterFunction<WebRequestAddEventListener>();
