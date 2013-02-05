@@ -504,6 +504,11 @@ views::View* AutofillDialogViews::GetExtraView() {
   return button_strip_extra_view_;
 }
 
+views::View* AutofillDialogViews::GetFootnoteView() {
+  // TODO(estade): add a view to contain the terms of service.
+  return NULL;
+}
+
 bool AutofillDialogViews::Cancel() {
   return true;
 }
@@ -603,7 +608,6 @@ void AutofillDialogViews::InitChildViews() {
   button_strip_extra_view_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 
-  // TODO(estade): i18n.
   save_in_chrome_checkbox_ =
       new views::Checkbox(controller_->SaveLocallyText());
   button_strip_extra_view_->AddChildView(save_in_chrome_checkbox_);

@@ -74,6 +74,11 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // max(extra_view preferred height, buttons preferred height).
   virtual bool GetSizeExtraViewHeightToButtons();
 
+  // Like GetExtraView, this function can be overridden to display an auxiliary
+  // view in the dialog. This view will be placed beneath the dialog buttons and
+  // will extend all the way from the left to the right of the dialog.
+  virtual View* GetFootnoteView();
+
   // For Dialog boxes, if there is a "Cancel" button or no dialog button at all,
   // this is called when the user presses the "Cancel" button or the Close
   // button on the window or in the system menu, or presses the Esc key.

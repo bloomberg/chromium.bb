@@ -92,6 +92,10 @@ bool DialogDelegate::GetSizeExtraViewHeightToButtons() {
   return false;
 }
 
+View* DialogDelegate::GetFootnoteView() {
+  return NULL;
+}
+
 bool DialogDelegate::Cancel() {
   return true;
 }

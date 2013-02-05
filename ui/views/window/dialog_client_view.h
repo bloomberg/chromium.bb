@@ -119,9 +119,14 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // and the spacing between bottom of buttons to end of the dialog.
   int GetDialogButtonsAreaHeight() const;
 
+  // Returns the preferred height of |footnote_view_|, or 0 if that view is
+  // NULL.
+  int GetFootnoteViewHeight() const;
+
   // Position and size various sub-views.
   void LayoutDialogButtons();
   void LayoutContentsView();
+  void LayoutFootnoteView();
 
   // Makes the specified button the default button.
   void SetDefaultButton(TextButton* button);
@@ -130,6 +135,9 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
   // Create and add the extra view, if supplied by the delegate.
   void CreateExtraView();
+
+  // Creates and adds the footnote view, if supplied by the delegate.
+  void CreateFootnoteView();
 
   // Returns the DialogDelegate for the window.
   DialogDelegate* GetDialogDelegate() const;
@@ -152,6 +160,9 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
   // The button-level extra view, NULL unless the dialog delegate supplies one.
   View* extra_view_;
+
+  // The view that resides beneath the dialog buttons, or NULL.
+  View* footnote_view_;
 
   // See description of DialogDelegate::GetSizeExtraViewHeightToButtons for
   // details on this.

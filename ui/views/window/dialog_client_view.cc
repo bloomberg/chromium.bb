@@ -119,6 +119,7 @@ DialogClientView::DialogClientView(Widget* owner, View* contents_view)
       cancel_button_(NULL),
       default_button_(NULL),
       extra_view_(NULL),
+      footnote_view_(NULL),
       size_extra_view_height_to_buttons_(false),
       notified_delegate_(false),
       listening_to_focus_(false),
@@ -222,9 +223,8 @@ void DialogClientView::UpdateDialogButtons() {
   if (buttons & ui::DIALOG_BUTTON_OK)
     UpdateButtonHelper(ok_button_, dd, ui::DIALOG_BUTTON_OK);
 
-  if (buttons & ui::DIALOG_BUTTON_CANCEL) {
+  if (buttons & ui::DIALOG_BUTTON_CANCEL)
     UpdateButtonHelper(cancel_button_, dd, ui::DIALOG_BUTTON_CANCEL);
-  }
 
   LayoutDialogButtons();
   SchedulePaint();
@@ -318,6 +318,10 @@ void DialogClientView::PaintChildren(gfx::Canvas* canvas) {
 void DialogClientView::Layout() {
   if (has_dialog_buttons())
     LayoutDialogButtons();
+
+  if (footnote_view_)
+    LayoutFootnoteView();
+
   LayoutContentsView();
 }
 
@@ -335,6 +339,7 @@ void DialogClientView::ViewHierarchyChanged(bool is_add, View* parent,
     // The "extra view" must be created and installed after the contents view
     // has been inserted into the view hierarchy.
     CreateExtraView();
+    CreateFootnoteView();
     UpdateDialogButtons();
     Layout();
   }
@@ -365,6 +370,13 @@ gfx::Size DialogClientView::GetPreferredSize() {
     }
   }
   prefsize.Enlarge(0, button_height);
+
+  if (footnote_view_) {
+    gfx::Size footnote_size = footnote_view_->GetPreferredSize();
+    prefsize.Enlarge(0, footnote_size.height());
+    prefsize.set_width(std::max(prefsize.width(), footnote_size.width()));
+  }
+
   return prefsize;
 }
 
@@ -481,10 +493,17 @@ int DialogClientView::GetDialogButtonsAreaHeight() const {
       style_params_.button_vedge_margin;
 }
 
+int DialogClientView::GetFootnoteViewHeight() const {
+  return footnote_view_ ? footnote_view_->GetPreferredSize().height() : 0;
+}
+
 void DialogClientView::LayoutDialogButtons() {
   gfx::Rect lb = GetContentsBounds();
   gfx::Rect extra_bounds;
   int bottom_y = lb.bottom() - style_params_.button_vedge_margin;
+  if (footnote_view_)
+    bottom_y -= footnote_view_->GetPreferredSize().height();
+
   int button_height = GetButtonsHeight();
   if (cancel_button_) {
     gfx::Size ps = cancel_button_->GetPreferredSize();
@@ -521,9 +540,19 @@ void DialogClientView::LayoutDialogButtons() {
 
 void DialogClientView::LayoutContentsView() {
   gfx::Rect lb = GetContentsBounds();
-  lb.set_height(std::max(0, lb.height() - GetDialogButtonsAreaHeight()));
+  lb.set_height(std::max(0, lb.height() - GetDialogButtonsAreaHeight() -
+                            GetFootnoteViewHeight()));
   contents_view()->SetBoundsRect(lb);
   contents_view()->Layout();
+}
+
+void DialogClientView::LayoutFootnoteView() {
+  int height = GetFootnoteViewHeight();
+  gfx::Rect bounds = GetContentsBounds();
+  bounds.set_y(bounds.height() - height);
+  bounds.set_height(height);
+  footnote_view_->SetBoundsRect(bounds);
+  footnote_view_->Layout();
 }
 
 void DialogClientView::CreateExtraView() {
@@ -535,6 +564,15 @@ void DialogClientView::CreateExtraView() {
     size_extra_view_height_to_buttons_ =
         GetDialogDelegate()->GetSizeExtraViewHeightToButtons();
   }
+}
+
+void DialogClientView::CreateFootnoteView() {
+  if (footnote_view_)
+    return;
+
+  footnote_view_ = GetDialogDelegate()->GetFootnoteView();
+  if (footnote_view_)
+    AddChildView(footnote_view_);
 }
 
 DialogDelegate* DialogClientView::GetDialogDelegate() const {
