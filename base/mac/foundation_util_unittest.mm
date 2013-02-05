@@ -327,7 +327,8 @@ TEST(FoundationUtilTest, FilePathToNSString) {
   EXPECT_NSEQ(@"/a/b", base::mac::FilePathToNSString(FilePath("/a/b")));
 }
 
-TEST(FoundationUtilTest, NSStringToFilePath) {
+// http://crbug.com/173983 Fails consistently under Mac ASAN.
+TEST(FoundationUtilTest, DISABLED_NSStringToFilePath) {
   EXPECT_EQ(FilePath(), base::mac::NSStringToFilePath(nil));
   EXPECT_EQ(FilePath(), base::mac::NSStringToFilePath(@""));
   EXPECT_EQ(FilePath("/a/b"), base::mac::NSStringToFilePath(@"/a/b"));
