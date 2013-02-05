@@ -1,4 +1,9 @@
 # This file contains known failures in the LLVM regression tests for PNaCl.
+# Introduced in the merge to r172453.
+MC/Mips/ef_frame.ll
+
+# Introduced by a recent xcode change on the bots, working on a fix
+CodeGenObjC/arc-captured-32bit-block-var-layout-2.m mac
 
 # Failures only on windows
 SemaObjC/method-def-2.m win
