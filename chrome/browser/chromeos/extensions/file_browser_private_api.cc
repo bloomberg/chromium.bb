@@ -264,6 +264,7 @@ GURL FindPreferredIcon(const InstalledApp::IconList& icons,
   return result;
 }
 
+#if defined(ENABLE_WEB_INTENTS)
 // Finds the title of the given Web Intents |action|, if the passed extension
 // supports this action for all specified |mime_types|. Returns true and
 // provides the |title| as output on success.
@@ -303,6 +304,7 @@ bool FindTitleForActionWithTypes(
   *title = found_title;
   return true;
 }
+#endif  // defined(ENABLE_WEB_INTENTS)
 
 // Retrieves total and remaining available size on |mount_path|.
 void GetSizeStatsOnFileThread(const std::string& mount_path,
@@ -978,6 +980,7 @@ bool GetFileTasksFileBrowserFunction::FindAppTasks(
   return true;
 }
 
+#if defined(ENABLE_WEB_INTENTS)
 // Find Web Intent platform apps that support the View task, and add them to
 // the |result_list|. These will be marked as kTaskWebIntent.
 bool GetFileTasksFileBrowserFunction::FindWebIntentTasks(
@@ -1029,6 +1032,7 @@ bool GetFileTasksFileBrowserFunction::FindWebIntentTasks(
 
   return true;
 }
+#endif  // defined(ENABLE_WEB_INTENTS)
 
 bool GetFileTasksFileBrowserFunction::RunImpl() {
   // First argument is the list of files to get tasks for.
@@ -1145,10 +1149,12 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   if (!FindAppTasks(file_paths, result_list))
     return false;
 
+#if defined(ENABLE_WEB_INTENTS)
   // TODO(benwells): remove the web intents tasks once we no longer support
   // them.
   if (!FindWebIntentTasks(file_paths, result_list))
     return false;
+#endif
 
   if (VLOG_IS_ON(1)) {
     std::string result_json;

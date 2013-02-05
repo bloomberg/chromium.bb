@@ -266,6 +266,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTestLazy) {
       << message_;
 }
 
+#if defined(ENABLE_WEB_INTENTS)
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserWebIntentTest) {
   // Create a test file inside the ScopedTempDir.
   FilePath test_file = mount_point_dir_.AppendASCII("text_file.xul");
@@ -276,6 +277,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserWebIntentTest) {
                                         "webintent_handler"))
       << message_;
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTestWrite) {
   ASSERT_TRUE(RunFileBrowserHandlerTest("write.html",
