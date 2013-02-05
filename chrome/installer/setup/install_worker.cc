@@ -18,6 +18,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -507,6 +508,62 @@ CommandLine GetGenericQuickEnableCommand(
   if (installer_state.verbose_logging())
     cmd_line.AppendSwitch(switches::kVerboseLogging);
   return cmd_line;
+}
+
+void AddUninstallDelegateExecuteWorkItems(HKEY root,
+                                          const string16& delegate_execute_path,
+                                          WorkItemList* list) {
+  VLOG(1) << "Adding unregistration items for DelegateExecute verb handler in "
+          << root;
+  list->AddDeleteRegKeyWorkItem(root, delegate_execute_path);
+
+  // In the past, the ICommandExecuteImpl interface and a TypeLib were both
+  // registered.  Remove these since this operation may be updating a machine
+  // that had the old registrations.
+  list->AddDeleteRegKeyWorkItem(root,
+                                L"Software\\Classes\\Interface\\"
+                                L"{0BA0D4E9-2259-4963-B9AE-A839F7CB7544}");
+  list->AddDeleteRegKeyWorkItem(root,
+                                L"Software\\Classes\\TypeLib\\"
+#if defined(GOOGLE_CHROME_BUILD)
+                                L"{4E805ED8-EBA0-4601-9681-12815A56EBFD}"
+#else
+                                L"{7779FB70-B399-454A-AA1A-BAA850032B10}"
+#endif
+                                );
+}
+
+// Google Chrome Canary, between 20.0.1101.0 (crrev.com/132190) and 20.0.1106.0
+// (exclusively -- crrev.com/132596), registered a DelegateExecute class by
+// mistake (with the same GUID as Chrome). The fix stopped registering the bad
+// value, but didn't delete it. This is a problem for users who had installed
+// Canary before 20.0.1106.0 and now have a system-level Chrome, as the
+// left-behind Canary registrations in HKCU mask the HKLM registrations for the
+// same GUID. Cleanup those registrations if they still exist and belong to this
+// Canary (i.e., the registered delegate_execute's path is under |target_path|).
+void CleanupBadCanaryDelegateExecuteRegistration(const FilePath& target_path,
+                                                 WorkItemList* list) {
+  string16 google_chrome_delegate_execute_path(
+      L"Software\\Classes\\CLSID\\{5C65F4B0-3651-4514-B207-D10CB699B14B}");
+  string16 google_chrome_local_server_32(
+      google_chrome_delegate_execute_path + L"\\LocalServer32");
+
+  RegKey local_server_32_key;
+  string16 registered_server;
+  if (local_server_32_key.Open(HKEY_CURRENT_USER,
+                               google_chrome_local_server_32.c_str(),
+                               KEY_QUERY_VALUE) == ERROR_SUCCESS &&
+      local_server_32_key.ReadValue(L"ServerExecutable",
+                                    &registered_server) == ERROR_SUCCESS &&
+      target_path.IsParent(FilePath(registered_server))) {
+    scoped_ptr<WorkItemList> no_rollback_list(
+        WorkItem::CreateNoRollbackWorkItemList());
+    AddUninstallDelegateExecuteWorkItems(
+        HKEY_CURRENT_USER, google_chrome_delegate_execute_path,
+        no_rollback_list.get());
+    list->AddWorkItem(no_rollback_list.release());
+    VLOG(1) << "Added deletion items for bad Canary registrations.";
+  }
 }
 
 }  // namespace
@@ -1273,8 +1330,12 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
   string16 handler_class_uuid;
   BrowserDistribution* distribution = product.distribution();
   if (!distribution->GetCommandExecuteImplClsid(&handler_class_uuid)) {
-    VLOG(1) << "No DelegateExecute verb handler processing to do for "
-            << distribution->GetAppShortCutName();
+    if (InstallUtil::IsChromeSxSProcess()) {
+      CleanupBadCanaryDelegateExecuteRegistration(target_path, list);
+    } else {
+      VLOG(1) << "No DelegateExecute verb handler processing to do for "
+              << distribution->GetAppShortCutName();
+    }
     return;
   }
 
@@ -1286,23 +1347,7 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
   // needed since builds after r132190 included it when it wasn't strictly
   // necessary.  Do this removal before adding in the new key to ensure that
   // the COM probe/flush below does its job.
-  VLOG(1) << "Adding unregistration items for DelegateExecute verb handler.";
-  list->AddDeleteRegKeyWorkItem(root, delegate_execute_path);
-
-  // In the past, the ICommandExecuteImpl interface and a TypeLib were both
-  // registered.  Remove these since this operation may be updating a machine
-  // that had the old registrations.
-  list->AddDeleteRegKeyWorkItem(root,
-                                L"Software\\Classes\\Interface\\"
-                                L"{0BA0D4E9-2259-4963-B9AE-A839F7CB7544}");
-  list->AddDeleteRegKeyWorkItem(root,
-                                L"Software\\Classes\\TypeLib\\"
-#if defined(GOOGLE_CHROME_BUILD)
-                                L"{4E805ED8-EBA0-4601-9681-12815A56EBFD}"
-#else
-                                L"{7779FB70-B399-454A-AA1A-BAA850032B10}"
-#endif
-                                );
+  AddUninstallDelegateExecuteWorkItems(root, delegate_execute_path, list);
 
   // Add work items to register the handler iff it is present.
   // See also shell_util.cc's GetProgIdEntries.

@@ -244,5 +244,5 @@ bool NoRollbackWorkItemList::Do() {
 }
 
 void NoRollbackWorkItemList::Rollback() {
-  NOTREACHED() << "Can't rollback a NoRollbackWorkItemList";
+  // Ignore rollback.
 }

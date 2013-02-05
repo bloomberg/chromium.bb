@@ -167,7 +167,7 @@ class NoRollbackWorkItemList : public WorkItemList {
   // WorkItems will still be executed.
   virtual bool Do();
 
-  // Just does a NOTREACHED.
+  // No-op.
   virtual void Rollback();
 };
 
