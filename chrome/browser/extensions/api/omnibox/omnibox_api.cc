@@ -132,7 +132,7 @@ OmniboxAPI::OmniboxAPI(Profile* profile)
     : profile_(profile),
       url_service_(TemplateURLServiceFactory::GetForProfile(profile)) {
   ManifestHandler::Register(extension_manifest_keys::kOmnibox,
-                            new OmniboxHandler);
+                            make_linked_ptr(new OmniboxHandler));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,

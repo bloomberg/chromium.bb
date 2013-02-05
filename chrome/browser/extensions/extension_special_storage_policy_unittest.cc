@@ -28,8 +28,9 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
   virtual void SetUp() {
     policy_ = new ExtensionSpecialStoragePolicy(NULL);
 #if defined(ENABLE_WEB_INTENTS)
-    extensions::ManifestHandler::Register(keys::kIntents,
-                                          new extensions::WebIntentsHandler);
+    extensions::ManifestHandler::Register(
+        keys::kIntents,
+        make_linked_ptr(new extensions::WebIntentsHandler));
 #endif
   }
 

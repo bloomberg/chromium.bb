@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/memory/linked_ptr.h"
 #include "base/string16.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest.h"
@@ -32,17 +33,27 @@ class ManifestHandler {
   // TODO(yoz): Use Feature availability instead.
   virtual bool AlwaysParseForType(Manifest::Type type);
 
+  // The list of keys that, if present, should be parsed before calling our
+  // Parse (typically, because our Parse needs to read those keys).
+  // Defaults to empty.
+  virtual const std::vector<std::string>& PrerequisiteKeys();
+
   // Associate |handler| with |key| in the manifest. A handler can register
   // for multiple keys. The global registry takes ownership of |handler|;
   // if it has an existing handler for |key|, it replaces it with this one.
   //
   // WARNING: Manifest handlers registered only in the browser process
   // are not available to renderers or utility processes.
-  static void Register(const std::string& key, ManifestHandler* handler);
+  static void Register(const std::string& key,
+                       linked_ptr<ManifestHandler> handler);
 
   // Call Parse on all registered manifest handlers that should parse
   // this extension.
   static bool ParseExtension(Extension* extension, string16* error);
+
+  // Reset the manifest handler registry to an empty state. Useful for
+  // unit tests.
+  static void ClearRegistryForTesting();
 };
 
 }  // namespace extensions

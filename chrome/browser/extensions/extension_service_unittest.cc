@@ -539,9 +539,10 @@ void ExtensionServiceTestBase::SetUpTestCase() {
 void ExtensionServiceTestBase::SetUp() {
   testing::Test::SetUp();
   ExtensionErrorReporter::GetInstance()->ClearErrors();
+  extensions::ManifestHandler::ClearRegistryForTesting();
   extensions::ManifestHandler::Register(
       keys::kDefaultLocale,
-      new extensions::DefaultLocaleHandler);
+      make_linked_ptr(new extensions::DefaultLocaleHandler));
 }
 
 class ExtensionServiceTest

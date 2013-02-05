@@ -587,7 +587,7 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
     : event_router_(make_scoped_refptr(new FileBrowserEventRouter(profile))) {
   extensions::ManifestHandler::Register(
       extension_manifest_keys::kFileBrowserHandlers,
-      new FileBrowserHandlerParser);
+      make_linked_ptr(new FileBrowserHandlerParser));
 
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();

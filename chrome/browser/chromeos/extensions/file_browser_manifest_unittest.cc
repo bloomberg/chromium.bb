@@ -27,10 +27,10 @@ class FileBrowserHandlerManifestTest : public ExtensionManifestTest {
     ExtensionManifestTest::SetUp();
     extensions::ManifestHandler::Register(
         extension_manifest_keys::kFileBrowserHandlers,
-        new FileBrowserHandlerParser);
+        make_linked_ptr(new FileBrowserHandlerParser));
     extensions::ManifestHandler::Register(
-        keys::kChromeURLOverrides,
-        new extensions::URLOverridesHandler);
+        extension_manifest_keys::kChromeURLOverrides,
+        make_linked_ptr(new extensions::URLOverridesHandler));
   }
 };
 

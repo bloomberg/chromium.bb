@@ -23,7 +23,7 @@ class BrowserActionManifestTest : public ExtensionManifestTest {
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
     ManifestHandler::Register(extension_manifest_keys::kBrowserAction,
-                              new BrowserActionHandler);
+                              make_linked_ptr(new BrowserActionHandler));
   }
 };
 

@@ -64,7 +64,7 @@ bool I18nGetAcceptLanguagesFunction::RunImpl() {
 
 I18nAPI::I18nAPI(Profile* profile) {
   ManifestHandler::Register(extension_manifest_keys::kDefaultLocale,
-                            new DefaultLocaleHandler);
+                            make_linked_ptr(new DefaultLocaleHandler));
 }
 
 I18nAPI::~I18nAPI() {

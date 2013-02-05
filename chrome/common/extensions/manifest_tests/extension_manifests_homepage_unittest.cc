@@ -15,10 +15,12 @@ namespace errors = extension_manifest_errors;
 class HomepageURLManifestTest : public ExtensionManifestTest {
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
-    extensions::ManifestHandler::Register(extension_manifest_keys::kHomepageURL,
-                                          new extensions::HomepageURLHandler);
-    extensions::ManifestHandler::Register(extension_manifest_keys::kUpdateURL,
-                                          new extensions::UpdateURLHandler);
+    extensions::ManifestHandler::Register(
+        extension_manifest_keys::kHomepageURL,
+        make_linked_ptr(new extensions::HomepageURLHandler));
+    extensions::ManifestHandler::Register(
+        extension_manifest_keys::kUpdateURL,
+        make_linked_ptr(new extensions::UpdateURLHandler));
   }
 };
 

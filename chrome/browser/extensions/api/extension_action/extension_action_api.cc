@@ -188,9 +188,9 @@ static base::LazyInstance<ProfileKeyedAPIFactory<ExtensionActionAPI> >
 
 ExtensionActionAPI::ExtensionActionAPI(Profile* profile) {
   ManifestHandler::Register(extension_manifest_keys::kBrowserAction,
-                            new BrowserActionHandler);
+                            make_linked_ptr(new BrowserActionHandler));
   ManifestHandler::Register(extension_manifest_keys::kScriptBadge,
-                            new ScriptBadgeHandler);
+                            make_linked_ptr(new ScriptBadgeHandler));
 
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();

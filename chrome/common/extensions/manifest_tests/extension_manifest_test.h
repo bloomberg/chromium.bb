@@ -13,14 +13,13 @@
 #include "chrome/common/extensions/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace errors = extension_manifest_errors;
-namespace keys = extension_manifest_keys;
-
 class ExtensionManifestTest : public testing::Test {
  public:
   ExtensionManifestTest();
 
  protected:
+  virtual void SetUp() OVERRIDE;
+
   // If filename is a relative path, LoadManifestFile will treat it relative to
   // the appropriate test directory.
   static DictionaryValue* LoadManifestFile(const std::string& filename,

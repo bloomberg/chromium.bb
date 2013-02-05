@@ -33,10 +33,10 @@ class ExtensionFileUtilTest : public testing::Test {
     testing::Test::SetUp();
     extensions::ManifestHandler::Register(
         extension_manifest_keys::kBrowserAction,
-        new extensions::BrowserActionHandler);
+        make_linked_ptr(new extensions::BrowserActionHandler));
     extensions::ManifestHandler::Register(
         keys::kDefaultLocale,
-        new extensions::DefaultLocaleHandler);
+        make_linked_ptr(new extensions::DefaultLocaleHandler));
   }
 };
 

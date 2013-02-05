@@ -14,7 +14,7 @@ namespace extensions {
 
 WebIntentsParser::WebIntentsParser(Profile* profile) {
   ManifestHandler::Register(extension_manifest_keys::kIntents,
-                            new WebIntentsHandler);
+                            make_linked_ptr(new WebIntentsHandler));
 }
 
 WebIntentsParser::~WebIntentsParser() {

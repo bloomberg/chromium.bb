@@ -187,7 +187,7 @@ TtsAPI* TtsAPI::Get(Profile* profile) {
 
 TtsAPI::TtsAPI(Profile* profile) {
   ManifestHandler::Register(extension_manifest_keys::kTtsEngine,
-                            new TtsEngineManifestHandler);
+                            make_linked_ptr(new TtsEngineManifestHandler));
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
   registry->RegisterFunction<ExtensionTtsEngineSendTtsEventFunction>();

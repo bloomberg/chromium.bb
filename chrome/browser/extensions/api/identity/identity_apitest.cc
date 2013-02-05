@@ -148,7 +148,7 @@ class GetAuthTokenFunctionTest : public ExtensionBrowserTest {
   virtual void SetUp() OVERRIDE {
     ExtensionBrowserTest::SetUp();
     ManifestHandler::Register(extension_manifest_keys::kOAuth2,
-                              new OAuth2ManifestHandler);
+                              make_linked_ptr(new OAuth2ManifestHandler));
   }
  protected:
   enum OAuth2Fields {

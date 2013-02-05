@@ -18,8 +18,9 @@ namespace errors = extension_manifest_errors;
 class WebIntentsManifestTest : public ExtensionManifestTest {
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
-    extensions::ManifestHandler::Register(extension_manifest_keys::kIntents,
-                                          new extensions::WebIntentsHandler);
+    extensions::ManifestHandler::Register(
+        extension_manifest_keys::kIntents,
+        make_linked_ptr(new extensions::WebIntentsHandler));
   }
 };
 

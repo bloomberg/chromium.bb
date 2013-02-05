@@ -34,8 +34,9 @@ public:
 
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
-    extensions::ManifestHandler::Register(keys::kDefaultLocale,
-                                          new extensions::DefaultLocaleHandler);
+    extensions::ManifestHandler::Register(
+        keys::kDefaultLocale,
+        make_linked_ptr(new extensions::DefaultLocaleHandler));
   }
 
   void SetupUnpacker(const std::string& crx_name) {

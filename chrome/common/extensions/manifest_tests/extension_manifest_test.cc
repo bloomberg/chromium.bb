@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using extensions::Extension;
@@ -19,6 +20,10 @@ ExtensionManifestTest::ExtensionManifestTest()
     : enable_apps_(true),
       // UNKNOWN == trunk.
       current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
+
+void ExtensionManifestTest::SetUp() {
+  extensions::ManifestHandler::ClearRegistryForTesting();
+}
 
 // static
 DictionaryValue* ExtensionManifestTest::LoadManifestFile(

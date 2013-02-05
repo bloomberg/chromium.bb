@@ -13,8 +13,9 @@ namespace errors = extension_manifest_errors;
 class URLOverridesManifestTest : public ExtensionManifestTest {
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
-    extensions::ManifestHandler::Register(keys::kChromeURLOverrides,
-                                          new extensions::URLOverridesHandler);
+    extensions::ManifestHandler::Register(
+        extension_manifest_keys::kChromeURLOverrides,
+        make_linked_ptr(new extensions::URLOverridesHandler));
   }
 };
 

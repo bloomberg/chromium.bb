@@ -47,7 +47,7 @@ void CommandService::RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
 CommandService::CommandService(Profile* profile)
     : profile_(profile) {
   ManifestHandler::Register(extension_manifest_keys::kCommands,
-                            new CommandsHandler);
+                            make_linked_ptr(new CommandsHandler));
 
   ExtensionFunctionRegistry::GetInstance()->
       RegisterFunction<GetAllCommandsFunction>();

@@ -19,15 +19,15 @@ namespace extensions {
 ManifestURLParser::ManifestURLParser(Profile* profile)
     : profile_(profile) {
   ManifestHandler::Register(extension_manifest_keys::kDevToolsPage,
-                            new DevToolsPageHandler);
+                            make_linked_ptr(new DevToolsPageHandler));
   ManifestHandler::Register(extension_manifest_keys::kHomepageURL,
-                            new HomepageURLHandler);
+                            make_linked_ptr(new HomepageURLHandler));
   ManifestHandler::Register(extension_manifest_keys::kUpdateURL,
-                            new UpdateURLHandler);
+                            make_linked_ptr(new UpdateURLHandler));
   ManifestHandler::Register(extension_manifest_keys::kOptionsPage,
-                            new OptionsPageHandler);
+                            make_linked_ptr(new OptionsPageHandler));
   ManifestHandler::Register(extension_manifest_keys::kChromeURLOverrides,
-                            new URLOverridesHandler);
+                            make_linked_ptr(new URLOverridesHandler));
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile));

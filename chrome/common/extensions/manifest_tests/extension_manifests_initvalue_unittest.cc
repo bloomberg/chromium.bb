@@ -25,10 +25,10 @@ class InitValueManifestTest : public ExtensionManifestTest {
     ExtensionManifestTest::SetUp();
     extensions::ManifestHandler::Register(
         extension_manifest_keys::kOptionsPage,
-        new extensions::OptionsPageHandler);
+        make_linked_ptr(new extensions::OptionsPageHandler));
     extensions::ManifestHandler::Register(
         extension_manifest_keys::kDefaultLocale,
-        new extensions::DefaultLocaleHandler);
+        make_linked_ptr(new extensions::DefaultLocaleHandler));
   }
 };
 

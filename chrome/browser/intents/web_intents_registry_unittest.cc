@@ -103,8 +103,9 @@ class WebIntentsRegistryTest : public testing::Test {
     EXPECT_CALL(extension_service_, GetExtensionById(testing::_, testing::_)).
         WillRepeatedly(
             testing::Invoke(this, &WebIntentsRegistryTest::GetExtensionById));
-    extensions::ManifestHandler::Register(extension_manifest_keys::kIntents,
-                                          new extensions::WebIntentsHandler);
+    extensions::ManifestHandler::Register(
+        extension_manifest_keys::kIntents,
+        make_linked_ptr(new extensions::WebIntentsHandler));
   }
 
   virtual void TearDown() {

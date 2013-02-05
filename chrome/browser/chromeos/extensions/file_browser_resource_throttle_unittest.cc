@@ -69,7 +69,7 @@ class FileBrowserResourceThrottleTest : public testing::Test {
   virtual void SetUp() {
     extensions::ManifestHandler::Register(
         extension_manifest_keys::kFileBrowserHandlers,
-        new FileBrowserHandlerParser);
+        make_linked_ptr(new FileBrowserHandlerParser));
     // Extension info map must be created before |CreateAndInstallTestExtension|
     // is called (the method will add created extension to the info map).
     extension_info_map_ = new ExtensionInfoMap();

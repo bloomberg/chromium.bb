@@ -128,10 +128,10 @@ namespace {
 void RegisterExtensionManifestHandlers() {
   extensions::ManifestHandler::Register(
       extension_manifest_keys::kDevToolsPage,
-      new extensions::DevToolsPageHandler);
+      make_linked_ptr(new extensions::DevToolsPageHandler));
   extensions::ManifestHandler::Register(
       extension_manifest_keys::kWebAccessibleResources,
-      new extensions::WebAccessibleResourcesHandler);
+      make_linked_ptr(new extensions::WebAccessibleResourcesHandler));
 }
 
 static void AppendParams(const std::vector<string16>& additional_names,

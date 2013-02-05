@@ -13,14 +13,14 @@ namespace extensions {
 class DefaultLocaleManifestTest : public ExtensionManifestTest {
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
-    ManifestHandler::Register(keys::kDefaultLocale,
-                              new DefaultLocaleHandler);
+    ManifestHandler::Register(extension_manifest_keys::kDefaultLocale,
+                              make_linked_ptr(new DefaultLocaleHandler));
   }
 };
 
 TEST_F(DefaultLocaleManifestTest, DefaultLocale) {
   LoadAndExpectError("default_locale_invalid.json",
-                     errors::kInvalidDefaultLocale);
+                     extension_manifest_errors::kInvalidDefaultLocale);
 
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("default_locale_valid.json"));

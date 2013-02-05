@@ -13,8 +13,9 @@ namespace errors = extension_manifest_errors;
 class OptionsPageManifestTest : public ExtensionManifestTest {
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
-    extensions::ManifestHandler::Register(extension_manifest_keys::kOptionsPage,
-                                          new extensions::OptionsPageHandler);
+    extensions::ManifestHandler::Register(
+        extension_manifest_keys::kOptionsPage,
+        make_linked_ptr(new extensions::OptionsPageHandler));
   }
 };
 

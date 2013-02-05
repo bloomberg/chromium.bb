@@ -69,7 +69,7 @@ class SandboxedUnpackerTest : public testing::Test {
     client_->DelegateToFake();
     extensions::ManifestHandler::Register(
         extension_manifest_keys::kDefaultLocale,
-        new extensions::DefaultLocaleHandler);
+        make_linked_ptr(new extensions::DefaultLocaleHandler));
   }
 
   virtual void TearDown() {

@@ -1536,6 +1536,7 @@
         'common/extensions/manifest_tests/extension_manifests_web_intents_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_web_unittest.cc',
         'common/extensions/manifest_unittest.cc',
+        'common/extensions/manifest_handler_unittest.cc',
         'common/extensions/message_bundle_unittest.cc',
         'common/extensions/permissions/api_permission_set_unittest.cc',
         'common/extensions/permissions/permission_set_unittest.cc',

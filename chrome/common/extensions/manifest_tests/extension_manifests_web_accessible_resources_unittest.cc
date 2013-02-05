@@ -16,7 +16,7 @@ class WebAccessibleResourcesManifestTest : public ExtensionManifestTest {
     ExtensionManifestTest::SetUp();
     extensions::ManifestHandler::Register(
         extension_manifest_keys::kWebAccessibleResources,
-        new extensions::WebAccessibleResourcesHandler);
+        make_linked_ptr(new extensions::WebAccessibleResourcesHandler));
   }
 };
 

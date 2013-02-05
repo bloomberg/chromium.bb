@@ -257,7 +257,7 @@ void IdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure() {
 
 IdentityAPI::IdentityAPI(Profile* profile) {
   ManifestHandler::Register(extension_manifest_keys::kOAuth2,
-                            new OAuth2ManifestHandler);
+                            make_linked_ptr(new OAuth2ManifestHandler));
 }
 
 IdentityAPI::~IdentityAPI() {

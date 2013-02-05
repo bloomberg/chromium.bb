@@ -15,7 +15,7 @@ class UIManifestTest : public ExtensionManifestTest {
  protected:
   virtual void SetUp() OVERRIDE {
     ManifestHandler::Register(extension_manifest_keys::kBrowserAction,
-                              new BrowserActionHandler);
+                              make_linked_ptr(new BrowserActionHandler));
   }
 };
 

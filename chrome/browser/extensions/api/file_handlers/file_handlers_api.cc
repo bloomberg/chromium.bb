@@ -12,7 +12,7 @@ namespace extensions {
 
 FileHandlersAPI::FileHandlersAPI(Profile* profile) {
   ManifestHandler::Register(extension_manifest_keys::kFileHandlers,
-                            new FileHandlersParser);
+                            make_linked_ptr(new FileHandlersParser));
 }
 
 FileHandlersAPI::~FileHandlersAPI() {

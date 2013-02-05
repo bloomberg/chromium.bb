@@ -126,7 +126,7 @@ class ExtensionTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     ManifestHandler::Register(extension_manifest_keys::kCommands,
-                              new CommandsHandler);
+                              make_linked_ptr(new CommandsHandler));
   }
 };
 

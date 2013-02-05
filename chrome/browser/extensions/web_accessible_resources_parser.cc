@@ -14,7 +14,7 @@ namespace extensions {
 
 WebAccessibleResourcesParser::WebAccessibleResourcesParser(Profile* profile) {
   ManifestHandler::Register(extension_manifest_keys::kWebAccessibleResources,
-                            new WebAccessibleResourcesHandler);
+                            make_linked_ptr(new WebAccessibleResourcesHandler));
 }
 
 WebAccessibleResourcesParser::~WebAccessibleResourcesParser() {

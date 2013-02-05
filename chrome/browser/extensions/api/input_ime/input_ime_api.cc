@@ -841,7 +841,7 @@ bool KeyEventHandled::RunImpl() {
 InputImeAPI::InputImeAPI(Profile* profile)
     : profile_(profile) {
   ManifestHandler::Register(extension_manifest_keys::kInputComponents,
-                            new InputComponentsHandler);
+                            make_linked_ptr(new InputComponentsHandler));
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile));

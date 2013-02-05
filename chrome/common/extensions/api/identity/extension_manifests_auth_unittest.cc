@@ -16,7 +16,7 @@ class OAuth2ManifestTest : public ExtensionManifestTest {
  protected:
   virtual void SetUp() OVERRIDE {
     ManifestHandler::Register(extension_manifest_keys::kOAuth2,
-                              new OAuth2ManifestHandler);
+                              make_linked_ptr(new OAuth2ManifestHandler));
   }
 };
 

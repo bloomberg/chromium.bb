@@ -35,7 +35,7 @@ class ScriptBadgeManifestTest : public ExtensionManifestTest {
  protected:
   virtual void SetUp() OVERRIDE {
     ManifestHandler::Register(extension_manifest_keys::kScriptBadge,
-                              new ScriptBadgeHandler);
+                              make_linked_ptr(new ScriptBadgeHandler));
   }
 };
 
