@@ -66,8 +66,9 @@ const AcceleratorData kAcceleratorData[] = {
   { false, ui::VKEY_POWER, ui::EF_NONE, POWER_RELEASED },
 #if !defined(NDEBUG)
   // Extra shortcut for debug build to control magnifier on linux desktop.
-  { true, ui::VKEY_F6, ui::EF_CONTROL_DOWN, MAGNIFY_SCREEN_ZOOM_OUT},
-  { true, ui::VKEY_F7, ui::EF_CONTROL_DOWN, MAGNIFY_SCREEN_ZOOM_IN},
+  { true, ui::VKEY_BRIGHTNESS_DOWN, ui::EF_CONTROL_DOWN,
+    MAGNIFY_SCREEN_ZOOM_OUT},
+  { true, ui::VKEY_BRIGHTNESS_UP, ui::EF_CONTROL_DOWN, MAGNIFY_SCREEN_ZOOM_IN},
   // Extra shortcut for debug build to activate lock screen on linux desktop.
   { true, ui::VKEY_L, ui::EF_ALT_DOWN, LOCK_SCREEN },
   // Extra shortcut for display swaping as alt-f4 is taken on linux desktop.
