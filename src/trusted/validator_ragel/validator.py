@@ -35,6 +35,10 @@ def ValidateChunkIA32_(*args):
   raise AssertionError('using validator without calling Init first')
 
 
+def ValidateChunkAMD64_(*args):
+  raise AssertionError('using validator without calling Init first')
+
+
 def Init(validator_dll):
   """Initialize python interface to the validator.
 
@@ -49,6 +53,7 @@ def Init(validator_dll):
   """
   global GetFullCPUIDFeatures
   global ValidateChunkIA32_
+  global ValidateChunkAMD64_
 
   validator_dll = ctypes.cdll.LoadLibrary(validator_dll)
 
@@ -56,7 +61,9 @@ def Init(validator_dll):
   GetFullCPUIDFeatures.restype = ctypes.c_void_p
 
   ValidateChunkIA32_ = validator_dll.ValidateChunkIA32
-  ValidateChunkIA32_.argtypes = [
+  ValidateChunkAMD64_ = validator_dll.ValidateChunkIA32
+
+  ValidateChunkIA32_.argtypes = ValidateChunkAMD64_.argtypes = [
       ctypes.POINTER(ctypes.c_uint8),  # data
       ctypes.c_uint32,  # size
       ctypes.c_uint32,  # options
@@ -65,6 +72,7 @@ def Init(validator_dll):
       ctypes.c_void_p,  # callback data
   ]
   ValidateChunkIA32_.restype = ctypes.c_uint32  # Bool
+  ValidateChunkAMD64_.restype = ctypes.c_uint32  # Bool
 
 
 def ValidateChunk(
@@ -108,7 +116,9 @@ def ValidateChunk(
 
   data_ptr = ctypes.cast(data, ctypes.POINTER(ctypes.c_uint8))
 
-  validate_chunk_function = {32: ValidateChunkIA32_}[bitness]
+  validate_chunk_function = {
+      32: ValidateChunkIA32_,
+      64: ValidateChunkAMD64_}[bitness]
 
   result = validate_chunk_function(
       data_ptr,
@@ -133,19 +143,20 @@ def main():
   # case because it crosses bundle boundary)
   data = '\x90' * 31 + 'z'
 
-  errors = []
+  for bitness in 32, 64:
+    errors = []
 
-  def Callback(begin_index, end_index, info):
-    errors.append(begin_index)
-    print 'callback', begin_index, end_index
+    def Callback(begin_index, end_index, info):
+      errors.append(begin_index)
+      print 'callback', begin_index, end_index
 
-  result = ValidateChunk(
-      data,
-      bitness=32,
-      callback=Callback)
+    result = ValidateChunk(
+        data,
+        bitness=bitness,
+        callback=Callback)
 
-  assert not result
-  assert errors == [31], errors
+    assert not result
+    assert errors == [31], errors
 
 
 if __name__ == '__main__':
