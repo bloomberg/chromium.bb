@@ -163,7 +163,9 @@ void EnableSpokenFeedback(bool enabled,
       IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_DISABLED).c_str());
 
   // Load/Unload ChromeVox
-  Profile* profile = ProfileManager::GetDefaultProfile();
+  Profile* profile = login_web_ui ?
+                         Profile::FromWebUI(login_web_ui) :
+                         ProfileManager::GetDefaultProfile();
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   FilePath path = FilePath(extension_misc::kChromeVoxExtensionPath);
