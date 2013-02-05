@@ -1265,7 +1265,8 @@ uses(Instruction inst) const {
 
 // BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0:
 //
-//   {arch: v5T,
+//   {actual: Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1,
+//    arch: v5T,
 //    baseline: BreakPointAndConstantPoolHead,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -1276,12 +1277,12 @@ uses(Instruction inst) const {
 //    imm32: ZeroExtend(imm12:imm4, 32),
 //    imm4: imm4(3:0),
 //    inst: inst,
+//    is_literal_pool_head: inst  ==
+//            LiteralPoolHeadConstant(),
 //    pattern: cccc00010010iiiiiiiiiiii0111iiii,
-//    pool_head: true,
 //    rule: BKPT,
 //    safety: [cond(31:28)=~1110 => UNPREDICTABLE,
 //      not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS],
-//    true: true,
 //    uses: {}}
 RegisterList BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0::
 defs(Instruction inst) const {
@@ -1293,8 +1294,9 @@ defs(Instruction inst) const {
 bool BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0::
 is_literal_pool_head(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // pool_head: 'true'
-  return true;
+  // is_literal_pool_head: 'LiteralPoolHeadConstant()  ==
+  //          inst'
+  return ((inst.Bits()) == (nacl_arm_dec::LiteralPoolHeadConstant()));
 }
 
 SafetyLevel BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0::
@@ -1364,6 +1366,7 @@ uses(Instruction inst) const {
 //   {Lr: 14,
 //    Pc: 15,
 //    Rm: Rm(3:0),
+//    actual: Actual_BLX_register_cccc000100101111111111110011mmmm_case_1,
 //    arch: v5T,
 //    baseline: BranchToRegister,
 //    cond: cond(31:28),
@@ -1543,6 +1546,7 @@ uses(Instruction inst) const {
 //
 //   {Pc: 15,
 //    Rm: Rm(3:0),
+//    actual: Actual_Bx_cccc000100101111111111110001mmmm_case_1,
 //    arch: v4T,
 //    baseline: BranchToRegister,
 //    cond: cond(31:28),
@@ -1709,6 +1713,7 @@ uses(Instruction inst) const {
 //   {Pc: 15,
 //    Rd: Rd(15:12),
 //    Rm: Rm(3:0),
+//    actual: Actual_CLZ_cccc000101101111dddd11110001mmmm_case_1,
 //    arch: v5T,
 //    baseline: Unary2RegisterOpNotRmIsPc,
 //    cond: cond(31:28),
@@ -6507,6 +6512,7 @@ uses(Instruction inst) const {
 //
 //   {R: R(22),
 //    Rd: Rd(15:12),
+//    actual: Actual_MRS_cccc00010r001111dddd000000000000_case_1,
 //    baseline: Unary1RegisterSet,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -6653,6 +6659,7 @@ uses(Instruction inst) const {
 //    None: 32,
 //    Pc: 15,
 //    Rn: Rn(3:0),
+//    actual: Actual_MSR_register_cccc00010010mm00111100000000nnnn_case_1,
 //    baseline: Unary1RegisterUse,
 //    cond: cond(31:28),
 //    constraints: ,

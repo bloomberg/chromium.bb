@@ -303,8 +303,8 @@ def _DeclarePoolHead(out, values):
 def _DefinePoolHead(out, pool_head, values):
   _DefineMethod(out, DECODER_POOL_HEAD_DEF, values, pool_head.to_bool())
 
-_METHODS_MAP['pool_head'] = [_DeclarePoolHead, _DefinePoolHead]
-dgen_core.DefineDecoderFieldType('pool_head', 'bool')
+_METHODS_MAP['is_literal_pool_head'] = [_DeclarePoolHead, _DefinePoolHead]
+dgen_core.DefineDecoderFieldType('is_literal_pool_head', 'bool')
 
 DECODER_RELATIVE_HEADER="""
   virtual bool is_relative_branch(Instruction i) const;"""

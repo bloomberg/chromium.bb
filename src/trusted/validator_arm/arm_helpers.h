@@ -63,6 +63,11 @@ inline uint32_t ARMExpandImm_C(uint32_t imm12) {
   return ARMExpandImm(imm12);
 }
 
+// Returns the bits used as a literal pool head.
+inline uint32_t LiteralPoolHeadConstant() {
+  return kLiteralPoolHead;
+}
+
 }  // namespace nacl_arm_dec
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_ARM_HELPERS_H

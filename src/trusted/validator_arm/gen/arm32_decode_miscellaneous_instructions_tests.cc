@@ -39,7 +39,7 @@ namespace nacl_arm_test {
 //       None: 32,
 //       Pc: 15,
 //       Rn: Rn(3:0),
-//       actual: Unary1RegisterUse,
+//       actual: Actual_MSR_register_cccc00010010mm00111100000000nnnn_case_1,
 //       baseline: Unary1RegisterUse,
 //       constraints: ,
 //       defs: {NZCV
@@ -241,7 +241,7 @@ bool UnsafeCondDecoderTesterCase3
 // op2(6:4)=000 & B(9)=0 & op(22:21)=x0 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx00x0xxxx0000
 //    = {R: R(22),
 //       Rd: Rd(15:12),
-//       actual: Unary1RegisterSet,
+//       actual: Actual_MRS_cccc00010r001111dddd000000000000_case_1,
 //       baseline: Unary1RegisterSet,
 //       constraints: ,
 //       defs: {Rd},
@@ -386,7 +386,7 @@ bool UnsafeCondDecoderTesterCase6
 // op2(6:4)=001 & op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
 //    = {Pc: 15,
 //       Rm: Rm(3:0),
-//       actual: BranchToRegister,
+//       actual: Actual_Bx_cccc000100101111111111110001mmmm_case_1,
 //       baseline: BranchToRegister,
 //       constraints: ,
 //       defs: {Pc},
@@ -449,7 +449,7 @@ bool BranchToRegisterTesterCase7
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
-//       actual: Unary2RegisterOpNotRmIsPc,
+//       actual: Actual_CLZ_cccc000101101111dddd11110001mmmm_case_1,
 //       baseline: Unary2RegisterOpNotRmIsPc,
 //       constraints: ,
 //       defs: {Rd},
@@ -546,7 +546,7 @@ bool UnsafeCondDecoderTesterCase9
 //    = {Lr: 14,
 //       Pc: 15,
 //       Rm: Rm(3:0),
-//       actual: BranchToRegister,
+//       actual: Actual_BLX_register_cccc000100101111111111110011mmmm_case_1,
 //       baseline: BranchToRegister,
 //       constraints: ,
 //       defs: {Pc, Lr},
@@ -642,7 +642,7 @@ bool UnsafeCondDecoderTesterCase11
 }
 
 // op2(6:4)=111 & op(22:21)=01
-//    = {actual: BreakPointAndConstantPoolHead,
+//    = {actual: Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1,
 //       baseline: BreakPointAndConstantPoolHead,
 //       cond: cond(31:28),
 //       constraints: ,
@@ -650,10 +650,10 @@ bool UnsafeCondDecoderTesterCase11
 //       fields: [cond(31:28)],
 //       generated_baseline: BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0,
 //       inst: inst,
-//       pool_head: true,
+//       is_literal_pool_head: inst  ==
+//               LiteralPoolHeadConstant(),
 //       safety: [cond(31:28)=~1110 => UNPREDICTABLE,
 //         not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS],
-//       true: true,
 //       uses: {}}
 class Immediate16UseTesterCase12
     : public Immediate16UseTester {
@@ -781,7 +781,7 @@ bool UnsafeCondDecoderTesterCase14
 //       None: 32,
 //       Pc: 15,
 //       Rn: Rn(3:0),
-//       actual: Unary1RegisterUse,
+//       actual: Actual_MSR_register_cccc00010010mm00111100000000nnnn_case_1,
 //       baseline: Unary1RegisterUse,
 //       constraints: ,
 //       defs: {NZCV
@@ -850,7 +850,7 @@ class ForbiddenCondDecoderTester_Case3
 // op2(6:4)=000 & B(9)=0 & op(22:21)=x0 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx00x0xxxx0000
 //    = {R: R(22),
 //       Rd: Rd(15:12),
-//       actual: Unary1RegisterSet,
+//       actual: Actual_MRS_cccc00010r001111dddd000000000000_case_1,
 //       baseline: Unary1RegisterSet,
 //       constraints: ,
 //       defs: {Rd},
@@ -900,7 +900,7 @@ class ForbiddenCondDecoderTester_Case6
 // op2(6:4)=001 & op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
 //    = {Pc: 15,
 //       Rm: Rm(3:0),
-//       actual: BranchToRegister,
+//       actual: Actual_Bx_cccc000100101111111111110001mmmm_case_1,
 //       baseline: BranchToRegister,
 //       constraints: ,
 //       defs: {Pc},
@@ -923,7 +923,7 @@ class BranchToRegisterTester_Case7
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
-//       actual: Unary2RegisterOpNotRmIsPc,
+//       actual: Actual_CLZ_cccc000101101111dddd11110001mmmm_case_1,
 //       baseline: Unary2RegisterOpNotRmIsPc,
 //       constraints: ,
 //       defs: {Rd},
@@ -959,7 +959,7 @@ class ForbiddenCondDecoderTester_Case9
 //    = {Lr: 14,
 //       Pc: 15,
 //       Rm: Rm(3:0),
-//       actual: BranchToRegister,
+//       actual: Actual_BLX_register_cccc000100101111111111110011mmmm_case_1,
 //       baseline: BranchToRegister,
 //       constraints: ,
 //       defs: {Pc, Lr},
@@ -993,7 +993,7 @@ class ForbiddenCondDecoderTester_Case11
 };
 
 // op2(6:4)=111 & op(22:21)=01
-//    = {actual: BreakPointAndConstantPoolHead,
+//    = {actual: Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1,
 //       baseline: BreakPointAndConstantPoolHead,
 //       cond: cond(31:28),
 //       constraints: ,
@@ -1001,11 +1001,11 @@ class ForbiddenCondDecoderTester_Case11
 //       fields: [cond(31:28)],
 //       generated_baseline: BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0,
 //       inst: inst,
-//       pool_head: true,
+//       is_literal_pool_head: inst  ==
+//               LiteralPoolHeadConstant(),
 //       rule: BKPT,
 //       safety: [cond(31:28)=~1110 => UNPREDICTABLE,
 //         not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS],
-//       true: true,
 //       uses: {}}
 class BreakPointAndConstantPoolHeadTester_Case12
     : public Immediate16UseTesterCase12 {
@@ -1058,7 +1058,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       None: 32,
 //       Pc: 15,
 //       Rn: Rn(3:0),
-//       actual: Unary1RegisterUse,
+//       actual: Actual_MSR_register_cccc00010010mm00111100000000nnnn_case_1,
 //       baseline: Unary1RegisterUse,
 //       constraints: ,
 //       defs: {NZCV
@@ -1076,8 +1076,10 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       write_nzcvq: mask(1)=1}
 TEST_F(Arm32DecoderStateTests,
        Unary1RegisterUseTester_Case0_TestCase0) {
-  Unary1RegisterUseTester_Case0 tester;
-  tester.Test("cccc00010010mm00111100000000nnnn");
+  Unary1RegisterUseTester_Case0 baseline_tester;
+  NamedActual_MSR_register_cccc00010010mm00111100000000nnnn_case_1_MSR_register actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010010mm00111100000000nnnn");
 }
 
 // op2(6:4)=000 & B(9)=0 & op(22:21)=01 & op1(19:16)=xx01 & $pattern(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx
@@ -1125,7 +1127,7 @@ TEST_F(Arm32DecoderStateTests,
 // op2(6:4)=000 & B(9)=0 & op(22:21)=x0 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx00x0xxxx0000
 //    = {R: R(22),
 //       Rd: Rd(15:12),
-//       actual: Unary1RegisterSet,
+//       actual: Actual_MRS_cccc00010r001111dddd000000000000_case_1,
 //       baseline: Unary1RegisterSet,
 //       constraints: ,
 //       defs: {Rd},
@@ -1138,8 +1140,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        Unary1RegisterSetTester_Case4_TestCase4) {
-  Unary1RegisterSetTester_Case4 tester;
-  tester.Test("cccc00010r001111dddd000000000000");
+  Unary1RegisterSetTester_Case4 baseline_tester;
+  NamedActual_MRS_cccc00010r001111dddd000000000000_case_1_MRS actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010r001111dddd000000000000");
 }
 
 // op2(6:4)=000 & B(9)=1 & op(22:21)=x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx00xxxxxx0000
@@ -1173,7 +1177,7 @@ TEST_F(Arm32DecoderStateTests,
 // op2(6:4)=001 & op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
 //    = {Pc: 15,
 //       Rm: Rm(3:0),
-//       actual: BranchToRegister,
+//       actual: Actual_Bx_cccc000100101111111111110001mmmm_case_1,
 //       baseline: BranchToRegister,
 //       constraints: ,
 //       defs: {Pc},
@@ -1186,15 +1190,17 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rm}}
 TEST_F(Arm32DecoderStateTests,
        BranchToRegisterTester_Case7_TestCase7) {
-  BranchToRegisterTester_Case7 tester;
-  tester.Test("cccc000100101111111111110001mmmm");
+  BranchToRegisterTester_Case7 baseline_tester;
+  NamedActual_Bx_cccc000100101111111111110001mmmm_case_1_Bx actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000100101111111111110001mmmm");
 }
 
 // op2(6:4)=001 & op(22:21)=11 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
-//       actual: Unary2RegisterOpNotRmIsPc,
+//       actual: Actual_CLZ_cccc000101101111dddd11110001mmmm_case_1,
 //       baseline: Unary2RegisterOpNotRmIsPc,
 //       constraints: ,
 //       defs: {Rd},
@@ -1206,8 +1212,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rm}}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterOpNotRmIsPcTester_Case8_TestCase8) {
-  Unary2RegisterOpNotRmIsPcTester_Case8 tester;
-  tester.Test("cccc000101101111dddd11110001mmmm");
+  Unary2RegisterOpNotRmIsPcTester_Case8 baseline_tester;
+  NamedActual_CLZ_cccc000101101111dddd11110001mmmm_case_1_CLZ actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000101101111dddd11110001mmmm");
 }
 
 // op2(6:4)=010 & op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
@@ -1228,7 +1236,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Lr: 14,
 //       Pc: 15,
 //       Rm: Rm(3:0),
-//       actual: BranchToRegister,
+//       actual: Actual_BLX_register_cccc000100101111111111110011mmmm_case_1,
 //       baseline: BranchToRegister,
 //       constraints: ,
 //       defs: {Pc, Lr},
@@ -1241,8 +1249,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rm}}
 TEST_F(Arm32DecoderStateTests,
        BranchToRegisterTester_Case10_TestCase10) {
-  BranchToRegisterTester_Case10 tester;
-  tester.Test("cccc000100101111111111110011mmmm");
+  BranchToRegisterTester_Case10 baseline_tester;
+  NamedActual_BLX_register_cccc000100101111111111110011mmmm_case_1_BLX_register actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000100101111111111110011mmmm");
 }
 
 // op2(6:4)=110 & op(22:21)=11 & $pattern(31:0)=xxxxxxxxxxxx000000000000xxxx1110
@@ -1260,7 +1270,7 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 // op2(6:4)=111 & op(22:21)=01
-//    = {actual: BreakPointAndConstantPoolHead,
+//    = {actual: Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1,
 //       baseline: BreakPointAndConstantPoolHead,
 //       cond: cond(31:28),
 //       constraints: ,
@@ -1268,17 +1278,19 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [cond(31:28)],
 //       generated_baseline: BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0,
 //       inst: inst,
+//       is_literal_pool_head: inst  ==
+//               LiteralPoolHeadConstant(),
 //       pattern: cccc00010010iiiiiiiiiiii0111iiii,
-//       pool_head: true,
 //       rule: BKPT,
 //       safety: [cond(31:28)=~1110 => UNPREDICTABLE,
 //         not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS],
-//       true: true,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        BreakPointAndConstantPoolHeadTester_Case12_TestCase12) {
-  BreakPointAndConstantPoolHeadTester_Case12 tester;
-  tester.Test("cccc00010010iiiiiiiiiiii0111iiii");
+  BreakPointAndConstantPoolHeadTester_Case12 baseline_tester;
+  NamedActual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1_BKPT actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010010iiiiiiiiiiii0111iiii");
 }
 
 // op2(6:4)=111 & op(22:21)=10

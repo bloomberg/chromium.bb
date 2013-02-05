@@ -1463,13 +1463,15 @@ class Actual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1
 //
 // Actual:
 //   {defs: {},
-//    pool_head: true,
+//    is_literal_pool_head: LiteralPoolHeadConstant()  ==
+//            inst,
 //    safety: [inst(31:28)=~1110 => UNPREDICTABLE,
 //      not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS],
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v5T,
+//   {actual: Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1,
+//    arch: v5T,
 //    baseline: BreakPointAndConstantPoolHead,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -1480,12 +1482,12 @@ class Actual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1
 //    imm32: ZeroExtend(imm12:imm4, 32),
 //    imm4: imm4(3:0),
 //    inst: inst,
+//    is_literal_pool_head: inst  ==
+//            LiteralPoolHeadConstant(),
 //    pattern: cccc00010010iiiiiiiiiiii0111iiii,
-//    pool_head: true,
 //    rule: BKPT,
 //    safety: [cond(31:28)=~1110 => UNPREDICTABLE,
 //      not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS],
-//    true: true,
 //    uses: {}}
 class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
      : public ClassDecoder {
@@ -1909,6 +1911,7 @@ class Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1
 //   {Lr: 14,
 //    Pc: 15,
 //    Rm: Rm(3:0),
+//    actual: Actual_BLX_register_cccc000100101111111111110011mmmm_case_1,
 //    arch: v5T,
 //    baseline: BranchToRegister,
 //    cond: cond(31:28),
@@ -2029,6 +2032,7 @@ class Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1
 // Baseline:
 //   {Pc: 15,
 //    Rm: Rm(3:0),
+//    actual: Actual_Bx_cccc000100101111111111110001mmmm_case_1,
 //    arch: v4T,
 //    baseline: BranchToRegister,
 //    cond: cond(31:28),
@@ -2069,6 +2073,7 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //   {Pc: 15,
 //    Rd: Rd(15:12),
 //    Rm: Rm(3:0),
+//    actual: Actual_CLZ_cccc000101101111dddd11110001mmmm_case_1,
 //    arch: v5T,
 //    baseline: Unary2RegisterOpNotRmIsPc,
 //    cond: cond(31:28),
@@ -4773,6 +4778,7 @@ class Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1
 // Baseline:
 //   {R: R(22),
 //    Rd: Rd(15:12),
+//    actual: Actual_MRS_cccc00010r001111dddd000000000000_case_1,
 //    baseline: Unary1RegisterSet,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -4857,6 +4863,7 @@ class Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1
 //    None: 32,
 //    Pc: 15,
 //    Rn: Rn(3:0),
+//    actual: Actual_MSR_register_cccc00010010mm00111100000000nnnn_case_1,
 //    baseline: Unary1RegisterUse,
 //    cond: cond(31:28),
 //    constraints: ,

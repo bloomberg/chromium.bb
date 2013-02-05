@@ -556,7 +556,8 @@ uses(Instruction inst) const {
 //
 // Actual:
 //   {defs: {},
-//    pool_head: true,
+//    is_literal_pool_head: LiteralPoolHeadConstant()  ==
+//            inst,
 //    safety: [inst(31:28)=~1110 => UNPREDICTABLE,
 //      not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS],
 //    uses: {}}
@@ -571,8 +572,9 @@ defs(Instruction inst) const {
 bool Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1::
 is_literal_pool_head(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // pool_head: 'true'
-  return true;
+  // is_literal_pool_head: 'LiteralPoolHeadConstant()  ==
+  //          inst'
+  return ((inst.Bits()) == (nacl_arm_dec::LiteralPoolHeadConstant()));
 }
 
 SafetyLevel Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1::

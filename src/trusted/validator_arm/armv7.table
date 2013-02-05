@@ -111,10 +111,10 @@
 #       base register (missing implies false).
 # is_literal_load: Checks whether the instruction is a PC-relative
 #       load plus immediate.
+# is_literal_pool_head: Checks whether the instruction is a special
+#       bit sequence that marks the start of a literal pool.
 # is_load_tp: Checks if r9 is used to load a thread pointer (missing
 #       implies false).
-# pool_head: Defines instruction to start a literal pool.
-#       (missing implies false).
 # relative: Defines if the instruction is a direct relative
 #       branch (R15 + constant offset). (missing implies false.)
 # relative_offset: Defines the constant offset used in a direct
@@ -1138,7 +1138,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    { cond(31:28), imm12(19:8), imm4(3:0) }
    baseline := BreakPointAndConstantPoolHead;
    imm32 := ZeroExtend(imm12:imm4, 32);
-   pool_head := true;
+   is_literal_pool_head := inst == LiteralPoolHeadConstant();
    defs := {};
    uses := {};
    safety := cond=~1110 => UNPREDICTABLE &
