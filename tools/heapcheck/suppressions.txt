@@ -1661,12 +1661,6 @@
    fun:v8::internal::Execution::New
 }
 {
-  bug_169434
-  Heapcheck:Leak
-  ...
-  fun:::BookmarkUIUtilsTest_HasBookmarkURLs_Test::TestBody
-}
-{
    bug_169678
    Heapcheck:Leak
    fun:v8::internal::SlotsBufferAllocator::AllocateBuffer

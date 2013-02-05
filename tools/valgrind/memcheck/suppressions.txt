@@ -6386,12 +6386,6 @@
    fun:_ZN7WebCore7Element16styleForRendererEv
 }
 {
-  bug_169434
-  Memcheck:Leak
-  fun:_Znw*
-  fun:_ZN12_GLOBAL__N_140BookmarkUIUtilsTest_HasBookmarkURLs_Test8TestBodyEv
-}
-{
    bug_170340
    Memcheck:Uninitialized
    fun:_ZN3WTF12AtomicString3addEPKt
