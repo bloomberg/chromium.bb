@@ -551,21 +551,19 @@ jint GetAwDrawGLFunction(JNIEnv* env, jclass) {
 }
 
 namespace {
-// |message| is passed as base::Owned, so it will automatically be deleted
-// when the callback goes out of scope.
-void DocumentHasImagesCallback(ScopedJavaGlobalRef<jobject>* message,
+void DocumentHasImagesCallback(const ScopedJavaGlobalRef<jobject>& message,
                                bool has_images) {
   Java_AwContents_onDocumentHasImagesResponse(AttachCurrentThread(),
                                               has_images,
-                                              message->obj());
+                                              message.obj());
 }
 }  // namespace
 
 void AwContents::DocumentHasImages(JNIEnv* env, jobject obj, jobject message) {
-  ScopedJavaGlobalRef<jobject>* j_message = new ScopedJavaGlobalRef<jobject>();
-  j_message->Reset(env, message);
+  ScopedJavaGlobalRef<jobject> j_message;
+  j_message.Reset(env, message);
   render_view_host_ext_->DocumentHasImages(
-      base::Bind(&DocumentHasImagesCallback, base::Owned(j_message)));
+      base::Bind(&DocumentHasImagesCallback, j_message));
 }
 
 namespace {

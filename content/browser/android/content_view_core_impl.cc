@@ -1259,17 +1259,15 @@ void ContentViewCoreImpl::UndoScrollFocusedEditableNodeIntoView(
 }
 
 namespace {
-void JavaScriptResultCallback(ScopedJavaGlobalRef<jobject>* callback,
+void JavaScriptResultCallback(const ScopedJavaGlobalRef<jobject>& callback,
                               const base::Value* result) {
-  // |callback| is passed as base::Owned, so it will automatically be deleted
-  // when this base::Callback goes out of scope.
   JNIEnv* env = base::android::AttachCurrentThread();
   std::string json;
   base::JSONWriter::Write(result, &json);
   ScopedJavaLocalRef<jstring> j_json = ConvertUTF8ToJavaString(env, json);
   Java_ContentViewCore_onEvaluateJavaScriptResult(env,
                                                   j_json.obj(),
-                                                  callback->obj());
+                                                  callback.obj());
 }
 }  // namespace
 
@@ -1289,10 +1287,10 @@ void ContentViewCoreImpl::EvaluateJavaScript(JNIEnv* env,
 
   // Secure the Java callback in a scoped object and give ownership of it to the
   // base::Callback.
-  ScopedJavaGlobalRef<jobject>* j_callback = new ScopedJavaGlobalRef<jobject>();
-  j_callback->Reset(env, callback);
+  ScopedJavaGlobalRef<jobject> j_callback;
+  j_callback.Reset(env, callback);
   content::RenderViewHost::JavascriptResultCallback c_callback =
-      base::Bind(&JavaScriptResultCallback, base::Owned(j_callback));
+      base::Bind(&JavaScriptResultCallback, j_callback);
 
   host->ExecuteJavascriptInWebFrameCallbackResult(
       string16(),  // frame_xpath
