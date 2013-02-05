@@ -1033,12 +1033,9 @@ void SyncSetupHandler::HandleDoSignOutOnAuthError(const ListValue* args) {
 }
 
 void SyncSetupHandler::HandleStopSyncing(const ListValue* args) {
-  ProfileSyncService* service = GetSyncService();
-
-  if (service) {
-    service->DisableForUser();
+  if (GetSyncService())
     ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
-  }
+
   GetSignin()->SignOut();
 }
 

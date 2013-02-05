@@ -289,6 +289,34 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
       harness_.profile->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
 }
 
+TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
+  SigninManager* signin =
+      SigninManagerFactory::GetForProfile(harness_.profile.get());
+  signin->SetAuthenticatedUsername("test@test.com");
+  ProfileSyncComponentsFactoryMock* factory =
+      new ProfileSyncComponentsFactoryMock();
+  harness_.service.reset(new TestProfileSyncService(
+      factory,
+      harness_.profile.get(),
+      signin,
+      ProfileSyncService::AUTO_START,
+      true));
+  // Register the bookmark data type.
+  EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _, _, _)).
+      WillRepeatedly(ReturnNewDataTypeManager());
+
+  harness_.IssueTestTokens();
+
+  harness_.service->Initialize();
+  EXPECT_TRUE(harness_.service->sync_initialized());
+  EXPECT_TRUE(harness_.service->GetBackendForTest() != NULL);
+  EXPECT_FALSE(
+      harness_.profile->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+
+  signin->SignOut();
+  EXPECT_FALSE(harness_.service->sync_initialized());
+}
+
 TEST_F(ProfileSyncServiceTest, JsControllerHandlersBasic) {
   harness_.StartSyncService();
   EXPECT_TRUE(harness_.service->sync_initialized());

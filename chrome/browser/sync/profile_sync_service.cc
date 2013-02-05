@@ -319,6 +319,9 @@ void ProfileSyncService::RegisterAuthNotifications() {
   registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
                  content::Source<Profile>(profile_));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
+                 content::Source<Profile>(profile_));
 }
 
 void ProfileSyncService::RegisterDataTypeController(
@@ -1831,6 +1834,10 @@ void ProfileSyncService::Observe(int type,
         TryStart();
       break;
     }
+    case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:
+      // Disable sync if the user is signed out.
+      DisableForUser();
+      break;
     default: {
       NOTREACHED();
     }
