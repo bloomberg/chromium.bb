@@ -300,6 +300,8 @@ TEST_F(NavigationControllerTest, LoadURL) {
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
   EXPECT_EQ(contents()->GetMaxPageID(), 0);
+  EXPECT_EQ(0, NavigationEntryImpl::FromNavigationEntry(
+      controller.GetLastCommittedEntry())->bindings());
 
   // The timestamp should have been set.
   EXPECT_FALSE(controller.GetActiveEntry()->GetTimestamp().is_null());
@@ -863,6 +865,54 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   EXPECT_FALSE(controller.GetVisibleEntry());
 
   contents()->SetDelegate(NULL);
+}
+
+// Ensure that NavigationEntries track which bindings their RenderViewHost had
+// at the time they committed.  http://crbug.com/173672.
+TEST_F(NavigationControllerTest, LoadURL_WithBindings) {
+  NavigationControllerImpl& controller = controller_impl();
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller);
+
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+
+  // Navigate to a first, unprivileged URL.
+  controller.LoadURL(url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_EQ(NavigationEntryImpl::kInvalidBindings,
+            NavigationEntryImpl::FromNavigationEntry(
+                controller.GetPendingEntry())->bindings());
+
+  // Commit.
+  TestRenderViewHost* orig_rvh = static_cast<TestRenderViewHost*>(test_rvh());
+  orig_rvh->SendNavigate(0, url1);
+  EXPECT_EQ(controller.GetEntryCount(), 1);
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(0, NavigationEntryImpl::FromNavigationEntry(
+      controller.GetLastCommittedEntry())->bindings());
+
+  // Navigate to a second URL, simulate the beforeunload ack for the cross-site
+  // transition, and set bindings on the pending RenderViewHost to simulate a
+  // privileged url.
+  controller.LoadURL(url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  orig_rvh->SendShouldCloseACK(true);
+  contents()->GetPendingRenderViewHost()->AllowBindings(1);
+  static_cast<TestRenderViewHost*>(
+      contents()->GetPendingRenderViewHost())->SendNavigate(1, url2);
+
+  // The second load should be committed, and bindings should be remembered.
+  EXPECT_EQ(controller.GetEntryCount(), 2);
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_EQ(1, NavigationEntryImpl::FromNavigationEntry(
+      controller.GetLastCommittedEntry())->bindings());
+
+  // Going back, the first entry should still appear unprivileged.
+  controller.GoBack();
+  orig_rvh->SendNavigate(0, url1);
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(0, NavigationEntryImpl::FromNavigationEntry(
+      controller.GetLastCommittedEntry())->bindings());
 }
 
 TEST_F(NavigationControllerTest, Reload) {
