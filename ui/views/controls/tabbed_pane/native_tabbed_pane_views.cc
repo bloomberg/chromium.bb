@@ -65,6 +65,9 @@ class Tab : public View {
     return ps;
   }
 
+  // Overridden from ui::EventHandler.
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+
  private:
   void PaintTabBackground(gfx::Canvas* canvas) {
     // Fill the background. Note that we don't constrain to the bounds as
@@ -220,6 +223,25 @@ bool Tab::OnMousePressed(const ui::MouseEvent& event) {
 void Tab::OnMouseReleased(const ui::MouseEvent& event) {
   SetTitleColor(kTabTitleColor_Hovered);
   tab_strip_->SelectTab(this);
+}
+
+void Tab::OnGestureEvent(ui::GestureEvent* event) {
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN:
+      SetTitleColor(kTabTitleColor_Pressed);
+      break;
+    case ui::ET_GESTURE_TAP:
+      // SelectTab also sets the right tab color.
+      tab_strip_->SelectTab(this);
+      break;
+    case ui::ET_GESTURE_TAP_CANCEL:
+      SetTitleColor(tab_strip_->IsTabSelected(this) ? kTabTitleColor_Active :
+          kTabTitleColor_Inactive);
+      break;
+    default:
+      break;
+  }
+  event->SetHandled();
 }
 
 void Tab::OnMouseCaptureLost() {
