@@ -319,6 +319,7 @@ class PrintWebViewHelper
 
   // WebView used only to print the selection.
   scoped_ptr<PrepareFrameAndViewForPrint> prep_frame_view_;
+  bool reset_prep_frame_view_;
 
   scoped_ptr<PrintMsg_PrintPages_Params> print_pages_params_;
   bool is_preview_enabled_;
