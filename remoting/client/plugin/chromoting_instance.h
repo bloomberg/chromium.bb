@@ -190,6 +190,7 @@ class ChromotingInstance :
   ClientContext context_;
   scoped_refptr<RectangleUpdateDecoder> rectangle_decoder_;
   scoped_ptr<PepperView> view_;
+  pp::View plugin_view_;
 
   scoped_ptr<protocol::ConnectionToHost> host_connection_;
   scoped_ptr<ChromotingClient> client_;

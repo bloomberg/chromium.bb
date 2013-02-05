@@ -237,17 +237,6 @@ bool ChromotingInstance::Init(uint32_t argc,
   // Start all the threads.
   context_.Start();
 
-  // Create the chromoting objects that don't depend on the network connection.
-  // RectangleUpdateDecoder runs on a separate thread so for now we wrap
-  // PepperView with a ref-counted proxy object.
-  scoped_refptr<FrameConsumerProxy> consumer_proxy =
-      new FrameConsumerProxy(plugin_task_runner_);
-  rectangle_decoder_ = new RectangleUpdateDecoder(context_.main_task_runner(),
-                                                  context_.decode_task_runner(),
-                                                  consumer_proxy);
-  view_.reset(new PepperView(this, &context_, rectangle_decoder_.get()));
-  consumer_proxy->Attach(view_->AsWeakPtr());
-
   return true;
 }
 
@@ -368,9 +357,11 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
 void ChromotingInstance::DidChangeView(const pp::View& view) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
-  view_->SetView(view);
-
-  mouse_input_filter_.set_input_size(view_->get_view_size_dips());
+  plugin_view_ = view;
+  if (view_) {
+    view_->SetView(view);
+    mouse_input_filter_.set_input_size(view_->get_view_size_dips());
+  }
 }
 
 bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
@@ -379,15 +370,13 @@ bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
   if (!IsConnected())
     return false;
 
-  // TODO(wez): When we have a good hook into Host dimensions changes, move
-  // this there.
-  mouse_input_filter_.set_output_size(view_->get_source_size());
-
   return input_handler_.HandleInputEvent(event);
 }
 
 void ChromotingInstance::SetDesktopSize(const SkISize& size,
                                         const SkIPoint& dpi) {
+  mouse_input_filter_.set_output_size(size);
+
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetInteger("width", size.width());
   data->SetInteger("height", size.height());
@@ -501,12 +490,22 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
 
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
+  // RectangleUpdateDecoder runs on a separate thread so for now we wrap
+  // PepperView with a ref-counted proxy object.
+  scoped_refptr<FrameConsumerProxy> consumer_proxy =
+      new FrameConsumerProxy(plugin_task_runner_);
+
   host_connection_.reset(new protocol::ConnectionToHost(true));
   scoped_ptr<AudioPlayer> audio_player(new PepperAudioPlayer(this));
   client_.reset(new ChromotingClient(config, &context_,
                                      host_connection_.get(), this,
-                                     rectangle_decoder_.get(),
-                                     audio_player.Pass()));
+                                     consumer_proxy, audio_player.Pass()));
+
+  view_.reset(new PepperView(this, &context_, client_->GetFrameProducer()));
+  consumer_proxy->Attach(view_->AsWeakPtr());
+  if (!plugin_view_.is_null()) {
+    view_->SetView(plugin_view_);
+  }
 
   // Connect the input pipeline to the protocol stub & initialize components.
   mouse_input_filter_.set_input_stub(host_connection_->input_stub());

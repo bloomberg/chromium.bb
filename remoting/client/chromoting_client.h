@@ -35,17 +35,18 @@ class AudioDecodeScheduler;
 class AudioPlayer;
 class ClientContext;
 class ClientUserInterface;
+class FrameConsumerProxy;
+class FrameProducer;
 class RectangleUpdateDecoder;
 
 class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                          public protocol::ClientStub {
  public:
-  // Objects passed in are not owned by this class.
   ChromotingClient(const ClientConfig& config,
                    ClientContext* client_context,
                    protocol::ConnectionToHost* connection,
                    ClientUserInterface* user_interface,
-                   RectangleUpdateDecoder* rectangle_decoder,
+                   scoped_refptr<FrameConsumerProxy> frame_consumer,
                    scoped_ptr<AudioPlayer> audio_player);
 
   virtual ~ChromotingClient();
@@ -54,6 +55,8 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   void Start(scoped_refptr<XmppProxy> xmpp_proxy,
              scoped_ptr<protocol::TransportFactory> transport_factory);
   void Stop(const base::Closure& shutdown_task);
+
+  FrameProducer* GetFrameProducer();
 
   // Return the stats recorded by this client.
   ChromotingStats* GetStats();
@@ -83,8 +86,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   protocol::ConnectionToHost* connection_;
   ClientUserInterface* user_interface_;
-  // TODO(kxing): Make ChromotingClient own RectangleUpdateDecoder.
-  RectangleUpdateDecoder* rectangle_decoder_;
+  scoped_refptr<RectangleUpdateDecoder> rectangle_decoder_;
 
   scoped_ptr<AudioDecodeScheduler> audio_decode_scheduler_;
 
