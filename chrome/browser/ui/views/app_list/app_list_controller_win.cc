@@ -342,12 +342,6 @@ void AppListControllerDelegateWin::LaunchApp(
     return;
   }
 
-  if (extension->is_legacy_packaged_app()) {
-    chrome::OpenApplication(chrome::AppLaunchParams(
-        profile, extension, extension_misc::LAUNCH_WINDOW, NEW_FOREGROUND_TAB));
-    return;
-  }
-
   chrome::OpenApplication(chrome::AppLaunchParams(
       profile, extension, NEW_FOREGROUND_TAB));
 }
