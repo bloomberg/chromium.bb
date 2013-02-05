@@ -107,23 +107,18 @@ void AuthenticatorTestBase::RunChannelAuth(bool expected_fail) {
       base::Bind(&AuthenticatorTestBase::OnHostConnected,
                  base::Unretained(this)));
 
-  net::StreamSocket* client_socket = NULL;
-  net::StreamSocket* host_socket = NULL;
-
   // Expect two callbacks to be called - the client callback and the host
   // callback.
   int callback_counter = 2;
 
-  EXPECT_CALL(client_callback_, OnDone(net::OK, _))
-      .WillOnce(DoAll(SaveArg<1>(&client_socket),
-                      QuitThreadOnCounter(&callback_counter)));
+  EXPECT_CALL(client_callback_, OnDone(net::OK))
+      .WillOnce(QuitThreadOnCounter(&callback_counter));
   if (expected_fail) {
-    EXPECT_CALL(host_callback_, OnDone(net::ERR_FAILED, NULL))
+    EXPECT_CALL(host_callback_, OnDone(net::ERR_FAILED))
          .WillOnce(QuitThreadOnCounter(&callback_counter));
   } else {
-    EXPECT_CALL(host_callback_, OnDone(net::OK, _))
-        .WillOnce(DoAll(SaveArg<1>(&host_socket),
-                        QuitThreadOnCounter(&callback_counter)));
+    EXPECT_CALL(host_callback_, OnDone(net::OK))
+        .WillOnce(QuitThreadOnCounter(&callback_counter));
   }
 
   // Ensure that .Run() does not run unbounded if the callbacks are never
@@ -137,9 +132,6 @@ void AuthenticatorTestBase::RunChannelAuth(bool expected_fail) {
   testing::Mock::VerifyAndClearExpectations(&client_callback_);
   testing::Mock::VerifyAndClearExpectations(&host_callback_);
 
-  client_socket_.reset(client_socket);
-  host_socket_.reset(host_socket);
-
   if (!expected_fail) {
     ASSERT_TRUE(client_socket_.get() != NULL);
     ASSERT_TRUE(host_socket_.get() != NULL);
@@ -149,14 +141,14 @@ void AuthenticatorTestBase::RunChannelAuth(bool expected_fail) {
 void AuthenticatorTestBase::OnHostConnected(
     net::Error error,
     scoped_ptr<net::StreamSocket> socket) {
-  host_callback_.OnDone(error, socket.get());
+  host_callback_.OnDone(error);
   host_socket_ = socket.Pass();
 }
 
 void AuthenticatorTestBase::OnClientConnected(
     net::Error error,
     scoped_ptr<net::StreamSocket> socket) {
-  client_callback_.OnDone(error, socket.get());
+  client_callback_.OnDone(error);
   client_socket_ = socket.Pass();
 }
 

@@ -37,7 +37,7 @@ class AuthenticatorTestBase : public testing::Test {
    public:
     MockChannelDoneCallback();
     ~MockChannelDoneCallback();
-    MOCK_METHOD2(OnDone, void(net::Error error, net::StreamSocket* socket));
+    MOCK_METHOD1(OnDone, void(net::Error error));
   };
 
   virtual void SetUp() OVERRIDE;
