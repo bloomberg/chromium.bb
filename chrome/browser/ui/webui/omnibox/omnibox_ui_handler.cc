@@ -139,20 +139,21 @@ void OmniboxUIHandler::AddResultToDictionary(const std::string& prefix,
   output->SetInteger(prefix + ".num_items", i);
 }
 
-void OmniboxUIHandler::StartOmniboxQuery(
-    const base::ListValue* three_element_input_string) {
-  DCHECK_EQ(3u, three_element_input_string->GetSize());
+void OmniboxUIHandler::StartOmniboxQuery(const base::ListValue* input) {
+  DCHECK_EQ(4u, input->GetSize());
   string16 input_string;
-  bool return_val = three_element_input_string->GetString(0, &input_string);
-  DCHECK(return_val);
-  bool prevent_inline_autocomplete;
-  return_val =
-      three_element_input_string->GetBoolean(1, &prevent_inline_autocomplete);
+  bool return_val = input->GetString(0, &input_string);
   DCHECK(return_val);
   int cursor_position_int;
-  return_val = three_element_input_string->GetInteger(2, &cursor_position_int);
+  return_val = input->GetInteger(1, &cursor_position_int);
   DCHECK(return_val);
   size_t cursor_position = cursor_position_int;
+  bool prevent_inline_autocomplete;
+  return_val = input->GetBoolean(2, &prevent_inline_autocomplete);
+  DCHECK(return_val);
+  bool prefer_keyword;
+  return_val = input->GetBoolean(3, &prefer_keyword);
+  DCHECK(return_val);
   string16 empty_string;
   // Reset the controller.  If we don't do this, then the
   // AutocompleteController might inappropriately set its |minimal_changes|
@@ -166,7 +167,7 @@ void OmniboxUIHandler::StartOmniboxQuery(
       cursor_position,
       empty_string,  // user's desired tld (top-level domain)
       prevent_inline_autocomplete,
-      false,  // no preferred keyword provider
+      prefer_keyword,
       true,  // allow exact keyword matches
       AutocompleteInput::ALL_MATCHES));  // want all matches
 }
