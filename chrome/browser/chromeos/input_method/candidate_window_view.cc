@@ -795,6 +795,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
     MessageLoop::current()->DeleteSoon(FROM_HERE, candidate_views_[i]);
   }
   candidate_views_.clear();
+  selected_candidate_index_in_page_ = -1;  // Invalidates the index.
 
   views::GridLayout* layout = new views::GridLayout(candidate_area_contents);
   // |candidate_area_contents| owns |layout|.
@@ -879,13 +880,17 @@ void CandidateWindowView::SelectCandidateAt(int index_in_page) {
       lookup_table_.page_size() * current_page_index + index_in_page;
   // Ignore click on out of range views.
   if (cursor_absolute_index < 0 ||
-      cursor_absolute_index >=
-      static_cast<int>(lookup_table_.candidates().size())) {
+      lookup_table_.candidates().size() <=
+      static_cast<size_t>(cursor_absolute_index)) {
     return;
   }
 
   // Unselect the currently selected candidate.
-  candidate_views_[selected_candidate_index_in_page_]->Unselect();
+  if (0 <= selected_candidate_index_in_page_ &&
+      static_cast<size_t>(selected_candidate_index_in_page_) <
+      candidate_views_.size()) {
+    candidate_views_[selected_candidate_index_in_page_]->Unselect();
+  }
   // Remember the currently selected candidate index in the current page.
   selected_candidate_index_in_page_ = index_in_page;
 
