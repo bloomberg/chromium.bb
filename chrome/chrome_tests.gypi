@@ -120,6 +120,9 @@
           ],
         }],
         ['OS=="win"', {
+          'dependencies': [
+            'automated_ui_tests_exe_pdb_workaround',
+          ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],
@@ -1639,6 +1642,7 @@
           ],
           'dependencies': [
             'app_host',
+            'browser_tests_exe_pdb_workaround',
             'chrome_version_resources',
             'security_tests',  # run time dependency
           ],
@@ -3015,6 +3019,40 @@
           'sources': [
             'sync_integration_tests.isolate',
           ],
+        },
+      ],
+    }],
+    ['OS=="win"', {
+      'targets' : [
+        {
+          # This target is only depended upon in Windows.
+          'target_name': 'automated_ui_tests_exe_pdb_workaround',
+          'type': 'static_library',
+          'sources': [ 'empty_pdb_workaround.cc' ],
+          'msvs_settings': {
+            'VCCLCompilerTool': {
+              # This *in the compile phase* must match the pdb name that's
+              # output by the final link. See empty_pdb_workaround.cc for
+              # more details.
+              'DebugInformationFormat': '3',
+              'ProgramDataBaseFileName': '<(PRODUCT_DIR)/automated_ui_tests.exe.pdb',
+            },
+          },
+        },
+        {
+          # This target is only depended upon in Windows.
+          'target_name': 'browser_tests_exe_pdb_workaround',
+          'type': 'static_library',
+          'sources': [ 'empty_pdb_workaround.cc' ],
+          'msvs_settings': {
+            'VCCLCompilerTool': {
+              # This *in the compile phase* must match the pdb name that's
+              # output by the final link. See empty_pdb_workaround.cc for
+              # more details.
+              'DebugInformationFormat': '3',
+              'ProgramDataBaseFileName': '<(PRODUCT_DIR)/browser_tests.exe.pdb',
+            },
+          },
         },
       ],
     }],
