@@ -138,6 +138,11 @@
                   'chrome/browser/chromeos/cros/|'\
                   'chrome/browser/chromeos/net/',
     },
+    'chromeos_power': {
+      'filepath': 'chromeos/dbus/power_.*|'\
+                  'chromeos/power/|'\
+                  'chrome/browser/chromeos/power/',
+    },
     'chromeos_webui': {
       'filepath': 'chrome/browser/ui/webui/chromeos/|'\
                   'chrome/browser/resources/chromeos/',
@@ -572,6 +577,7 @@
     'chromeos_net' : ['gauravsh+watch@chromium.org',
                       'gspencer+watch@chromium.org',
                       'stevenjb+watch@chromium.org'],
+    'chromeos_power' : ['derat+watch@chromium.org'],
     'chromeos_webui': ['nkostylev+watch@chromium.org'],
     'clang_update': ['fischman+watch@chromium.org', 'ukai+watch@chromium.org',
                      'glotov+watch@chromium.org',
