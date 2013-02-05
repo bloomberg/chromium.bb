@@ -77,7 +77,7 @@ sync_pb::TabNavigation MakeSyncDataForTest() {
   sync_data.set_page_transition(
       sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME);
   sync_data.set_unique_id(kUniqueID);
-  sync_data.set_timestamp(syncer::TimeToProtoTime(kTimestamp));
+  sync_data.set_timestamp_msec(syncer::TimeToProtoTime(kTimestamp));
   sync_data.set_redirect_type(sync_pb::SyncEnums::CLIENT_REDIRECT);
   sync_data.set_navigation_home_page(true);
   sync_data.set_search_terms(UTF16ToUTF8(kSearchTerms));
@@ -254,7 +254,7 @@ TEST(TabNavigationTest, ToSyncData) {
             sync_data.page_transition());
   EXPECT_TRUE(sync_data.has_redirect_type());
   EXPECT_EQ(navigation_entry->GetUniqueID(), sync_data.unique_id());
-  EXPECT_EQ(syncer::TimeToProtoTime(kTimestamp), sync_data.timestamp());
+  EXPECT_EQ(syncer::TimeToProtoTime(kTimestamp), sync_data.timestamp_msec());
   EXPECT_EQ(kTimestamp.ToInternalValue(), sync_data.global_id());
 }
 

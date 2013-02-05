@@ -431,7 +431,7 @@ sync_pb::TabNavigation TabNavigation::ToSyncData() const {
       (transition_type_ & content::PAGE_TRANSITION_CHAIN_END) != 0);
 
   sync_data.set_unique_id(unique_id_);
-  sync_data.set_timestamp(syncer::TimeToProtoTime(timestamp_));
+  sync_data.set_timestamp_msec(syncer::TimeToProtoTime(timestamp_));
   // The full-resolution timestamp works as a global ID.
   sync_data.set_global_id(timestamp_.ToInternalValue());
 
