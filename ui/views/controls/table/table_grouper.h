@@ -7,7 +7,10 @@
 
 namespace views {
 
-struct GroupRange;
+struct GroupRange {
+  int start;
+  int length;
+};
 
 // TableGrouper is used by TableView to group a set of rows and treat them
 // as one. Rows that fall in the same group are selected together and sorted

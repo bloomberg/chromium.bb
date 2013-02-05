@@ -31,7 +31,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/table/group_table_model.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -101,7 +100,7 @@ void HungPagesTableModel::InitForWebContents(WebContents* hung_contents) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// HungPagesTableModel, views::GroupTableModel implementation:
+// HungPagesTableModel, ui::TableModel implementation:
 
 int HungPagesTableModel::RowCount() {
   return static_cast<int>(tab_observers_.size());
