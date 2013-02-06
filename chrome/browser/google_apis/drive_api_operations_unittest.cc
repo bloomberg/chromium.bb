@@ -264,9 +264,8 @@ TEST_F(DriveApiOperationsTest, RenameResourceOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ(test_server::METHOD_PATCH, http_request_.method);
   EXPECT_EQ("/drive/v2/files/resource_id", http_request_.relative_url);
-  EXPECT_EQ("PATCH", http_request_.headers["X-HTTP-Method-Override"]);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
 
   EXPECT_TRUE(http_request_.has_content);

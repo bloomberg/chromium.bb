@@ -191,6 +191,8 @@ HttpMethod HttpRequestParser::GetMethodType(const std::string& token) const {
     return METHOD_PUT;
   } else if (token == "delete") {
     return METHOD_DELETE;
+  } else if (token == "patch") {
+    return METHOD_PATCH;
   }
   NOTREACHED() << "Method not implemented: " << token;
   return METHOD_UNKNOWN;

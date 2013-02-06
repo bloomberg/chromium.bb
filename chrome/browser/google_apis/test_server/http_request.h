@@ -23,6 +23,7 @@ enum HttpMethod {
   METHOD_POST,
   METHOD_PUT,
   METHOD_DELETE,
+  METHOD_PATCH,
 };
 
 // Represents a HTTP request. Since it can be big, use scoped_ptr to pass it
