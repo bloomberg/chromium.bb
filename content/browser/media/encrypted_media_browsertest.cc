@@ -160,11 +160,14 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback_VideoClearAudio) {
                          GetParam(), kExpected));
 }
 
-#if !defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameChangeVideo) {
+#if defined(OS_LINUX)
+#define MAYBE_FrameChangeVideo DISABLED_FrameChangeVideo
+#else
+#define MAYBE_FrameChangeVideo FrameChangeVideo
+#endif
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE_FrameChangeVideo) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(TestFrameSizeChange(GetParam(), kExpected));
 }
-#endif
 
 }  // namespace content

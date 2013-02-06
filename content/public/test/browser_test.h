@@ -14,6 +14,7 @@
 #if defined(HAS_OUT_OF_PROC_TEST_RUNNER)
 
 #include "base/compiler_specific.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 #define IN_PROC_BROWSER_TEST_(test_case_name, test_name, parent_class,\
                               parent_id)\
@@ -44,7 +45,7 @@ void GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::RunTestOnMainThread()
   IN_PROC_BROWSER_TEST_(test_fixture, test_name, test_fixture,\
                     ::testing::internal::GetTypeId<test_fixture>())
 
-#define IN_PROC_BROWSER_TEST_P(test_case_name, test_name) \
+#define IN_PROC_BROWSER_TEST_P_(test_case_name, test_name) \
   class GTEST_TEST_CLASS_NAME_(test_case_name, test_name) \
       : public test_case_name { \
    public: \
@@ -71,6 +72,11 @@ void GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::RunTestOnMainThread()
                              test_name)::gtest_registering_dummy_ = \
       GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::AddToRegistry(); \
   void GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::RunTestOnMainThread()
+
+// Wrap the real macro with an outer macro to ensure that the parameters are
+// evaluated (e.g., if |test_name| is prefixed with MAYBE_).
+#define IN_PROC_BROWSER_TEST_P(test_case_name, test_name) \
+  IN_PROC_BROWSER_TEST_P_(test_case_name, test_name)
 
 #endif  // defined(HAS_OUT_OF_PROC_TEST_RUNNER)
 
