@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
@@ -439,26 +440,26 @@ class ExtensionLoadedNotificationObserver
     // First calculate the height of the sign-in promo.
     NSFont* font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 
-    string16 link(l10n_util::GetStringFUTF16(
+    NSString* link(l10n_util::GetNSStringFWithFixup(
         IDS_EXTENSION_INSTALLED_SIGNIN_PROMO_LINK,
         l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
-    string16 message(l10n_util::GetStringUTF16(
-                        IDS_EXTENSION_INSTALLED_SIGNIN_PROMO));
+    NSString* message(l10n_util::GetNSStringWithFixup(
+        IDS_EXTENSION_INSTALLED_SIGNIN_PROMO));
 
-    HyperlinkTextView* view = (HyperlinkTextView*)promo_.get();
-    [view setMessageAndLink:base::SysUTF16ToNSString(message)
-                   withLink:base::SysUTF16ToNSString(link)
+    HyperlinkTextView* view = promo_.get();
+    [view setMessageAndLink:message
+                   withLink:link
                    atOffset:0
                        font:font
                messageColor:[NSColor blackColor]
-                  linkColor:[NSColor blueColor]];
+                  linkColor:gfx::SkColorToCalibratedNSColor(
+                                chrome_style::GetLinkColor())];
 
     // HACK! The TextView does not report correct height even after you stuff
     // it with text (it tells you it is single-line even if it is multiline), so
     // here the hidden howToUse_ TextField is temporarily repurposed to
     // calculate the correct height for the TextView.
-    [howToUse_ setStringValue:base::SysUTF16ToNSString(link + message)];
-    [[howToUse_ cell] setFont:font];
+    [[howToUse_ cell] setAttributedStringValue:[promo_ attributedString]];
     [GTMUILocalizerAndLayoutTweaker
           sizeToFitFixedWidthTextField:howToUse_];
     sync_promo_height = NSHeight([howToUse_ frame]);
@@ -533,6 +534,9 @@ class ExtensionLoadedNotificationObserver
     [manageShortcutLink_ setHidden:NO];
     [[manageShortcutLink_ cell]
         setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+    [[manageShortcutLink_ cell]
+        setTextColor:gfx::SkColorToCalibratedNSColor(
+            chrome_style::GetLinkColor())];
     [GTMUILocalizerAndLayoutTweaker sizeToFitView:manageShortcutLink_];
     newWindowHeight += extension_installed_bubble::kInnerVerticalMargin;
     newWindowHeight += NSHeight([manageShortcutLink_ frame]);

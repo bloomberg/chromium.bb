@@ -14,6 +14,7 @@
 
 class Browser;
 class ExtensionLoadedNotificationObserver;
+@class HyperlinkTextView;
 @class HoverCloseButton;
 @class InfoBubbleView;
 
@@ -90,7 +91,7 @@ typedef enum {
   // text views cannot conveniently be created in IB. The xib file contains
   // a text field |promoPlaceholder_| that's replaced by this text view |promo_|
   // in -awakeFromNib.
-  scoped_nsobject<NSTextView> promo_;
+  scoped_nsobject<HyperlinkTextView> promo_;
   // Only shown for bundle installs.
   IBOutlet NSTextField* installedHeadingMsg_;
   IBOutlet NSTextField* installedItemsMsg_;
