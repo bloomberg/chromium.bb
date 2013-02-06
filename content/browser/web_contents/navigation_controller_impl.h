@@ -411,6 +411,11 @@ class CONTENT_EXPORT NavigationControllerImpl
   // is used only for testing.
   base::Callback<void(RenderViewHost*)> take_screenshot_callback_;
 
+  // Taking a screenshot can be async. So use a weakptr for the callback to make
+  // sure that the screenshot completion callback does not trigger on a
+  // destroyed NavigationControllerImpl.
+  base::WeakPtrFactory<NavigationControllerImpl> take_screenshot_factory_;
+
   // Used to smooth out timestamps from |get_timestamp_callback_|.
   // Without this, whenever there is a run of redirects or
   // code-generated navigations, those navigations may occur within

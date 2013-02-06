@@ -219,7 +219,8 @@ NavigationControllerImpl::NavigationControllerImpl(
       needs_reload_(false),
       is_initial_navigation_(true),
       pending_reload_(NO_RELOAD),
-      get_timestamp_callback_(base::Bind(&base::Time::Now)) {
+      get_timestamp_callback_(base::Bind(&base::Time::Now)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(take_screenshot_factory_(this)) {
   DCHECK(browser_context_);
 }
 
@@ -503,7 +504,7 @@ void NavigationControllerImpl::TakeScreenshot() {
   render_view_host->CopyFromBackingStore(gfx::Rect(),
       view->GetViewBounds().size(),
       base::Bind(&NavigationControllerImpl::OnScreenshotTaken,
-                 base::Unretained(this),
+                 take_screenshot_factory_.GetWeakPtr(),
                  entry->GetUniqueID()));
 }
 
