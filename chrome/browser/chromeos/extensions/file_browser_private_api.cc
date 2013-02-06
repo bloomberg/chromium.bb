@@ -24,8 +24,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
@@ -73,6 +71,7 @@
 #include "grit/platform_locale_settings.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
+#include "net/base/network_change_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "webkit/chromeos/fileapi/cros_mount_point_provider.h"
@@ -3057,13 +3056,6 @@ bool ReloadDriveFunction::RunImpl() {
 }
 
 bool GetDriveConnectionStateFunction::RunImpl() {
-  chromeos::NetworkLibrary* network_library =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  if (!network_library)
-    return false;
-
-  const chromeos::Network* active_network = network_library->active_network();
-
   scoped_ptr<DictionaryValue> value(new DictionaryValue());
   scoped_ptr<ListValue> reasons(new ListValue());
 
@@ -3072,17 +3064,21 @@ bool GetDriveConnectionStateFunction::RunImpl() {
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
 
   bool ready = system_service->drive_service()->CanStartOperation();
-  if (!active_network || !ready) {
-    type_string = kDriveConnectionTypeOnline;
-    if (!active_network)
+  bool is_connection_cellular =
+      net::NetworkChangeNotifier::IsConnectionCellular(
+          net::NetworkChangeNotifier::GetConnectionType());
+  if (net::NetworkChangeNotifier::IsOffline() || !ready) {
+    type_string = kDriveConnectionTypeOffline;
+    if (net::NetworkChangeNotifier::IsOffline())
       reasons->AppendString(kDriveConnectionReasonNoNetwork);
     if (!ready)
       reasons->AppendString(kDriveConnectionReasonNotReady);
-  } else if (active_network->type() == chromeos::TYPE_CELLULAR &&
+  } else if (
+      is_connection_cellular &&
       profile_->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular)) {
     type_string = kDriveConnectionTypeMetered;
   } else {
-    type_string = kDriveConnectionTypeOffline;
+    type_string = kDriveConnectionTypeOnline;
   }
 
   value->SetString("type", type_string);
