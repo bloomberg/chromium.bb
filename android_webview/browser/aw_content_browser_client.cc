@@ -19,6 +19,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/url_constants.h"
 #include "grit/ui_resources.h"
+#include "net/android/network_library.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -56,6 +57,16 @@ AwContentBrowserClient::AwContentBrowserClient(
 }
 
 AwContentBrowserClient::~AwContentBrowserClient() {
+}
+
+void AwContentBrowserClient::AddCertificate(net::URLRequest* request,
+                                            net::CertificateMimeType cert_type,
+                                            const void* cert_data,
+                                            size_t cert_size,
+                                            int render_process_id,
+                                            int render_view_id) {
+  if (cert_size > 0)
+    net::android::StoreCertificate(cert_type, cert_data, cert_size);
 }
 
 AwBrowserContext* AwContentBrowserClient::GetAwBrowserContext() {
