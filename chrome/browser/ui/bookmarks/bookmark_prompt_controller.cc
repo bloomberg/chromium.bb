@@ -48,12 +48,51 @@ enum PromptDisplayReason {
   PROMPT_DISPLAY_REASON_LIMIT, // Keep this last.
 };
 
+// We enable bookmark prompt experiment for users who have profile created
+// before |install_date| until |expiration_date|.
+struct ExperimentDateRange {
+  base::Time::Exploded install_date;
+  base::Time::Exploded expiration_date;
+};
+
 bool CanShowBookmarkPrompt(Browser* browser) {
   BookmarkPromptPrefs prefs(browser->profile()->GetPrefs());
   if (!prefs.IsBookmarkPromptEnabled())
     return false;
   return prefs.GetPromptImpressionCount() <
          BookmarkPromptController::kMaxPromptImpressionCount;
+}
+
+const ExperimentDateRange* GetExperimentDateRange() {
+  switch (chrome::VersionInfo::GetChannel()) {
+    case chrome::VersionInfo::CHANNEL_BETA:
+    case chrome::VersionInfo::CHANNEL_DEV: {
+      // Experiment date range for M25 Beta/Dev
+      static const ExperimentDateRange kBetaAndDevRange = {
+        { 2013, 1, 0, 17, 0, 0, 0, 0 },   // Jan 17, 2013
+        { 2013, 2, 0, 18, 0, 0, 0, 0 },   // Feb 17, 2013
+      };
+      return &kBetaAndDevRange;
+    }
+    case chrome::VersionInfo::CHANNEL_CANARY: {
+      // Experiment date range for M26 Canary.
+      static const ExperimentDateRange kCanaryRange = {
+        { 2013, 1, 0, 17, 0, 0, 0, 0 },  // Jan 17, 2013
+        { 2013, 2, 0, 18, 0, 0, 0, 0 },  // Feb 17, 2013
+      };
+      return &kCanaryRange;
+    }
+    case chrome::VersionInfo::CHANNEL_STABLE: {
+      // TODO(yosin) We'll update stable date range once release date is fixed.
+      static const ExperimentDateRange kStableRange = {
+        { 2013, 1, 0, 17, 0, 0, 0, 0 },  // Jan 17, 2013
+        { 2013, 2, 0, 18, 0, 0, 0, 0 },  // Feb 17, 2013
+      };
+      return &kStableRange;
+    }
+    default:
+      return NULL;
+  }
 }
 
 bool IsActiveWebContents(Browser* browser, WebContents* web_contents) {
@@ -174,23 +213,22 @@ bool BookmarkPromptController::IsEnabled() {
   if (!manual_group_name.empty())
     return manual_group_name == "Experiment";
 
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel != chrome::VersionInfo::CHANNEL_BETA &&
-      channel != chrome::VersionInfo::CHANNEL_DEV)
+  const ExperimentDateRange* date_range = GetExperimentDateRange();
+  if (!date_range)
     return false;
 
-  const base::Time::Exploded kStartDate = {
-    2013, 1, 0, 17,  // Jan 17, 2013
-    0, 0, 0, 0       // 00:00:00.000
-  };
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
-          "BookmarkPrompt", 100, "Disabled", 2012, 12, 21, NULL));
+          "BookmarkPrompt", 100, "Disabled",
+          date_range->expiration_date.year,
+          date_range->expiration_date.month,
+          date_range->expiration_date.day_of_month, NULL));
   trial->UseOneTimeRandomization();
   trial->AppendGroup("Control", 99);
   trial->AppendGroup("Experiment", 1);
-  const base::Time start_date = base::Time::FromLocalExploded(kStartDate);
 
+  const base::Time start_date = base::Time::FromLocalExploded(
+      date_range->install_date);
   const int64 install_time = g_browser_process->local_state()->GetInt64(
       prefs::kUninstallMetricsInstallDate);
   // This must be called after the pref is initialized.
