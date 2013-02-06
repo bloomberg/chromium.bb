@@ -23,7 +23,10 @@
       'copies': [
         {
           'destination': '<(PRODUCT_DIR)/android_webview_test/assets',
-          'files': [ '<!@(find <(java_in_dir)/assets -type f -not -iwholename \'*.svn*\' )' ]
+          'files': [
+            '<(java_in_dir)/assets/asset_file.html',
+            '<(java_in_dir)/assets/asset_icon.png',
+          ],
         },
       ],
       'includes': [ '../build/java_apk.gypi' ],
