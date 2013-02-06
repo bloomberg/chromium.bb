@@ -49,6 +49,8 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
     slow_down_raster_scale_factor_for_debug_ = factor;
   }
 
+  bool IsCheapInRect(gfx::Rect content_rect, float contents_scale) const;
+
  protected:
   friend class PicturePile;
 

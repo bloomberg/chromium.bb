@@ -95,7 +95,8 @@ class CC_EXPORT TileManager {
   TileManager(TileManagerClient* client,
               ResourceProvider *resource_provider,
               size_t num_raster_threads,
-              bool record_rendering_stats);
+              bool record_rendering_stats,
+              bool use_cheapess_estimator);
   virtual ~TileManager();
 
   const GlobalStateThatImpactsTilePriority& GlobalState() const {
@@ -145,7 +146,13 @@ class CC_EXPORT TileManager {
   void OnImageDecodeTaskCompleted(
       scoped_refptr<Tile> tile, uint32_t pixel_ref_id);
   bool CanDispatchRasterTask(Tile* tile);
+  scoped_ptr<ResourcePool::Resource> PrepareTileForRaster(Tile* tile);
   void DispatchOneRasterTask(scoped_refptr<Tile> tile);
+  void PerformOneRaster(Tile* tile);
+  void OnRasterCompleted(
+      scoped_refptr<Tile> tile,
+      scoped_ptr<ResourcePool::Resource> resource,
+      int manage_tiles_call_count_when_dispatched);
   void OnRasterTaskCompleted(
       scoped_refptr<Tile> tile,
       scoped_ptr<ResourcePool::Resource> resource,
@@ -157,13 +164,17 @@ class CC_EXPORT TileManager {
                         WhichTree tree);
   scoped_ptr<Value> GetMemoryRequirementsAsValue() const;
 
-  static void RunRasterTask(uint8* buffer,
+  static void PerformRaster(uint8* buffer,
                             const gfx::Rect& rect,
                             float contents_scale,
+                            bool use_cheapness_estimator,
                             PicturePileImpl* picture_pile,
                             RenderingStats* stats);
   static void RunImageDecodeTask(skia::LazyPixelRef* pixel_ref,
                                  RenderingStats* stats);
+
+  static void RecordCheapnessPredictorResults(bool is_predicted_cheap,
+                                              bool is_actually_cheap);
 
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;
@@ -194,6 +205,7 @@ class CC_EXPORT TileManager {
   bool record_rendering_stats_;
   RenderingStats rendering_stats_;
 
+  bool use_cheapness_estimator_;
   int raster_state_count_[NUM_STATES][NUM_TREES][NUM_BINS];
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);

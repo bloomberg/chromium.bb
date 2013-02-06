@@ -167,4 +167,28 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
   return picture;
 }
 
+bool PicturePileImpl::IsCheapInRect(
+    gfx::Rect content_rect, float contents_scale) const {
+  gfx::Rect layer_rect = gfx::ToEnclosingRect(
+      gfx::ScaleRect(content_rect, 1.f / contents_scale));
+
+  for (TilingData::Iterator tile_iter(&tiling_, layer_rect);
+       tile_iter; ++tile_iter) {
+    PictureListMap::const_iterator map_iter =
+        picture_list_map_.find(tile_iter.index());
+    if (map_iter == picture_list_map_.end())
+      continue;
+
+    const PictureList& pic_list = map_iter->second;
+    for (PictureList::const_iterator i = pic_list.begin();
+         i != pic_list.end(); ++i) {
+      if (!(*i)->LayerRect().Intersects(layer_rect) || !(*i)->HasRecording())
+        continue;
+      if (!(*i)->IsCheapInRect(layer_rect))
+        return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace cc
