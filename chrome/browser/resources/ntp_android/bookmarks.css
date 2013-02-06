@@ -212,12 +212,6 @@
 }
 
 @media screen and (-webkit-min-device-pixel-ratio: 1.32) {
-  .favicon-box.document .fold {
-    /* this is to make the canvas scale properly */
-    height: 16px;
-    width: 16px;
-    zoom: 0.75;
-  }
   .favicon-box.document {
     background-image: url(images/bookmark_bg_tvdpi.png);
   }
@@ -245,12 +239,6 @@
 }
 
 @media screen and (-webkit-min-device-pixel-ratio: 1.5) {
-  .favicon-box.document .fold {
-    /* this is to make the canvas scale properly */
-    height: 18px;
-    width: 18px;
-    zoom: 0.66;
-  }
   .favicon-box.document {
     background-image: url(images/bookmark_bg_hdpi.png);
   }
@@ -266,12 +254,6 @@
 }
 
 @media screen and (-webkit-min-device-pixel-ratio: 2.0) {
-  .favicon-box.document .fold {
-    /* this is to make the canvas scale properly */
-    height: 24px;
-    width: 24px;
-    zoom: 0.5;
-  }
   .favicon-box.document {
     background-image: url(images/bookmark_bg_xhdpi.png);
   }

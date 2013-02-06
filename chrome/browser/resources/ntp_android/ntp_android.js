@@ -1832,20 +1832,25 @@ cr.define('ntp', function() {
     var zoom = window.getComputedStyle(fold).zoom;
     var scale = 1 / window.getComputedStyle(fold).zoom;
 
+    // The width/height of the canvas.  Set to 24 so it looks good across all
+    // resolutions.
+    var cw = 24;
+    var ch = 24;
+
     // Get the fold canvas and create a path for the fold shape
     var ctx = document.getCSSCanvasContext(
-        '2d', 'fold_' + index, 12 * scale, 12 * scale);
+        '2d', 'fold_' + index, cw * scale, ch * scale);
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.lineTo(0, 9 * scale);
+    ctx.lineTo(0, ch * 0.75 * scale);
     ctx.quadraticCurveTo(
-        0, 12 * scale,
-        3 * scale, 12 * scale);
-    ctx.lineTo(12 * scale, 12 * scale);
+        0, ch * scale,
+        cw * .25 * scale, ch * scale);
+    ctx.lineTo(cw * scale, ch * scale);
     ctx.closePath();
 
     // Create a gradient for the fold and fill it
-    var gradient = ctx.createLinearGradient(12 * scale, 0, 0, 12 * scale);
+    var gradient = ctx.createLinearGradient(cw * scale, 0, 0, ch * scale);
     if (color.indexOf('#') == 0) {
       var r = parseInt(color.substring(1, 3), 16);
       var g = parseInt(color.substring(3, 5), 16);
