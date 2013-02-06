@@ -24,6 +24,7 @@ import tempfile
 import threading
 import time
 from xml.dom import minidom
+import xml.parsers.expat
 
 import run_isolated
 
@@ -696,7 +697,11 @@ def append_gtest_output_to_xml(final_xml, filepath):
   try:
     with open(filepath) as shard_xml_file:
       shard_xml = minidom.parse(shard_xml_file)
-  except IOError:
+  except xml.parsers.expat.ExpatError as e:
+    logging.error('Failed to parse %s: %s', filepath, e)
+    return final_xml
+  except IOError as e:
+    logging.error('Failed to load %s: %s', filepath, e)
     # If the shard crashed, gtest will not have generated an xml file.
     return final_xml
 
