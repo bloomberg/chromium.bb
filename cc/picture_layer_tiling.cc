@@ -373,11 +373,13 @@ void PictureLayerTiling::UpdateTilePriorities(
       gfx::ToEnclosingRect(gfx::ScaleRect(viewport_in_layer_space,
                                           contents_scale_));
   gfx::Rect inflated_rect = viewport_in_content_space;
+  float adjusted_inset = TilePriority::kMaxDistanceInContentSpace /
+                         std::max(contents_scale_, 1.f);
   inflated_rect.Inset(
-      -TilePriority::kMaxDistanceInContentSpace,
-      -TilePriority::kMaxDistanceInContentSpace,
-      -TilePriority::kMaxDistanceInContentSpace,
-      -TilePriority::kMaxDistanceInContentSpace);
+      -adjusted_inset,
+      -adjusted_inset,
+      -adjusted_inset,
+      -adjusted_inset);
   inflated_rect.Intersect(ContentRect());
 
   // Iterate through all of the tiles that were live last frame but will
