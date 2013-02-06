@@ -41,9 +41,9 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_TOP" file="common/window_shadow_inactive_top.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_TOP_LEFT" file="common/window_shadow_inactive_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_TOP_RIGHT" file="common/window_shadow_inactive_top_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_CENTER" file="browser_action_badge_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_LEFT" file="browser_action_badge_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_RIGHT" file="browser_action_badge_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_CENTER" file="common/browser_action_badge_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_LEFT" file="common/browser_action_badge_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_RIGHT" file="common/browser_action_badge_right.png" />
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_B" file="bubble_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_BL" file="bubble_bottom_left.png" />
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_BR" file="bubble_bottom_right.png" />
@@ -81,7 +81,7 @@
         <structure type="chrome_scaled_image" name="IDR_CHECKBOX_OFF" file="linux/linux-checkbox-off.png" />
         <structure type="chrome_scaled_image" name="IDR_CHECKBOX_ON" file="linux/linux-checkbox-on.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_CHECKMARK" file="checkmark.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHECKMARK" file="common/checkmark.png" />
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_CLOSE" file="linux/linux_close.png" />
       </if>

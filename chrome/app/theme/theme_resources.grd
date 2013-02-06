@@ -277,7 +277,7 @@
       </if>
 
       <if expr="pp_ifdef('chromeos')">
-        <structure type="chrome_scaled_image" name="IDR_FILES_APP_ICON" file="files_app_icon.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILES_APP_ICON" file="common/files_app_icon.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT" file="common/find_next.png" />
       <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT_D" file="common/find_next_disabled.png" />
@@ -660,7 +660,7 @@
         <structure type="chrome_scaled_image" name="IDR_PROFILE_PICTURE_LOADING" file="profile_loading.png" />
         <structure type="chrome_scaled_image" name="IDR_RESET_WARNING" file="reset_warning.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_PROFILE_SELECTED" file="profile_selected.png" />
+      <structure type="chrome_scaled_image" name="IDR_PROFILE_SELECTED" file="common/profile_selected.png" />
       <structure type="chrome_scaled_image" name="IDR_REGISTER_PROTOCOL_HANDLER_LOCATIONBAR_ICON" file="webintents.png" />
       <if expr="not pp_ifdef('toolkit_views') and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_RELOAD" file="reload.png" />
@@ -738,7 +738,7 @@
         <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_RIGHT" file="mac/tab_active_right.png" />
         <structure type="chrome_scaled_image" name="IDR_SWIPE_BACK" file="back_large.png" />
         <structure type="chrome_scaled_image" name="IDR_SWIPE_FORWARD" file="forward_large.png" />
-        <structure type="chrome_scaled_image" name="IDR_TABPOSE_CLOSE" file="tabpose_close.png" />
+        <structure type="chrome_scaled_image" name="IDR_TABPOSE_CLOSE" file="mac/tabpose_close.png" />
       </if>
       <!-- Note: Tab close buttons are not traditional buttons.  Tab close buttons
            fill a background with a color from the theme, tile IDR_TAB_CLOSE over it,
