@@ -71,7 +71,7 @@ AutofillExternalDelegate::~AutofillExternalDelegate() {
 void AutofillExternalDelegate::OnQuery(int query_id,
                                        const FormData& form,
                                        const FormFieldData& field,
-                                       const gfx::Rect& element_bounds,
+                                       const gfx::RectF& element_bounds,
                                        bool display_warning_if_disabled) {
   autofill_query_form_ = form;
   autofill_query_field_ = field;
@@ -147,7 +147,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 void AutofillExternalDelegate::OnShowPasswordSuggestions(
     const std::vector<string16>& suggestions,
     const FormFieldData& field,
-    const gfx::Rect& element_bounds) {
+    const gfx::RectF& element_bounds) {
   autofill_query_field_ = field;
   EnsurePopupForElement(element_bounds);
 
@@ -163,11 +163,11 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
 }
 
 void AutofillExternalDelegate::EnsurePopupForElement(
-    const gfx::Rect& element_bounds) {
+    const gfx::RectF& element_bounds) {
   // Convert element_bounds to be in screen space. If |web_contents_| is NULL
   // then assume the element_bounds is already in screen space (since we don't
   // have any other way of converting to screen space).
-  gfx::Rect element_bounds_in_screen_space = element_bounds;
+  gfx::RectF element_bounds_in_screen_space = element_bounds;
   if (web_contents_) {
     gfx::Rect client_area;
     web_contents_->GetContainerBounds(&client_area);

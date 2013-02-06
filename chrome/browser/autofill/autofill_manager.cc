@@ -497,7 +497,7 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
 void AutofillManager::OnQueryFormFieldAutofill(int query_id,
                                                const FormData& form,
                                                const FormFieldData& field,
-                                               const gfx::Rect& bounding_box,
+                                               const gfx::RectF& bounding_box,
                                                bool display_warning) {
   std::vector<string16> values;
   std::vector<string16> labels;
@@ -813,7 +813,7 @@ void AutofillManager::OnAddPasswordFormMapping(
 
 void AutofillManager::OnShowPasswordSuggestions(
     const FormFieldData& field,
-    const gfx::Rect& bounds,
+    const gfx::RectF& bounds,
     const std::vector<string16>& suggestions) {
   if (external_delegate_)
     external_delegate_->OnShowPasswordSuggestions(suggestions, field, bounds);

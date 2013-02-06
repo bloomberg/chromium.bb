@@ -17,6 +17,7 @@
 #include "ui/base/events/event.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/vector2d.h"
 
@@ -74,7 +75,7 @@ AutofillPopupControllerImpl* AutofillPopupControllerImpl::GetOrCreate(
     AutofillPopupControllerImpl* previous,
     AutofillPopupDelegate* delegate,
     gfx::NativeView container_view,
-    const gfx::Rect& element_bounds) {
+    const gfx::RectF& element_bounds) {
   DCHECK(!previous || previous->delegate_ == delegate);
 
   if (previous &&
@@ -93,7 +94,7 @@ AutofillPopupControllerImpl* AutofillPopupControllerImpl::GetOrCreate(
 AutofillPopupControllerImpl::AutofillPopupControllerImpl(
     AutofillPopupDelegate* delegate,
     gfx::NativeView container_view,
-    const gfx::Rect& element_bounds)
+    const gfx::RectF& element_bounds)
     : view_(NULL),
       delegate_(delegate),
       container_view_(container_view),
@@ -287,7 +288,7 @@ gfx::NativeView AutofillPopupControllerImpl::container_view() const {
   return container_view_;
 }
 
-const gfx::Rect& AutofillPopupControllerImpl::element_bounds() const {
+const gfx::RectF& AutofillPopupControllerImpl::element_bounds() const {
   return element_bounds_;
 }
 
@@ -505,7 +506,7 @@ int AutofillPopupControllerImpl::GetDesiredPopupWidth() const {
     return 0;
   }
 
-  int popup_width = element_bounds().width();
+  int popup_width = RoundedElementBounds().width();
   DCHECK_EQ(names().size(), subtexts().size());
   for (size_t i = 0; i < names().size(); ++i) {
     int row_size = name_font_.GetStringWidth(names()[i]) +
@@ -551,16 +552,16 @@ void AutofillPopupControllerImpl::UpdatePopupBounds() {
   // This is the top left point of the popup if the popup is above the element
   // and grows to the left (since that is the highest and furthest left the
   // popup go could).
-  gfx::Point top_left_corner_of_popup = element_bounds().origin() +
-      gfx::Vector2d(element_bounds().width() - popup_required_width,
+  gfx::Point top_left_corner_of_popup = RoundedElementBounds().origin() +
+      gfx::Vector2d(RoundedElementBounds().width() - popup_required_width,
                     -popup_height);
 
   // This is the bottom right point of the popup if the popup is below the
   // element and grows to the right (since the is the lowest and furthest right
   // the popup could go).
-  gfx::Point bottom_right_corner_of_popup = element_bounds().origin() +
+  gfx::Point bottom_right_corner_of_popup = RoundedElementBounds().origin() +
       gfx::Vector2d(popup_required_width,
-                    element_bounds().height() + popup_height);
+                    RoundedElementBounds().height() + popup_height);
 
   gfx::Display top_left_display = GetDisplayNearestPoint(
       top_left_corner_of_popup);
@@ -578,6 +579,10 @@ void AutofillPopupControllerImpl::UpdatePopupBounds() {
                             popup_y_and_height.second);
 }
 #endif  // !defined(OS_ANDROID)
+
+const gfx::Rect AutofillPopupControllerImpl::RoundedElementBounds() const {
+  return gfx::ToNearestRect(element_bounds_);
+}
 
 gfx::Display AutofillPopupControllerImpl::GetDisplayNearestPoint(
     const gfx::Point& point) const {
@@ -598,10 +603,10 @@ std::pair<int, int> AutofillPopupControllerImpl::CalculatePopupXAndWidth(
   // the end position if it is growing to the left, capped to screen space.
   int right_growth_start = std::max(leftmost_display_x,
                                     std::min(rightmost_display_x,
-                                             element_bounds().x()));
+                                             RoundedElementBounds().x()));
   int left_growth_end = std::max(leftmost_display_x,
                                    std::min(rightmost_display_x,
-                                            element_bounds().right()));
+                                            RoundedElementBounds().right()));
 
   int right_available = rightmost_display_x - right_growth_start;
   int left_available = left_growth_end - leftmost_display_x;
@@ -631,10 +636,9 @@ std::pair<int,int> AutofillPopupControllerImpl::CalculatePopupYAndHeight(
   // the end position if it is growing up, capped to screen space.
   int top_growth_end = std::max(topmost_display_y,
                                 std::min(bottommost_display_y,
-                                         element_bounds().y()));
+                                         RoundedElementBounds().y()));
   int bottom_growth_start = std::max(topmost_display_y,
-                                     std::min(bottommost_display_y,
-                                              element_bounds().bottom()));
+      std::min(bottommost_display_y, RoundedElementBounds().bottom()));
 
   int top_available = bottom_growth_start - topmost_display_y;
   int bottom_available = bottommost_display_y - top_growth_end;

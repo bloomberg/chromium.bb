@@ -15,6 +15,7 @@ namespace gfx {
 class Font;
 class Point;
 class Rect;
+class RectF;
 }
 
 // This interface provides data to an AutofillPopupView.
@@ -59,7 +60,7 @@ class AutofillPopupController {
   virtual gfx::NativeView container_view() const = 0;
 
   // The bounds of the form field element (screen coordinates).
-  virtual const gfx::Rect& element_bounds() const = 0;
+  virtual const gfx::RectF& element_bounds() const = 0;
 
   // The main labels for each autofill item.
   virtual const std::vector<string16>& names() const = 0;

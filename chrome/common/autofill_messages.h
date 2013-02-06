@@ -200,7 +200,7 @@ IPC_MESSAGE_ROUTED5(AutofillHostMsg_QueryFormFieldAutofill,
                     int /* id of this message */,
                     FormData /* the form */,
                     FormFieldData /* the form field */,
-                    gfx::Rect /* input field bounds, window-relative */,
+                    gfx::RectF /* input field bounds, window-relative */,
                     bool /* display warning if autofill disabled */)
 
 // Sent when the popup with Autofill suggestions for a form is shown.
@@ -266,7 +266,7 @@ IPC_MESSAGE_ROUTED2(AutofillHostMsg_AddPasswordFormMapping,
 // password manager.
 IPC_MESSAGE_ROUTED3(AutofillHostMsg_ShowPasswordSuggestions,
                     FormFieldData /* the form field */,
-                    gfx::Rect /* input field bounds, window-relative */,
+                    gfx::RectF /* input field bounds, window-relative */,
                     std::vector<string16> /* suggestions */)
 
 // Inform browser of data list values for the curent field.

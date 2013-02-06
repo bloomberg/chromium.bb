@@ -208,6 +208,7 @@ PasswordAutofillManager::PasswordAutofillManager(
     content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       disable_popup_(false),
+      web_view_(render_view->GetWebView()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
@@ -511,9 +512,15 @@ bool PasswordAutofillManager::ShowSuggestionPopup(
 
     WebKit::WebInputElement selected_element = user_input;
     gfx::Rect bounding_box(selected_element.boundsInViewportSpace());
+
+    float scale = web_view_->pageScaleFactor();
+    gfx::RectF bounding_box_scaled(bounding_box.x() * scale,
+                                   bounding_box.y() * scale,
+                                   bounding_box.width() * scale,
+                                   bounding_box.height() * scale);
     Send(new AutofillHostMsg_ShowPasswordSuggestions(routing_id(),
                                                      field,
-                                                     bounding_box,
+                                                     bounding_box_scaled,
                                                      suggestions));
     return !suggestions.empty();
   }

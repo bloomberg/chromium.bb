@@ -11,6 +11,7 @@
 #include "content/public/browser/keyboard_listener.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_f.h"
 
 class AutofillPopupDelegate;
 class AutofillPopupView;
@@ -36,7 +37,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
       AutofillPopupControllerImpl* previous,
       AutofillPopupDelegate* delegate,
       gfx::NativeView container_view,
-      const gfx::Rect& element_bounds);
+      const gfx::RectF& element_bounds);
 
   // Shows the popup, or updates the existing popup with the given values.
   void Show(const std::vector<string16>& names,
@@ -58,7 +59,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
 
   AutofillPopupControllerImpl(AutofillPopupDelegate* delegate,
                               gfx::NativeView container_view,
-                              const gfx::Rect& element_bounds);
+                              const gfx::RectF& element_bounds);
   virtual ~AutofillPopupControllerImpl();
 
   // AutofillPopupController implementation.
@@ -74,7 +75,8 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   virtual void SetPopupBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual const gfx::Rect& popup_bounds() const OVERRIDE;
   virtual gfx::NativeView container_view() const OVERRIDE;
-  virtual const gfx::Rect& element_bounds() const OVERRIDE;
+  virtual const gfx::RectF& element_bounds() const OVERRIDE;
+
   virtual const std::vector<string16>& names() const OVERRIDE;
   virtual const std::vector<string16>& subtexts() const OVERRIDE;
   virtual const std::vector<string16>& icons() const OVERRIDE;
@@ -137,6 +139,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
 #endif
 
  private:
+  const gfx::Rect RoundedElementBounds() const;
 #if !defined(OS_ANDROID)
   // Calculate the width of the row, excluding all the text. This provides
   // the size of the row that won't be reducible (since all the text can be
@@ -172,7 +175,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
 
   // The bounds of the text element that is the focus of the Autofill.
   // These coordinates are in screen space.
-  const gfx::Rect element_bounds_;
+  const gfx::RectF element_bounds_;
 
   // The bounds of the Autofill popup.
   gfx::Rect popup_bounds_;

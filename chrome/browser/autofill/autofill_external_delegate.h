@@ -64,7 +64,7 @@ class AutofillExternalDelegate
   virtual void OnQuery(int query_id,
                        const FormData& form,
                        const FormFieldData& field,
-                       const gfx::Rect& element_bounds,
+                       const gfx::RectF& element_bounds,
                        bool display_warning_if_disabled);
 
   // Records query results and correctly formats them before sending them off
@@ -79,7 +79,7 @@ class AutofillExternalDelegate
   // Show password suggestions in the popup.
   void OnShowPasswordSuggestions(const std::vector<string16>& suggestions,
                                  const FormFieldData& field,
-                                 const gfx::Rect& bounds);
+                                 const gfx::RectF& bounds);
 
   // Set the data list value associated with the current field.
   void SetCurrentDataListValues(const std::vector<string16>& autofill_values,
@@ -119,7 +119,7 @@ class AutofillExternalDelegate
 
   // Create the popup if it doesn't already exist. |element_bounds| is the
   // bounding rect for the element it is popping up for.
-  virtual void EnsurePopupForElement(const gfx::Rect& element_bounds);
+  virtual void EnsurePopupForElement(const gfx::RectF& element_bounds);
 
   content::WebContents* web_contents() { return web_contents_; }
 

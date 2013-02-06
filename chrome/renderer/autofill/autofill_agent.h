@@ -23,6 +23,7 @@ struct FormFieldData;
 
 namespace WebKit {
 class WebNode;
+class WebView;
 }
 
 namespace autofill {
@@ -221,6 +222,9 @@ class AutofillAgent : public content::RenderViewObserver,
   // Pointer to the current topmost frame.  Used in autocheckout flows so
   // elements can be clicked.
   WebKit::WebFrame* topmost_frame_;
+
+  // Pointer to the WebView. Used to access page scale factor.
+  WebKit::WebView* web_view_;
 
   // Should we display a warning if autofill is disabled?
   bool display_warning_if_disabled_;

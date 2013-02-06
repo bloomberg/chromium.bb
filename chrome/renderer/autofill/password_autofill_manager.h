@@ -17,6 +17,7 @@
 namespace WebKit {
 class WebInputElement;
 class WebKeyboardEvent;
+class WebView;
 }
 
 namespace autofill {
@@ -116,6 +117,9 @@ class PasswordAutofillManager : public content::RenderViewObserver,
 
   // Used to disable and hide the popup.
   bool disable_popup_;
+
+  // Pointer to the WebView. Used to access page scale factor.
+  WebKit::WebView* web_view_;
 
   base::WeakPtrFactory<PasswordAutofillManager> weak_ptr_factory_;
 

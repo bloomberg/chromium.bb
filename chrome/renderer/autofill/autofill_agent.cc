@@ -135,6 +135,7 @@ AutofillAgent::AutofillAgent(
       autofill_query_id_(0),
       autofill_action_(AUTOFILL_NONE),
       topmost_frame_(NULL),
+      web_view_(render_view->GetWebView()),
       display_warning_if_disabled_(false),
       was_query_node_autofilled_(false),
       has_shown_autofill_popup_for_current_edit_(false),
@@ -766,6 +767,12 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
 
   gfx::Rect bounding_box(element_.boundsInViewportSpace());
 
+  float scale = web_view_->pageScaleFactor();
+  gfx::RectF bounding_box_scaled(bounding_box.x() * scale,
+                                 bounding_box.y() * scale,
+                                 bounding_box.width() * scale,
+                                 bounding_box.height() * scale);
+
   // Find the datalist values and send them to the browser process.
   std::vector<string16> data_list_values;
   std::vector<string16> data_list_labels;
@@ -796,7 +803,7 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
                                                   autofill_query_id_,
                                                   form,
                                                   field,
-                                                  bounding_box,
+                                                  bounding_box_scaled,
                                                   display_warning_if_disabled));
 }
 

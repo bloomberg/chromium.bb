@@ -36,7 +36,7 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
  public:
   explicit TestAutofillPopupController(
       AutofillExternalDelegate* external_delegate,
-      const gfx::Rect& element_bounds)
+      const gfx::RectF& element_bounds)
       : AutofillPopupControllerImpl(external_delegate, NULL, element_bounds) {}
   virtual ~TestAutofillPopupController() {}
 
@@ -76,7 +76,7 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   const gfx::Rect& popup_bounds() const {
     return AutofillPopupControllerImpl::popup_bounds();
   }
-  const gfx::Rect& element_bounds() const {
+  const gfx::RectF& element_bounds() const {
     return AutofillPopupControllerImpl::element_bounds();
   }
 #if !defined(OS_ANDROID)
@@ -280,7 +280,7 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
                                                          gfx::Rect());
   EXPECT_CALL(*test_controller, Hide());
 
-  gfx::Rect bounds(0, 0, 1, 2);
+  gfx::RectF bounds(0.f, 0.f, 1.f, 2.f);
   AutofillPopupControllerImpl* controller3 =
       AutofillPopupControllerImpl::GetOrCreate(
           test_controller,
@@ -344,40 +344,40 @@ TEST_F(AutofillPopupControllerUnitTest, GrowPopupInSpace) {
 
   // Store the possible element bounds and the popup bounds they should result
   // in.
-  std::vector<gfx::Rect> element_bounds;
+  std::vector<gfx::RectF> element_bounds;
   std::vector<gfx::Rect> expected_popup_bounds;
 
   // The popup grows down and to the right.
-  element_bounds.push_back(gfx::Rect(0, 0, 0, 0));
+  element_bounds.push_back(gfx::RectF(0, 0, 0, 0));
   expected_popup_bounds.push_back(
       gfx::Rect(0, 0, desired_width, desired_height));
 
   // The popup grows down and to the left.
-  element_bounds.push_back(gfx::Rect(2 * desired_width, 0, 0, 0));
+  element_bounds.push_back(gfx::RectF(2 * desired_width, 0, 0, 0));
   expected_popup_bounds.push_back(
       gfx::Rect(desired_width, 0, desired_width, desired_height));
 
   // The popup grows up and to the right.
-  element_bounds.push_back(gfx::Rect(0, 2 * desired_height, 0, 0));
+  element_bounds.push_back(gfx::RectF(0, 2 * desired_height, 0, 0));
   expected_popup_bounds.push_back(
       gfx::Rect(0, desired_height, desired_width, desired_height));
 
   // The popup grows up and to the left.
   element_bounds.push_back(
-      gfx::Rect(2 * desired_width, 2 * desired_height, 0, 0));
+      gfx::RectF(2 * desired_width, 2 * desired_height, 0, 0));
   expected_popup_bounds.push_back(
       gfx::Rect(desired_width, desired_height, desired_width, desired_height));
 
   // The popup would be partial off the top and left side of the screen.
   element_bounds.push_back(
-      gfx::Rect(-desired_width / 2, -desired_height / 2, 0, 0));
+      gfx::RectF(-desired_width / 2, -desired_height / 2, 0, 0));
   expected_popup_bounds.push_back(
       gfx::Rect(0, 0, desired_width, desired_height));
 
   // The popup would be partially off the bottom and the right side of
   // the screen.
   element_bounds.push_back(
-      gfx::Rect(desired_width * 1.5, desired_height * 1.5, 0, 0));
+      gfx::RectF(desired_width * 1.5, desired_height * 1.5, 0, 0));
   expected_popup_bounds.push_back(gfx::Rect(
           desired_width / 2, desired_height /2, desired_width, desired_height));
 

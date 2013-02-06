@@ -33,7 +33,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
 
   virtual void HideAutofillPopup() OVERRIDE;
 
-  virtual void EnsurePopupForElement(const gfx::Rect& element_bounds) OVERRIDE;
+  virtual void EnsurePopupForElement(const gfx::RectF& element_bounds) OVERRIDE;
 
   virtual void ControllerDestroyed() OVERRIDE;
 

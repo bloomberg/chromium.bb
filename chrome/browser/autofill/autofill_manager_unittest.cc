@@ -3251,7 +3251,7 @@ class MockAutofillExternalDelegate :
   MOCK_METHOD5(OnQuery, void(int query_id,
                              const FormData& form,
                              const FormFieldData& field,
-                             const gfx::Rect& bounds,
+                             const gfx::RectF& bounds,
                              bool display_warning));
 
  private:

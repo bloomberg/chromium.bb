@@ -64,6 +64,7 @@ struct PasswordForm;
 
 namespace gfx {
 class Rect;
+class RectF;
 }
 
 namespace IPC {
@@ -242,7 +243,7 @@ class AutofillManager : public content::WebContentsObserver,
   void OnQueryFormFieldAutofill(int query_id,
                                 const FormData& form,
                                 const FormFieldData& field,
-                                const gfx::Rect& bounding_box,
+                                const gfx::RectF& bounding_box,
                                 bool display_warning);
   void OnDidEndTextFieldEditing();
   void OnHideAutofillPopup();
@@ -250,7 +251,7 @@ class AutofillManager : public content::WebContentsObserver,
       const FormFieldData& form,
       const PasswordFormFillData& fill_data);
   void OnShowPasswordSuggestions(const FormFieldData& field,
-                                 const gfx::Rect& bounds,
+                                 const gfx::RectF& bounds,
                                  const std::vector<string16>& suggestions);
   void OnSetDataList(const std::vector<string16>& values,
                      const std::vector<string16>& labels,

@@ -48,7 +48,7 @@ class MockAutofillExternalDelegate :
 
   MOCK_METHOD0(ClearPreviewedForm, void());
 
-  MOCK_METHOD1(EnsurePopupForElement, void(const gfx::Rect& element_bounds));
+  MOCK_METHOD1(EnsurePopupForElement, void(const gfx::RectF& element_bounds));
 
   MOCK_METHOD0(HideAutofillPopup, void());
 };
@@ -89,7 +89,7 @@ class AutofillExternalDelegateUnitTest
     FormFieldData field;
     field.is_focusable = true;
     field.should_autocomplete = true;
-    const gfx::Rect element_bounds;
+    const gfx::RectF element_bounds;
 
     EXPECT_CALL(*external_delegate_, EnsurePopupForElement(element_bounds));
     external_delegate_->OnQuery(query_id, form, field, element_bounds, false);
@@ -266,7 +266,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
   FormFieldData field;
   field.is_focusable = true;
   field.should_autocomplete = true;
-  const gfx::Rect element_bounds;
+  const gfx::RectF element_bounds;
 
   EXPECT_CALL(*external_delegate_, EnsurePopupForElement(element_bounds));
 
