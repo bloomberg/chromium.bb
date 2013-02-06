@@ -1,0 +1,130 @@
+/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+body {
+  -webkit-app-region: drag;
+  cursor: -webkit-grab;
+  font: 16px 'Arimo', 'Gill Sans', 'Open Sans',
+             'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  margin: 0;
+  padding: 17px 4px 0;
+}
+
+button {
+  -webkit-app-region: no-drag;
+  background: none;
+  border: 1px solid white;
+  cursor: default;
+  height: 72px;
+  margin: 0;
+  padding: 3px;
+  width: 72px;
+}
+
+button:active {
+  opacity: 0.5;
+}
+
+button:hover {
+  border: 1px solid black;
+}
+
+#close {
+  background: url("/images/close-26x26.png");
+  background-size: cover;
+  border: none;
+  height: 12px;
+  opacity: 0.2;
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 12px;
+}
+
+#close:hover {
+  border: none;
+  border-radius: 0;
+  opacity: 0.75;
+}
+
+#close:active:hover {
+  opacity: 1;
+}
+
+#events {
+  position: relative;
+}
+
+#events-fade {
+  background: -webkit-linear-gradient(rgba(255, 255, 255, 1),
+                                      rgba(255, 255, 255, 0));
+  height: 48px;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 20px;
+  z-index: 99;
+}
+
+#events-scroll {
+  -webkit-app-region: no-drag;
+  color: gray;
+  cursor: text;
+  font-weight: lighter;
+  height: 90px;
+  overflow: scroll;
+  padding: 0 3px;
+  -webkit-user-select: text;
+}
+
+h1 {
+  background: -webkit-linear-gradient(white, white 59%,
+                                      black 60%, black 64%,
+                                      white 65%, white);
+  font-size: 16px;
+  font-weight: normal;
+  margin: 8px 0 2px;
+  text-align: center;
+  z-index: -1;
+}
+
+h1 span {
+  background: white;
+  padding: 0 2px;
+  position: relative;
+}
+
+img {
+  display: block;
+  height: 64px;
+  margin: 0;
+  padding: 0;
+  width: 64px;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+#priority {
+  -webkit-app-region: no-drag;
+  margin: 0 0 0 33px;
+}
+
+#priority input {
+  margin: 0 8px 0 0;
+}
+
+#priority label {
+  display: inline-block;
+  font-size: 14px;
+  margin: 0 0 0 23px;
+  width: 68px
+}
+
+#templates {
+  position: absolute;
+  visibility: hidden;
+}

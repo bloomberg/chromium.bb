@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<!-- Copyright (c) 2012 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file. -->
+<html>
+  <head>
+    <title>Garrulous</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+  </head>
+  <body>
+    <button id="close"></button>
+    <div id="templates">
+      <div class="section"><h1><span/></h1></div>
+      <div class="event"></div>
+      <button><img src="images/white-64x64.png"></button>
+    </div>
+    <div>
+      <h1><span>Priority</span></h1>
+      <form name="priority" id="priority">
+        <label><input type="radio" name="priority" value="-2">-2</label>
+        <label><input type="radio" name="priority" value="-1">-1</label>
+        <label>
+          <input type="radio" name="priority" value="0" checked="true">0
+        </label>
+        <label><input type="radio" name="priority" value="1">1</label>
+        <label><input type="radio" name="priority" value="2">2</label>
+      </div>
+    </div>
+    <div id="sections"></div>
+    <div id="events">
+      <h1><span>Events</span></h1>
+      <div id="events-scroll"></div>
+      <div id="events-fade"></div>
+    </div>
+  </body>
+</html>
