@@ -44,7 +44,7 @@ class SmoothnessBenchmarkUnitTest(
                        'numAnimationFrames': 10,
                        'numFramesSentToScreen': 10}
     res = PageBenchmarkResults()
-    res.WillMeasurePage(page.Page('http://foo.com/'))
+    res.WillMeasurePage(page.Page('http://foo.com/', None))
     smoothness_benchmark.CalcScrollResults(rendering_stats, res)
     res.DidMeasurePage()
     self.assertEquals(50, res.page_results[0]['dropped_percent'].value)
@@ -66,7 +66,7 @@ class SmoothnessBenchmarkUnitTest(
                        'totalRasterizeTimeInSeconds': 0,
                        'totalTimeInSeconds': 1.0}
     res = PageBenchmarkResults()
-    res.WillMeasurePage(page.Page('http://foo.com/'))
+    res.WillMeasurePage(page.Page('http://foo.com/', None))
     smoothness_benchmark.CalcScrollResults(rendering_stats, res)
     res.DidMeasurePage()
     self.assertEquals(0, res.page_results[0]['dropped_percent'].value)
