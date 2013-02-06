@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVideoFrame.h"
 
 namespace media {
 class VideoFrame;
