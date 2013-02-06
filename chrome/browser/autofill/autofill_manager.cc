@@ -57,6 +57,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_message_macros.h"
@@ -453,6 +454,7 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
 
 void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
                                   const TimeTicks& timestamp) {
+  autocheckout_manager_.OnFormsSeen();
   bool enabled = IsAutofillEnabled();
   if (!has_logged_autofill_enabled_) {
     metric_logger_->LogIsAutofillEnabledAtPageLoad(enabled);
@@ -582,12 +584,14 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
     // Autofill server said so), then trigger payments UI while also returning
     // standard autofill suggestions to renderer process.
     if (autocheckout_manager_.IsStartOfAutofillableFlow()) {
-      AutocheckoutInfoBarDelegate::Create(
-          *metric_logger_,
-          form.origin,
-          form.ssl_status,
-          &autocheckout_manager_,
-          manager_delegate_->GetInfoBarService());
+      bool bubble_shown =
+          autocheckout_manager_.MaybeShowAutocheckoutBubble(
+              form.origin,
+              form.ssl_status,
+              web_contents()->GetView()->GetContentNativeView(),
+              bounding_box);
+      if (bubble_shown)
+        return;
     }
   }
 

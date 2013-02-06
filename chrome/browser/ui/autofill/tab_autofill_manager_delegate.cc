@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/autofill/autocheckout_bubble.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -83,6 +84,13 @@ void TabAutofillManagerDelegate::ShowPasswordGenerationBubble(
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   browser->window()->ShowPasswordGenerationBubble(bounds, form, generator);
 #endif  // #if defined(OS_ANDROID)
+}
+
+void TabAutofillManagerDelegate::ShowAutocheckoutBubble(
+    const gfx::RectF& bounding_box,
+    const gfx::NativeView& native_view,
+    const base::Closure& callback) {
+  autofill::ShowAutocheckoutBubble(bounding_box, native_view, callback);
 }
 
 void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_MANAGER_DELEGATE_H_
 
 #include "base/callback_forward.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace autofill {
 class PasswordGenerator;
@@ -19,6 +20,7 @@ struct SSLStatus;
 
 namespace gfx {
 class Rect;
+class RectF;
 }
 
 class FormStructure;
@@ -77,6 +79,14 @@ class AutofillManagerDelegate {
       const gfx::Rect& bounds,
       const content::PasswordForm& form,
       autofill::PasswordGenerator* generator) = 0;
+
+  // Causes the Autocheckout bubble UI to be displayed. |bounding_box| is the
+  // anchor for the bubble. |native_view| is the parent view of the bubble.
+  // |callback| is run if the bubble is accepted.
+  virtual void ShowAutocheckoutBubble(
+      const gfx::RectF& bounding_box,
+      const gfx::NativeView& native_view,
+      const base::Closure& callback) = 0;
 
   // Causes the dialog for request autocomplete feature to be shown.
   virtual void ShowRequestAutocompleteDialog(

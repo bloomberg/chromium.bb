@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/autocheckout_page_meta_data.h"
+#include "ui/gfx/native_widget_types.h"
 
 class AutofillField;
 class AutofillManager;
@@ -30,6 +31,10 @@ namespace content {
 struct SSLStatus;
 }
 
+namespace gfx {
+class RectF;
+}
+
 class AutocheckoutManager {
  public:
   explicit AutocheckoutManager(AutofillManager* autofill_manager);
@@ -42,6 +47,20 @@ class AutocheckoutManager {
   // Sets |page_meta_data_| with the meta data for the current page.
   void OnLoadedPageMetaData(
       scoped_ptr<autofill::AutocheckoutPageMetaData> page_meta_data);
+
+  // Called when a page containing forms is loaded.
+  void OnFormsSeen();
+
+  // Causes the Autocheckout bubble to be displayed if the user hasn't seen it
+  // yet for the current page. |frame_url| is the page where Autocheckout is
+  // being initiated. |ssl_status| is the SSL status of the page. |native_view|
+  // is the parent view of the bubble. |bounding_box| is the bounding box of the
+  // input field in focus. Returns true if the bubble was shown and false
+  // otherwise.
+  virtual bool MaybeShowAutocheckoutBubble(const GURL& frame_url,
+                                           const content::SSLStatus& ssl_status,
+                                           const gfx::NativeView& native_view,
+                                           const gfx::RectF& bounding_box);
 
   // Show the requestAutocomplete dialog.
   virtual void ShowAutocheckoutDialog(const GURL& frame_url,
@@ -74,6 +93,11 @@ class AutocheckoutManager {
 
   // Autocheckout specific page meta data.
   scoped_ptr<autofill::AutocheckoutPageMetaData> page_meta_data_;
+
+  // Whether or not the Autocheckout bubble has been displayed to the user for
+  // the current forms. Ensures the Autocheckout bubble is only shown to a
+  // user once per pageview.
+  bool autocheckout_bubble_shown_;
 
   base::WeakPtrFactory<AutocheckoutManager> weak_ptr_factory_;
 

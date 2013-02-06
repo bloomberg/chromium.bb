@@ -41,6 +41,10 @@ class TabAutofillManagerDelegate
       const gfx::Rect& bounds,
       const content::PasswordForm& form,
       autofill::PasswordGenerator* generator) OVERRIDE;
+  virtual void ShowAutocheckoutBubble(
+      const gfx::RectF& bounds,
+      const gfx::NativeView& native_view,
+      const base::Closure& callback) OVERRIDE;
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,

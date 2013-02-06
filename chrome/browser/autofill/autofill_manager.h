@@ -128,6 +128,10 @@ class AutofillManager : public content::WebContentsObserver,
   // Happens when the autocomplete dialog runs its callback when being closed.
   void RequestAutocompleteDialogClosed();
 
+  autofill::AutofillManagerDelegate* delegate() const {
+    return manager_delegate_;
+  }
+
  protected:
   // Only test code should subclass AutofillManager.
   friend class base::RefCounted<AutofillManager>;

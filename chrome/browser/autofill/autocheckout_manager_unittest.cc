@@ -176,37 +176,11 @@ class TestAutofillManagerDelegate : public autofill::AutofillManagerDelegate {
       autofill::PasswordGenerator* generator) OVERRIDE {
   }
 
-  virtual void ShowRequestAutocompleteDialog(
-      const FormData& form,
-      const GURL& source_url,
-      const content::SSLStatus& ssl_status,
-      const base::Callback<void(const FormStructure*)>& callback) OVERRIDE {
-  }
-
-  virtual void RequestAutocompleteDialogClosed() OVERRIDE {
-  }
-
-  virtual void UpdateProgressBar(double value) OVERRIDE {
-  }
-
- private:
-  content::BrowserContext* browser_context_;
-};
-
-class TestAutofillManager : public AutofillManager {
- public:
-  explicit TestAutofillManager(content::WebContents* contents,
-                               autofill::AutofillManagerDelegate* delegate)
-      : AutofillManager(contents, delegate, NULL) {
-  }
-
-  void SetUserSuppliedData(scoped_ptr<FormStructure> user_supplied_data) {
-    user_supplied_data_.reset(user_supplied_data.release());
-  }
-
-  void SetFormStructure(scoped_ptr<FormStructure> form_structure) {
-    form_structures()->clear();
-    form_structures()->push_back(form_structure.release());
+  virtual void ShowAutocheckoutBubble(
+      const gfx::RectF& bounds,
+      const gfx::NativeView& native_view,
+      const base::Closure& callback) OVERRIDE {
+    callback.Run();
   }
 
   virtual void ShowRequestAutocompleteDialog(
@@ -217,8 +191,34 @@ class TestAutofillManager : public AutofillManager {
     callback.Run(user_supplied_data_.get());
   }
 
+  virtual void RequestAutocompleteDialogClosed() OVERRIDE {
+  }
+
+  virtual void UpdateProgressBar(double value) OVERRIDE {
+  }
+
+  void SetUserSuppliedData(scoped_ptr<FormStructure> user_supplied_data) {
+    user_supplied_data_.reset(user_supplied_data.release());
+  }
+
  private:
+  content::BrowserContext* browser_context_;
   scoped_ptr<FormStructure> user_supplied_data_;
+};
+
+class TestAutofillManager : public AutofillManager {
+ public:
+  explicit TestAutofillManager(content::WebContents* contents,
+                               autofill::AutofillManagerDelegate* delegate)
+      : AutofillManager(contents, delegate, NULL) {
+  }
+
+  void SetFormStructure(scoped_ptr<FormStructure> form_structure) {
+    form_structures()->clear();
+    form_structures()->push_back(form_structure.release());
+  }
+
+ private:
   virtual ~TestAutofillManager() {}
 };
 
@@ -273,7 +273,8 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(AutocheckoutManagerTest, TestFillForms) {
   // Simulate the user submitting some data via the requestAutocomplete UI.
-  autofill_manager_->SetUserSuppliedData(FakeUserSubmittedFormStructure());
+  autofill_manager_delegate_->SetUserSuppliedData(
+      FakeUserSubmittedFormStructure());
 
   // Set up page meta data.
   scoped_ptr<autofill::AutocheckoutPageMetaData> page_meta_data(

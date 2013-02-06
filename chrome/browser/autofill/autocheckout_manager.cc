@@ -23,6 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/rect.h"
 
 using content::RenderViewHost;
 using content::SSLStatus;
@@ -69,6 +70,7 @@ FormData BuildAutocheckoutFormData() {
 
 AutocheckoutManager::AutocheckoutManager(AutofillManager* autofill_manager)
     : autofill_manager_(autofill_manager),
+      autocheckout_bubble_shown_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
@@ -115,13 +117,38 @@ void AutocheckoutManager::OnLoadedPageMetaData(
   page_meta_data_ = page_meta_data.Pass();
 }
 
+void AutocheckoutManager::OnFormsSeen() {
+  autocheckout_bubble_shown_ = false;
+}
+
+bool AutocheckoutManager::MaybeShowAutocheckoutBubble(
+    const GURL& frame_url,
+    const content::SSLStatus& ssl_status,
+    const gfx::NativeView& native_view,
+    const gfx::RectF& bounding_box) {
+  if (autocheckout_bubble_shown_)
+    return false;
+
+  base::Closure callback = base::Bind(
+      &AutocheckoutManager::ShowAutocheckoutDialog,
+      weak_ptr_factory_.GetWeakPtr(),
+      frame_url,
+      ssl_status);
+  autofill_manager_->delegate()->ShowAutocheckoutBubble(
+      bounding_box,
+      native_view,
+      callback);
+  autocheckout_bubble_shown_ = true;
+  return true;
+}
+
 void AutocheckoutManager::ShowAutocheckoutDialog(
     const GURL& frame_url,
     const SSLStatus& ssl_status) {
   base::Callback<void(const FormStructure*)> callback =
       base::Bind(&AutocheckoutManager::ReturnAutocheckoutData,
                  weak_ptr_factory_.GetWeakPtr());
-  autofill_manager_->ShowRequestAutocompleteDialog(
+  autofill_manager_->delegate()->ShowRequestAutocompleteDialog(
       BuildAutocheckoutFormData(), frame_url, ssl_status, callback);
 }
 

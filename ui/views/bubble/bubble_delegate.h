@@ -114,7 +114,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // bubble to the setting before StartFade() was called.
   void ResetFade();
 
-  // Sets the bubble alignment relative to the anchor.
+  // Sets the bubble alignment relative to the anchor. This may only be called
+  // after calling CreateBubble.
   void SetAlignment(BubbleBorder::BubbleAlignment alignment);
 
  protected:
