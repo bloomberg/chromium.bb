@@ -42,8 +42,7 @@ class PrefServiceBase;
 
 namespace subtle {
 
-class BASE_PREFS_EXPORT PrefMemberBase
-    : public NON_EXPORTED_BASE(PrefObserver) {
+class BASE_PREFS_EXPORT PrefMemberBase : public PrefObserver {
  public:
   // Type of callback you can register if you need to know the name of
   // the pref that is changing.

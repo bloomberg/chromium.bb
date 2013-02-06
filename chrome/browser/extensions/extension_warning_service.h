@@ -36,8 +36,6 @@ class ExtensionWarningService : public content::NotificationObserver,
  public:
   class Observer {
    public:
-    virtual ~Observer() { }
-
     virtual void ExtensionWarningsChanged() = 0;
   };
 

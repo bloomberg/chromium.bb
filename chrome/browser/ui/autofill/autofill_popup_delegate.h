@@ -11,8 +11,6 @@
 // of events by the controller.
 class AutofillPopupDelegate {
  public:
-  virtual ~AutofillPopupDelegate() { }
-
   // Called when the autofill suggestion indicated by |identifier| has been
   // temporarily selected (e.g., hovered).
   virtual void DidSelectSuggestion(int identifier) = 0;

@@ -32,7 +32,7 @@ class DownloadItemImplDelegate;
 // See download_item.h for usage.
 class CONTENT_EXPORT DownloadItemImpl
     : public DownloadItem,
-      public NON_EXPORTED_BASE(DownloadDestinationObserver) {
+      public DownloadDestinationObserver {
  public:
   enum ResumeMode {
     RESUME_MODE_INVALID = 0,

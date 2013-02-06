@@ -19,8 +19,6 @@ class SkRegion;
 
 class BaseWindow {
  public:
-  virtual ~BaseWindow() { }
-
   // Returns true if the window is currently the active/focused window.
   virtual bool IsActive() const = 0;
 

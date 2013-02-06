@@ -54,8 +54,6 @@ class EventRouter : public content::NotificationObserver,
   // notified when a listener is added or removed for that |event_name|.
   class Observer {
    public:
-    virtual ~Observer() {}
-
     // Called when a listener is added.
     virtual void OnListenerAdded(const EventListenerInfo& details) {}
     // Called when a listener is removed.

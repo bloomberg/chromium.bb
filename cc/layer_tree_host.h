@@ -72,7 +72,7 @@ struct CC_EXPORT RendererCapabilities {
     int maxTextureSize;
 };
 
-class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(RateLimiterClient) {
+class CC_EXPORT LayerTreeHost : public RateLimiterClient {
 public:
     static scoped_ptr<LayerTreeHost> create(LayerTreeHostClient*, const LayerTreeSettings&, scoped_ptr<Thread> implThread);
     virtual ~LayerTreeHost();
@@ -218,7 +218,7 @@ private:
     void updateLayers(Layer*, ResourceUpdateQueue&);
     void triggerPrepaint();
 
-    void prioritizeTextures(const LayerList&, OverdrawMetrics&);
+    void prioritizeTextures(const LayerList&, OverdrawMetrics&); 
     void setPrioritiesForSurfaces(size_t surfaceMemoryBytes);
     void setPrioritiesForLayers(const LayerList&);
     size_t calculateMemoryForRenderSurfaces(const LayerList& updateList);

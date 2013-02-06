@@ -31,8 +31,6 @@ class CertificateManagerModel {
 
   class Observer {
    public:
-    virtual ~Observer() { }
-
     // Called to notify the view that the certificate list has been refreshed.
     // TODO(mattm): do a more granular updating strategy?  Maybe retrieve new
     // list of certs, diff against past list, and then notify of the changes?

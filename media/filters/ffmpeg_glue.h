@@ -38,8 +38,6 @@ class ScopedPtrAVFree;
 
 class MEDIA_EXPORT FFmpegURLProtocol {
  public:
-  virtual ~FFmpegURLProtocol() { }
-
   // Read the given amount of bytes into data, returns the number of bytes read
   // if successful, kReadError otherwise.
   virtual int Read(int size, uint8* data) = 0;

@@ -117,8 +117,6 @@ class MEDIA_EXPORT AudioManager {
   // callback is to recreate the stream.
   class AudioDeviceListener {
    public:
-    virtual ~AudioDeviceListener() { }
-
     virtual void OnDeviceChange() = 0;
   };
 

@@ -16,8 +16,6 @@ namespace internal {
 
 class ASH_EXPORT SystemModalContainerEventFilterDelegate {
  public:
-  virtual ~SystemModalContainerEventFilterDelegate() { }
-
   // Returns true if |window| can receive the specified event.
   virtual bool CanWindowReceiveEvents(aura::Window* window) = 0;
 };

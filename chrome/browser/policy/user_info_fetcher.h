@@ -28,8 +28,6 @@ class UserInfoFetcher : public net::URLFetcherDelegate {
  public:
   class Delegate {
    public:
-    virtual ~Delegate() { }
-
     // Invoked when the UserInfo request has succeeded, passing the parsed
     // response in |response|. Delegate may free the UserInfoFetcher in this
     // callback.

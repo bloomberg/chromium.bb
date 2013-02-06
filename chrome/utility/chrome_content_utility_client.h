@@ -39,7 +39,7 @@ class ProfileImportHandler;
 class ChromeContentUtilityClient : public content::ContentUtilityClient {
  public:
   ChromeContentUtilityClient();
-  virtual ~ChromeContentUtilityClient();
+  ~ChromeContentUtilityClient();
 
   virtual void UtilityThreadStarted() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

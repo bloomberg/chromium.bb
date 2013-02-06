@@ -19,8 +19,7 @@ class PrefServiceBase;
 // with a PrefStore. Functions much like NotificationRegistrar, but specifically
 // manages observers of preference changes. When the Registrar is destroyed,
 // all registered observers are automatically unregistered with the PrefStore.
-class BASE_PREFS_EXPORT PrefChangeRegistrar
-    : public NON_EXPORTED_BASE(PrefObserver) {
+class BASE_PREFS_EXPORT PrefChangeRegistrar : public PrefObserver {
  public:
   // You can register this type of callback if you need to know the
   // path of the preference that is changing.

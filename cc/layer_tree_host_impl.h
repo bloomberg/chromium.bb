@@ -59,9 +59,6 @@ public:
     virtual void sendManagedMemoryStats() = 0;
     virtual bool isInsideDraw() = 0;
     virtual void renewTreePriority() = 0;
-
-protected:
-    virtual ~LayerTreeHostImplClient() { }
 };
 
 // LayerTreeHostImpl owns the LayerImpl tree as well as associated rendering state
@@ -95,7 +92,7 @@ public:
 
     struct CC_EXPORT FrameData : public RenderPassSink {
         FrameData();
-        virtual ~FrameData();
+        ~FrameData();
 
         std::vector<gfx::Rect> occludingScreenSpaceRects;
         std::vector<gfx::Rect> nonOccludingScreenSpaceRects;

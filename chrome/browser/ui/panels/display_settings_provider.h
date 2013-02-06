@@ -32,23 +32,17 @@ class DisplaySettingsProvider {
 
   class DisplayAreaObserver {
    public:
-    virtual ~DisplayAreaObserver() { }
-
     virtual void OnDisplayAreaChanged(const gfx::Rect& display_area) = 0;
   };
 
   class DesktopBarObserver {
    public:
-    virtual ~DesktopBarObserver() { }
-
     virtual void OnAutoHidingDesktopBarVisibilityChanged(
         DesktopBarAlignment alignment, DesktopBarVisibility visibility) = 0;
   };
 
   class FullScreenObserver {
    public:
-    virtual ~FullScreenObserver() { }
-
     virtual void OnFullScreenModeChanged(bool is_full_screen) = 0;
   };
 

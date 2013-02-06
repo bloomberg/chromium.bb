@@ -43,8 +43,6 @@ class NET_EXPORT_PRIVATE HttpPipelinedHost {
 
   class Delegate {
    public:
-    virtual ~Delegate() {}
-
     // Called when a pipelined host has no outstanding requests on any of its
     // pipelined connections.
     virtual void OnHostIdle(HttpPipelinedHost* host) = 0;

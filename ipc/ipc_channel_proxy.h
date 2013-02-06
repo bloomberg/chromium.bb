@@ -113,8 +113,6 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   // re-write the message.  Used mainly for testing.
   class OutgoingMessageFilter {
    public:
-    virtual ~OutgoingMessageFilter() { }
-
     // Returns a re-written message, freeing the original, or simply the
     // original unchanged if no rewrite indicated.
     virtual Message *Rewrite(Message *message) = 0;
