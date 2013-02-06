@@ -88,6 +88,7 @@
         'browser/android/dev_tools_server.cc',
         'browser/android/dev_tools_server.h',
         'browser/android/google_location_settings_helper.h',
+        'browser/android/infobar_stubs.cc',
         'browser/android/intent_helper.cc',
         'browser/android/intent_helper.h',
         'browser/android/process_utils.cc',

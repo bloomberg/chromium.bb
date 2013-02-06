@@ -376,6 +376,7 @@ extern const char kPluginsMetadataServerURL[];
 #endif
 
 #if defined(OS_ANDROID)
+extern const char kEnableTranslate[];
 extern const char kTabletUI[];
 #endif
 

@@ -1395,7 +1395,10 @@ const char kPluginsMetadataServerURL[]      = "plugins-metadata-server-url";
 #endif
 
 #if defined(OS_ANDROID)
-// Use the tablet specific UI components when available.
+// Pops the translate infobar if possible.
+const char kEnableTranslate[] = "enable-translate";
+
+// Uses the tablet specific UI components when available.
 const char kTabletUI[]                      = "tablet-ui";
 #endif
 

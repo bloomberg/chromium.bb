@@ -1286,11 +1286,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 #endif
 
-#if !defined(OS_ANDROID)
   // Create the TranslateManager singleton.
   translate_manager_ = TranslateManager::GetInstance();
   DCHECK(translate_manager_ != NULL);
 
+#if !defined(OS_ANDROID)
   // Initialize Managed Mode.
   ManagedMode::Init(profile_);
 #endif

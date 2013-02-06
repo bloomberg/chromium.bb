@@ -6,7 +6,6 @@
 // needed to compile some tests.
 
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 
 // static
 TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
@@ -15,11 +14,5 @@ TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
 
 // static
 TabAndroid* TabAndroid::GetNativeTab(JNIEnv* env, jobject obj) {
-  return NULL;
-}
-
-// This is here temporaily till we add support for infobars upstream.
-// static
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   return NULL;
 }

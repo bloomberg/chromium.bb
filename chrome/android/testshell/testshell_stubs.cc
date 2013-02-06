@@ -16,7 +16,3 @@ TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
   return NULL;
 }
 
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
