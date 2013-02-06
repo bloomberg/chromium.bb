@@ -10,6 +10,7 @@
 #include "chrome/browser/signin/signin_tracker.h"
 
 class Browser;
+class ProfileSyncService;
 
 // Waits for successful singin notification from the signin manager and then
 // starts the sync machine.  Instances of this class delete themselves once
@@ -43,6 +44,8 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer {
   virtual void GaiaCredentialsValid() OVERRIDE;
   virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void SigninSuccess() OVERRIDE;
+
+  ProfileSyncService* GetProfileSyncService();
 
   Profile* profile_;
   Browser* browser_;

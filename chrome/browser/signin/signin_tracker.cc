@@ -43,7 +43,10 @@ SigninTracker::SigninTracker(Profile* profile,
 }
 
 SigninTracker::~SigninTracker() {
-  ProfileSyncServiceFactory::GetForProfile(profile_)->RemoveObserver(this);
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  if (service)
+    service->RemoveObserver(this);
 }
 
 void SigninTracker::Initialize() {
@@ -67,7 +70,8 @@ void SigninTracker::Initialize() {
   // sync for now).
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
-  service->AddObserver(this);
+  if (service)
+    service->AddObserver(this);
 
   if (state_ == SERVICES_INITIALIZING)
     HandleServiceStateChange();

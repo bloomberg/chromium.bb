@@ -664,7 +664,7 @@ cr.define('options', function() {
      * @private
      */
     updateSyncState_: function(syncData) {
-      if (!syncData.syncSystemEnabled) {
+      if (!syncData.signinAllowed) {
         $('sync-section').hidden = true;
         return;
       }
@@ -672,8 +672,9 @@ cr.define('options', function() {
       $('sync-section').hidden = false;
       this.signedIn = syncData.signedIn;
       // Display the "setup sync" button if we're signed in and sync is not
-      // managed.
-      $('customize-sync').hidden = !(syncData.signedIn && !syncData.managed);
+      // managed/disabled.
+      $('customize-sync').hidden = !syncData.signedIn ||
+          syncData.managed || !syncData.syncSystemEnabled;
 
       var startStopButton = $('start-stop-sync');
       startStopButton.disabled = syncData.setupInProgress;
@@ -694,8 +695,10 @@ cr.define('options', function() {
       $('sync-status').hidden = !statusSet;
 
       $('sync-action-link').textContent = syncData.actionLinkText;
+      // Don't show the action link if it is empty or undefined.
       $('sync-action-link').hidden = syncData.actionLinkText.length == 0;
-      $('sync-action-link').disabled = syncData.managed;
+      $('sync-action-link').disabled = syncData.managed ||
+                                       !syncData.syncSystemEnabled;
 
       // On Chrome OS, sign out the user and sign in again to get fresh
       // credentials on auth errors.

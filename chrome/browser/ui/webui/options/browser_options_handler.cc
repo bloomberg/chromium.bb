@@ -612,7 +612,10 @@ void BrowserOptionsHandler::InitializeHandler() {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile)));
-
+  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
+                 content::Source<Profile>(profile));
+  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
+                 content::Source<Profile>(profile));
   AddTemplateUrlServiceObserver();
 
 #if defined(OS_WIN)
@@ -897,17 +900,26 @@ void BrowserOptionsHandler::Observe(
   if (!page_initialized_)
     return;
 
-  if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
-    ObserveThemeChanged();
+  switch (type) {
+    case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
+      ObserveThemeChanged();
+      break;
 #if defined(OS_CHROMEOS)
-  } else if (type == chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED) {
-    UpdateAccountPicture();
+    case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED:
+      UpdateAccountPicture();
+      break;
 #endif
-  } else if (type == chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED) {
-    if (multiprofile_)
-      SendProfilesInfo();
-  } else {
-    NOTREACHED();
+    case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
+      if (multiprofile_)
+        SendProfilesInfo();
+      break;
+    case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL:
+    case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:
+      // Update our sync/signin status display.
+      OnStateChanged();
+      break;
+    default:
+      NOTREACHED();
   }
 }
 
@@ -1059,21 +1071,25 @@ void BrowserOptionsHandler::UpdateAccountPicture() {
 
 scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
   scoped_ptr<DictionaryValue> sync_status(new DictionaryValue);
-  ProfileSyncService* service(ProfileSyncServiceFactory::
-      GetInstance()->GetForProfile(Profile::FromWebUI(web_ui())));
-  sync_status->SetBoolean("syncSystemEnabled", !!service);
-  if (!service)
+  Profile* profile = Profile::FromWebUI(web_ui());
+  sync_status->SetBoolean("signinAllowed", !profile->IsGuestSession());
+  if (profile->IsGuestSession()) {
+    // Cannot display signin status when running in guest mode on chromeos
+    // because there is no SigninManager.
     return sync_status.Pass();
-
+  }
+  ProfileSyncService* service(
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile));
+  sync_status->SetBoolean("syncSystemEnabled", !!service);
   sync_status->SetBoolean("setupCompleted",
-                          service->HasSyncSetupCompleted());
-  sync_status->SetBoolean("setupInProgress", service->FirstSetupInProgress());
+                          service && service->HasSyncSetupCompleted());
+  sync_status->SetBoolean("setupInProgress",
+      service && !service->IsManaged() && service->FirstSetupInProgress());
 
   string16 status_label;
   string16 link_label;
-  SigninManager* signin = SigninManagerFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()));
-
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+  DCHECK(signin);
   bool status_has_error = sync_ui_util::GetStatusLabels(
       service, *signin, sync_ui_util::WITH_HTML, &status_label, &link_label) ==
           sync_ui_util::SYNC_ERROR;
@@ -1081,15 +1097,16 @@ scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
   sync_status->SetString("actionLinkText", link_label);
   sync_status->SetBoolean("hasError", status_has_error);
 
-  sync_status->SetBoolean("managed", service->IsManaged());
+  sync_status->SetBoolean("managed", service && service->IsManaged());
   sync_status->SetBoolean("signedIn",
                           !signin->GetAuthenticatedUsername().empty());
   sync_status->SetBoolean("hasUnrecoverableError",
-                          service->HasUnrecoverableError());
+                          service && service->HasUnrecoverableError());
   sync_status->SetBoolean(
       "autoLoginVisible",
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAutologin) &&
-      service->IsSyncEnabledAndLoggedIn() && service->IsSyncTokenAvailable());
+      service && service->IsSyncEnabledAndLoggedIn() &&
+      service->IsSyncTokenAvailable());
 
   return sync_status.Pass();
 }

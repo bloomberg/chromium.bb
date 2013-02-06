@@ -1136,10 +1136,9 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
     DisplayGaiaLogin(false);
   } else {
     if (!GetSyncService()) {
-      // Shouldn't happen, except in various race conditions where a policy
-      // push comes down that disables sync while the user is trying to
-      // configure it.
+      // This can happen if the user directly navigates to /settings/syncSetup.
       DLOG(WARNING) << "Cannot display sync UI when sync is disabled";
+      CloseOverlay();
       return;
     }
 

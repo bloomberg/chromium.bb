@@ -10,8 +10,7 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -184,11 +183,10 @@ void ShowSearchEngineSettings(Browser* browser) {
 
 void ShowBrowserSignin(Browser* browser, SyncPromoUI::Source source) {
   Profile* original_profile = browser->profile()->GetOriginalProfile();
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          original_profile);
+  SigninManager* manager =
+      SigninManagerFactory::GetForProfile(original_profile);
   // If we're signed in, just show settings.
-  if (!service->signin()->GetAuthenticatedUsername().empty()) {
+  if (!manager->GetAuthenticatedUsername().empty()) {
     ShowSettings(browser);
   } else {
     // If the browser's profile is an incognito profile, make sure to use
@@ -215,7 +213,9 @@ void ShowBrowserSignin(Browser* browser, SyncPromoUI::Source source) {
       if (login->current_login_ui()) {
         login->current_login_ui()->FocusUI();
       } else {
-        // Need to navigate to the settings page and display the UI.
+        // Need to navigate to the settings page and display the sync setup UI.
+        // This always displays the signin UI since the user is not yet signed
+        // in.
         chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupSubPage);
       }
     }

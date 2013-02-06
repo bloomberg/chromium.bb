@@ -32,9 +32,9 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
 
   // Let the sync service know that setup is in progress so it doesn't start
   // syncing until the user has finished any configuration.
-  ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  profile_sync_service->SetSetupInProgress(true);
+  ProfileSyncService* profile_sync_service = GetProfileSyncService();
+  if (profile_sync_service)
+    profile_sync_service->SetSetupInProgress(true);
 
   // Make sure the syncing is not suppressed, otherwise the SigninManager
   // will not be able to compelte sucessfully.
@@ -53,22 +53,24 @@ void OneClickSigninSyncStarter::GaiaCredentialsValid() {
 
 void OneClickSigninSyncStarter::SigninFailed(
     const GoogleServiceAuthError& error) {
-  ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  profile_sync_service->SetSetupInProgress(false);
+  ProfileSyncService* profile_sync_service = GetProfileSyncService();
+  if (profile_sync_service)
+    profile_sync_service->SetSetupInProgress(false);
   delete this;
 }
 
 void OneClickSigninSyncStarter::SigninSuccess() {
-  ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
+  ProfileSyncService* profile_sync_service = GetProfileSyncService();
 
   switch (start_mode_) {
     case SYNC_WITH_DEFAULT_SETTINGS:
-      // Just kick off the sync machine, no need to configure it first.
-      profile_sync_service->OnUserChoseDatatypes(true, syncer::ModelTypeSet());
-      profile_sync_service->SetSyncSetupCompleted();
-      profile_sync_service->SetSetupInProgress(false);
+      if (profile_sync_service) {
+        // Just kick off the sync machine, no need to configure it first.
+        profile_sync_service->OnUserChoseDatatypes(true,
+                                                   syncer::ModelTypeSet());
+        profile_sync_service->SetSyncSetupCompleted();
+        profile_sync_service->SetSetupInProgress(false);
+      }
       break;
     case CONFIGURE_SYNC_FIRST: {
       // Give the user a chance to configure things. We don't clear the
@@ -79,8 +81,13 @@ void OneClickSigninSyncStarter::SigninSuccess() {
       if (login_ui->current_login_ui()) {
         login_ui->current_login_ui()->FocusUI();
       } else if (browser_) {
-        // Need to navigate to the settings page and display the UI.
-        chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
+        if (profile_sync_service) {
+          // Need to navigate to the settings page and display the sync UI.
+          chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
+        } else {
+          // Sync is disabled - just display the settings page.
+          chrome::ShowSettings(browser_);
+        }
       }
       break;
     }
@@ -89,4 +96,11 @@ void OneClickSigninSyncStarter::SigninSuccess() {
   }
 
   delete this;
+}
+
+ProfileSyncService* OneClickSigninSyncStarter::GetProfileSyncService() {
+  ProfileSyncService* service = NULL;
+  if (profile_->IsSyncAccessible())
+    service = ProfileSyncServiceFactory::GetForProfile(profile_);
+  return service;
 }

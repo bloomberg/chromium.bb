@@ -67,8 +67,8 @@ NewTabPageSyncHandler::MessageType
 void NewTabPageSyncHandler::RegisterMessages() {
   sync_service_ = ProfileSyncServiceFactory::GetInstance()->GetForProfile(
       Profile::FromWebUI(web_ui()));
-  DCHECK(sync_service_);  // This shouldn't get called by an incognito NTP.
-  sync_service_->AddObserver(this);
+  if (sync_service_)
+    sync_service_->AddObserver(this);
 
   web_ui()->RegisterMessageCallback("GetSyncMessage",
       base::Bind(&NewTabPageSyncHandler::HandleGetSyncMessage,
@@ -123,8 +123,7 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
 
 void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
   DCHECK(!waiting_for_initial_page_load_);
-  DCHECK(sync_service_);
-  if (!sync_service_->IsSyncEnabled())
+  if (!sync_service_ || !sync_service_->IsSyncEnabled())
     return;
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
