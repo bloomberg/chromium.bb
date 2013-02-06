@@ -27,7 +27,7 @@ bool GetShmemTempDir(FilePath* path, bool executable) {
   return GetTempDir(path);
 }
 
-bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
+bool CopyFileUnsafe(const FilePath& from_path, const FilePath& to_path) {
   base::ThreadRestrictions::AssertIOAllowed();
   return (copyfile(from_path.value().c_str(),
                    to_path.value().c_str(), NULL, COPYFILE_ALL) == 0);

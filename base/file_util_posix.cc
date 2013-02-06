@@ -249,7 +249,7 @@ bool Delete(const FilePath& path, bool recursive) {
   return success;
 }
 
-bool Move(const FilePath& from_path, const FilePath& to_path) {
+bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
   base::ThreadRestrictions::AssertIOAllowed();
   // Windows compatibility: if to_path exists, from_path and to_path
   // must be the same type, either both files, or both directories.
@@ -1012,7 +1012,7 @@ FilePath GetHomeDir() {
   return FilePath("/tmp");
 }
 
-bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
+bool CopyFileUnsafe(const FilePath& from_path, const FilePath& to_path) {
   base::ThreadRestrictions::AssertIOAllowed();
   int infile = HANDLE_EINTR(open(from_path.value().c_str(), O_RDONLY));
   if (infile < 0)

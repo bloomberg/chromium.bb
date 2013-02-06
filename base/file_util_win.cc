@@ -138,7 +138,7 @@ bool DeleteAfterReboot(const FilePath& path) {
                         MOVEFILE_REPLACE_EXISTING) != FALSE;
 }
 
-bool Move(const FilePath& from_path, const FilePath& to_path) {
+bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   // NOTE: I suspect we could support longer paths, but that would involve
@@ -189,7 +189,7 @@ bool ReplaceFile(const FilePath& from_path, const FilePath& to_path) {
   return false;
 }
 
-bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
+bool CopyFileUnsafe(const FilePath& from_path, const FilePath& to_path) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   // NOTE: I suspect we could support longer paths, but that would involve

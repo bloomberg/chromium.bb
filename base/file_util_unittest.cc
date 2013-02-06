@@ -1149,8 +1149,8 @@ TEST_F(FileUtilTest, MoveNew) {
   ASSERT_TRUE(file_util::PathExists(dir_name_from));
 
   // Create a file under the directory
-  FilePath file_name_from =
-      dir_name_from.Append(FILE_PATH_LITERAL("Move_Test_File.txt"));
+  FilePath txt_file_name(FILE_PATH_LITERAL("Move_Test_File.txt"));
+  FilePath file_name_from = dir_name_from.Append(txt_file_name);
   CreateTextFile(file_name_from, L"Gooooooooooooooooooooogle");
   ASSERT_TRUE(file_util::PathExists(file_name_from));
 
@@ -1168,6 +1168,17 @@ TEST_F(FileUtilTest, MoveNew) {
   EXPECT_FALSE(file_util::PathExists(dir_name_from));
   EXPECT_FALSE(file_util::PathExists(file_name_from));
   EXPECT_TRUE(file_util::PathExists(dir_name_to));
+  EXPECT_TRUE(file_util::PathExists(file_name_to));
+
+  // Test path traversal.
+  file_name_from = dir_name_to.Append(txt_file_name);
+  file_name_to = dir_name_to.Append(FILE_PATH_LITERAL(".."));
+  file_name_to = file_name_to.Append(txt_file_name);
+  EXPECT_FALSE(file_util::Move(file_name_from, file_name_to));
+  EXPECT_TRUE(file_util::PathExists(file_name_from));
+  EXPECT_FALSE(file_util::PathExists(file_name_to));
+  EXPECT_TRUE(file_util::MoveUnsafe(file_name_from, file_name_to));
+  EXPECT_FALSE(file_util::PathExists(file_name_from));
   EXPECT_TRUE(file_util::PathExists(file_name_to));
 }
 
@@ -1525,7 +1536,8 @@ TEST_F(FileUtilTest, CopyFile) {
   FilePath dest_file2(dir_name_from);
   dest_file2 = dest_file2.AppendASCII("..");
   dest_file2 = dest_file2.AppendASCII("DestFile.txt");
-  ASSERT_TRUE(file_util::CopyFile(file_name_from, dest_file2));
+  ASSERT_FALSE(file_util::CopyFile(file_name_from, dest_file2));
+  ASSERT_TRUE(file_util::CopyFileUnsafe(file_name_from, dest_file2));
 
   FilePath dest_file2_test(dir_name_from);
   dest_file2_test = dest_file2_test.DirName();
