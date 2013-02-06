@@ -9,6 +9,7 @@
 #include <iterator>
 #include <limits>
 #include <numeric>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -19,6 +20,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/bookmarks/bookmark_service.h"
+#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/history/history_database.h"
@@ -68,7 +70,11 @@ bool LengthGreater(const string16& string_a, const string16& string_b) {
 // Public Functions ------------------------------------------------------------
 
 URLIndexPrivateData::URLIndexPrivateData()
-    : restored_cache_version_(0),
+    : use_cursor_position_(
+          AutocompleteFieldTrial::InHQPUseCursorPositionFieldTrial() &&
+          AutocompleteFieldTrial::
+              InHQPUseCursorPositionFieldTrialExperimentGroup()),
+      restored_cache_version_(0),
       saved_cache_version_(kCurrentCacheFileVersion),
       pre_filter_item_count_(0),
       post_filter_item_count_(0),
@@ -76,8 +82,19 @@ URLIndexPrivateData::URLIndexPrivateData()
 }
 
 ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
-    const string16& search_string,
+    string16 search_string,
+    size_t cursor_position,
     BookmarkService* bookmark_service) {
+  // If we're allowed to use the cursor position, then if cursor
+  // position is set and useful (not at either end of the string),
+  // allow the search string to be broken at cursor position.  We do
+  // this by pretending there's a space where the cursor is.
+  // TODO(figure out highlighting).
+  if (use_cursor_position_ && (cursor_position != string16::npos) &&
+      (cursor_position < search_string.length()) &&
+      (cursor_position > 0)) {
+    search_string.insert(cursor_position, ASCIIToUTF16(" "));
+  }
   pre_filter_item_count_ = 0;
   post_filter_item_count_ = 0;
   post_scoring_item_count_ = 0;

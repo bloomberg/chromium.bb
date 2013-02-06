@@ -163,8 +163,9 @@ HistoryQuickProvider::~HistoryQuickProvider() {}
 
 void HistoryQuickProvider::DoAutocomplete() {
   // Get the matching URLs from the DB.
-  string16 term_string = autocomplete_input_.text();
-  ScoredHistoryMatches matches = GetIndex()->HistoryItemsForTerms(term_string);
+  ScoredHistoryMatches matches = GetIndex()->HistoryItemsForTerms(
+      autocomplete_input_.text(),
+      autocomplete_input_.cursor_position());
   if (matches.empty())
     return;
 

@@ -117,8 +117,11 @@ class InMemoryURLIndex : public content::NotificationObserver,
   // Scans the history index and returns a vector with all scored, matching
   // history items. This entry point simply forwards the call on to the
   // URLIndexPrivateData class. For a complete description of this function
-  // refer to that class.
-  ScoredHistoryMatches HistoryItemsForTerms(const string16& term_string);
+  // refer to that class.  If |cursor_position| is string16::npos, the
+  // function doesn't do anything special with the cursor; this is equivalent
+  // to the cursor being at the end.
+  ScoredHistoryMatches HistoryItemsForTerms(const string16& term_string,
+                                            size_t cursor_position);
 
   // Deletes the index entry, if any, for the given |url|.
   void DeleteURL(const GURL& url);

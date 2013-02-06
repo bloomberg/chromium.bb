@@ -157,9 +157,12 @@ bool InMemoryURLIndex::GetCacheFilePath(FilePath* file_path) {
 // Querying --------------------------------------------------------------------
 
 ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
-    const string16& term_string) {
+    const string16& term_string,
+    size_t cursor_position) {
   return private_data_->HistoryItemsForTerms(
-    term_string, BookmarkModelFactory::GetForProfile(profile_));
+      term_string,
+      cursor_position,
+      BookmarkModelFactory::GetForProfile(profile_));
 }
 
 // Updating --------------------------------------------------------------------

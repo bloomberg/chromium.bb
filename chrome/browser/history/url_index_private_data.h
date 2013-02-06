@@ -50,19 +50,22 @@ class URLIndexPrivateData
   // vector with all scored, matching history items. The |term_string| is
   // broken down into individual terms (words), each of which must occur in the
   // candidate history item's URL or page title for the item to qualify;
-  // however, the terms do not necessarily have to be adjacent. Once we have
-  // a set of candidates, they are filtered to insure that all |term_string|
-  // terms, as separated by whitespace, occur within the candidate's URL
-  // or page title. Scores are then calculated on no more than
-  // |kItemsToScoreLimit| candidates, as the scoring of such a large number of
-  // candidates may cause perceptible typing response delays in the omnibox.
-  // This is likely to occur for short omnibox terms such as 'h' and 'w' which
+  // however, the terms do not necessarily have to be adjacent. We
+  // also allow breaking |term_string| at |cursor_position| (if
+  // set). Once we have a set of candidates, they are filtered to ensure
+  // that all |term_string| terms, as separated by whitespace and the
+  // cursor (if set), occur within the candidate's URL or page title.
+  // Scores are then calculated on no more than |kItemsToScoreLimit|
+  // candidates, as the scoring of such a large number of candidates may
+  // cause perceptible typing response delays in the omnibox. This is
+  // likely to occur for short omnibox terms such as 'h' and 'w' which
   // will be found in nearly all history candidates. Results are sorted by
   // descending score. The full results set (i.e. beyond the
   // |kItemsToScoreLimit| limit) will be retained and used for subsequent calls
   // to this function. |bookmark_service| is used to boost a result's score if
   // its URL is referenced by one or more of the user's bookmarks.
-  ScoredHistoryMatches HistoryItemsForTerms(const string16& term_string,
+  ScoredHistoryMatches HistoryItemsForTerms(string16 term_string,
+                                            size_t cursor_position,
                                             BookmarkService* bookmark_service);
 
   // Adds the history item in |row| to the index if it does not already already
@@ -123,6 +126,7 @@ class URLIndexPrivateData
   friend class ::HistoryQuickProviderTest;
   friend class InMemoryURLIndexTest;
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CacheSaveRestore);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CursorPositionRetrieval);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, HugeResultSet);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, Scoring);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TitleSearch);
@@ -293,6 +297,11 @@ class URLIndexPrivateData
 
   // Cache of search terms.
   SearchTermCacheMap search_term_cache_;
+
+  // Whether to allow breaking the input at the cursor position.  Set based
+  // on whether the user is in the OmniboxHQPUseCursorPosition field trial
+  // experiment group.
+  bool use_cursor_position_;
 
   // Start of data members that are cached -------------------------------------
 
