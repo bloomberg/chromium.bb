@@ -273,6 +273,34 @@ TEST_F(DriveApiOperationsTest, RenameResourceOperation) {
   EXPECT_EQ("{\"title\":\"new name\"}", http_request_.content);
 }
 
+TEST_F(DriveApiOperationsTest, TrashResourceOperation) {
+  // Set data for the expected result. Directory entry should be returned
+  // if the trashing entry is a directory, so using it here should be fine.
+  expected_data_file_path_ =
+      test_util::GetTestFilePath("drive/directory_entry.json");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+
+  // Trash a resource with the given resource id.
+  drive::TrashResourceOperation* operation =
+      new drive::TrashResourceOperation(
+          &operation_registry_,
+          request_context_getter_.get(),
+          *url_generator_,
+          "resource_id",
+          base::Bind(&test_util::CopyResultFromEntryActionCallbackAndQuit,
+                     &error));
+  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
+                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ("/drive/v2/files/resource_id/trash", http_request_.relative_url);
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_TRUE(http_request_.content.empty());
+}
+
 TEST_F(DriveApiOperationsTest, InsertResourceOperation) {
   // Set an expected data file containing the children entry.
   expected_content_type_ = "application/json";

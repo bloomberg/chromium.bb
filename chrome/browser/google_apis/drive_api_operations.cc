@@ -227,6 +227,30 @@ bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
   return true;
 }
 
+//=========================== TrashResourceOperation ===========================
+
+TrashResourceOperation::TrashResourceOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const DriveApiUrlGenerator& url_generator,
+    const std::string& resource_id,
+    const EntryActionCallback& callback)
+    : EntryActionOperation(registry, url_request_context_getter, callback),
+      url_generator_(url_generator),
+      resource_id_(resource_id) {
+  DCHECK(!callback.is_null());
+}
+
+TrashResourceOperation::~TrashResourceOperation() {}
+
+GURL TrashResourceOperation::GetURL() const {
+  return url_generator_.GetFileTrashUrl(resource_id_);
+}
+
+net::URLFetcher::RequestType TrashResourceOperation::GetRequestType() const {
+  return net::URLFetcher::POST_WITHOUT_BODY;
+}
+
 //========================== InsertResourceOperation ===========================
 
 InsertResourceOperation::InsertResourceOperation(

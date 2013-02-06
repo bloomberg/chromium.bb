@@ -206,6 +206,42 @@ class RenameResourceOperation : public EntryActionOperation {
   DISALLOW_COPY_AND_ASSIGN(RenameResourceOperation);
 };
 
+//=========================== TrashResourceOperation ===========================
+
+// This class performs the operation for trashing a resource.
+//
+// According to the document:
+// https://developers.google.com/drive/v2/reference/files/trash
+// the file resource will be returned from the server, which is not in the
+// response from WAPI server. For the transition, we simply ignore the result,
+// because now we do not handle resources in trash.
+// Note for the naming: the name "trash" comes from the server's operation
+// name. In order to be consistent with the server, we chose "trash" here,
+// although we are preferring the term "remove" in drive/google_api code.
+// TODO(hidehiko): Replace the base class to GetDataOperation.
+class TrashResourceOperation : public EntryActionOperation {
+ public:
+  // |callback| must not be null.
+  TrashResourceOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const DriveApiUrlGenerator& url_generator,
+      const std::string& resource_id,
+      const EntryActionCallback& callback);
+  virtual ~TrashResourceOperation();
+
+ protected:
+  // UrlFetchOperationBase overrides.
+  virtual GURL GetURL() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+  const std::string resource_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrashResourceOperation);
+};
+
 //========================== InsertResourceOperation ===========================
 
 // This class performs the operation for inserting a resource to a directory.

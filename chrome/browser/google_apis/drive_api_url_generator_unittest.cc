@@ -159,4 +159,21 @@ TEST_F(DriveApiUrlGeneratorTest, GetChildrenUrlForRemoval) {
           "file:folder_id", "file:child_id").spec());
 }
 
+TEST_F(DriveApiUrlGeneratorTest, GetFileTrashUrl) {
+  // |file_id| should be embedded into the url.
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0ADK06pfg/trash",
+            url_generator_.GetFileTrashUrl("0ADK06pfg").spec());
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0Bz0bd074/trash",
+            url_generator_.GetFileTrashUrl("0Bz0bd074").spec());
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/files/file%3Afile_id/trash",
+            url_generator_.GetFileTrashUrl("file:file_id").spec());
+
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/0ADK06pfg/trash",
+            test_url_generator_.GetFileTrashUrl("0ADK06pfg").spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/0Bz0bd074/trash",
+            test_url_generator_.GetFileTrashUrl("0Bz0bd074").spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/file%3Afile_id/trash",
+            test_url_generator_.GetFileTrashUrl("file:file_id").spec());
+}
+
 }  // namespace google_apis
