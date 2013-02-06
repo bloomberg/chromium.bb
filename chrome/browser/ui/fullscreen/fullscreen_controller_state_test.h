@@ -20,9 +20,10 @@ class FullscreenControllerStateTest {
   enum State {
     // The window is not in fullscreen.
     STATE_NORMAL,
-    // User-initiated fullscreen. On Mac, this is Lion-mode for 10.7+. On 10.6,
-    // this is synonymous with STATE_BROWSER_FULLSCREEN_WITH_CHROME.
+    // User-initiated fullscreen.
     STATE_BROWSER_FULLSCREEN_NO_CHROME,
+    // Mac User-initiated 'Lion Fullscreen' with browser chrome. OSX 10.7+ only.
+    STATE_BROWSER_FULLSCREEN_WITH_CHROME,
     // Windows 8 Metro Snap mode, which puts the window at 20% screen-width.
     // No TO_ state for Metro, as the windows implementation is only reentrant.
     STATE_METRO_SNAP,
@@ -30,10 +31,14 @@ class FullscreenControllerStateTest {
     STATE_TAB_FULLSCREEN,
     // Both tab and browser fullscreen.
     STATE_TAB_BROWSER_FULLSCREEN,
+    // Both tab and browser fullscreen, displayed without chrome, but exits tab
+    // fullscreen to STATE_BROWSER_FULLSCREEN_WITH_CHROME.
+    STATE_TAB_BROWSER_FULLSCREEN_CHROME,
     // TO_ states are asynchronous states waiting for window state change
     // before transitioning to their named state.
     STATE_TO_NORMAL,
     STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,
+    STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME,
     STATE_TO_TAB_FULLSCREEN,
     NUM_STATES,
     STATE_INVALID,
@@ -42,6 +47,8 @@ class FullscreenControllerStateTest {
   enum Event {
     // FullscreenController::ToggleFullscreenMode()
     TOGGLE_FULLSCREEN,
+    // FullscreenController::ToggleFullscreenWithChrome()
+    TOGGLE_FULLSCREEN_CHROME,
     // FullscreenController::ToggleFullscreenModeForTab(, true)
     TAB_FULLSCREEN_TRUE,
     // FullscreenController::ToggleFullscreenModeForTab(, false)
@@ -62,8 +69,8 @@ class FullscreenControllerStateTest {
     EVENT_INVALID,
   };
 
-  static const int MAX_STATE_NAME_LENGTH = 37;
-  static const int MAX_EVENT_NAME_LENGTH = 20;
+  static const int MAX_STATE_NAME_LENGTH = 39;
+  static const int MAX_EVENT_NAME_LENGTH = 24;
 
   FullscreenControllerStateTest();
   virtual ~FullscreenControllerStateTest();
@@ -96,6 +103,11 @@ class FullscreenControllerStateTest {
   // TransitionToState() always takes the same path even when multiple paths
   // exist.
   void TestTransitionsForEachState();
+
+  // Log transition_table_ to a string for debugging.
+  std::string GetTransitionTableAsString() const;
+  // Log state_transitions_ to a string for debugging.
+  std::string GetStateTransitionsAsString() const;
 
  protected:
   // Generated information about the transitions between states.
@@ -134,6 +146,9 @@ class FullscreenControllerStateTest {
   State transition_table_[NUM_STATES][NUM_EVENTS];
 
   // Generated information about the transitions between states [from][to].
+  // View generated data with: out/Release/unit_tests
+  //     --gtest_filter="FullscreenController*DebugLogStateTables"
+  //     --gtest_also_run_disabled_tests
   StateTransitionInfo state_transitions_[NUM_STATES][NUM_STATES];
 
   // Log of operations reported on errors via GetAndClearDebugLog().
