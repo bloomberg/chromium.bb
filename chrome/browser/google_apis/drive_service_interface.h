@@ -216,7 +216,7 @@ class DriveServiceInterface {
                                const std::string& directory_name,
                                const GetResourceEntryCallback& callback) = 0;
 
-  // Downloads a file identified by its |content_url|. The downloaded file will
+  // Downloads a file from |download_url|. The downloaded file will
   // be stored at |local_cache_path| location. Upon completion, invokes
   // |download_action_callback| with results on the calling thread.
   // If |get_content_callback| is not empty,
@@ -228,7 +228,7 @@ class DriveServiceInterface {
   virtual void DownloadFile(
       const FilePath& virtual_path,
       const FilePath& local_cache_path,
-      const GURL& content_url,
+      const GURL& download_url,
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback) = 0;
 

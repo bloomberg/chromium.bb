@@ -704,7 +704,8 @@ scoped_ptr<ResourceEntry> ResourceEntry::CreateFromFileResource(
   entry->title_ = UTF8ToUTF16(file.title());
   entry->published_time_ = file.created_date();
   // TODO(kochi): entry->labels_
-  entry->content_.url_ = file.web_content_link();
+  // This should be the url to download the file.
+  entry->content_.url_ = file.download_url();
   entry->content_.mime_type_ = file.mime_type();
   // TODO(kochi): entry->feed_links_
 

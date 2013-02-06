@@ -48,7 +48,7 @@ class DummyDriveService : public DriveServiceInterface {
   virtual void DownloadFile(
       const FilePath& virtual_path,
       const FilePath& local_cache_path,
-      const GURL& content_url,
+      const GURL& download_url,
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback) OVERRIDE;
   virtual void CopyHostedDocument(

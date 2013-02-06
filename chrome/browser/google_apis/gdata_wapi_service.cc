@@ -293,7 +293,7 @@ void GDataWapiService::GetAppList(const GetAppListCallback& callback) {
 void GDataWapiService::DownloadFile(
     const FilePath& virtual_path,
     const FilePath& local_cache_path,
-    const GURL& content_url,
+    const GURL& download_url,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -305,7 +305,7 @@ void GDataWapiService::DownloadFile(
                                 url_request_context_getter_,
                                 download_action_callback,
                                 get_content_callback,
-                                content_url,
+                                download_url,
                                 virtual_path,
                                 local_cache_path));
 }

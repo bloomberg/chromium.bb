@@ -144,7 +144,7 @@ class DriveScheduler
   void DownloadFile(
       const FilePath& virtual_path,
       const FilePath& local_cache_path,
-      const GURL& content_url,
+      const GURL& download_url,
       const google_apis::DownloadActionCallback& download_action_callback,
       const google_apis::GetContentCallback& get_content_callback);
 
@@ -169,7 +169,7 @@ class DriveScheduler
     // URL to access the contents of the operation's target.
     // Used by:
     //   TYPE_DOWNLOAD_FILE
-    GURL content_url;
+    GURL download_url;
 
     // Online and cache path of the operation's target.
     // Used by:

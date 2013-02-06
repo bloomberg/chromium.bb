@@ -77,9 +77,8 @@ class MockDriveService : public DriveServiceInterface {
       DownloadFile,
       void(const base::FilePath& virtual_path,
           const base::FilePath& local_cache_path,
-          const GURL& content_url,
-          const DownloadActionCallback&
-          donwload_action_callback,
+          const GURL& download_url,
+          const DownloadActionCallback& donwload_action_callback,
           const GetContentCallback& get_content_callback));
   MOCK_METHOD2(InitiateUpload,
       void(const InitiateUploadParams& upload_file_info,
@@ -159,7 +158,7 @@ class MockDriveService : public DriveServiceInterface {
   void DownloadFileStub(
       const base::FilePath& virtual_path,
       const base::FilePath& local_tmp_path,
-      const GURL& content_url,
+      const GURL& download_url,
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback);
 

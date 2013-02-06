@@ -242,7 +242,7 @@ void DriveScheduler::AddNewDirectory(
 void DriveScheduler::DownloadFile(
     const FilePath& virtual_path,
     const FilePath& local_cache_path,
-    const GURL& content_url,
+    const GURL& download_url,
     const google_apis::DownloadActionCallback& download_action_callback,
     const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -250,7 +250,7 @@ void DriveScheduler::DownloadFile(
   scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_DOWNLOAD_FILE));
   new_job->virtual_path = virtual_path;
   new_job->local_cache_path = local_cache_path;
-  new_job->content_url = content_url;
+  new_job->download_url = download_url;
   new_job->download_action_callback = download_action_callback;
   new_job->get_content_callback = get_content_callback;
 
@@ -406,7 +406,7 @@ void DriveScheduler::DoJobLoop() {
       drive_service_->DownloadFile(
           queue_entry->virtual_path,
           queue_entry->local_cache_path,
-          queue_entry->content_url,
+          queue_entry->download_url,
           base::Bind(&DriveScheduler::OnDownloadActionJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id),

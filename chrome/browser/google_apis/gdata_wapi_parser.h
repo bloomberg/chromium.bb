@@ -244,6 +244,10 @@ class Content {
   static void RegisterJSONConverter(
       base::JSONValueConverter<Content>* converter);
 
+  // The URL to download the file content.
+  // Note that the url can expire, so we'll fetch the latest resource
+  // entry before starting a download to get the download URL. See also
+  // DriveFileSystem::OnGetFileFromCache for details.
   const GURL& url() const { return url_; }
   const std::string& mime_type() const { return mime_type_; }
 

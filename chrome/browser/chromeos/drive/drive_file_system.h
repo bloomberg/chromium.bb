@@ -438,7 +438,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void CheckForSpaceBeforeDownload(
       const GetFileFromCacheParams& params,
       int64 file_size,
-      const GURL& content_url,
+      const GURL& download_url,
       DriveFileError error,
       const FilePath& drive_file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
@@ -446,7 +446,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Starts downloading a file if we have enough disk space indicated by
   // |has_enough_space|.
   void StartDownloadFileIfEnoughSpace(const GetFileFromCacheParams& params,
-                                      const GURL& content_url,
+                                      const GURL& download_url,
                                       const FilePath& cache_file_path,
                                       bool has_enough_space);
 

@@ -82,7 +82,7 @@ class DriveAPIService : public DriveServiceInterface,
   virtual void DownloadFile(
       const base::FilePath& virtual_path,
       const base::FilePath& local_cache_path,
-      const GURL& content_url,
+      const GURL& download_url,
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback) OVERRIDE;
   virtual void CopyHostedDocument(
