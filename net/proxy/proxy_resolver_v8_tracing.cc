@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/waitable_event.h"
@@ -61,6 +62,11 @@ base::Value* NetLogErrorCallback(int line_number,
   dict->SetInteger("line_number", line_number);
   dict->SetString("message", *message);
   return dict;
+}
+
+void IncrementWithoutOverflow(uint8* x) {
+  if (*x != 0xFF)
+    *x += 1;
 }
 
 }  // namespace
@@ -137,6 +143,8 @@ class ProxyResolverV8Tracing::Job
   void NotifyCaller(int result);
   void NotifyCallerOnOriginLoop(int result);
 
+  void RecordMetrics() const;
+
   void Start(Operation op, bool blocking_dns,
              const CompletionCallback& callback);
 
@@ -159,8 +167,12 @@ class ProxyResolverV8Tracing::Job
                              ResolveDnsOperation op,
                              std::string* output);
 
-  void DoDnsOperation(const std::string& host, ResolveDnsOperation op,
-                      bool* out_cache_hit);
+  bool PostDnsOperationAndWait(const std::string& host,
+                               ResolveDnsOperation op,
+                               bool* completed_synchronously)
+                               WARN_UNUSED_RESULT;
+
+  void DoDnsOperation();
   void OnDnsOperationComplete(int result);
 
   void ScheduleRestartWithBlockingDns();
@@ -266,13 +278,55 @@ class ProxyResolverV8Tracing::Job
   // ---------------------------------------------------------------------------
   // State for pending DNS request.
   // ---------------------------------------------------------------------------
-  // These variables are used exclusively on the origin thread.
 
+  // Handle to the outstanding request in the HostResolver, or NULL.
+  // This is mutated and used on the origin thread, however it may be read by
+  // the worker thread for some DCHECKS().
   HostResolver::RequestHandle pending_dns_;
-  // Only meaningful when |pending_dns_|:
+
+  // Indicates if the outstanding DNS request completed synchronously. Written
+  // on the origin thread, and read by the worker thread.
+  bool pending_dns_completed_synchronously_;
+
+  // These are the inputs to DoDnsOperation(). Written on the worker thread,
+  // read by the origin thread.
   std::string pending_dns_host_;
   ResolveDnsOperation pending_dns_op_;
+
+  // This contains the resolved address list that DoDnsOperation() fills in.
+  // Used exclusively on the origin thread.
   AddressList pending_dns_addresses_;
+
+  // ---------------------------------------------------------------------------
+  // Metrics for histograms
+  // ---------------------------------------------------------------------------
+  // These values are used solely for logging histograms. They do not affect
+  // the execution flow of requests.
+
+  // The time when the proxy resolve request started. Used exclusively on the
+  // origin thread.
+  base::TimeTicks metrics_start_time_;
+
+  // The time when PostDnsOperationAndWait() was called. Written on the worker
+  // thread, read by the origin thread.
+  base::TimeTicks metrics_pending_dns_start_;
+
+  // The total amount of time that has been spent by the script waiting for
+  // DNS dependencies. This includes the time spent posting the task to
+  // the origin thread, up until the DNS result is found on the origin
+  // thread. It does not include any time spent waiting in the message loop
+  // for the worker thread, nor any time restarting or executing the
+  // script. Used exclusively on the origin thread.
+  base::TimeDelta metrics_dns_total_time_;
+
+  // The following variables are initialized on the origin thread,
+  // incremented on the worker thread, and then read upon completion on the
+  // origin thread. The values are not expected to exceed the range of a uint8.
+  // If they do, then they will be clamped to 0xFF.
+  uint8 metrics_num_executions_;
+  uint8 metrics_num_unique_dns_;
+  uint8 metrics_num_alerts_;
+  uint8 metrics_num_errors_;
 };
 
 ProxyResolverV8Tracing::Job::Job(ProxyResolverV8Tracing* parent)
@@ -280,7 +334,11 @@ ProxyResolverV8Tracing::Job::Job(ProxyResolverV8Tracing* parent)
       parent_(parent),
       event_(true, false),
       last_num_dns_(0),
-      pending_dns_(NULL) {
+      pending_dns_(NULL),
+      metrics_num_executions_(0),
+      metrics_num_unique_dns_(0),
+      metrics_num_alerts_(0),
+      metrics_num_errors_(0) {
   CheckIsOnOriginThread();
 }
 
@@ -425,8 +483,10 @@ void ProxyResolverV8Tracing::Job::NotifyCallerOnOriginLoop(int result) {
   DCHECK(!callback_.is_null());
   DCHECK(!pending_dns_);
 
-  if (operation_ == GET_PROXY_FOR_URL)
+  if (operation_ == GET_PROXY_FOR_URL) {
+    RecordMetrics();
     *user_results_ = results_;
+  }
 
   // There is only ever 1 outstanding SET_PAC_SCRIPT job. It needs to be
   // tracked to support cancellation.
@@ -442,10 +502,75 @@ void ProxyResolverV8Tracing::Job::NotifyCallerOnOriginLoop(int result) {
   owned_self_reference_ = NULL;
 }
 
+void ProxyResolverV8Tracing::Job::RecordMetrics() const {
+  CheckIsOnOriginThread();
+  DCHECK_EQ(GET_PROXY_FOR_URL, operation_);
+
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  // Metrics are output for each completed request to GetProxyForURL()).
+  //
+  // Note that a different set of histograms is used to record the metrics for
+  // requests that completed in non-blocking mode versus blocking mode. The
+  // expectation is for requests to complete in non-blocking mode each time.
+  // If they don't then something strange is happening, and the purpose of the
+  // seprate statistics is to better understand that trend.
+  //
+  // The names of the non-blocking histograms and their meanings (the blocking
+  // mode versions additionally contain "BlockingDNSMode" in their name).
+  //
+  // * Net.ProxyResolver.TotalTime:
+  //   The total time that the proxy resolution took. This includes all the time
+  //   spent waiting for DNS, PAC script execution, and restarts.
+  //
+  // * Net.ProxyResolver.TotalTimeDNS:
+  //   The total time that proxy resolution spent waiting for DNS. This also
+  //   includes any queuing delays on the origin thread waiting for the DNS
+  //   result to be processed.
+  //
+  // * Net.ProxyResolver.NumRestarts:
+  //   The number of times that the PAC script execution was restarted.
+  //
+  // * Net.ProxyResolver.UniqueDNS:
+  //   The number of unique DNS hostnames that the PAC script tried to resolve.
+  //   The *Ex() versions of the bindings count separately.
+  //
+  // * Net.ProxyResolver.NumAlerts:
+  //   The number of times that alert() was called in the final execution of the
+  //   script.
+  //
+  // * Net.ProxyResolver.NumErrors:
+  //   The number of errors that were seen in the final execution of the script.
+#define UPDATE_HISTOGRAMS(base_name) \
+  do {\
+  UMA_HISTOGRAM_MEDIUM_TIMES(base_name "TotalTime", now - metrics_start_time_);\
+  UMA_HISTOGRAM_MEDIUM_TIMES(base_name "TotalTimeDNS",\
+                             metrics_dns_total_time_);\
+  UMA_HISTOGRAM_CUSTOM_COUNTS(\
+      base_name "NumRestarts", metrics_num_executions_ - 1,\
+      1, kMaxUniqueResolveDnsPerExec, kMaxUniqueResolveDnsPerExec);\
+  UMA_HISTOGRAM_CUSTOM_COUNTS(\
+      base_name "UniqueDNS", metrics_num_unique_dns_,\
+      1, kMaxUniqueResolveDnsPerExec, kMaxUniqueResolveDnsPerExec);\
+  UMA_HISTOGRAM_COUNTS_100(base_name "NumAlerts", metrics_num_alerts_);\
+  UMA_HISTOGRAM_CUSTOM_COUNTS(\
+      base_name "NumErrors", metrics_num_errors_, 1, 10, 10);\
+  } while (false)
+
+  if (!blocking_dns_)
+    UPDATE_HISTOGRAMS("Net.ProxyResolver.");
+  else
+    UPDATE_HISTOGRAMS("Net.ProxyResolver.BlockingDNSMode.");
+
+#undef UPDATE_HISTOGRAMS
+}
+
+
 void ProxyResolverV8Tracing::Job::Start(Operation op, bool blocking_dns,
                                         const CompletionCallback& callback) {
   CheckIsOnOriginThread();
 
+  metrics_start_time_ = base::TimeTicks::Now();
   operation_ = op;
   blocking_dns_ = blocking_dns;
   SetCallback(callback);
@@ -499,6 +624,8 @@ void ProxyResolverV8Tracing::Job::ExecuteNonBlocking() {
 }
 
 int ProxyResolverV8Tracing::Job::ExecuteProxyResolver() {
+  IncrementWithoutOverflow(&metrics_num_executions_);
+
   JSBindings* prev_bindings = v8_resolver()->js_bindings();
   v8_resolver()->set_js_bindings(this);
 
@@ -564,6 +691,7 @@ bool ProxyResolverV8Tracing::Job::ResolveDnsBlocking(const std::string& host,
   }
 
   // If the host was not in the local cache, this is a new hostname.
+  IncrementWithoutOverflow(&metrics_num_unique_dns_);
 
   if (dns_cache_.size() >= kMaxUniqueResolveDnsPerExec) {
     // Safety net for scripts with unexpectedly many DNS calls.
@@ -572,18 +700,8 @@ bool ProxyResolverV8Tracing::Job::ResolveDnsBlocking(const std::string& host,
     return false;
   }
 
-  bool unused;
-  origin_loop_->PostTask(
-      FROM_HERE, base::Bind(&Job::DoDnsOperation, this, host, op, &unused));
-
-  // Wait for the DNS operation to be completed by the host resolver on the
-  // origin thread. After waking up, either the request was cancelled, or
-  // the DNS result is now available in the cache.
-  event_.Wait();
-  event_.Reset();
-
-  if (cancelled_.IsSet())
-    return false;
+  if (!PostDnsOperationAndWait(host, op, NULL))
+    return false;  // Was cancelled.
 
   CHECK(GetDnsFromLocalCache(host, op, output, &rv));
   return rv;
@@ -610,6 +728,7 @@ bool ProxyResolverV8Tracing::Job::ResolveDnsNonBlocking(const std::string& host,
   }
 
   // If the host was not in the local cache, then this is a new hostname.
+  IncrementWithoutOverflow(&metrics_num_unique_dns_);
 
   if (num_dns_ <= last_num_dns_) {
     // The sequence of DNS operations is different from last time!
@@ -624,21 +743,11 @@ bool ProxyResolverV8Tracing::Job::ResolveDnsNonBlocking(const std::string& host,
 
   DCHECK(!should_restart_with_blocking_dns_);
 
-  // Post the DNS request to the origin thread.
-  bool resolver_cache_hit = false;
-  origin_loop_->PostTask(
-      FROM_HERE, base::Bind(&Job::DoDnsOperation, this, host, op,
-                            &resolver_cache_hit));
+  bool completed_synchronously;
+  if (!PostDnsOperationAndWait(host, op, &completed_synchronously))
+    return false;  // Was cancelled.
 
-  // As an optimization to avoid restarting too often, wait until the
-  // resolver's cache has been inspected on the origin thread.
-  event_.Wait();
-  event_.Reset();
-
-  if (cancelled_.IsSet())
-    return false;
-
-  if (resolver_cache_hit) {
+  if (completed_synchronously) {
     CHECK(GetDnsFromLocalCache(host, op, output, &rv));
     return rv;
   }
@@ -651,8 +760,30 @@ bool ProxyResolverV8Tracing::Job::ResolveDnsNonBlocking(const std::string& host,
   return false;
 }
 
-void ProxyResolverV8Tracing::Job::DoDnsOperation(
-    const std::string& host, ResolveDnsOperation op, bool* out_cache_hit) {
+bool ProxyResolverV8Tracing::Job::PostDnsOperationAndWait(
+    const std::string& host, ResolveDnsOperation op,
+    bool* completed_synchronously) {
+
+  // Post the DNS request to the origin thread.
+  DCHECK(!pending_dns_);
+  metrics_pending_dns_start_ = base::TimeTicks::Now();
+  pending_dns_host_ = host;
+  pending_dns_op_ = op;
+  origin_loop_->PostTask(FROM_HERE, base::Bind(&Job::DoDnsOperation, this));
+
+  event_.Wait();
+  event_.Reset();
+
+  if (cancelled_.IsSet())
+    return false;
+
+  if (completed_synchronously)
+    *completed_synchronously = pending_dns_completed_synchronously_;
+
+  return true;
+}
+
+void ProxyResolverV8Tracing::Job::DoDnsOperation() {
   CheckIsOnOriginThread();
   DCHECK(!pending_dns_);
 
@@ -661,67 +792,61 @@ void ProxyResolverV8Tracing::Job::DoDnsOperation(
 
   HostResolver::RequestHandle dns_request = NULL;
   int result = host_resolver()->Resolve(
-      MakeDnsRequestInfo(host, op),
+      MakeDnsRequestInfo(pending_dns_host_, pending_dns_op_),
       &pending_dns_addresses_,
       base::Bind(&Job::OnDnsOperationComplete, this),
       &dns_request,
       bound_net_log_);
 
-  bool completed_synchronously = result != ERR_IO_PENDING;
+  pending_dns_completed_synchronously_ = result != ERR_IO_PENDING;
 
   // Check if the request was cancelled as a side-effect of calling into the
   // HostResolver. This isn't the ordinary execution flow, however it is
   // exercised by unit-tests.
   if (cancelled_.IsSet()) {
-    if (!completed_synchronously)
+    if (!pending_dns_completed_synchronously_)
       host_resolver()->CancelRequest(dns_request);
     return;
   }
 
-  if (!completed_synchronously) {
+  if (pending_dns_completed_synchronously_) {
+    OnDnsOperationComplete(result);
+  } else {
     DCHECK(dns_request);
     pending_dns_ = dns_request;
+    // OnDnsOperationComplete() will be called by host resolver on completion.
   }
 
   if (!blocking_dns_) {
-    // Check if the DNS result can be serviced directly from the cache.
-    // (The worker thread is blocked waiting for this information).
-    if (completed_synchronously)
-      SaveDnsToLocalCache(host, op, result, pending_dns_addresses_);
-
-    // Important: Do not read/write |out_cache_hit| after signalling, since
-    // the memory may no longer be valid.
-    *out_cache_hit = completed_synchronously;
+    // The worker thread always blocks waiting to see if the result can be
+    // serviced from cache before restarting.
     event_.Signal();
-
-    if (completed_synchronously)
-      return;
   }
-
-  pending_dns_host_ = host;
-  pending_dns_op_ = op;
-
-  if (completed_synchronously)
-    OnDnsOperationComplete(result);
 }
 
 void ProxyResolverV8Tracing::Job::OnDnsOperationComplete(int result) {
   CheckIsOnOriginThread();
 
   DCHECK(!cancelled_.IsSet());
+  DCHECK(pending_dns_completed_synchronously_ == (pending_dns_ == NULL));
 
   SaveDnsToLocalCache(pending_dns_host_, pending_dns_op_, result,
                       pending_dns_addresses_);
   pending_dns_ = NULL;
 
-  if (!blocking_dns_) {
+  metrics_dns_total_time_ +=
+      base::TimeTicks::Now() - metrics_pending_dns_start_;
+
+  if (blocking_dns_) {
+    event_.Signal();
+    return;
+  }
+
+  if (!blocking_dns_ && !pending_dns_completed_synchronously_) {
     // Restart. This time it should make more progress due to having
     // cached items.
     worker_loop()->PostTask(FROM_HERE,
                             base::Bind(&Job::ExecuteNonBlocking, this));
-  } else {
-    // Otherwise wakeup the blocked worker thread.
-    event_.Signal();
   }
 }
 
@@ -868,6 +993,7 @@ void ProxyResolverV8Tracing::Job::DispatchAlertOrError(
     // -------------------
     // alert
     // -------------------
+    IncrementWithoutOverflow(&metrics_num_alerts_);
     VLOG(1) << "PAC-alert: " << message;
 
     // Send to the NetLog.
@@ -878,6 +1004,7 @@ void ProxyResolverV8Tracing::Job::DispatchAlertOrError(
     // -------------------
     // error
     // -------------------
+    IncrementWithoutOverflow(&metrics_num_errors_);
     if (line_number == -1)
       VLOG(1) << "PAC-error: " << message;
     else
