@@ -5,6 +5,7 @@
 """Utilies and constants specific to Chromium C++ code.
 """
 
+from code import Code
 from datetime import datetime
 from model import Property, PropertyType, Type
 import os
@@ -91,3 +92,19 @@ def PadForGenerics(var):
   within generic types.
   """
   return ('%s ' % var) if var.endswith('>') else var
+
+def OpenNamespace(namespace):
+  """Get opening root namespace declarations.
+  """
+  c = Code()
+  for component in namespace.split('::'):
+    c.Append('namespace %s {' % component)
+  return c
+
+def CloseNamespace(namespace):
+  """Get closing root namespace declarations.
+  """
+  c = Code()
+  for component in reversed(namespace.split('::')):
+    c.Append('}  // namespace %s' % component)
+  return c

@@ -13,5 +13,19 @@ class CppUtilTest(unittest.TestCase):
         cpp_util.Classname('updateAllTheThings'))
     self.assertEquals('Aa_Bb_Cc', cpp_util.Classname('aa.bb.cc'))
 
+  def testNamespaceDeclaration(self):
+    self.assertEquals('namespace extensions {',
+                      cpp_util.OpenNamespace('extensions').Render())
+    self.assertEquals('}  // namespace extensions',
+                      cpp_util.CloseNamespace('extensions').Render())
+    self.assertEquals('namespace extensions {\n'
+                      'namespace gen {\n'
+                      'namespace api {',
+                      cpp_util.OpenNamespace('extensions::gen::api').Render())
+    self.assertEquals('}  // namespace api\n'
+                      '}  // namespace gen\n'
+                      '}  // namespace extensions',
+                      cpp_util.CloseNamespace('extensions::gen::api').Render())
+
 if __name__ == '__main__':
   unittest.main()

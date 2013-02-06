@@ -73,7 +73,7 @@ class JsonSchemaUnittest(unittest.TestCase):
     ]
 
     schema = json_schema.CachedLoad('test/json_schema_test.json')
-    self.assertEquals(compiled, json_schema.DeleteNocompileNodes(schema))
+    self.assertEquals(compiled, json_schema.DeleteNodes(schema, 'nocompile'))
 
 if __name__ == '__main__':
   unittest.main()

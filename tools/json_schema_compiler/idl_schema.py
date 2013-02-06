@@ -150,7 +150,7 @@ class Member(object):
   def process(self, callbacks):
     properties = OrderedDict()
     name = self.node.GetName()
-    for property_name in ('OPTIONAL', 'nodoc', 'nocompile'):
+    for property_name in ('OPTIONAL', 'nodoc', 'nocompile', 'nodart'):
       if self.node.GetProperty(property_name):
         properties[property_name.lower()] = True
     is_function = False

@@ -11,11 +11,22 @@ import sys
 import util_cc_helper
 
 class CCGenerator(object):
+  def __init__(self, type_generator, cpp_namespace):
+    self._type_generator = type_generator
+    self._cpp_namespace = cpp_namespace
+
+  def Generate(self, namespace):
+    return _Generator(namespace,
+                      self._type_generator,
+                      self._cpp_namespace).Generate()
+
+class _Generator(object):
   """A .cc generator for a namespace.
   """
-  def __init__(self, namespace, cpp_type_generator):
-    self._type_helper = cpp_type_generator
+  def __init__(self, namespace, cpp_type_generator, cpp_namespace):
     self._namespace = namespace
+    self._type_helper = cpp_type_generator
+    self._cpp_namespace = cpp_namespace
     self._target_namespace = (
         self._type_helper.GetCppNamespaceName(self._namespace))
     self._util_cc_helper = (
@@ -36,7 +47,7 @@ class CCGenerator(object):
       .Append('#include "%s/%s.h"' %
           (self._namespace.source_file_dir, self._namespace.unix_name))
       .Cblock(self._type_helper.GenerateIncludes(include_soft=True))
-      .Concat(self._type_helper.GetRootNamespaceStart())
+      .Concat(cpp_util.OpenNamespace(self._cpp_namespace))
       .Cblock(self._type_helper.GetNamespaceStart())
     )
     if self._namespace.properties:
@@ -76,7 +87,7 @@ class CCGenerator(object):
       for event in self._namespace.events.values():
         c.Cblock(self._GenerateEvent(event))
     (c.Concat(self._type_helper.GetNamespaceEnd())
-      .Cblock(self._type_helper.GetRootNamespaceEnd())
+      .Cblock(cpp_util.CloseNamespace(self._cpp_namespace))
     )
     return c
 

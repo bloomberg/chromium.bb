@@ -31,15 +31,20 @@ def _RemoveDescriptions(node):
     return [_RemoveDescriptions(v) for v in node]
   return node
 
-class SchemaBundleGenerator(object):
+class CppBundleGenerator(object):
   """This class contains methods to generate code based on multiple schemas.
   """
 
-  def __init__(self, root, model, api_defs, cpp_type_generator):
+  def __init__(self, root, model, api_defs, cpp_type_generator, cpp_namespace):
     self._root = root;
     self._model = model
     self._api_defs = api_defs
     self._cpp_type_generator = cpp_type_generator
+    self._cpp_namespace = cpp_namespace
+
+    self.api_h_generator = _APIHGenerator(self)
+    self.schemas_cc_generator = _SchemasCCGenerator(self)
+    self.schemas_h_generator = _SchemasHGenerator(self)
 
   def GenerateHeader(self, file_base, body_code):
     """Generates a code.Code object for a header file
@@ -75,49 +80,6 @@ class SchemaBundleGenerator(object):
       else:
         raise ValueError("Unsupported platform ifdef: %s" % platform.name)
     return ' and '.join(ifdefs)
-
-  def GenerateAPIHeader(self):
-    """Generates the header for API registration / declaration"""
-    c = code.Code()
-
-    c.Append('#include <string>')
-    c.Append()
-    c.Append('#include "base/basictypes.h"')
-
-    for namespace in self._model.namespaces.values():
-      namespace_name = namespace.unix_name.replace("experimental_", "")
-      implementation_header = namespace.compiler_options.get(
-          "implemented_in",
-          "chrome/browser/extensions/api/%s/%s_api.h" % (namespace_name,
-                                                         namespace_name))
-      if not os.path.exists(
-          os.path.join(self._root, os.path.normpath(implementation_header))):
-        if "implemented_in" in namespace.compiler_options:
-          raise ValueError('Header file for namespace "%s" specified in '
-                          'compiler_options not found: %s' %
-                          (namespace.unix_name, implementation_header))
-        continue
-      ifdefs = self._GetPlatformIfdefs(namespace)
-      if ifdefs is not None:
-        c.Append("#if %s" % ifdefs, indent_level=0)
-
-      c.Append('#include "%s"' % implementation_header)
-
-      if ifdefs is not None:
-        c.Append("#endif  // %s" % ifdefs, indent_level=0)
-
-    c.Append()
-    c.Append("class ExtensionFunctionRegistry;")
-    c.Append()
-
-    c.Concat(self._cpp_type_generator.GetRootNamespaceStart())
-    for namespace in self._model.namespaces.values():
-      c.Append("// TODO(miket): emit code for %s" % (namespace.unix_name))
-    c.Append()
-    c.Concat(self.GenerateFunctionRegistry())
-    c.Concat(self._cpp_type_generator.GetRootNamespaceEnd())
-    c.Append()
-    return self.GenerateHeader('generated_api', c)
 
   def _GetNamespaceFunctions(self, namespace):
     functions = list(namespace.functions.values())
@@ -159,15 +121,67 @@ class SchemaBundleGenerator(object):
     c.Append()
     return c
 
-  def GenerateSchemasHeader(self):
-    """Generates a code.Code object for the generated schemas .h file"""
+class _APIHGenerator(object):
+  """Generates the header for API registration / declaration"""
+  def __init__(self, cpp_bundle):
+    self._bundle = cpp_bundle
+
+  def Generate(self, namespace):
+    c = code.Code()
+
+    c.Append('#include <string>')
+    c.Append()
+    c.Append('#include "base/basictypes.h"')
+
+    for namespace in self._bundle._model.namespaces.values():
+      namespace_name = namespace.unix_name.replace("experimental_", "")
+      implementation_header = namespace.compiler_options.get(
+          "implemented_in",
+          "chrome/browser/extensions/api/%s/%s_api.h" % (namespace_name,
+                                                         namespace_name))
+      if not os.path.exists(
+          os.path.join(self._bundle._root,
+                       os.path.normpath(implementation_header))):
+        if "implemented_in" in namespace.compiler_options:
+          raise ValueError('Header file for namespace "%s" specified in '
+                          'compiler_options not found: %s' %
+                          (namespace.unix_name, implementation_header))
+        continue
+      ifdefs = self._bundle._GetPlatformIfdefs(namespace)
+      if ifdefs is not None:
+        c.Append("#if %s" % ifdefs, indent_level=0)
+
+      c.Append('#include "%s"' % implementation_header)
+
+      if ifdefs is not None:
+        c.Append("#endif  // %s" % ifdefs, indent_level=0)
+
+    c.Append()
+    c.Append("class ExtensionFunctionRegistry;")
+    c.Append()
+
+    c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
+    for namespace in self._bundle._model.namespaces.values():
+      c.Append("// TODO(miket): emit code for %s" % (namespace.unix_name))
+    c.Append()
+    c.Concat(self._bundle.GenerateFunctionRegistry())
+    c.Concat(cpp_util.CloseNamespace(self._bundle._cpp_namespace))
+    c.Append()
+    return self._bundle.GenerateHeader('generated_api', c)
+
+class _SchemasHGenerator(object):
+  """Generates a code.Code object for the generated schemas .h file"""
+  def __init__(self, cpp_bundle):
+    self._bundle = cpp_bundle
+
+  def Generate(self, namespace):
     c = code.Code()
     c.Append('#include <map>')
     c.Append('#include <string>')
     c.Append();
     c.Append('#include "base/string_piece.h"')
     c.Append()
-    c.Concat(self._cpp_type_generator.GetRootNamespaceStart())
+    c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
     c.Append()
     c.Sblock('class GeneratedSchemas {')
     c.Append(' public:')
@@ -176,25 +190,30 @@ class SchemaBundleGenerator(object):
                  'std::map<std::string, base::StringPiece>* schemas);')
     c.Eblock('};');
     c.Append()
-    c.Concat(self._cpp_type_generator.GetRootNamespaceEnd())
+    c.Concat(cpp_util.CloseNamespace(self._bundle._cpp_namespace))
     c.Append()
-    return self.GenerateHeader('generated_schemas', c)
+    return self._bundle.GenerateHeader('generated_schemas', c)
 
-  def GenerateSchemasCC(self):
-    """Generates a code.Code object for the generated schemas .cc file"""
+class _SchemasCCGenerator(object):
+  """Generates a code.Code object for the generated schemas .cc file"""
+
+  def __init__(self, cpp_bundle):
+    self._bundle = cpp_bundle
+
+  def Generate(self, namespace):
     c = code.Code()
     c.Append(cpp_util.CHROMIUM_LICENSE)
     c.Append()
     c.Append('#include "%s"' % (os.path.join(SOURCE_BASE_PATH,
                                              'generated_schemas.h')))
     c.Append()
-    c.Concat(self._cpp_type_generator.GetRootNamespaceStart())
+    c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
     c.Append()
     c.Append('// static')
     c.Sblock('void GeneratedSchemas::Get('
                  'std::map<std::string, base::StringPiece>* schemas) {')
-    for api in self._api_defs:
-      namespace = self._model.namespaces[api.get('namespace')]
+    for api in self._bundle._api_defs:
+      namespace = self._bundle._model.namespaces[api.get('namespace')]
       # JSON parsing code expects lists of schemas, so dump a singleton list.
       json_content = json.dumps([_RemoveDescriptions(api)],
                                 separators=(',', ':'))
@@ -204,6 +223,6 @@ class SchemaBundleGenerator(object):
       c.Append('(*schemas)["%s"] = "%s";' % (namespace.name, json_content))
     c.Eblock('}')
     c.Append()
-    c.Concat(self._cpp_type_generator.GetRootNamespaceEnd())
+    c.Concat(cpp_util.CloseNamespace(self._bundle._cpp_namespace))
     c.Append()
     return c

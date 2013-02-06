@@ -9,22 +9,25 @@ import sys
 import json_parse
 import schema_util
 
-def DeleteNocompileNodes(item):
-  def HasNocompile(thing):
-    return json_parse.IsDict(thing) and thing.get('nocompile', False)
+def DeleteNodes(item, delete_key):
+  """Deletes the given nodes in item, recursively, that have |delete_key| as
+  an attribute.
+  """
+  def HasKey(thing):
+    return json_parse.IsDict(thing) and thing.get(delete_key, False)
 
   if json_parse.IsDict(item):
     toDelete = []
     for key, value in item.items():
-      if HasNocompile(value):
+      if HasKey(value):
         toDelete.append(key)
       else:
-        DeleteNocompileNodes(value)
+        DeleteNodes(value, delete_key)
     for key in toDelete:
       del item[key]
   elif type(item) == list:
-    item[:] = [DeleteNocompileNodes(thing)
-        for thing in item if not HasNocompile(thing)]
+    item[:] = [DeleteNodes(thing, delete_key)
+        for thing in item if not HasKey(thing)]
 
   return item
 
@@ -44,3 +47,4 @@ def CachedLoad(filename):
   # Return a copy of the object so that any changes a caller makes won't affect
   # the next caller.
   return copy.deepcopy(_cache[filename])
+

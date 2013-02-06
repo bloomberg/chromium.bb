@@ -199,6 +199,8 @@ class Function(object):
   - |optional| whether the Function is "optional"; this only makes sense to be
                present when the Function is representing a callback property
   - |simple_name| the name of this Function without a namespace
+  - |returns| the return type of the function; None if the function does not
+    return a value
   """
   def __init__(self,
                parent,

@@ -63,16 +63,17 @@ class Code(object):
       self.Concat(code).Append()
     return self
 
-  def Sblock(self, line=''):
+  def Sblock(self, line=None):
     """Starts a code block.
 
     Appends a line of code and then increases the indent level.
     """
-    self.Append(line)
+    if line is not None:
+      self.Append(line)
     self._indent_level += self._indent_size
     return self
 
-  def Eblock(self, line=''):
+  def Eblock(self, line=None):
     """Ends a code block by decreasing and then appending a line (or a blank
     line if not given).
     """
@@ -80,7 +81,8 @@ class Code(object):
     #if not isinstance(line, basestring):
     #  raise TypeError
     self._indent_level -= self._indent_size
-    self.Append(line)
+    if line is not None:
+      self.Append(line)
     return self
 
   def Comment(self, comment, comment_prefix='// '):
