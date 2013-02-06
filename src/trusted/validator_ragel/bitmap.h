@@ -20,11 +20,7 @@
 # define FORCEINLINE __inline __attribute__ ((always_inline))
 #endif
 
-#define BITMAP_WORD_NAME BITMAP_WORD_NAME1(NACL_HOST_WORDSIZE)
-#define BITMAP_WORD_NAME1(size) BITMAP_WORD_NAME2(size)
-#define BITMAP_WORD_NAME2(size) uint##size##_t
-
-typedef BITMAP_WORD_NAME bitmap_word;
+typedef NACL_CONCAT(NACL_CONCAT(uint, NACL_HOST_WORDSIZE), _t) bitmap_word;
 
 static INLINE bitmap_word *BitmapAllocate(size_t indexes) {
   size_t word_count = ((indexes + NACL_HOST_WORDSIZE - 1) / NACL_HOST_WORDSIZE);
