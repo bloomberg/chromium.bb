@@ -6,15 +6,16 @@
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_KEYMAP_H_
 
 #include <string>
+#include "base/basictypes.h"
 
 namespace chromeos {
 namespace input_method {
 
-// Translate the key value from an IBus constant to a string.
+// Translates the key value from an IBus constant to a string.
 std::string GetIBusKey(int keyval);
 
-// Translate the unmodified keycode from an IBus constant to a string.
-std::string GetIBusKeyCode(int keycode);
+// Translates the unmodified keycode from an IBus constant to a string.
+std::string GetIBusKeyCode(uint16 keycode);
 
 }  // namespace input_method
 }  // namespace chromeos

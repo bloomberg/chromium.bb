@@ -26,6 +26,7 @@ class InputMethodEngine {
 
     std::string type;
     std::string key;
+    std::string code;
     bool alt_key;
     bool ctrl_key;
     bool shift_key;

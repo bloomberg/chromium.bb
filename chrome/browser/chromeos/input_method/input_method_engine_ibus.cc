@@ -432,6 +432,7 @@ void InputMethodEngineIBus::ProcessKeyEvent(
   KeyboardEvent event;
   event.type = !(state & kIBusKeyReleaseMask) ? "keydown" : "keyup";
   event.key = input_method::GetIBusKey(keysym);
+  event.code = input_method::GetIBusKeyCode(keycode);
   event.alt_key = state & kIBusAltKeyMask;
   event.ctrl_key = state & kIBusCtrlKeyMask;
   event.shift_key = state & kIBusShiftKeyMask;
