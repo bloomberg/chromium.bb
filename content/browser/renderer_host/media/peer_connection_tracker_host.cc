@@ -23,6 +23,7 @@ bool PeerConnectionTrackerHost::OnMessageReceived(const IPC::Message& message,
                         OnRemovePeerConnection)
     IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_UpdatePeerConnection,
                         OnUpdatePeerConnection)
+    IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_AddStats, OnAddStats)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -60,6 +61,12 @@ void PeerConnectionTrackerHost::OnUpdatePeerConnection(
       lid,
       type,
       value);
+}
+
+void PeerConnectionTrackerHost::OnAddStats(int lid,
+                                           const base::ListValue& value) {
+  WebRTCInternals::GetInstance()->AddStats(
+      base::GetProcId(peer_handle()), lid, value);
 }
 
 }  // namespace content

@@ -137,6 +137,24 @@ void WebRTCInternals::UpdatePeerConnection(
   }
 }
 
+void WebRTCInternals::AddStats(base::ProcessId pid, int lid,
+                               const base::ListValue& value) {
+  if (observers_.size() == 0)
+    return;
+
+  DictionaryValue dict;
+  dict.SetInteger("pid", static_cast<int>(pid));
+  dict.SetInteger("lid", lid);
+
+  ListValue* list = value.DeepCopy();
+  if (!list)
+    return;
+
+  dict.Set("reports", list);
+
+  SendUpdate("addStats", &dict);
+}
+
 void WebRTCInternals::AddObserver(WebRTCInternalsUIObserver *observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.AddObserver(observer);

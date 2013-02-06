@@ -9,6 +9,10 @@
 
 struct PeerConnectionInfo;
 
+namespace base {
+class ListValue;
+}  // namespace base
+
 namespace content {
 
 // This class is the host for PeerConnectionTracker in the browser process
@@ -33,6 +37,7 @@ class PeerConnectionTrackerHost : public BrowserMessageFilter {
   void OnRemovePeerConnection(int lid);
   void OnUpdatePeerConnection(
       int lid, const std::string& type, const std::string& value);
+  void OnAddStats(int lid, const base::ListValue& value);
 
   int render_process_id_;
 

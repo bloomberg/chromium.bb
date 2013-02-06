@@ -51,6 +51,11 @@ class CONTENT_EXPORT WebRTCInternals : public NotificationObserver{
                             const std::string& type,
                             const std::string& value);
 
+  // This method is called when results from PeerConnectionInterface::GetStats
+  // are available. |pid| is the renderer process id, |lid| is the renderer
+  // local id, |value| is the list of stats reports.
+  void AddStats(base::ProcessId pid, int lid, const base::ListValue& value);
+
   // Methods for adding or removing WebRTCInternalsUIObserver.
   void AddObserver(WebRTCInternalsUIObserver *observer);
   void RemoveObserver(WebRTCInternalsUIObserver *observer);

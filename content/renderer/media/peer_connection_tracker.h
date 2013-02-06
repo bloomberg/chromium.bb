@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandlerClient.h"
@@ -29,7 +30,7 @@ class RTCPeerConnectionHandler;
 // This class collects data about each peer connection,
 // sends it to the browser process, and handles messages
 // from the browser process.
-class PeerConnectionTracker : public RenderProcessObserver{
+class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
  public:
   PeerConnectionTracker();
   virtual ~PeerConnectionTracker();
@@ -45,6 +46,9 @@ class PeerConnectionTracker : public RenderProcessObserver{
     ACTION_CREATE_OFFER,
     ACTION_CREATE_ANSWER
   };
+
+  // RenderProcessObserver implementation.
+  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
 
   //
   // The following methods send an update to the browser process when a
@@ -67,66 +71,66 @@ class PeerConnectionTracker : public RenderProcessObserver{
       const WebKit::WebFrame* frame);
 
   // Sends an update when a PeerConnection has been destroyed.
-  void UnregisterPeerConnection(RTCPeerConnectionHandler* pc_handler);
+  virtual void UnregisterPeerConnection(RTCPeerConnectionHandler* pc_handler);
 
   // Sends an update when createOffer/createAnswer has been called.
   // The |pc_handler| is the handler object associated with the PeerConnection,
   // the |constraints| is the media constraints used to create the offer/answer.
-  void TrackCreateOffer(RTCPeerConnectionHandler* pc_handler,
-                        const RTCMediaConstraints& constraints);
-  void TrackCreateAnswer(RTCPeerConnectionHandler* pc_handler,
-                         const RTCMediaConstraints& constraints);
+  virtual void TrackCreateOffer(RTCPeerConnectionHandler* pc_handler,
+                                const RTCMediaConstraints& constraints);
+  virtual void TrackCreateAnswer(RTCPeerConnectionHandler* pc_handler,
+                                 const RTCMediaConstraints& constraints);
 
   // Sends an update when setLocalDescription or setRemoteDescription is called.
-  void TrackSetSessionDescription(
+  virtual void TrackSetSessionDescription(
       RTCPeerConnectionHandler* pc_handler,
       const webrtc::SessionDescriptionInterface* desc, Source source);
 
   // Sends an update when Ice candidates are updated.
-  void TrackUpdateIce(
+  virtual void TrackUpdateIce(
       RTCPeerConnectionHandler* pc_handler,
       const std::vector<webrtc::JsepInterface::IceServer>& servers,
       const RTCMediaConstraints& options);
 
   // Sends an update when an Ice candidate is added.
-  void TrackAddIceCandidate(
+  virtual void TrackAddIceCandidate(
       RTCPeerConnectionHandler* pc_handler,
       const WebKit::WebRTCICECandidate& candidate, Source source);
 
   // Sends an update when a media stream is added.
-  void TrackAddStream(
+  virtual void TrackAddStream(
       RTCPeerConnectionHandler* pc_handler,
       const WebKit::WebMediaStream& stream, Source source);
 
   // Sends an update when a media stream is removed.
-  void TrackRemoveStream(
+  virtual void TrackRemoveStream(
       RTCPeerConnectionHandler* pc_handler,
       const WebKit::WebMediaStream& stream, Source source);
 
   // Sends an update when OnIceComplete is called.
-  void TrackOnIceComplete(RTCPeerConnectionHandler* pc_handler);
+  virtual void TrackOnIceComplete(RTCPeerConnectionHandler* pc_handler);
 
   // Sends an update when a DataChannel is created.
-  void TrackCreateDataChannel(
+  virtual void TrackCreateDataChannel(
       RTCPeerConnectionHandler* pc_handler,
       const webrtc::DataChannelInterface* data_channel, Source source);
 
   // Sends an update when a PeerConnection has been stopped.
-  void TrackStop(RTCPeerConnectionHandler* pc_handler);
+  virtual void TrackStop(RTCPeerConnectionHandler* pc_handler);
 
   // Sends an update when the signaling state of a PeerConnection has changed.
-  void TrackSignalingStateChange(
+  virtual void TrackSignalingStateChange(
       RTCPeerConnectionHandler* pc_handler,
       WebKit::WebRTCPeerConnectionHandlerClient::SignalingState state);
 
   // Sends an update when the Ice state of a PeerConnection has changed.
-  void TrackIceStateChange(
+  virtual void TrackIceStateChange(
       RTCPeerConnectionHandler* pc_handler,
       WebKit::WebRTCPeerConnectionHandlerClient::ICEState state);
 
   // Sends an update when the SetSessionDescription or CreateOffer or
   // CreateAnswer callbacks are called.
-  void TrackSessionDescriptionCallback(
+  virtual void TrackSessionDescriptionCallback(
       RTCPeerConnectionHandler* pc_handler, Action action,
       const std::string& type, const std::string& value);
 
@@ -135,12 +139,16 @@ class PeerConnectionTracker : public RenderProcessObserver{
   // uniquely identify a peer connection in the renderer process.
   int GetNextLocalID();
 
+  // IPC Message handler for getting all stats.
+  void OnGetAllStats();
+
   void SendPeerConnectionUpdate(RTCPeerConnectionHandler* pc_handler,
                                 const std::string& callback_type,
                                 const std::string& value);
 
   // This map stores the local ID assigned to each RTCPeerConnectionHandler.
-  std::map<RTCPeerConnectionHandler*, int> peer_connection_id_map_;
+  typedef std::map<RTCPeerConnectionHandler*, int> PeerConnectionIdMap;
+  PeerConnectionIdMap peer_connection_id_map_;
 
   // This keeps track of the next available local ID.
   int next_lid_;

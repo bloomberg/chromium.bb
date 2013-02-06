@@ -253,7 +253,7 @@ void MockPeerConnectionImpl::CreateAnswer(
       dependency_factory_->CreateSessionDescription("unknown", kDummyAnswer));
 }
 
-void MockPeerConnectionImpl::SetLocalDescription(
+void MockPeerConnectionImpl::SetLocalDescriptionWorker(
     SetSessionDescriptionObserver* observer,
     SessionDescriptionInterface* desc) {
   desc->ToString(&description_sdp_);

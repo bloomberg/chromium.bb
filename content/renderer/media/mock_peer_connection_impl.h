@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 
 namespace content {
@@ -54,9 +55,12 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   virtual void CreateAnswer(
       webrtc::CreateSessionDescriptionObserver* observer,
       const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
-  virtual void SetLocalDescription(
+  MOCK_METHOD2(SetLocalDescription,
+               void(webrtc::SetSessionDescriptionObserver* observer,
+                    webrtc::SessionDescriptionInterface* desc));
+  void SetLocalDescriptionWorker(
       webrtc::SetSessionDescriptionObserver* observer,
-      webrtc::SessionDescriptionInterface* desc) OVERRIDE;
+      webrtc::SessionDescriptionInterface* desc) ;
   virtual void SetRemoteDescription(
       webrtc::SetSessionDescriptionObserver* observer,
       webrtc::SessionDescriptionInterface* desc) OVERRIDE;

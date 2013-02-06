@@ -6,11 +6,15 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"
 #include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
+#include "content/renderer/media/peer_connection_tracker.h"
+#include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
@@ -29,6 +33,9 @@
 
 static const char kDummySdp[] = "dummy sdp";
 static const char kDummySdpType[] = "dummy type";
+
+using WebKit::WebRTCPeerConnectionHandlerClient;
+using testing::NiceMock;
 
 namespace content {
 
@@ -117,10 +124,57 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
   bool request_succeeded_called_;
 };
 
+class MockPeerConnectionTracker : public PeerConnectionTracker {
+ public:
+  MOCK_METHOD1(UnregisterPeerConnection,
+               void(RTCPeerConnectionHandler* pc_handler));
+  // TODO (jiayl): add coverage for the following methods
+  MOCK_METHOD2(TrackCreateOffer,
+               void(RTCPeerConnectionHandler* pc_handler,
+                    const RTCMediaConstraints& constraints));
+  MOCK_METHOD2(TrackCreateAnswer,
+               void(RTCPeerConnectionHandler* pc_handler,
+                    const RTCMediaConstraints& constraints));
+  MOCK_METHOD3(TrackSetSessionDescription,
+               void(RTCPeerConnectionHandler* pc_handler,
+                    const webrtc::SessionDescriptionInterface* desc,
+                    Source source));
+  MOCK_METHOD3(
+      TrackUpdateIce,
+      void(RTCPeerConnectionHandler* pc_handler,
+           const std::vector<webrtc::JsepInterface::IceServer>& servers,
+           const RTCMediaConstraints& options));
+  MOCK_METHOD3(TrackAddIceCandidate,
+               void(RTCPeerConnectionHandler* pc_handler,
+                    const WebKit::WebRTCICECandidate& candidate,
+                    Source source));
+  MOCK_METHOD3(TrackAddStream,
+               void(RTCPeerConnectionHandler* pc_handler,
+                    const WebKit::WebMediaStream& stream,
+                    Source source));
+  MOCK_METHOD3(TrackRemoveStream,
+               void(RTCPeerConnectionHandler* pc_handler,
+                    const WebKit::WebMediaStream& stream,
+                    Source source));
+  MOCK_METHOD1(TrackOnIceComplete,
+               void(RTCPeerConnectionHandler* pc_handler));
+  MOCK_METHOD3(TrackCreateDataChannel,
+               void(RTCPeerConnectionHandler* pc_handler,
+                    const webrtc::DataChannelInterface* data_channel,
+                    Source source));
+  MOCK_METHOD1(TrackStop, void(RTCPeerConnectionHandler* pc_handler));
+  MOCK_METHOD2(TrackSignalingStateChange,
+               void(RTCPeerConnectionHandler* pc_handler,
+                    WebRTCPeerConnectionHandlerClient::SignalingState state));
+  MOCK_METHOD2(TrackIceStateChange,
+               void(RTCPeerConnectionHandler* pc_handler,
+                    WebRTCPeerConnectionHandlerClient::ICEState state));
+};
+
 class RTCPeerConnectionHandlerUnderTest : public RTCPeerConnectionHandler {
  public:
   RTCPeerConnectionHandlerUnderTest(
-      WebKit::WebRTCPeerConnectionHandlerClient* client,
+      WebRTCPeerConnectionHandlerClient* client,
       MediaStreamDependencyFactory* dependency_factory)
       : RTCPeerConnectionHandler(client, dependency_factory) {
   }
@@ -142,10 +196,11 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     pc_handler_.reset(
         new RTCPeerConnectionHandlerUnderTest(mock_client_.get(),
                                               mock_dependency_factory_.get()));
-
+    mock_tracker_.reset(new NiceMock<MockPeerConnectionTracker>());
     WebKit::WebRTCConfiguration config;
     WebKit::WebMediaConstraints constraints;
-    EXPECT_TRUE(pc_handler_->InitializeForTest(config, constraints));
+    EXPECT_TRUE(pc_handler_->InitializeForTest(config, constraints,
+                                               mock_tracker_.get()));
 
     mock_peer_connection_ = pc_handler_->native_peer_connection();
     ASSERT_TRUE(mock_peer_connection_);
@@ -213,11 +268,18 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
   scoped_ptr<MockWebRTCPeerConnectionHandlerClient> mock_client_;
   scoped_ptr<MockMediaStreamDependencyFactory> mock_dependency_factory_;
+  scoped_ptr<NiceMock<MockPeerConnectionTracker> > mock_tracker_;
   scoped_ptr<RTCPeerConnectionHandlerUnderTest> pc_handler_;
 
   // Weak reference to the mocked native peer connection implementation.
   MockPeerConnectionImpl* mock_peer_connection_;
 };
+
+TEST_F(RTCPeerConnectionHandlerTest, Destruct) {
+  EXPECT_CALL(*mock_tracker_.get(), UnregisterPeerConnection(pc_handler_.get()))
+      .Times(1);
+  pc_handler_.reset(NULL);
+}
 
 TEST_F(RTCPeerConnectionHandlerTest, CreateOffer) {
   WebKit::WebRTCSessionDescriptionRequest request;
@@ -242,6 +304,19 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateAnswer) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
+  // PeerConnectionTracker::TrackSetSessionDescription is expected to be called
+  // before |mock_peer_connection| is called.
+  testing::InSequence sequence;
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackSetSessionDescription(pc_handler_.get(),
+                                         testing::NotNull(),
+                                         PeerConnectionTracker::SOURCE_LOCAL));
+  EXPECT_CALL(*mock_peer_connection_,
+              SetLocalDescription(testing::_, testing::_))
+      .WillOnce(testing::Invoke(
+          mock_peer_connection_,
+          &MockPeerConnectionImpl::SetLocalDescriptionWorker));
+
   WebKit::WebRTCVoidRequest request;
   WebKit::WebRTCSessionDescription description;
   description.initialize(kDummySdpType, kDummySdp);
@@ -364,7 +439,6 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, OnStateChange) {
-  using WebKit::WebRTCPeerConnectionHandlerClient;
   // Signaling states.
   webrtc::PeerConnectionObserver::StateType state_type =
       webrtc::PeerConnectionObserver::kSignalingState;
@@ -407,37 +481,37 @@ TEST_F(RTCPeerConnectionHandlerTest, OnStateChange) {
   mock_peer_connection_->SetIceState(
       webrtc::PeerConnectionInterface::kIceGathering);
   pc_handler_->OnStateChange(state_type);
-  EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ICEStateGathering,
+  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEStateGathering,
             mock_client_->ice_state());
   mock_peer_connection_->SetIceState(
       webrtc::PeerConnectionInterface::kIceWaiting);
   pc_handler_->OnStateChange(state_type);
-  EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ICEStateWaiting,
+  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEStateWaiting,
             mock_client_->ice_state());
   mock_peer_connection_->SetIceState(
       webrtc::PeerConnectionInterface::kIceChecking);
   pc_handler_->OnStateChange(state_type);
-  EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ICEStateChecking,
+  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEStateChecking,
             mock_client_->ice_state());
   mock_peer_connection_->SetIceState(
       webrtc::PeerConnectionInterface::kIceConnected);
   pc_handler_->OnStateChange(state_type);
-  EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ICEStateConnected,
+  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEStateConnected,
             mock_client_->ice_state());
   mock_peer_connection_->SetIceState(
       webrtc::PeerConnectionInterface::kIceCompleted);
   pc_handler_->OnStateChange(state_type);
-  EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ICEStateCompleted,
+  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEStateCompleted,
             mock_client_->ice_state());
   mock_peer_connection_->SetIceState(
       webrtc::PeerConnectionInterface::kIceFailed);
   pc_handler_->OnStateChange(state_type);
-  EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ICEStateFailed,
+  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEStateFailed,
             mock_client_->ice_state());
   mock_peer_connection_->SetIceState(
       webrtc::PeerConnectionInterface::kIceClosed);
   pc_handler_->OnStateChange(state_type);
-  EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ICEStateClosed,
+  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEStateClosed,
             mock_client_->ice_state());
 }
 

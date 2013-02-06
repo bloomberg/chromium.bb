@@ -136,10 +136,107 @@ static string GetIceStateString(
   return result;
 }
 
+// Builds a DictionaryValue from the StatsElement.
+// The caller takes the ownership of the returned value.
+static DictionaryValue* GetDictValue(const webrtc::StatsElement& elem) {
+  if (elem.values.empty())
+    return NULL;
+
+  DictionaryValue* dict = new DictionaryValue();
+  if (!dict)
+    return NULL;
+  dict->SetDouble("timestamp", elem.timestamp);
+
+  ListValue* values = new ListValue();
+  if (!values) {
+    delete dict;
+    return NULL;
+  }
+  dict->Set("values", values);
+
+  for (size_t i = 0; i < elem.values.size(); ++i) {
+    values->AppendString(elem.values[i].name);
+    values->AppendString(elem.values[i].value);
+  }
+  return dict;
+}
+
+// Builds a DictionaryValue from the StatsReport.
+// The caller takes the ownership of the returned value.
+static DictionaryValue* GetDictValue(const webrtc::StatsReport& report) {
+  scoped_ptr<DictionaryValue> local, remote, result;
+
+  local.reset(GetDictValue(report.local));
+  remote.reset(GetDictValue(report.remote));
+  if (!local.get() && !remote.get())
+    return NULL;
+
+  result.reset(new DictionaryValue());
+  if (!result.get())
+    return NULL;
+
+  if (local.get())
+    result->Set("local", local.release());
+  if (remote.get())
+    result->Set("remote", remote.release());
+  result->SetString("id", report.id);
+  result->SetString("type", report.type);
+
+  return result.release();
+}
+
+class InternalStatsObserver : public webrtc::StatsObserver {
+ public:
+  InternalStatsObserver(int lid)
+      : lid_(lid){}
+
+  virtual void OnComplete(
+      const std::vector<webrtc::StatsReport>& reports) OVERRIDE {
+    ListValue list;
+
+    for (size_t i = 0; i < reports.size(); ++i) {
+      DictionaryValue* report = GetDictValue(reports[i]);
+      if (report)
+        list.Append(report);
+    }
+
+    if (!list.empty())
+      RenderThreadImpl::current()->Send(
+          new PeerConnectionTrackerHost_AddStats(lid_, list));
+  }
+
+ protected:
+  virtual ~InternalStatsObserver() {}
+
+ private:
+  int lid_;
+};
+
 PeerConnectionTracker::PeerConnectionTracker() : next_lid_(1) {
 }
 
 PeerConnectionTracker::~PeerConnectionTracker() {
+}
+
+bool PeerConnectionTracker::OnControlMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(PeerConnectionTracker, message)
+    IPC_MESSAGE_HANDLER(PeerConnectionTracker_GetAllStats, OnGetAllStats)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void PeerConnectionTracker::OnGetAllStats() {
+  for (PeerConnectionIdMap::iterator it = peer_connection_id_map_.begin();
+       it != peer_connection_id_map_.end(); ++it) {
+
+    talk_base::scoped_refptr<InternalStatsObserver> observer(
+        new talk_base::RefCountedObject<InternalStatsObserver>(it->second));
+
+    it->first->GetStats(observer, NULL);
+  }
 }
 
 void PeerConnectionTracker::RegisterPeerConnection(

@@ -5,10 +5,14 @@
 #include "content/browser/media/webrtc_internals_message_handler.h"
 
 #include "content/browser/media/webrtc_internals.h"
+#include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+
+using base::ListValue;
 
 namespace content {
 
@@ -24,11 +28,23 @@ void WebRTCInternalsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getAllUpdates",
       base::Bind(&WebRTCInternalsMessageHandler::OnGetAllUpdates,
                  base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback("getAllStats",
+      base::Bind(&WebRTCInternalsMessageHandler::OnGetAllStats,
+                 base::Unretained(this)));
 }
 
 void WebRTCInternalsMessageHandler::OnGetAllUpdates(
     const base::ListValue* list) {
   WebRTCInternals::GetInstance()->SendAllUpdates();
+}
+
+void WebRTCInternalsMessageHandler::OnGetAllStats(const ListValue* list) {
+  for (RenderProcessHost::iterator i(
+       content::RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    i.GetCurrentValue()->Send(new PeerConnectionTracker_GetAllStats());
+  }
 }
 
 void WebRTCInternalsMessageHandler::OnUpdate(const std::string& command,

@@ -7,10 +7,18 @@ var peerConnectionsListElem = null;
 function initialize() {
   peerConnectionsListElem = $('peer-connections-list');
   chrome.send('getAllUpdates');
+  startGetStats();
+}
+
+// Polls stats from all PeerConnections every second.
+function startGetStats() {
+  if (document.getElementsByTagName('li').length)
+    chrome.send('getAllStats');
+  window.setTimeout(startGetStats, 1000);
 }
 
 function getPeerConnectionId(data) {
-  return data.pid + ':' + data.lid;
+  return data.pid + '-' + data.lid;
 }
 
 // Makes sure a LI element representing a PeerConnection is created
@@ -28,16 +36,20 @@ function ensurePeerConnectionElement(id) {
 // Makes sure the table representing the PeerConnection event log is created
 // and appended to peerConnectionElement.
 function ensurePeerConnectionLog(peerConnectionElement) {
-  var logId = peerConnectionElement.id + ':log';
+  var logId = peerConnectionElement.id + '-log';
   var logElement = $(logId);
   if (!logElement) {
+    var container = document.createElement('div');
+    container.className = 'log-container';
+    peerConnectionElement.appendChild(container);
+
     logElement = document.createElement('table');
     logElement.id = logId;
-    logElement.class = 'log-table';
+    logElement.className = 'log-table';
     logElement.border = 1;
-    peerConnectionElement.appendChild(logElement);
+    container.appendChild(logElement);
     logElement.innerHTML = '<tr><th>Time</th>' +
-                               '<th class="log-header-event">Event</th></tr>';
+                           '<th class="log-header-event">Event</th></tr>';
   }
   return logElement;
 }
@@ -73,6 +85,63 @@ function addToPeerConnectionLog(logElement, update) {
         element.style.display = 'none';
       }
   });
+}
+
+// Ensure the DIV container for the stats tables is created as a child of
+// |peerConnectionElement|.
+function ensureStatsTableContainer(peerConnectionElement) {
+  var containerId = peerConnectionElement.id + '-table-container';
+  var container = $(containerId);
+  if (!container) {
+    container = document.createElement('div');
+    container.id = containerId;
+    container.className = 'stats-table-container';
+    peerConnectionElement.appendChild(container);
+  }
+  return container;
+}
+
+// Ensure the stats table for track |statsId| of PeerConnection
+// |peerConnectionElement| is created as a child of the stats table container.
+function ensureStatsTable(peerConnectionElement, statsId) {
+  var tableId = peerConnectionElement.id + '-table-' + statsId;
+  var table = $(tableId);
+  if (!table) {
+    var container = ensureStatsTableContainer(peerConnectionElement);
+    table = document.createElement('table');
+    container.appendChild(table);
+    table.id = tableId;
+    table.border = 1;
+    table.innerHTML = '<th>Statistics ' + statsId + '</th>';
+  }
+  return table;
+}
+
+// Update the value column of the stats row of |rowName| to |value|.
+// A new row is created is this is the first report of this stats.
+function updateStatsTableRow(statsTable, rowName, value) {
+  var trId = statsTable.id + '-' + rowName;
+  var trElement = $(trId);
+  if (!trElement) {
+    trElement = document.createElement('tr');
+    trElement.id = trId;
+    statsTable.appendChild(trElement);
+    trElement.innerHTML = '<td>' + rowName + '</td><td></td>';
+  }
+  trElement.cells[1].textContent = value;
+}
+
+// Add |singleReport| to the stats table.
+function addSingleReportToTable(statsTable, singleReport) {
+  if (!singleReport || !singleReport.values || singleReport.values.length == 0)
+    return;
+
+  var date = Date(singleReport.timestamp);
+  updateStatsTableRow(statsTable, 'timestamp', date.toLocaleString());
+  for (var i = 0; i < singleReport.values.length - 1; i = i + 2) {
+    updateStatsTableRow(statsTable, singleReport.values[i],
+                        singleReport.values[i + 1]);
+  }
 }
 
 //
@@ -118,6 +187,27 @@ function updateAllPeerConnections(data) {
     for (var j = 0; j < log.length; ++j) {
       addToPeerConnectionLog(logElement, log[j]);
     }
+  }
+}
+
+// data = {pid:|integer|, lid:|integer|, reports:|array|}.
+// Each entry of reports =
+// {id:|string|, type:|string|, local:|array|, remote:|array|}.
+// reports.local or reports.remote =
+// {timestamp: |double|, values: |array|},
+// where values is an array of strings, whose even index entry represents
+// the name of the stat, and the odd index entry represents the value of
+// the stat.
+function addStats(data) {
+  var peerConnectionElement = ensurePeerConnectionElement(
+      getPeerConnectionId(data));
+  for (var i = 0; i < data.reports.length; ++i) {
+    var report = data.reports[i];
+    var statsTable = ensureStatsTable(peerConnectionElement,
+                                      report.type + '-' + report.id);
+
+    addSingleReportToTable(statsTable, report.local);
+    addSingleReportToTable(statsTable, report.remote);
   }
 }
 

@@ -20,6 +20,8 @@ class WebRTCDataChannelHandler;
 
 namespace content {
 
+class PeerConnectionTracker;
+
 // Mockable wrapper for WebKit::WebRTCStatsResponse
 class CONTENT_EXPORT LocalRTCStatsResponse
     : public talk_base::RefCountInterface {
@@ -85,7 +87,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // Initialize method only used for unit test.
   bool InitializeForTest(
       const WebKit::WebRTCConfiguration& server_configuration,
-      const WebKit::WebMediaConstraints& options);
+      const WebKit::WebMediaConstraints& options,
+      PeerConnectionTracker* peer_connection_tracker);
 
   // WebKit::WebRTCPeerConnectionHandler implementation
   virtual bool initialize(
@@ -143,6 +146,11 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // getStats takes ownership of request parameter.
   virtual void getStats(LocalRTCStatsRequest* request);
 
+  // Calls GetStats on |native_peer_connection_|.
+  void GetStats(webrtc::StatsObserver* observer,
+                webrtc::MediaStreamTrackInterface* track);
+
+  PeerConnectionTracker* peer_connection_tracker();
  private:
   webrtc::SessionDescriptionInterface* CreateNativeSessionDescription(
       const WebKit::WebRTCSessionDescription& description);
@@ -151,6 +159,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   WebKit::WebRTCPeerConnectionHandlerClient* client_;
 
   WebKit::WebFrame* frame_;
+
+  PeerConnectionTracker* peer_connection_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCPeerConnectionHandler);
 };
