@@ -111,6 +111,7 @@ enum {
 }
 
 - (void)dealloc {
+  [locationManager_ setDelegate:nil];
   [locationManager_ release];
   [locationManagerClass_ release];
   [bundle_ release];
