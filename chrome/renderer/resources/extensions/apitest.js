@@ -45,7 +45,11 @@
   chrome.test.callbackAdded = function() {
     pendingCallbacks++;
 
+    var called = false;
     return function() {
+      chrome.test.assertFalse(called, 'callback has already been run');
+      called = true;
+
       pendingCallbacks--;
       if (pendingCallbacks == 0) {
         chrome.test.succeed();
