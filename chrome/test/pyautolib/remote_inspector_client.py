@@ -1034,6 +1034,10 @@ class RemoteInspectorClient(object):
         'EventListenerCount': integer,  # Total number of event listeners.
       }
     """
+    # TODO(yurys): Remove this hack after M27 is released.
+    if self._IsWebkitVersionNotOlderThan(537, 31):
+      return self._GetMemoryObjectCountsNew()
+
     MEMORY_COUNT_MESSAGES = [
       ('Memory.getDOMNodeCount', {})
     ]
@@ -1062,6 +1066,53 @@ class RemoteInspectorClient(object):
             dom_node_count += dom_element['count']
         self._event_listener_count = event_listener_count
         self._dom_node_count = dom_node_count
+
+        done_condition.acquire()
+        done_condition.notify()
+        done_condition.release()
+
+    # Tell the remote inspector to collect memory count info, then wait until
+    # that information is available to return.
+    self._remote_inspector_thread.PerformAction(MEMORY_COUNT_MESSAGES,
+                                                HandleReply)
+
+    done_condition.acquire()
+    done_condition.wait()
+    done_condition.release()
+
+    return {
+      'DOMNodeCount': self._dom_node_count,
+      'EventListenerCount': self._event_listener_count,
+    }
+
+  def _GetMemoryObjectCountsNew(self):
+    """Retrieves memory object count information.
+
+    Returns:
+      A dictionary containing the memory object count information:
+      {
+        'DOMNodeCount': integer,  # Total number of DOM nodes.
+        'EventListenerCount': integer,  # Total number of event listeners.
+      }
+    """
+    MEMORY_COUNT_MESSAGES = [
+      ('Memory.getDOMCounters', {})
+    ]
+
+    self._event_listener_count = None
+    self._dom_node_count = None
+
+    done_condition = threading.Condition()
+    def HandleReply(reply_dict):
+      """Processes a reply message received from the remote Chrome instance.
+
+      Args:
+        reply_dict: A dictionary object representing the reply message received
+                    from the remote Chrome instance.
+      """
+      if 'result' in reply_dict:
+        self._event_listener_count = reply_dict['result']['jsEventListeners']
+        self._dom_node_count = reply_dict['result']['nodes']
 
         done_condition.acquire()
         done_condition.notify()
