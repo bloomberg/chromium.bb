@@ -163,7 +163,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
     return policy.Pass();
   }
 
-  void Reload() {
+  virtual void Reload() OVERRIDE {
     DCHECK(OnPolicyWatcherThread());
     // Check the directory time in order to see whether a reload is required.
     base::TimeDelta delay;

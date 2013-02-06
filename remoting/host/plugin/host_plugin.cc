@@ -76,7 +76,7 @@ class HostNPPlugin : public remoting::PluginThreadTaskRunner::Delegate {
                        plugin_task_runner_));
   }
 
-  ~HostNPPlugin() {
+  virtual ~HostNPPlugin() {
     if (scriptable_object_) {
       DCHECK_EQ(scriptable_object_->referenceCount, 1UL);
       g_npnetscape_funcs->releaseobject(scriptable_object_);

@@ -104,7 +104,7 @@ class ChannelMultiplexer::MuxSocket : public net::StreamSocket,
                                       public base::SupportsWeakPtr<MuxSocket> {
  public:
   MuxSocket(MuxChannel* channel);
-  ~MuxSocket();
+  virtual ~MuxSocket();
 
   void OnWriteComplete();
   void OnWriteFailed();

@@ -43,17 +43,17 @@ class UdpPacketSocket : public talk_base::AsyncPacketSocket {
             int min_port, int max_port);
 
   // talk_base::AsyncPacketSocket interface.
-  virtual talk_base::SocketAddress GetLocalAddress() const;
-  virtual talk_base::SocketAddress GetRemoteAddress() const;
-  virtual int Send(const void* data, size_t data_size);
+  virtual talk_base::SocketAddress GetLocalAddress() const OVERRIDE;
+  virtual talk_base::SocketAddress GetRemoteAddress() const OVERRIDE;
+  virtual int Send(const void* data, size_t data_size) OVERRIDE;
   virtual int SendTo(const void* data, size_t data_size,
-                     const talk_base::SocketAddress& address);
-  virtual int Close();
-  virtual State GetState() const;
-  virtual int GetOption(talk_base::Socket::Option option, int* value);
-  virtual int SetOption(talk_base::Socket::Option option, int value);
-  virtual int GetError() const;
-  virtual void SetError(int error);
+                     const talk_base::SocketAddress& address) OVERRIDE;
+  virtual int Close() OVERRIDE;
+  virtual State GetState() const OVERRIDE;
+  virtual int GetOption(talk_base::Socket::Option option, int* value) OVERRIDE;
+  virtual int SetOption(talk_base::Socket::Option option, int value) OVERRIDE;
+  virtual int GetError() const OVERRIDE;
+  virtual void SetError(int error) OVERRIDE;
 
  private:
   struct PendingPacket {

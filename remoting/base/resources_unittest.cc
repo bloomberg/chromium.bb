@@ -24,11 +24,11 @@ namespace remoting {
 
 class ResourcesTest : public testing::Test {
  protected:
-  void SetUp() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(LoadResources("en-US"));
   }
 
-  void TearDown() OVERRIDE {
+  virtual void TearDown() OVERRIDE {
     ui::ResourceBundle::CleanupSharedInstance();
   }
 };

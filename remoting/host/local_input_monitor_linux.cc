@@ -15,7 +15,7 @@ namespace {
 class LocalInputMonitorLinux : public LocalInputMonitor {
  public:
   LocalInputMonitorLinux();
-  ~LocalInputMonitorLinux();
+  virtual ~LocalInputMonitorLinux();
 
   virtual void Start(MouseMoveObserver* mouse_move_observer,
                      const base::Closure& disconnect_callback) OVERRIDE;

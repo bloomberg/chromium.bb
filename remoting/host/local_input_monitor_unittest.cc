@@ -26,7 +26,7 @@ class FakeMouseMoveObserver : public MouseMoveObserver {
   virtual ~FakeMouseMoveObserver() {}
 
   // Ignore mouse events to avoid breaking the test of someone moves the mouse.
-  void OnLocalMouseMoved(const SkIPoint&) {}
+  virtual void OnLocalMouseMoved(const SkIPoint&) OVERRIDE {}
   void OnDisconnectCallback() {}
 };
 

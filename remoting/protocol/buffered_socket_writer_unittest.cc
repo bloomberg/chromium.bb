@@ -44,7 +44,7 @@ class BufferedSocketWriterTest : public testing::Test {
   }
 
  protected:
-  void SetUp() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     socket_.reset(new FakeSocket());
     writer_.reset(new BufferedSocketWriter());
     writer_->Init(socket_.get(), base::Bind(
