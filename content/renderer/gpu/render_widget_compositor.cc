@@ -60,7 +60,8 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.implSidePainting =
     CommandLine::ForCurrentProcess()->HasSwitch(
         cc::switches::kEnableImplSidePainting);
-  settings.recordRenderingStats = web_settings.recordRenderingStats;
+  settings.initialDebugState.setRecordRenderingStats(
+      web_settings.recordRenderingStats);
   settings.useCheapnessEstimator =
     CommandLine::ForCurrentProcess()->HasSwitch(
         cc::switches::kUseCheapnessEstimator);

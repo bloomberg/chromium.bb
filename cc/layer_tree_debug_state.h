@@ -29,12 +29,18 @@ class CC_EXPORT LayerTreeDebugState {
 
   int slowDownRasterScaleFactor;
 
+  void setRecordRenderingStats(bool);
+  bool recordRenderingStats() const;
+
   bool showHudInfo() const;
   bool showHudRects() const;
   bool hudNeedsFont() const;
 
   static bool equal(const LayerTreeDebugState& a, const LayerTreeDebugState& b);
   static LayerTreeDebugState unite(const LayerTreeDebugState& a, const LayerTreeDebugState& b);
+
+private:
+  bool m_recordRenderingStats;
 };
 
 }  // namespace cc

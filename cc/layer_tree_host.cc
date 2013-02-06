@@ -406,7 +406,7 @@ void LayerTreeHost::didDeferCommit()
 
 void LayerTreeHost::renderingStats(RenderingStats* stats) const
 {
-    CHECK(m_settings.recordRenderingStats);
+    CHECK(m_debugState.recordRenderingStats());
     *stats = m_renderingStats;
     m_proxy->renderingStats(stats);
 }
@@ -697,7 +697,7 @@ bool LayerTreeHost::paintMasksForRenderSurface(Layer* renderSurfaceLayer, Resour
     // in code, we already know that at least something will be drawn into this render surface, so the
     // mask and replica should be painted.
 
-    RenderingStats* stats = m_settings.recordRenderingStats ? &m_renderingStats : NULL;
+    RenderingStats* stats = m_debugState.recordRenderingStats() ? &m_renderingStats : NULL;
 
     bool needMoreUpdates = false;
     Layer* maskLayer = renderSurfaceLayer->maskLayer();
@@ -726,7 +726,7 @@ bool LayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList, 
 
     prioritizeTextures(renderSurfaceLayerList, occlusionTracker.overdrawMetrics());
 
-    RenderingStats* stats = m_settings.recordRenderingStats ? &m_renderingStats : NULL;
+    RenderingStats* stats = m_debugState.recordRenderingStats() ? &m_renderingStats : NULL;
 
     LayerIteratorType end = LayerIteratorType::end(&renderSurfaceLayerList);
     for (LayerIteratorType it = LayerIteratorType::begin(&renderSurfaceLayerList); it != end; ++it) {

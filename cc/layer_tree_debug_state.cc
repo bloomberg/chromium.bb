@@ -21,9 +21,18 @@ LayerTreeDebugState::LayerTreeDebugState()
   , showReplicaScreenSpaceRects(false)
   , showOccludingRects(false)
   , showNonOccludingRects(false)
-  , slowDownRasterScaleFactor(0) { }
+  , slowDownRasterScaleFactor(0)
+  , m_recordRenderingStats(false) { }
 
 LayerTreeDebugState::~LayerTreeDebugState() {
+}
+
+void LayerTreeDebugState::setRecordRenderingStats(bool enabled) {
+    m_recordRenderingStats = enabled;
+}
+
+bool LayerTreeDebugState::recordRenderingStats() const {
+    return m_recordRenderingStats || continuousPainting;
 }
 
 bool LayerTreeDebugState::showHudInfo() const {
@@ -50,7 +59,8 @@ bool LayerTreeDebugState::equal(const LayerTreeDebugState& a, const LayerTreeDeb
             a.showReplicaScreenSpaceRects == b.showReplicaScreenSpaceRects &&
             a.showOccludingRects == b.showOccludingRects &&
             a.showNonOccludingRects == b.showNonOccludingRects &&
-            a.slowDownRasterScaleFactor == b.slowDownRasterScaleFactor);
+            a.slowDownRasterScaleFactor == b.slowDownRasterScaleFactor &&
+            a.m_recordRenderingStats == b.m_recordRenderingStats);
 }
 
 LayerTreeDebugState LayerTreeDebugState::unite(const LayerTreeDebugState& a, const LayerTreeDebugState& b) {
@@ -71,6 +81,8 @@ LayerTreeDebugState LayerTreeDebugState::unite(const LayerTreeDebugState& a, con
 
     if (b.slowDownRasterScaleFactor)
       r.slowDownRasterScaleFactor = b.slowDownRasterScaleFactor;
+
+    r.m_recordRenderingStats |= b.m_recordRenderingStats;
 
     return r;
 }
