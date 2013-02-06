@@ -116,6 +116,8 @@ class DeepHeapProfile {
     NUMBER_OF_MAPS_REGION_TYPES
   };
 
+  static const char* kMapsRegionTypeDict[NUMBER_OF_MAPS_REGION_TYPES];
+
   // Manages a buffer to keep a dumped text for FillOrderedProfile and other
   // functions.
   class TextBuffer {
@@ -258,7 +260,9 @@ class DeepHeapProfile {
     void SnapshotProcMaps(
         const MemoryResidenceInfoGetterInterface* memory_residence_info_getter,
         MMapListEntry* mmap_list,
-        int mmap_list_length);
+        int mmap_list_length,
+        const char* prefix,
+        int dump_count);
 
     // Snapshots allocations by malloc and mmap.
     void SnapshotAllocations(DeepHeapProfile* deep_profile);

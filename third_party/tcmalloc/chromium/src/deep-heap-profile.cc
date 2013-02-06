@@ -38,6 +38,15 @@ static const char kProcSelfMapsHeader[] = "\nMAPPED_LIBRARIES:\n";
 static const char kVirtualLabel[] = "virtual";
 static const char kCommittedLabel[] = "committed";
 
+const char* DeepHeapProfile::kMapsRegionTypeDict[] = {
+  "absent",
+  "anonymous",
+  "file-exec",
+  "file-nonexec",
+  "stack",
+  "other",
+};
+
 namespace {
 
 #if defined(__linux__)
@@ -261,7 +270,7 @@ int DeepHeapProfile::FillOrderedProfile(char raw_buffer[], int buffer_size) {
     mmap_list_[num_mmap_allocations_ - 1].last_address = 0;
   }
 
-  stats_.SnapshotProcMaps(memory_residence_info_getter_, NULL, 0);
+  stats_.SnapshotProcMaps(memory_residence_info_getter_, NULL, 0, NULL, 0);
 
   // TODO(dmikurube): Eliminate dynamic memory allocation caused by snprintf.
   // glibc's snprintf internally allocates memory by alloca normally, but it
@@ -271,8 +280,11 @@ int DeepHeapProfile::FillOrderedProfile(char raw_buffer[], int buffer_size) {
   stats_.SnapshotAllocations(this);
 
   // Check if committed bytes changed during SnapshotAllocations.
-  stats_.SnapshotProcMaps(
-      memory_residence_info_getter_, mmap_list_, mmap_list_length_);
+  stats_.SnapshotProcMaps(memory_residence_info_getter_,
+                          mmap_list_,
+                          mmap_list_length_,
+                          filename_prefix_,
+                          dump_count_);
 
   buffer.AppendString(kProfileHeader, 0);
   buffer.AppendString(kProfileVersion, 0);
@@ -617,7 +629,9 @@ void DeepHeapProfile::RegionStats::Unparse(const char* name,
 void DeepHeapProfile::GlobalStats::SnapshotProcMaps(
     const MemoryResidenceInfoGetterInterface* memory_residence_info_getter,
     MMapListEntry* mmap_list,
-    int mmap_list_length) {
+    int mmap_list_length,
+    const char* prefix,
+    int dump_count) {
   ProcMapsIterator::Buffer iterator_buffer;
   ProcMapsIterator iterator(0, &iterator_buffer);
   uint64 first_address, last_address, offset;
@@ -626,10 +640,18 @@ void DeepHeapProfile::GlobalStats::SnapshotProcMaps(
   char* filename;
   int mmap_list_index = 0;
   enum MapsRegionType type;
+  char unhooked_filename[100];
+  RawFD unhooked_fd = kIllegalRawFD;
 
   for (int i = 0; i < NUMBER_OF_MAPS_REGION_TYPES; ++i) {
     all_[i].Initialize();
     nonprofiled_[i].Initialize();
+  }
+
+  if (prefix) {
+    snprintf(unhooked_filename, sizeof(unhooked_filename),
+             "%s.%05d.%04d.unhooked", prefix, getpid(), dump_count);
+    unhooked_fd = RawOpenForWriting(unhooked_filename);
   }
 
   while (iterator.Next(&first_address, &last_address,
@@ -686,12 +708,25 @@ void DeepHeapProfile::GlobalStats::SnapshotProcMaps(
               memory_residence_info_getter,
               cursor,
               last_address_of_nonprofiled);
+          if (unhooked_fd != kIllegalRawFD) {
+            char range[128];
+            int length = 0;
+            length = snprintf(range, sizeof(range),
+                              "%s %"PRIxPTR"-%"PRIxPTR"\n",
+                              kMapsRegionTypeDict[type],
+                              cursor, last_address_of_nonprofiled);
+            if (length > 0)
+              RawWrite(unhooked_fd, range, length);
+          }
           cursor = last_address_of_nonprofiled + 1;
         }
       } while (mmap_list_index < mmap_list_length &&
                mmap_list[mmap_list_index].last_address <= last_address);
     }
   }
+
+  if (unhooked_fd != kIllegalRawFD)
+    RawClose(unhooked_fd);
 }
 
 void DeepHeapProfile::GlobalStats::SnapshotAllocations(
