@@ -905,6 +905,8 @@
         'test/chromedriver/keycode_text_conversion_unittest.cc',
         'test/chromedriver/net/net_util_unittest.cc',
         'test/chromedriver/net/sync_websocket_impl_unittest.cc',
+        'test/chromedriver/net/test_http_server.cc',
+        'test/chromedriver/net/test_http_server.h',
         'test/chromedriver/net/websocket_unittest.cc',
         'test/chromedriver/test_util.cc',
         'test/chromedriver/test_util.h',

@@ -8,29 +8,31 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stringprintf.h"
+#include "base/threading/thread.h"
 #include "base/time.h"
+#include "chrome/test/chromedriver/net/test_http_server.h"
 #include "chrome/test/chromedriver/net/websocket.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/ip_endpoint.h"
-#include "net/base/net_errors.h"
-#include "net/base/tcp_listen_socket.h"
-#include "net/server/http_server.h"
-#include "net/server/http_server_request_info.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-void OnConnectFinished(int* save_error, int error) {
-  MessageLoop::current()->Quit();
+void OnConnectFinished(base::RunLoop* run_loop, int* save_error, int error) {
   *save_error = error;
+  run_loop->Quit();
+}
+
+void RunPending(MessageLoop* loop) {
+  base::RunLoop run_loop;
+  loop->PostTask(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 class Listener : public WebSocketListener {
@@ -60,108 +62,60 @@ class Listener : public WebSocketListener {
 
 class CloseListener : public WebSocketListener {
  public:
-  explicit CloseListener(bool expect_close) : expect_close_(expect_close) {}
+  explicit CloseListener(base::RunLoop* run_loop)
+      : run_loop_(run_loop) {}
 
   virtual ~CloseListener() {
-    EXPECT_FALSE(expect_close_);
+    EXPECT_FALSE(run_loop_);
   }
 
   virtual void OnMessageReceived(const std::string& message) OVERRIDE {}
 
   virtual void OnClose() OVERRIDE {
-    EXPECT_TRUE(expect_close_);
-    if (expect_close_)
-      MessageLoop::current()->Quit();
-    expect_close_ = false;
+    EXPECT_TRUE(run_loop_);
+    if (run_loop_)
+      run_loop_->Quit();
+    run_loop_ = NULL;
   }
 
  private:
-  bool expect_close_;
+  base::RunLoop* run_loop_;
 };
 
-class WebSocketTest : public testing::Test,
-                      public net::HttpServer::Delegate {
+class WebSocketTest : public testing::Test {
  public:
-  enum WebSocketRequestResponse {
-    kAccept = 0,
-    kNotFound,
-    kClose
-  };
-
   WebSocketTest()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(server_(CreateServer())),
-        context_getter_(
-            new net::TestURLRequestContextGetter(loop_.message_loop_proxy())),
-        ws_request_response_(kAccept),
-        close_on_message_(false),
-        quit_on_close_(false) {
-    net::IPEndPoint address;
-    CHECK_EQ(net::OK, server_->GetLocalAddress(&address));
-    server_url_ = GURL(base::StringPrintf("ws://127.0.0.1:%d", address.port()));
+      : context_getter_(
+            new net::TestURLRequestContextGetter(loop_.message_loop_proxy())) {}
+  virtual ~WebSocketTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(server_.Start());
   }
 
-  // Overridden from net::HttpServer::Delegate:
-  virtual void OnHttpRequest(int connection_id,
-                             const net::HttpServerRequestInfo& info) {}
-
-  virtual void OnWebSocketRequest(int connection_id,
-                                  const net::HttpServerRequestInfo& info) {
-    switch (ws_request_response_) {
-      case kAccept:
-        server_->AcceptWebSocket(connection_id, info);
-        break;
-      case kNotFound:
-        server_->Send404(connection_id);
-        break;
-      case kClose:
-        // net::HttpServer doesn't allow us to close connection during callback.
-        MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(&net::HttpServer::Close, server_, connection_id));
-        break;
-    }
-  }
-
-  virtual void OnWebSocketMessage(int connection_id,
-                                  const std::string& data) {
-    if (close_on_message_) {
-      // net::HttpServer doesn't allow us to close connection during callback.
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&net::HttpServer::Close, server_, connection_id));
-    } else {
-      server_->SendOverWebSocket(connection_id, data);
-    }
-  }
-
-  virtual void OnClose(int connection_id) {
-    if (quit_on_close_)
-      MessageLoop::current()->Quit();
+  virtual void TearDown() OVERRIDE {
+    server_.Stop();
   }
 
  protected:
-  net::HttpServer* CreateServer() {
-    net::TCPListenSocketFactory factory("127.0.0.1", 0);
-    return new net::HttpServer(factory, this);
-  }
-
   scoped_ptr<WebSocket> CreateWebSocket(const GURL& url,
                                         WebSocketListener* listener) {
     int error;
     scoped_ptr<WebSocket> sock(new WebSocket(
         context_getter_, url, listener));
-    sock->Connect(base::Bind(&OnConnectFinished, &error));
+    base::RunLoop run_loop;
+    sock->Connect(base::Bind(&OnConnectFinished, &run_loop, &error));
     loop_.PostDelayedTask(
-        FROM_HERE, MessageLoop::QuitWhenIdleClosure(),
+        FROM_HERE, run_loop.QuitClosure(),
         base::TimeDelta::FromSeconds(10));
-    base::RunLoop().Run();
+    run_loop.Run();
     if (error == net::OK)
       return sock.Pass();
     return scoped_ptr<WebSocket>();
   }
 
   scoped_ptr<WebSocket> CreateConnectedWebSocket(WebSocketListener* listener) {
-    return CreateWebSocket(server_url_, listener);
+    return CreateWebSocket(server_.web_socket_url(), listener);
   }
 
   void SendReceive(const std::vector<std::string>& messages) {
@@ -179,62 +133,50 @@ class WebSocketTest : public testing::Test,
   }
 
   MessageLoopForIO loop_;
-  scoped_refptr<net::HttpServer> server_;
+  TestHttpServer server_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
-  GURL server_url_;
-  WebSocketRequestResponse ws_request_response_;
-  bool close_on_message_;
-  bool quit_on_close_;
 };
 
 }  // namespace
 
 TEST_F(WebSocketTest, CreateDestroy) {
-  CloseListener listener(false);
+  CloseListener listener(NULL);
   WebSocket sock(context_getter_, GURL("http://ok"), &listener);
 }
 
 TEST_F(WebSocketTest, Connect) {
-  CloseListener listener(false);
-  ASSERT_TRUE(CreateWebSocket(server_url_, &listener));
-  quit_on_close_ = true;
-  base::RunLoop run_loop;
-  loop_.PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromSeconds(10));
-  run_loop.Run();
+  CloseListener listener(NULL);
+  ASSERT_TRUE(CreateWebSocket(server_.web_socket_url(), &listener));
+  RunPending(&loop_);
+  ASSERT_TRUE(server_.WaitForConnectionsToClose());
 }
 
 TEST_F(WebSocketTest, ConnectNoServer) {
-  CloseListener listener(false);
+  CloseListener listener(NULL);
   ASSERT_FALSE(CreateWebSocket(GURL("ws://127.0.0.1:33333"), NULL));
 }
 
 TEST_F(WebSocketTest, Connect404) {
-  ws_request_response_ = kNotFound;
-  CloseListener listener(false);
-  ASSERT_FALSE(CreateWebSocket(server_url_, NULL));
-  quit_on_close_ = true;
-  base::RunLoop run_loop;
-  loop_.PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromSeconds(10));
-  run_loop.Run();
+  server_.SetRequestAction(TestHttpServer::kNotFound);
+  CloseListener listener(NULL);
+  ASSERT_FALSE(CreateWebSocket(server_.web_socket_url(), NULL));
+  RunPending(&loop_);
+  ASSERT_TRUE(server_.WaitForConnectionsToClose());
 }
 
 TEST_F(WebSocketTest, ConnectServerClosesConn) {
-  ws_request_response_ = kClose;
-  CloseListener listener(false);
-  ASSERT_FALSE(CreateWebSocket(server_url_, &listener));
+  server_.SetRequestAction(TestHttpServer::kClose);
+  CloseListener listener(NULL);
+  ASSERT_FALSE(CreateWebSocket(server_.web_socket_url(), &listener));
 }
 
 TEST_F(WebSocketTest, CloseOnReceive) {
-  close_on_message_ = true;
-  CloseListener listener(true);
+  server_.SetMessageAction(TestHttpServer::kCloseOnMessage);
+  base::RunLoop run_loop;
+  CloseListener listener(&run_loop);
   scoped_ptr<WebSocket> sock(CreateConnectedWebSocket(&listener));
   ASSERT_TRUE(sock);
   ASSERT_TRUE(sock->Send("hi"));
-  base::RunLoop run_loop;
   loop_.PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(),
       base::TimeDelta::FromSeconds(10));
@@ -242,19 +184,18 @@ TEST_F(WebSocketTest, CloseOnReceive) {
 }
 
 TEST_F(WebSocketTest, CloseOnSend) {
-  CloseListener listener(true);
+  base::RunLoop run_loop;
+  CloseListener listener(&run_loop);
   scoped_ptr<WebSocket> sock(CreateConnectedWebSocket(&listener));
   ASSERT_TRUE(sock);
-  server_ = NULL;
-  loop_.PostTask(
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&WebSocket::Send),
-                 base::Unretained(sock.get()), "hi"));
-  base::RunLoop run_loop;
+  server_.Stop();
+
+  sock->Send("hi");
   loop_.PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(),
       base::TimeDelta::FromSeconds(10));
   run_loop.Run();
+  ASSERT_FALSE(sock->Send("hi"));
 }
 
 TEST_F(WebSocketTest, SendReceive) {
@@ -265,9 +206,7 @@ TEST_F(WebSocketTest, SendReceive) {
 
 TEST_F(WebSocketTest, SendReceiveLarge) {
   std::vector<std::string> messages;
-  // Sends/receives 200kb. For some reason pushing this above 240kb on my
-  // machine results in receiving no data back from the http server.
-  messages.push_back(std::string(200 << 10, 'a'));
+  messages.push_back(std::string(10 << 20, 'a'));
   SendReceive(messages);
 }
 
