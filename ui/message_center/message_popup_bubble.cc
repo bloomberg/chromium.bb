@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "ui/message_center/message_view.h"
+#include "ui/message_center/notification.h"
 #include "ui/message_center/notification_view.h"
 #include "ui/notifications/notification_types.h"
 #include "ui/views/bubble/tray_bubble_view.h"
@@ -78,8 +79,7 @@ void PopupBubbleContentsView::Update(
 // The timer to call OnAutoClose for |notification|.
 class MessagePopupBubble::AutocloseTimer {
  public:
-  AutocloseTimer(const NotificationList::Notification& notification,
-                 MessagePopupBubble* bubble);
+  AutocloseTimer(const Notification& notification, MessagePopupBubble* bubble);
 
   void Start();
 
@@ -96,7 +96,7 @@ class MessagePopupBubble::AutocloseTimer {
 };
 
 MessagePopupBubble::AutocloseTimer::AutocloseTimer(
-    const NotificationList::Notification& notification,
+    const Notification& notification,
     MessagePopupBubble* bubble)
     : id_(notification.id),
       bubble_(bubble) {

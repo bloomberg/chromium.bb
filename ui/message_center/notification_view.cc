@@ -61,15 +61,14 @@ views::Background* MakeBackground(SkColor color) {
 // message next to each other within a single column.
 class ItemView : public views::View {
  public:
-  ItemView(const message_center::NotificationList::NotificationItem& item);
+  ItemView(const message_center::NotificationItem& item);
   virtual ~ItemView();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ItemView);
 };
 
-ItemView::ItemView(
-    const message_center::NotificationList::NotificationItem& item) {
+ItemView::ItemView(const message_center::NotificationItem& item) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
                                         0, 0, kItemTitleToMessagePadding));
 
@@ -195,7 +194,7 @@ namespace message_center {
 
 // static
 MessageView* NotificationView::ViewForNotification(
-    const NotificationList::Notification& notification,
+    const Notification& notification,
     NotificationList::Delegate* list_delegate) {
   // For the time being, use MessageSimpleView for simple notifications unless
   // one of the use-the-new-style flags are set. This preserves the appearance
@@ -231,7 +230,7 @@ MessageView* NotificationView::ViewForNotification(
 
 NotificationView::NotificationView(
     NotificationList::Delegate* list_delegate,
-    const NotificationList::Notification& notification)
+    const Notification& notification)
     : MessageView(list_delegate, notification) {
 }
 

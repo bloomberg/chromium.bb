@@ -6,6 +6,8 @@
 
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/notification.h"
+#include "ui/message_center/notification_list.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -19,7 +21,7 @@ const SkColor kNotificationReadColor = SkColorSetRGB(0xfa, 0xfa, 0xfa);
 
 MessageSimpleView::MessageSimpleView(
     NotificationList::Delegate* list_delegate,
-    const NotificationList::Notification& notification)
+    const Notification& notification)
     : MessageView(list_delegate, notification) {
   views::ImageButton* close = new views::ImageButton(this);
   close->SetImage(

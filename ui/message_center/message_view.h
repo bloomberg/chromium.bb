@@ -5,6 +5,7 @@
 #ifndef UI_MESSAGE_CENTER_MESSAGE_VIEW_H_
 #define UI_MESSAGE_CENTER_MESSAGE_VIEW_H_
 
+#include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/slide_out_view.h"
@@ -29,7 +30,7 @@ class MessageView : public views::SlideOutView,
                     public views::ButtonListener {
  public:
   MessageView(NotificationList::Delegate* list_delegate,
-              const NotificationList::Notification& notification);
+              const Notification& notification);
 
   virtual ~MessageView();
 
@@ -59,13 +60,13 @@ class MessageView : public views::SlideOutView,
   virtual void OnSlideOut() OVERRIDE;
 
   NotificationList::Delegate* list_delegate() { return list_delegate_; }
-  NotificationList::Notification& notification() { return notification_; }
+  Notification& notification() { return notification_; }
   views::ImageButton* close_button() { return close_button_.get(); }
   views::ScrollView* scroller() { return scroller_; }
 
  private:
   NotificationList::Delegate* list_delegate_;
-  NotificationList::Notification notification_;
+  Notification notification_;
   scoped_ptr<views::ImageButton> close_button_;
 
   views::ScrollView* scroller_;

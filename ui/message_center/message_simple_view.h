@@ -10,11 +10,13 @@
 
 namespace message_center {
 
+struct Notification;
+
 // A simple view for a notification entry (icon + message + buttons).
 class MessageSimpleView : public MessageView {
  public:
   MessageSimpleView(NotificationList::Delegate* list_delegate,
-                    const NotificationList::Notification& notification);
+                    const Notification& notification);
   virtual ~MessageSimpleView();
 
   // Overridden from MessageView:

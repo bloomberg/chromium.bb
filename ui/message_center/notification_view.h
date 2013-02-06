@@ -20,11 +20,11 @@ class NotificationView : public MessageView {
   // always NotificationView instances but in the future may be instances of
   // other classes, with the class depending on the notification type.
   static MessageView* ViewForNotification(
-      const NotificationList::Notification& notification,
+      const Notification& notification,
       NotificationList::Delegate* list_delegate);
 
   NotificationView(NotificationList::Delegate* list_delegate,
-                   const NotificationList::Notification& notification);
+                   const Notification& notification);
   virtual ~NotificationView();
 
   // Overridden from View.

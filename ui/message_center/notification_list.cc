@@ -8,18 +8,12 @@
 #include "base/logging.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "ui/message_center/notification.h"
 
 namespace message_center {
 
 const size_t NotificationList::kMaxVisibleMessageCenterNotifications = 100;
 const size_t NotificationList::kMaxVisiblePopupNotifications = 2;
-
-NotificationList::Notification::Notification() : is_read(false),
-                                                 shown_as_popup(false) {
-}
-
-NotificationList::Notification::~Notification() {
-}
 
 NotificationList::NotificationList(Delegate* delegate)
     : delegate_(delegate),

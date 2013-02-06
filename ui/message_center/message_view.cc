@@ -144,7 +144,7 @@ class WebNotificationMenuModel : public ui::SimpleMenuModel,
                                  public ui::SimpleMenuModel::Delegate {
  public:
   WebNotificationMenuModel(NotificationList::Delegate* list_delegate,
-                           const NotificationList::Notification& notification)
+                           const Notification& notification)
       : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
         list_delegate_(list_delegate),
         notification_(notification) {
@@ -215,14 +215,14 @@ class WebNotificationMenuModel : public ui::SimpleMenuModel,
 
  private:
   NotificationList::Delegate* list_delegate_;
-  NotificationList::Notification notification_;
+  Notification notification_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationMenuModel);
 };
 
 MessageView::MessageView(
     NotificationList::Delegate* list_delegate,
-    const NotificationList::Notification& notification)
+    const Notification& notification)
     : list_delegate_(list_delegate),
       notification_(notification),
       scroller_(NULL) {

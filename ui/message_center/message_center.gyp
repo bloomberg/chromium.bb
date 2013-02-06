@@ -47,6 +47,8 @@
         'message_simple_view.h',
         'message_view.cc',
         'message_view.h',
+        'notification.cc',
+        'notification.h',
         'notification_list.cc',
         'notification_list.h',
         'notification_view.cc',
