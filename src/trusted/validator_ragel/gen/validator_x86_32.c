@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "native_client/src/trusted/validator_ragel/bitmap.h"
 #include "native_client/src/trusted/validator_ragel/unreviewed/validator_internal.h"
 
 /* Ignore this information: it's not used by security model in IA32 mode.  */

@@ -8,8 +8,10 @@
 #include <errno.h>
 #include <string.h>
 
+#include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/trusted/validator_ragel/bitmap.h"
 #include "native_client/src/trusted/validator_ragel/unreviewed/dfa_validate_common.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/validator_internal.h"
+#include "native_client/src/trusted/validator_ragel/validator.h"
 
 /* Be sure the correct compile flags are defined for this. */
 #if NACL_ARCH(NACL_TARGET_ARCH) != NACL_x86
