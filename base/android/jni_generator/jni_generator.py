@@ -172,7 +172,7 @@ class JniParams(object):
       return prefix + pod_param_map[param]
     if '/' in param:
       # Coming from javap, use the fully qualified param directly.
-      return 'L' + param + ';'
+      return prefix + 'L' + param + ';'
     for qualified_name in (object_param_list +
                            [JniParams._fully_qualified_class] +
                            JniParams._inner_classes):
