@@ -95,8 +95,7 @@ class FileBrowserEventRouter
   // drive::DriveServiceObserver overrides.
   virtual void OnProgressUpdate(
       const google_apis::OperationProgressStatusList& list) OVERRIDE;
-  virtual void OnAuthenticationFailed(
-      google_apis::GDataErrorCode error) OVERRIDE;
+  virtual void OnRefreshTokenInvalid() OVERRIDE;
 
   // drive::DriveFileSystemInterface::Observer overrides.
   virtual void OnDirectoryChanged(const FilePath& directory_path) OVERRIDE;

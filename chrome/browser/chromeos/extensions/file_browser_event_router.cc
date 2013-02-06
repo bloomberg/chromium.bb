@@ -562,12 +562,8 @@ void FileBrowserEventRouter::OnFileSystemBeingUnmounted() {
                mount_info);
 }
 
-void FileBrowserEventRouter::OnAuthenticationFailed(
-    google_apis::GDataErrorCode error) {
+void FileBrowserEventRouter::OnRefreshTokenInvalid() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (error == google_apis::GDATA_NO_CONNECTION)
-    return;
 
   // Raise a DriveConnectionStatusChanged event to notify the status offline.
   scoped_ptr<extensions::Event> event(new extensions::Event(

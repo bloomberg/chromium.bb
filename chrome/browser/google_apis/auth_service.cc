@@ -231,8 +231,18 @@ void AuthService::OnAuthCompleted(const AuthStatusCallback& callback,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error == HTTP_SUCCESS)
+  if (error == HTTP_SUCCESS) {
     access_token_ = access_token;
+  } else if (error == HTTP_UNAUTHORIZED) {
+    // Refreshing access token using the refresh token is failed with 401 error
+    // (HTTP_UNAUTHORIZED). This means the current refresh token is invalid for
+    // Drive, hence we clear the refresh token here to make HasRefreshToken()
+    // false, thus the invalidness is clearly observable.
+    // This is not for triggering refetch of the refresh token. UI should
+    // show some message to encourage user to log-off and log-in again in order
+    // to fetch new valid refresh token.
+    ClearRefreshToken();
+  }
 
   // TODO(zelidrag): Add retry, back-off logic when things go wrong here.
   callback.Run(error, access_token);

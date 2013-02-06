@@ -144,7 +144,6 @@ class DriveAPIService : public DriveServiceInterface,
   // DriveServiceObserver Overrides
   virtual void OnProgressUpdate(
       const OperationProgressStatusList& list) OVERRIDE;
-  virtual void OnAuthenticationFailed(GDataErrorCode error) OVERRIDE;
 
   net::URLRequestContextGetter* url_request_context_getter_;
   Profile* profile_;

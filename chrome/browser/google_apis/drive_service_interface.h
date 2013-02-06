@@ -31,8 +31,8 @@ class DriveServiceObserver {
   // Called when an operation started, made some progress, or finished.
   virtual void OnProgressUpdate(const OperationProgressStatusList& list) {}
 
-  // Called when GData authentication failed.
-  virtual void OnAuthenticationFailed(GDataErrorCode error) {}
+  // Called when the refresh token was found to be invalid.
+  virtual void OnRefreshTokenInvalid() {}
 
  protected:
   virtual ~DriveServiceObserver() {}

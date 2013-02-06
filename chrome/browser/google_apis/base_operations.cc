@@ -240,9 +240,6 @@ void UrlFetchOperationBase::NotifyStartToOperationRegistry() {
 void UrlFetchOperationBase::OnAuthFailed(GDataErrorCode code) {
   RunCallbackOnPrematureFailure(code);
 
-  // Notify authentication failed.
-  NotifyAuthFailed(code);
-
   // Check if this failed before we even started fetching. If so, register
   // for start so we can properly unregister with finish.
   if (!started_)

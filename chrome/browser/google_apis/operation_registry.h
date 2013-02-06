@@ -111,8 +111,6 @@ class OperationRegistry {
     // that it removes the existing "suspend" operation.
     void NotifySuspend();
     void NotifyResume();
-    // Notifies that authentication has failed.
-    void NotifyAuthFailed(GDataErrorCode error);
 
    private:
     // Does the cancellation.
@@ -151,7 +149,6 @@ class OperationRegistry {
   void OnOperationSuspend(OperationID operation);
   void OnOperationResume(Operation* operation,
                          OperationProgressStatus* new_status);
-  void OnOperationAuthFailed(GDataErrorCode error);
 
   bool IsFileTransferOperation(const Operation* operation) const;
 
@@ -176,9 +173,6 @@ class OperationRegistryObserver {
  public:
   // Called when a GData operation started, made some progress, or finished.
   virtual void OnProgressUpdate(const OperationProgressStatusList& list) {}
-
-  // Called when GData authentication failed.
-  virtual void OnAuthenticationFailed(GDataErrorCode error) {}
 
  protected:
   virtual ~OperationRegistryObserver() {}
