@@ -26,8 +26,9 @@ extern "C" {
 
 namespace webkit_media {
 
-static const int kDecodeThreads = 1;
+static const int kDecodeThreads = 2;
 
+#if defined(USE_COPYPLANE_WITH_LIBVPX)
 static void CopyPlane(const uint8_t* source,
                       int32_t source_stride,
                       int32_t target_stride,
@@ -47,6 +48,7 @@ static void CopyPlane(const uint8_t* source,
            copy_bytes_per_row);
   }
 }
+#endif  // USE_COPYPLANE_WITH_LIBVPX
 
 LibvpxCdmVideoDecoder::LibvpxCdmVideoDecoder(cdm::Allocator* allocator)
     : is_initialized_(false),
