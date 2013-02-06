@@ -93,7 +93,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -254,7 +254,9 @@ TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
       , power_manager_observer_(NULL)
 #endif
       {
-  BrowserList::AddObserver(this);
+  // The automation layer doesn't support non-native desktops.
+  chrome::BrowserListImpl::GetInstance(
+      chrome::HOST_DESKTOP_TYPE_NATIVE)->AddObserver(this);
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_END,
                  content::NotificationService::AllSources());
 #if defined(OS_CHROMEOS)
@@ -266,7 +268,9 @@ TestingAutomationProvider::~TestingAutomationProvider() {
 #if defined(OS_CHROMEOS)
   RemoveChromeosObservers();
 #endif
-  BrowserList::RemoveObserver(this);
+  // The automation layer doesn't support non-native desktops.
+  chrome::BrowserListImpl::GetInstance(
+      chrome::HOST_DESKTOP_TYPE_NATIVE)->RemoveObserver(this);
 }
 
 IPC::Channel::Mode TestingAutomationProvider::GetChannelMode(
@@ -289,7 +293,10 @@ void TestingAutomationProvider::OnBrowserRemoved(Browser* browser) {
   // For backwards compatibility with the testing automation interface, we
   // want the automation provider (and hence the process) to go away when the
   // last browser goes away.
-  if (BrowserList::empty() && !CommandLine::ForCurrentProcess()->HasSwitch(
+  // The automation layer doesn't support non-native desktops.
+  if (chrome::BrowserListImpl::GetInstance(
+          chrome::HOST_DESKTOP_TYPE_NATIVE)->empty() &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kKeepAliveForTest)) {
     // If you change this, update Observer for chrome::SESSION_END
     // below.
@@ -606,7 +613,9 @@ void TestingAutomationProvider::Reload(int handle,
 }
 
 void TestingAutomationProvider::GetBrowserWindowCount(int* window_count) {
-  *window_count = static_cast<int>(BrowserList::size());
+  // The automation layer doesn't support non-native desktops.
+  *window_count = static_cast<int>(chrome::BrowserListImpl::GetInstance(
+                      chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
 }
 
 void TestingAutomationProvider::GetNormalBrowserWindowCount(int* window_count) {
@@ -1122,7 +1131,10 @@ void TestingAutomationProvider::GetBrowserWindowCountJSON(
     base::DictionaryValue* args,
     IPC::Message* reply_message) {
   DictionaryValue dict;
-  dict.SetInteger("count", static_cast<int>(BrowserList::size()));
+  // The automation layer doesn't support non-native desktops.
+  dict.SetInteger("count",
+                  static_cast<int>(chrome::BrowserListImpl::GetInstance(
+                      chrome::HOST_DESKTOP_TYPE_NATIVE)->size()));
   AutomationJSONReply(this, reply_message).SendSuccess(&dict);
 }
 
@@ -1512,7 +1524,10 @@ void TestingAutomationProvider::RemoveBookmark(DictionaryValue* args,
 void TestingAutomationProvider::WaitForBrowserWindowCountToBecome(
     int target_count,
     IPC::Message* reply_message) {
-  if (static_cast<int>(BrowserList::size()) == target_count) {
+  // The automation layer doesn't support non-native desktops.
+  int current_count = static_cast<int>(chrome::BrowserListImpl::GetInstance(
+                          chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
+  if (current_count == target_count) {
     AutomationMsg_WaitForBrowserWindowCountToBecome::WriteReplyParams(
         reply_message, true);
     Send(reply_message);

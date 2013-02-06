@@ -55,9 +55,10 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
@@ -819,7 +820,9 @@ void BrowserClosedNotificationObserver::Observe(
     return;
   }
 
-  int browser_count = static_cast<int>(BrowserList::size());
+  // The automation layer doesn't support non-native desktops.
+  int browser_count = static_cast<int>(chrome::BrowserListImpl::GetInstance(
+                          chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
   // We get the notification before the browser is removed from the BrowserList.
   bool app_closing = browser_count == 1;
 
@@ -866,7 +869,10 @@ void BrowserCountChangeNotificationObserver::Observe(
     const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BROWSER_OPENED ||
          type == chrome::NOTIFICATION_BROWSER_CLOSED);
-  int current_count = static_cast<int>(BrowserList::size());
+
+  // The automation layer doesn't support non-native desktops.
+  int current_count = static_cast<int>(chrome::BrowserListImpl::GetInstance(
+                          chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
   if (type == chrome::NOTIFICATION_BROWSER_CLOSED) {
     // At the time of the notification the browser being closed is not removed
     // from the list. The real count is one less than the reported count.

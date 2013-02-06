@@ -27,7 +27,8 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/automation_id.h"
@@ -154,9 +155,12 @@ void DeleteCookieOnIOThread(
 namespace automation_util {
 
 Browser* GetBrowserAt(int index) {
-  if (index < 0 || index >= static_cast<int>(BrowserList::size()))
+  // The automation layer doesn't support non-native desktops.
+  chrome::BrowserListImpl* native_list =
+      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  if (index < 0 || index >= static_cast<int>(native_list->size()))
     return NULL;
-  return *(BrowserList::begin() + index);
+  return native_list->get(index);
 }
 
 WebContents* GetWebContentsAt(int browser_index, int tab_index) {

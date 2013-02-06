@@ -53,6 +53,8 @@ class BrowserListImpl {
   bool empty() const { return browsers_.empty(); }
   size_t size() const { return browsers_.size(); }
 
+  Browser* get(size_t index) const { return browsers_[index]; }
+
   // Returns iterated access to list of open browsers ordered by when
   // they were last active. The underlying data structure is a vector
   // and we push_back on recent access so a reverse iterator gives the
