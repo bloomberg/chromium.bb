@@ -544,13 +544,17 @@ void LoginUtilsImpl::CompleteProfileCreate(Profile* user_profile) {
 
 void LoginUtilsImpl::RestoreAuthSession(Profile* user_profile,
                                         bool restore_from_auth_cookies) {
-  DCHECK(authenticator_ || !restore_from_auth_cookies);
+  CHECK((authenticator_ && authenticator_->authentication_profile()) ||
+        !restore_from_auth_cookies);
+  if (!login_manager_.get())
+    return;
+
   // Remove legacy OAuth1 token if we have one. If it's valid, we should already
   // have OAuth2 refresh token in TokenService that could be used to retrieve
   // all other tokens and credentials.
   login_manager_->RestoreSession(
       user_profile,
-      authenticator_ ?
+      authenticator_ && authenticator_->authentication_profile() ?
           authenticator_->authentication_profile()->GetRequestContext() :
           NULL,
       restore_from_auth_cookies);
