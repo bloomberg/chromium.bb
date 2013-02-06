@@ -82,6 +82,8 @@ def _CheckHeadingIDs(input_api):
   headings_re = re.compile('<h[23].*?>')
   bad_files = []
   for name in input_api.AbsoluteLocalPaths():
+    if not os.path.exists(name):
+      continue
     if (fnmatch.fnmatch(name, '*%s*' % INTROS_PATH) or
         fnmatch.fnmatch(name, '*%s*' % ARTICLES_PATH)):
       contents = input_api.ReadFile(name)
@@ -112,6 +114,8 @@ def _CheckLinks(input_api, output_api, results):
   for affected_file in input_api.AffectedFiles():
     name = affected_file.LocalPath()
     absolute_path = affected_file.AbsoluteLocalPath()
+    if not os.path.exists(absolute_path):
+      continue
     if (fnmatch.fnmatch(name, '%s*' % PUBLIC_TEMPLATES_PATH) or
         fnmatch.fnmatch(name, '%s*' % INTROS_PATH) or
         fnmatch.fnmatch(name, '%s*' % ARTICLES_PATH) or
