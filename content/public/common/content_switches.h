@@ -186,6 +186,7 @@ extern const char kShowCompositedLayerBorders[];
 extern const char kShowCompositedLayerTree[];
 extern const char kShowFPSCounter[];
 extern const char kEnableAcceleratedOverflowScroll[];
+extern const char kDisableAcceleratedOverflowScroll[];
 extern const char kEnableAcceleratedScrollableFrames[];
 extern const char kEnableCompositedScrollingForFrames[];
 extern const char kShowPaintRects[];

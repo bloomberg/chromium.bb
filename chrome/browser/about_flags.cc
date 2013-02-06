@@ -150,6 +150,14 @@ const Experiment::Choice kThreadedCompositingModeChoices[] = {
     switches::kEnableThreadedCompositing, ""}
 };
 
+const Experiment::Choice kForceAcceleratedOverflowScrollModeChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisableAcceleratedOverflowScroll, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kEnableAcceleratedOverflowScroll, ""}
+};
+
 const Experiment::Choice kGDIPresentChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_PRESENT_WITH_GDI_FIRST_SHOW,
@@ -346,6 +354,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_THREADED_COMPOSITING_MODE_DESCRIPTION,
     kOsDesktop & ~kOsCrOS,
     MULTI_VALUE_TYPE(kThreadedCompositingModeChoices)
+  },
+  {
+    "force-accelerated-composited-scrolling",
+     IDS_FLAGS_FORCE_ACCELERATED_OVERFLOW_SCROLL_MODE_NAME,
+     IDS_FLAGS_FORCE_ACCELERATED_OVERFLOW_SCROLL_MODE_DESCRIPTION,
+     kOsAll,
+     MULTI_VALUE_TYPE(kForceAcceleratedOverflowScrollModeChoices)
   },
   {
     "present-with-GDI",

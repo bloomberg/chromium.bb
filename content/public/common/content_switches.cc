@@ -612,6 +612,10 @@ const char kShowFPSCounter[]                = "show-fps-counter";
 const char kEnableAcceleratedOverflowScroll[] =
     "enable-accelerated-overflow-scroll";
 
+// Disables accelerated compositing for overflow scroll.
+extern const char kDisableAcceleratedOverflowScroll[] =
+    "disable-accelerated-overflow-scroll";
+
 // Enables accelerated compositing for scrollable frames for accelerated
 // scrolling for them. Requires kForceCompositingMode.
 const char kEnableAcceleratedScrollableFrames[] =

@@ -728,6 +728,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kAllowWebUICompositing,
       ::switches::kDeviceManagementUrl,
       ::switches::kDisableAccelerated2dCanvas,
+      ::switches::kDisableAcceleratedOverflowScroll,
       ::switches::kDisableAcceleratedPlugins,
       ::switches::kDisableAcceleratedVideoDecode,
       ::switches::kDisableEncryptedMedia,
