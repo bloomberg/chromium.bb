@@ -161,6 +161,22 @@ void VisitCountsToVisitedBefore(
       (first_visit.LocalMidnight() < base::Time::Now().LocalMidnight()));
 }
 
+// Returns a file path in the form that is expected by
+// platform_util::OpenItem/ShowItemInFolder, including any transformation
+// required for download abstractions layered on top of the core system,
+// e.g. download to Drive.
+FilePath GetPlatformDownloadPath(Profile* profile,
+                                 const DownloadItem* download) {
+#if defined(OS_CHROMEOS)
+  drive::DriveDownloadHandler* drive_download_handler =
+      drive::DriveDownloadHandler::GetForProfile(profile);
+  if (drive_download_handler &&
+      drive_download_handler->IsDriveDownload(download))
+    return drive_download_handler->GetTargetPath(download);
+#endif
+  return download->GetFullPath();
+}
+
 }  // namespace
 
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
@@ -531,17 +547,26 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
 }
 
 void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
-  platform_util::OpenItem(download->GetFullPath());
+  platform_util::OpenItem(GetPlatformDownloadPath(profile_, download));
 }
 
 void ChromeDownloadManagerDelegate::ShowDownloadInShell(
     DownloadItem* download) {
-  platform_util::ShowItemInFolder(download->GetFullPath());
+  platform_util::ShowItemInFolder(GetPlatformDownloadPath(profile_, download));
 }
 
 void ChromeDownloadManagerDelegate::CheckForFileExistence(
     DownloadItem* download,
     const content::CheckForFileExistenceCallback& callback) {
+#if defined(OS_CHROMEOS)
+  drive::DriveDownloadHandler* drive_download_handler =
+      drive::DriveDownloadHandler::GetForProfile(profile_);
+  if (drive_download_handler &&
+      drive_download_handler->IsDriveDownload(download)) {
+    drive_download_handler->CheckForFileExistence(download, callback);
+    return;
+  }
+#endif
   BrowserThread::PostTaskAndReplyWithResult(BrowserThread::FILE, FROM_HERE,
                                             base::Bind(&file_util::PathExists,
                                                        download->GetFullPath()),

@@ -73,6 +73,14 @@ void MoveDownloadedFile(const FilePath& downloaded_file,
   file_util::Move(downloaded_file, dest_path);
 }
 
+// Used to implement CheckForFileExistence().
+void ContinueCheckingForFileExistence(
+    const content::CheckForFileExistenceCallback& callback,
+    DriveFileError error,
+    scoped_ptr<DriveEntryProto> entry_proto) {
+  callback.Run(error == DRIVE_FILE_OK);
+}
+
 }  // namespace
 
 DriveDownloadHandler::DriveDownloadHandler(
@@ -163,6 +171,15 @@ bool DriveDownloadHandler::IsDriveDownload(const DownloadItem* download) {
   // We use the existence of the DriveUserData object in download as a
   // signal that this is a DriveDownload.
   return GetDriveUserData(download) != NULL;
+}
+
+void DriveDownloadHandler::CheckForFileExistence(
+    const DownloadItem* download,
+    const content::CheckForFileExistenceCallback& callback) {
+  file_system_->GetEntryInfoByPath(
+      util::ExtractDrivePath(GetTargetPath(download)),
+      base::Bind(&ContinueCheckingForFileExistence,
+                 callback));
 }
 
 void DriveDownloadHandler::OnDownloadUpdated(

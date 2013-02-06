@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
+#include "content/public/browser/download_manager_delegate.h"
 
 class Profile;
 
@@ -59,6 +60,11 @@ class DriveDownloadHandler : public AllDownloadItemNotifier::Observer {
 
   // Checks if there is a Drive upload associated with |download|
   bool IsDriveDownload(const content::DownloadItem* download);
+
+  // Checks a file corresponding to the download item exists in Drive.
+  void CheckForFileExistence(
+      const content::DownloadItem* download,
+      const content::CheckForFileExistenceCallback& callback);
 
  private:
   // AllDownloadItemNotifier::Observer
