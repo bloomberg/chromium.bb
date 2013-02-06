@@ -360,6 +360,7 @@ WebKitPlatformSupportImpl::WebKitPlatformSupportImpl()
     : main_loop_(MessageLoop::current()),
       shared_timer_func_(NULL),
       shared_timer_fire_time_(0.0),
+      shared_timer_fire_time_was_set_while_suspended_(false),
       shared_timer_suspended_(0),
       current_thread_slot_(&DestroyCurrentThread),
       compositor_support_(new webkit::WebCompositorSupportImpl),
@@ -733,8 +734,10 @@ void WebKitPlatformSupportImpl::setSharedTimerFiredFunction(void (*func)()) {
 void WebKitPlatformSupportImpl::setSharedTimerFireInterval(
     double interval_seconds) {
   shared_timer_fire_time_ = interval_seconds + monotonicallyIncreasingTime();
-  if (shared_timer_suspended_)
+  if (shared_timer_suspended_) {
+    shared_timer_fire_time_was_set_while_suspended_ = true;
     return;
+  }
 
   // By converting between double and int64 representation, we run the risk
   // of losing precision due to rounding errors. Performing computations in
@@ -877,7 +880,10 @@ void WebKitPlatformSupportImpl::SuspendSharedTimer() {
 
 void WebKitPlatformSupportImpl::ResumeSharedTimer() {
   // The shared timer may have fired or been adjusted while we were suspended.
-  if (--shared_timer_suspended_ == 0 && !shared_timer_.IsRunning()) {
+  if (--shared_timer_suspended_ == 0 &&
+      (!shared_timer_.IsRunning() ||
+       shared_timer_fire_time_was_set_while_suspended_)) {
+    shared_timer_fire_time_was_set_while_suspended_ = false;
     setSharedTimerFireInterval(
         shared_timer_fire_time_ - monotonicallyIncreasingTime());
   }

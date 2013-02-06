@@ -173,6 +173,7 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   base::OneShotTimer<WebKitPlatformSupportImpl> shared_timer_;
   void (*shared_timer_func_)();
   double shared_timer_fire_time_;
+  bool shared_timer_fire_time_was_set_while_suspended_;
   int shared_timer_suspended_;  // counter
   WebThemeEngineImpl theme_engine_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
