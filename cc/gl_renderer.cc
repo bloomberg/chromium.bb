@@ -51,6 +51,23 @@ namespace cc {
 
 namespace {
 
+// TODO(epenner): This should probably be moved to output surface.
+//
+// This implements a simple fence based on client side swaps.
+// This is to isolate the ResourceProvider from 'frames' which
+// it shouldn't need to care about, while still allowing us to
+// enforce good texture recycling behavior strictly throughout
+// the compositor (don't recycle a texture while it's in use).
+class SimpleSwapFence : public ResourceProvider::Fence {
+public:
+    SimpleSwapFence() : m_hasPassed(false) {}
+    virtual bool hasPassed() OVERRIDE { return m_hasPassed; }
+    void setHasPassed() { m_hasPassed = true; }
+private:
+    virtual ~SimpleSwapFence() {}
+    bool m_hasPassed;
+};
+
 bool needsIOSurfaceReadbackWorkaround()
 {
 #if defined(OS_MACOSX)
@@ -1289,6 +1306,11 @@ bool GLRenderer::swapBuffers()
 
     TRACE_EVENT0("cc", "GLRenderer::swapBuffers");
     // We're done! Time to swapbuffers!
+
+    scoped_refptr<ResourceProvider::Fence> lastSwapFence = m_resourceProvider->getReadLockFence();
+    if (lastSwapFence)
+        static_cast<SimpleSwapFence*>(lastSwapFence.get())->setHasPassed();
+    m_resourceProvider->setReadLockFence(new SimpleSwapFence());
 
     if (m_capabilities.usingPartialSwap) {
         // If supported, we can save significant bandwidth by only swapping the damaged/scissored region (clamped to the viewport)

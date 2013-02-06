@@ -61,6 +61,8 @@ ResourceProvider::Resource::Resource()
     , markedForDeletion(false)
     , pendingSetPixels(false)
     , allocated(false)
+    , enableReadLockFences(false)
+    , readLockFence(NULL)
     , size()
     , format(0)
     , filter(0)
@@ -85,6 +87,8 @@ ResourceProvider::Resource::Resource(unsigned textureId, const gfx::Size& size, 
     , markedForDeletion(false)
     , pendingSetPixels(false)
     , allocated(false)
+    , enableReadLockFences(false)
+    , readLockFence(NULL)
     , size(size)
     , format(format)
     , filter(filter)
@@ -105,6 +109,8 @@ ResourceProvider::Resource::Resource(uint8_t* pixels, const gfx::Size& size, GLe
     , markedForDeletion(false)
     , pendingSetPixels(false)
     , allocated(false)
+    , enableReadLockFences(false)
+    , readLockFence(NULL)
     , size(size)
     , format(format)
     , filter(filter)
@@ -328,6 +334,7 @@ void ResourceProvider::setPixels(ResourceId id, const uint8_t* image, const gfx:
     DCHECK(!resource->lockForReadCount);
     DCHECK(!resource->external);
     DCHECK(!resource->exported);
+    DCHECK(readLockFenceHasPassed(resource));
     lazyAllocate(resource);
 
     if (resource->glId) {
@@ -435,6 +442,9 @@ const ResourceProvider::Resource* ResourceProvider::lockForRead(ResourceId id)
     }
 
     resource->lockForReadCount++;
+    if (resource->enableReadLockFences)
+        resource->readLockFence = m_currentReadLockFence;
+
     return resource;
 }
 
@@ -459,10 +469,24 @@ const ResourceProvider::Resource* ResourceProvider::lockForWrite(ResourceId id)
     DCHECK(!resource->lockForReadCount);
     DCHECK(!resource->exported);
     DCHECK(!resource->external);
+    DCHECK(readLockFenceHasPassed(resource));
     lazyAllocate(resource);
 
     resource->lockedForWrite = true;
     return resource;
+}
+
+bool ResourceProvider::canLockForWrite(ResourceId id)
+{
+    DCHECK(m_threadChecker.CalledOnValidThread());
+    ResourceMap::iterator it = m_resources.find(id);
+    CHECK(it != m_resources.end());
+    Resource* resource = &it->second;
+    return !resource->lockedForWrite &&
+           !resource->lockForReadCount &&
+           !resource->exported &&
+           !resource->external &&
+           readLockFenceHasPassed(resource);
 }
 
 void ResourceProvider::unlockForWrite(ResourceId id)
@@ -886,6 +910,7 @@ void ResourceProvider::setPixelsFromBuffer(ResourceId id)
     DCHECK(!resource->lockForReadCount);
     DCHECK(!resource->external);
     DCHECK(!resource->exported);
+    DCHECK(readLockFenceHasPassed(resource));
     lazyAllocate(resource);
 
     if (resource->glId) {
@@ -949,6 +974,7 @@ void ResourceProvider::beginSetPixels(ResourceId id)
     Resource* resource = &it->second;
     DCHECK(!resource->pendingSetPixels);
     DCHECK(resource->glId || resource->allocated);
+    DCHECK(readLockFenceHasPassed(resource));
 
     bool allocate = !resource->allocated;
     resource->allocated = true;
@@ -1038,7 +1064,6 @@ void ResourceProvider::lazyAllocate(Resource* resource) {
 
     if (resource->allocated || !resource->glId)
         return;
-
     resource->allocated = true;
     WebGraphicsContext3D* context3d = m_outputSurface->Context3D();
     gfx::Size& size = resource->size;
@@ -1051,5 +1076,12 @@ void ResourceProvider::lazyAllocate(Resource* resource) {
         GLC(context3d, context3d->texImage2D(GL_TEXTURE_2D, 0, format, size.width(), size.height(), 0, format, GL_UNSIGNED_BYTE, 0));
 }
 
+void ResourceProvider::enableReadLockFences(ResourceProvider::ResourceId id, bool enable) {
+    DCHECK(m_threadChecker.CalledOnValidThread());
+    ResourceMap::iterator it = m_resources.find(id);
+    CHECK(it != m_resources.end());
+    Resource* resource = &it->second;
+    resource->enableReadLockFences = enable;
+}
 
 }  // namespace cc

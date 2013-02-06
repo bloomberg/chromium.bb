@@ -43,6 +43,12 @@ scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
        it != resources_.end(); ++it) {
     Resource* resource = *it;
 
+    // TODO(epenner): It would be nice to DCHECK that this
+    // doesn't happen two frames in a row for any resource
+    // in this pool.
+    if (!resource_provider_->canLockForWrite(resource->id()))
+      continue;
+
     if (resource->size() != size)
       continue;
     if (resource->format() != format)
@@ -55,6 +61,12 @@ scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
   // Create new resource.
   Resource* resource = new Resource(
       resource_provider_, size, format);
+
+  // Extend all read locks on all resources until the resource is
+  // finished being used, such that we know when resources are
+  // truly safe to recycle.
+  resource_provider_->enableReadLockFences(resource->id(), true);
+
   memory_usage_bytes_ += resource->bytes();
   return make_scoped_ptr(resource);
 }
