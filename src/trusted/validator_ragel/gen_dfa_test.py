@@ -88,6 +88,14 @@ class TestInstruction(unittest.TestCase):
         'mfence, 0x0f 0xae 0xf0, CPUFeature_SSE2')
     assert not instr.HasModRM()
 
+  def test_collect_prefixes(self):
+    instr = gen_dfa.Instruction.Parse('pause, 0xf3 0x90, norex')
+
+    instr.CollectPrefixes()
+
+    self.assertEquals(instr.required_prefixes, ['0xf3'])
+    self.assertEquals(instr.opcodes, ['0x90'])
+
 
 class TestPrinterParts(unittest.TestCase):
 

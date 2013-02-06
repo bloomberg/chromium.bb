@@ -156,7 +156,22 @@ class Instruction(object):
     if Attribute('rep') in self.attributes:
       self.optional_prefixes.append('rep')
 
-    # TODO(shcherbina): handle REXW and legacy prefixes in opcodes here as well.
+    while True:
+      opcode = self.opcodes[0]
+      if opcode == 'rexw':
+        self.rex.w_set = True
+      elif opcode in [
+          'data16',
+          '0x66',  # data16 as well (the difference is that it is treated as
+                   # part of opcode, and not as operand size indicator)
+          '0xf0',  # lock
+          '0xf2',  # rep(nz)
+          '0xf3']:  # repz/condrep/branch_hint
+        self.required_prefixes.append(opcode)
+      else:
+        # Prefixes ended, we get to the regular part of the opcode.
+        break
+      del self.opcodes[0]
 
   @staticmethod
   def Parse(line):
