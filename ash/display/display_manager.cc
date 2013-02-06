@@ -232,16 +232,28 @@ void DisplayManager::OnNativeDisplaysChanged(
 void DisplayManager::UpdateDisplays(
     const std::vector<gfx::Display>& updated_displays) {
   DisplayList new_displays = updated_displays;
-
-  for (DisplayList::iterator iter = new_displays.begin();
-       iter != new_displays.end(); ++iter) {
-    std::map<int64, DisplayInfo>::const_iterator info =
-        display_info_.find(iter->id());
-    if (info != display_info_.end()) {
-      gfx::Rect bounds = info->second.original_bounds_in_pixel;
-      bounds.Inset(info->second.overscan_insets_in_dip.Scale(
-          iter->device_scale_factor()));
-      iter->SetScaleAndBounds(iter->device_scale_factor(), bounds);
+#if defined(OS_CHROMEOS)
+  // Overscan is always enabled when not running on the device
+  // in order for unit tests to work.
+  bool can_overscan =
+      !base::chromeos::IsRunningOnChromeOS() ||
+      (Shell::GetInstance()->output_configurator()->output_state() !=
+       chromeos::STATE_DUAL_MIRROR &&
+       updated_displays.size() == 1);
+#else
+  bool can_overscan = true;
+#endif
+  if (can_overscan) {
+    for (DisplayList::iterator iter = new_displays.begin();
+         iter != new_displays.end(); ++iter) {
+      std::map<int64, DisplayInfo>::const_iterator info =
+          display_info_.find(iter->id());
+      if (info != display_info_.end()) {
+        gfx::Rect bounds = info->second.original_bounds_in_pixel;
+        bounds.Inset(info->second.overscan_insets_in_dip.Scale(
+            iter->device_scale_factor()));
+        iter->SetScaleAndBounds(iter->device_scale_factor(), bounds);
+      }
     }
   }
 
