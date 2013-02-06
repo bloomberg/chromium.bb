@@ -1942,7 +1942,15 @@ void TabStrip::StoppedDraggingTab(Tab* tab, bool* is_first_tab) {
 }
 
 void TabStrip::OwnDragController(TabDragController* controller) {
-  drag_controller_.reset(controller);
+  // Typically, ReleaseDragController() and OwnDragController() calls are paired
+  // via corresponding calls to TabDragController::Detach() and
+  // TabDragController::Attach(). There is one exception to that rule: when a
+  // drag might start, we create a TabDragController that is owned by the
+  // potential source tabstrip in MaybeStartDrag(). If a drag actually starts,
+  // we then call Attach() on the source tabstrip, but since the source tabstrip
+  // already owns the TabDragController, so we don't need to do anything.
+  if (controller != drag_controller_.get())
+    drag_controller_.reset(controller);
 }
 
 void TabStrip::DestroyDragController() {
