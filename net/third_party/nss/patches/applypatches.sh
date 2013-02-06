@@ -41,3 +41,5 @@ patch -p5 < $patches_dir/sslkeylogerror.patch
 patch -p5 < $patches_dir/ecpointform.patch
 
 patch -p5 < $patches_dir/secretexporterlocks.patch
+
+patch -p6 < $patches_dir/cbc.patch

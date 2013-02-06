@@ -83,6 +83,11 @@ Patches:
     This change was made in https://chromiumcodereview.appspot.com/10454066.
     patches/secretexporterlocks.patch
 
+  * Implement CBC processing in constant-time to address the "Lucky Thirteen"
+    attack.
+    patches/cbc.patch
+    https://bugzilla.mozilla.org/show_bug.cgi?id=822365
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 
