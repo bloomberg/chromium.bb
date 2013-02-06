@@ -221,8 +221,40 @@ public:
 void TileManager::SortTiles() {
   TRACE_EVENT0("cc", "TileManager::SortTiles");
 
+  if (tiles_.size() == 0) {
+    TRACE_COUNTER_ID1("cc", "LiveTileCount", this, 0);
+    return;
+  }
+
+  TileVector::iterator i = tiles_.begin();
+  TileVector::iterator j = tiles_.end() - 1;
+
+  // Sift the live tiles to the front of the list.
+  while (i != j) {
+    while (i != j && (
+        !(*j)->priority( ACTIVE_TREE).is_live &&
+        !(*j)->priority(PENDING_TREE).is_live))
+      j--;
+
+    // j now points to i or a live tile.
+    while (i != j && (
+        (*i)->priority( ACTIVE_TREE).is_live ||
+        (*i)->priority(PENDING_TREE).is_live))
+      i++;
+    // i now points to j or a non-live tile.
+    if (i == j)
+      break;
+
+    // If i does not equal j then we'll swap them.
+    Tile* temp = *i;
+    *i = *j;
+    *j = temp;
+  }
+
+  TRACE_COUNTER_ID1("cc", "LiveTileCount", this, i + 1 - tiles_.begin());
+
   // Sort by bin, resolution and time until needed.
-  std::sort(tiles_.begin(), tiles_.end(), BinComparator());
+  std::sort(tiles_.begin(), i + 1, BinComparator());
 }
 
 void TileManager::ManageTiles() {
