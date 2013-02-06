@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'https://chromium.googlesource.com',
     'webkit_rev':
-         '@33c3839fffc3f73bc52971e23ef999e84234b925'
+         '@7e08824ee1541541afcbe1097732798dbc7732e4'
 }
 
 deps = {
@@ -116,7 +116,7 @@ deps = {
     'src/third_party/undoview':
         Var('git_url') + '/chromium/deps/undoview.git@3ba503e248f3cdbd81b78325a24ece0984637559',
     'src/third_party/v8-i18n':
-        Var('git_url') + '/external/v8-i18n.git@66be796a52483495dc2ab7c8456613225d72dc5c',
+        Var('git_url') + '/external/v8-i18n.git@13b5988678d2480ef8180f4a4db48a2121c1d386',
     'src/third_party/webdriver/pylib':
         Var('git_url') + '/external/selenium/py.git@304801aede8d4b52a30657201aefed7479c0c9dd',
     'src/third_party/webgl_conformance':
@@ -272,7 +272,7 @@ deps_os = {
         'src/third_party/libyuv':
             None,
         'src/third_party/nss':
-            Var('git_url') + '/chromium/deps/nss.git@d7cab77d620db7208fb2eb157e0e61b44632425c',
+            Var('git_url') + '/chromium/deps/nss.git@706698100bb24432cda58aa6f1684450bd68a20f',
         'src/third_party/ots':
             None,
         'src/third_party/pylib':
@@ -321,7 +321,7 @@ deps_os = {
         'src/third_party/lighttpd':
             Var('git_url') + '/chromium/deps/lighttpd.git@9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
         'src/third_party/nss':
-            Var('git_url') + '/chromium/deps/nss.git@d7cab77d620db7208fb2eb157e0e61b44632425c',
+            Var('git_url') + '/chromium/deps/nss.git@706698100bb24432cda58aa6f1684450bd68a20f',
         'src/third_party/pdfsqueeze':
             Var('git_url') + '/external/pdfsqueeze.git@5936b871e6a087b7e50d4cbcb122378d8a07499f',
         'src/third_party/swig/mac':
@@ -371,7 +371,7 @@ deps_os = {
         'src/third_party/nacl_sdk_binaries':
             Var('git_url') + '/chromium/deps/nacl_sdk_binaries.git@759dfca03bdc774da7ecbf974f6e2b84f43699a5',
         'src/third_party/nss':
-            Var('git_url') + '/chromium/deps/nss.git@d7cab77d620db7208fb2eb157e0e61b44632425c',
+            Var('git_url') + '/chromium/deps/nss.git@706698100bb24432cda58aa6f1684450bd68a20f',
         'src/third_party/pefile':
             Var('git_url') + '/external/pefile.git@d0ca75794f69f1d09fd6d31d40ba2f1e9b3b7fb4',
         'src/third_party/perl':
