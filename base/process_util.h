@@ -197,6 +197,12 @@ BASE_EXPORT FilePath GetProcessExecutablePath(ProcessHandle process);
 // Exposed for testing.
 BASE_EXPORT int ParseProcStatCPU(const std::string& input);
 
+// Get the number of threads of |process| as available in /proc/<pid>/stat.
+// This should be used with care as no synchronization with running threads is
+// done. This is mostly useful to guarantee being single-threaded.
+// Returns 0 on failure.
+BASE_EXPORT int GetNumberOfThreads(ProcessHandle process);
+
 // The maximum allowed value for the OOM score.
 const int kMaxOomScore = 1000;
 

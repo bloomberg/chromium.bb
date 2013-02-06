@@ -46,6 +46,7 @@ enum ProcStatsFields {
   VM_PGRP           = 4,   // Process group id.
   VM_UTIME          = 13,  // Time scheduled in user mode in clock ticks.
   VM_STIME          = 14,  // Time scheduled in kernel mode in clock ticks.
+  VM_NUMTHREADS     = 19,  // Number of threads.
   VM_VSIZE          = 22,  // Virtual memory size in bytes.
   VM_RSS            = 23,  // Resident Set Size in pages.
 };
@@ -592,6 +593,10 @@ int ParseProcStatCPU(const std::string& input) {
   int utime = GetProcStatsFieldAsInt(proc_stats, VM_UTIME);
   int stime = GetProcStatsFieldAsInt(proc_stats, VM_STIME);
   return utime + stime;
+}
+
+int GetNumberOfThreads(ProcessHandle process) {
+  return ReadProcStatsAndGetFieldAsInt(process, VM_NUMTHREADS);
 }
 
 namespace {
