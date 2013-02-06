@@ -29,7 +29,15 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptInFrame) {
   ASSERT_TRUE(RunExtensionTest("executescript/in_frame")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptPermissions) {
+// Fails often on Windows.
+// http://crbug.com/174715
+#if defined(OS_WIN)
+#define MAYBE_ExecuteScriptPermissions DISABLED_ExecuteScriptPermissions
+#else
+#define MAYBE_ExecuteScriptPermissions ExecuteScriptPermissions
+#endif  // defined(OS_WIN)
+
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, MAYBE_ExecuteScriptPermissions) {
   SetupDelayedHostResolver();
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/permissions")) << message_;
