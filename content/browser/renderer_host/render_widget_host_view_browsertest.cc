@@ -23,7 +23,7 @@ namespace content {
 
 class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
  public:
-  RenderWidgetHostViewBrowserTest() : finish_called_(false) {}
+  RenderWidgetHostViewBrowserTest() : finish_called_(false), size_(400, 300) {}
 
   virtual void SetUpInProcessBrowserTestFixture() {
     ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &test_dir_));
@@ -33,15 +33,46 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
     ui::DisableTestCompositor();
   }
 
-  void FinishCopyFromBackingStore(bool expected_result, bool result,
+#if defined(OS_MACOSX)
+  void SetupCompositingSurface() {
+    NavigateToURL(shell(), net::FilePathToFileURL(
+        test_dir_.AppendASCII("rwhv_compositing_static.html")));
+
+    RenderViewHost* const rwh =
+        shell()->web_contents()->GetRenderViewHost();
+    RenderWidgetHostViewPort* rwhvp =
+        static_cast<RenderWidgetHostViewPort*>(rwh->GetView());
+
+    // Wait until an IoSurface is created by repeatedly resizing the window.
+    // TODO(justinlin): Find a better way to force an IoSurface when possible.
+    int increment = 0;
+    while (!rwhvp->HasAcceleratedSurface(gfx::Size())) {
+      base::RunLoop run_loop;
+      SetWindowBounds(shell()->window(), gfx::Rect(size_.width() + increment,
+                                                   size_.height()));
+      // Wait for any ViewHostMsg_CompositorSurfaceBuffersSwapped message.
+      run_loop.RunUntilIdle();
+      increment++;
+      ASSERT_LT(increment, 50);
+    }
+  }
+#endif
+
+  void FinishCopyFromBackingStore(bool expected_result,
+                                  const base::Callback<void ()> quit_closure,
+                                  bool result,
                                   const SkBitmap& bitmap) {
+    quit_closure.Run();
     ASSERT_EQ(expected_result, result);
+    if (expected_result)
+      ASSERT_FALSE(bitmap.empty());
     finish_called_ = true;
   }
 
  protected:
   FilePath test_dir_;
   bool finish_called_;
+  gfx::Size size_;
 };
 
 #if defined(OS_MACOSX)
@@ -52,40 +83,45 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
   if (!IOSurfaceSupport::Initialize())
     return;
 
-  NavigateToURL(shell(), net::FilePathToFileURL(
-      test_dir_.AppendASCII("rwhv_compositing_static.html")));
+  SetupCompositingSurface();
+
+  base::RunLoop run_loop;
 
   RenderViewHost* const rwh =
       shell()->web_contents()->GetRenderViewHost();
   RenderWidgetHostViewPort* rwhvp =
       static_cast<RenderWidgetHostViewPort*>(rwh->GetView());
 
-  // Wait until an IoSurface is created by repeatedly resizing the window.
-  // TODO(justinlin): Find a better way to force an IoSurface when possible.
-  gfx::Size size(400, 300);
-  int increment = 0;
-  while (!rwhvp->HasAcceleratedSurface(gfx::Size())) {
-    base::RunLoop run_loop;
-    SetWindowBounds(shell()->window(), gfx::Rect(size.width() + increment,
-                                                 size.height()));
-    // Wait for any ViewHostMsg_CompositorSurfaceBuffersSwapped message to post.
-    run_loop.RunUntilIdle();
-    increment++;
-    ASSERT_LT(increment, 50);
-  }
-
   rwh->CopyFromBackingStore(
       gfx::Rect(),
-      size,
+      size_,
       base::Bind(&RenderWidgetHostViewBrowserTest::FinishCopyFromBackingStore,
-                 base::Unretained(this), false));
+                 base::Unretained(this), false, run_loop.QuitClosure()));
 
   // Delete the surface before the callback is run. This is synchronous until
   // we get to the copy_timer_, so we will always end up in the destructor
   // before the timer fires.
   rwhvp->AcceleratedSurfaceRelease();
+  run_loop.Run();
+
+  ASSERT_TRUE(finish_called_);
+}
+
+// TODO(justinlin): Enable this test for other platforms.
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
+                       MacAsyncCopyFromBackingStoreTest) {
+  if (!IOSurfaceSupport::Initialize())
+    return;
+
+  SetupCompositingSurface();
+
   base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  shell()->web_contents()->GetRenderViewHost()->CopyFromBackingStore(
+      gfx::Rect(),
+      size_,
+      base::Bind(&RenderWidgetHostViewBrowserTest::FinishCopyFromBackingStore,
+                 base::Unretained(this), true, run_loop.QuitClosure()));
+  run_loop.Run();
 
   ASSERT_TRUE(finish_called_);
 }

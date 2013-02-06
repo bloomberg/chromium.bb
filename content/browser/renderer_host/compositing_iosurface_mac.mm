@@ -865,11 +865,14 @@ void CompositingIOSurfaceMac::FinishCopy() {
   }
   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0); CHECK_GL_ERROR();
 
+  // Ref so they don't get deleted in CleanupResourcesForCopy.
   base::Callback<void(bool, const SkBitmap&)> callback = copy_context_.callback;
+  SkBitmap out_buf = copy_context_.out_buf;
+
   CleanupResourcesForCopy();
   CGLSetCurrentContext(0);
 
-  callback.Run(buf != NULL, copy_context_.out_buf);
+  callback.Run(buf != NULL, out_buf);
 }
 
 void CompositingIOSurfaceMac::CleanupResourcesForCopy() {
