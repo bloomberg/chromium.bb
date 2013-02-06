@@ -130,9 +130,9 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
   ASSERT_EQ(2U, result->size());
 
   // The results should be sorted by the last accessed time.
-  EXPECT_EQ(12970368000000000,
+  EXPECT_EQ(12970368000000000LL,
             result->at(0).entry_proto.file_info().last_accessed());
-  EXPECT_EQ(12969849600000000,
+  EXPECT_EQ(12969849600000000LL,
             result->at(1).entry_proto.file_info().last_accessed());
 
   // All base names should contain "File".
