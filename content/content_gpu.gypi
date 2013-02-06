@@ -45,6 +45,14 @@
           '-lsetupapi.lib',
         ],
       },
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)',
+          'files': [
+            '<(windows_sdk_path)/Redist/D3D/x86/d3dcompiler_46.dll',
+          ],
+        },
+      ],
     }],
     ['OS=="win" and directxsdk_exists=="True"', {
       'actions': [

@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/win/windows_version.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -29,10 +30,10 @@ namespace gfx {
 
 namespace {
 
-// This is the D3DX_SDK_VERSION for the last 'separate' DirectX SDK which
-// is from June 2010. Since June 2012 Microsoft includes DirectX in the regular
-// Windows SDK and the D3DX library has been deprecated.
-const int kPinnedD3DXVersion = 43;
+// Version 43 is the latest version of D3DCompiler_nn.dll that works prior to
+// Windows Vista.
+const wchar_t kPreVistaD3DCompiler[] = L"D3DCompiler_43.dll";
+const wchar_t kPostVistaD3DCompiler[] = L"D3DCompiler_46.dll";
 
 void GL_BINDING_CALL MarshalClearDepthToClearDepthf(GLclampd depth) {
   glClearDepthf(static_cast<GLclampf>(depth));
@@ -118,9 +119,11 @@ bool InitializeGLBindings(GLImplementation implementation) {
       // Attempt to load the D3DX shader compiler using the default search path
       // and if that fails, using an absolute path. This is to ensure these DLLs
       // are loaded before ANGLE is loaded in case they are not in the default
-      // search path.
-      LoadD3DXLibrary(module_path, base::StringPrintf(L"d3dcompiler_%d.dll",
-                                                      kPinnedD3DXVersion));
+      // search path. Prefer the post vista version.
+      if (base::win::GetVersion() < base::win::VERSION_VISTA ||
+          !LoadD3DXLibrary(module_path, kPostVistaD3DCompiler)) {
+        LoadD3DXLibrary(module_path, kPreVistaD3DCompiler);
+      }
 
       FilePath gles_path;
       const CommandLine* command_line = CommandLine::ForCurrentProcess();
