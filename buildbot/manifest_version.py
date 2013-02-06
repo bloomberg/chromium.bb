@@ -172,36 +172,15 @@ class VersionInfo(object):
 
   def _LoadFromFile(self):
     """Read the version file and set the version components"""
-    with open(self.version_file, 'r') as version_fh:
-      for line in version_fh:
-        if not line.strip():
-          continue
+    env_vars = ('CHROME_BRANCH', 'CHROMEOS_BUILD', 'CHROMEOS_BRANCH',
+                'CHROMEOS_PATCH')
+    env = osutils.SourceEnvironment(self.version_file, env_vars)
+    logging.debug('found in version file: %r', env)
 
-        match = self.FindValue('CHROME_BRANCH', line)
-        if match:
-          self.chrome_branch = match
-          logging.debug('Set the Chrome branch number to:%s',
-                        self.chrome_branch)
-          continue
-
-        match = self.FindValue('CHROMEOS_BUILD', line)
-        if match:
-          self.build_number = match
-          logging.debug('Set the build version to:%s', self.build_number)
-          continue
-
-        match = self.FindValue('CHROMEOS_BRANCH', line)
-        if match:
-          self.branch_build_number = match
-          logging.debug('Set the branch version to:%s',
-                        self.branch_build_number)
-          continue
-
-        match = self.FindValue('CHROMEOS_PATCH', line)
-        if match:
-          self.patch_number = match
-          logging.debug('Set the patch version to:%s', self.patch_number)
-          continue
+    self.chrome_branch = env['CHROME_BRANCH']
+    self.build_number = env['CHROMEOS_BUILD']
+    self.branch_build_number = env['CHROMEOS_BRANCH']
+    self.patch_number = env['CHROMEOS_PATCH']
 
     logging.debug(self.VersionString())
 
