@@ -29,6 +29,8 @@
         'CHROMEOS_IMPLEMENTATION',
       ],
       'sources': [
+        'attestation/attestation_flow.cc',
+        'attestation/attestation_flow.h',
         'chromeos_export.h',
         'chromeos_switches.cc',
         'chromeos_switches.h',
@@ -202,6 +204,8 @@
         'chromeos',
       ],
       'sources': [
+        'attestation/mock_attestation_flow.cc',
+        'attestation/mock_attestation_flow.h',
         'chromeos_test_utils.cc',
         'chromeos_test_utils.h',
         'cryptohome/mock_async_method_caller.cc',
@@ -308,6 +312,7 @@
         'chromeos_test_support',
       ],
       'sources': [
+        'attestation/attestation_flow_unittest.cc',
         'display/output_configurator_unittest.cc',
         'dbus/blocking_method_caller_unittest.cc',
         'dbus/shill_client_unittest_base.cc',

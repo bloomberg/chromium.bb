@@ -10,6 +10,10 @@ using ::testing::_;
 
 namespace cryptohome {
 
+const char MockAsyncMethodCaller::kFakeAttestationEnrollRequest[] = "enrollreq";
+const char MockAsyncMethodCaller::kFakeAttestationCertRequest[] = "certreq";
+const char MockAsyncMethodCaller::kFakeAttestationCert[] = "cert";
+
 MockAsyncMethodCaller::MockAsyncMethodCaller()
     : success_(false), return_code_(cryptohome::MOUNT_ERROR_NONE) {
 }
@@ -34,10 +38,40 @@ void MockAsyncMethodCaller::SetUp(bool success, MountError return_code) {
   ON_CALL(*this, AsyncRemove(_, _))
       .WillByDefault(
           WithArgs<1>(Invoke(this, &MockAsyncMethodCaller::DoCallback)));
+  ON_CALL(*this, AsyncTpmAttestationCreateEnrollRequest(_))
+      .WillByDefault(
+          WithArgs<0>(Invoke(this,
+                             &MockAsyncMethodCaller::FakeCreateEnrollRequest)));
+  ON_CALL(*this, AsyncTpmAttestationEnroll(_, _))
+      .WillByDefault(
+          WithArgs<1>(Invoke(this, &MockAsyncMethodCaller::DoCallback)));
+  ON_CALL(*this, AsyncTpmAttestationCreateCertRequest(_, _))
+      .WillByDefault(
+          WithArgs<1>(Invoke(this,
+                             &MockAsyncMethodCaller::FakeCreateCertRequest)));
+  ON_CALL(*this, AsyncTpmAttestationFinishCertRequest(_, _))
+      .WillByDefault(
+          WithArgs<1>(Invoke(this,
+                             &MockAsyncMethodCaller::FakeFinishCertRequest)));
 }
 
 void MockAsyncMethodCaller::DoCallback(Callback callback) {
   callback.Run(success_, return_code_);
+}
+
+void MockAsyncMethodCaller::FakeCreateEnrollRequest(
+    const DataCallback& callback) {
+  callback.Run(success_, kFakeAttestationEnrollRequest);
+}
+
+void MockAsyncMethodCaller::FakeCreateCertRequest(
+    const DataCallback& callback) {
+  callback.Run(success_, kFakeAttestationCertRequest);
+}
+
+void MockAsyncMethodCaller::FakeFinishCertRequest(
+    const DataCallback& callback) {
+  callback.Run(success_, kFakeAttestationCert);
 }
 
 }  // namespace cryptohome
