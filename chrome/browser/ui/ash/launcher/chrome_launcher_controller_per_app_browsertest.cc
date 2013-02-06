@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
+#include "ash/launcher/launcher_util.h"
 #include "ash/shell.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/window_util.h"
@@ -758,12 +759,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest, ActivationStateCheck) {
       static_cast<ChromeLauncherController*>(launcher_->delegate());
   TabStripModel* tab_strip = browser()->tab_strip_model();
   // Get the browser item index
-  int browser_index = -1;
-  for (size_t index = 0; index < model_->items().size() && browser_index == -1;
-       index++) {
-    if (model_->items()[index].type == ash::TYPE_BROWSER_SHORTCUT)
-      browser_index = index;
-  }
+  int browser_index = ash::launcher::GetBrowserItemIndex(*controller->model());
   EXPECT_TRUE(browser_index >= 0);
 
   // Even though we are just comming up, the browser should be active.
@@ -797,5 +793,39 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest, ActivationStateCheck) {
   ash::wm::DeactivateWindow(browser()->window()->GetNativeWindow());
   EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(shortcut_id)->status);
   EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[browser_index].status);
+}
+
+// Check that the launcher activation state for a V1 application stays closed
+// even after an asynchronous browser event comes in after the tab got
+// destroyed.
+IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest,
+                       AsyncActivationStateCheck) {
+  ChromeLauncherController* controller =
+      static_cast<ChromeLauncherController*>(launcher_->delegate());
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+
+  ash::LauncherID shortcut_id = CreateShortcut("app1");
+  controller->SetRefocusURLPatternForTest(
+      shortcut_id, GURL("http://www.example.com/path1/*"));
+
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(shortcut_id)->status);
+
+  // Create new tab which would be the running app.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL("http://www.example.com/path1/bar.html"),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(shortcut_id)->status);
+  // To address the issue of crbug.com/174050, the tab we are about to close
+  // has to be active.
+  tab_strip->ActivateTabAt(1, false);
+  EXPECT_EQ(1, tab_strip->active_index());
+
+  // Close the web contents.
+  tab_strip->CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  // The status should now be set to closed.
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(shortcut_id)->status);
 }
 

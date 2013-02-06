@@ -182,7 +182,10 @@ void BrowserLauncherItemController::ActiveTabChanged(
     int index,
     bool user_gesture) {
   // Update immediately on a tab change.
-  if (old_contents)
+  if (old_contents &&
+      (!launcher_controller()->GetPerAppInterface() ||
+       TabStripModel::kNoTab !=
+           tab_model_->GetIndexOfWebContents(old_contents)))
     UpdateAppState(old_contents);
   UpdateAppState(new_contents);
   UpdateLauncher(new_contents);
