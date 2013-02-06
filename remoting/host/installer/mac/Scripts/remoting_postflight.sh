@@ -19,15 +19,18 @@ KSUPDATE=https://tools.google.com/service/update2
 KSPID=com.google.chrome_remote_desktop
 KSPVERSION=@@VERSION@@
 
-trap onexit ERR
+trap on_error ERR
 
-function onexit {
-  # Log an error but don't report an install failure if this script has errors.
-  logger An error occurred while launching the service
-  exit 0
+function on_error {
+  logger An error occurred during Chrome Remote Desktop setup.
+  exit 1
 }
 
 logger Running Chrome Remote Desktop postflight script @@VERSION@@
+
+# Register a ticket with Keystone to keep this package up to date.
+$KSADMIN --register --productid "$KSPID" --version "$KSPVERSION" \
+    --xcpath "$PLIST" --url "$KSUPDATE"
 
 # If there is a backup _enabled file, re-enable the service.
 if [[ -f "$ENABLED_FILE_BACKUP" ]]; then
@@ -75,6 +78,3 @@ USERID=$2
 if [[ -n "$USERNAME" && -n "$USERID" ]]; then
   launchctl bsexec "$USERID" sudo -u "$USERNAME" launchctl load -w -S Aqua "$PLIST"
 fi
-
-# Register a ticket with Keystone so we're updated.
-$KSADMIN --register --productid "$KSPID" --version "$KSPVERSION" --xcpath "$PLIST" --url "$KSUPDATE"
