@@ -609,7 +609,7 @@ TEST_F(DeviceOrientationProviderTest, StartStopStart) {
 }
 
 // Tests that Motion events always fire, even if the motion is unchanged.
-TEST_F(DeviceOrientationProviderTest, MotionAlwaysFires) {
+TEST_F(DeviceOrientationProviderTest, FLAKY_MotionAlwaysFires) {
   scoped_refptr<MockDeviceDataFactory> device_data_factory(
       new MockDeviceDataFactory());
   MockDeviceDataFactory::SetCurInstance(device_data_factory.get());
