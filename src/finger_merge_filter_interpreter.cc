@@ -18,7 +18,7 @@ FingerMergeFilterInterpreter::FingerMergeFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next, Tracer* tracer)
     : FilterInterpreter(NULL, next, tracer, false),
       finger_merge_filter_enable_(prop_reg,
-                                  "Finger Merge Filter Enabled", true),
+                                  "Finger Merge Filter Enabled", false),
       merge_distance_threshold_(prop_reg,
                                 "Finger Merge Distance Thresh", 250.0),
       max_pressure_threshold_(prop_reg,
