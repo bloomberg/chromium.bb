@@ -7,8 +7,11 @@
 
 #include <deque>
 
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/native_web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "ui/gfx/native_widget_types.h"
 
 class WebContentsModalDialog;
 class WebContentsModalDialogManagerDelegate;
@@ -22,6 +25,9 @@ class WebContentsModalDialogManager
 
   WebContentsModalDialogManagerDelegate* delegate() const { return delegate_; }
   void set_delegate(WebContentsModalDialogManagerDelegate* d) { delegate_ = d; }
+
+  static NativeWebContentsModalDialogManager* CreateNativeManager(
+      WebContentsModalDialogManager* manager);
 
   // Adds the given dialog to the list of child dialogs. The dialog will notify
   // via WillClose() when it is being destroyed.
@@ -47,6 +53,9 @@ class WebContentsModalDialogManager
         : manager_(manager) {}
 
     void CloseAllDialogs() { manager_->CloseAllDialogs(); }
+    void ResetNativeManager(NativeWebContentsModalDialogManager* delegate) {
+      manager_->native_manager_.reset(delegate);
+    }
 
    private:
     WebContentsModalDialogManager* manager_;
@@ -85,6 +94,9 @@ class WebContentsModalDialogManager
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   WebContentsModalDialogManagerDelegate* delegate_;
+
+  // Delegate for native UI-specific functions on the dialog.
+  scoped_ptr<NativeWebContentsModalDialogManager> native_manager_;
 
   // All active dialogs.
   WebContentsModalDialogList child_dialogs_;

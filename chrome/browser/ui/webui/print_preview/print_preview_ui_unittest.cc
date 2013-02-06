@@ -270,6 +270,7 @@ TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewDialogClose) {
   ASSERT_TRUE(preview_ui != NULL);
 
   preview_ui->OnPrintPreviewDialogClosed();
+  message_loop()->RunUntilIdle();
 
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_FALSE(IsShowingWebContentsModalDialog(initiator_tab));

@@ -645,6 +645,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // with it. TYPE_CONTROL and TYPE_TOOLTIP is not considered top level.
   bool is_top_level() const { return is_top_level_; }
 
+  // True when window movement via mouse interaction with the frame is disabled.
+  bool movement_disabled() const { return movement_disabled_; }
+  void set_movement_disabled(bool disabled) { movement_disabled_ = disabled; }
+
   // Returns the work area bounds of the screen the Widget belongs to.
   gfx::Rect GetWorkAreaBoundsInScreen() const;
 
@@ -835,6 +839,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Is |root_layers_| out of date?
   bool root_layers_dirty_;
+
+  // True when window movement via mouse interaction with the frame should be
+  // disabled.
+  bool movement_disabled_;
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };

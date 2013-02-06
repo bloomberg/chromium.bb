@@ -169,7 +169,8 @@ gfx::ImageSkia* VistaWindowResources::images_[];
 class ConstrainedWindowFrameView : public views::NonClientFrameView,
                                    public views::ButtonListener {
  public:
-  explicit ConstrainedWindowFrameView(ConstrainedWindowViews* container);
+  ConstrainedWindowFrameView(ConstrainedWindowViews* container,
+                             bool browser_is_off_the_record);
   virtual ~ConstrainedWindowFrameView();
 
   void UpdateWindowTitle();
@@ -225,7 +226,7 @@ class ConstrainedWindowFrameView : public views::NonClientFrameView,
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;
 
   SkColor GetTitleColor() const {
-    return container_->owner()->GetBrowserContext()->IsOffTheRecord()
+    return browser_is_off_the_record_
 #if defined(OS_WIN) && !defined(USE_AURA)
             || !ui::win::IsAeroGlassEnabled()
 #endif
@@ -236,6 +237,8 @@ class ConstrainedWindowFrameView : public views::NonClientFrameView,
   void InitWindowResources();
 
   ConstrainedWindowViews* container_;
+
+  bool browser_is_off_the_record_;
 
   scoped_ptr<views::WindowResources> resources_;
 
@@ -286,9 +289,10 @@ const SkColor kContentsBorderShadow = SkColorSetARGB(51, 0, 0, 0);
 }  // namespace
 
 ConstrainedWindowFrameView::ConstrainedWindowFrameView(
-    ConstrainedWindowViews* container)
+    ConstrainedWindowViews* container, bool browser_is_off_the_record)
     : NonClientFrameView(),
       container_(container),
+      browser_is_off_the_record_(browser_is_off_the_record),
       close_button_(new views::ImageButton(this)),
       frame_background_(new views::FrameBackground()) {
   InitClass();
@@ -563,39 +567,22 @@ class ConstrainedWindowFrameViewAsh : public ash::CustomFrameViewAsh {
 #endif  // defined(USE_ASH)
 
 ConstrainedWindowViews::ConstrainedWindowViews(
-    content::WebContents* web_contents,
+    gfx::NativeView parent,
+    bool off_the_record,
     views::WidgetDelegate* widget_delegate)
-    : web_contents_(web_contents),
-      ALLOW_THIS_IN_INITIALIZER_LIST(native_constrained_window_(
-          NativeConstrainedWindow::CreateNativeConstrainedWindow(this))) {
+    : off_the_record_(off_the_record) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = widget_delegate;
-  params.native_widget = native_constrained_window_->AsNativeWidget();
   params.child = true;
 
-  params.parent = web_contents_->GetNativeView();
+  params.parent = parent;
 
 #if defined(USE_ASH)
   // Ash window headers can be transparent.
   params.transparent = true;
-  views::corewm::SetChildWindowVisibilityChangesAnimated(params.parent);
-  // No animations should get performed on the window since that will re-order
-  // the window stack which will then cause many problems.
-  if (params.parent && params.parent->parent()) {
-    params.parent->parent()->SetProperty(aura::client::kAnimationsDisabledKey,
-                                         true);
-  }
 #endif
-  Init(params);
 
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents_);
-  web_contents_modal_dialog_manager->AddDialog(this);
-#if defined(USE_ASH)
-  GetNativeWindow()->SetProperty(ash::kConstrainedWindowKey, true);
-  views::corewm::SetModalParent(GetNativeWindow(),
-                                web_contents_->GetView()->GetNativeView());
-#endif
+  Init(params);
 }
 
 ConstrainedWindowViews::~ConstrainedWindowViews() {
@@ -607,15 +594,6 @@ void ConstrainedWindowViews::ShowWebContentsModalDialog() {
 }
 
 void ConstrainedWindowViews::CloseWebContentsModalDialog() {
-#if defined(USE_ASH)
-  gfx::NativeView view = web_contents_->GetNativeView();
-  // Allow the parent to animate again.
-  if (view && view->parent())
-    view->parent()->ClearProperty(aura::client::kAnimationsDisabledKey);
-#endif
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents_);
-  web_contents_modal_dialog_manager->WillClose(this);
   Close();
 }
 
@@ -636,6 +614,19 @@ gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
   return Widget::GetNativeWindow();
 }
 
+ConstrainedWindowViews* ConstrainedWindowViews::Create(
+    content::WebContents* web_contents,
+    views::WidgetDelegate* widget_delegate) {
+  WebContentsModalDialogManager* manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  ConstrainedWindowViews* dialog = new ConstrainedWindowViews(
+      web_contents->GetNativeView(),
+      web_contents->GetBrowserContext()->IsOffTheRecord(),
+      widget_delegate);
+  manager->AddDialog(dialog);
+  return dialog;
+}
+
 views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
   if (views::DialogDelegate::UseNewStyle())
     return views::DialogDelegate::CreateNewStyleFrameView(this);
@@ -644,25 +635,5 @@ views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
   frame->Init(this);
   return frame;
 #endif
-  return new ConstrainedWindowFrameView(this);
-}
-
-void ConstrainedWindowViews::OnNativeConstrainedWindowDestroyed() {
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents_);
-  web_contents_modal_dialog_manager->WillClose(this);
-}
-
-void ConstrainedWindowViews::OnNativeConstrainedWindowMouseActivate() {
-  Activate();
-}
-
-views::internal::NativeWidgetDelegate*
-    ConstrainedWindowViews::AsNativeWidgetDelegate() {
-  return this;
-}
-
-int ConstrainedWindowViews::GetNonClientComponent(const gfx::Point& point) {
-  // Prevent a constrained window to be moved by the user.
-  return HTNOWHERE;
+  return new ConstrainedWindowFrameView(this, off_the_record_);
 }

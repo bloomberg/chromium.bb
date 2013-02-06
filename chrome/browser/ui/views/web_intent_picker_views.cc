@@ -1090,7 +1090,7 @@ WebIntentPickerViews::WebIntentPickerViews(WebContents* web_contents,
       chrome_style::GetBackgroundColor()));
 
   // Show the dialog.
-  window_ = new ConstrainedWindowViews(web_contents, this);
+  window_ = ConstrainedWindowViews::Create(web_contents, this);
   if (model_->IsInlineDisposition())
     OnInlineDisposition(string16(), model_->inline_disposition_url());
   else

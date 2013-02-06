@@ -2150,6 +2150,7 @@
             'browser/ui/toolbar/recent_tabs_sub_menu_model_unittest.cc',
             'browser/ui/toolbar/toolbar_model_unittest.cc',
             'browser/ui/toolbar/wrench_menu_model_unittest.cc',
+            'browser/ui/web_contents_modal_dialog_manager_unittest.cc',
             'browser/ui/webui/ntp/suggestions_combiner_unittest.cc',
             'browser/ui/webui/web_dialog_web_contents_delegate_unittest.cc',
             'browser/ui/window_sizer/window_sizer_common_unittest.cc',

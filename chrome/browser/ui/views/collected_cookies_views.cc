@@ -198,7 +198,7 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
       TabSpecificContentSettings::FromWebContents(web_contents);
   registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
                  content::Source<TabSpecificContentSettings>(content_settings));
-  window_ = new ConstrainedWindowViews(web_contents, this);
+  window_ = ConstrainedWindowViews::Create(web_contents, this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -25,6 +25,9 @@ void WebContentsModalDialogManager::AddDialog(
     WebContentsModalDialog* dialog) {
   child_dialogs_.push_back(dialog);
 
+  if (native_manager_)
+    native_manager_->ManageDialog(dialog->GetNativeWindow());
+
   if (child_dialogs_.size() == 1) {
     dialog->ShowWebContentsModalDialog();
     BlockWebContentsInteraction(true);
@@ -78,7 +81,9 @@ void WebContentsModalDialogManager::FocusTopmostDialog() {
 WebContentsModalDialogManager::WebContentsModalDialogManager(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      delegate_(NULL) {
+      delegate_(NULL),
+      native_manager_(
+          ALLOW_THIS_IN_INITIALIZER_LIST(CreateNativeManager(this))) {
 }
 
 void WebContentsModalDialogManager::CloseAllDialogs() {

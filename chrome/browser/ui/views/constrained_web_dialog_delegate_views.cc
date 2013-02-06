@@ -190,7 +190,7 @@ ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
       new ConstrainedWebDialogDelegateViewViews(
           browser_context, delegate, tab_delegate);
   WebContentsModalDialog* web_contents_modal_dialog =
-      new ConstrainedWindowViews(web_contents, constrained_delegate);
+      ConstrainedWindowViews::Create(web_contents, constrained_delegate);
   constrained_delegate->set_window(web_contents_modal_dialog);
   return constrained_delegate;
 }

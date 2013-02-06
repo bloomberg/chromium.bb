@@ -33,7 +33,7 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     : delegate_(delegate),
       message_box_view_(new views::MessageBoxView(
           views::MessageBoxView::InitParams(delegate->GetMessage()))) {
-  delegate_->set_window(new ConstrainedWindowViews(web_contents, this));
+  delegate_->set_window(ConstrainedWindowViews::Create(web_contents, this));
 }
 
 TabModalConfirmDialogViews::~TabModalConfirmDialogViews() {

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog_browsertest.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/test_utils.h"
 
 typedef InProcessBrowserTest BrowserCommandControllerBrowserTest;
 
@@ -35,5 +36,6 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, DisableFind) {
 
   // Closing the constrained window should reenable it.
   delegate->Cancel();
+  content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FIND));
 }

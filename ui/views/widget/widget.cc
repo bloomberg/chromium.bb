@@ -200,7 +200,8 @@ Widget::Widget()
       is_mouse_button_pressed_(false),
       is_touch_down_(false),
       last_mouse_event_was_move_(false),
-      root_layers_dirty_(false) {
+      root_layers_dirty_(false),
+      movement_disabled_(false) {
 }
 
 Widget::~Widget() {
@@ -1124,9 +1125,14 @@ void Widget::OnNativeWidgetPaint(gfx::Canvas* canvas) {
 }
 
 int Widget::GetNonClientComponent(const gfx::Point& point) {
-  return non_client_view_ ?
+  int component = non_client_view_ ?
       non_client_view_->NonClientHitTest(point) :
       HTNOWHERE;
+
+  if (movement_disabled_ && (component == HTCAPTION || component == HTSYSMENU))
+    return HTNOWHERE;
+
+  return component;
 }
 
 void Widget::OnKeyEvent(ui::KeyEvent* event) {

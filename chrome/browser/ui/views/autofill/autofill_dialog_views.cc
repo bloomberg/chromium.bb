@@ -379,7 +379,7 @@ void AutofillDialogViews::Show() {
   // Ownership of |contents_| is handed off by this call. The
   // WebContentsModalDialog will take care of deleting itself after calling
   // DeleteDelegate().
-  window_ = new ConstrainedWindowViews(controller_->web_contents(), this);
+  window_ = ConstrainedWindowViews::Create(controller_->web_contents(), this);
   focus_manager_ = window_->GetFocusManager();
   focus_manager_->AddFocusChangeListener(this);
 }
