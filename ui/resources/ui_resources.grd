@@ -25,22 +25,22 @@
         <structure type="chrome_scaled_image" name="IDR_APP_TOP_LEFT" file="app_top_left.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_TOP_RIGHT" file="app_top_right.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_BOTTOM" file="window_shadow_active_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_BOTTOM_LEFT" file="window_shadow_active_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_BOTTOM_RIGHT" file="window_shadow_active_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_LEFT" file="window_shadow_active_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_RIGHT" file="window_shadow_active_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_TOP" file="window_shadow_active_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_TOP_LEFT" file="window_shadow_active_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_TOP_RIGHT" file="window_shadow_active_top_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_BOTTOM" file="window_shadow_inactive_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_BOTTOM_LEFT" file="window_shadow_inactive_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_BOTTOM_RIGHT" file="window_shadow_inactive_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_LEFT" file="window_shadow_inactive_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_RIGHT" file="window_shadow_inactive_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_TOP" file="window_shadow_inactive_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_TOP_LEFT" file="window_shadow_inactive_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_TOP_RIGHT" file="window_shadow_inactive_top_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_BOTTOM" file="common/window_shadow_active_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_BOTTOM_LEFT" file="common/window_shadow_active_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_BOTTOM_RIGHT" file="common/window_shadow_active_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_LEFT" file="common/window_shadow_active_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_RIGHT" file="common/window_shadow_active_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_TOP" file="common/window_shadow_active_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_TOP_LEFT" file="common/window_shadow_active_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_TOP_RIGHT" file="common/window_shadow_active_top_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_BOTTOM" file="common/window_shadow_inactive_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_BOTTOM_LEFT" file="common/window_shadow_inactive_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_BOTTOM_RIGHT" file="common/window_shadow_inactive_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_LEFT" file="common/window_shadow_inactive_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_RIGHT" file="common/window_shadow_inactive_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_TOP" file="common/window_shadow_inactive_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_TOP_LEFT" file="common/window_shadow_inactive_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_TOP_RIGHT" file="common/window_shadow_inactive_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_CENTER" file="browser_action_badge_center.png" />
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_LEFT" file="browser_action_badge_left.png" />
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_RIGHT" file="browser_action_badge_right.png" />
@@ -244,14 +244,14 @@
       <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP_LEFT" file="common/textbutton_pressed_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP_RIGHT" file="common/textbutton_pressed_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_THROBBER" file="throbber.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_CENTER" file="window_bottom_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_LEFT_CORNER" file="window_bottom_left_corner.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_RIGHT_CORNER" file="window_bottom_right_corner.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_LEFT_SIDE" file="window_left_side.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_RIGHT_SIDE" file="window_right_side.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_TOP_CENTER" file="window_top_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_TOP_LEFT_CORNER" file="window_top_left_corner.png" />
-      <structure type="chrome_scaled_image" name="IDR_WINDOW_TOP_RIGHT_CORNER" file="window_top_right_corner.png" />
+      <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_CENTER" file="common/window_bottom_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_LEFT_CORNER" file="common/window_bottom_left_corner.png" />
+      <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_RIGHT_CORNER" file="common/window_bottom_right_corner.png" />
+      <structure type="chrome_scaled_image" name="IDR_WINDOW_LEFT_SIDE" file="common/window_left_side.png" />
+      <structure type="chrome_scaled_image" name="IDR_WINDOW_RIGHT_SIDE" file="common/window_right_side.png" />
+      <structure type="chrome_scaled_image" name="IDR_WINDOW_TOP_CENTER" file="common/window_top_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_WINDOW_TOP_LEFT_CORNER" file="common/window_top_left_corner.png" />
+      <structure type="chrome_scaled_image" name="IDR_WINDOW_TOP_RIGHT_CORNER" file="common/window_top_right_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_BIG_BOTTOM" file="common/window_bubble_shadow_big_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_BIG_BOTTOM_LEFT" file="common/window_bubble_shadow_big_bottom_left.png" />
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_BIG_BOTTOM_RIGHT" file="common/window_bubble_shadow_big_bottom_right.png" />
