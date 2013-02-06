@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/program_cache.h"
+#include "third_party/re2/re2/re2.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -151,33 +152,25 @@ void ProgramManager::ProgramInfo::Reset() {
 
 std::string ProgramManager::ProgramInfo::ProcessLogInfo(
     const std::string& log) {
-  const char kHashedNamePrefix[] = "webgl_";
-  const size_t kHashedNamePrefixLength = sizeof(kHashedNamePrefix) - 1;
-
   std::string output;
-  size_t current = 0;
-  size_t next = log.find(kHashedNamePrefix, current);
-  while (next != std::string::npos) {
-    output += log.substr(current, next - current);
+  re2::StringPiece input(log);
+  std::string prior_log;
+  std::string hashed_name;
+  while (RE2::Consume(&input,
+                      "(.*)_(webgl_[0123456789abcdefABCDEF]+)",
+                      &prior_log,
+                      &hashed_name)) {
+    output += prior_log;
 
-    size_t end_of_name = log.find_first_not_of(
-        "0123456789abcdefABCDEF", next + kHashedNamePrefixLength);
-    size_t name_length = end_of_name - next;
-    std::string hashed_name = log.substr(next, name_length);
     const std::string* original_name =
         GetOriginalNameFromHashedName(hashed_name);
-    if (original_name) {
+    if (original_name)
       output += *original_name;
-      current = next + name_length;
-    } else {
-      // This shouldn't happen, but still handle it, to be on the safer side.
-      output += std::string(kHashedNamePrefix);
-      current += kHashedNamePrefixLength;
-    }
-    next = log.find(kHashedNamePrefix, current);
+    else
+      output += hashed_name;
   }
-  output += log.substr(current);
-  return output;
+
+  return output + input.as_string();
 }
 
 void ProgramManager::ProgramInfo::UpdateLogInfo() {
