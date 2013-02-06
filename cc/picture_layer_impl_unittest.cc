@@ -112,7 +112,7 @@ class TestablePicturePileImpl : public PicturePileImpl {
   }
 
  protected:
-  ~TestablePicturePileImpl() {
+  virtual ~TestablePicturePileImpl() {
   }
 };
 
@@ -131,7 +131,7 @@ class PictureLayerImplTest : public testing::Test {
     host_impl_.initializeRenderer(createFakeOutputSurface());
   }
 
-  ~PictureLayerImplTest() {
+  virtual ~PictureLayerImplTest() {
   }
 
   void SetupTrees(

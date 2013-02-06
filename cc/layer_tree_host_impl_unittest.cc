@@ -2405,14 +2405,14 @@ TEST_P(LayerTreeHostImplTest, partialSwap)
 
 class PartialSwapContext : public FakeWebGraphicsContext3D {
 public:
-    WebKit::WebString getString(WebKit::WGC3Denum name)
+    virtual WebKit::WebString getString(WebKit::WGC3Denum name)
     {
         if (name == GL_EXTENSIONS)
             return WebKit::WebString("GL_CHROMIUM_post_sub_buffer");
         return WebKit::WebString();
     }
 
-    WebKit::WebString getRequestableExtensionsCHROMIUM()
+    virtual WebKit::WebString getRequestableExtensionsCHROMIUM()
     {
         return WebKit::WebString("GL_CHROMIUM_post_sub_buffer");
     }
@@ -4017,7 +4017,7 @@ TEST_P(LayerTreeHostImplTest, testRemoveRenderPasses)
 
 class LayerTreeHostImplTestWithDelegatingRenderer : public LayerTreeHostImplTest {
 protected:
-    virtual scoped_ptr<OutputSurface> createOutputSurface()
+    virtual scoped_ptr<OutputSurface> createOutputSurface() OVERRIDE
     {
         // Creates an output surface with a parent to use a delegating renderer.
         WebKit::WebGraphicsContext3D::Attributes attrs;
@@ -4061,7 +4061,7 @@ public:
         return make_scoped_ptr(new FakeMaskLayerImpl(treeImpl, id));
     }
 
-    virtual ResourceProvider::ResourceId contentsResourceId() const { return 0; }
+    virtual ResourceProvider::ResourceId contentsResourceId() const OVERRIDE { return 0; }
 
 private:
     FakeMaskLayerImpl(LayerTreeImpl* treeImpl, int id) : LayerImpl(treeImpl, id) { }

@@ -78,7 +78,7 @@ public:
     {
     }
 
-    ~ResourceUpdateControllerTest()
+    virtual ~ResourceUpdateControllerTest()
     {
         DebugScopedSetImplThreadAndMainThreadBlocked
             implThreadAndMainThreadBlocked(&m_proxy);

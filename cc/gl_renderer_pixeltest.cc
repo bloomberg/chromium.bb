@@ -42,7 +42,7 @@ class FakeRendererClient : public RendererClient {
   virtual void enforceManagedMemoryPolicy(
       const ManagedMemoryPolicy&) OVERRIDE {}
   virtual bool hasImplThread() const OVERRIDE { return false; }
-  virtual bool shouldClearRootRenderPass() const { return true; }
+  virtual bool shouldClearRootRenderPass() const OVERRIDE { return true; }
   virtual CompositorFrameMetadata makeCompositorFrameMetadata() const
       OVERRIDE { return CompositorFrameMetadata(); }
 };

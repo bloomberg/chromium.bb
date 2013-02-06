@@ -300,7 +300,7 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent :
     LayerTreeHostContextTestLostContextSucceeds::InvalidateAndSetNeedsCommit();
   }
 
-  virtual void drawLayersOnThread(LayerTreeHostImpl* host_impl) {
+  virtual void drawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     FakeContentLayerImpl* content_impl = static_cast<FakeContentLayerImpl*>(
         host_impl->rootLayer()->children()[0]);
     // Even though the context was lost, we should have a resource. The
@@ -549,7 +549,7 @@ class LayerTreeHostContextTestLostContextWhileUpdatingResources :
         times_to_lose_on_end_query_(3) {
   }
 
-  virtual scoped_ptr<FakeWebGraphicsContext3D> CreateContext3d() {
+  virtual scoped_ptr<FakeWebGraphicsContext3D> CreateContext3d() OVERRIDE {
     scoped_ptr<FakeWebGraphicsContext3D> context =
         LayerTreeHostContextTest::CreateContext3d();
     if (times_to_lose_on_end_query_) {
@@ -559,7 +559,7 @@ class LayerTreeHostContextTestLostContextWhileUpdatingResources :
     return context.Pass();
   }
 
-  virtual void setupTree() {
+  virtual void setupTree() OVERRIDE {
     parent_->setBounds(gfx::Size(num_children_, 1));
 
     for (int i = 0; i < num_children_; i++) {
@@ -574,11 +574,11 @@ class LayerTreeHostContextTestLostContextWhileUpdatingResources :
     LayerTreeHostContextTest::setupTree();
   }
 
-  virtual void beginTest() {
+  virtual void beginTest() OVERRIDE {
     postSetNeedsCommitToMainThread();
   }
 
-  virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) {
+  virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     endTest();
   }
 
@@ -586,7 +586,7 @@ class LayerTreeHostContextTestLostContextWhileUpdatingResources :
     EXPECT_TRUE(succeeded);
   }
 
-  virtual void afterTest() {
+  virtual void afterTest() OVERRIDE {
     EXPECT_EQ(0, times_to_lose_on_end_query_);
   }
 

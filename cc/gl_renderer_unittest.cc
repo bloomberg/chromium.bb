@@ -581,7 +581,7 @@ TEST(GLRendererTest2, activeTextureState)
 
 class NoClearRootRenderPassFakeClient : public FakeRendererClient {
 public:
-    virtual bool shouldClearRootRenderPass() const { return false; }
+    virtual bool shouldClearRootRenderPass() const OVERRIDE { return false; }
 };
 
 class NoClearRootRenderPassMockContext : public FakeWebGraphicsContext3D {
