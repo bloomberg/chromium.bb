@@ -222,6 +222,9 @@ FingerprintDataLoader::FingerprintDataLoader(
       accept_languages_(prefs.GetString(prefs::kAcceptLanguages)),
       has_loaded_plugins_(false),
       callback_(callback) {
+  // TODO(isherman): Investigating http://crbug.com/174296
+  LOG(WARNING) << "Loading fingerprint data.";
+
   // Load GPU data if needed.
   if (!gpu_data_manager_->IsCompleteGpuInfoAvailable()) {
     gpu_data_manager_->AddObserver(this);
@@ -244,6 +247,9 @@ void FingerprintDataLoader::OnGpuInfoUpdate() {
   if (!gpu_data_manager_->IsCompleteGpuInfoAvailable())
     return;
 
+  // TODO(isherman): Investigating http://crbug.com/174296
+  LOG(WARNING) << "Loaded GPU data.";
+
   gpu_data_manager_->RemoveObserver(this);
   MaybeFillFingerprint();
 }
@@ -253,6 +259,9 @@ void FingerprintDataLoader::OnVideoMemoryUsageStatsUpdate(
 }
 
 void FingerprintDataLoader::OnGotFonts(scoped_ptr<base::ListValue> fonts) {
+  // TODO(isherman): Investigating http://crbug.com/174296
+  LOG(WARNING) << "Loaded fonts.";
+
   DCHECK(!fonts_);
   fonts_.reset(fonts.release());
   MaybeFillFingerprint();
@@ -260,6 +269,9 @@ void FingerprintDataLoader::OnGotFonts(scoped_ptr<base::ListValue> fonts) {
 
 void FingerprintDataLoader::OnGotPlugins(
     const std::vector<webkit::WebPluginInfo>& plugins) {
+  // TODO(isherman): Investigating http://crbug.com/174296
+  LOG(WARNING) << "Loaded plugins.";
+
   DCHECK(!has_loaded_plugins_);
   has_loaded_plugins_ = true;
   plugins_ = plugins;
