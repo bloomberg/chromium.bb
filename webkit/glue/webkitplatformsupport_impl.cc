@@ -827,6 +827,20 @@ WebKit::WebString WebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
   return WebKit::WebString("");
 }
 
+static scoped_ptr<base::ProcessMetrics> CurrentProcessMetrics() {
+  using base::ProcessMetrics;
+#if defined(OS_MACOSX)
+  return scoped_ptr<ProcessMetrics>(
+      // The default port provider is sufficient to get data for the current
+      // process.
+      ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle(),
+                                           NULL));
+#else
+  return scoped_ptr<ProcessMetrics>(
+      ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle()));
+#endif
+}
+
 static size_t getMemoryUsageMB(bool bypass_cache) {
   size_t current_mem_usage = 0;
   MemoryUsageCache* mem_usage_cache_singleton = MemoryUsageCache::GetInstance();
@@ -869,6 +883,12 @@ size_t WebKitPlatformSupportImpl::highUsageDeltaMB() {
   return base::SysInfo::DalvikHeapSizeMB() / 8;
 }
 #endif
+
+bool WebKitPlatformSupportImpl::processMemorySizesInBytes(
+    size_t* private_bytes,
+    size_t* shared_bytes) {
+  return CurrentProcessMetrics()->GetMemoryBytes(private_bytes, shared_bytes);
+}
 
 bool WebKitPlatformSupportImpl::memoryAllocatorWasteInBytes(size_t* size) {
   return base::allocator::GetAllocatorWasteSize(size);
