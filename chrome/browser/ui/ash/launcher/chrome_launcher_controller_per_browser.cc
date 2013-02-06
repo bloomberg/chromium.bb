@@ -163,11 +163,14 @@ void UpdatePerDisplayPref(PrefService* pref_service,
 //  * A value managed by policy. This is a single value that applies to all
 //    displays.
 //  * A user-set value for the specified display.
-//  * A user-set value in |local_path| or |path|. |local_path| is preferred. See
-//    comment in |kShelfAlignment| as to why we consider two prefs and why
-//    |local_path| is preferred.
+//  * A user-set value in |local_path| or |path|, if no per-display settings are
+//    ever specified (see http://crbug.com/173719 for why). |local_path| is
+//    preferred. See comment in |kShelfAlignment| as to why we consider two
+//    prefs and why |local_path| is preferred.
 //  * A value recommended by policy. This is a single value that applies to all
 //    root windows.
+//  * The default value for |local_path| if the value is not recommended by
+//    policy.
 std::string GetPrefForRootWindow(PrefService* pref_service,
                                  aura::RootWindow* root_window,
                                  const char* local_path,
@@ -179,18 +182,37 @@ std::string GetPrefForRootWindow(PrefService* pref_service,
     return value;
 
   std::string pref_key = GetPrefKeyForRootWindow(root_window);
+  bool has_per_display_prefs = false;
   if (!pref_key.empty()) {
     const base::DictionaryValue* shelf_prefs = pref_service->GetDictionary(
         prefs::kShelfPreferences);
     const base::DictionaryValue* display_pref = NULL;
     std::string per_display_value;
     if (shelf_prefs->GetDictionary(pref_key, &display_pref) &&
-        display_pref->GetString(path, &per_display_value)) {
+        display_pref->GetString(path, &per_display_value))
       return per_display_value;
+
+    // If the pref for the specified display is not found, scan the whole prefs
+    // and check if the prefs for other display is already specified.
+    for (base::DictionaryValue::Iterator iter(*shelf_prefs);
+         !iter.IsAtEnd(); iter.Advance()) {
+      const base::DictionaryValue* display_pref = NULL;
+      if (iter.value().GetAsDictionary(&display_pref) &&
+          display_pref->GetString(path, static_cast<std::string*>(NULL))) {
+        has_per_display_prefs = true;
+        break;
+      }
     }
   }
 
-  return value;
+  if (local_pref->IsRecommended() || !has_per_display_prefs)
+    return value;
+
+  const base::Value* default_value =
+      pref_service->GetDefaultPrefValue(local_path);
+  std::string default_string;
+  default_value->GetAsString(&default_string);
+  return default_string;
 }
 
 // If prefs have synced and no user-set value exists at |local_path|, the value
@@ -254,6 +276,11 @@ ChromeLauncherControllerPerBrowser::ChromeLauncherControllerPerBrowser(
       prefs::kShelfAutoHideBehaviorLocal,
       base::Bind(&ChromeLauncherControllerPerBrowser::
                      SetShelfAutoHideBehaviorFromPrefs,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kShelfPreferences,
+      base::Bind(&ChromeLauncherControllerPerBrowser::
+                     SetShelfBehaviorsFromPrefs,
                  base::Unretained(this)));
 }
 
@@ -1191,6 +1218,11 @@ void ChromeLauncherControllerPerBrowser::SetShelfAlignmentFromPrefs() {
       alignment = ash::SHELF_ALIGNMENT_TOP;
     ash::Shell::GetInstance()->SetShelfAlignment(alignment, *iter);
   }
+}
+
+void ChromeLauncherControllerPerBrowser::SetShelfBehaviorsFromPrefs() {
+  SetShelfAutoHideBehaviorFromPrefs();
+  SetShelfAlignmentFromPrefs();
 }
 
 WebContents* ChromeLauncherControllerPerBrowser::GetLastActiveWebContents(

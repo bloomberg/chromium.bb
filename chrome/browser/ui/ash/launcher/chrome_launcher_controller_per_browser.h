@@ -319,6 +319,9 @@ class ChromeLauncherControllerPerBrowser : public ash::LauncherModelObserver,
   // Sets the shelf alignment from prefs.
   void SetShelfAlignmentFromPrefs();
 
+  // Sets both of auto-hide behavior and alignment from prefs.
+  void SetShelfBehaviorsFromPrefs();
+
   // Returns the most recently active WebContents for an app.
   content::WebContents* GetLastActiveWebContents(const std::string& app_id);
 
