@@ -50,7 +50,7 @@ void FakeMessageArrival(SpellCheckProvider* provider,
 TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
   FakeTextCheckingCompletion completion;
 
-  provider_.RequestTextChecking(WebKit::WebString("hello"),
+  provider_.RequestTextChecking(WebKit::WebString("hello "),
                                 &completion);
   EXPECT_EQ(completion.completion_count_, 0U);
   EXPECT_EQ(provider_.messages_.size(), 1U);
@@ -58,7 +58,7 @@ TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
 
   MessageParameters read_parameters =
       ReadRequestTextCheck(provider_.messages_[0]);
-  EXPECT_EQ(read_parameters.text, UTF8ToUTF16("hello"));
+  EXPECT_EQ(read_parameters.text, UTF8ToUTF16("hello "));
 
   FakeMessageArrival(&provider_, read_parameters);
   EXPECT_EQ(completion.completion_count_, 1U);
@@ -67,10 +67,10 @@ TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
 
 TEST_F(SpellCheckProviderMacTest, TwoRoundtripSuccess) {
   FakeTextCheckingCompletion completion1;
-  provider_.RequestTextChecking(WebKit::WebString("hello"),
+  provider_.RequestTextChecking(WebKit::WebString("hello "),
                                 &completion1);
   FakeTextCheckingCompletion completion2;
-  provider_.RequestTextChecking(WebKit::WebString("bye"),
+  provider_.RequestTextChecking(WebKit::WebString("bye "),
                                 &completion2);
 
   EXPECT_EQ(completion1.completion_count_, 0U);
@@ -80,11 +80,11 @@ TEST_F(SpellCheckProviderMacTest, TwoRoundtripSuccess) {
 
   MessageParameters read_parameters1 =
       ReadRequestTextCheck(provider_.messages_[0]);
-  EXPECT_EQ(read_parameters1.text, UTF8ToUTF16("hello"));
+  EXPECT_EQ(read_parameters1.text, UTF8ToUTF16("hello "));
 
   MessageParameters read_parameters2 =
       ReadRequestTextCheck(provider_.messages_[1]);
-  EXPECT_EQ(read_parameters2.text, UTF8ToUTF16("bye"));
+  EXPECT_EQ(read_parameters2.text, UTF8ToUTF16("bye "));
 
   FakeMessageArrival(&provider_, read_parameters1);
   EXPECT_EQ(completion1.completion_count_, 1U);

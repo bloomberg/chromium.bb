@@ -59,13 +59,11 @@ class SpellCheckProvider
  private:
   friend class TestingSpellCheckProvider;
 
-#if !defined(OS_MACOSX)
   // Tries to satisfy a spell check request from the cache in |last_request_|.
   // Returns true (and cancels/finishes the completion) if it can, false
   // if the provider should forward the query on.
   bool SatisfyRequestFromCache(const WebKit::WebString& text,
                                WebKit::WebTextCheckingCompletion* completion);
-#endif
 
   // WebKit::WebSpellCheckClient implementation.
   virtual void spellCheck(
@@ -94,11 +92,12 @@ class SpellCheckProvider
       bool succeeded,
       const string16& text,
       const std::vector<SpellCheckResult>& results);
+#endif
 
   // Returns whether |text| has word characters, i.e. whether a spellchecker
   // needs to check this text.
   bool HasWordCharacters(const WebKit::WebString& text, int index) const;
-#endif
+
 #if defined(OS_MACOSX)
   void OnAdvanceToNextMisspelling();
   void OnRespondTextCheck(
@@ -110,12 +109,10 @@ class SpellCheckProvider
   // Holds ongoing spellchecking operations, assigns IDs for the IPC routing.
   WebTextCheckCompletions text_check_completions_;
 
-#if !defined(OS_MACOSX)
   // The last text sent to the browser process to spellcheck it and its
   // spellchecking results.
   string16 last_request_;
   WebKit::WebVector<WebKit::WebTextCheckingResult> last_results_;
-#endif
 
   // True if the browser is showing the spelling panel for us.
   bool spelling_panel_visible_;

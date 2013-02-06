@@ -65,6 +65,21 @@ SpellCheckProvider::~SpellCheckProvider() {
 void SpellCheckProvider::RequestTextChecking(
     const WebString& text,
     WebTextCheckingCompletion* completion) {
+  // Ignore invalid requests.
+  if (text.isEmpty() || !HasWordCharacters(text, 0)) {
+    completion->didCancelCheckingText();
+    return;
+  }
+
+  // Try to satisfy check from cache.
+  if (SatisfyRequestFromCache(text, completion))
+    return;
+
+  // Send this text to a browser. A browser checks the user profile and send
+  // this text to the Spelling service only if a user enables this feature.
+  last_request_.clear();
+  last_results_.assign(WebKit::WebVector<WebKit::WebTextCheckingResult>());
+
 #if defined(OS_MACOSX)
   // Text check (unified request for grammar and spell check) is only
   // available for browser process, so we ask the system spellchecker
@@ -75,23 +90,6 @@ void SpellCheckProvider::RequestTextChecking(
       text_check_completions_.Add(completion),
       text));
 #else
-  // Ignore invalid requests.
-  // TODO(groby): Should that be applied for OSX, too?
-  if (text.isEmpty() || !HasWordCharacters(text, 0)) {
-    completion->didCancelCheckingText();
-    return;
-  }
-
-  // Try to satisfy check from cache.
-  // TODO(groby): Should that be applied to OSX results, too?
-  if (SatisfyRequestFromCache(text, completion))
-    return;
-
-  // Send this text to a browser. A browser checks the user profile and send
-  // this text to the Spelling service only if a user enables this feature.
-  last_request_.clear();
-  last_results_.assign(WebKit::WebVector<WebKit::WebTextCheckingResult>());
-
   Send(new SpellCheckHostMsg_CallSpellingService(
       routing_id(),
       text_check_completions_.Add(completion),
@@ -243,6 +241,7 @@ void SpellCheckProvider::OnRespondSpellingService(
   last_request_ = line;
   last_results_.swap(textcheck_results);
 }
+#endif
 
 bool SpellCheckProvider::HasWordCharacters(
     const WebKit::WebString& text,
@@ -258,7 +257,6 @@ bool SpellCheckProvider::HasWordCharacters(
   }
   return false;
 }
-#endif
 
 #if defined(OS_MACOSX)
 void SpellCheckProvider::OnAdvanceToNextMisspelling() {
@@ -271,6 +269,7 @@ void SpellCheckProvider::OnAdvanceToNextMisspelling() {
 void SpellCheckProvider::OnRespondTextCheck(
     int identifier,
     const std::vector<SpellCheckResult>& results) {
+  // TODO(groby): Unify with SpellCheckProvider::OnRespondSpellingService
   DCHECK(spellcheck_);
   WebTextCheckingCompletion* completion =
       text_check_completions_.Lookup(identifier);
@@ -284,6 +283,10 @@ void SpellCheckProvider::OnRespondTextCheck(
                                          results,
                                          &textcheck_results);
   completion->didFinishCheckingText(textcheck_results);
+
+  // TODO(groby): Add request caching once OSX reports back original request.
+  // (cf. SpellCheckProvider::OnRespondSpellingService)
+  // Cache the request and the converted results.
 }
 
 void SpellCheckProvider::OnToggleSpellPanel(bool is_currently_visible) {
@@ -305,15 +308,15 @@ void SpellCheckProvider::EnableSpellcheck(bool enable) {
   frame->enableContinuousSpellChecking(enable);
 }
 
-#if !defined(OS_MACOSX)
 bool SpellCheckProvider::SatisfyRequestFromCache(
     const WebString& text,
     WebTextCheckingCompletion* completion) {
+  size_t last_length = last_request_.length();
+
   // Cancel this spellcheck request if the cached text is a substring of the
   // given text and the given text is the middle of a possible word.
   string16 request(text);
   size_t text_length = request.length();
-  size_t last_length = last_request_.length();
   if (text_length >= last_length &&
       !request.compare(0, last_length, last_request_)) {
     if (text_length == last_length || !HasWordCharacters(text, last_length)) {
@@ -355,4 +358,3 @@ bool SpellCheckProvider::SatisfyRequestFromCache(
 
   return false;
 }
-#endif
