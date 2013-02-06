@@ -53,8 +53,10 @@ class VpnListDetailedView : public NetworkListDetailedViewBase {
                       user::LoginStatus login,
                       int header_string_id)
       : NetworkListDetailedViewBase(owner, login, header_string_id),
-        other_vpn_(NULL) {
+        other_vpn_(NULL),
+        no_networks_view_(NULL) {
   }
+
   virtual ~VpnListDetailedView() {
   }
 
@@ -75,17 +77,6 @@ class VpnListDetailedView : public NetworkListDetailedViewBase {
   virtual void GetAvailableNetworkList(
       std::vector<NetworkIconInfo>* list) OVERRIDE{
     Shell::GetInstance()->system_tray_delegate()->GetVirtualNetworks(list);
-  }
-
-  virtual void RefreshNetworkScrollWithEmptyNetworkList() OVERRIDE {
-    ClearNetworkScrollWithEmptyNetworkList();
-    HoverHighlightView* container = new HoverHighlightView(this);
-    container->AddLabel(ui::ResourceBundle::GetSharedInstance().
-        GetLocalizedString(IDS_ASH_STATUS_TRAY_NETWORK_NO_VPN),
-        gfx::Font::NORMAL);
-    scroll_content()->AddChildViewAt(container, 0);
-    scroll_content()->SizeToPreferredSize();
-    static_cast<views::View*>(scroller())->Layout();
   }
 
   virtual void UpdateNetworkEntries() OVERRIDE {
@@ -120,21 +111,36 @@ class VpnListDetailedView : public NetworkListDetailedViewBase {
 
   virtual bool UpdateNetworkListEntries(
       std::set<std::string>* new_service_paths) OVERRIDE {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     bool needs_relayout = false;
+
+    int index = 0;
+
     for (size_t i = 0; i < network_list().size(); ++i) {
       const NetworkIconInfo* info = &network_list()[i];
-      if (UpdateNetworkChild(i, false, info))
+      if (UpdateNetworkChild(index++, info))
         needs_relayout = true;
       new_service_paths->insert(info->service_path);
     }
-    return needs_relayout;
-  }
 
-  virtual void ClearNetworkListEntries() {
+    // We shouldn't be showing this list if there are no VPNs, but it could
+    // be possible to get here if a VPN were removed (e.g. by a policy) while
+    // the UI was open. Better to show something than nothing.
+    if (network_list().empty()) {
+      if (CreateOrUpdateInfoLabel(
+              index++,
+              rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_NETWORK_NO_VPN),
+              &no_networks_view_)) {
+        needs_relayout = true;
+      }
+    }
+
+    return needs_relayout;
   }
 
  private:
   TrayPopupLabelButton* other_vpn_;
+  views::Label* no_networks_view_;
 
   DISALLOW_COPY_AND_ASSIGN(VpnListDetailedView);
 };

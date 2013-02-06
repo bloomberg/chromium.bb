@@ -10515,7 +10515,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Ethernet Networks:
       </message>
       <message name="IDS_ABOUT_NETWORK_WIFI" desc="The section title for wifi networks in the chrome://network page.">
-        Wifi Networks:
+        Wi-Fi Networks:
       </message>
       <message name="IDS_ABOUT_NETWORK_CELLULAR" desc="The section title for cellular networks in the chrome://network page.">
         Cellular Networks:
@@ -10524,7 +10524,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Virtual Networks:
       </message>
       <message name="IDS_ABOUT_NETWORK_REMEMBERED_WIFI" desc="The section title for remembered wifi networks in the chrome://network page.">
-        Remembered Wifi Networks:
+        Remembered Wi-Fi Networks:
       </message>
 
       <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="The title of the startup group">

@@ -223,12 +223,13 @@ bool NetworkListDetailedViewBase::CreateOrUpdateInfoLabel(
 }
 
 bool NetworkListDetailedViewBase::UpdateNetworkChild(
-    int index, bool highlight, const NetworkIconInfo* info) {
+    int index, const NetworkIconInfo* info) {
   bool needs_relayout = false;
   HoverHighlightView* container = NULL;
   ServicePathMap::const_iterator found =
       service_path_map_.find(info->service_path);
-  gfx::Font::FontStyle font = highlight ? gfx::Font::BOLD : gfx::Font::NORMAL;
+  gfx::Font::FontStyle font =
+      info->highlight() ? gfx::Font::BOLD : gfx::Font::NORMAL;
   string16 desc = info->description.empty() ? info->name : info->description;
   if (found == service_path_map_.end()) {
     container = new HoverHighlightView(this);
@@ -295,13 +296,6 @@ void NetworkListDetailedViewBase::RefreshNetworkList() {
     if (selected_view)
       scroll_content()->ScrollRectToVisible(selected_view->bounds());
   }
-}
-
-void NetworkListDetailedViewBase::ClearNetworkScrollWithEmptyNetworkList() {
-  service_path_map_.clear();
-  network_map_.clear();
-  scroll_content()->RemoveAllChildViews(true);
-  ClearNetworkListEntries();
 }
 
 void NetworkListDetailedViewBase::RefreshNetworkScrollWithUpdatedNetworkData() {

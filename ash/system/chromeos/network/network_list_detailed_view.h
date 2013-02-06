@@ -38,7 +38,6 @@ class NetworkListDetailedView : public NetworkListDetailedViewBase {
   virtual void AppendNetworkEntries() OVERRIDE;
   virtual void GetAvailableNetworkList(
       std::vector<NetworkIconInfo>* list) OVERRIDE;
-  virtual void RefreshNetworkScrollWithEmptyNetworkList() OVERRIDE;
   virtual void UpdateNetworkEntries() OVERRIDE;
   virtual void AppendCustomButtonsToBottomRow(views::View* bottom_row) OVERRIDE;
   virtual void UpdateNetworkExtra() OVERRIDE;
@@ -47,7 +46,6 @@ class NetworkListDetailedView : public NetworkListDetailedViewBase {
   virtual bool CustomLinkClickedOn(views::View* sender) OVERRIDE;
   virtual bool UpdateNetworkListEntries(
       std::set<std::string>* new_service_paths) OVERRIDE;
-  virtual void ClearNetworkListEntries() OVERRIDE;
 
  private:
   std::string carrier_id_;

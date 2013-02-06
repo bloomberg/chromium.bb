@@ -42,14 +42,12 @@ class NetworkListDetailedViewBase : public NetworkDetailedView,
  protected:
   void AppendInfoButtonToHeader();
   void UpdateSettingButton();
-  void ClearNetworkScrollWithEmptyNetworkList();
   void RefreshNetworkScrollWithUpdatedNetworkData();
   user::LoginStatus login() const { return login_; }
   bool IsNetworkListEmpty() const;
   bool CreateOrUpdateInfoLabel(
       int index, const string16& text, views::Label** label);
-  bool UpdateNetworkChild(
-      int index, bool highlight, const NetworkIconInfo* info);
+  bool UpdateNetworkChild(int index, const NetworkIconInfo* info);
 
   const std::vector<NetworkIconInfo>& network_list() const {
     return network_list_;
@@ -70,7 +68,6 @@ class NetworkListDetailedViewBase : public NetworkDetailedView,
   virtual void UpdateHeaderButtons() = 0;
   virtual void AppendNetworkEntries() = 0;
   virtual void GetAvailableNetworkList(std::vector<NetworkIconInfo>* list) = 0;
-  virtual void RefreshNetworkScrollWithEmptyNetworkList() = 0;
   virtual void UpdateNetworkEntries() = 0;
   virtual void AppendCustomButtonsToBottomRow(views::View* bottom_row) = 0;
   virtual void UpdateNetworkExtra() = 0;
@@ -81,7 +78,6 @@ class NetworkListDetailedViewBase : public NetworkDetailedView,
   // Returns true if the scroll list needs to be relayed out.
   virtual bool UpdateNetworkListEntries(
       std::set<std::string>* new_service_paths) = 0;
-  virtual void ClearNetworkListEntries() = 0;
 
   void Update();
   void CreateItems();

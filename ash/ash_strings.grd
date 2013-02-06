@@ -251,8 +251,41 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_VPN" desc="The label used in the VPN detailed view header.">
         Private Network
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_TOOLTIP" desc="Tooltip for the network tray item when connected to a network.">
+      <message name="IDS_ASH_STATUS_TRAY_ETHERNET" desc="The ethernet network device.">
+        Ethernet
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_WIFI" desc="The wifi network device.">
+        Wi-Fi
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CELLULAR" desc="The accessible text for the cellular button.">
+        Cellular
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_INFO" desc="The accessible text for the network info button.">
+        Network Info
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_IP" desc="The label for the IP address of the network:">
+        IP Address
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NO_NETWORKS" desc="The message to display in the network info bubble when it is otherwise empty.">
+        No network information available
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS" desc="The message to display in the network list when no cellular networks are available.">
+	No cellular network available
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED" desc="Description in status area or network dropdown when no network is connected.">
+	No network
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED" desc="The label used in system tray bubble to display vpn is disconnected.">
+	VPN disconnected
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED" desc="Message for the network tray tooltip and default menu text when connected to a network.">
         Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING" desc="Message for the network tray tooltip and default menu text when connecting to a network.">
+        Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_CONNECTING" desc="Message for the network list when connecting to a network.">
+        <ph name="NAME">$1<ex>GoogleGuest</ex></ph>: Connecting...
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS" desc="The label used in the settings entry in the network dialog.">
         Settings...
@@ -269,21 +302,6 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_NO_VPN" desc="The label used in the tray popup to notify no vpn is configured.">
         VPN is not configured.
       </message>      
-      <message name="IDS_ASH_STATUS_TRAY_SMS" desc="The label used in the status tray for SMS.">      
-        SMS
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_SMS_MESSAGES" desc="The label used in the default status tray view for SMS with the number of messages.">
-        SMS messages: <ph name="MESSAGE_COUNT">$1<ex>3</ex></ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_SMS_NUMBER" desc="Sender for SMS messagees in the system tray.">
-        SMS from <ph name="PHONE_NUMBER">$1<ex>08700 776655</ex></ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_MESSAGE" desc="The message used for locale change notifications in the system tray.">
-        The language has changed from "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" to "<ph name="TO_LOCALE">$2<ex>English (United States)</ex></ph>" after syncing your settings.
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_LOCALE_REVERT_MESSAGE" desc="Link to revert a change.">
-        Change back to "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" (requires restart)
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_ENABLE_WIFI" desc="The label used for the item to enable wifi.">
         Enable Wi-Fi
       </message>
@@ -297,7 +315,7 @@ Press Ctrl+Alt+Z to disable.
         Join other...
       </message>
       <message name="IDS_ASH_STATUS_TRAY_TURN_ON_WIFI" desc="The label used for the item to turn on Wi-Fi networks.">
-        Turn WiFi on...
+        Turn Wi-Fi on...
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ENABLE_MOBILE" desc="The label used for the item to enable cellular networks.">
         Enable mobile data
@@ -320,9 +338,16 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR" desc="Message for the status area when initializing the cellular device.">
 	Initializing cellular modem...
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
-        Restart to update
+      <message name="IDS_ASH_STATUS_TRAY_SMS" desc="The label used in the status tray for SMS.">
+        SMS
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_SMS_MESSAGES" desc="The label used in the default status tray view for SMS with the number of messages.">
+        SMS messages: <ph name="MESSAGE_COUNT">$1<ex>3</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_SMS_NUMBER" desc="Sender for SMS messagees in the system tray.">
+        SMS from <ph name="PHONE_NUMBER">$1<ex>08700 776655</ex></ph>
+      </message>
+
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH" desc="The label used as the header in the bluetooth popup.">
         Bluetooth
       </message>
@@ -341,15 +366,6 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCONNECTING" desc="Shows a disconnecting bluetooth device in the bluetooth list.">
         <ph name="BLUETOOTH">$1<ex>Apple Magic Mouse</ex></ph>: Disconnecting...
       </message>      
-      <message name="IDS_ASH_STATUS_TRAY_BRIGHTNESS" desc="The accessible text for the brightness slider.">
-        Brightness
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_VOLUME" desc="The accessible text for the volume slider.">
-        Volume
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_VOLUME_MUTE" desc="The label text for the volume mute segment.">
-        mute
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_DISABLE_BLUETOOTH" desc="The label used in the tray popup to disable bluetooth.">
         Disable Bluetooth
       </message>
@@ -371,6 +387,21 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING" desc="The label used in the tray popup to show bluetooth is discovering devices.">
         Scanning for devices...
       </message>
+
+      <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
+        Restart to update
+      </message>
+
+      <message name="IDS_ASH_STATUS_TRAY_BRIGHTNESS" desc="The accessible text for the brightness slider.">
+        Brightness
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_VOLUME" desc="The accessible text for the volume slider.">
+        Volume
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_VOLUME_MUTE" desc="The label text for the volume mute segment.">
+        mute
+      </message>
+
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING" desc="The label used in the tray to show that the current status is mirroring.">
 	Mirroring to <ph name="DISPLAY_NAME">$1</ph>
       </message>
@@ -429,6 +460,14 @@ Press Shift + Alt to switch.
         Your input method has changed to <ph name="INPUT_METHOD_ID">$1<ex>EN</ex></ph>*(<ph name="BEGIN_LINK">&lt;a target="_blank" href="$2"&gt;</ph>3rd party<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>).
 Press Shift + Alt to switch.
       </message>
+
+      <message name="IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_MESSAGE" desc="The message used for locale change notifications in the system tray.">
+        The language has changed from "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" to "<ph name="TO_LOCALE">$2<ex>English (United States)</ex></ph>" after syncing your settings.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOCALE_REVERT_MESSAGE" desc="Link to revert a change.">
+        Change back to "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" (requires restart)
+      </message>
+
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY" desc="The label used in the tray menu to show the accessibility option menu.">
         Accessibility
       </message>
@@ -491,15 +530,6 @@ Press Shift + Alt to switch.
       <message name = "IDS_ASH_STATUS_TRAY_BATTERY_TIME_ACCESSIBLE" desc="The message used by accessibility to read battery time, which includes both non-zero hours and minutes.">
         <ph name="hour">$1<ex> 1 hour</ex></ph> and <ph name="minute">$2<ex>15 minutes</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_IP" desc="The label for the IP address of the network:">
-        IP Address
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_ETHERNET" desc="The ethernet network device.">
-        Ethernet
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_WIFI" desc="The wifi network device.">
-        Wi-Fi
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_HELP" desc="The accessible text for the help button.">
         Help
       </message>
@@ -511,21 +541,6 @@ Press Shift + Alt to switch.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS" desc="The accessible text for the notifications button.">
         Notifications
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_CELLULAR" desc="The accessible text for the cellular button.">
-        Cellular
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_INFO" desc="The accessible text for the network info button.">
-        Network Info
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NO_NETWORKS" desc="The message to display in the network info bubble when it is otherwise empty.">
-        No network information available
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS" desc="The message to display in the network list when no cellular networks are available.">
-	No cellular network available
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING" desc="Shows a connecting network in the network list.">
-	<ph name="NETWORK">$1<ex>GoogleGuest</ex></ph>: Connecting...
       </message>
       <message name="IDS_ASH_STATUS_TRAY_REMAINING_SESSION_TIME" desc="The time remaining until the end of the session. Shown if the session length is limited.">
         <ph name="hours">$1<ex>01</ex></ph>:<ph name="minutes">$2<ex>35</ex></ph>:<ph name="seconds">$3<ex>12</ex></ph>

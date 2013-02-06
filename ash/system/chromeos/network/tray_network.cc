@@ -138,7 +138,7 @@ class NetworkTrayView : public TrayItemView {
     string16 new_connection_status_string;
     if (connected) {
       new_connection_status_string = l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_TOOLTIP, network_name);
+          IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED, network_name);
     }
     if (new_connection_status_string != connection_status_string_) {
       connection_status_string_ = new_connection_status_string;

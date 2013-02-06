@@ -100,31 +100,6 @@ void NetworkListDetailedView::GetAvailableNetworkList(
   Shell::GetInstance()->system_tray_delegate()->GetAvailableNetworks(list);
 }
 
-void NetworkListDetailedView::RefreshNetworkScrollWithEmptyNetworkList() {
-  ClearNetworkScrollWithEmptyNetworkList();
-  HoverHighlightView* container = new HoverHighlightView(this);
-
-  if (Shell::GetInstance()->system_tray_delegate()->GetWifiEnabled()) {
-    NetworkIconInfo info;
-    Shell::GetInstance()->system_tray_delegate()->
-        GetMostRelevantNetworkIcon(&info, true);
-    container->AddIconAndLabel(info.image,
-                               info.description,
-                               gfx::Font::NORMAL);
-    container->set_border(
-        views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
-  } else {
-    container->AddLabel(ui::ResourceBundle::GetSharedInstance().
-                        GetLocalizedString(
-                            IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED),
-                        gfx::Font::NORMAL);
-  }
-
-  scroll_content()->AddChildViewAt(container, 0);
-  scroll_content()->SizeToPreferredSize();
-  static_cast<views::View*>(scroller())->Layout();
-}
-
 void NetworkListDetailedView::UpdateNetworkEntries() {
   RefreshNetworkScrollWithUpdatedNetworkData();
 
@@ -228,40 +203,35 @@ bool NetworkListDetailedView::CustomLinkClickedOn(views::View* sender) {
 bool NetworkListDetailedView::UpdateNetworkListEntries(
     std::set<std::string>* new_service_paths) {
   bool needs_relayout = false;
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
 
   // Insert child views
 
   int index = 0;
+  bool have_cellular_network = false;
 
   // Highlighted networks
   for (size_t i = 0; i < network_list().size(); ++i) {
     const NetworkIconInfo* info = &network_list()[i];
     if (info->highlight()) {
-      if (UpdateNetworkChild(index++, true, info))
+      if (UpdateNetworkChild(index++, info))
         needs_relayout = true;
       new_service_paths->insert(info->service_path);
     }
-  }
-
-  // "Cellular Initializing" or "No celular networks"
-  bool have_cellular_network = false;
-  for (size_t i = 0; i < network_list().size(); ++i) {
-    if (network_list()[i].is_cellular) {
+    if (info->is_cellular)
       have_cellular_network = true;
-      break;
-    }
   }
 
+  // "Cellular Initializing" or "No celular networks" or "No network"
   int status_message_id = 0;
   if (delegate->GetCellularInitializing())
     status_message_id = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
   else if (!have_cellular_network && delegate->GetMobileEnabled())
     status_message_id = IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS;
   if (status_message_id) {
-    string16 text = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-        status_message_id);
+    string16 text = rb.GetLocalizedString(status_message_id);
     if (CreateOrUpdateInfoLabel(index++, text, &no_cellular_networks_view_))
       needs_relayout = true;
   } else if (no_cellular_networks_view_) {
@@ -275,8 +245,7 @@ bool NetworkListDetailedView::UpdateNetworkListEntries(
     int message_id = delegate->GetWifiEnabled() ?
         IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED :
         IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
-    string16 text = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-        message_id);
+    string16 text = rb.GetLocalizedString(message_id);
     if (CreateOrUpdateInfoLabel(index++, text, &no_wifi_networks_view_))
       needs_relayout = true;
   } else if (no_wifi_networks_view_) {
@@ -287,8 +256,8 @@ bool NetworkListDetailedView::UpdateNetworkListEntries(
 
   // "Wifi Scanning"
   if (delegate->GetWifiScanning()) {
-    string16 text = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-        IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE);
+    string16 text =
+        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE);
     if (CreateOrUpdateInfoLabel(index++, text, &scanning_view_))
       needs_relayout = true;
   } else if (scanning_view_ != NULL) {
@@ -301,19 +270,13 @@ bool NetworkListDetailedView::UpdateNetworkListEntries(
   for (size_t i = 0; i < network_list().size(); ++i) {
     const NetworkIconInfo* info = &network_list()[i];
     if (!info->highlight()) {
-      if (UpdateNetworkChild(index++, false, info))
+      if (UpdateNetworkChild(index++, info))
         needs_relayout = true;
       new_service_paths->insert(info->service_path);
     }
   }
 
   return needs_relayout;
-}
-
-void NetworkListDetailedView::ClearNetworkListEntries() {
-  scanning_view_ = NULL;
-  no_wifi_networks_view_ = NULL;
-  no_cellular_networks_view_ = NULL;
 }
 
 }  // namespace tray
