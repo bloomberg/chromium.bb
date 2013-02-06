@@ -324,7 +324,7 @@ private:
 
     bool m_didLockScrollingLayer;
     bool m_shouldBubbleScrolls;
-    bool m_scrollDeltaIsInViewportSpace;
+    bool m_wheelScrolling;
     LayerTreeSettings m_settings;
     LayerTreeDebugState m_debugState;
     gfx::Size m_layoutViewportSize;
