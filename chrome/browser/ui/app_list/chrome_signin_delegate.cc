@@ -48,6 +48,9 @@ bool ChromeSigninDelegate::NeedSignin()  {
   if (!profile_)
     return false;
 
+  if (!GetSigninManager(profile_))
+    return false;
+
   return GetSigninManager(profile_)->GetAuthenticatedUsername().empty();
 #endif
 }
