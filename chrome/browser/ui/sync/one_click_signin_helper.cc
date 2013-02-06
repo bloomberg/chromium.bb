@@ -191,6 +191,11 @@ bool IsValidGaiaSigninRedirectOrResponseURL(const GURL& url) {
   return false;
 }
 
+// Constants for the modal dialog / bubble sign in to chrome confirmation
+// experiment
+const char kSignInToChromeDialogFieldTrialName[] = "SignInToChromeConfirmation";
+const char kSignInConfirmBubbleGroupName[] = "Bubble";
+
 }  // namespace
 
 // The infobar asking the user if they want to use one-click sign in.
@@ -860,6 +865,13 @@ void OneClickSigninHelper::DidStopLoading(
           << " auto_accept=" << auto_accept_
           << " source=" << source_;
 
+  BrowserWindow::OneClickSigninBubbleType bubble_type;
+  if (base::FieldTrialList::FindFullName(kSignInToChromeDialogFieldTrialName) ==
+      kSignInConfirmBubbleGroupName)
+    bubble_type = BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE;
+  else
+    bubble_type = BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG;
+
   switch (auto_accept_) {
     case AUTO_ACCEPT_NONE:
       if (SyncPromoUI::UseWebBasedSigninFlow()) {
@@ -875,7 +887,7 @@ void OneClickSigninHelper::DidStopLoading(
     case AUTO_ACCEPT_ACCEPTED:
       SigninManager::DisableOneClickSignIn(profile);
       browser->window()->ShowOneClickSigninBubble(
-          BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG,
+          bubble_type,
           base::Bind(&StartSync, profile, browser, auto_accept_, session_index_,
                      email_, password_));
       break;
