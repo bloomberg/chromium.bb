@@ -187,6 +187,11 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   void DidCopyNexeToCachePartial(int32_t pp_error, int32_t num_read_prev,
                                  int64_t cur_offset);
   void NexeWasCopiedToCache(int32_t pp_error);
+  // If the copy of the nexe to the not-yet-committed-to-cache file
+  // failed after partial writes, we attempt to delete the partially written
+  // file. This callback is invoked when the delete is completed.
+  void CorruptCacheFileWasDeleted(int32_t delete_pp_error,
+                                  int32_t orig_pp_error);
   // Invoked when the nexe_file_ temporary has been renamed to the nexe name.
   void NexeFileWasRenamed(int32_t pp_error);
   // Invoked when the read descriptor for nexe_file_ is created.

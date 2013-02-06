@@ -284,7 +284,7 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
   coordinator->off_the_record_ =
       plugin->nacl_interface()->IsOffTheRecord();
   PLUGIN_PRINTF(("PnaclCoordinator::BitcodeToNative (manifest=%p, "
-                 "off_the_record=%b)\n",
+                 "off_the_record=%d)\n",
                  reinterpret_cast<const void*>(coordinator->manifest_.get()),
                  coordinator->off_the_record_));
 
@@ -597,29 +597,48 @@ void PnaclCoordinator::DidCopyNexeToCachePartial(int32_t pp_error,
 
 void PnaclCoordinator::NexeWasCopiedToCache(int32_t pp_error) {
   if (pp_error != PP_OK) {
-    // TODO(jvoung): This should try to delete the partially written
-    // cache file before returning...
-    if (pp_error == PP_ERROR_NOQUOTA) {
-      ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_COPY_NOQUOTA,
-                       pp_error,
-                       "Failed to copy translated nexe to cache (no quota).");
-      return;
-    }
-    if (pp_error == PP_ERROR_NOSPACE) {
-      ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_COPY_NOSPACE,
-                       pp_error,
-                       "Failed to copy translated nexe to cache (no space).");
-      return;
-    }
-    ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_COPY_OTHER,
-                     pp_error,
-                     "Failed to copy translated nexe to cache.");
+    // Try to delete the partially written not-yet-committed cache file before
+    // returning. We pass the current pp_error along so that it can be reported
+    // before returning.
+    pp::CompletionCallback cb = callback_factory_.NewCallback(
+        &PnaclCoordinator::CorruptCacheFileWasDeleted, pp_error);
+    cached_nexe_file_->Delete(cb);
     return;
   }
   // Rename the cached_nexe_file_ file to the cache id, to finalize.
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::NexeFileWasRenamed);
   cached_nexe_file_->Rename(cache_identity_, cb);
+}
+
+void PnaclCoordinator::CorruptCacheFileWasDeleted(int32_t delete_pp_error,
+                                                  int32_t orig_pp_error) {
+  if (delete_pp_error != PP_OK) {
+    // The cache file was certainly already opened by the time we tried
+    // to write to it, so it should certainly be deletable.
+    PLUGIN_PRINTF(("PnaclCoordinator::CorruptCacheFileWasDeleted "
+                   "delete failed with pp_error=%"NACL_PRId32"\n",
+                   delete_pp_error));
+    // fall through and report the original error.
+  }
+  // Report the original error that caused us to consider the
+  // cache file corrupted.
+  if (orig_pp_error == PP_ERROR_NOQUOTA) {
+    ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_COPY_NOQUOTA,
+                     orig_pp_error,
+                     "Failed to copy translated nexe to cache (no quota).");
+    return;
+  }
+  if (orig_pp_error == PP_ERROR_NOSPACE) {
+    ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_COPY_NOSPACE,
+                     orig_pp_error,
+                     "Failed to copy translated nexe to cache (no space).");
+      return;
+  }
+  ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_COPY_OTHER,
+                   orig_pp_error,
+                   "Failed to copy translated nexe to cache.");
+  return;
 }
 
 void PnaclCoordinator::NexeFileWasRenamed(int32_t pp_error) {
@@ -640,9 +659,7 @@ void PnaclCoordinator::NexeFileWasRenamed(int32_t pp_error) {
       // NOTE: if the file already existed, it looks like the rename will
       // happily succeed.  However, we should add a test for this.
       // Could be a hash collision, or it could also be two tabs racing to
-      // translate the same pexe.  The file could also be a corrupt left-over,
-      // but that case can be removed by doing the TODO for cleanup.
-      // We may want UMA stats to know if this happens.
+      // translate the same pexe. We may want UMA stats to know if this happens.
       // For now, assume that it is a race and try to continue.
       // If there is truly a corrupted file, then sel_ldr should prevent the
       // file from loading due to the file size not matching the ELF header.

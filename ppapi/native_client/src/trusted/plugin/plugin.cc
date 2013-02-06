@@ -908,7 +908,7 @@ void Plugin::CopyCrashLogToJsConsole() {
   size_t ix_start = 0;
   size_t ix_end;
 
-  PLUGIN_PRINTF(("Plugin::CopyCrashLogToJsConsole: got %d bytes\n",
+  PLUGIN_PRINTF(("Plugin::CopyCrashLogToJsConsole: got %"NACL_PRIuS" bytes\n",
                  fatal_msg.size()));
   while (nacl::string::npos != (ix_end = fatal_msg.find('\n', ix_start))) {
     LogLineToConsole(this, fatal_msg.substr(ix_start, ix_end - ix_start));

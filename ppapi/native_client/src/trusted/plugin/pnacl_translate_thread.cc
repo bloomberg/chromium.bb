@@ -74,8 +74,8 @@ void PnaclTranslateThread::RunTranslate(
 // Called from main thread to send bytes to the translator.
 void PnaclTranslateThread::PutBytes(std::vector<char>* bytes,
                                              int count) {
-  PLUGIN_PRINTF(("PutBytes, this %p bytes %p, size %d, count %d\n", this, bytes,
-                 bytes ? bytes->size(): 0, count));
+  PLUGIN_PRINTF(("PutBytes (this=%p, bytes=%p, size=%"NACL_PRIuS", count=%d)\n",
+                 this, bytes, bytes ? bytes->size() : 0, count));
   size_t buffer_size = 0;
   // If we are done (error or not), Signal the translation thread to stop.
   if (count <= PP_OK) {
@@ -179,7 +179,7 @@ void PnaclTranslateThread::DoTranslate() {
     while(!done_ && data_buffers_.size() == 0) {
       NaClXCondVarWait(&buffer_cond_, &cond_mu_);
     }
-    PLUGIN_PRINTF(("PnaclTranslateThread awake, done %d, size %d\n",
+    PLUGIN_PRINTF(("PnaclTranslateThread awake (done=%d, size=%"NACL_PRIuS")\n",
                    done_, data_buffers_.size()));
     if (data_buffers_.size() > 0) {
       std::vector<char> data;
