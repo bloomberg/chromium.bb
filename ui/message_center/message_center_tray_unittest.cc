@@ -18,17 +18,17 @@ class MockDelegate : public MessageCenterTrayDelegate {
       : show_popups_success_(true),
         show_message_center_success_(true) {}
   virtual ~MockDelegate() {}
-  virtual void OnMessageCenterTrayChanged() {}
-  virtual bool ShowPopups() {
+  virtual void OnMessageCenterTrayChanged() OVERRIDE {}
+  virtual bool ShowPopups() OVERRIDE {
     return show_message_center_success_;
   }
-  virtual void HidePopups() {}
-  virtual void UpdatePopups() {}
-  virtual bool ShowMessageCenter() {
+  virtual void HidePopups() OVERRIDE {}
+  virtual void UpdatePopups() OVERRIDE {}
+  virtual bool ShowMessageCenter() OVERRIDE {
     return show_popups_success_;
   }
-  virtual void HideMessageCenter() {}
-  virtual void UpdateMessageCenter() {}
+  virtual void HideMessageCenter() OVERRIDE {}
+  virtual void UpdateMessageCenter() OVERRIDE {}
 
   bool show_popups_success_;
   bool show_message_center_success_;

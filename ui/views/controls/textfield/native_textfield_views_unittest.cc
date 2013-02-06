@@ -129,22 +129,22 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
 
   // TextfieldController:
   virtual void ContentsChanged(Textfield* sender,
-                               const string16& new_contents) {
+                               const string16& new_contents) OVERRIDE {
     ASSERT_NE(last_contents_, new_contents);
     last_contents_ = new_contents;
   }
 
   virtual bool HandleKeyEvent(Textfield* sender,
-                              const ui::KeyEvent& key_event) {
+                              const ui::KeyEvent& key_event) OVERRIDE {
     // TODO(oshima): figure out how to test the keystroke.
     return false;
   }
 
-  virtual void OnBeforeUserAction(Textfield* sender) {
+  virtual void OnBeforeUserAction(Textfield* sender) OVERRIDE {
     ++on_before_user_action_;
   }
 
-  virtual void OnAfterUserAction(Textfield* sender) {
+  virtual void OnAfterUserAction(Textfield* sender) OVERRIDE {
     ++on_after_user_action_;
   }
 

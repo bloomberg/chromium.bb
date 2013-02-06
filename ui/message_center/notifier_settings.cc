@@ -86,7 +86,8 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
 
  private:
   // views::ButtonListener overrides:
-  void ButtonPressed(views::Button* button, const ui::Event& event) {
+  virtual void ButtonPressed(views::Button* button,
+                             const ui::Event& event) OVERRIDE {
     DCHECK(button == checkbox_);
     // The checkbox state has already changed at this point, but we'll update
     // the state on NotifierSettingsView::ButtonPressed() too, so here change

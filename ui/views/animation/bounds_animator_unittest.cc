@@ -22,7 +22,7 @@ class TestBoundsAnimator : public BoundsAnimator {
   }
 
  protected:
-  SlideAnimation* CreateAnimation() {
+  virtual SlideAnimation* CreateAnimation() OVERRIDE {
     SlideAnimation* animation = BoundsAnimator::CreateAnimation();
     animation->SetSlideDuration(10);
     return animation;

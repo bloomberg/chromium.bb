@@ -67,12 +67,12 @@ class OMLSyncControlVSyncProvider
  protected:
   virtual bool GetSyncValues(int64* system_time,
                              int64* media_stream_counter,
-                             int64* swap_buffer_counter) {
+                             int64* swap_buffer_counter) OVERRIDE {
     return glXGetSyncValuesOML(g_display, window_, system_time,
                                media_stream_counter, swap_buffer_counter);
   }
 
-  virtual bool GetMscRate(int32* numerator, int32* denominator) {
+  virtual bool GetMscRate(int32* numerator, int32* denominator) OVERRIDE {
     if (!g_glx_get_msc_rate_oml_supported)
       return false;
 
@@ -112,7 +112,7 @@ class SGIVideoSyncThread
     DCHECK(CalledOnValidThread());
   }
 
-  ~SGIVideoSyncThread() {
+  virtual ~SGIVideoSyncThread() {
     DCHECK(CalledOnValidThread());
     g_video_sync_thread = NULL;
     Stop();

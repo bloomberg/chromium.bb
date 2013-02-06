@@ -31,7 +31,7 @@ class GtkExpandedContainerTest : public testing::Test {
     gtk_window_set_default_size(GTK_WINDOW(window_), 200, 200);
     gtk_container_add(GTK_CONTAINER(window_), expanded_);
   }
-  ~GtkExpandedContainerTest() {
+  virtual ~GtkExpandedContainerTest() {
     gtk_widget_destroy(window_);
   }
 

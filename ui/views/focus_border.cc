@@ -20,7 +20,7 @@ class DashedFocusBorder : public FocusBorder {
         bottom_inset_(bottom_inset) {
   }
 
-  virtual void Paint(const View& view, gfx::Canvas* canvas) const {
+  virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE {
     gfx::Rect rect(view.GetLocalBounds());
     rect.Inset(left_inset_, top_inset_, right_inset_, bottom_inset_);
     canvas->DrawFocusRect(rect);

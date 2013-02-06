@@ -27,7 +27,7 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
     MessageLoopForUI::current()->AddObserver(this);
   }
 
-  ~Observer() {
+  virtual ~Observer() {
     MessageLoopForUI::current()->RemoveObserver(this);
   }
 

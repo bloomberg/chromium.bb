@@ -49,7 +49,7 @@ class MenuRunnerImpl : public internal::MenuControllerDelegate {
   virtual void SiblingMenuCreated(MenuItemView* menu) OVERRIDE;
 
  private:
-  ~MenuRunnerImpl();
+  virtual ~MenuRunnerImpl();
 
   // Cleans up after the menu is no longer showing. |result| is the menu that
   // the user selected, or NULL if nothing was selected.

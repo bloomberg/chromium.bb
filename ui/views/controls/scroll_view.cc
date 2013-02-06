@@ -99,7 +99,7 @@ class ScrollView::Viewport : public View {
         scroll_rect);
   }
 
-  void ChildPreferredSizeChanged(View* child) OVERRIDE {
+  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE {
     if (parent())
       parent()->Layout();
   }

@@ -150,7 +150,7 @@ class InvalidateTargetEventHandler : public TestEventHandler {
   virtual ~InvalidateTargetEventHandler() {}
 
  private:
-  virtual void ReceivedEvent(Event* event) {
+  virtual void ReceivedEvent(Event* event) OVERRIDE {
    TestEventHandler::ReceivedEvent(event);
    TestTarget* target = static_cast<TestTarget*>(event->target());
    target->set_valid(false);
@@ -178,7 +178,7 @@ class EventHandlerDestroyer : public TestEventHandler {
   }
 
  private:
-  virtual void ReceivedEvent(Event* event) {
+  virtual void ReceivedEvent(Event* event) OVERRIDE {
     TestEventHandler::ReceivedEvent(event);
     delete to_destroy_;
     to_destroy_ = NULL;

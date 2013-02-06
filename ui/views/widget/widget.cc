@@ -107,14 +107,14 @@ class DefaultWidgetDelegate : public WidgetDelegate {
   virtual void DeleteDelegate() OVERRIDE {
     delete this;
   }
-  virtual Widget* GetWidget() {
+  virtual Widget* GetWidget() OVERRIDE {
     return widget_;
   }
-  virtual const Widget* GetWidget() const {
+  virtual const Widget* GetWidget() const OVERRIDE {
     return widget_;
   }
 
-  virtual bool CanActivate() const {
+  virtual bool CanActivate() const OVERRIDE {
     return can_activate_;
   }
 

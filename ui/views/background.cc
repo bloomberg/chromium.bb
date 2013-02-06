@@ -22,7 +22,7 @@ class SolidBackground : public Background {
     SetNativeControlColor(color);
   }
 
-  void Paint(gfx::Canvas* canvas, View* view) const {
+  virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE {
     // Fill the background. Note that we don't constrain to the bounds as
     // canvas is already clipped for us.
     canvas->DrawColor(get_color());
@@ -45,7 +45,7 @@ class BackgroundPainter : public Background {
   }
 
 
-  void Paint(gfx::Canvas* canvas, View* view) const {
+  virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE {
     Painter::PaintPainterAt(canvas, painter_, view->GetLocalBounds());
   }
 

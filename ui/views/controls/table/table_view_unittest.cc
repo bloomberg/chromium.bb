@@ -157,7 +157,7 @@ class TestTableView : public TableView {
   }
 
   // View overrides:
-  virtual bool HasFocus() const {
+  virtual bool HasFocus() const OVERRIDE {
     // Overriden so key processing works.
     return true;
   }

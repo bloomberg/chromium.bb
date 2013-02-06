@@ -935,10 +935,10 @@ class HitTestView : public View {
 
  protected:
   // Overridden from View:
-  virtual bool HasHitTestMask() const {
+  virtual bool HasHitTestMask() const OVERRIDE {
     return has_hittest_mask_;
   }
-  virtual void GetHitTestMask(gfx::Path* mask) const {
+  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {
     DCHECK(has_hittest_mask_);
     DCHECK(mask);
 
@@ -1896,9 +1896,10 @@ class TestNativeViewHierarchy : public View {
   TestNativeViewHierarchy() {
   }
 
-  virtual void NativeViewHierarchyChanged(bool attached,
-                                          gfx::NativeView native_view,
-                                          internal::RootView* root_view) {
+  virtual void NativeViewHierarchyChanged(
+      bool attached,
+      gfx::NativeView native_view,
+      internal::RootView* root_view) OVERRIDE {
     NotificationInfo info;
     info.attached = attached;
     info.native_view = native_view;
@@ -2033,7 +2034,7 @@ class TransformPaintView : public TestView {
   gfx::Rect scheduled_paint_rect() const { return scheduled_paint_rect_; }
 
   // Overridden from View:
-  virtual void SchedulePaintInRect(const gfx::Rect& rect) {
+  virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE {
     gfx::Rect xrect = ConvertRectToParent(rect);
     scheduled_paint_rect_.Union(xrect);
   }
@@ -2271,10 +2272,10 @@ class VisibleBoundsView : public View {
 
  private:
   // Overridden from View:
-  virtual bool NeedsNotificationWhenVisibleBoundsChange() const {
+  virtual bool NeedsNotificationWhenVisibleBoundsChange() const OVERRIDE {
      return true;
   }
-  virtual void OnVisibleBoundsChanged() {
+  virtual void OnVisibleBoundsChanged() OVERRIDE {
     received_notification_ = true;
   }
 
@@ -2896,7 +2897,7 @@ class TestLayerAnimator : public ui::LayerAnimator {
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
 
  protected:
-  ~TestLayerAnimator() { }
+  virtual ~TestLayerAnimator() { }
 
  private:
   gfx::Rect last_bounds_;

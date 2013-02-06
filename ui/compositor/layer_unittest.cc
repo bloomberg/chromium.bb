@@ -578,7 +578,7 @@ class LayerWithNullDelegateTest : public LayerWithDelegateTest {
   virtual void TearDown() OVERRIDE {
   }
 
-  Layer* CreateLayer(LayerType type) OVERRIDE {
+  virtual Layer* CreateLayer(LayerType type) OVERRIDE {
     Layer* layer = new Layer(type);
     layer->set_delegate(default_layer_delegate_.get());
     return layer;
@@ -596,7 +596,7 @@ class LayerWithNullDelegateTest : public LayerWithDelegateTest {
     return layer;
   }
 
-  Layer* CreateNoTextureLayer(const gfx::Rect& bounds) OVERRIDE {
+  virtual Layer* CreateNoTextureLayer(const gfx::Rect& bounds) OVERRIDE {
     Layer* layer = CreateLayer(LAYER_NOT_DRAWN);
     layer->SetBounds(bounds);
     return layer;

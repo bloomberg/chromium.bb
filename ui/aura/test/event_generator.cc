@@ -33,11 +33,11 @@ class DefaultEventGeneratorDelegate : public EventGeneratorDelegate {
   virtual ~DefaultEventGeneratorDelegate() {}
 
   // EventGeneratorDelegate overrides:
-  RootWindow* GetRootWindowAt(const gfx::Point& point) const OVERRIDE {
+  virtual RootWindow* GetRootWindowAt(const gfx::Point& point) const OVERRIDE {
     return root_window_;
   }
 
-  client::ScreenPositionClient* GetScreenPositionClient(
+  virtual client::ScreenPositionClient* GetScreenPositionClient(
       const aura::Window* window) const OVERRIDE {
     return NULL;
   }

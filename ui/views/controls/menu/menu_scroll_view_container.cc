@@ -44,37 +44,37 @@ class MenuScrollButton : public View {
         pref_height_(MenuItemView::pref_menu_height()) {
   }
 
-  virtual gfx::Size GetPreferredSize() {
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     return gfx::Size(
         host_->GetMenuItem()->GetMenuConfig().scroll_arrow_height * 2 - 1,
         pref_height_);
   }
 
-  virtual bool CanDrop(const OSExchangeData& data) {
+  virtual bool CanDrop(const OSExchangeData& data) OVERRIDE {
     DCHECK(host_->GetMenuItem()->GetMenuController());
     return true;  // Always return true so that drop events are targeted to us.
   }
 
-  virtual void OnDragEntered(const ui::DropTargetEvent& event) {
+  virtual void OnDragEntered(const ui::DropTargetEvent& event) OVERRIDE {
     DCHECK(host_->GetMenuItem()->GetMenuController());
     host_->GetMenuItem()->GetMenuController()->OnDragEnteredScrollButton(
         host_, is_up_);
   }
 
-  virtual int OnDragUpdated(const ui::DropTargetEvent& event) {
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE {
     return ui::DragDropTypes::DRAG_NONE;
   }
 
-  virtual void OnDragExited() {
+  virtual void OnDragExited() OVERRIDE {
     DCHECK(host_->GetMenuItem()->GetMenuController());
     host_->GetMenuItem()->GetMenuController()->OnDragExitedScrollButton(host_);
   }
 
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) {
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE {
     return ui::DragDropTypes::DRAG_NONE;
   }
 
-  virtual void OnPaint(gfx::Canvas* canvas) {
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     const MenuConfig& config = host_->GetMenuItem()->GetMenuConfig();
 
     // The background.
@@ -143,7 +143,7 @@ class MenuScrollViewContainer::MenuScrollView : public View {
     AddChildView(child);
   }
 
-  virtual void ScrollRectToVisible(const gfx::Rect& rect) {
+  virtual void ScrollRectToVisible(const gfx::Rect& rect) OVERRIDE {
     // NOTE: this assumes we only want to scroll in the y direction.
 
     // Convert rect.y() to view's coordinates and make sure we don't show past

@@ -108,7 +108,7 @@ class PaneView : public View, public FocusTraversable {
   }
 
   // Overridden from views::View:
-  virtual FocusTraversable* GetPaneFocusTraversable() {
+  virtual FocusTraversable* GetPaneFocusTraversable() OVERRIDE {
     if (focus_search_)
       return this;
     else
@@ -116,13 +116,13 @@ class PaneView : public View, public FocusTraversable {
   }
 
   // Overridden from views::FocusTraversable:
-  virtual views::FocusSearch* GetFocusSearch() {
+  virtual views::FocusSearch* GetFocusSearch() OVERRIDE {
     return focus_search_;
   }
-  virtual FocusTraversable* GetFocusTraversableParent() {
+  virtual FocusTraversable* GetFocusTraversableParent() OVERRIDE {
     return NULL;
   }
-  virtual View* GetFocusTraversableParentView() {
+  virtual View* GetFocusTraversableParentView() OVERRIDE {
     return NULL;
   }
 
@@ -146,11 +146,13 @@ class BorderView : public NativeViewHost {
     return static_cast<internal::RootView*>(widget_->GetRootView());
   }
 
-  virtual FocusTraversable* GetFocusTraversable() {
+  virtual FocusTraversable* GetFocusTraversable() OVERRIDE {
     return static_cast<internal::RootView*>(widget_->GetRootView());
   }
 
-  virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child) {
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View *parent,
+                                    View *child) OVERRIDE {
     NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
 
     if (child == this && is_add) {
@@ -186,7 +188,7 @@ class BorderView : public NativeViewHost {
 
 class FocusTraversalTest : public FocusManagerTest {
  public:
-  ~FocusTraversalTest();
+  virtual ~FocusTraversalTest();
 
   virtual void InitContentView() OVERRIDE;
 

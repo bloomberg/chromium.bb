@@ -85,13 +85,18 @@ class DeletingLayerAnimationObserver : public LayerAnimationObserver {
       sequence_(sequence) {
   }
 
-  virtual void OnLayerAnimationEnded(LayerAnimationSequence* sequence) {
+  virtual void OnLayerAnimationEnded(
+      LayerAnimationSequence* sequence) OVERRIDE {
     animator_->StopAnimating();
   }
 
-  virtual void OnLayerAnimationAborted(LayerAnimationSequence* sequence) {}
+  virtual void OnLayerAnimationAborted(
+      LayerAnimationSequence* sequence) OVERRIDE {
+  }
 
-  virtual void OnLayerAnimationScheduled(LayerAnimationSequence* sequence) {}
+  virtual void OnLayerAnimationScheduled(
+      LayerAnimationSequence* sequence) OVERRIDE {
+  }
 
  private:
   LayerAnimator* animator_;
@@ -1568,7 +1573,7 @@ public:
     animator()->AddObserver(this);
   }
 
-  ~DeletingObserver() {
+  virtual ~DeletingObserver() {
     animator()->RemoveObserver(this);
     *was_deleted_ = true;
   }
@@ -1610,7 +1615,7 @@ public:
   }
 
   virtual void OnLayerAnimationScheduled(
-      LayerAnimationSequence* sequence) {
+      LayerAnimationSequence* sequence) OVERRIDE {
     if (delete_on_animation_scheduled_)
       delete this;
   }

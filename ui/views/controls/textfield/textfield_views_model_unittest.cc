@@ -51,7 +51,7 @@ class TextfieldViewsModelTest : public ViewsTestBase,
         composition_text_confirmed_or_cleared_(false) {
   }
 
-  virtual void OnCompositionTextConfirmedOrCleared() {
+  virtual void OnCompositionTextConfirmedOrCleared() OVERRIDE {
     composition_text_confirmed_or_cleared_ = true;
   }
 

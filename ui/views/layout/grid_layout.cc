@@ -178,7 +178,7 @@ class Column : public LayoutElement {
   GridLayout::Alignment h_align() { return h_align_; }
   GridLayout::Alignment v_align() { return v_align_; }
 
-  virtual void ResetSize();
+  virtual void ResetSize() OVERRIDE;
 
  private:
   friend class ColumnSet;
@@ -190,7 +190,7 @@ class Column : public LayoutElement {
   // to that size. This should only be used for the master column.
   void UnifySameSizedColumnSizes();
 
-  virtual void AdjustSize(int size);
+  virtual void AdjustSize(int size) OVERRIDE;
 
   const GridLayout::Alignment h_align_;
   const GridLayout::Alignment v_align_;
@@ -274,7 +274,7 @@ class Row : public LayoutElement {
 
   virtual ~Row() {}
 
-  virtual void ResetSize() {
+  virtual void ResetSize() OVERRIDE {
     max_ascent_ = max_descent_ = 0;
     SetSize(height_);
   }
