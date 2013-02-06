@@ -67,9 +67,14 @@ class DriveDownloadHandler : public AllDownloadItemNotifier::Observer {
       const content::CheckForFileExistenceCallback& callback);
 
  private:
-  // AllDownloadItemNotifier::Observer
+  // AllDownloadItemNotifier::Observer overrides:
+  virtual void OnDownloadCreated(content::DownloadManager* manager,
+                                 content::DownloadItem* download) OVERRIDE;
   virtual void OnDownloadUpdated(content::DownloadManager* manager,
                                  content::DownloadItem* download) OVERRIDE;
+
+  // Removes the download.
+  void RemoveDownload(int id);
 
   // Callback for DriveFileSystem::GetEntryInfoByPath().
   // Used to implement SubstituteDriveDownloadPath().

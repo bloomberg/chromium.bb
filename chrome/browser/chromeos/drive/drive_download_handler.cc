@@ -81,6 +81,16 @@ void ContinueCheckingForFileExistence(
   callback.Run(error == DRIVE_FILE_OK);
 }
 
+// Returns true if |download| is a Drive download created from data persisted
+// on the download history DB.
+bool IsPersistedDriveDownload(const FilePath& drive_tmp_download_path,
+                              DownloadItem* download) {
+  // Persisted downloads are not in IN_PROGRESS state when created, while newly
+  // created downloads are.
+  return drive_tmp_download_path.IsParent(download->GetFullPath()) &&
+      download->GetState() != DownloadItem::IN_PROGRESS;
+}
+
 }  // namespace
 
 DriveDownloadHandler::DriveDownloadHandler(
@@ -105,9 +115,19 @@ void DriveDownloadHandler::Initialize(
     DownloadManager* download_manager,
     const FilePath& drive_tmp_download_path) {
   DCHECK(!drive_tmp_download_path.empty());
-  if (download_manager)
-    notifier_.reset(new AllDownloadItemNotifier(download_manager, this));
+
   drive_tmp_download_path_ = drive_tmp_download_path;
+
+  if (download_manager) {
+    notifier_.reset(new AllDownloadItemNotifier(download_manager, this));
+    // Remove any persisted Drive DownloadItem. crbug.com/171384
+    content::DownloadManager::DownloadVector downloads;
+    download_manager->GetAllDownloads(&downloads);
+    for (size_t i = 0; i < downloads.size(); ++i) {
+      if (IsPersistedDriveDownload(drive_tmp_download_path_, downloads[i]))
+        RemoveDownload(downloads[i]->GetId());
+    }
+  }
 }
 
 void DriveDownloadHandler::SubstituteDriveDownloadPath(
@@ -147,15 +167,12 @@ void DriveDownloadHandler::SetDownloadParams(const FilePath& drive_path,
   if (util::IsUnderDriveMountPoint(drive_path)) {
     download->SetUserData(&kDrivePathKey, new DriveUserData(drive_path));
     download->SetDisplayName(drive_path.BaseName());
-    download->SetIsTemporary(true);
   } else if (IsDriveDownload(download)) {
     // This may have been previously set if the default download folder is
     // /drive, and the user has now changed the download target to a local
     // folder.
     download->SetUserData(&kDrivePathKey, NULL);
     download->SetDisplayName(FilePath());
-    // TODO(achuith): This is not quite right.
-    download->SetIsTemporary(false);
   }
 }
 
@@ -182,16 +199,36 @@ void DriveDownloadHandler::CheckForFileExistence(
                  callback));
 }
 
+void DriveDownloadHandler::OnDownloadCreated(DownloadManager* manager,
+                                             DownloadItem* download) {
+  // Remove any persisted Drive DownloadItem. crbug.com/171384
+  if (IsPersistedDriveDownload(drive_tmp_download_path_, download)) {
+    // Remove download later, since doing it here results in a crash.
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&DriveDownloadHandler::RemoveDownload,
+                                       weak_ptr_factory_.GetWeakPtr(),
+                                       download->GetId()));
+  }
+}
+
+void DriveDownloadHandler::RemoveDownload(int id) {
+  DownloadManager* manager = notifier_->GetManager();
+  if (!manager)
+    return;
+  DownloadItem* download = manager->GetDownload(id);
+  if (!download)
+    return;
+  download->Remove();
+}
+
 void DriveDownloadHandler::OnDownloadUpdated(
     DownloadManager* manager, DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Drive downloads are considered temporary downloads. Only accept downloads
-  // that have the Drive meta data associated with them. Otherwise we might trip
-  // over non-Drive downloads being saved to drive_tmp_download_path_.
+  // Only accept downloads that have the Drive meta data associated with them.
   DriveUserData* data = GetDriveUserData(download);
-  if (!download->IsTemporary() ||
-      (download->GetTargetFilePath().DirName() != drive_tmp_download_path_) ||
+  if (!drive_tmp_download_path_.IsParent(download->GetTargetFilePath()) ||
       !data ||
       data->is_complete())
     return;
