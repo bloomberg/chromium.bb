@@ -350,7 +350,7 @@
                 <RegistryKey Key="0" Action="create">
                   <RegistryKey Key="win32" Action="create">
                     <RegistryValue Type="string"
-                                   Value="@[binaries]$(var.CoreBinary)"/>
+                                   Value="[binaries]$(var.CoreBinary)"/>
                   </RegistryKey>
                 </RegistryKey>
 
