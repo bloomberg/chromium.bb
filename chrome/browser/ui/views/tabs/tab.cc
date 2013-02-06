@@ -95,10 +95,10 @@ int right_padding() {
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
       case ui::LAYOUT_DESKTOP:
-        value = 19;
+        value = 17;
         break;
       case ui::LAYOUT_TOUCH:
-        value = 23;
+        value = 21;
         break;
       default:
         NOTREACHED();

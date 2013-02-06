@@ -110,7 +110,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
     // Close button.
     closeButton_.reset([[HoverCloseButton alloc] initWithFrame:
-        NSMakeRect(125, 4, 18, 18)]);
+        NSMakeRect(127, 4, 18, 18)]);
     [closeButton_ setAutoresizingMask:NSViewMinXMargin];
     [closeButton_ setTarget:self];
     [closeButton_ setAction:@selector(closeTab:)];
