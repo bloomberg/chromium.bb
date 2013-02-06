@@ -425,7 +425,7 @@ typedef struct _FcCaseFold {
 
 #define FC_CACHE_MAGIC_MMAP	    0xFC02FC04
 #define FC_CACHE_MAGIC_ALLOC	    0xFC02FC05
-#define FC_CACHE_CONTENT_VERSION    3
+#define FC_CACHE_CONTENT_VERSION    4
 
 struct _FcAtomic {
     FcChar8	*file;		/* original file name */
