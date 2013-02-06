@@ -15,6 +15,7 @@ import toolchain_env
 import hashlib
 import logging
 import os
+import platform
 import shutil
 import sys
 
@@ -221,7 +222,16 @@ class Once(object):
     Ideally this would capture anything relevant about the current machine that
     would cause build output to vary (other than build recipe + inputs).
     """
-    return sys.platform
+    # Note there is no attempt to canonicalize these values.  If two
+    # machines that would in fact produce identical builds differ in
+    # these values, it just means that a superfluous build will be
+    # done once to get the mapping from new input hash to preexisting
+    # output hash into the cache.
+    items = [
+        ('platform', sys.platform),
+        ('machine', platform.machine()),
+        ]
+    return str(items)
 
   def BuildSignature(self, package, inputs, commands):
     """Compute a total checksum for a computation.
