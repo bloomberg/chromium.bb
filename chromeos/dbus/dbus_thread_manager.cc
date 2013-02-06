@@ -39,7 +39,6 @@
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/sms_client.h"
 #include "chromeos/dbus/speech_synthesizer_client.h"
@@ -125,11 +124,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         SpeechSynthesizerClient::Create(client_type, system_bus_.get()));
     update_engine_client_.reset(
         UpdateEngineClient::Create(client_type, system_bus_.get()));
-
-    // PowerPolicyController is dependent on PowerManagerClient, so
-    // initialize it after the main list of clients.
-    power_policy_controller_.reset(
-        new PowerPolicyController(this, power_manager_client_.get()));
   }
 
   virtual ~DBusThreadManagerImpl() {
@@ -287,10 +281,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return power_manager_client_.get();
   }
 
-  virtual PowerPolicyController* GetPowerPolicyController() OVERRIDE {
-    return power_policy_controller_.get();
-  }
-
   virtual SessionManagerClient* GetSessionManagerClient() OVERRIDE {
     return session_manager_client_.get();
   }
@@ -352,10 +342,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return ibus_panel_service_.get();
   }
 
-  // Note: Keep this before other members so they can call AddObserver() in
-  // their c'tors.
-  ObserverList<DBusThreadManagerObserver> observers_;
-
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
   scoped_refptr<dbus::Bus> ibus_bus_;
@@ -389,9 +375,10 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<IBusEngineFactoryService> ibus_engine_factory_service_;
   std::map<dbus::ObjectPath, IBusEngineService*> ibus_engine_services_;
   scoped_ptr<IBusPanelService> ibus_panel_service_;
-  scoped_ptr<PowerPolicyController> power_policy_controller_;
 
   std::string ibus_address_;
+
+  ObserverList<DBusThreadManagerObserver> observers_;
 };
 
 // static

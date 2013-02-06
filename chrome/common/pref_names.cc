@@ -825,42 +825,6 @@ const char kSessionStartTime[] = "session.start_time";
 // informed about the remaining time by a countdown timer shown in the ash
 // system tray.
 const char kSessionLengthLimit[] = "session.length_limit";
-
-// Inactivity time in milliseconds while the system is on AC power before
-// the screen should be dimmed, turned off, or locked, or before
-// kPowerIdleAction should be performed.  0 disables the delay (N/A for
-// kPowerAcIdleDelayMs).
-const char kPowerAcScreenDimDelayMs[] = "power.ac_screen_dim_delay_ms";
-const char kPowerAcScreenOffDelayMs[] = "power.ac_screen_off_delay_ms";
-const char kPowerAcScreenLockDelayMs[] = "power.ac_screen_lock_delay_ms";
-const char kPowerAcIdleDelayMs[] = "power.ac_idle_delay_ms";
-
-// Similar delays while the system is on battery power.
-const char kPowerBatteryScreenDimDelayMs[] =
-    "power.battery_screen_dim_delay_ms";
-const char kPowerBatteryScreenOffDelayMs[] =
-    "power.battery_screen_off_delay_ms";
-const char kPowerBatteryScreenLockDelayMs[] =
-    "power.battery_screen_lock_delay_ms";
-const char kPowerBatteryIdleDelayMs[] =
-    "power.battery_idle_delay_ms";
-
-// Action that should be performed when the idle delay is reached.
-// Values are from the chromeos::PowerPolicyController::Action enum.
-const char kPowerIdleAction[] = "power.idle_action";
-
-// Action that should be performed when the lid is closed.
-// Values are from the chromeos::PowerPolicyController::Action enum.
-const char kPowerLidClosedAction[] = "power.lid_closed_action";
-
-// Should audio and video activity be used to disable the above delays?
-const char kPowerUseAudioActivity[] = "power.use_audio_activity";
-const char kPowerUseVideoActivity[] = "power.use_video_activity";
-
-// Amount by which the idle delay should be scaled while the system is in
-// presentation mode.  Values are limited to a minimum of 1.0.
-const char kPowerPresentationIdleDelayFactor[] =
-    "power.presentation_idle_delay_factor";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

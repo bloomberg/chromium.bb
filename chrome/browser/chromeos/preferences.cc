@@ -32,8 +32,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_policy_controller.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/icu/public/i18n/unicode/timezone.h"
 #include "ui/base/events/event_constants.h"
@@ -298,53 +296,6 @@ void Preferences::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kExternalStorageDisabled,
                              false,
                              PrefServiceSyncable::UNSYNCABLE_PREF);
-
-  // TODO(derat): Right now, these values are just copied from powerd's
-  // defaults.  Make this file be the canonical source of default power
-  // management settings.  Note that these prefs' default values aren't
-  // currently expressive enough to convey powerd's default behavior, e.g.
-  // powerd shuts down instead of suspending when no user is logged in, and
-  // the default screen-lock delays are only used when
-  // prefs::kEnableScreenLock is set.
-  prefs->RegisterIntegerPref(prefs::kPowerAcScreenDimDelayMs,
-                             420000,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kPowerAcScreenOffDelayMs,
-                             480000,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kPowerAcScreenLockDelayMs,
-                             600000,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kPowerAcIdleDelayMs,
-                             1800000,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kPowerBatteryScreenDimDelayMs,
-                             300000,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kPowerBatteryScreenOffDelayMs,
-                             360000,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kPowerBatteryScreenLockDelayMs,
-                             600000,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kPowerBatteryIdleDelayMs,
-                             600000,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kPowerIdleAction,
-                             chromeos::PowerPolicyController::ACTION_SUSPEND,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kPowerLidClosedAction,
-                             chromeos::PowerPolicyController::ACTION_SUSPEND,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kPowerUseAudioActivity,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kPowerUseVideoActivity,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterDoublePref(prefs::kPowerPresentationIdleDelayFactor,
-                            2.0,
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
@@ -437,30 +388,6 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
   enable_screen_lock_.Init(prefs::kEnableScreenLock, prefs, callback);
 
   enable_drm_.Init(prefs::kEnableCrosDRM, prefs, callback);
-
-  power_ac_screen_dim_delay_ms_.Init(
-      prefs::kPowerAcScreenDimDelayMs, prefs, callback);
-  power_ac_screen_off_delay_ms_.Init(
-      prefs::kPowerAcScreenOffDelayMs, prefs, callback);
-  power_ac_screen_lock_delay_ms_.Init(
-      prefs::kPowerAcScreenLockDelayMs, prefs, callback);
-  power_ac_idle_delay_ms_.Init(prefs::kPowerAcIdleDelayMs, prefs, callback);
-  power_battery_screen_dim_delay_ms_.Init(
-      prefs::kPowerBatteryScreenDimDelayMs, prefs, callback);
-  power_battery_screen_off_delay_ms_.Init(
-      prefs::kPowerBatteryScreenOffDelayMs, prefs, callback);
-  power_battery_screen_lock_delay_ms_.Init(
-      prefs::kPowerBatteryScreenLockDelayMs, prefs, callback);
-  power_battery_idle_delay_ms_.Init(
-      prefs::kPowerBatteryIdleDelayMs, prefs, callback);
-  power_idle_action_.Init(prefs::kPowerIdleAction, prefs, callback);
-  power_lid_closed_action_.Init(prefs::kPowerLidClosedAction, prefs, callback);
-  power_use_audio_activity_.Init(
-      prefs::kPowerUseAudioActivity, prefs, callback);
-  power_use_video_activity_.Init(
-      prefs::kPowerUseVideoActivity, prefs, callback);
-  power_presentation_idle_delay_factor_.Init(
-      prefs::kPowerPresentationIdleDelayFactor, prefs, callback);
 }
 
 void Preferences::Init(PrefServiceSyncable* prefs) {
@@ -750,36 +677,6 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
                             download_util::GetDefaultDownloadDirectory());
       }
     }
-  }
-
-  if (!pref_name ||
-      *pref_name == prefs::kPowerAcScreenDimDelayMs ||
-      *pref_name == prefs::kPowerAcScreenOffDelayMs ||
-      *pref_name == prefs::kPowerAcScreenLockDelayMs ||
-      *pref_name == prefs::kPowerAcIdleDelayMs ||
-      *pref_name == prefs::kPowerBatteryScreenDimDelayMs ||
-      *pref_name == prefs::kPowerBatteryScreenOffDelayMs ||
-      *pref_name == prefs::kPowerBatteryScreenLockDelayMs ||
-      *pref_name == prefs::kPowerBatteryIdleDelayMs ||
-      *pref_name == prefs::kPowerIdleAction ||
-      *pref_name == prefs::kPowerLidClosedAction ||
-      *pref_name == prefs::kPowerUseAudioActivity ||
-      *pref_name == prefs::kPowerUseVideoActivity ||
-      *pref_name == prefs::kPowerPresentationIdleDelayFactor) {
-    DBusThreadManager::Get()->GetPowerPolicyController()->UpdatePolicyFromPrefs(
-        *prefs_->FindPreference(prefs::kPowerAcScreenDimDelayMs),
-        *prefs_->FindPreference(prefs::kPowerAcScreenOffDelayMs),
-        *prefs_->FindPreference(prefs::kPowerAcScreenLockDelayMs),
-        *prefs_->FindPreference(prefs::kPowerAcIdleDelayMs),
-        *prefs_->FindPreference(prefs::kPowerBatteryScreenDimDelayMs),
-        *prefs_->FindPreference(prefs::kPowerBatteryScreenOffDelayMs),
-        *prefs_->FindPreference(prefs::kPowerBatteryScreenLockDelayMs),
-        *prefs_->FindPreference(prefs::kPowerBatteryIdleDelayMs),
-        *prefs_->FindPreference(prefs::kPowerIdleAction),
-        *prefs_->FindPreference(prefs::kPowerLidClosedAction),
-        *prefs_->FindPreference(prefs::kPowerUseAudioActivity),
-        *prefs_->FindPreference(prefs::kPowerUseVideoActivity),
-        *prefs_->FindPreference(prefs::kPowerPresentationIdleDelayFactor));
   }
 }
 

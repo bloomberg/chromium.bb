@@ -46,7 +46,6 @@ class IntrospectableClient;
 class ModemMessagingClient;
 class PermissionBrokerClient;
 class PowerManagerClient;
-class PowerPolicyController;
 class SMSClient;
 class SessionManagerClient;
 class ShillDeviceClient;
@@ -138,7 +137,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual ModemMessagingClient* GetModemMessagingClient() = 0;
   virtual PermissionBrokerClient* GetPermissionBrokerClient() = 0;
   virtual PowerManagerClient* GetPowerManagerClient() = 0;
-  virtual PowerPolicyController* GetPowerPolicyController() = 0;
   virtual SessionManagerClient* GetSessionManagerClient() = 0;
   virtual ShillDeviceClient* GetShillDeviceClient() = 0;
   virtual ShillIPConfigClient* GetShillIPConfigClient() = 0;

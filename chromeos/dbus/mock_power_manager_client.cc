@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chromeos/dbus/mock_power_manager_client.h"
-#include "chromeos/dbus/power_manager/policy.pb.h"
 
 namespace chromeos {
 

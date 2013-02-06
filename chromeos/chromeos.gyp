@@ -111,8 +111,6 @@
         'dbus/permission_broker_client.h',
         'dbus/power_manager_client.cc',
         'dbus/power_manager_client.h',
-        'dbus/power_policy_controller.cc',
-        'dbus/power_policy_controller.h',
         'dbus/power_supply_status.cc',
         'dbus/power_supply_status.h',
         'dbus/session_manager_client.cc',
@@ -204,7 +202,6 @@
         '../build/linux/system.gyp:dbus',
         '../testing/gmock.gyp:gmock',
         'chromeos',
-        'power_manager_proto',
       ],
       'sources': [
         'attestation/mock_attestation_flow.cc',
@@ -376,7 +373,6 @@
       'type': 'static_library',
       'sources': [
         '../third_party/cros_system_api/dbus/power_manager/input_event.proto',
-        '../third_party/cros_system_api/dbus/power_manager/policy.proto',
         '../third_party/cros_system_api/dbus/power_manager/suspend.proto',
       ],
       'variables': {

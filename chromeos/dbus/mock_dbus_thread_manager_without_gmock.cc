@@ -159,12 +159,6 @@ PowerManagerClient* MockDBusThreadManagerWithoutGMock::GetPowerManagerClient() {
   return NULL;
 }
 
-PowerPolicyController*
-MockDBusThreadManagerWithoutGMock::GetPowerPolicyController() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 SessionManagerClient*
     MockDBusThreadManagerWithoutGMock::GetSessionManagerClient() {
   NOTIMPLEMENTED();
