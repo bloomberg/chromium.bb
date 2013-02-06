@@ -4341,6 +4341,120 @@ safety(Instruction inst) const {
 }
 
 
+// VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0:
+//
+//   {D: D(22),
+//    Vd: Vd(15:12),
+//    advsimd: false,
+//    arch: VFPv3,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      imm4H(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      imm4L(3:0)],
+//    generated_baseline: VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0,
+//    imm32: VFPExpandImm(imm4H:imm4L, 32),
+//    imm4H: imm4H(19:16),
+//    imm4L: imm4L(3:0),
+//    imm64: VFPExpandImm(imm4H:imm4L, 64),
+//    pattern: cccc11101d11iiiidddd101s0000iiii,
+//    regs: 1,
+//    rule: VMOV_immediate,
+//    safety: [true => MAY_BE_SAFE],
+//    single_register: sz(8)=0,
+//    sz: sz(8),
+//    true: true,
+//    uses: {}}
+RegisterList VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => MAY_BE_SAFE
+  if (true)
+    return MAY_BE_SAFE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    false: false,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
+//    generated_baseline: VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0,
+//    m: Vm:D
+//         if sz(8)=0
+//         else M:Vm,
+//    pattern: cccc11101d110000dddd101s01m0mmmm,
+//    regs: 1,
+//    rule: VMOV_register,
+//    safety: [true => MAY_BE_SAFE],
+//    single_register: sz(8)=0,
+//    sz: sz(8),
+//    true: true,
+//    uses: {}}
+RegisterList VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => MAY_BE_SAFE
+  if (true)
+    return MAY_BE_SAFE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // VMRS_cccc111011110001tttt101000010000_case_0:
 //
 //   {NZCV: 16,
@@ -5430,6 +5544,60 @@ safety(Instruction inst) const {
 
 
 RegisterList VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VNEG_cccc11101d110001dddd101s01m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
+//    generated_baseline: VNEG_cccc11101d110001dddd101s01m0mmmm_case_0,
+//    m: Vm:D
+//         if sz(8)=0
+//         else M:Vm,
+//    pattern: cccc11101d110001dddd101s01m0mmmm,
+//    rule: VNEG,
+//    safety: [true => MAY_BE_SAFE],
+//    sz: sz(8),
+//    true: true,
+//    uses: {}}
+RegisterList VNEG_cccc11101d110001dddd101s01m0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VNEG_cccc11101d110001dddd101s01m0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => MAY_BE_SAFE
+  if (true)
+    return MAY_BE_SAFE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VNEG_cccc11101d110001dddd101s01m0mmmm_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'
@@ -10358,6 +10526,60 @@ safety(Instruction inst) const {
 
 
 RegisterList VSLI_111100111diiiiiidddd0101lqm1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
+//    generated_baseline: VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0,
+//    m: Vm:D
+//         if sz(8)=0
+//         else M:Vm,
+//    pattern: cccc11101d110001dddd101s11m0mmmm,
+//    rule: VSQRT,
+//    safety: [true => MAY_BE_SAFE],
+//    sz: sz(8),
+//    true: true,
+//    uses: {}}
+RegisterList VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => MAY_BE_SAFE
+  if (true)
+    return MAY_BE_SAFE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'

@@ -526,7 +526,10 @@ class Parser(object):
         self._read_token(',')
       args.append(self._bit_expr(context))
     self._read_token(')')
-    return dgen_core.FunctionCall(name, args)
+    if len(args) == 1 and name in dgen_core.DGEN_TYPE_TO_CPP_TYPE.keys():
+        return dgen_core.TypeCast(name, args[0])
+    else:
+        return dgen_core.FunctionCall(name, args)
 
   def _citation(self):
     """ citation ::= '(' word+ ')' """

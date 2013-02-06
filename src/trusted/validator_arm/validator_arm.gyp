@@ -45,6 +45,7 @@
         'baseline_classes.cc',
         'inst_classes.cc',
         'model.cc',
+        'arm_helpers.cc',
         'validator.cc',
         'gen/arm32_decode.cc',
         'gen/arm32_decode_actuals_1.cc',

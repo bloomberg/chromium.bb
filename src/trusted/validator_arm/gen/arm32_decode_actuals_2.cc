@@ -159,6 +159,39 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [true => MAY_BE_SAFE],
+//    uses: {}}
+
+RegisterList Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => MAY_BE_SAFE
+  if (true)
+    return MAY_BE_SAFE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1
 //
 // Actual:
@@ -411,6 +444,44 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [inst(18:16)=~000 &&
+//         inst(18:16)=~10x => DECODER_ERROR],
+//    uses: {}}
+
+RegisterList Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(18:16)=~000 &&
+  //       inst(18:16)=~10x => DECODER_ERROR
+  if (((inst.Bits() & 0x00070000)  !=
+          0x00000000) &&
+       ((inst.Bits() & 0x00060000)  !=
+          0x00040000))
+    return DECODER_ERROR;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // Actual_VCVT_between_floating_point_and_fixed_point_1111001u1diiiiiidddd111p0qm1mmmm_case_1
 //
 // Actual:
@@ -459,6 +530,48 @@ safety(Instruction inst) const {
 
 
 RegisterList Actual_VCVT_between_floating_point_and_fixed_point_1111001u1diiiiiidddd111p0qm1mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [16
+//         if inst(7)=0
+//         else 32 - inst(3:0):inst(5)  <
+//            0 => UNPREDICTABLE],
+//    uses: {}}
+
+RegisterList Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 16
+  //       if inst(7)=0
+  //       else 32 - inst(3:0):inst(5)  <
+  //          0 => UNPREDICTABLE
+  if (((static_cast<int32_t>(((inst.Bits() & 0x00000080)  ==
+          0x00000000
+       ? 16
+       : 32)) - static_cast<int32_t>(((((inst.Bits() & 0x0000000F)) << 1) | ((inst.Bits() & 0x00000020) >> 5)))) < (0)))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'

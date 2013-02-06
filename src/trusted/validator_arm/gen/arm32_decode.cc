@@ -99,6 +99,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Unary2RegisterSatImmedShiftedOp_instance_()
   , Undefined_instance_()
   , Unpredictable_instance_()
+  , VcvtPtAndFixedPoint_FloatingPoint_instance_()
   , Vector1RegisterImmediate_BIT_instance_()
   , Vector1RegisterImmediate_MOV_instance_()
   , Vector1RegisterImmediate_MVN_instance_()
@@ -151,7 +152,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , VectorLoadStoreSingle4_instance_()
   , VectorUnary2RegisterDup_instance_()
   , VfpMrsOp_instance_()
-  , VfpOp_instance_()
   , VfpUsesRegOp_instance_()
   , not_implemented_()
 {}
@@ -1951,7 +1951,7 @@ const ClassDecoder& Arm32DecoderState::decode_other_floating_point_data_processi
           0x00010000 /* opc2(19:16)=0001 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return VfpOp_instance_;
+    return CondVfpOp_instance_;
   }
 
   if ((inst.Bits() & 0x000F0000)  ==
@@ -1960,28 +1960,28 @@ const ClassDecoder& Arm32DecoderState::decode_other_floating_point_data_processi
           0x00000040 /* opc3(7:6)=x1 */ &&
       (inst.Bits() & 0x0000002F)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000 */) {
-    return VfpOp_instance_;
+    return CondVfpOp_instance_;
   }
 
   if ((inst.Bits() & 0x000F0000)  ==
           0x00070000 /* opc2(19:16)=0111 */ &&
       (inst.Bits() & 0x000000C0)  ==
           0x000000C0 /* opc3(7:6)=11 */) {
-    return VfpOp_instance_;
+    return CondVfpOp_instance_;
   }
 
   if ((inst.Bits() & 0x000F0000)  ==
           0x00080000 /* opc2(19:16)=1000 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return VfpOp_instance_;
+    return CondVfpOp_instance_;
   }
 
   if ((inst.Bits() & 0x000B0000)  ==
           0x00000000 /* opc2(19:16)=0x00 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return VfpOp_instance_;
+    return CondVfpOp_instance_;
   }
 
   if ((inst.Bits() & 0x000E0000)  ==
@@ -1990,28 +1990,28 @@ const ClassDecoder& Arm32DecoderState::decode_other_floating_point_data_processi
           0x00000040 /* opc3(7:6)=x1 */ &&
       (inst.Bits() & 0x00000100)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx */) {
-    return VfpOp_instance_;
+    return CondVfpOp_instance_;
   }
 
   if ((inst.Bits() & 0x000E0000)  ==
           0x000C0000 /* opc2(19:16)=110x */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return VfpOp_instance_;
+    return CondVfpOp_instance_;
   }
 
   if ((inst.Bits() & 0x000A0000)  ==
           0x000A0000 /* opc2(19:16)=1x1x */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return VfpOp_instance_;
+    return VcvtPtAndFixedPoint_FloatingPoint_instance_;
   }
 
   if ((inst.Bits() & 0x00000040)  ==
           0x00000000 /* opc3(7:6)=x0 */ &&
       (inst.Bits() & 0x000000A0)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx */) {
-    return VfpOp_instance_;
+    return CondVfpOp_instance_;
   }
 
   // Catch any attempt to fall though ...

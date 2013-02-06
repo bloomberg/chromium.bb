@@ -459,9 +459,33 @@ class AddOp(BitExpr):
       raise Exception("Bad op %s" % self._op)
 
   def to_uint32(self, options={}):
-    return '%s %s %s' % (self._args[0].to_uint32(options),
-                         self._op,
-                         self._args[1].to_uint32(options))
+      # Check subtraction as a special case. By default, we assume that all
+      # integers are unsigned. However, a difference may generate a negative
+      # value. In C++, the subtraction of unsigned integers is an unsigned
+      # integer, which is not a difference. To fix this, we insert integer
+      # typecasts.
+    if self._is_subtract_bitfields():
+        # Cast each argument to an int, so that we can do subtraction that
+        # can result in negative values.
+        args = [TypeCast('int', a) for a in self._args]
+        return AddOp('-', args[0], args[1]).to_uint32(options)
+    else:
+        return '%s %s %s' % (self._args[0].to_uint32(options),
+                             self._op,
+                             self._args[1].to_uint32(options))
+
+  def _is_subtract_bitfields(self):
+      """Returns true if the subtraction of bitfields that are not defined
+         by typecasts."""
+      if self._op != '-': return False
+      for arg in self.args():
+          if isinstance(arg, TypeCast):
+              return False
+          try:
+              bf = arg.to_bitfield()
+          except:
+              return False
+      return True
 
   def to_uint32_constant(self):
     args = [a.to_uint32_constant() for a in self._args]
@@ -641,6 +665,44 @@ _FUNCTION_SIGNATURE_MAP = {
                      # (['register'], 'registerlist),
                      ],
     }
+
+# Models how each DGEN type is represented as a C++ type cast.
+DGEN_TYPE_TO_CPP_TYPE = {
+    'int': 'int32_t',
+    'unsigned': 'uint32_t'
+    }
+
+class TypeCast(BitExpr):
+    """Allow some simple type castings."""
+
+    def __init__(self, type, arg):
+        self._type = type
+        self._arg = arg
+        if type not in DGEN_TYPE_TO_CPP_TYPE.keys():
+            raise Exception('TypeCast(%s, %s): type not understood.' %
+                            (type, arg))
+        # Verify we can convert arg to an integer.
+        arg.to_uint32()
+
+    def name(self):
+        return self._name
+
+    def arg(self):
+        return self._arg
+
+    def to_uint32(self, options={}):
+        return ('static_cast<%s>(%s)' %
+                (DGEN_TYPE_TO_CPP_TYPE[self._type],
+                 self._arg.to_uint32(options)))
+
+    def sub_bit_exprs(self):
+        return [ self._arg ]
+
+    def __repr__(self):
+        return '%s(%s)' % (self._type, self._arg)
+
+    def neutral_repr(self):
+        return '%s(%s)' % (self._type, neutral_repr(self._arg))
 
 class FunctionCall(BitExpr):
   """Abstract class defining an (external) function call."""

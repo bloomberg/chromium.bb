@@ -538,7 +538,27 @@ class CondDecoder_YIELD
     : public CondDecoder {
 };
 
+class CondVfpOp_VABS
+    : public CondVfpOp {
+};
+
 class CondVfpOp_VADD_floating_point
+    : public CondVfpOp {
+};
+
+class CondVfpOp_VCMP_VCMPE
+    : public CondVfpOp {
+};
+
+class CondVfpOp_VCVTB_VCVTT
+    : public CondVfpOp {
+};
+
+class CondVfpOp_VCVT_VCVTR_between_floating_point_and_integer_Floating_point
+    : public CondVfpOp {
+};
+
+class CondVfpOp_VCVT_between_double_precision_and_single_precision
     : public CondVfpOp {
 };
 
@@ -558,7 +578,19 @@ class CondVfpOp_VMLA_VMLS_floating_point
     : public CondVfpOp {
 };
 
+class CondVfpOp_VMOV_immediate
+    : public CondVfpOp {
+};
+
+class CondVfpOp_VMOV_register
+    : public CondVfpOp {
+};
+
 class CondVfpOp_VMUL_floating_point
+    : public CondVfpOp {
+};
+
+class CondVfpOp_VNEG
     : public CondVfpOp {
 };
 
@@ -570,51 +602,11 @@ class CondVfpOp_VNMUL
     : public CondVfpOp {
 };
 
+class CondVfpOp_VSQRT
+    : public CondVfpOp {
+};
+
 class CondVfpOp_VSUB_floating_point
-    : public CondVfpOp {
-};
-
-class CondVfpOp_Vabs_Rule_269_A2_P532
-    : public CondVfpOp {
-};
-
-class CondVfpOp_Vcmp_Vcmpe_Rule_A1
-    : public CondVfpOp {
-};
-
-class CondVfpOp_Vcmp_Vcmpe_Rule_A2
-    : public CondVfpOp {
-};
-
-class CondVfpOp_Vcvt_Rule_297_A1_P582
-    : public CondVfpOp {
-};
-
-class CondVfpOp_Vcvt_Rule_298_A1_P584
-    : public CondVfpOp {
-};
-
-class CondVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578
-    : public CondVfpOp {
-};
-
-class CondVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588
-    : public CondVfpOp {
-};
-
-class CondVfpOp_Vmov_Rule_326_A2_P640
-    : public CondVfpOp {
-};
-
-class CondVfpOp_Vmov_Rule_327_A2_P642
-    : public CondVfpOp {
-};
-
-class CondVfpOp_Vneg_Rule_342_A2_P672
-    : public CondVfpOp {
-};
-
-class CondVfpOp_Vsqrt_Rule_388_A1_P762
     : public CondVfpOp {
 };
 
@@ -1208,6 +1200,10 @@ class Undefined_None
 
 class Unpredictable_None
     : public Unpredictable {
+};
+
+class VcvtPtAndFixedPoint_FloatingPoint_VCVT_between_floating_point_and_fixed_point_Floating_point
+    : public VcvtPtAndFixedPoint_FloatingPoint {
 };
 
 class Vector1RegisterImmediate_BIT_VBIC_immediate
@@ -2360,50 +2356,6 @@ class Forbidden_MSR_register
 
 class Forbidden_SMC
     : public Forbidden {
-};
-
-class VfpOp_Vabs_Rule_269_A2_P532
-    : public VfpOp {
-};
-
-class VfpOp_Vcmp_Vcmpe_Rule_A1
-    : public VfpOp {
-};
-
-class VfpOp_Vcmp_Vcmpe_Rule_A2
-    : public VfpOp {
-};
-
-class VfpOp_Vcvt_Rule_297_A1_P582
-    : public VfpOp {
-};
-
-class VfpOp_Vcvt_Rule_298_A1_P584
-    : public VfpOp {
-};
-
-class VfpOp_Vcvt_Vcvtr_Rule_295_A1_P578
-    : public VfpOp {
-};
-
-class VfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588
-    : public VfpOp {
-};
-
-class VfpOp_Vmov_Rule_326_A2_P640
-    : public VfpOp {
-};
-
-class VfpOp_Vmov_Rule_327_A2_P642
-    : public VfpOp {
-};
-
-class VfpOp_Vneg_Rule_342_A2_P672
-    : public VfpOp {
-};
-
-class VfpOp_Vsqrt_Rule_388_A1_P762
-    : public VfpOp {
 };
 
 }  // nacl_arm_dec
@@ -3957,6 +3909,18 @@ class NamedCondDecoder_YIELD
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondDecoder_YIELD);
 };
 
+class NamedCondVfpOp_VABS
+    : public NamedClassDecoder {
+ public:
+  NamedCondVfpOp_VABS()
+    : NamedClassDecoder(decoder_, "CondVfpOp VABS")
+  {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_VABS decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_VABS);
+};
+
 class NamedCondVfpOp_VADD_floating_point
     : public NamedClassDecoder {
  public:
@@ -3967,6 +3931,54 @@ class NamedCondVfpOp_VADD_floating_point
  private:
   nacl_arm_dec::CondVfpOp_VADD_floating_point decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_VADD_floating_point);
+};
+
+class NamedCondVfpOp_VCMP_VCMPE
+    : public NamedClassDecoder {
+ public:
+  NamedCondVfpOp_VCMP_VCMPE()
+    : NamedClassDecoder(decoder_, "CondVfpOp VCMP_VCMPE")
+  {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_VCMP_VCMPE decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_VCMP_VCMPE);
+};
+
+class NamedCondVfpOp_VCVTB_VCVTT
+    : public NamedClassDecoder {
+ public:
+  NamedCondVfpOp_VCVTB_VCVTT()
+    : NamedClassDecoder(decoder_, "CondVfpOp VCVTB_VCVTT")
+  {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_VCVTB_VCVTT decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_VCVTB_VCVTT);
+};
+
+class NamedCondVfpOp_VCVT_VCVTR_between_floating_point_and_integer_Floating_point
+    : public NamedClassDecoder {
+ public:
+  NamedCondVfpOp_VCVT_VCVTR_between_floating_point_and_integer_Floating_point()
+    : NamedClassDecoder(decoder_, "CondVfpOp VCVT_VCVTR_between_floating_point_and_integer_Floating_point")
+  {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_VCVT_VCVTR_between_floating_point_and_integer_Floating_point decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_VCVT_VCVTR_between_floating_point_and_integer_Floating_point);
+};
+
+class NamedCondVfpOp_VCVT_between_double_precision_and_single_precision
+    : public NamedClassDecoder {
+ public:
+  NamedCondVfpOp_VCVT_between_double_precision_and_single_precision()
+    : NamedClassDecoder(decoder_, "CondVfpOp VCVT_between_double_precision_and_single_precision")
+  {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_VCVT_between_double_precision_and_single_precision decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_VCVT_between_double_precision_and_single_precision);
 };
 
 class NamedCondVfpOp_VDIV
@@ -4017,6 +4029,30 @@ class NamedCondVfpOp_VMLA_VMLS_floating_point
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_VMLA_VMLS_floating_point);
 };
 
+class NamedCondVfpOp_VMOV_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedCondVfpOp_VMOV_immediate()
+    : NamedClassDecoder(decoder_, "CondVfpOp VMOV_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_VMOV_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_VMOV_immediate);
+};
+
+class NamedCondVfpOp_VMOV_register
+    : public NamedClassDecoder {
+ public:
+  NamedCondVfpOp_VMOV_register()
+    : NamedClassDecoder(decoder_, "CondVfpOp VMOV_register")
+  {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_VMOV_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_VMOV_register);
+};
+
 class NamedCondVfpOp_VMUL_floating_point
     : public NamedClassDecoder {
  public:
@@ -4027,6 +4063,18 @@ class NamedCondVfpOp_VMUL_floating_point
  private:
   nacl_arm_dec::CondVfpOp_VMUL_floating_point decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_VMUL_floating_point);
+};
+
+class NamedCondVfpOp_VNEG
+    : public NamedClassDecoder {
+ public:
+  NamedCondVfpOp_VNEG()
+    : NamedClassDecoder(decoder_, "CondVfpOp VNEG")
+  {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_VNEG decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_VNEG);
 };
 
 class NamedCondVfpOp_VNMLA_VNMLS
@@ -4053,6 +4101,18 @@ class NamedCondVfpOp_VNMUL
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_VNMUL);
 };
 
+class NamedCondVfpOp_VSQRT
+    : public NamedClassDecoder {
+ public:
+  NamedCondVfpOp_VSQRT()
+    : NamedClassDecoder(decoder_, "CondVfpOp VSQRT")
+  {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_VSQRT decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_VSQRT);
+};
+
 class NamedCondVfpOp_VSUB_floating_point
     : public NamedClassDecoder {
  public:
@@ -4063,138 +4123,6 @@ class NamedCondVfpOp_VSUB_floating_point
  private:
   nacl_arm_dec::CondVfpOp_VSUB_floating_point decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_VSUB_floating_point);
-};
-
-class NamedCondVfpOp_Vabs_Rule_269_A2_P532
-    : public NamedClassDecoder {
- public:
-  NamedCondVfpOp_Vabs_Rule_269_A2_P532()
-    : NamedClassDecoder(decoder_, "CondVfpOp Vabs_Rule_269_A2_P532")
-  {}
-
- private:
-  nacl_arm_dec::CondVfpOp_Vabs_Rule_269_A2_P532 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vabs_Rule_269_A2_P532);
-};
-
-class NamedCondVfpOp_Vcmp_Vcmpe_Rule_A1
-    : public NamedClassDecoder {
- public:
-  NamedCondVfpOp_Vcmp_Vcmpe_Rule_A1()
-    : NamedClassDecoder(decoder_, "CondVfpOp Vcmp_Vcmpe_Rule_A1")
-  {}
-
- private:
-  nacl_arm_dec::CondVfpOp_Vcmp_Vcmpe_Rule_A1 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vcmp_Vcmpe_Rule_A1);
-};
-
-class NamedCondVfpOp_Vcmp_Vcmpe_Rule_A2
-    : public NamedClassDecoder {
- public:
-  NamedCondVfpOp_Vcmp_Vcmpe_Rule_A2()
-    : NamedClassDecoder(decoder_, "CondVfpOp Vcmp_Vcmpe_Rule_A2")
-  {}
-
- private:
-  nacl_arm_dec::CondVfpOp_Vcmp_Vcmpe_Rule_A2 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vcmp_Vcmpe_Rule_A2);
-};
-
-class NamedCondVfpOp_Vcvt_Rule_297_A1_P582
-    : public NamedClassDecoder {
- public:
-  NamedCondVfpOp_Vcvt_Rule_297_A1_P582()
-    : NamedClassDecoder(decoder_, "CondVfpOp Vcvt_Rule_297_A1_P582")
-  {}
-
- private:
-  nacl_arm_dec::CondVfpOp_Vcvt_Rule_297_A1_P582 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vcvt_Rule_297_A1_P582);
-};
-
-class NamedCondVfpOp_Vcvt_Rule_298_A1_P584
-    : public NamedClassDecoder {
- public:
-  NamedCondVfpOp_Vcvt_Rule_298_A1_P584()
-    : NamedClassDecoder(decoder_, "CondVfpOp Vcvt_Rule_298_A1_P584")
-  {}
-
- private:
-  nacl_arm_dec::CondVfpOp_Vcvt_Rule_298_A1_P584 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vcvt_Rule_298_A1_P584);
-};
-
-class NamedCondVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578
-    : public NamedClassDecoder {
- public:
-  NamedCondVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578()
-    : NamedClassDecoder(decoder_, "CondVfpOp Vcvt_Vcvtr_Rule_295_A1_P578")
-  {}
-
- private:
-  nacl_arm_dec::CondVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578);
-};
-
-class NamedCondVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588
-    : public NamedClassDecoder {
- public:
-  NamedCondVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588()
-    : NamedClassDecoder(decoder_, "CondVfpOp Vcvtb_Vcvtt_Rule_300_A1_P588")
-  {}
-
- private:
-  nacl_arm_dec::CondVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588);
-};
-
-class NamedCondVfpOp_Vmov_Rule_326_A2_P640
-    : public NamedClassDecoder {
- public:
-  NamedCondVfpOp_Vmov_Rule_326_A2_P640()
-    : NamedClassDecoder(decoder_, "CondVfpOp Vmov_Rule_326_A2_P640")
-  {}
-
- private:
-  nacl_arm_dec::CondVfpOp_Vmov_Rule_326_A2_P640 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vmov_Rule_326_A2_P640);
-};
-
-class NamedCondVfpOp_Vmov_Rule_327_A2_P642
-    : public NamedClassDecoder {
- public:
-  NamedCondVfpOp_Vmov_Rule_327_A2_P642()
-    : NamedClassDecoder(decoder_, "CondVfpOp Vmov_Rule_327_A2_P642")
-  {}
-
- private:
-  nacl_arm_dec::CondVfpOp_Vmov_Rule_327_A2_P642 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vmov_Rule_327_A2_P642);
-};
-
-class NamedCondVfpOp_Vneg_Rule_342_A2_P672
-    : public NamedClassDecoder {
- public:
-  NamedCondVfpOp_Vneg_Rule_342_A2_P672()
-    : NamedClassDecoder(decoder_, "CondVfpOp Vneg_Rule_342_A2_P672")
-  {}
-
- private:
-  nacl_arm_dec::CondVfpOp_Vneg_Rule_342_A2_P672 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vneg_Rule_342_A2_P672);
-};
-
-class NamedCondVfpOp_Vsqrt_Rule_388_A1_P762
-    : public NamedClassDecoder {
- public:
-  NamedCondVfpOp_Vsqrt_Rule_388_A1_P762()
-    : NamedClassDecoder(decoder_, "CondVfpOp Vsqrt_Rule_388_A1_P762")
-  {}
-
- private:
-  nacl_arm_dec::CondVfpOp_Vsqrt_Rule_388_A1_P762 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vsqrt_Rule_388_A1_P762);
 };
 
 class NamedDataBarrier_DMB
@@ -5971,6 +5899,18 @@ class NamedUnpredictable_None
  private:
   nacl_arm_dec::Unpredictable_None decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnpredictable_None);
+};
+
+class NamedVcvtPtAndFixedPoint_FloatingPoint_VCVT_between_floating_point_and_fixed_point_Floating_point
+    : public NamedClassDecoder {
+ public:
+  NamedVcvtPtAndFixedPoint_FloatingPoint_VCVT_between_floating_point_and_fixed_point_Floating_point()
+    : NamedClassDecoder(decoder_, "VcvtPtAndFixedPoint_FloatingPoint VCVT_between_floating_point_and_fixed_point_Floating_point")
+  {}
+
+ private:
+  nacl_arm_dec::VcvtPtAndFixedPoint_FloatingPoint_VCVT_between_floating_point_and_fixed_point_Floating_point decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVcvtPtAndFixedPoint_FloatingPoint_VCVT_between_floating_point_and_fixed_point_Floating_point);
 };
 
 class NamedVector1RegisterImmediate_BIT_VBIC_immediate
@@ -9427,138 +9367,6 @@ class NamedForbidden_SMC
  private:
   nacl_arm_dec::Forbidden_SMC decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_SMC);
-};
-
-class NamedVfpOp_Vabs_Rule_269_A2_P532
-    : public NamedClassDecoder {
- public:
-  NamedVfpOp_Vabs_Rule_269_A2_P532()
-    : NamedClassDecoder(decoder_, "VfpOp Vabs_Rule_269_A2_P532")
-  {}
-
- private:
-  nacl_arm_dec::VfpOp_Vabs_Rule_269_A2_P532 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vabs_Rule_269_A2_P532);
-};
-
-class NamedVfpOp_Vcmp_Vcmpe_Rule_A1
-    : public NamedClassDecoder {
- public:
-  NamedVfpOp_Vcmp_Vcmpe_Rule_A1()
-    : NamedClassDecoder(decoder_, "VfpOp Vcmp_Vcmpe_Rule_A1")
-  {}
-
- private:
-  nacl_arm_dec::VfpOp_Vcmp_Vcmpe_Rule_A1 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vcmp_Vcmpe_Rule_A1);
-};
-
-class NamedVfpOp_Vcmp_Vcmpe_Rule_A2
-    : public NamedClassDecoder {
- public:
-  NamedVfpOp_Vcmp_Vcmpe_Rule_A2()
-    : NamedClassDecoder(decoder_, "VfpOp Vcmp_Vcmpe_Rule_A2")
-  {}
-
- private:
-  nacl_arm_dec::VfpOp_Vcmp_Vcmpe_Rule_A2 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vcmp_Vcmpe_Rule_A2);
-};
-
-class NamedVfpOp_Vcvt_Rule_297_A1_P582
-    : public NamedClassDecoder {
- public:
-  NamedVfpOp_Vcvt_Rule_297_A1_P582()
-    : NamedClassDecoder(decoder_, "VfpOp Vcvt_Rule_297_A1_P582")
-  {}
-
- private:
-  nacl_arm_dec::VfpOp_Vcvt_Rule_297_A1_P582 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vcvt_Rule_297_A1_P582);
-};
-
-class NamedVfpOp_Vcvt_Rule_298_A1_P584
-    : public NamedClassDecoder {
- public:
-  NamedVfpOp_Vcvt_Rule_298_A1_P584()
-    : NamedClassDecoder(decoder_, "VfpOp Vcvt_Rule_298_A1_P584")
-  {}
-
- private:
-  nacl_arm_dec::VfpOp_Vcvt_Rule_298_A1_P584 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vcvt_Rule_298_A1_P584);
-};
-
-class NamedVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578
-    : public NamedClassDecoder {
- public:
-  NamedVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578()
-    : NamedClassDecoder(decoder_, "VfpOp Vcvt_Vcvtr_Rule_295_A1_P578")
-  {}
-
- private:
-  nacl_arm_dec::VfpOp_Vcvt_Vcvtr_Rule_295_A1_P578 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578);
-};
-
-class NamedVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588
-    : public NamedClassDecoder {
- public:
-  NamedVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588()
-    : NamedClassDecoder(decoder_, "VfpOp Vcvtb_Vcvtt_Rule_300_A1_P588")
-  {}
-
- private:
-  nacl_arm_dec::VfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588);
-};
-
-class NamedVfpOp_Vmov_Rule_326_A2_P640
-    : public NamedClassDecoder {
- public:
-  NamedVfpOp_Vmov_Rule_326_A2_P640()
-    : NamedClassDecoder(decoder_, "VfpOp Vmov_Rule_326_A2_P640")
-  {}
-
- private:
-  nacl_arm_dec::VfpOp_Vmov_Rule_326_A2_P640 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vmov_Rule_326_A2_P640);
-};
-
-class NamedVfpOp_Vmov_Rule_327_A2_P642
-    : public NamedClassDecoder {
- public:
-  NamedVfpOp_Vmov_Rule_327_A2_P642()
-    : NamedClassDecoder(decoder_, "VfpOp Vmov_Rule_327_A2_P642")
-  {}
-
- private:
-  nacl_arm_dec::VfpOp_Vmov_Rule_327_A2_P642 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vmov_Rule_327_A2_P642);
-};
-
-class NamedVfpOp_Vneg_Rule_342_A2_P672
-    : public NamedClassDecoder {
- public:
-  NamedVfpOp_Vneg_Rule_342_A2_P672()
-    : NamedClassDecoder(decoder_, "VfpOp Vneg_Rule_342_A2_P672")
-  {}
-
- private:
-  nacl_arm_dec::VfpOp_Vneg_Rule_342_A2_P672 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vneg_Rule_342_A2_P672);
-};
-
-class NamedVfpOp_Vsqrt_Rule_388_A1_P762
-    : public NamedClassDecoder {
- public:
-  NamedVfpOp_Vsqrt_Rule_388_A1_P762()
-    : NamedClassDecoder(decoder_, "VfpOp Vsqrt_Rule_388_A1_P762")
-  {}
-
- private:
-  nacl_arm_dec::VfpOp_Vsqrt_Rule_388_A1_P762 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vsqrt_Rule_388_A1_P762);
 };
 
 

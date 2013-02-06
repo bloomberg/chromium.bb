@@ -43,6 +43,15 @@ SafetyLevel CondAdvSIMDOp::safety(Instruction i) const {
       : DEPRECATED;
 }
 
+// VcvtPtAndFixedPoint_FloatingPoint
+SafetyLevel VcvtPtAndFixedPoint_FloatingPoint::safety(Instruction i) const {
+  int32_t size = (sx.value(i) == 0 ? 16 : 32);
+  int32_t frac_bits =
+    size - static_cast<int>((imm4.value(i) << 1) | i_bit.value(i));
+  if (frac_bits < 0) return UNPREDICTABLE;
+  return CondVfpOp::safety(i);
+}
+
 // MoveImmediate12ToApsr
 SafetyLevel MoveImmediate12ToApsr::safety(Instruction i) const {
   UNREFERENCED_PARAMETER(i);

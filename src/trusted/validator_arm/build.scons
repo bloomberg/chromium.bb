@@ -228,6 +228,7 @@ env.ComponentLibrary('arm_validator_core',
                       'baseline_classes.cc',
                       'inst_classes.cc',
                       'model.cc',
+                      'arm_helpers.cc',
                       'validator.cc',
                       _gen_dir('arm32_decode.cc')] +
                      _gen_dirs(GenerateActualFiles(AUTO_ACTUAL_CC_FORMAT)))

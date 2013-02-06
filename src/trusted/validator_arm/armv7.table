@@ -161,6 +161,7 @@ class Binary4RegisterDualOpNoCondsUpdate : Binary4RegisterDualOp
 class Binary4RegisterDualResultLtV6RdHiLoNotRn : Binary4RegisterDualResult
 class Binary4RegisterDualResultNoCondsUpdate : Binary4RegisterDualResult
 class Binary4RegisterDualResultUsesRnRm : Binary4RegisterDualResult
+class VcvtPtAndFixedPoint_FloatingPoint : CondVfpOp
 class Deprecated : UnsafeCondDecoder
 class Forbidden : UnsafeCondDecoder
 class Undefined : UnsafeCondDecoder
@@ -2005,50 +2006,126 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | 1x11        -         -> other_floating_point_data_processing_instructions
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- other_floating_point_data_processing_instructions (A7.5 Table A7-17)
+*Vbase
+   baseline := CondVfpOp;
+   # TODO(karl): Add vector defs/uses etc.
+   defs := {};
+   uses := {};
+   safety := true => MAY_BE_SAFE;
+*VdOp *Vbase
+   { cond(31:28), D(22), Vd(15:12), sz(8) }
+   d := Vd:D if sz=0 else D:Vd;
+*VdVmOp *VdOp
+   { cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0) }
+   m := Vm:D if sz=0 else M:Vm;
+*VmovImm *VdOp
+   { cond(31:28), D(22), imm4H(19:16), Vd(15:12), sz(8), imm4L(3:0) }
+   single_register := sz=0;  advsimd := false;
+   imm32 := VFPExpandImm(imm4H:imm4L, 32);
+   imm64 := VFPExpandImm(imm4H:imm4L, 64);
+   regs := 1;
+*VopBase *VdVmOp
+   advsimd := false;
+*VmovReg *VopBase
+   single_register := sz=0;
+   regs := 1;
+*Vop *VopBase
+   dp_operation := sz=1;
+*VcvtFP *VdVmOp
+   double_to_single := sz=1;
+*VcvtInt *Vbase
+   { cond(31:28), D(22), opc2(18:16), Vd(15:12), sz(8), op(7), M(5), Vm(3:0) }
+   to_integer := opc2(2)=1;  dp_operation := sz=1;
+   unsigned := opc2(0)=0 if to_integer else op=0;
+   round_zero := to_integer & op=1;
+   round_nearest := not to_integer;
+   d := Vd:D if to_integer else D:Vd if dp_operation else Vd:D;
+   m := Vm:M if not to_integer else M:Vm if dp_operation else Vm:M;
+   safety := opc2=~000 & opc2=~10x => DECODER_ERROR;
+*VcvtFixed *VdOp
+   { cond(31:28), D(22), op(18), U(16), Vd(12:12), sf(8),
+     sx(7), i(5), imm4(3:0) }
+   baseline := VcvtPtAndFixedPoint_FloatingPoint;
+   to_fixed := op=1;  dp_operation:= sf=1;  unsigned := U=1;
+   size := 16 if sx=0 else 32;
+   # casts needed in following to allow negatives in C++.
+   frac_bits := size - imm4:i;  
+   round_zero := to_fixed;
+   round_nearest := not to_fixed;
+   safety := frac_bits < 0 => UNPREDICTABLE;
+*VcvtFP16 *Vbase
+   { cond(31:28), D(22), op(16), Vd(15:12), T(7), M(5), Vm(3:0) }
+   half_to_single := op=0;
+   lowbit := 16 if T=1 else 0;
+   m := Vm:M;
+   d := Vd:D;   
+*Vcmp *VdOp
+   { cond(31:28), D(22), Vd(15:12), sz(8), E(7) }
+   # Sets FPSCR, not APSR.
+   dp_operation := sz=1; quiet_nan_exc := E=1;
+*VcmpWithZero *Vcmp
+   with_zero := true;
+*VcmpWithoutZero *Vcmp
+   { cond(31:28), D(22), Vd(15:12), sz(8), E(7), M(5), Vm(3:0) }
+   with_zero := false;
+   m := M:Vm if dp_operation else Vm:M;
++--
 | opc2(19:16) opc3(7:6)
-| -           x0        = CondVfpOp => VfpOp
-                          Vmov_Rule_326_A2_P640
-                          cccc11101d11iiiidddd101s0000iiii (VFPv3)
-| 0000        01        = CondVfpOp => VfpOp
-                          Vmov_Rule_327_A2_P642
-                          cccc11101d110000dddd101s01m0mmmm (VFPv2)
-| "           11        = CondVfpOp => VfpOp
-                          Vabs_Rule_269_A2_P532
-                          cccc11101d110000dddd101s11m0mmmm (VFPv2)
-| 0001        01        = CondVfpOp => VfpOp
-                          Vneg_Rule_342_A2_P672
-                          cccc11101d110001dddd101s01m0mmmm (VFPv2)
-| "           11        = CondVfpOp => VfpOp
-                          Vsqrt_Rule_388_A1_P762
-                          cccc11101d110001dddd101s11m0mmmm (VFPv2)
-| 001x        x1        = CondVfpOp => VfpOp
-                          Vcvtb_Vcvtt_Rule_300_A1_P588
-                          cccc11101d11001odddd1010t1m0mmmm (VFPv3HP)
+| -           x0        = *VmovImm
+                           pattern := cccc11101d11iiiidddd101s0000iiii;
+                           rule := VMOV_immediate;
+                           arch := VFPv3;
+| 0000        01        = *VmovReg
+                           pattern := cccc11101d110000dddd101s01m0mmmm;
+                           rule := VMOV_register;
+                           arch := VFPv2;
+| "           11        = *Vop
+                           pattern := cccc11101d110000dddd101s11m0mmmm;
+                           rule := VABS;
+                           arch := VFPv2;
+| 0001        01        = *Vop
+                           pattern := cccc11101d110001dddd101s01m0mmmm;
+                           rule := VNEG;
+                           arch := VFPv2;
+| "           11        = *Vop
+                           pattern := cccc11101d110001dddd101s11m0mmmm;
+                           rule := VSQRT;
+                           arch := VFPv2;
+| 001x        x1        = *VcvtFP16
+                           pattern := cccc11101d11001odddd1010t1m0mmmm;
+                           rule := VCVTB_VCVTT;
+                           arch := VFPv3HP;
 # The two following entries aren't separate in the ARM manual, but separating
 # them simplifies handling of default-zero bits.
-| 0100        x1        = CondVfpOp => VfpOp # Sets FPSCR, not APSR.
-                          Vcmp_Vcmpe_Rule_A1
-                          cccc11101d110100dddd101se1m0mmmm (VFPv2)
-| 0101        x1        = CondVfpOp => VfpOp # Sets FPSCR, not APSR.
-                          Vcmp_Vcmpe_Rule_A2
-                          cccc11101d110101dddd101se1000000 (VFPv2)
-| 0111        11        = CondVfpOp => VfpOp
-                          Vcvt_Rule_298_A1_P584
-                          cccc11101d110111dddd101s11m0mmmm (VFPv2)
-| 1000        x1        = CondVfpOp => VfpOp
-                          Vcvt_Vcvtr_Rule_295_A1_P578
-                          cccc11101d111000dddd101sp1m0mmmm (VFPv2)
-| 101x        x1        = CondVfpOp => VfpOp
-                          Vcvt_Rule_297_A1_P582
-                          cccc11101d11101udddd101fx1i0iiii (VFPv3)
-| 110x        x1        = CondVfpOp => VfpOp
-                          Vcvt_Vcvtr_Rule_295_A1_P578
-                          cccc11101d11110xdddd101sp1m0mmmm (VFPv2)
-| 111x        x1        = CondVfpOp => VfpOp
-                          Vcvt_Rule_297_A1_P582
-                          cccc11101d11111udddd101fx1i0iiii (VFPv3)
+| 0100        x1        = *VcmpWithoutZero
+                           pattern := cccc11101d110100dddd101se1m0mmmm;
+                           rule := VCMP_VCMPE;
+                           arch := VFPv2;
+| 0101        x1        = *VcmpWithZero 
+                           pattern := cccc11101d110101dddd101se1000000;
+                           rule := VCMP_VCMPE;
+                           arch := VFPv2;
+| 0111        11        = *VcvtFP
+                           pattern := cccc11101d110111dddd101s11m0mmmm;
+        rule := VCVT_between_double_precision_and_single_precision;
+                           arch := VFPv2;                           
+| 1000        x1        = *VcvtInt
+                           pattern := cccc11101d111ooodddd101sp1m0mmmm;
+        rule := VCVT_VCVTR_between_floating_point_and_integer_Floating_point;
+                           arch := VFPv2;
+| 101x        x1        = *VcvtFixed
+                           pattern := cccc11101d111o1udddd101fx1i0iiii;
+        rule := VCVT_between_floating_point_and_fixed_point_Floating_point;
+                           arch := VFPv3;
+| 110x        x1        = *VcvtInt
+                           pattern := cccc11101d111ooodddd101sp1m0mmmm;
+        rule := VCVT_VCVTR_between_floating_point_and_integer_Floating_point;
+                           arch := VFPv2;
+| 111x        x1        = *VcvtFixed
+                           pattern := cccc11101d111o1udddd101fx1i0iiii;
+        rule := VCVT_between_floating_point_and_fixed_point_Floating_point;
+                           arch := VFPv3;
 +--
 
 +-- extension_register_load_store_instructions (A7.6)

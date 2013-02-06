@@ -208,6 +208,28 @@ class RegBits12To15Plus1Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(RegBits12To15Plus1Interface);
 };
 
+// Interface class to pull out a binary immediate value from bit 16.
+class Imm1Bit16Interface {
+ public:
+  static uint32_t value(const Instruction& i) {
+    return i.Bits(16, 16);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm1Bit16Interface);
+};
+
+// Interface class to pull out a binary immediate value from bit 18.
+class Imm1Bit18Interface {
+ public:
+  static uint32_t value(const Instruction& i) {
+    return i.Bits(18, 18);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm1Bit18Interface);
+};
+
 // Interface to pull out value in bits 20 and 21.
 class Imm2Bits20To21Interface {
  public:

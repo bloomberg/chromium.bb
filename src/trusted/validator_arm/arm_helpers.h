@@ -63,6 +63,10 @@ inline uint32_t ARMExpandImm_C(uint32_t imm12) {
   return ARMExpandImm(imm12);
 }
 
+// Function that expands an imm8 to a corresponding floating point
+// value with the given (n) number of bits, where n is 32 or 64.
+uint64_t VFPExpandImm(uint32_t imm8, int n);
+
 // Returns the bits used as a literal pool head.
 inline uint32_t LiteralPoolHeadConstant() {
   return kLiteralPoolHead;

@@ -198,6 +198,34 @@ class CondAdvSIMDOp : public CoprocessorOp {
   NACL_DISALLOW_COPY_AND_ASSIGN(CondAdvSIMDOp);
 };
 
+// Models VCVT (between floating-point and fixed-point, Floating-point).
+// +--------+--..--+--+------+--+--+--+--------+------+--+--+--+--+--+--------+
+// |31302928|27..23|22|212019|18|17|16|15141312|1110 9| 8| 7| 6| 5| 4| 3 2 1 0|
+// +--------+--.. -+--+------+--+--+--+--------+------+--+--+--+--+--+--------+
+// |  cond  |      | D|      |op|  | U|   Vd   |      |sf|sx|  | i|  |  imm4  |
+// +--------+--..- +--+------+--+--+--+--------+------+--+--+--+--+--+--------+
+// size := if sx == '0' then 16 else 32.
+// frac_bits := size - imm4:i;
+// if frac_bits < 0 then UNPREDICTABLE;
+class VcvtPtAndFixedPoint_FloatingPoint: public CondVfpOp {
+ public:
+    // Interaces for components of instruction.
+  static const Imm4Bits0To3Interface imm4;
+  static const Imm1Bit5Interface i_bit;
+  static const Imm1Bit7Interface sx;
+  static const FlagBit8Interface sf;
+  static const RegBits12To15Interface vd;
+  static const Imm1Bit16Interface u_bit;
+  static const Imm1Bit18Interface op;
+  static const Imm1Bit22Interface d_bit;
+
+  VcvtPtAndFixedPoint_FloatingPoint() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VcvtPtAndFixedPoint_FloatingPoint);
+};
+
 // Models a move of an immediate 12 value to the corresponding
 // bits in the APSR.
 // MSR<c> <spec_reg>, #<const>

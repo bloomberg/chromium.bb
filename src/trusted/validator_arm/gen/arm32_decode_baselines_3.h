@@ -2480,6 +2480,94 @@ class VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0
       VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0);
 };
 
+// VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0:
+//
+//   {D: D(22),
+//    Vd: Vd(15:12),
+//    advsimd: false,
+//    arch: VFPv3,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      imm4H(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      imm4L(3:0)],
+//    generated_baseline: VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0,
+//    imm32: VFPExpandImm(imm4H:imm4L, 32),
+//    imm4H: imm4H(19:16),
+//    imm4L: imm4L(3:0),
+//    imm64: VFPExpandImm(imm4H:imm4L, 64),
+//    pattern: cccc11101d11iiiidddd101s0000iiii,
+//    regs: 1,
+//    rule: VMOV_immediate,
+//    safety: [true => MAY_BE_SAFE],
+//    single_register: sz(8)=0,
+//    sz: sz(8),
+//    true: true,
+//    uses: {}}
+class VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0
+     : public ClassDecoder {
+ public:
+  VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0);
+};
+
+// VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    false: false,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
+//    generated_baseline: VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0,
+//    m: Vm:D
+//         if sz(8)=0
+//         else M:Vm,
+//    pattern: cccc11101d110000dddd101s01m0mmmm,
+//    regs: 1,
+//    rule: VMOV_register,
+//    safety: [true => MAY_BE_SAFE],
+//    single_register: sz(8)=0,
+//    sz: sz(8),
+//    true: true,
+//    uses: {}}
+class VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0);
+};
+
 // VMRS_cccc111011110001tttt101000010000_case_0:
 //
 //   {NZCV: 16,
@@ -3229,6 +3317,47 @@ class VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1);
+};
+
+// VNEG_cccc11101d110001dddd101s01m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
+//    generated_baseline: VNEG_cccc11101d110001dddd101s01m0mmmm_case_0,
+//    m: Vm:D
+//         if sz(8)=0
+//         else M:Vm,
+//    pattern: cccc11101d110001dddd101s01m0mmmm,
+//    rule: VNEG,
+//    safety: [true => MAY_BE_SAFE],
+//    sz: sz(8),
+//    true: true,
+//    uses: {}}
+class VNEG_cccc11101d110001dddd101s01m0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VNEG_cccc11101d110001dddd101s01m0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VNEG_cccc11101d110001dddd101s01m0mmmm_case_0);
 };
 
 // VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0:
@@ -6708,6 +6837,47 @@ class VSLI_111100111diiiiiidddd0101lqm1mmmm_case_0
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VSLI_111100111diiiiiidddd0101lqm1mmmm_case_0);
+};
+
+// VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
+//    generated_baseline: VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0,
+//    m: Vm:D
+//         if sz(8)=0
+//         else M:Vm,
+//    pattern: cccc11101d110001dddd101s11m0mmmm,
+//    rule: VSQRT,
+//    safety: [true => MAY_BE_SAFE],
+//    sz: sz(8),
+//    true: true,
+//    uses: {}}
+class VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0);
 };
 
 // VSRA_1111001u1diiiiiidddd0001lqm1mmmm_case_0:

@@ -6618,6 +6618,60 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// VABS_cccc11101d110000dddd101s11m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
+//    generated_baseline: VABS_cccc11101d110000dddd101s11m0mmmm_case_0,
+//    m: Vm:D
+//         if sz(8)=0
+//         else M:Vm,
+//    pattern: cccc11101d110000dddd101s11m0mmmm,
+//    rule: VABS,
+//    safety: [true => MAY_BE_SAFE],
+//    sz: sz(8),
+//    true: true,
+//    uses: {}}
+RegisterList VABS_cccc11101d110000dddd101s11m0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VABS_cccc11101d110000dddd101s11m0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => MAY_BE_SAFE
+  if (true)
+    return MAY_BE_SAFE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VABS_cccc11101d110000dddd101s11m0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // VACGE_111100110dssnnnndddd1110nqm1mmmm_case_0:
 //
 //   {D: D(22),
@@ -9001,6 +9055,112 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// VCMP_VCMPE_cccc11101d110100dddd101se1m0mmmm_case_0:
+//
+//   {D: D(22),
+//    E: E(7),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), E(7), M(5), Vm(3:0)],
+//    generated_baseline: VCMP_VCMPE_cccc11101d110100dddd101se1m0mmmm_case_0,
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    pattern: cccc11101d110100dddd101se1m0mmmm,
+//    quiet_nan_exc: E(7)=1,
+//    rule: VCMP_VCMPE,
+//    safety: [true => MAY_BE_SAFE],
+//    sz: sz(8),
+//    true: true,
+//    uses: {},
+//    with_zero: false}
+RegisterList VCMP_VCMPE_cccc11101d110100dddd101se1m0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VCMP_VCMPE_cccc11101d110100dddd101se1m0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => MAY_BE_SAFE
+  if (true)
+    return MAY_BE_SAFE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VCMP_VCMPE_cccc11101d110100dddd101se1m0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VCMP_VCMPE_cccc11101d110101dddd101se1000000_case_0:
+//
+//   {D: D(22),
+//    E: E(7),
+//    Vd: Vd(15:12),
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), E(7)],
+//    generated_baseline: VCMP_VCMPE_cccc11101d110101dddd101se1000000_case_0,
+//    pattern: cccc11101d110101dddd101se1000000,
+//    quiet_nan_exc: E(7)=1,
+//    rule: VCMP_VCMPE,
+//    safety: [true => MAY_BE_SAFE],
+//    sz: sz(8),
+//    true: true,
+//    uses: {},
+//    with_zero: true}
+RegisterList VCMP_VCMPE_cccc11101d110101dddd101se1000000_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VCMP_VCMPE_cccc11101d110101dddd101se1000000_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => MAY_BE_SAFE
+  if (true)
+    return MAY_BE_SAFE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VCMP_VCMPE_cccc11101d110101dddd101se1000000_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // VCNT_111100111d11ss00dddd01010qm0mmmm_case_0:
 //
 //   {D: D(22),
@@ -9070,6 +9230,58 @@ safety(Instruction inst) const {
 
 
 RegisterList VCNT_111100111d11ss00dddd01010qm0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VCVTB_VCVTT_cccc11101d11001odddd1010t1m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    T: T(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    arch: VFPv3HP,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D,
+//    defs: {},
+//    fields: [cond(31:28), D(22), op(16), Vd(15:12), T(7), M(5), Vm(3:0)],
+//    generated_baseline: VCVTB_VCVTT_cccc11101d11001odddd1010t1m0mmmm_case_0,
+//    half_to_single: op(16)=0,
+//    lowbit: 16
+//         if T(7)=1
+//         else 0,
+//    m: Vm:M,
+//    op: op(16),
+//    pattern: cccc11101d11001odddd1010t1m0mmmm,
+//    rule: VCVTB_VCVTT,
+//    safety: [true => MAY_BE_SAFE],
+//    true: true,
+//    uses: {}}
+RegisterList VCVTB_VCVTT_cccc11101d11001odddd1010t1m0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VCVTB_VCVTT_cccc11101d11001odddd1010t1m0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => MAY_BE_SAFE
+  if (true)
+    return MAY_BE_SAFE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VCVTB_VCVTT_cccc11101d11001odddd1010t1m0mmmm_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'
@@ -9147,6 +9359,135 @@ safety(Instruction inst) const {
 
 
 RegisterList VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if to_integer
+//         else D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    fields: [cond(31:28),
+//      D(22),
+//      opc2(18:16),
+//      Vd(15:12),
+//      sz(8),
+//      op(7),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_0,
+//    m: Vm:M
+//         if not to_integer
+//         else M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    op: op(7),
+//    opc2: opc2(18:16),
+//    pattern: cccc11101d111ooodddd101sp1m0mmmm,
+//    round_nearest: not to_integer,
+//    round_zero: to_integer &&
+//         op(7)=1,
+//    rule: VCVT_VCVTR_between_floating_point_and_integer_Floating_point,
+//    safety: [opc2(18:16)=~000 &&
+//         opc2(18:16)=~10x => DECODER_ERROR],
+//    sz: sz(8),
+//    to_integer: opc2(2)=1,
+//    true: true,
+//    unsigned: opc2(0)=0
+//         if to_integer
+//         else op(7)=0,
+//    uses: {}}
+RegisterList VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(18:16)=~000 &&
+  //       inst(18:16)=~10x => DECODER_ERROR
+  if (((inst.Bits() & 0x00070000)  !=
+          0x00000000) &&
+       ((inst.Bits() & 0x00060000)  !=
+          0x00040000))
+    return DECODER_ERROR;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VCVT_between_double_precision_and_single_precision_cccc11101d110111dddd101s11m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    double_to_single: sz(8)=1,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
+//    generated_baseline: VCVT_between_double_precision_and_single_precision_cccc11101d110111dddd101s11m0mmmm_case_0,
+//    m: Vm:D
+//         if sz(8)=0
+//         else M:Vm,
+//    pattern: cccc11101d110111dddd101s11m0mmmm,
+//    rule: VCVT_between_double_precision_and_single_precision,
+//    safety: [true => MAY_BE_SAFE],
+//    sz: sz(8),
+//    true: true,
+//    uses: {}}
+RegisterList VCVT_between_double_precision_and_single_precision_cccc11101d110111dddd101s11m0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VCVT_between_double_precision_and_single_precision_cccc11101d110111dddd101s11m0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => MAY_BE_SAFE
+  if (true)
+    return MAY_BE_SAFE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VCVT_between_double_precision_and_single_precision_cccc11101d110111dddd101s11m0mmmm_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'
@@ -9233,6 +9574,82 @@ safety(Instruction inst) const {
 
 
 RegisterList VCVT_between_floating_point_and_fixed_point_1111001u1diiiiiidddd111p0qm1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_0:
+//
+//   {D: D(22),
+//    U: U(16),
+//    Vd: Vd(12),
+//    arch: VFPv3,
+//    baseline: VcvtPtAndFixedPoint_FloatingPoint,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    dp_operation: sf(8)=1,
+//    fields: [cond(31:28),
+//      D(22),
+//      op(18),
+//      U(16),
+//      Vd(12),
+//      sf(8),
+//      sx(7),
+//      i(5),
+//      imm4(3:0)],
+//    frac_bits: size - imm4:i,
+//    generated_baseline: VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_0,
+//    i: i(5),
+//    imm4: imm4(3:0),
+//    op: op(18),
+//    pattern: cccc11101d111o1udddd101fx1i0iiii,
+//    round_nearest: not to_fixed,
+//    round_zero: to_fixed,
+//    rule: VCVT_between_floating_point_and_fixed_point_Floating_point,
+//    safety: [frac_bits  <
+//            0 => UNPREDICTABLE],
+//    sf: sf(8),
+//    size: 16
+//         if sx(7)=0
+//         else 32,
+//    sx: sx(7),
+//    sz: sz(8),
+//    to_fixed: op(18)=1,
+//    true: true,
+//    unsigned: U(16)=1,
+//    uses: {}}
+RegisterList VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 16
+  //       if inst(7)=0
+  //       else 32 - inst(3:0):inst(5)  <
+  //          0 => UNPREDICTABLE
+  if (((static_cast<int32_t>(((inst.Bits() & 0x00000080)  ==
+          0x00000000
+       ? 16
+       : 32)) - static_cast<int32_t>(((((inst.Bits() & 0x0000000F)) << 1) | ((inst.Bits() & 0x00000020) >> 5)))) < (0)))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'

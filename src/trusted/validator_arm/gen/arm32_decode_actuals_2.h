@@ -1652,6 +1652,277 @@ class Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2
       Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2);
 };
 
+// Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [true => MAY_BE_SAFE],
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
+//    generated_baseline: VABS_cccc11101d110000dddd101s11m0mmmm_case_0,
+//    m: Vm:D
+//         if sz(8)=0
+//         else M:Vm,
+//    pattern: cccc11101d110000dddd101s11m0mmmm,
+//    rule: VABS,
+//    safety: [true => MAY_BE_SAFE],
+//    sz: sz(8),
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    E: E(7),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), E(7), M(5), Vm(3:0)],
+//    generated_baseline: VCMP_VCMPE_cccc11101d110100dddd101se1m0mmmm_case_0,
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    pattern: cccc11101d110100dddd101se1m0mmmm,
+//    quiet_nan_exc: E(7)=1,
+//    rule: VCMP_VCMPE,
+//    safety: [true => MAY_BE_SAFE],
+//    sz: sz(8),
+//    true: true,
+//    uses: {},
+//    with_zero: false}
+//
+// Baseline:
+//   {D: D(22),
+//    E: E(7),
+//    Vd: Vd(15:12),
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), E(7)],
+//    generated_baseline: VCMP_VCMPE_cccc11101d110101dddd101se1000000_case_0,
+//    pattern: cccc11101d110101dddd101se1000000,
+//    quiet_nan_exc: E(7)=1,
+//    rule: VCMP_VCMPE,
+//    safety: [true => MAY_BE_SAFE],
+//    sz: sz(8),
+//    true: true,
+//    uses: {},
+//    with_zero: true}
+//
+// Baseline:
+//   {D: D(22),
+//    M: M(5),
+//    T: T(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    arch: VFPv3HP,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D,
+//    defs: {},
+//    fields: [cond(31:28), D(22), op(16), Vd(15:12), T(7), M(5), Vm(3:0)],
+//    generated_baseline: VCVTB_VCVTT_cccc11101d11001odddd1010t1m0mmmm_case_0,
+//    half_to_single: op(16)=0,
+//    lowbit: 16
+//         if T(7)=1
+//         else 0,
+//    m: Vm:M,
+//    op: op(16),
+//    pattern: cccc11101d11001odddd1010t1m0mmmm,
+//    rule: VCVTB_VCVTT,
+//    safety: [true => MAY_BE_SAFE],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    double_to_single: sz(8)=1,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
+//    generated_baseline: VCVT_between_double_precision_and_single_precision_cccc11101d110111dddd101s11m0mmmm_case_0,
+//    m: Vm:D
+//         if sz(8)=0
+//         else M:Vm,
+//    pattern: cccc11101d110111dddd101s11m0mmmm,
+//    rule: VCVT_between_double_precision_and_single_precision,
+//    safety: [true => MAY_BE_SAFE],
+//    sz: sz(8),
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    Vd: Vd(15:12),
+//    advsimd: false,
+//    arch: VFPv3,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      imm4H(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      imm4L(3:0)],
+//    generated_baseline: VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0,
+//    imm32: VFPExpandImm(imm4H:imm4L, 32),
+//    imm4H: imm4H(19:16),
+//    imm4L: imm4L(3:0),
+//    imm64: VFPExpandImm(imm4H:imm4L, 64),
+//    pattern: cccc11101d11iiiidddd101s0000iiii,
+//    regs: 1,
+//    rule: VMOV_immediate,
+//    safety: [true => MAY_BE_SAFE],
+//    single_register: sz(8)=0,
+//    sz: sz(8),
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    false: false,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
+//    generated_baseline: VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0,
+//    m: Vm:D
+//         if sz(8)=0
+//         else M:Vm,
+//    pattern: cccc11101d110000dddd101s01m0mmmm,
+//    regs: 1,
+//    rule: VMOV_register,
+//    safety: [true => MAY_BE_SAFE],
+//    single_register: sz(8)=0,
+//    sz: sz(8),
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
+//    generated_baseline: VNEG_cccc11101d110001dddd101s01m0mmmm_case_0,
+//    m: Vm:D
+//         if sz(8)=0
+//         else M:Vm,
+//    pattern: cccc11101d110001dddd101s01m0mmmm,
+//    rule: VNEG,
+//    safety: [true => MAY_BE_SAFE],
+//    sz: sz(8),
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
+//    generated_baseline: VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0,
+//    m: Vm:D
+//         if sz(8)=0
+//         else M:Vm,
+//    pattern: cccc11101d110001dddd101s11m0mmmm,
+//    rule: VSQRT,
+//    safety: [true => MAY_BE_SAFE],
+//    sz: sz(8),
+//    true: true,
+//    uses: {}}
+class Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1
+     : public ClassDecoder {
+ public:
+  Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1);
+};
+
 // Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1
 //
 // Actual:
@@ -3164,6 +3435,73 @@ class Actual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1
       Actual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1);
 };
 
+// Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [inst(18:16)=~000 &&
+//         inst(18:16)=~10x => DECODER_ERROR],
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if to_integer
+//         else D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    fields: [cond(31:28),
+//      D(22),
+//      opc2(18:16),
+//      Vd(15:12),
+//      sz(8),
+//      op(7),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_0,
+//    m: Vm:M
+//         if not to_integer
+//         else M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    op: op(7),
+//    opc2: opc2(18:16),
+//    pattern: cccc11101d111ooodddd101sp1m0mmmm,
+//    round_nearest: not to_integer,
+//    round_zero: to_integer &&
+//         op(7)=1,
+//    rule: VCVT_VCVTR_between_floating_point_and_integer_Floating_point,
+//    safety: [opc2(18:16)=~000 &&
+//         opc2(18:16)=~10x => DECODER_ERROR],
+//    sz: sz(8),
+//    to_integer: opc2(2)=1,
+//    true: true,
+//    unsigned: opc2(0)=0
+//         if to_integer
+//         else op(7)=0,
+//    uses: {}}
+class Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1
+     : public ClassDecoder {
+ public:
+  Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1);
+};
+
 // Actual_VCVT_between_floating_point_and_fixed_point_1111001u1diiiiiidddd111p0qm1mmmm_case_1
 //
 // Actual:
@@ -3228,6 +3566,72 @@ class Actual_VCVT_between_floating_point_and_fixed_point_1111001u1diiiiiidddd111
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_VCVT_between_floating_point_and_fixed_point_1111001u1diiiiiidddd111p0qm1mmmm_case_1);
+};
+
+// Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [16
+//         if inst(7)=0
+//         else 32 - inst(3:0):inst(5)  <
+//            0 => UNPREDICTABLE],
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    U: U(16),
+//    Vd: Vd(12),
+//    arch: VFPv3,
+//    baseline: VcvtPtAndFixedPoint_FloatingPoint,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D
+//         if sz(8)=0
+//         else D:Vd,
+//    defs: {},
+//    dp_operation: sf(8)=1,
+//    fields: [cond(31:28),
+//      D(22),
+//      op(18),
+//      U(16),
+//      Vd(12),
+//      sf(8),
+//      sx(7),
+//      i(5),
+//      imm4(3:0)],
+//    frac_bits: size - imm4:i,
+//    generated_baseline: VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_0,
+//    i: i(5),
+//    imm4: imm4(3:0),
+//    op: op(18),
+//    pattern: cccc11101d111o1udddd101fx1i0iiii,
+//    round_nearest: not to_fixed,
+//    round_zero: to_fixed,
+//    rule: VCVT_between_floating_point_and_fixed_point_Floating_point,
+//    safety: [frac_bits  <
+//            0 => UNPREDICTABLE],
+//    sf: sf(8),
+//    size: 16
+//         if sx(7)=0
+//         else 32,
+//    sx: sx(7),
+//    sz: sz(8),
+//    to_fixed: op(18)=1,
+//    true: true,
+//    unsigned: U(16)=1,
+//    uses: {}}
+class Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1
+     : public ClassDecoder {
+ public:
+  Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1);
 };
 
 // Actual_VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1

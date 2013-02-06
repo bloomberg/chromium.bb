@@ -232,6 +232,7 @@ class Arm32DecoderState : DecoderState {
   const Unary2RegisterSatImmedShiftedOp Unary2RegisterSatImmedShiftedOp_instance_;
   const Undefined Undefined_instance_;
   const Unpredictable Unpredictable_instance_;
+  const VcvtPtAndFixedPoint_FloatingPoint VcvtPtAndFixedPoint_FloatingPoint_instance_;
   const Vector1RegisterImmediate_BIT Vector1RegisterImmediate_BIT_instance_;
   const Vector1RegisterImmediate_MOV Vector1RegisterImmediate_MOV_instance_;
   const Vector1RegisterImmediate_MVN Vector1RegisterImmediate_MVN_instance_;
@@ -284,7 +285,6 @@ class Arm32DecoderState : DecoderState {
   const VectorLoadStoreSingle4 VectorLoadStoreSingle4_instance_;
   const VectorUnary2RegisterDup VectorUnary2RegisterDup_instance_;
   const VfpMrsOp VfpMrsOp_instance_;
-  const VfpOp VfpOp_instance_;
   const VfpUsesRegOp VfpUsesRegOp_instance_;
   const NotImplemented not_implemented_;
 };
