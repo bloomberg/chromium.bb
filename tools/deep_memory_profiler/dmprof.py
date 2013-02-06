@@ -55,6 +55,8 @@ DUMP_DEEP_OBSOLETE = (DUMP_DEEP_1, DUMP_DEEP_2, DUMP_DEEP_3, DUMP_DEEP_4)
 # DUMP_DEEP_5 should be processed by POLICY_DEEP_4.
 DUMP_DEEP_5 = 'DUMP_DEEP_5'
 
+# DUMP_DEEP_6 adds a mmap list to DUMP_DEEP_5.
+DUMP_DEEP_6 = 'DUMP_DEEP_6'
 
 # Heap Profile Policy versions
 
@@ -74,7 +76,7 @@ POLICY_DEEP_4 = 'POLICY_DEEP_4'
 
 
 class EmptyDumpException(Exception):
-  def __init__(self, value):
+  def __init__(self, value=''):
     super(EmptyDumpException, self).__init__()
     self.value = value
   def __str__(self):
@@ -82,7 +84,7 @@ class EmptyDumpException(Exception):
 
 
 class ParsingException(Exception):
-  def __init__(self, value):
+  def __init__(self, value=''):
     super(ParsingException, self).__init__()
     self.value = value
   def __str__(self):
@@ -703,7 +705,7 @@ class Dump(object):
     # Identify a version.
     if self._lines[ln].startswith('heap profile: '):
       version = self._lines[ln][13:].strip()
-      if version == DUMP_DEEP_5:
+      if version in (DUMP_DEEP_5, DUMP_DEEP_6):
         (ln, _) = skip_while(
             ln, len(self._lines),
             lambda n: self._lines[n] != 'STACKTRACES:\n')
@@ -750,7 +752,7 @@ class Dump(object):
     Raises:
         ParsingException for invalid dump versions.
     """
-    if self._version == DUMP_DEEP_5:
+    if self._version in (DUMP_DEEP_5, DUMP_DEEP_6):
       (line_number, _) = skip_while(
           line_number, len(self._lines),
           lambda n: not self._lines[n].split()[0].isdigit())
