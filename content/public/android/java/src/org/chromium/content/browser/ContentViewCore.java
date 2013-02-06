@@ -1999,7 +1999,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         int x2 = endRect.left;
         int y2 = endRect.bottom;
 
-        if (x1 != x2 || y1 != y2) {
+        if (x1 != x2 || y1 != y2 ||
+                (mSelectionHandleController != null && mSelectionHandleController.isDragging())) {
             if (mInsertionHandleController != null) {
                 mInsertionHandleController.hide();
             }
@@ -2011,10 +2012,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             mHasSelection = true;
         } else {
             hideSelectActionBar();
-            if (x1 != 0 && y1 != 0
-                    && (mSelectionHandleController == null
-                            || !mSelectionHandleController.isDragging())
-                    && mSelectionEditable) {
+            if (x1 != 0 && y1 != 0 && mSelectionEditable) {
                 // Selection is a caret, and a text field is focused.
                 if (mSelectionHandleController != null) {
                     mSelectionHandleController.hide();
@@ -2032,8 +2030,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 }
             } else {
                 // Deselection
-                if (mSelectionHandleController != null
-                        && !mSelectionHandleController.isDragging()) {
+                if (mSelectionHandleController != null) {
                     mSelectionHandleController.hideAndDisallowAutomaticShowing();
                 }
                 if (mInsertionHandleController != null) {
