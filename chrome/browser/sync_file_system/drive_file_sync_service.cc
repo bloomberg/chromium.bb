@@ -246,12 +246,14 @@ DriveFileSyncService::RemoteChange::RemoteChange()
 DriveFileSyncService::RemoteChange::RemoteChange(
     int64 changestamp,
     const std::string& resource_id,
+    const std::string& md5_checksum,
     RemoteSyncType sync_type,
     const fileapi::FileSystemURL& url,
     const fileapi::FileChange& change,
     PendingChangeQueue::iterator position_in_queue)
     : changestamp(changestamp),
       resource_id(resource_id),
+      md5_checksum(md5_checksum),
       sync_type(sync_type),
       url(url),
       change(change),
@@ -1644,7 +1646,9 @@ bool DriveFileSyncService::AppendRemoteChange(
   DCHECK(!entry.is_folder());
   return AppendRemoteChangeInternal(
       origin, path, entry.deleted(),
-      entry.resource_id(), changestamp, entry.file_md5(), sync_type);
+      entry.resource_id(), changestamp,
+      entry.deleted() ? std::string() : entry.file_md5(),
+      sync_type);
 }
 
 bool DriveFileSyncService::AppendFetchChange(
@@ -1652,9 +1656,11 @@ bool DriveFileSyncService::AppendFetchChange(
     const FilePath& path,
     const std::string& resource_id) {
   return AppendRemoteChangeInternal(
-      origin, path, false /* is_deleted */,
-      resource_id, 0 /* changestamp */,
-      std::string() /* remote_file_md5 */,
+      origin, path,
+      false,  // is_deleted
+      resource_id,
+      0,  // changestamp
+      std::string(),  // remote_file_md5
       REMOTE_SYNC_TYPE_FETCH);
 }
 
@@ -1662,19 +1668,21 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
     const GURL& origin,
     const FilePath& path,
     bool is_deleted,
-    const std::string& resource_id,
+    const std::string& remote_resource_id,
     int64 changestamp,
     const std::string& remote_file_md5,
     RemoteSyncType sync_type) {
   fileapi::FileSystemURL url(
       fileapi::CreateSyncableFileSystemURL(origin, kServiceName, path));
-  if (!is_deleted && !remote_file_md5.empty()) {
-    DriveMetadata metadata;
-    fileapi::SyncStatusCode status = metadata_store_->ReadEntry(url, &metadata);
-    if (status == fileapi::SYNC_STATUS_OK &&
-        !metadata.md5_checksum().empty() &&
-        metadata.md5_checksum() == remote_file_md5)
-      return false;
+
+  std::string local_resource_id;
+  std::string local_file_md5;
+
+  DriveMetadata metadata;
+  if (metadata_store_->ReadEntry(url, &metadata) == fileapi::SYNC_STATUS_OK) {
+    local_resource_id = metadata.resource_id();
+    if (!metadata.to_be_fetched())
+      local_file_md5 = metadata.md5_checksum();
   }
 
   PathToChangeMap* path_to_change = &origin_to_changes_map_[origin];
@@ -1683,8 +1691,29 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
   if (found != path_to_change->end()) {
     if (found->second.changestamp >= changestamp)
       return false;
-    overridden_queue_item = found->second.position_in_queue;
+    const RemoteChange& pending_change = found->second;
+    overridden_queue_item = pending_change.position_in_queue;
+
+    if (pending_change.change.IsDelete()) {
+      local_resource_id.clear();
+      local_file_md5.clear();
+    } else {
+      local_resource_id = pending_change.resource_id;
+      local_file_md5 = pending_change.md5_checksum;
+    }
   }
+
+  // Drop the change if remote update change does not change file content.
+  if (!remote_file_md5.empty() &&
+      !local_file_md5.empty() &&
+      remote_file_md5 == local_file_md5)
+    return false;
+
+  // Drop any change if the change has unknown resource id.
+  if (!remote_resource_id.empty() &&
+      !local_resource_id.empty() &&
+      remote_resource_id != local_resource_id)
+    return false;
 
   fileapi::FileChange file_change(CreateFileChange(is_deleted));
 
@@ -1698,7 +1727,8 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
     DCHECK(inserted_to_queue.second);
 
     (*path_to_change)[path] = RemoteChange(
-        changestamp, resource_id, sync_type, url, file_change,
+        changestamp, remote_resource_id, remote_file_md5,
+        sync_type, url, file_change,
         inserted_to_queue.first);
   }
 

@@ -207,7 +207,7 @@ class DriveFileSyncClient
   void DidEnsureUniquenessForCreateDirectory(
       const ResourceIdCallback& callback,
       google_apis::GDataErrorCode error,
-      const std::string& resource_id);
+      scoped_ptr<google_apis::ResourceEntry> entry);
 
   void SearchFilesInDirectory(const std::string& directory_resource_id,
                               const std::string& search_query,
@@ -244,6 +244,16 @@ class DriveFileSyncClient
       const UploadFileCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> parent_directory_entry);
+  void DidUploadNewFile(const std::string& parent_resource_id,
+                        const std::string& title,
+                        const UploadFileCallback& callback,
+                        google_apis::GDataErrorCode error,
+                        scoped_ptr<google_apis::ResourceEntry> entry);
+  void DidEnsureUniquenessForCreateFile(
+      const std::string& expected_resource_id,
+      const UploadFileCallback& callback,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::ResourceEntry> entry);
 
   void UploadExistingFileInternal(
       const std::string& remote_file_md5,
@@ -252,11 +262,9 @@ class DriveFileSyncClient
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> entry);
 
-  void DidUploadFile(const UploadFileCallback& callback,
-                     google_apis::DriveUploadError error,
-                     const FilePath& drive_path,
-                     const FilePath& file_path,
-                     scoped_ptr<google_apis::ResourceEntry> entry);
+  void DidUploadExistingFile(const UploadFileCallback& callback,
+                             google_apis::GDataErrorCode error,
+                             scoped_ptr<google_apis::ResourceEntry> entry);
 
   void DeleteFileInternal(const std::string& remote_file_md5,
                           const GDataErrorCallback& callback,
@@ -268,11 +276,11 @@ class DriveFileSyncClient
 
   void EnsureTitleUniqueness(const std::string& parent_resource_id,
                              const string16& expected_title,
-                             const ResourceIdCallback& callback);
+                             const ResourceEntryCallback& callback);
   void DidListEntriesToEnsureUniqueness(
       const std::string& parent_resource_id,
       const string16& expected_title,
-      const ResourceIdCallback& callback,
+      const ResourceEntryCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> feed);
   void DeleteEntries(ScopedVector<google_apis::ResourceEntry> entries,

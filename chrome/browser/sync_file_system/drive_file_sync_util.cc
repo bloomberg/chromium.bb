@@ -59,4 +59,22 @@ fileapi::SyncStatusCode GDataErrorCodeToSyncStatusCode(
   return fileapi::SYNC_STATUS_FAILED;
 }
 
+google_apis::GDataErrorCode DriveUploadErrorToGDataErrorCode(
+    google_apis::DriveUploadError error) {
+  switch (error) {
+    case google_apis::DRIVE_UPLOAD_OK:
+       return google_apis::HTTP_SUCCESS;
+    case google_apis::DRIVE_UPLOAD_ERROR_NOT_FOUND:
+      return google_apis::HTTP_NOT_FOUND;
+    case google_apis::DRIVE_UPLOAD_ERROR_NO_SPACE:
+      return google_apis::GDATA_NO_SPACE;
+    case google_apis::DRIVE_UPLOAD_ERROR_CONFLICT:
+      return google_apis::HTTP_CONFLICT;
+    case google_apis::DRIVE_UPLOAD_ERROR_ABORT:
+      return google_apis::GDATA_OTHER_ERROR;
+  }
+  NOTREACHED();
+  return google_apis::GDATA_OTHER_ERROR;
+}
+
 }  // namespace sync_file_system

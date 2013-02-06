@@ -132,6 +132,7 @@ class DriveFileSyncService
   struct RemoteChange {
     int64 changestamp;
     std::string resource_id;
+    std::string md5_checksum;
     RemoteSyncType sync_type;
     fileapi::FileSystemURL url;
     fileapi::FileChange change;
@@ -140,6 +141,7 @@ class DriveFileSyncService
     RemoteChange();
     RemoteChange(int64 changestamp,
                  const std::string& resource_id,
+                 const std::string& md5_checksum,
                  RemoteSyncType sync_type,
                  const fileapi::FileSystemURL& url,
                  const fileapi::FileChange& change,

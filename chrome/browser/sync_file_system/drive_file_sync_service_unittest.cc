@@ -303,6 +303,7 @@ class DriveFileSyncServiceTest : public testing::Test {
 
   void AddRemoteChange(int64 changestamp,
                        const std::string& resource_id,
+                       const std::string& md5_checksum,
                        const fileapi::FileSystemURL& url,
                        const fileapi::FileChange& file_change) {
     typedef DriveFileSyncService::PendingChangeQueue::iterator iterator;
@@ -319,7 +320,8 @@ class DriveFileSyncServiceTest : public testing::Test {
     DriveFileSyncService::PathToChangeMap* path_to_change =
         &sync_service_->origin_to_changes_map_[url.origin()];
     (*path_to_change)[url.path()] = DriveFileSyncService::RemoteChange(
-        changestamp, resource_id, sync_type, url, file_change,
+        changestamp, resource_id, md5_checksum,
+        sync_type, url, file_change,
         inserted_to_queue.first);
   }
 
@@ -766,7 +768,7 @@ TEST_F(DriveFileSyncServiceTest, ResolveLocalSyncOperationType) {
 
   // Add an ADD_OR_UPDATE change for the file to the pending change queue.
   AddRemoteChange(
-      kChangestamp, kResourceId, url,
+      kChangestamp, kResourceId, "hoge", url,
       fileapi::FileChange(fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                           fileapi::SYNC_FILE_TYPE_FILE));
 
@@ -777,7 +779,7 @@ TEST_F(DriveFileSyncServiceTest, ResolveLocalSyncOperationType) {
 
   // Add a DELETE change for the file to the pending change queue.
   AddRemoteChange(
-      kChangestamp, kResourceId, url,
+      kChangestamp, kResourceId, "fuga", url,
       fileapi::FileChange(fileapi::FileChange::FILE_CHANGE_DELETE,
                           fileapi::SYNC_FILE_TYPE_FILE));
 
@@ -980,6 +982,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_Override) {
   const std::string kSyncRootResourceId("folder:sync_root_resource_id");
   const FilePath kFilePath(FPL("File 1.mp3"));
   const std::string kFileResourceId("file:2_file_resource_id");
+  const std::string kFileResourceId2("file:2_file_resource_id_2");
   const fileapi::FileSystemURL kURL(CreateURL(kOrigin, kFilePath.value()));
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
@@ -1004,15 +1007,6 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_Override) {
       kOrigin, kFilePath, false /* is_deleted */,
       kFileResourceId, 1, "remote_file_md5_2"));
 
-  DriveMetadata metadata;
-  metadata.set_resource_id(kFileResourceId);
-  metadata.set_md5_checksum("remote_file_md5");
-  metadata.set_conflicted(false);
-  metadata.set_to_be_fetched(false);
-  metadata_store()->UpdateEntry(
-      kURL, metadata, base::Bind(&DidUpdateEntry));
-  message_loop()->RunUntilIdle();
-
   // Expect to drop this change since it has the same md5 with the previous one.
   EXPECT_FALSE(AppendIncrementalRemoteChange(
       kOrigin, kFilePath, false /* is_deleted */,
@@ -1022,6 +1016,28 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_Override) {
   EXPECT_FALSE(AppendIncrementalRemoteChange(
       kOrigin, kFilePath, false /* is_deleted */,
       kFileResourceId, 4, "remote_file_md5"));
+
+  // Expect to drop these changes since they have different resource IDs with
+  // the previous ones.
+  EXPECT_FALSE(AppendIncrementalRemoteChange(
+      kOrigin, kFilePath, false /* is_deleted */,
+      kFileResourceId2, 5, "updated_file_md5"));
+  EXPECT_FALSE(AppendIncrementalRemoteChange(
+      kOrigin, kFilePath, true /* is_deleted */,
+      kFileResourceId2, 5, "deleted_file_md5"));
+
+  // Push delete change.
+  EXPECT_TRUE(AppendIncrementalRemoteChange(
+      kOrigin, kFilePath, true /* is_deleted */,
+      kFileResourceId, 6, "deleted_file_md5"));
+
+  // Expect not to drop these changes even if they have different resource IDs.
+  EXPECT_TRUE(AppendIncrementalRemoteChange(
+      kOrigin, kFilePath, true /* is_deleted */,
+      kFileResourceId2, 7, "deleted_file_md5"));
+  EXPECT_TRUE(AppendIncrementalRemoteChange(
+      kOrigin, kFilePath, false /* is_deleted */,
+      kFileResourceId, 8, "updated_file_md5"));
 }
 
 #endif  // !defined(OS_ANDROID)
