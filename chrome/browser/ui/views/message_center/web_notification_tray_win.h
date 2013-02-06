@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_MESSAGE_CENTER_WEB_NOTIFICATION_TRAY_WIN_H_
 
 #include "chrome/browser/status_icons/status_icon_observer.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/views/bubble/tray_bubble_view.h"
@@ -32,9 +33,9 @@ class NotificationBubbleWrapperWin;
 // via a system tray icon.  The notification popups will be displayed in the
 // corner of the screen and the message center will be displayed by the system
 // tray icon on click.
-// TODO(dewittj): Quiet mode.
 class WebNotificationTrayWin
     : public message_center::MessageCenterTrayDelegate,
+      public ui::SimpleMenuModel::Delegate,
       public StatusIconObserver {
  public:
   WebNotificationTrayWin();
@@ -66,6 +67,14 @@ class WebNotificationTrayWin
 
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view);
 
+  // SimpleMenuModel::Delegate implementation.
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayWinTest, WebNotifications);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayWinTest,
@@ -75,6 +84,7 @@ class WebNotificationTrayWin
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayWinTest, ManyPopupNotifications);
 
   void UpdateAnchorRect();
+  void AddQuietModeMenu(StatusIcon* status_icon);
   message_center::MessagePopupBubble* GetPopupBubbleForTest();
   message_center::MessageCenterBubble* GetMessageCenterBubbleForTest();
 

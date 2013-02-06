@@ -136,6 +136,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
                                  const gfx::ImageSkia& image);
 
   NotificationList* notification_list() { return notification_list_.get(); }
+  bool quiet_mode() const { return notification_list_->quiet_mode(); }
 
   // Overridden from NotificationList::Delegate.
   virtual void SendRemoveNotification(const std::string& id) OVERRIDE;

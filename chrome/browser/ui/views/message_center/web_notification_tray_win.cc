@@ -10,6 +10,9 @@
 #include "chrome/browser/ui/views/message_center/notification_bubble_wrapper_win.h"
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
 #include "grit/theme_resources.h"
+#include "grit/ui_strings.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -22,6 +25,11 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
+
+// Menu commands
+const int kToggleQuietMode = 0;
+const int kEnableQuietModeHour = 1;
+const int kEnableQuietModeDay = 2;
 
 // Tray constants
 const int kPaddingFromLeftEdgeOfSystemTrayBottomAlignment = 8;
@@ -92,6 +100,8 @@ WebNotificationTrayWin::WebNotificationTrayWin()
   status_icon_->AddObserver(this);
   status_icon_->SetImage(
       GetIcon(message_center()->UnreadNotificationCount() > 0));
+
+  AddQuietModeMenu(status_icon_);
 }
 
 WebNotificationTrayWin::~WebNotificationTrayWin() {
@@ -211,8 +221,50 @@ void WebNotificationTrayWin::HideBubbleWithView(
   }
 }
 
+bool WebNotificationTrayWin::IsCommandIdChecked(int command_id) const {
+  if (command_id != kToggleQuietMode)
+    return false;
+  return message_center_tray_->message_center()->quiet_mode();
+}
+
+bool WebNotificationTrayWin::IsCommandIdEnabled(int command_id) const {
+  return true;
+}
+
+bool WebNotificationTrayWin::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) {
+  return false;
+}
+
+void WebNotificationTrayWin::ExecuteCommand(int command_id) {
+  if (command_id == kToggleQuietMode) {
+    bool in_quiet_mode = message_center()->quiet_mode();
+    message_center()->notification_list()->SetQuietMode(!in_quiet_mode);
+    return;
+  }
+  base::TimeDelta expires_in = command_id == kEnableQuietModeDay ?
+      base::TimeDelta::FromDays(1):
+      base::TimeDelta::FromHours(1);
+  message_center()->notification_list()->EnterQuietModeWithExpire(expires_in);
+}
+
 void WebNotificationTrayWin::UpdateAnchorRect() {
   message_center_anchor_rect_ = GetMouseAnchorRect();
+}
+
+void WebNotificationTrayWin::AddQuietModeMenu(StatusIcon* status_icon) {
+  DCHECK(status_icon);
+  ui::SimpleMenuModel* menu = new ui::SimpleMenuModel(this);
+
+  menu->AddCheckItem(kToggleQuietMode,
+                     l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_QUIET_MODE));
+  menu->AddItem(kEnableQuietModeHour,
+                l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_QUIET_MODE_1HOUR));
+  menu->AddItem(kEnableQuietModeDay,
+                l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_QUIET_MODE_1DAY));
+
+  status_icon->SetContextMenu(menu);
 }
 
 message_center::MessageCenterBubble*
