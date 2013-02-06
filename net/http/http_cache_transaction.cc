@@ -45,12 +45,6 @@ using base::TimeTicks;
 
 namespace {
 
-// The cutoff for tagging small transactions in histograms; this size was chosen
-// to cover resources likely to be received in a single TCP window. With an
-// initial CWND of 10, and an MTU of 1500 bytes, with TCP and HTTP framing
-// overhead this is a size relatively likely to take only one RTT.
-const int kSmallResourceMaxBytes = 14 * 1024;
-
 // From http://tools.ietf.org/html/draft-ietf-httpbis-p6-cache-21#section-6
 //      a "non-error response" is one with a 2xx (Successful) or 3xx
 //      (Redirection) status code.
@@ -155,8 +149,6 @@ HttpCache::Transaction::Transaction(
           base::Bind(&Transaction::OnIOComplete,
                      weak_factory_.GetWeakPtr()))),
       transaction_pattern_(PATTERN_UNDEFINED),
-      bytes_read_from_cache_(0),
-      bytes_read_from_network_(0),
       defer_cache_sensitivity_delay_(false),
       transaction_delegate_(transaction_delegate) {
   COMPILE_ASSERT(HttpCache::Transaction::kNumValidationHeaders ==
@@ -858,7 +850,6 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
     next_state_ = STATE_SEND_REQUEST;
     return OK;
   }
-  bytes_read_from_network_ += new_response_->headers->raw_headers().size();
   if (handling_206_ && mode_ == READ_WRITE && !truncated_ && !is_sparse_) {
     // We have stored the full entry, but it changed and the server is
     // sending a range. We have to delete the old entry.
@@ -921,9 +912,6 @@ int HttpCache::Transaction::DoNetworkReadComplete(int result) {
 
   if (!cache_)
     return ERR_UNEXPECTED;
-
-  if (result > 0)
-    bytes_read_from_network_ += result;
 
   if (infinite_cache_transaction_.get())
     infinite_cache_transaction_->OnDataRead(read_buf_->data(), result);
@@ -1367,7 +1355,6 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
                                     &response_, &truncated_)) {
     return OnCacheReadError(result, true);
   }
-  bytes_read_from_cache_ += result;
 
   // Some resources may have slipped in as truncated when they're not.
   int current_size = entry_->disk_entry->GetDataSize(kResponseContentIndex);
@@ -1523,7 +1510,6 @@ int HttpCache::Transaction::DoCacheReadDataComplete(int result) {
 
   if (result > 0) {
     read_offset_ += result;
-    bytes_read_from_cache_ += result;
   } else if (result == 0) {  // End of file.
     RecordHistograms();
     cache_->DoneReadingFromEntry(entry_, this);
@@ -2466,28 +2452,9 @@ void HttpCache::Transaction::RecordHistograms() {
         transaction_pattern_ == PATTERN_ENTRY_CANT_CONDITIONALIZE)) ||
       (!did_send_request && transaction_pattern_ == PATTERN_ENTRY_USED));
 
-  int resource_size;
-  if (transaction_pattern_ == PATTERN_ENTRY_NOT_CACHED ||
-      transaction_pattern_ == PATTERN_ENTRY_UPDATED ||
-      transaction_pattern_ == PATTERN_ENTRY_CANT_CONDITIONALIZE) {
-      resource_size = bytes_read_from_network_;
-  } else {
-      DCHECK(transaction_pattern_ == PATTERN_ENTRY_VALIDATED ||
-             transaction_pattern_ == PATTERN_ENTRY_USED);
-      resource_size = bytes_read_from_cache_;
-  }
-
-  bool is_small_resource = resource_size < kSmallResourceMaxBytes;
-  if (is_small_resource)
-    UMA_HISTOGRAM_TIMES("HttpCache.AccessToDone.SmallResource", total_time);
-
   if (!did_send_request) {
     DCHECK(transaction_pattern_ == PATTERN_ENTRY_USED);
     UMA_HISTOGRAM_TIMES("HttpCache.AccessToDone.Used", total_time);
-    if (is_small_resource) {
-      UMA_HISTOGRAM_TIMES("HttpCache.AccessToDone.Used.SmallResource",
-                          total_time);
-    }
     return;
   }
 
@@ -2501,13 +2468,6 @@ void HttpCache::Transaction::RecordHistograms() {
   UMA_HISTOGRAM_TIMES("HttpCache.AccessToDone.SentRequest", total_time);
   UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend", before_send_time);
   UMA_HISTOGRAM_PERCENTAGE("HttpCache.PercentBeforeSend", before_send_percent);
-  if (is_small_resource) {
-    UMA_HISTOGRAM_TIMES("HttpCache.AccessToDone.SentRequest.SmallResource",
-                        total_time);
-    UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.SmallResource", before_send_time);
-    UMA_HISTOGRAM_PERCENTAGE("HttpCache.PercentBeforeSend.SmallResource",
-                             before_send_percent);
-  }
 
   // TODO(gavinp): Remove or minimize these histograms, particularly the ones
   // below this comment after we have received initial data.
@@ -2529,26 +2489,12 @@ void HttpCache::Transaction::RecordHistograms() {
       UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.Validated", before_send_time);
       UMA_HISTOGRAM_PERCENTAGE("HttpCache.PercentBeforeSend.Validated",
                                before_send_percent);
-      if (is_small_resource) {
-        UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.Validated.SmallResource",
-                            before_send_time);
-        UMA_HISTOGRAM_PERCENTAGE(
-            "HttpCache.PercentBeforeSend.Validated.SmallResource",
-            before_send_percent);
-      }
       break;
     }
     case PATTERN_ENTRY_UPDATED: {
       UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.Updated", before_send_time);
       UMA_HISTOGRAM_PERCENTAGE("HttpCache.PercentBeforeSend.Updated",
                                before_send_percent);
-      if (is_small_resource) {
-        UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.Updated.SmallResource",
-                            before_send_time);
-        UMA_HISTOGRAM_PERCENTAGE(
-            "HttpCache.PercentBeforeSend.Updated.SmallResource",
-            before_send_percent);
-      }
       break;
     }
     default:
