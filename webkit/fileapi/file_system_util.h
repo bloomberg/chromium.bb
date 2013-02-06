@@ -102,6 +102,12 @@ WEBKIT_STORAGE_EXPORT GURL GetOriginURLFromIdentifier(
 // Returns an empty string if the |type| is invalid.
 WEBKIT_STORAGE_EXPORT std::string GetFileSystemTypeString(FileSystemType type);
 
+// Sets type to FileSystemType enum that corresponds to the string name.
+// Returns false if the |type_string| is invalid.
+WEBKIT_STORAGE_EXPORT bool GetFileSystemPublicType(
+    std::string type_string,
+    WebKit::WebFileSystem::Type* type);
+
 // Encodes |file_path| to a string.
 // Following conditions should be held:
 //  - StringToFilePath(FilePathToString(path)) == path

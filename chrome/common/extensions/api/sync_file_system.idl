@@ -97,8 +97,10 @@ namespace syncFileSystem {
     static void onSyncStateChanged(SyncState detail);
 
     // Fired when a file has been updated by the background sync service.
-    // TODO(calvinlo): Convert |file_entry_path| from to Webkit FileEntry.
-    static void onFileSynced(DOMString file_entry_path,
+    // |fileEntry| will contain name and path information of synchronized file.
+    // On file deletion, fileEntry information will still be valid but file will
+    // no longer exist.
+    static void onFileSynced([instanceOf=FileEntry] object fileEntry, 
                              SyncOperationResult result);
   };
 

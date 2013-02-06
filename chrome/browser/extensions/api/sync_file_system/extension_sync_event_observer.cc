@@ -12,7 +12,9 @@
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/common/extensions/api/sync_file_system.h"
 #include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/syncable/sync_operation_result.h"
+#include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 using sync_file_system::SyncEventObserver;
 
@@ -116,13 +118,23 @@ void ExtensionSyncEventObserver::OnSyncStateUpdated(
 void ExtensionSyncEventObserver::OnFileSynced(
     const fileapi::FileSystemURL& url,
     fileapi::SyncOperationResult result) {
-  // TODO(calvinlo):Convert filePath from string to Webkit FileEntry.
+  // Get all values needed to build FileEntry in custom_bindings args massager.
+  std::string mount_type = fileapi::GetFileSystemTypeString(url.mount_type());
+  std::string file_system_name = fileapi::GetFileSystemName(url.origin(),
+                                                            url.type());
+  GURL root_url = fileapi::GetSyncableFileSystemRootURI(url.origin(),
+                                                        url.filesystem_id());
+  FilePath file_path = url.path();
   const api::sync_file_system::SyncOperationResult sync_operation_result =
       SyncOperationResultToExtensionEnum(result);
-  const std::string filePath = url.path().AsUTF8Unsafe();
-  scoped_ptr<base::ListValue> params(
-      api::sync_file_system::OnFileSynced::Create(filePath,
-                                                  sync_operation_result));
+
+  // All arguments must be basic types for args massager.
+  scoped_ptr<base::ListValue> params(new ListValue());
+  params->AppendString(mount_type);
+  params->AppendString(file_system_name);
+  params->AppendString(root_url.spec());
+  params->AppendString(fileapi::VirtualPath::GetNormalizedFilePath(file_path));
+  params->AppendString(api::sync_file_system::ToString(sync_operation_result));
 
   BroadcastOrDispatchEvent(url.origin(),
                            event_names::kOnFileSynced,

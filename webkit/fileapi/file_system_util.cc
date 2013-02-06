@@ -256,6 +256,30 @@ WebKit::WebFileError PlatformFileErrorToWebFileError(
   }
 }
 
+bool GetFileSystemPublicType(
+    const std::string type_string,
+    WebKit::WebFileSystem::Type* type) {
+  DCHECK(type);
+  if (type_string == "Temporary") {
+    *type = WebKit::WebFileSystem::TypeTemporary;
+    return true;
+  }
+  if (type_string == "Persistent") {
+    *type = WebKit::WebFileSystem::TypePersistent;
+    return true;
+  }
+  if (type_string == "Isolated") {
+    *type = WebKit::WebFileSystem::TypeIsolated;
+    return true;
+  }
+  if (type_string == "External") {
+    *type = WebKit::WebFileSystem::TypeExternal;
+    return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 std::string GetIsolatedFileSystemName(const GURL& origin_url,
                                       const std::string& filesystem_id) {
   std::string name(fileapi::GetFileSystemName(origin_url,

@@ -10,10 +10,13 @@
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
+#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
+#include "webkit/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/quota/quota_manager.h"
 
 using ::testing::_;
@@ -28,7 +31,11 @@ namespace {
 
 class SyncFileSystemApiTest : public ExtensionApiTest {
  public:
-  SyncFileSystemApiTest() {}
+  // Override the current channel to "trunk" as syncFileSystem is currently
+  // available only on trunk channel.
+  SyncFileSystemApiTest()
+      : current_channel_(VersionInfo::CHANNEL_UNKNOWN) {
+  }
 
   void SetUpInProcessBrowserTestFixture() OVERRIDE {
     mock_remote_service_ = new ::testing::NiceMock<MockRemoteFileSyncService>;
@@ -51,6 +58,7 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
   }
 
  private:
+  extensions::Feature::ScopedCurrentChannel current_channel_;
   ::testing::NiceMock<MockRemoteFileSyncService>* mock_remote_service_;
   int64 real_default_quota_;
 };
@@ -67,17 +75,20 @@ ACTION_P2(UpdateRemoteChangeQueue, origin, mock_remote_service) {
   mock_remote_service->NotifyRemoteChangeQueueUpdated(1);
 }
 
-ACTION_P2(ReturnWithFakeFileAddedStatus, origin, mock_remote_service) {
-  fileapi::FileSystemURL mock_url =
-      fileapi::FileSystemURL::CreateForTest(*origin,
-                                            fileapi::kFileSystemTypeTest,
-                                            FilePath(FILE_PATH_LITERAL("foo")));
+ACTION_P3(ReturnWithFakeFileAddedStatus,
+          origin,
+          mock_remote_service,
+          sync_operation) {
+  fileapi::FileSystemURL mock_url = fileapi::CreateSyncableFileSystemURL(
+      *origin,
+      "drive",
+      FilePath(FILE_PATH_LITERAL("foo.txt")));
   mock_remote_service->NotifyRemoteChangeQueueUpdated(0);
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(arg1,
                             fileapi::SYNC_STATUS_OK,
                             mock_url,
-                            fileapi::SYNC_OPERATION_ADDED));
+                            sync_operation));
 }
 
 }  // namespace
@@ -109,8 +120,22 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileSynced) {
       .WillOnce(UpdateRemoteChangeQueue(&origin, mock_remote_service()));
   EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_, _))
       .WillOnce(ReturnWithFakeFileAddedStatus(&origin,
-                                               mock_remote_service()));
+                                              mock_remote_service(),
+                                              fileapi::SYNC_OPERATION_ADDED));
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/on_file_synced"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileSyncedDeleted) {
+  // Mock a pending remote change to be synced.
+  GURL origin;
+  EXPECT_CALL(*mock_remote_service(), RegisterOriginForTrackingChanges(_, _))
+      .WillOnce(UpdateRemoteChangeQueue(&origin, mock_remote_service()));
+  EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_, _))
+      .WillOnce(ReturnWithFakeFileAddedStatus(&origin,
+                                              mock_remote_service(),
+                                              fileapi::SYNC_OPERATION_DELETED));
+  ASSERT_TRUE(RunPlatformAppTest("sync_file_system/on_file_synced_deleted"))
       << message_;
 }
 

@@ -54,12 +54,46 @@ static v8::Handle<v8::Value> GetIsolatedFileSystem(
       WebKit::WebString::fromUTF8(root));
 }
 
+static v8::Handle<v8::Value> GetFileEntry(const v8::Arguments& args) {
+  DCHECK(args.Length() == 5);
+  DCHECK(args[0]->IsString());
+  std::string type_string = *v8::String::Utf8Value(args[0]->ToString());
+  WebKit::WebFileSystem::Type type;
+  bool is_valid_type = fileapi::GetFileSystemPublicType(type_string, &type);
+  DCHECK(is_valid_type);
+  if (is_valid_type == false) {
+    return v8::Undefined();
+  }
+
+  DCHECK(args[1]->IsString());
+  DCHECK(args[2]->IsString());
+  DCHECK(args[3]->IsString());
+  std::string file_system_name(*v8::String::Utf8Value(args[1]->ToString()));
+  std::string file_system_root_url(*v8::String::Utf8Value(args[2]->ToString()));
+  std::string file_path_string(*v8::String::Utf8Value(args[3]->ToString()));
+  FilePath file_path = FilePath::FromUTF8Unsafe(file_path_string);
+  DCHECK(fileapi::VirtualPath::IsAbsolute(file_path.value()));
+
+  DCHECK(args[4]->IsBoolean());
+  bool is_directory = args[4]->BooleanValue();
+
+  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
+  DCHECK(webframe);
+  return webframe->createFileEntry(
+      type,
+      WebKit::WebString::fromUTF8(file_system_name),
+      WebKit::WebString::fromUTF8(file_system_root_url),
+      WebKit::WebString::fromUTF8(file_path_string),
+      is_directory);
+}
+
 }  // namespace
 
 namespace extensions {
 
 FileSystemNatives::FileSystemNatives()
     : ChromeV8Extension(NULL) {
+  RouteStaticFunction("GetFileEntry", &GetFileEntry);
   RouteStaticFunction("GetIsolatedFileSystem", &GetIsolatedFileSystem);
 }
 
