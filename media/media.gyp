@@ -668,8 +668,8 @@
               },
             },
           },
-          # TODO(wolenetz): crbug.com/171009 fix size_t to int truncations
-          # in win64.
+          # TODO(wolenetz): Fix size_t to int truncations in win64. See
+          # http://crbug.com/171009
           'conditions': [
             ['target_arch == "x64"', {
               'msvs_disabled_warnings': [ 4267, ],
@@ -932,6 +932,11 @@
             'mp4/offset_byte_queue_unittest.cc',
             'mp4/track_run_iterator_unittest.cc',
           ],
+        }],
+        # TODO(wolenetz): Fix size_t to int truncations in win64. See
+        # http://crbug.com/171009
+        ['OS=="win" and target_arch=="x64"', {
+          'msvs_disabled_warnings': [ 4267, ],
         }],
       ],
     },
