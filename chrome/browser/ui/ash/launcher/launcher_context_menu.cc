@@ -138,9 +138,12 @@ void LauncherContextMenu::Init() {
     AddCheckItemWithStringId(
         MENU_AUTO_HIDE, IDS_AURA_LAUNCHER_CONTEXT_MENU_AUTO_HIDE);
   }
-  AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
-                         IDS_AURA_LAUNCHER_CONTEXT_MENU_POSITION,
-                         &launcher_alignment_menu_);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kShowLauncherAlignmentMenu)) {
+    AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
+                           IDS_AURA_LAUNCHER_CONTEXT_MENU_POSITION,
+                           &launcher_alignment_menu_);
+  }
   AddItem(MENU_CHANGE_WALLPAPER,
        l10n_util::GetStringUTF16(IDS_AURA_SET_DESKTOP_WALLPAPER));
 }
