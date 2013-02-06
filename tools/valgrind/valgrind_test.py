@@ -744,6 +744,13 @@ class ThreadSanitizerWindows(ThreadSanitizerBase, PinTool):
 
 
   def ToolSpecificFlags(self):
+    add_env = {
+      "CHROME_ALLOCATOR" : "WINHEAP",
+    }
+    for k,v in add_env.iteritems():
+      logging.info("export %s=%s", k, v)
+      os.putenv(k, v)
+
     proc = ThreadSanitizerBase.ToolSpecificFlags(self)
     # On PIN, ThreadSanitizer has its own suppression mechanism
     # and --log-file flag which work exactly on Valgrind.
