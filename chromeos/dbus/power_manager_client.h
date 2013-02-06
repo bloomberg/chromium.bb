@@ -19,6 +19,10 @@ namespace dbus {
 class Bus;
 }
 
+namespace power_manager {
+class PowerManagementPolicy;
+}
+
 namespace chromeos {
 
 // Callback used for processing the idle time.  The int64 param is the number of
@@ -164,6 +168,10 @@ class CHROMEOS_EXPORT PowerManagerClient {
   virtual void NotifyVideoActivity(
       const base::TimeTicks& last_activity_time,
       bool is_fullscreen) = 0;
+
+  // Tells the power manager to begin using |policy|.
+  virtual void SetPolicy(
+      const power_manager::PowerManagementPolicy& policy) = 0;
 
   // Override the current power state on the machine. The overrides will be
   // applied to the request ID specified. To specify a new request; use 0 as the
