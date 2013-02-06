@@ -536,12 +536,13 @@ class RenderWidgetHostTest : public testing::Test {
     host_->ForwardMouseEvent(mouse_event);
   }
 
-  void SimulateWheelEvent(float dX, float dY, int modifiers) {
+  void SimulateWheelEvent(float dX, float dY, int modifiers, bool precise) {
     WebMouseWheelEvent wheel_event;
     wheel_event.type = WebInputEvent::MouseWheel;
     wheel_event.deltaX = dX;
     wheel_event.deltaY = dY;
     wheel_event.modifiers = modifiers;
+    wheel_event.hasPreciseScrollingDeltas = precise;
     host_->ForwardWheelEvent(wheel_event);
   }
 
@@ -1080,10 +1081,10 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
   process_->sink().ClearMessages();
 
   // Simulate wheel events.
-  SimulateWheelEvent(0, -5, 0);  // sent directly
-  SimulateWheelEvent(0, -10, 0);  // enqueued
-  SimulateWheelEvent(8, -6, 0);  // coalesced into previous event
-  SimulateWheelEvent(9, -7, 1);  // enqueued, different modifiers
+  SimulateWheelEvent(0, -5, 0, false);  // sent directly
+  SimulateWheelEvent(0, -10, 0, false);  // enqueued
+  SimulateWheelEvent(8, -6, 0, false);  // coalesced into previous event
+  SimulateWheelEvent(9, -7, 1, false);  // enqueued, different modifiers
 
   // Check that only the first event was sent.
   EXPECT_EQ(1U, process_->sink().message_count());
@@ -1134,7 +1135,7 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEventsQueuedPhaseEndIsNotDropped) {
   MessageLoop::current()->RunUntilIdle();
 
   // Send a wheel event, should get sent directly.
-  SimulateWheelEvent(0, -5, 0);
+  SimulateWheelEvent(0, -5, 0, false);
   EXPECT_EQ(2U, process_->sink().message_count());
 
   // Send a wheel phase end event before an ACK is received for the previous
@@ -2950,12 +2951,12 @@ TEST_F(RenderWidgetHostTest, WheelScrollEventOverscrolls) {
   process_->sink().ClearMessages();
 
   // Simulate wheel events.
-  SimulateWheelEvent(0, -5, 0);  // sent directly
-  SimulateWheelEvent(0, -10, 0);  // enqueued
-  SimulateWheelEvent(-10, -3, 0);  // coalesced into previous event
-  SimulateWheelEvent(-15, -1, 0);  // coalesced into previous event
-  SimulateWheelEvent(-10, -3, 0);  // coalesced into previous event
-  SimulateWheelEvent(-20, 16, 1);  // enqueued, different modifiers
+  SimulateWheelEvent(0, -5, 0, true);  // sent directly
+  SimulateWheelEvent(0, -10, 0, true);  // enqueued
+  SimulateWheelEvent(-10, -3, 0, true);  // coalesced into previous event
+  SimulateWheelEvent(-15, -1, 0, true);  // coalesced into previous event
+  SimulateWheelEvent(-10, -3, 0, true);  // coalesced into previous event
+  SimulateWheelEvent(-20, 16, 1, true);  // enqueued, different modifiers
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
   EXPECT_EQ(1U, process_->sink().message_count());
   process_->sink().ClearMessages();
@@ -2996,7 +2997,7 @@ TEST_F(RenderWidgetHostTest, WheelScrollOverscrollToggle) {
 
   // Send a wheel event. ACK the event as not processed. This should not
   // initiate an overscroll gesture since it doesn't cross the threshold yet.
-  SimulateWheelEvent(10, -5, 0);
+  SimulateWheelEvent(10, -5, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -3005,7 +3006,7 @@ TEST_F(RenderWidgetHostTest, WheelScrollOverscrollToggle) {
   process_->sink().ClearMessages();
 
   // Scroll some more so as to not overscroll.
-  SimulateWheelEvent(10, -4, 0);
+  SimulateWheelEvent(10, -4, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -3014,7 +3015,7 @@ TEST_F(RenderWidgetHostTest, WheelScrollOverscrollToggle) {
   process_->sink().ClearMessages();
 
   // Scroll some more to initiate an overscroll.
-  SimulateWheelEvent(20, -4, 0);
+  SimulateWheelEvent(20, -4, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -3026,13 +3027,13 @@ TEST_F(RenderWidgetHostTest, WheelScrollOverscrollToggle) {
   process_->sink().ClearMessages();
 
   // Scroll in the reverse direction enough to abort the overscroll.
-  SimulateWheelEvent(-20, -4, 0);
+  SimulateWheelEvent(-20, -4, 0, true);
   EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
 
   // Continue to scroll in the reverse direction.
-  SimulateWheelEvent(-20, 4, 0);
+  SimulateWheelEvent(-20, 4, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -3042,7 +3043,7 @@ TEST_F(RenderWidgetHostTest, WheelScrollOverscrollToggle) {
 
   // Continue to scroll in the reverse direction enough to initiate overscroll
   // in that direction.
-  SimulateWheelEvent(-35, -2, 0);
+  SimulateWheelEvent(-35, -2, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -3059,7 +3060,7 @@ TEST_F(RenderWidgetHostTest, ScrollEventsOverscrollWithFling) {
 
   // Send a wheel event. ACK the event as not processed. This should not
   // initiate an overscroll gesture since it doesn't cross the threshold yet.
-  SimulateWheelEvent(10, -5, 0);
+  SimulateWheelEvent(10, -5, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -3068,7 +3069,7 @@ TEST_F(RenderWidgetHostTest, ScrollEventsOverscrollWithFling) {
   process_->sink().ClearMessages();
 
   // Scroll some more so as to not overscroll.
-  SimulateWheelEvent(10, -4, 0);
+  SimulateWheelEvent(10, -4, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -3077,7 +3078,7 @@ TEST_F(RenderWidgetHostTest, ScrollEventsOverscrollWithFling) {
   process_->sink().ClearMessages();
 
   // Scroll some more to initiate an overscroll.
-  SimulateWheelEvent(20, -4, 0);
+  SimulateWheelEvent(20, -4, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -3106,7 +3107,7 @@ TEST_F(RenderWidgetHostTest, ScrollEventsOverscrollWithZeroFling) {
 
   // Send a wheel event. ACK the event as not processed. This should not
   // initiate an overscroll gesture since it doesn't cross the threshold yet.
-  SimulateWheelEvent(10, -5, 0);
+  SimulateWheelEvent(10, -5, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -3115,7 +3116,7 @@ TEST_F(RenderWidgetHostTest, ScrollEventsOverscrollWithZeroFling) {
   process_->sink().ClearMessages();
 
   // Scroll some more so as to not overscroll.
-  SimulateWheelEvent(10, -4, 0);
+  SimulateWheelEvent(10, -4, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -3124,7 +3125,7 @@ TEST_F(RenderWidgetHostTest, ScrollEventsOverscrollWithZeroFling) {
   process_->sink().ClearMessages();
 
   // Scroll some more to initiate an overscroll.
-  SimulateWheelEvent(20, -4, 0);
+  SimulateWheelEvent(20, -4, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);

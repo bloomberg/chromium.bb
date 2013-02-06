@@ -145,7 +145,14 @@ bool OverscrollController::DispatchEventCompletesAction (
 bool OverscrollController::DispatchEventResetsState(
     const WebKit::WebInputEvent& event) const {
   switch (event.type) {
-    case WebKit::WebInputEvent::MouseWheel:
+    case WebKit::WebInputEvent::MouseWheel: {
+      // Only wheel events with precise deltas (i.e. from trackpad) contribute
+      // to the overscroll gesture.
+      const WebKit::WebMouseWheelEvent& wheel =
+          static_cast<const WebKit::WebMouseWheelEvent&>(event);
+      return !wheel.hasPreciseScrollingDeltas;
+    }
+
     case WebKit::WebInputEvent::GestureScrollUpdate:
     case WebKit::WebInputEvent::GestureFlingCancel:
       return false;
@@ -163,7 +170,8 @@ void OverscrollController::ProcessEventForOverscroll(
     case WebKit::WebInputEvent::MouseWheel: {
       const WebKit::WebMouseWheelEvent& wheel =
           static_cast<const WebKit::WebMouseWheelEvent&>(event);
-      ProcessOverscroll(wheel.deltaX, wheel.deltaY);
+      if (wheel.hasPreciseScrollingDeltas)
+        ProcessOverscroll(wheel.deltaX, wheel.deltaY);
       break;
     }
     case WebKit::WebInputEvent::GestureScrollUpdate: {
