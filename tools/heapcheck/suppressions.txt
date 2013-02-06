@@ -1506,6 +1506,14 @@
    fun:GeolocationInfoBarQueueControllerTests_OneObservationPerInfoBarCancelled_Test::TestBody
 }
 {
+   bug_155530_b
+   Heapcheck:Leak
+   ...
+   fun:::CreateLocaleDefaultValue
+   ...
+   fun:GeolocationInfoBarQueueControllerTests::SetUp
+}
+{
    bug_157885
    Heapcheck:Leak
    ...
