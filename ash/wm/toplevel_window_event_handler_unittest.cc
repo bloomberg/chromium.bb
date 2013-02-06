@@ -489,6 +489,68 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {
             GetRestoreBoundsInScreen(window.get())->ToString());
 }
 
+// Tests that an unresizable window cannot be dragged or snapped using gestures.
+TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
+  scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       target.get());
+  gfx::Rect old_bounds = target->bounds();
+  gfx::Point location(5, 5);
+
+  target->SetProperty(aura::client::kCanResizeKey, false);
+
+  gfx::Point end = location;
+
+  // Try to snap right. The window is not resizable. So it should not snap.
+  {
+    // Get the expected snapped bounds before the gesture.
+    internal::SnapSizer sizer(target.get(), location,
+        internal::SnapSizer::RIGHT_EDGE,
+        internal::SnapSizer::OTHER_INPUT);
+    gfx::Rect snapped_bounds = sizer.GetSnapBounds(target->bounds());
+
+    end.Offset(100, 0);
+    generator.GestureScrollSequence(location, end,
+        base::TimeDelta::FromMilliseconds(5),
+        10);
+    RunAllPendingInMessageLoop();
+
+    // Verify that the window has moved after the gesture.
+    gfx::Rect expected_bounds(old_bounds);
+    expected_bounds.Offset(gfx::Vector2d(100, 0));
+    EXPECT_EQ(expected_bounds.ToString(), target->bounds().ToString());
+
+    // Verify that the window did not snap left.
+    EXPECT_NE(snapped_bounds.ToString(), target->bounds().ToString());
+  }
+
+  old_bounds = target->bounds();
+
+  // Try to snap left. It should not snap.
+  {
+    // Get the expected snapped bounds before the gesture.
+    internal::SnapSizer sizer(target.get(), location,
+        internal::SnapSizer::LEFT_EDGE,
+        internal::SnapSizer::OTHER_INPUT);
+    gfx::Rect snapped_bounds = sizer.GetSnapBounds(target->bounds());
+    end = location = target->GetBoundsInRootWindow().CenterPoint();
+    end.Offset(-100, 0);
+    generator.GestureScrollSequence(location, end,
+        base::TimeDelta::FromMilliseconds(5),
+        10);
+    RunAllPendingInMessageLoop();
+
+    // Verify that the window has moved after the gesture.
+    gfx::Rect expected_bounds(old_bounds);
+    expected_bounds.Offset(gfx::Vector2d(-100, 0));
+    EXPECT_EQ(expected_bounds.ToString(), target->bounds().ToString());
+
+    // Verify that the window did not snap left.
+    EXPECT_NE(snapped_bounds.ToString(), target->bounds().ToString());
+  }
+}
+
 // Verifies pressing escape resets the bounds to the original bounds.
 // Disabled crbug.com/166219.
 #if defined(OS_MACOSX) || defined(OS_WIN)

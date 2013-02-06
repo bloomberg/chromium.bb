@@ -220,7 +220,8 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
           SetRestoreBoundsInParent(target, pre_drag_window_bounds_);
           wm::MaximizeWindow(target);
         }
-      } else if (fabs(event->details().velocity_x()) >
+      } else if (wm::CanSnapWindow(target) &&
+                 fabs(event->details().velocity_x()) >
                  kMinHorizVelocityForWindowSwipe) {
         // Snap left/right.
         ui::ScopedLayerAnimationSettings scoped_setter(
