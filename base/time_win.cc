@@ -438,8 +438,11 @@ class HighResNowSingleton {
 // static
 TimeTicks::TickFunctionType TimeTicks::SetMockTickFunction(
     TickFunctionType ticker) {
+  base::AutoLock locked(rollover_lock);
   TickFunctionType old = tick_function;
   tick_function = ticker;
+  rollover_ms = 0;
+  last_seen_now = 0;
   return old;
 }
 
