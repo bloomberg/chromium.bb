@@ -13,7 +13,7 @@ import sys
 import gyp
 import gyp.common
 import gyp.msvs_emulation
-import gyp.MSVSVersion
+import gyp.MSVSUtil as MSVSUtil
 import gyp.xcode_emulation
 
 from gyp.common import GetEnvironFallback
@@ -1767,6 +1767,8 @@ def CallGenerateOutputForConfig(arglist):
 
 def GenerateOutput(target_list, target_dicts, data, params):
   user_config = params.get('generator_flags', {}).get('config', None)
+  if gyp.common.GetFlavor(params) == 'win':
+    target_list, target_dicts = MSVSUtil.ShardTargets(target_list, target_dicts)
   if user_config:
     GenerateOutputForConfig(target_list, target_dicts, data, params,
                             user_config)
