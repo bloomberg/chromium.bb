@@ -24,7 +24,7 @@ struct DefaultSingletonTraits;
 class ManagedModeSiteList;
 class ManagedModeURLFilter;
 class PrefChangeRegistrar;
-class PrefServiceSimple;
+class PrefRegistrySimple;
 class PrefServiceSyncable;
 class Profile;
 
@@ -42,7 +42,7 @@ class ManagedMode : public chrome::BrowserListObserver,
  public:
   typedef base::Callback<void(bool)> EnterCallback;
 
-  static void RegisterPrefs(PrefServiceSimple* prefs);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Initializes the singleton, setting the managed_profile_. Must be called
   // after g_browser_process and the LocalState have been created.

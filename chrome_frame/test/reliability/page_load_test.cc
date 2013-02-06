@@ -35,6 +35,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/pref_value_store.h"
@@ -428,7 +429,7 @@ class PageLoadTest : public testing::Test {
   // Get a PrefService whose contents correspond to the Local State file
   // that was saved by the app as it closed.  The caller takes ownership of the
   // returned PrefService object.
-  PrefServiceSimple* GetLocalState() {
+  PrefService* GetLocalState(PrefRegistry* registry) {
     FilePath path;
     chrome::GetChromeFrameUserDataDirectory(&path);
     PrefServiceMockBuilder builder;
@@ -436,20 +437,22 @@ class PageLoadTest : public testing::Test {
         path,
         JsonPrefStore::GetTaskRunnerForFile(
             path, content::BrowserThread::GetBlockingPool()));
-    return builder.CreateSimple();
+    return builder.Create(registry);
   }
 
   void GetStabilityMetrics(NavigationMetrics* metrics) {
     if (!metrics)
       return;
-    scoped_ptr<PrefServiceSimple> local_state(GetLocalState());
+    scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple();
+    registry->RegisterBooleanPref(prefs::kStabilityExitedCleanly, false);
+    registry->RegisterIntegerPref(prefs::kStabilityLaunchCount, -1);
+    registry->RegisterIntegerPref(prefs::kStabilityPageLoadCount, -1);
+    registry->RegisterIntegerPref(prefs::kStabilityCrashCount, 0);
+    registry->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
+
+    scoped_ptr<PrefService> local_state(GetLocalState(registry));
     if (!local_state.get())
       return;
-    local_state->RegisterBooleanPref(prefs::kStabilityExitedCleanly, false);
-    local_state->RegisterIntegerPref(prefs::kStabilityLaunchCount, -1);
-    local_state->RegisterIntegerPref(prefs::kStabilityPageLoadCount, -1);
-    local_state->RegisterIntegerPref(prefs::kStabilityCrashCount, 0);
-    local_state->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
 
     metrics->browser_clean_exit =
         local_state->GetBoolean(prefs::kStabilityExitedCleanly);

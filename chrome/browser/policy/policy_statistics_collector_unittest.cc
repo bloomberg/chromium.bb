@@ -60,7 +60,7 @@ class PolicyStatisticsCollectorTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    chrome::RegisterLocalState(&prefs_);
+    chrome::RegisterLocalState(prefs_.registry(), &prefs_);
 
     // Find ids for kTestPolicy1 and kTestPolicy2.
     const policy::PolicyDefinitionList* policy_list =

@@ -25,7 +25,7 @@ class ChromeNetLog;
 class ChromeResourceDispatcherHostDelegate;
 class CommandLine;
 class RemoteDebuggingServer;
-class PrefServiceSimple;
+class PrefRegistrySimple;
 class PromoResourceService;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -76,7 +76,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual IOThread* io_thread() OVERRIDE;
   virtual WatchDogThread* watchdog_thread() OVERRIDE;
   virtual ProfileManager* profile_manager() OVERRIDE;
-  virtual PrefServiceSimple* local_state() OVERRIDE;
+  virtual PrefService* local_state() OVERRIDE;
   virtual net::URLRequestContextGetter* system_request_context() OVERRIDE;
   virtual chrome_variations::VariationsService* variations_service() OVERRIDE;
 #if defined(OS_CHROMEOS)
@@ -132,6 +132,8 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual void PlatformSpecificCommandLineProcessing(
       const CommandLine& command_line) OVERRIDE;
 
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
  private:
   void CreateMetricsService();
   void CreateWatchdogThread();
@@ -182,7 +184,7 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<ProfileManager> profile_manager_;
 
   bool created_local_state_;
-  scoped_ptr<PrefServiceSimple> local_state_;
+  scoped_ptr<PrefService> local_state_;
 
   bool created_icon_manager_;
   scoped_ptr<IconManager> icon_manager_;

@@ -27,7 +27,7 @@ class DictionaryValue;
 }
 
 class PrefService;
-class PrefServiceSimple;
+class PrefRegistrySimple;
 
 // This class saves various information about profiles to local preferences.
 // This cache can be used to display a list of profiles without having to
@@ -129,7 +129,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   static std::vector<string16> GetProfileNames();
 
   // Register cache related preferences in Local State.
-  static void RegisterPrefs(PrefServiceSimple* prefs);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   void AddObserver(ProfileInfoCacheObserver* obs);
   void RemoveObserver(ProfileInfoCacheObserver* obs);

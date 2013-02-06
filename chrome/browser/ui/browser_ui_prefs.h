@@ -7,13 +7,13 @@
 
 #include <string>
 
-class PrefServiceSimple;
+class PrefRegistrySimple;
 class PrefServiceSyncable;
 class Profile;
 
 namespace chrome {
 
-void RegisterBrowserPrefs(PrefServiceSimple* prefs);
+void RegisterBrowserPrefs(PrefRegistrySimple* registry);
 void RegisterBrowserUserPrefs(PrefServiceSyncable* prefs);
 
 // Create a preference dictionary for the provided application name, in the

@@ -7,6 +7,7 @@
 #include "base/prefs/pref_observer.h"
 #include "chrome/browser/prefs/mock_pref_change_callback.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -93,10 +94,8 @@ class PrefObserverMock : public PrefObserver {
 class PrefNotifierTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    pref_service_.RegisterBooleanPref(kChangedPref,
-                                      true);
-    pref_service_.RegisterBooleanPref(kUnchangedPref,
-                                      true);
+    pref_service_.registry()->RegisterBooleanPref(kChangedPref, true);
+    pref_service_.registry()->RegisterBooleanPref(kUnchangedPref, true);
   }
 
   TestingPrefServiceSimple pref_service_;

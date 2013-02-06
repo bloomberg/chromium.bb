@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
@@ -296,8 +297,8 @@ void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(const GURL& url) {
 }
 
 // static
-void ExternalProtocolHandler::RegisterPrefs(PrefServiceSimple* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kExcludedSchemes);
+void ExternalProtocolHandler::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(prefs::kExcludedSchemes);
 }
 
 // static

@@ -9,7 +9,7 @@
 #include "base/prefs/json_pref_store.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/pref_service_simple.h"
+
 #include "chrome/browser/prefs/pref_value_store.h"
 
 namespace {
@@ -72,10 +72,9 @@ PrefServiceBuilder& PrefServiceBuilder::WithAsync(bool async) {
   return *this;
 }
 
-PrefServiceSimple* PrefServiceBuilder::CreateSimple() {
-  DefaultPrefStore* default_pref_store = new DefaultPrefStore();
+PrefService* PrefServiceBuilder::Create(PrefRegistry* pref_registry) {
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
-  PrefServiceSimple* pref_service = new PrefServiceSimple(
+  PrefService* pref_service = new PrefService(
       pref_notifier,
       new PrefValueStore(
           managed_prefs_.get(),
@@ -83,10 +82,10 @@ PrefServiceSimple* PrefServiceBuilder::CreateSimple() {
           command_line_prefs_.get(),
           user_prefs_.get(),
           recommended_prefs_.get(),
-          default_pref_store,
+          pref_registry->defaults(),
           pref_notifier),
       user_prefs_.get(),
-      default_pref_store,
+      pref_registry,
       read_error_callback_,
       async_);
   ResetDefaultState();

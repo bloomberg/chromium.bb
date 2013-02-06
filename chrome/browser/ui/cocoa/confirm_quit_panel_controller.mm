@@ -12,7 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
@@ -45,8 +45,8 @@ void RecordHistogram(ConfirmQuitMetric sample) {
   UMA_HISTOGRAM_ENUMERATION("OSX.ConfirmToQuit", sample, kSampleCount);
 }
 
-void RegisterLocalState(PrefServiceSimple* local_state) {
-  local_state->RegisterBooleanPref(prefs::kConfirmToQuitEnabled, false);
+void RegisterLocalState(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kConfirmToQuitEnabled, false);
 }
 
 }  // namespace confirm_quit

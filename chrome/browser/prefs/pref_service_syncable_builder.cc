@@ -9,6 +9,7 @@
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 
@@ -41,7 +42,8 @@ PrefServiceSyncableBuilder::WithCommandLine(CommandLine* command_line) {
 }
 
 PrefServiceSyncable* PrefServiceSyncableBuilder::CreateSyncable() {
-  DefaultPrefStore* default_pref_store = new DefaultPrefStore();
+  // TODO(joi): Switch to accepting a PrefRegistrySyncable parameter.
+  scoped_refptr<PrefRegistry> pref_registry = new PrefRegistrySimple();
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
   PrefServiceSyncable* pref_service = new PrefServiceSyncable(
       pref_notifier,
@@ -51,10 +53,10 @@ PrefServiceSyncable* PrefServiceSyncableBuilder::CreateSyncable() {
           command_line_prefs_.get(),
           user_prefs_.get(),
           recommended_prefs_.get(),
-          default_pref_store,
+          pref_registry->defaults(),
           pref_notifier),
       user_prefs_.get(),
-      default_pref_store,
+      pref_registry.get(),
       read_error_callback_,
       async_);
   ResetDefaultState();

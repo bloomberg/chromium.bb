@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 
@@ -392,13 +393,12 @@ const int kXkbAutoRepeatDelayInMs = 500;
 const int kXkbAutoRepeatIntervalInMs = 50;
 const char kPreferredKeyboardLayout[] = "PreferredKeyboardLayout";
 
-void RegisterPrefs(PrefServiceSimple* local_state) {
+void RegisterPrefs(PrefRegistrySimple* registry) {
   // We use an empty string here rather than a hardware keyboard layout name
   // since input_method::GetHardwareInputMethodId() might return a fallback
-  // layout name if local_state->RegisterStringPref(kHardwareKeyboardLayout)
+  // layout name if registry->RegisterStringPref(kHardwareKeyboardLayout)
   // is not called yet.
-  local_state->RegisterStringPref(kPreferredKeyboardLayout,
-                                  "");
+  registry->RegisterStringPref(kPreferredKeyboardLayout, "");
 }
 
 }  // namespace language_prefs

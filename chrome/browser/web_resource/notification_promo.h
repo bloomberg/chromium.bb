@@ -18,8 +18,8 @@ class DictionaryValue;
 class ListValue;
 }
 
+class PrefRegistrySimple;
 class PrefService;
-class PrefServiceSimple;
 class PrefServiceSyncable;
 
 // Helper class for PromoResourceService that parses promo notification info
@@ -66,7 +66,7 @@ class NotificationPromo {
   }
 
   // Register preferences.
-  static void RegisterPrefs(PrefServiceSimple* local_state);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
   static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
  private:

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list_impl.h"
@@ -181,9 +182,11 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
 TEST_F(BrowserListTest, MAYBE_AttemptRestart) {
   ASSERT_TRUE(g_browser_process);
   TestingPrefServiceSimple testing_pref_service;
-  testing_pref_service.RegisterBooleanPref(prefs::kWasRestarted, false);
-  testing_pref_service.RegisterBooleanPref(prefs::kRestartLastSessionOnShutdown,
-                                           false);
+  testing_pref_service.registry()->RegisterBooleanPref(
+      prefs::kWasRestarted, false);
+  testing_pref_service.registry()->RegisterBooleanPref(
+      prefs::kRestartLastSessionOnShutdown,
+      false);
 
   TestingBrowserProcess* testing_browser_process =
       TestingBrowserProcess::GetGlobal();

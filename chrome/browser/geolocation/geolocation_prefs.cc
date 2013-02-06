@@ -8,9 +8,9 @@
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
 
 namespace geolocation {
-void RegisterPrefs(PrefServiceSimple* prefs) {
+void RegisterPrefs(PrefRegistrySimple* registry) {
   // Fan out to all geolocation sub-components that use prefs.
-  ChromeAccessTokenStore::RegisterPrefs(prefs);
+  ChromeAccessTokenStore::RegisterPrefs(registry);
 }
 
 }  // namespace geolocation

@@ -33,6 +33,7 @@
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/process_singleton.h"
@@ -516,8 +517,13 @@ void FakeExternalTab::Initialize() {
 
   content::RenderProcessHost::SetRunRendererInProcess(true);
 
-  browser_process_->local_state()->RegisterBooleanPref(
-      prefs::kMetricsReportingEnabled, false);
+  // TODO(joi): Registration should be done up front via browser_prefs.cc
+  scoped_refptr<PrefRegistrySimple> registry = static_cast<PrefRegistrySimple*>(
+      browser_process_->local_state()->DeprecatedGetPrefRegistry());
+  if (!browser_process_->local_state()->FindPreference(
+          prefs::kMetricsReportingEnabled)) {
+    registry->RegisterBooleanPref(prefs::kMetricsReportingEnabled, false);
+  }
 }
 
 void FakeExternalTab::InitializePostThreadsCreated() {

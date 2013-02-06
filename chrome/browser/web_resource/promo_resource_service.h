@@ -15,7 +15,7 @@ class DictionaryValue;
 }
 
 class NotificationPromo;
-class PrefServiceSimple;
+class PrefRegistrySimple;
 class PrefServiceSyncable;
 
 // A PromoResourceService fetches data from a web resource server to be used to
@@ -24,7 +24,7 @@ class PrefServiceSyncable;
 // promotional messages to certain groups of Chrome users.
 class PromoResourceService : public WebResourceService {
  public:
-  static void RegisterPrefs(PrefServiceSimple* local_state);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
   static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   PromoResourceService();

@@ -99,7 +99,7 @@ class SessionLengthLimiterTest : public testing::Test {
 
   virtual void SetUp() {
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
-    SessionLengthLimiter::RegisterPrefs(&local_state_);
+    SessionLengthLimiter::RegisterPrefs(local_state_.registry());
 
     delegate_ = new NiceMock<MockSessionLengthLimiterDelegate>;
     ON_CALL(*delegate_, GetCurrentTime())

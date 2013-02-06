@@ -26,6 +26,7 @@
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/service/service_process_control.h"
@@ -77,10 +78,10 @@ int shutdown_num_processes_slow_;
 
 const char kShutdownMsFile[] = "chrome_shutdown_ms.txt";
 
-void RegisterPrefs(PrefServiceSimple* local_state) {
-  local_state->RegisterIntegerPref(prefs::kShutdownType, NOT_VALID);
-  local_state->RegisterIntegerPref(prefs::kShutdownNumProcesses, 0);
-  local_state->RegisterIntegerPref(prefs::kShutdownNumProcessesSlow, 0);
+void RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kShutdownType, NOT_VALID);
+  registry->RegisterIntegerPref(prefs::kShutdownNumProcesses, 0);
+  registry->RegisterIntegerPref(prefs::kShutdownNumProcessesSlow, 0);
 }
 
 ShutdownType GetShutdownType() {

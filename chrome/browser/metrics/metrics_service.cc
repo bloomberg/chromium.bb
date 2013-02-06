@@ -178,6 +178,7 @@
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/net/http_pipelining_compatibility_client.h"
 #include "chrome/browser/net/network_stats.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -434,55 +435,52 @@ class MetricsMemoryDetails : public MemoryDetails {
 };
 
 // static
-void MetricsService::RegisterPrefs(PrefServiceSimple* local_state) {
+void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   DCHECK(IsSingleThreaded());
-  local_state->RegisterStringPref(prefs::kMetricsClientID, "");
-  local_state->RegisterIntegerPref(prefs::kMetricsLowEntropySource,
-                                   kLowEntropySourceNotSet);
-  local_state->RegisterInt64Pref(prefs::kMetricsClientIDTimestamp, 0);
-  local_state->RegisterInt64Pref(prefs::kStabilityLaunchTimeSec, 0);
-  local_state->RegisterInt64Pref(prefs::kStabilityLastTimestampSec, 0);
-  local_state->RegisterStringPref(prefs::kStabilityStatsVersion, "");
-  local_state->RegisterInt64Pref(prefs::kStabilityStatsBuildTime, 0);
-  local_state->RegisterBooleanPref(prefs::kStabilityExitedCleanly, true);
-  local_state->RegisterBooleanPref(prefs::kStabilitySessionEndCompleted, true);
-  local_state->RegisterIntegerPref(prefs::kMetricsSessionID, -1);
-  local_state->RegisterIntegerPref(prefs::kStabilityLaunchCount, 0);
-  local_state->RegisterIntegerPref(prefs::kStabilityCrashCount, 0);
-  local_state->RegisterIntegerPref(prefs::kStabilityIncompleteSessionEndCount,
-                                   0);
-  local_state->RegisterIntegerPref(prefs::kStabilityPageLoadCount, 0);
-  local_state->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
-  local_state->RegisterIntegerPref(prefs::kStabilityExtensionRendererCrashCount,
-                                   0);
-  local_state->RegisterIntegerPref(prefs::kStabilityRendererHangCount, 0);
-  local_state->RegisterIntegerPref(prefs::kStabilityChildProcessCrashCount, 0);
-  local_state->RegisterIntegerPref(prefs::kStabilityBreakpadRegistrationFail,
-                                   0);
-  local_state->RegisterIntegerPref(prefs::kStabilityBreakpadRegistrationSuccess,
-                                   0);
-  local_state->RegisterIntegerPref(prefs::kStabilityDebuggerPresent, 0);
-  local_state->RegisterIntegerPref(prefs::kStabilityDebuggerNotPresent, 0);
+  registry->RegisterStringPref(prefs::kMetricsClientID, "");
+  registry->RegisterIntegerPref(prefs::kMetricsLowEntropySource,
+                                kLowEntropySourceNotSet);
+  registry->RegisterInt64Pref(prefs::kMetricsClientIDTimestamp, 0);
+  registry->RegisterInt64Pref(prefs::kStabilityLaunchTimeSec, 0);
+  registry->RegisterInt64Pref(prefs::kStabilityLastTimestampSec, 0);
+  registry->RegisterStringPref(prefs::kStabilityStatsVersion, "");
+  registry->RegisterInt64Pref(prefs::kStabilityStatsBuildTime, 0);
+  registry->RegisterBooleanPref(prefs::kStabilityExitedCleanly, true);
+  registry->RegisterBooleanPref(prefs::kStabilitySessionEndCompleted, true);
+  registry->RegisterIntegerPref(prefs::kMetricsSessionID, -1);
+  registry->RegisterIntegerPref(prefs::kStabilityLaunchCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityCrashCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityIncompleteSessionEndCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityPageLoadCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityExtensionRendererCrashCount,
+                                0);
+  registry->RegisterIntegerPref(prefs::kStabilityRendererHangCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityChildProcessCrashCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityBreakpadRegistrationFail, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityBreakpadRegistrationSuccess,
+                                0);
+  registry->RegisterIntegerPref(prefs::kStabilityDebuggerPresent, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityDebuggerNotPresent, 0);
 #if defined(OS_CHROMEOS)
-  local_state->RegisterIntegerPref(prefs::kStabilityOtherUserCrashCount, 0);
-  local_state->RegisterIntegerPref(prefs::kStabilityKernelCrashCount, 0);
-  local_state->RegisterIntegerPref(prefs::kStabilitySystemUncleanShutdownCount,
-                                   0);
+  registry->RegisterIntegerPref(prefs::kStabilityOtherUserCrashCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityKernelCrashCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilitySystemUncleanShutdownCount, 0);
 #endif  // OS_CHROMEOS
 
-  local_state->RegisterDictionaryPref(prefs::kProfileMetrics);
-  local_state->RegisterIntegerPref(prefs::kNumKeywords, 0);
-  local_state->RegisterListPref(prefs::kMetricsInitialLogsXml);
-  local_state->RegisterListPref(prefs::kMetricsOngoingLogsXml);
-  local_state->RegisterListPref(prefs::kMetricsInitialLogsProto);
-  local_state->RegisterListPref(prefs::kMetricsOngoingLogsProto);
+  registry->RegisterDictionaryPref(prefs::kProfileMetrics);
+  registry->RegisterIntegerPref(prefs::kNumKeywords, 0);
+  registry->RegisterListPref(prefs::kMetricsInitialLogsXml);
+  registry->RegisterListPref(prefs::kMetricsOngoingLogsXml);
+  registry->RegisterListPref(prefs::kMetricsInitialLogsProto);
+  registry->RegisterListPref(prefs::kMetricsOngoingLogsProto);
 
-  local_state->RegisterInt64Pref(prefs::kUninstallMetricsPageLoadCount, 0);
-  local_state->RegisterInt64Pref(prefs::kUninstallLaunchCount, 0);
-  local_state->RegisterInt64Pref(prefs::kUninstallMetricsInstallDate, 0);
-  local_state->RegisterInt64Pref(prefs::kUninstallMetricsUptimeSec, 0);
-  local_state->RegisterInt64Pref(prefs::kUninstallLastLaunchTimeSec, 0);
-  local_state->RegisterInt64Pref(prefs::kUninstallLastObservedRunTimeSec, 0);
+  registry->RegisterInt64Pref(prefs::kUninstallMetricsPageLoadCount, 0);
+  registry->RegisterInt64Pref(prefs::kUninstallLaunchCount, 0);
+  registry->RegisterInt64Pref(prefs::kUninstallMetricsInstallDate, 0);
+  registry->RegisterInt64Pref(prefs::kUninstallMetricsUptimeSec, 0);
+  registry->RegisterInt64Pref(prefs::kUninstallLastLaunchTimeSec, 0);
+  registry->RegisterInt64Pref(prefs::kUninstallLastObservedRunTimeSec, 0);
 }
 
 // static

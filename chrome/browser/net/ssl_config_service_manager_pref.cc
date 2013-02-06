@@ -12,6 +12,7 @@
 #include "base/prefs/public/pref_change_registrar.h"
 #include "base/prefs/public/pref_member.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
@@ -149,7 +150,7 @@ class SSLConfigServiceManagerPref
   virtual ~SSLConfigServiceManagerPref() {}
 
   // Register local_state SSL preferences.
-  static void RegisterPrefs(PrefServiceSimple* local_state);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   virtual net::SSLConfigService* Get();
 
@@ -245,22 +246,21 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
 }
 
 // static
-void SSLConfigServiceManagerPref::RegisterPrefs(
-    PrefServiceSimple* local_state) {
+void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
   net::SSLConfig default_config;
-  local_state->RegisterBooleanPref(prefs::kCertRevocationCheckingEnabled,
-                                   default_config.rev_checking_enabled);
+  registry->RegisterBooleanPref(prefs::kCertRevocationCheckingEnabled,
+                                default_config.rev_checking_enabled);
   std::string version_min_str =
       SSLProtocolVersionToString(default_config.version_min);
   std::string version_max_str =
       SSLProtocolVersionToString(default_config.version_max);
-  local_state->RegisterStringPref(prefs::kSSLVersionMin, version_min_str);
-  local_state->RegisterStringPref(prefs::kSSLVersionMax, version_max_str);
-  local_state->RegisterBooleanPref(prefs::kEnableOriginBoundCerts,
-                                   default_config.channel_id_enabled);
-  local_state->RegisterBooleanPref(prefs::kDisableSSLRecordSplitting,
-                                   !default_config.false_start_enabled);
-  local_state->RegisterListPref(prefs::kCipherSuiteBlacklist);
+  registry->RegisterStringPref(prefs::kSSLVersionMin, version_min_str);
+  registry->RegisterStringPref(prefs::kSSLVersionMax, version_max_str);
+  registry->RegisterBooleanPref(prefs::kEnableOriginBoundCerts,
+                                default_config.channel_id_enabled);
+  registry->RegisterBooleanPref(prefs::kDisableSSLRecordSplitting,
+                                !default_config.false_start_enabled);
+  registry->RegisterListPref(prefs::kCipherSuiteBlacklist);
 }
 
 net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
@@ -353,6 +353,6 @@ SSLConfigServiceManager* SSLConfigServiceManager::CreateDefaultManager(
 }
 
 // static
-void SSLConfigServiceManager::RegisterPrefs(PrefServiceSimple* prefs) {
-  SSLConfigServiceManagerPref::RegisterPrefs(prefs);
+void SSLConfigServiceManager::RegisterPrefs(PrefRegistrySimple* registry) {
+  SSLConfigServiceManagerPref::RegisterPrefs(registry);
 }

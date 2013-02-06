@@ -16,6 +16,7 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
@@ -61,12 +62,14 @@ class RecoveryComponentInstaller : public ComponentInstaller {
 };
 
 void RecoveryRegisterHelper(ComponentUpdateService* cus,
-                            PrefServiceSimple* prefs) {
+                            PrefService* prefs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // TODO(joi): Registrations for local state prefs shouldn't happen
   // like this, they should be done via
   // browser_prefs::RegisterLocalState.
-  prefs->RegisterStringPref(prefs::kRecoveryComponentVersion, "0.0.0.0");
+  static_cast<PrefRegistrySimple*>(
+      prefs->DeprecatedGetPrefRegistry())->RegisterStringPref(
+          prefs::kRecoveryComponentVersion, "0.0.0.0");
   Version version(prefs->GetString(prefs::kRecoveryComponentVersion));
   if (!version.IsValid()) {
     NOTREACHED();
@@ -134,7 +137,7 @@ bool RecoveryComponentInstaller::Install(base::DictionaryValue* manifest,
 }
 
 void RegisterRecoveryComponent(ComponentUpdateService* cus,
-                               PrefServiceSimple* prefs) {
+                               PrefService* prefs) {
 #if !defined(OS_CHROMEOS)
   // We delay execute the registration because we are not required in
   // the critical path during browser startup.

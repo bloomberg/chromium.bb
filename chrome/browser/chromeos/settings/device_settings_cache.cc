@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 
@@ -19,8 +20,8 @@ namespace chromeos {
 
 namespace device_settings_cache {
 
-void RegisterPrefs(PrefServiceSimple* local_state) {
-  local_state->RegisterStringPref(prefs::kDeviceSettingsCache, "invalid");
+void RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kDeviceSettingsCache, "invalid");
 }
 
 bool Store(const em::PolicyData& policy, PrefService* local_state) {

@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -41,8 +42,8 @@ FilePath GetAppListProfilePath(const FilePath& user_data_dir) {
   return user_data_dir.AppendASCII(profile_path);
 }
 
-void RegisterAppListPrefs(PrefServiceSimple* prefs) {
-  prefs->RegisterStringPref(prefs::kAppListProfile, "");
+void RegisterAppListPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kAppListProfile, "");
 }
 #endif  // defined(ENABLE_APP_LIST)
 

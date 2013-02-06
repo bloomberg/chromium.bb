@@ -9,6 +9,8 @@
 
 #include "chrome/browser/prefs/pref_service.h"
 
+class PrefRegistrySimple;
+
 // TODO(yusukes): Rename this file to input_method_preference.cc. Since
 // "language" usually means UI language, the current file name is confusing.
 // The namespace should also be changed to "namespace input_method {".
@@ -161,7 +163,7 @@ extern const int kXkbAutoRepeatIntervalInMs;
 extern const char kPreferredKeyboardLayout[];
 
 // Registers non-user prefs for the default keyboard layout on the login screen.
-void RegisterPrefs(PrefServiceSimple* local_state);
+void RegisterPrefs(PrefRegistrySimple* registry);
 
 }  // language_prefs
 }  // chromeos

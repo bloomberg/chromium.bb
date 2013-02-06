@@ -96,7 +96,7 @@ void TestingBrowserProcess::SetProfileManager(ProfileManager* profile_manager) {
 #endif
 }
 
-PrefServiceSimple* TestingBrowserProcess::local_state() {
+PrefService* TestingBrowserProcess::local_state() {
   return local_state_;
 }
 
@@ -344,7 +344,7 @@ void TestingBrowserProcess::SetSystemRequestContext(
   system_request_context_ = context_getter;
 }
 
-void TestingBrowserProcess::SetLocalState(PrefServiceSimple* local_state) {
+void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
   if (!local_state) {
     // The local_state_ PrefService is owned outside of TestingBrowserProcess,
     // but some of the members of TestingBrowserProcess hold references to it

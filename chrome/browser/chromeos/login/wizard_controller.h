@@ -18,7 +18,7 @@
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
 
-class PrefServiceSimple;
+class PrefRegistrySimple;
 
 namespace base {
 class DictionaryValue;
@@ -99,7 +99,7 @@ class WizardController : public ScreenObserver {
   static void SetInitialLocale(const std::string& locale);
 
   // Registers OOBE preferences.
-  static void RegisterPrefs(PrefServiceSimple* local_state);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Marks user image screen to be always skipped after login.
   static void SkipImageSelectionForTesting();

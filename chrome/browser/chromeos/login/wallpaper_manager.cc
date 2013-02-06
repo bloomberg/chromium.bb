@@ -8,9 +8,9 @@
 
 #include "ash/shell.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -139,10 +140,10 @@ void WallpaperManager::Shutdown() {
 }
 
 // static
-void WallpaperManager::RegisterPrefs(PrefServiceSimple* local_state) {
-  local_state->RegisterDictionaryPref(prefs::kUsersWallpaperInfo);
-  local_state->RegisterDictionaryPref(kUserWallpapers);
-  local_state->RegisterDictionaryPref(kUserWallpapersProperties);
+void WallpaperManager::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(prefs::kUsersWallpaperInfo);
+  registry->RegisterDictionaryPref(kUserWallpapers);
+  registry->RegisterDictionaryPref(kUserWallpapersProperties);
 }
 
 void WallpaperManager::AddObservers() {

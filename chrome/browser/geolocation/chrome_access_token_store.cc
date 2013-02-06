@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
@@ -98,8 +99,8 @@ class TokenLoadingJob : public base::RefCountedThreadSafe<TokenLoadingJob> {
 
 }  // namespace
 
-void ChromeAccessTokenStore::RegisterPrefs(PrefServiceSimple* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kGeolocationAccessToken);
+void ChromeAccessTokenStore::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(prefs::kGeolocationAccessToken);
 }
 
 ChromeAccessTokenStore::ChromeAccessTokenStore() {}

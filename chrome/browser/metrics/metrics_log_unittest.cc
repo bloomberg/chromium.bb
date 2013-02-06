@@ -15,9 +15,9 @@
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/metrics/proto/profiler_event.pb.h"
 #include "chrome/common/metrics/proto/system_profile.pb.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -51,7 +51,7 @@ class TestMetricsLog : public MetricsLog {
   TestMetricsLog(const std::string& client_id, int session_id)
       : MetricsLog(client_id, session_id),
         brand_for_testing_(kBrandForTesting) {
-    chrome::RegisterLocalState(&prefs_);
+          chrome::RegisterLocalState(prefs_.registry(), &prefs_);
 
 #if defined(OS_CHROMEOS)
     prefs_.SetInteger(prefs::kStabilityChildProcessCrashCount, 10);

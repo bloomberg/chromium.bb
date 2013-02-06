@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "ui/snapshot/snapshot.h"
@@ -21,8 +22,8 @@ bool GrabWindowSnapshotForUser(
       snapshot_bounds);
 }
 
-void RegisterScreenshotPrefs(PrefServiceSimple* service) {
-  service->RegisterBooleanPref(prefs::kDisableScreenshots, false);
+void RegisterScreenshotPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kDisableScreenshots, false);
 }
 
 }  // namespace chrome

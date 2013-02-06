@@ -12,8 +12,8 @@ PrefServiceMockBuilder::PrefServiceMockBuilder() {
 
 PrefServiceMockBuilder::~PrefServiceMockBuilder() {}
 
-PrefServiceSimple* PrefServiceMockBuilder::CreateSimple() {
-  PrefServiceSimple* service = PrefServiceBuilder::CreateSimple();
+PrefService* PrefServiceMockBuilder::Create(PrefRegistry* pref_registry) {
+  PrefService* service = PrefServiceBuilder::Create(pref_registry);
   return service;
 }
 

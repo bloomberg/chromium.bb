@@ -39,6 +39,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/options/options_util.h"
@@ -385,27 +386,19 @@ void WizardController::SkipUpdateEnrollAfterEula() {
 }
 
 // static
-void WizardController::RegisterPrefs(PrefServiceSimple* local_state) {
-  local_state->RegisterBooleanPref(kOobeComplete, false);
-  local_state->RegisterIntegerPref(kDeviceRegistered, -1);
-  local_state->RegisterBooleanPref(kEulaAccepted, false);
-  local_state->RegisterStringPref(kInitialLocale, "en-US");
-  // Check if the pref is already registered in case
-  // Preferences::RegisterUserPrefs runs before this code in the future.
-  if (local_state->FindPreference(prefs::kSpokenFeedbackEnabled) == NULL) {
-    local_state->RegisterBooleanPref(prefs::kSpokenFeedbackEnabled, false);
-  }
-  if (local_state->FindPreference(prefs::kHighContrastEnabled) == NULL) {
-    local_state->RegisterBooleanPref(prefs::kHighContrastEnabled, false);
-  }
-  if (local_state->FindPreference(prefs::kVirtualKeyboardEnabled) == NULL) {
-    local_state->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled, false);
-  }
-  local_state->RegisterBooleanPref(prefs::kOwnerPrimaryMouseButtonRight, false);
-  local_state->RegisterBooleanPref(prefs::kOwnerTapToClickEnabled, true);
-  local_state->RegisterBooleanPref(prefs::kFactoryResetRequested, false);
-  local_state->RegisterStringPref(prefs::kRLZBrand, std::string());
-  local_state->RegisterBooleanPref(prefs::kRLZDisabled, false);
+void WizardController::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(kOobeComplete, false);
+  registry->RegisterIntegerPref(kDeviceRegistered, -1);
+  registry->RegisterBooleanPref(kEulaAccepted, false);
+  registry->RegisterStringPref(kInitialLocale, "en-US");
+  registry->RegisterBooleanPref(prefs::kSpokenFeedbackEnabled, false);
+  registry->RegisterBooleanPref(prefs::kHighContrastEnabled, false);
+  registry->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled, false);
+  registry->RegisterBooleanPref(prefs::kOwnerPrimaryMouseButtonRight, false);
+  registry->RegisterBooleanPref(prefs::kOwnerTapToClickEnabled, true);
+  registry->RegisterBooleanPref(prefs::kFactoryResetRequested, false);
+  registry->RegisterStringPref(prefs::kRLZBrand, std::string());
+  registry->RegisterBooleanPref(prefs::kRLZDisabled, false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

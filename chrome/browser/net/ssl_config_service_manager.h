@@ -10,7 +10,7 @@ class SSLConfigService;
 }  // namespace net
 
 class PrefService;
-class PrefServiceSimple;
+class PrefRegistrySimple;
 
 // An interface for creating SSLConfigService objects.
 class SSLConfigServiceManager {
@@ -23,7 +23,7 @@ class SSLConfigServiceManager {
       PrefService* local_state,
       PrefService* user_prefs);
 
-  static void RegisterPrefs(PrefServiceSimple* local_state);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   virtual ~SSLConfigServiceManager() {}
 

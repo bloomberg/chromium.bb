@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -127,9 +128,9 @@ DataPromoNotification::~DataPromoNotification() {
   CloseNotification();
 }
 
-void DataPromoNotification::RegisterPrefs(PrefServiceSimple* local_state) {
+void DataPromoNotification::RegisterPrefs(PrefRegistrySimple* registry) {
   // Carrier deal notification shown count defaults to 0.
-  local_state->RegisterIntegerPref(prefs::kCarrierDealPromoShown, 0);
+  registry->RegisterIntegerPref(prefs::kCarrierDealPromoShown, 0);
 }
 
 void DataPromoNotification::ShowOptionalMobileDataPromoNotification(

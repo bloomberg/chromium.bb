@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 
-#include "base/debug/trace_event.h"
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_downloader.h"
@@ -168,9 +169,9 @@ int UserImageManagerImpl::user_image_migration_delay_sec =
     kUserImageMigrationDelaySec;
 
 // static
-void UserImageManager::RegisterPrefs(PrefServiceSimple* local_state) {
-  local_state->RegisterDictionaryPref(kUserImages);
-  local_state->RegisterDictionaryPref(kUserImageProperties);
+void UserImageManager::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(kUserImages);
+  registry->RegisterDictionaryPref(kUserImageProperties);
 }
 
 UserImageManagerImpl::UserImageManagerImpl()

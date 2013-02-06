@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -40,9 +41,9 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "grit/chrome_unscaled_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "grit/chrome_unscaled_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -219,10 +220,10 @@ BackgroundModeManager::~BackgroundModeManager() {
 }
 
 // static
-void BackgroundModeManager::RegisterPrefs(PrefServiceSimple* prefs) {
-  prefs->RegisterBooleanPref(prefs::kUserCreatedLoginItem, false);
-  prefs->RegisterBooleanPref(prefs::kUserRemovedLoginItem, false);
-  prefs->RegisterBooleanPref(prefs::kBackgroundModeEnabled, true);
+void BackgroundModeManager::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kUserCreatedLoginItem, false);
+  registry->RegisterBooleanPref(prefs::kUserRemovedLoginItem, false);
+  registry->RegisterBooleanPref(prefs::kBackgroundModeEnabled, true);
 }
 
 

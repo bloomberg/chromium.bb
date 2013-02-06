@@ -18,6 +18,7 @@
 #include "base/value_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
+#include "chrome/browser/prefs/pref_registry.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 
 using content::BrowserContext;
@@ -43,26 +44,40 @@ PrefService::PrefService(
     PrefNotifierImpl* pref_notifier,
     PrefValueStore* pref_value_store,
     PersistentPrefStore* user_prefs,
-    DefaultPrefStore* default_store,
+    PrefRegistry* pref_registry,
     base::Callback<void(PersistentPrefStore::PrefReadError)>
         read_error_callback,
     bool async)
     : pref_notifier_(pref_notifier),
       pref_value_store_(pref_value_store),
+      pref_registry_(pref_registry),
       user_pref_store_(user_prefs),
-      default_store_(default_store),
       read_error_callback_(read_error_callback) {
   pref_notifier_->SetPrefService(this);
+
+  pref_registry_->SetRegistrationCallback(
+      base::Bind(&PrefService::AddRegisteredPreference,
+                 base::Unretained(this)));
+  pref_registry_->SetUnregistrationCallback(
+      base::Bind(&PrefService::RemoveRegisteredPreference,
+                 base::Unretained(this)));
+  AddInitialPreferences();
+
   InitFromStorage(async);
 }
 
 PrefService::~PrefService() {
   DCHECK(CalledOnValidThread());
 
+  // Remove our callbacks, setting NULL ones.
+  pref_registry_->SetRegistrationCallback(PrefRegistry::RegistrationCallback());
+  pref_registry_->SetUnregistrationCallback(
+      PrefRegistry::UnregistrationCallback());
+
   // Reset pointers so accesses after destruction reliably crash.
   pref_value_store_.reset();
+  pref_registry_ = NULL;
   user_pref_store_ = NULL;
-  default_store_ = NULL;
   pref_notifier_.reset();
 }
 
@@ -172,8 +187,8 @@ bool PrefService::HasPrefPath(const char* path) const {
 DictionaryValue* PrefService::GetPreferenceValues() const {
   DCHECK(CalledOnValidThread());
   DictionaryValue* out = new DictionaryValue;
-  DefaultPrefStore::const_iterator i = default_store_->begin();
-  for (; i != default_store_->end(); ++i) {
+  PrefRegistry::const_iterator i = pref_registry_->begin();
+  for (; i != pref_registry_->end(); ++i) {
     const Value* value = GetPreferenceValue(i->first);
     DCHECK(value);
     out->Set(i->first, value->DeepCopy());
@@ -187,11 +202,12 @@ const PrefService::Preference* PrefService::FindPreference(
   PreferenceMap::iterator it = prefs_map_.find(pref_name);
   if (it != prefs_map_.end())
     return &(it->second);
-  const base::Value::Type type = default_store_->GetType(pref_name);
-  if (type == Value::TYPE_NULL)
+  const base::Value* default_value = NULL;
+  if (!pref_registry_->defaults()->GetValue(pref_name, &default_value))
     return NULL;
   it = prefs_map_.insert(
-      std::make_pair(pref_name, Preference(this, pref_name, type))).first;
+      std::make_pair(pref_name, Preference(
+          this, pref_name, default_value->GetType()))).first;
   return &(it->second);
 }
 
@@ -266,7 +282,7 @@ const base::Value* PrefService::GetDefaultPrefValue(const char* path) const {
   DCHECK(CalledOnValidThread());
   // Lookup the preference in the default store.
   const base::Value* value = NULL;
-  if (!default_store_->GetValue(path, &value)) {
+  if (!pref_registry_->defaults()->GetValue(path, &value)) {
     NOTREACHED() << "Default value missing for pref: " << path;
     return NULL;
   }
@@ -300,24 +316,33 @@ void PrefService::AddPrefInitObserver(base::Callback<void(bool)> obs) {
   pref_notifier_->AddInitObserver(obs);
 }
 
-void PrefService::RegisterPreference(const char* path,
-                                     Value* default_value) {
+PrefRegistry* PrefService::DeprecatedGetPrefRegistry() {
+  return pref_registry_.get();
+}
+
+void PrefService::AddInitialPreferences() {
+  for (PrefRegistry::const_iterator it = pref_registry_->begin();
+       it != pref_registry_->end();
+       ++it) {
+    AddRegisteredPreference(it->first.c_str(), it->second);
+  }
+}
+
+// TODO(joi): Once MarkNeedsEmptyValue is gone, we can probably
+// completely get rid of this method. There will be one difference in
+// semantics; currently all registered preferences are stored right
+// away in the prefs_map_, if we remove this they would be stored only
+// opportunistically.
+void PrefService::AddRegisteredPreference(const char* path,
+                                          Value* default_value) {
   DCHECK(CalledOnValidThread());
-
-  // The main code path takes ownership, but most don't. We'll be safe.
-  scoped_ptr<Value> scoped_value(default_value);
-
-  CHECK(!FindPreference(path)) << "Tried to register duplicate pref " << path;
-
-  base::Value::Type orig_type = default_value->GetType();
-  DCHECK(orig_type != Value::TYPE_NULL && orig_type != Value::TYPE_BINARY) <<
-         "invalid preference type: " << orig_type;
 
   // For ListValue and DictionaryValue with non empty default, empty value
   // for |path| needs to be persisted in |user_pref_store_|. So that
   // non empty default is not used when user sets an empty ListValue or
   // DictionaryValue.
   bool needs_empty_value = false;
+  base::Value::Type orig_type = default_value->GetType();
   if (orig_type == base::Value::TYPE_LIST) {
     const base::ListValue* list = NULL;
     if (default_value->GetAsList(&list) && !list->empty())
@@ -329,20 +354,14 @@ void PrefService::RegisterPreference(const char* path,
   }
   if (needs_empty_value)
     user_pref_store_->MarkNeedsEmptyValue(path);
-
-  // Hand off ownership.
-  default_store_->SetDefaultValue(path, scoped_value.release());
 }
 
-void PrefService::UnregisterPreference(const char* path) {
+// TODO(joi): We can get rid of this once the ability to unregister
+// prefs has been removed.
+void PrefService::RemoveRegisteredPreference(const char* path) {
   DCHECK(CalledOnValidThread());
 
-  PreferenceMap::iterator it = prefs_map_.find(path);
-  CHECK(it != prefs_map_.end()) << "Trying to unregister an unregistered pref: "
-                                << path;
-
-  prefs_map_.erase(it);
-  default_store_->RemoveDefaultValue(path);
+  prefs_map_.erase(path);
 }
 
 void PrefService::ClearPref(const char* path) {
@@ -561,16 +580,18 @@ bool PrefService::Preference::IsExtensionModifiable() const {
 const base::Value* PrefService::GetPreferenceValue(
     const std::string& path) const {
   DCHECK(CalledOnValidThread());
-  const base::Value::Type type = default_store_->GetType(path);
-  if (type == Value::TYPE_NULL)
-    return NULL;
-  const Value* found_value = NULL;
-  if (pref_value_store_->GetValue(path, type, &found_value)) {
-    DCHECK(found_value->IsType(type));
-    return found_value;
+  const Value* default_value = NULL;
+  if (pref_registry_->defaults()->GetValue(path, &default_value)) {
+    const Value* found_value = NULL;
+    base::Value::Type default_type = default_value->GetType();
+    if (pref_value_store_->GetValue(path, default_type, &found_value)) {
+      DCHECK(found_value->IsType(default_type));
+      return found_value;
+    } else {
+      // Every registered preference has at least a default value.
+      NOTREACHED() << "no valid value found for registered pref " << path;
+    }
   }
 
-  // Every registered preference has at least a default value.
-  NOTREACHED() << "no valid value found for registered pref " << path;
   return NULL;
 }

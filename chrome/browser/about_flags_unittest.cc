@@ -6,6 +6,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/about_flags.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -86,7 +87,7 @@ static Experiment kExperiments[] = {
 class AboutFlagsTest : public ::testing::Test {
  protected:
   AboutFlagsTest() {
-    prefs_.RegisterListPref(prefs::kEnabledLabsExperiments);
+    prefs_.registry()->RegisterListPref(prefs::kEnabledLabsExperiments);
     testing::ClearState();
   }
 

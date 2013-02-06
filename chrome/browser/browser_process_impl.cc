@@ -51,6 +51,7 @@
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/background_printing_manager.h"
@@ -415,10 +416,7 @@ ProfileManager* BrowserProcessImpl::profile_manager() {
   return profile_manager_.get();
 }
 
-// TODO(joi): Switch to returning just PrefService, since those
-// calling this function shouldn't be doing ad-hoc registration, that
-// happens earlier in browser_prefs::RegisterLocalState.
-PrefServiceSimple* BrowserProcessImpl::local_state() {
+PrefService* BrowserProcessImpl::local_state() {
   DCHECK(CalledOnValidThread());
   if (!created_local_state_)
     CreateLocalState();
@@ -626,6 +624,45 @@ void BrowserProcessImpl::PlatformSpecificCommandLineProcessing(
 }
 #endif
 
+// static
+void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kDefaultBrowserSettingEnabled,
+                                false);
+  // This policy needs to be defined before the net subsystem is initialized,
+  // so we do it here.
+  registry->RegisterIntegerPref(prefs::kMaxConnectionsPerProxy,
+                                net::kDefaultMaxSocketsPerProxyServer);
+
+  // This is observed by ChildProcessSecurityPolicy, which lives in content/
+  // though, so it can't register itself.
+  registry->RegisterListPref(prefs::kDisabledSchemes);
+
+  registry->RegisterBooleanPref(prefs::kAllowCrossOriginAuthPrompt, false);
+
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    registry->RegisterBooleanPref(prefs::kRestartSwitchMode, false);
+#endif
+
+  // TODO(brettw,*): this comment about ResourceBundle was here since
+  // initial commit.  This comment seems unrelated, bit-rotten and
+  // a candidate for removal.
+  // Initialize ResourceBundle which handles files loaded from external
+  // sources. This has to be done before uninstall code path and before prefs
+  // are registered.
+  registry->RegisterStringPref(prefs::kApplicationLocale, std::string());
+#if defined(OS_CHROMEOS)
+  registry->RegisterStringPref(prefs::kOwnerLocale, std::string());
+  registry->RegisterStringPref(prefs::kHardwareKeyboardLayout,
+                               std::string());
+#endif  // defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
+  registry->RegisterBooleanPref(
+      prefs::kMetricsReportingEnabled,
+      GoogleUpdateSettings::GetCollectStatsConsent());
+#endif  // !defined(OS_CHROMEOS)
+}
+
 DownloadRequestLimiter* BrowserProcessImpl::download_request_limiter() {
   DCHECK(CalledOnValidThread());
   if (!download_request_limiter_)
@@ -762,29 +799,30 @@ void BrowserProcessImpl::CreateLocalState() {
 
   FilePath local_state_path;
   CHECK(PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path));
+  scoped_refptr<PrefRegistrySimple> pref_registry = new PrefRegistrySimple;
   local_state_.reset(
       chrome_prefs::CreateLocalState(local_state_path,
                                      local_state_task_runner_,
                                      policy_service(),
-                                     NULL, false));
+                                     NULL,
+                                     pref_registry,
+                                     false));
 
   // Initialize the prefs of the local state.
-  chrome::RegisterLocalState(local_state_.get());
+  //
+  // TODO(joi): Once we clean up so none of the registration methods
+  // need the PrefService pointer, this should happen before the call
+  // to CreateLocalState.
+  chrome::RegisterLocalState(pref_registry, local_state_.get());
 
   pref_change_registrar_.Init(local_state_.get());
 
   // Initialize the notification for the default browser setting policy.
-  local_state_->RegisterBooleanPref(prefs::kDefaultBrowserSettingEnabled,
-                                    false);
   pref_change_registrar_.Add(
       prefs::kDefaultBrowserSettingEnabled,
       base::Bind(&BrowserProcessImpl::ApplyDefaultBrowserPolicy,
                  base::Unretained(this)));
 
-  // This policy needs to be defined before the net subsystem is initialized,
-  // so we do it here.
-  local_state_->RegisterIntegerPref(prefs::kMaxConnectionsPerProxy,
-                                    net::kDefaultMaxSocketsPerProxyServer);
   int max_per_proxy = local_state_->GetInteger(prefs::kMaxConnectionsPerProxy);
   net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(
       net::HttpNetworkSession::NORMAL_SOCKET_POOL,
@@ -792,21 +830,11 @@ void BrowserProcessImpl::CreateLocalState() {
                net::ClientSocketPoolManager::max_sockets_per_group(
                    net::HttpNetworkSession::NORMAL_SOCKET_POOL)));
 
-  // This is observed by ChildProcessSecurityPolicy, which lives in content/
-  // though, so it can't register itself.
-  local_state_->RegisterListPref(prefs::kDisabledSchemes);
   pref_change_registrar_.Add(
       prefs::kDisabledSchemes,
       base::Bind(&BrowserProcessImpl::ApplyDisabledSchemesPolicy,
                  base::Unretained(this)));
   ApplyDisabledSchemesPolicy();
-
-  local_state_->RegisterBooleanPref(prefs::kAllowCrossOriginAuthPrompt, false);
-
-#if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
-    local_state_->RegisterBooleanPref(prefs::kRestartSwitchMode, false);
-#endif
 }
 
 void BrowserProcessImpl::PreCreateThreads() {

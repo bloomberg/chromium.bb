@@ -14,8 +14,8 @@
 template <typename T> struct DefaultSingletonTraits;
 
 class PrefChangeRegistrar;
+class PrefRegistrySimple;
 class PrefService;
-class PrefServiceSimple;
 
 namespace chromeos {
 
@@ -44,7 +44,7 @@ class AudioHandler {
   static AudioHandler* GetInstance();
 
   // Registers volume and mute preferences.
-  static void RegisterPrefs(PrefServiceSimple* local_state);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Gets volume level in our internal 0-100% range, 0 being pure silence.
   double GetVolumePercent();

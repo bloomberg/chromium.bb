@@ -17,6 +17,7 @@
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -46,7 +47,7 @@ class DeviceCloudPolicyManagerChromeOSTest
 
   virtual void SetUp() OVERRIDE {
     DeviceSettingsTestBase::SetUp();
-    chrome::RegisterLocalState(&local_state_);
+    chrome::RegisterLocalState(local_state_.registry(), &local_state_);
     manager_.Init();
   }
 

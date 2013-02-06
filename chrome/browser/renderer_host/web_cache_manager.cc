@@ -14,6 +14,7 @@
 #include "base/sys_info.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -53,8 +54,8 @@ int GetDefaultCacheSize() {
 }  // anonymous namespace
 
 // static
-void WebCacheManager::RegisterPrefs(PrefServiceSimple* prefs) {
-  prefs->RegisterIntegerPref(prefs::kMemoryCacheSize, GetDefaultCacheSize());
+void WebCacheManager::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kMemoryCacheSize, GetDefaultCacheSize());
 }
 
 // static

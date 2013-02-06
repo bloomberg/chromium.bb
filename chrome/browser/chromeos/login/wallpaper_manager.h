@@ -24,7 +24,7 @@
 #include "third_party/icu/public/i18n/unicode/timezone.h"
 #include "ui/gfx/image/image_skia.h"
 
-class PrefServiceSimple;
+class PrefRegistrySimple;
 
 namespace base {
 class SequencedTaskRunner;
@@ -70,7 +70,7 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   void Shutdown();
 
   // Registers wallpaper manager preferences.
-  static void RegisterPrefs(PrefServiceSimple* local_state);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Adds PowerManagerClient, TimeZoneSettings and CrosSettings observers.
   void AddObservers();

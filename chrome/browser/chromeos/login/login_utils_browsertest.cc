@@ -28,6 +28,7 @@
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -186,8 +187,6 @@ class LoginUtilsTest : public testing::Test,
     // TODO(mnissler): Figure out how to beat this test into submission on
     // OAuth2 path.
     command_line->AppendSwitch(switches::kForceOAuth1);
-
-    local_state_.Get()->RegisterStringPref(prefs::kApplicationLocale, "");
 
     // DBusThreadManager should be initialized before io_thread_state_, as
     // DBusThreadManager is used from chromeos::ProxyConfigServiceImpl,

@@ -6,6 +6,7 @@
 #include "base/bind_helpers.h"
 #include "base/prefs/pref_observer.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -128,9 +129,10 @@ class ObserveSetOfPreferencesTest : public testing::Test {
  public:
   virtual void SetUp() {
     pref_service_.reset(new TestingPrefServiceSimple);
-    pref_service_->RegisterStringPref(kHomePage, "http://google.com");
-    pref_service_->RegisterBooleanPref(kHomePageIsNewTabPage, false);
-    pref_service_->RegisterStringPref(kApplicationLocale, "");
+    PrefRegistrySimple* registry = pref_service_->registry();
+    registry->RegisterStringPref(kHomePage, "http://google.com");
+    registry->RegisterBooleanPref(kHomePageIsNewTabPage, false);
+    registry->RegisterStringPref(kApplicationLocale, "");
   }
 
   PrefChangeRegistrar* CreatePrefChangeRegistrar() {

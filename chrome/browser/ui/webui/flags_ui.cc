@@ -14,7 +14,7 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -173,6 +173,6 @@ base::RefCountedMemory* FlagsUI::GetFaviconResourceBytes(
 }
 
 // static
-void FlagsUI::RegisterPrefs(PrefServiceSimple* prefs) {
-  prefs->RegisterListPref(prefs::kEnabledLabsExperiments);
+void FlagsUI::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterListPref(prefs::kEnabledLabsExperiments);
 }

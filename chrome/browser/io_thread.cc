@@ -35,6 +35,7 @@
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/net/spdyproxy/http_auth_handler_spdyproxy.h"
 #include "chrome/browser/policy/policy_service.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -363,7 +364,7 @@ IOThread::Globals::~Globals() {}
 // |local_state| is passed in explicitly in order to (1) reduce implicit
 // dependencies and (2) make IOThread more flexible for testing.
 IOThread::IOThread(
-    PrefServiceSimple* local_state,
+    PrefService* local_state,
     policy::PolicyService* policy_service,
     ChromeNetLog* net_log,
     extensions::EventRouterForwarder* extension_event_router_forwarder)
@@ -381,7 +382,9 @@ IOThread::IOThread(
   //
   // TODO(joi): See if we can fix so it does get registered from
   // browser_prefs::RegisterLocalState.
-  RegisterPrefs(local_state);
+  PrefRegistrySimple* registry = static_cast<PrefRegistrySimple*>(
+      local_state->DeprecatedGetPrefRegistry());
+  RegisterPrefs(registry);
   auth_schemes_ = local_state->GetString(prefs::kAuthSchemes);
   negotiate_disable_cname_lookup_ = local_state->GetBoolean(
       prefs::kDisableAuthNegotiateCnameLookup);
@@ -740,21 +743,21 @@ void IOThread::EnableSpdy(const std::string& mode) {
 }
 
 // static
-void IOThread::RegisterPrefs(PrefServiceSimple* local_state) {
-  local_state->RegisterStringPref(prefs::kAuthSchemes,
-                                  "basic,digest,ntlm,negotiate,"
-                                  "spdyproxy");
-  local_state->RegisterBooleanPref(prefs::kDisableAuthNegotiateCnameLookup,
-                                   false);
-  local_state->RegisterBooleanPref(prefs::kEnableAuthNegotiatePort, false);
-  local_state->RegisterStringPref(prefs::kAuthServerWhitelist, "");
-  local_state->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist, "");
-  local_state->RegisterStringPref(prefs::kGSSAPILibraryName, "");
-  local_state->RegisterStringPref(prefs::kSpdyProxyOrigin, "");
-  local_state->RegisterBooleanPref(prefs::kEnableReferrers, true);
-  local_state->RegisterInt64Pref(prefs::kHttpReceivedContentLength, 0);
-  local_state->RegisterInt64Pref(prefs::kHttpOriginalContentLength, 0);
-  local_state->RegisterBooleanPref(
+void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kAuthSchemes,
+                               "basic,digest,ntlm,negotiate,"
+                               "spdyproxy");
+  registry->RegisterBooleanPref(prefs::kDisableAuthNegotiateCnameLookup,
+                                false);
+  registry->RegisterBooleanPref(prefs::kEnableAuthNegotiatePort, false);
+  registry->RegisterStringPref(prefs::kAuthServerWhitelist, "");
+  registry->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist, "");
+  registry->RegisterStringPref(prefs::kGSSAPILibraryName, "");
+  registry->RegisterStringPref(prefs::kSpdyProxyOrigin, "");
+  registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
+  registry->RegisterInt64Pref(prefs::kHttpReceivedContentLength, 0);
+  registry->RegisterInt64Pref(prefs::kHttpOriginalContentLength, 0);
+  registry->RegisterBooleanPref(
       prefs::kBuiltInDnsClientEnabled,
       chrome_browser_net::ConfigureAsyncDnsFieldTrial());
 }

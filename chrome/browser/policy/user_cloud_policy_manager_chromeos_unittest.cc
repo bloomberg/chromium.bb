@@ -13,6 +13,7 @@
 #include "chrome/browser/policy/mock_device_management_service.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -34,7 +35,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
       : store_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
-    chrome::RegisterLocalState(&prefs_);
+    chrome::RegisterLocalState(prefs_.registry(), &prefs_);
 
     // Set up a policy map for testing.
     policy_map_.Set("key", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,

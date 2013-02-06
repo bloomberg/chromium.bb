@@ -24,7 +24,7 @@ class ChromeNetLog;
 class CommandLine;
 class PrefProxyConfigTrackerImpl;
 class PrefService;
-class PrefServiceSimple;
+class PrefRegistrySimple;
 class SystemURLRequestContextGetter;
 
 namespace chrome_browser_net {
@@ -171,7 +171,7 @@ class IOThread : public content::BrowserThreadDelegate {
   };
 
   // |net_log| must either outlive the IOThread or be NULL.
-  IOThread(PrefServiceSimple* local_state,
+  IOThread(PrefService* local_state,
            policy::PolicyService* policy_service,
            ChromeNetLog* net_log,
            extensions::EventRouterForwarder* extension_event_router_forwarder);
@@ -236,7 +236,7 @@ class IOThread : public content::BrowserThreadDelegate {
   // SystemRequestContext state has been initialized on the UI thread.
   void InitSystemRequestContextOnIOThread();
 
-  static void RegisterPrefs(PrefServiceSimple* local_state);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   net::HttpAuthHandlerFactory* CreateDefaultAuthHandlerFactory(
       net::HostResolver* resolver);

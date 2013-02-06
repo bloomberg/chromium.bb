@@ -13,6 +13,7 @@
 #include "base/prefs/public/pref_service_base.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 
@@ -65,9 +66,9 @@ SessionLengthLimiter::Delegate::~Delegate() {
 }
 
 // static
-void SessionLengthLimiter::RegisterPrefs(PrefServiceSimple* local_state) {
-  local_state->RegisterInt64Pref(prefs::kSessionStartTime, 0);
-  local_state->RegisterIntegerPref(prefs::kSessionLengthLimit, 0);
+void SessionLengthLimiter::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterInt64Pref(prefs::kSessionStartTime, 0);
+  registry->RegisterIntegerPref(prefs::kSessionLengthLimit, 0);
 }
 
 SessionLengthLimiter::SessionLengthLimiter(Delegate* delegate,

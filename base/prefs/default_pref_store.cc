@@ -25,11 +25,6 @@ void DefaultPrefStore::RemoveDefaultValue(const std::string& key) {
   prefs_.RemoveValue(key);
 }
 
-base::Value::Type DefaultPrefStore::GetType(const std::string& key) const {
-  const Value* value = NULL;
-  return GetValue(key, &value) ? value->GetType() : Value::TYPE_NULL;
-}
-
 DefaultPrefStore::const_iterator DefaultPrefStore::begin() const {
   return prefs_.begin();
 }

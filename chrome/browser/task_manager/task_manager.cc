@@ -21,7 +21,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_resource_providers.h"
 #include "chrome/browser/task_manager/task_manager_worker_resource_provider.h"
@@ -1388,8 +1388,8 @@ content::WebContents* TaskManager::Resource::GetWebContents() const {
 bool TaskManager::Resource::IsBackground() const { return false; }
 
 // static
-void TaskManager::RegisterPrefs(PrefServiceSimple* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kTaskManagerWindowPlacement);
+void TaskManager::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(prefs::kTaskManagerWindowPlacement);
 }
 
 bool TaskManager::IsBrowserProcess(int index) const {

@@ -14,7 +14,7 @@
 #include "chrome/browser/policy/configuration_policy_handler_list.h"
 #include "chrome/browser/policy/proxy_policy_provider.h"
 
-class PrefServiceSimple;
+class PrefRegistrySimple;
 class Profile;
 
 namespace policy {
@@ -148,7 +148,7 @@ class BrowserPolicyConnector {
   static bool IsNonEnterpriseUser(const std::string& username);
 
   // Registers refresh rate prefs.
-  static void RegisterPrefs(PrefServiceSimple* local_state);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
   // Complete initialization once the message loops are running and the

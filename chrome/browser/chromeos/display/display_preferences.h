@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 
-class PrefServiceSimple;
+class PrefRegistrySimple;
 
 namespace gfx {
 class Display;
@@ -18,7 +18,7 @@ namespace chromeos {
 
 // Registers the prefs associated with display settings and stored
 // into Local State.
-void RegisterDisplayLocalStatePrefs(PrefServiceSimple* local_state);
+void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry);
 
 // Sets or updates the display layout data to the specified |display| and
 // |pref_service|.

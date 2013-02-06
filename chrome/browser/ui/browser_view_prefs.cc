@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/browser_view_prefs.h"
 
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/common/pref_names.h"
 
 namespace {
@@ -19,11 +19,11 @@ const int kDefaultHungPluginDetectFrequency = 2000;
 
 namespace chrome {
 
-void RegisterBrowserViewPrefs(PrefServiceSimple* prefs) {
-  prefs->RegisterIntegerPref(prefs::kPluginMessageResponseTimeout,
-                             kDefaultPluginMessageResponseTimeout);
-  prefs->RegisterIntegerPref(prefs::kHungPluginDetectFrequency,
-                             kDefaultHungPluginDetectFrequency);
+void RegisterBrowserViewPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kPluginMessageResponseTimeout,
+                                kDefaultPluginMessageResponseTimeout);
+  registry->RegisterIntegerPref(prefs::kHungPluginDetectFrequency,
+                                kDefaultHungPluginDetectFrequency);
 }
 
 }  // namespace chrome

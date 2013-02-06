@@ -23,7 +23,7 @@ class CloudPolicyCoreTest : public testing::Test {
       : core_(PolicyNamespaceKey(dm_protocol::kChromeUserPolicyType,
                                  std::string()),
               &store_) {
-    chrome::RegisterLocalState(&prefs_);
+    chrome::RegisterLocalState(prefs_.registry(), &prefs_);
   }
 
   MessageLoop loop_;

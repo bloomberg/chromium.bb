@@ -15,20 +15,20 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/hash_tables.h"
 #include "base/observer_list.h"
 #include "base/prefs/persistent_pref_store.h"
 #include "base/prefs/public/pref_service_base.h"
 #include "base/threading/non_thread_safe.h"
 
-class DefaultPrefStore;
 class PrefNotifier;
 class PrefNotifierImpl;
 class PrefObserver;
-class PrefStore;
+class PrefRegistry;
 class PrefValueStore;
+class PrefStore;
 
 namespace subtle {
 class ScopedUserPrefUpdateBase;
@@ -36,7 +36,7 @@ class ScopedUserPrefUpdateBase;
 
 // Base class for PrefServices. You can use the base class to read and
 // interact with preferences, but not to register new preferences; for
-// that see subclasses like PrefServiceSimple.
+// that see e.g. PrefRegistrySimple.
 class PrefService : public PrefServiceBase, public base::NonThreadSafe {
  public:
   enum PrefInitializationStatus {
@@ -94,7 +94,7 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
       PrefNotifierImpl* pref_notifier,
       PrefValueStore* pref_value_store,
       PersistentPrefStore* user_prefs,
-      DefaultPrefStore* default_store,
+      PrefRegistry* pref_registry,
       base::Callback<void(PersistentPrefStore::PrefReadError)>
           read_error_callback,
       bool async);
@@ -112,7 +112,6 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // PrefServiceBase implementation.
   virtual bool IsManagedPreference(const char* pref_name) const OVERRIDE;
   virtual bool IsUserModifiablePreference(const char* pref_name) const OVERRIDE;
-  virtual void UnregisterPreference(const char* path) OVERRIDE;
   virtual const PrefService::Preference* FindPreference(
       const char* path) const OVERRIDE;
   virtual bool GetBoolean(const char* path) const OVERRIDE;
@@ -167,12 +166,24 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // false for unsuccessful.
   void AddPrefInitObserver(base::Callback<void(bool)> callback);
 
+  // Returns the PrefRegistry object for this service. You should not
+  // use this; the intent is for no registrations to take place after
+  // PrefService has been constructed.
+  PrefRegistry* DeprecatedGetPrefRegistry();
+
  protected:
-  // Registers a new preference at |path|. The |default_value| must not be
-  // NULL as it determines the preference value's type.
-  // RegisterPreference must not be called twice for the same path.
-  // This method takes ownership of |default_value|.
-  void RegisterPreference(const char* path, base::Value* default_value);
+  // Adds the registered preferences from the PrefRegistry instance
+  // passed to us at construction time.
+  void AddInitialPreferences();
+
+  // Updates local caches for a preference registered at |path|. The
+  // |default_value| must not be NULL as it determines the preference
+  // value's type.  AddRegisteredPreference must not be called twice
+  // for the same path.
+  void AddRegisteredPreference(const char* path,
+                               base::Value* default_value);
+
+  void RemoveRegisteredPreference(const char* path);
 
   // The PrefNotifier handles registering and notifying preference observers.
   // It is created and owned by this PrefService. Subclasses may access it for
@@ -183,9 +194,10 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // this PrefService. Subclasses may access it for unit testing.
   scoped_ptr<PrefValueStore> pref_value_store_;
 
+  scoped_refptr<PrefRegistry> pref_registry_;
+
   // Pref Stores and profile that we passed to the PrefValueStore.
   scoped_refptr<PersistentPrefStore> user_pref_store_;
-  scoped_refptr<DefaultPrefStore> default_store_;
 
   // Callback to call when a read error occurs.
   base::Callback<void(PersistentPrefStore::PrefReadError)> read_error_callback_;
@@ -196,9 +208,6 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // Confirmed on Android where this speeded Chrome startup by roughly 50ms
   // vs. std::map, and by roughly 180ms vs. std::set of Preference pointers.
   typedef base::hash_map<std::string, Preference> PreferenceMap;
-
-  // Give access to Initialize().
-  friend class PrefServiceBuilder;
 
   // Give access to ReportUserPrefChanged() and GetMutableUserPref().
   friend class subtle::ScopedUserPrefUpdateBase;
@@ -238,7 +247,7 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // actually get the value.).
   const base::Value* GetPreferenceValue(const std::string& path) const;
 
-  // Local cache of registered Preference objects. The default_store_
+  // Local cache of registered Preference objects. The pref_registry_
   // is authoritative with respect to what the types and default values
   // of registered preferences are.
   mutable PreferenceMap prefs_map_;
@@ -249,7 +258,6 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
 // TODO(joi): Remove these forwards. They were placed here temporarily
 // to limit the size of the initial change that split
 // PrefServiceSimple and PrefServiceSyncable out of PrefService.
-#include "chrome/browser/prefs/pref_service_simple.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 
 #endif  // CHROME_BROWSER_PREFS_PREF_SERVICE_H_

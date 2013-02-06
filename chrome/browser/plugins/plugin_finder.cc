@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -135,8 +136,8 @@ PluginMetadata* CreatePluginMetadata(
 }  // namespace
 
 // static
-void PluginFinder::RegisterPrefs(PrefServiceSimple* local_state) {
-  local_state->RegisterBooleanPref(prefs::kDisablePluginFinder, false);
+void PluginFinder::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kDisablePluginFinder, false);
 }
 
 // static

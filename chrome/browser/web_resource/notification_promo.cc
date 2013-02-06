@@ -16,8 +16,8 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/pref_service_simple.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_version_info.h"
@@ -310,8 +310,8 @@ void NotificationPromo::OnNewNotification() {
 }
 
 // static
-void NotificationPromo::RegisterPrefs(PrefServiceSimple* local_state) {
-  local_state->RegisterDictionaryPref(kPrefPromoObject);
+void NotificationPromo::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(kPrefPromoObject);
 }
 
 // static

@@ -16,6 +16,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -92,9 +93,9 @@ AutoEnrollmentClient::AutoEnrollmentClient(const base::Closure& callback,
 AutoEnrollmentClient::~AutoEnrollmentClient() {}
 
 // static
-void AutoEnrollmentClient::RegisterPrefs(PrefServiceSimple* local_state) {
-  local_state->RegisterBooleanPref(prefs::kShouldAutoEnroll, false);
-  local_state->RegisterIntegerPref(prefs::kAutoEnrollmentPowerLimit, -1);
+void AutoEnrollmentClient::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kShouldAutoEnroll, false);
+  registry->RegisterIntegerPref(prefs::kAutoEnrollmentPowerLimit, -1);
 }
 
 // static

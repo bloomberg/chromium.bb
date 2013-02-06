@@ -5,9 +5,11 @@
 #include "chrome/test/base/testing_pref_service.h"
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/prefs/default_pref_store.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,25 +23,25 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
 }  // namespace
 
 template<>
-TestingPrefServiceBase<PrefServiceSimple>::TestingPrefServiceBase(
+TestingPrefServiceBase<PrefService>::TestingPrefServiceBase(
     TestingPrefStore* managed_prefs,
     TestingPrefStore* user_prefs,
     TestingPrefStore* recommended_prefs,
-    DefaultPrefStore* default_store,
+    PrefRegistry* pref_registry,
     PrefNotifierImpl* pref_notifier)
-    : PrefServiceSimple(pref_notifier,
-                        new PrefValueStore(
-                            managed_prefs,
-                            NULL,
-                            NULL,
-                            user_prefs,
-                            recommended_prefs,
-                            default_store,
-                            pref_notifier),
-                        user_prefs,
-                        default_store,
-                        base::Bind(&HandleReadError),
-                        false),
+    : PrefService(pref_notifier,
+                  new PrefValueStore(
+                      managed_prefs,
+                      NULL,
+                      NULL,
+                      user_prefs,
+                      recommended_prefs,
+                      pref_registry->defaults(),
+                      pref_notifier),
+                  user_prefs,
+                  pref_registry,
+                  base::Bind(&HandleReadError),
+                  false),
       managed_prefs_(managed_prefs),
       user_prefs_(user_prefs),
       recommended_prefs_(recommended_prefs) {
@@ -50,7 +52,7 @@ TestingPrefServiceBase<PrefServiceSyncable>::TestingPrefServiceBase(
     TestingPrefStore* managed_prefs,
     TestingPrefStore* user_prefs,
     TestingPrefStore* recommended_prefs,
-    DefaultPrefStore* default_store,
+    PrefRegistry* pref_registry,
     PrefNotifierImpl* pref_notifier)
     : PrefServiceSyncable(pref_notifier,
                           new PrefValueStore(
@@ -59,10 +61,10 @@ TestingPrefServiceBase<PrefServiceSyncable>::TestingPrefServiceBase(
                               NULL,
                               user_prefs,
                               recommended_prefs,
-                              default_store,
+                              pref_registry->defaults(),
                               pref_notifier),
                           user_prefs,
-                          default_store,
+                          pref_registry,
                           base::Bind(&HandleReadError),
                           false),
       managed_prefs_(managed_prefs),
@@ -71,22 +73,29 @@ TestingPrefServiceBase<PrefServiceSyncable>::TestingPrefServiceBase(
 }
 
 TestingPrefServiceSimple::TestingPrefServiceSimple()
-    : TestingPrefServiceBase<PrefServiceSimple>(new TestingPrefStore(),
-                                                new TestingPrefStore(),
-                                                new TestingPrefStore(),
-                                                new DefaultPrefStore(),
-                                                new PrefNotifierImpl()) {
+    : TestingPrefServiceBase<PrefService>(
+        new TestingPrefStore(),
+        new TestingPrefStore(),
+        new TestingPrefStore(),
+        new PrefRegistrySimple(),
+        new PrefNotifierImpl()) {
 }
 
 TestingPrefServiceSimple::~TestingPrefServiceSimple() {
 }
 
+PrefRegistrySimple* TestingPrefServiceSimple::registry() {
+  return static_cast<PrefRegistrySimple*>(DeprecatedGetPrefRegistry());
+}
+
+// TODO(joi): Switch to PrefRegistrySyncable once available.
 TestingPrefServiceSyncable::TestingPrefServiceSyncable()
-    : TestingPrefServiceBase<PrefServiceSyncable>(new TestingPrefStore(),
-                                                  new TestingPrefStore(),
-                                                  new TestingPrefStore(),
-                                                  new DefaultPrefStore(),
-                                                  new PrefNotifierImpl()) {
+    : TestingPrefServiceBase<PrefServiceSyncable>(
+        new TestingPrefStore(),
+        new TestingPrefStore(),
+        new TestingPrefStore(),
+        new PrefRegistrySimple(),
+        new PrefNotifierImpl()) {
 }
 
 TestingPrefServiceSyncable::~TestingPrefServiceSyncable() {
@@ -95,7 +104,8 @@ TestingPrefServiceSyncable::~TestingPrefServiceSyncable() {
 ScopedTestingLocalState::ScopedTestingLocalState(
     TestingBrowserProcess* browser_process)
     : browser_process_(browser_process) {
-  chrome::RegisterLocalState(&local_state_);
+  chrome::RegisterLocalState(static_cast<PrefRegistrySimple*>(
+      local_state_.DeprecatedGetPrefRegistry()), &local_state_);
   EXPECT_FALSE(browser_process->local_state());
   browser_process->SetLocalState(&local_state_);
 }

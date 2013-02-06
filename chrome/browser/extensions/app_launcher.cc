@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -102,7 +103,7 @@ bool IsAppLauncherEnabled() {
 
 namespace app_launcher {
 
-void RegisterPrefs(PrefServiceSimple* pref_service) {
+void RegisterPrefs(PrefRegistrySimple* registry) {
   // If it is impossible to synchronously determine whether the app launcher is
   // enabled, assume it is disabled. Anything that needs to know the absolute
   // truth should call UpdateIsAppLauncherEnabled().
@@ -112,7 +113,7 @@ void RegisterPrefs(PrefServiceSimple* pref_service) {
   // that the value hasn't changed since last time it was checked, using this
   // preference.
   bool is_enabled = SynchronousAppLauncherChecks() == APP_LAUNCHER_ENABLED;
-  pref_service->RegisterBooleanPref(prefs::kAppLauncherIsEnabled, is_enabled);
+  registry->RegisterBooleanPref(prefs::kAppLauncherIsEnabled, is_enabled);
 }
 
 }  // namespace app_launcher

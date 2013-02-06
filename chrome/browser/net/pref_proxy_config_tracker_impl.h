@@ -15,7 +15,7 @@
 #include "net/proxy/proxy_config_service.h"
 
 class PrefService;
-class PrefServiceSimple;
+class PrefRegistrySimple;
 class PrefServiceSyncable;
 
 // A net::ProxyConfigService implementation that applies preference proxy
@@ -119,7 +119,7 @@ class PrefProxyConfigTrackerImpl {
 
   // Registers the proxy preferences. These are actually registered
   // the same way in local state and in user prefs.
-  static void RegisterPrefs(PrefServiceSimple* local_state);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
   static void RegisterUserPrefs(PrefServiceSyncable* user_prefs);
 
  protected:

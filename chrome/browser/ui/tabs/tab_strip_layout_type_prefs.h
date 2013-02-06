@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_UI_TABS_TAB_STRIP_LAYOUT_TYPE_PREFS_H_
 #define CHROME_BROWSER_UI_TABS_TAB_STRIP_LAYOUT_TYPE_PREFS_H_
 
-class PrefServiceSimple;
+class PrefRegistrySimple;
 
 namespace chrome {
 
 // Register local state preferences specific to the TabStrip.
-void RegisterTabStripLayoutTypePrefs(PrefServiceSimple* local_state);
+void RegisterTabStripLayoutTypePrefs(PrefRegistrySimple* registry);
 
 }  // namespace chrome
 

@@ -25,6 +25,7 @@
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -435,26 +436,29 @@ bool SetShowFirstRunBubblePref(FirstRunBubbleOptions show_bubble_option) {
 }
 
 bool SetShowWelcomePagePref() {
-  PrefServiceSimple* local_state = g_browser_process->local_state();
+  PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
     return false;
   // TODO(joi): This should happen via browser_prefs::RegisterLocalState().
   if (!local_state->FindPreference(prefs::kShouldShowWelcomePage)) {
-    local_state->RegisterBooleanPref(prefs::kShouldShowWelcomePage, false);
+    static_cast<PrefRegistrySimple*>(
+        local_state->DeprecatedGetPrefRegistry())->RegisterBooleanPref(
+            prefs::kShouldShowWelcomePage, false);
     local_state->SetBoolean(prefs::kShouldShowWelcomePage, true);
   }
   return true;
 }
 
 bool SetPersonalDataManagerFirstRunPref() {
-  PrefServiceSimple* local_state = g_browser_process->local_state();
+  PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
     return false;
   if (!local_state->FindPreference(
           prefs::kAutofillPersonalDataManagerFirstRun)) {
     // TODO(joi): This should happen via browser_prefs::RegisterLocalState().
-    local_state->RegisterBooleanPref(
-        prefs::kAutofillPersonalDataManagerFirstRun, false);
+    static_cast<PrefRegistrySimple*>(
+        local_state->DeprecatedGetPrefRegistry())->RegisterBooleanPref(
+            prefs::kAutofillPersonalDataManagerFirstRun, false);
     local_state->SetBoolean(prefs::kAutofillPersonalDataManagerFirstRun, true);
   }
   return true;

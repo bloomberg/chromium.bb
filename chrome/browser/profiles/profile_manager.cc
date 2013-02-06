@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
@@ -64,9 +65,9 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
 using content::BrowserThread;
@@ -848,10 +849,10 @@ void ProfileManager::CreateMultiProfileAsync(
 }
 
 // static
-void ProfileManager::RegisterPrefs(PrefServiceSimple* prefs) {
-  prefs->RegisterStringPref(prefs::kProfileLastUsed, "");
-  prefs->RegisterIntegerPref(prefs::kProfilesNumCreated, 1);
-  prefs->RegisterListPref(prefs::kProfilesLastActive);
+void ProfileManager::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kProfileLastUsed, "");
+  registry->RegisterIntegerPref(prefs::kProfilesNumCreated, 1);
+  registry->RegisterListPref(prefs::kProfilesLastActive);
 }
 
 size_t ProfileManager::GetNumberOfProfiles() {

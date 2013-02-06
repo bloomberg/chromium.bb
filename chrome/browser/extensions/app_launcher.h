@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 
-class PrefServiceSimple;
+class PrefRegistrySimple;
 
 namespace extensions {
 
@@ -26,7 +26,7 @@ void UpdateIsAppLauncherEnabled(
 bool IsAppLauncherEnabled();
 
 namespace app_launcher {
-void RegisterPrefs(PrefServiceSimple* pref_service);
+void RegisterPrefs(PrefRegistrySimple* registry);
 }
 
 }  // namespace extensions

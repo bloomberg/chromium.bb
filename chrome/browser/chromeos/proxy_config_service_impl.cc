@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
@@ -580,10 +581,10 @@ bool ProxyConfigServiceImpl::ParseProxyConfig(const Network* network,
 }
 
 // static
-void ProxyConfigServiceImpl::RegisterPrefs(PrefServiceSimple* pref_service) {
+void ProxyConfigServiceImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   // Use shared proxies default to off.  GetUseSharedProxies will return the
   // correct value based on pre-login and login.
-  pref_service->RegisterBooleanPref(prefs::kUseSharedProxies, true);
+  registry->RegisterBooleanPref(prefs::kUseSharedProxies, true);
 }
 
 // static

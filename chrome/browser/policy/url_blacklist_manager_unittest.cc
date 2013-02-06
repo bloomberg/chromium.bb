@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/public/test/test_browser_thread.h"
@@ -72,8 +73,8 @@ class URLBlacklistManagerTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    pref_service_.RegisterListPref(prefs::kUrlBlacklist);
-    pref_service_.RegisterListPref(prefs::kUrlWhitelist);
+    pref_service_.registry()->RegisterListPref(prefs::kUrlBlacklist);
+    pref_service_.registry()->RegisterListPref(prefs::kUrlWhitelist);
     blacklist_manager_.reset(
         new TestingURLBlacklistManager(&pref_service_));
     loop_.RunUntilIdle();

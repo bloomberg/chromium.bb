@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -248,8 +249,8 @@ ServicesCustomizationDocument* ServicesCustomizationDocument::GetInstance() {
 
 // static
 void ServicesCustomizationDocument::RegisterPrefs(
-    PrefServiceSimple* local_state) {
-  local_state->RegisterBooleanPref(kServicesCustomizationAppliedPref, false);
+    PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(kServicesCustomizationAppliedPref, false);
 }
 
 // static

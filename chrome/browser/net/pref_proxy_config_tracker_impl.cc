@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -195,10 +196,9 @@ net::ProxyConfigService::ConfigAvailability
 }
 
 // static
-void PrefProxyConfigTrackerImpl::RegisterPrefs(
-    PrefServiceSimple* local_state) {
+void PrefProxyConfigTrackerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   DictionaryValue* default_settings = ProxyConfigDictionary::CreateSystem();
-  local_state->RegisterDictionaryPref(prefs::kProxy, default_settings);
+  registry->RegisterDictionaryPref(prefs::kProxy, default_settings);
 }
 
 // static

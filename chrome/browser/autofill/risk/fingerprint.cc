@@ -15,7 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/risk/proto/fingerprint.pb.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service_simple.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/content_browser_client.h"

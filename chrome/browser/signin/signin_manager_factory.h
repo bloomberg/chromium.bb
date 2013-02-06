@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class SigninManager;
-class PrefServiceSimple;
+class PrefRegistrySimple;
 class PrefServiceSyncable;
 class Profile;
 
@@ -35,7 +35,7 @@ class SigninManagerFactory : public ProfileKeyedServiceFactory {
   virtual void RegisterUserPrefs(PrefServiceSyncable* user_prefs) OVERRIDE;
 
   // Registers the browser-global prefs used by SigninManager.
-  static void RegisterPrefs(PrefServiceSimple* local_state);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
   friend struct DefaultSingletonTraits<SigninManagerFactory>;

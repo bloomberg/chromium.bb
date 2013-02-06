@@ -107,9 +107,6 @@ class PrefServiceBase {
   // value can be changed by the user.
   virtual bool IsUserModifiablePreference(const char* pref_name) const = 0;
 
-  // Unregisters a preference.
-  virtual void UnregisterPreference(const char* path) = 0;
-
   // Look up a preference.  Returns NULL if the preference is not
   // registered.
   virtual const Preference* FindPreference(const char* pref_name) const = 0;

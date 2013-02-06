@@ -33,7 +33,7 @@ class PrefServiceSyncable : public PrefService {
       PrefNotifierImpl* pref_notifier,
       PrefValueStore* pref_value_store,
       PersistentPrefStore* user_prefs,
-      DefaultPrefStore* default_store,
+      PrefRegistry* pref_registry,
       base::Callback<void(PersistentPrefStore::PrefReadError)>
           read_error_callback,
       bool async);
@@ -54,8 +54,6 @@ class PrefServiceSyncable : public PrefService {
 
   void AddObserver(PrefServiceSyncableObserver* observer);
   void RemoveObserver(PrefServiceSyncableObserver* observer);
-
-  virtual void UnregisterPreference(const char* path) OVERRIDE;
 
   void RegisterBooleanPref(const char* path,
                            bool default_value,
@@ -100,6 +98,8 @@ class PrefServiceSyncable : public PrefService {
   void RegisterUint64Pref(const char* path,
                           uint64 default_value,
                           PrefSyncStatus sync_status);
+
+  void UnregisterPreference(const char* path);
 
   // TODO(zea): Have PrefServiceSyncable implement
   // syncer::SyncableService directly.

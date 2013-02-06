@@ -143,7 +143,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     scoped_ptr<base::Environment> env(base::Environment::Create());
     env->SetVar("TZ", "UTC");
 
-    TestingDeviceStatusCollector::RegisterPrefs(&prefs_);
+    TestingDeviceStatusCollector::RegisterPrefs(prefs_.registry());
 
     EXPECT_CALL(statistics_provider_, GetMachineStatistic(_, NotNull()))
         .WillRepeatedly(Return(false));

@@ -10,6 +10,7 @@
 #include "base/prefs/testing_pref_store.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
@@ -61,7 +62,7 @@ class SSLConfigServiceManagerPrefTest : public testing::Test {
 // Test channel id with no user prefs.
 TEST_F(SSLConfigServiceManagerPrefTest, ChannelIDWithoutUserPrefs) {
   TestingPrefServiceSimple local_state;
-  SSLConfigServiceManager::RegisterPrefs(&local_state);
+  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
   local_state.SetUserPref(prefs::kEnableOriginBoundCerts,
                           Value::CreateBooleanValue(false));
 
@@ -87,7 +88,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, ChannelIDWithoutUserPrefs) {
 // Test channel id with user prefs.
 TEST_F(SSLConfigServiceManagerPrefTest, ChannelIDWithUserPrefs) {
   TestingPrefServiceSimple local_state;
-  SSLConfigServiceManager::RegisterPrefs(&local_state);
+  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
   local_state.SetUserPref(prefs::kEnableOriginBoundCerts,
                           Value::CreateBooleanValue(false));
 
@@ -152,7 +153,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, ChannelIDWithUserPrefs) {
 // every value is expected to be successfully parsed into a cipher suite.
 TEST_F(SSLConfigServiceManagerPrefTest, GoodDisabledCipherSuites) {
   TestingPrefServiceSimple local_state;
-  SSLConfigServiceManager::RegisterPrefs(&local_state);
+  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
 
   scoped_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(&local_state, NULL));
@@ -187,7 +188,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, GoodDisabledCipherSuites) {
 // should be ignored.
 TEST_F(SSLConfigServiceManagerPrefTest, BadDisabledCipherSuites) {
   TestingPrefServiceSimple local_state;
-  SSLConfigServiceManager::RegisterPrefs(&local_state);
+  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
 
   scoped_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(&local_state, NULL));
@@ -226,9 +227,10 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoCommandLinePrefs) {
 
   PrefServiceMockBuilder builder;
   builder.WithUserPrefs(local_state_store.get());
-  scoped_ptr<PrefServiceSimple> local_state(builder.CreateSimple());
+  scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
+  scoped_ptr<PrefService> local_state(builder.Create(registry));
 
-  SSLConfigServiceManager::RegisterPrefs(local_state.get());
+  SSLConfigServiceManager::RegisterPrefs(registry);
 
   scoped_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(local_state.get(), NULL));
@@ -269,9 +271,10 @@ TEST_F(SSLConfigServiceManagerPrefTest, CommandLinePrefs) {
   PrefServiceMockBuilder builder;
   builder.WithUserPrefs(local_state_store.get());
   builder.WithCommandLine(&command_line);
-  scoped_ptr<PrefServiceSimple> local_state(builder.CreateSimple());
+  scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
+  scoped_ptr<PrefService> local_state(builder.Create(registry));
 
-  SSLConfigServiceManager::RegisterPrefs(local_state.get());
+  SSLConfigServiceManager::RegisterPrefs(registry);
 
   scoped_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(local_state.get(), NULL));

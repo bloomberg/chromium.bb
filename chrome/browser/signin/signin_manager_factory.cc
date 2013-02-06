@@ -4,7 +4,8 @@
 
 #include "chrome/browser/signin/signin_manager_factory.h"
 
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -52,8 +53,8 @@ void SigninManagerFactory::RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
 }
 
 // static
-void SigninManagerFactory::RegisterPrefs(PrefServiceSimple* local_state) {
-  local_state->RegisterStringPref(prefs::kGoogleServicesUsernamePattern, "");
+void SigninManagerFactory::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kGoogleServicesUsernamePattern, "");
 }
 
 ProfileKeyedService* SigninManagerFactory::BuildServiceInstanceFor(

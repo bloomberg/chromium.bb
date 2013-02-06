@@ -9,7 +9,7 @@
 
 #include "chrome/browser/chromeos/login/user.h"
 
-class PrefServiceSimple;
+class PrefRegistrySimple;
 
 namespace base {
 class FilePath;
@@ -27,7 +27,7 @@ class UserImage;
 class UserImageManager {
  public:
   // Registers user image manager preferences.
-  static void RegisterPrefs(PrefServiceSimple* local_state);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   virtual ~UserImageManager();
 

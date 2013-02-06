@@ -10,7 +10,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service_simple.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/web_resource/notification_promo.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -61,9 +61,9 @@ int GetCacheUpdateDelay() {
 }  // namespace
 
 // static
-void PromoResourceService::RegisterPrefs(PrefServiceSimple* local_state) {
-  local_state->RegisterStringPref(prefs::kNtpPromoResourceCacheUpdate, "0");
-  NotificationPromo::RegisterPrefs(local_state);
+void PromoResourceService::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kNtpPromoResourceCacheUpdate, "0");
+  NotificationPromo::RegisterPrefs(registry);
 }
 
 // static

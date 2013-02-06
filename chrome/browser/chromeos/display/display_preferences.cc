@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
@@ -132,22 +133,22 @@ void NotifyDisplayOverscans() {
 
 }  // namespace
 
-void RegisterDisplayLocalStatePrefs(PrefServiceSimple* local_state) {
+void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry) {
   // The default secondary display layout.
-  local_state->RegisterIntegerPref(prefs::kSecondaryDisplayLayout,
-                                   static_cast<int>(ash::DisplayLayout::RIGHT));
+  registry->RegisterIntegerPref(prefs::kSecondaryDisplayLayout,
+                                static_cast<int>(ash::DisplayLayout::RIGHT));
   // The default offset of the secondary display position from the primary
   // display.
-  local_state->RegisterIntegerPref(prefs::kSecondaryDisplayOffset, 0);
+  registry->RegisterIntegerPref(prefs::kSecondaryDisplayOffset, 0);
   // Per-display preference.
-  local_state->RegisterDictionaryPref(prefs::kSecondaryDisplays);
+  registry->RegisterDictionaryPref(prefs::kSecondaryDisplays);
 
   // Primary output name.
-  local_state->RegisterInt64Pref(prefs::kPrimaryDisplayID,
-                                 gfx::Display::kInvalidDisplayID);
+  registry->RegisterInt64Pref(prefs::kPrimaryDisplayID,
+                              gfx::Display::kInvalidDisplayID);
 
   // Display overscan preference.
-  local_state->RegisterDictionaryPref(prefs::kDisplayOverscans);
+  registry->RegisterDictionaryPref(prefs::kDisplayOverscans);
 }
 
 void SetDisplayLayoutPref(const gfx::Display& display,

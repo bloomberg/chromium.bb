@@ -17,6 +17,7 @@
 #else
 #include "chrome/browser/chromeos/audio/audio_mixer_alsa.h"
 #endif
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -79,27 +80,15 @@ AudioHandler* AudioHandler::GetInstance() {
 }
 
 // static
-void AudioHandler::RegisterPrefs(PrefServiceSimple* local_state) {
-  if (!local_state->FindPreference(prefs::kAudioVolumePercent)) {
-    local_state->RegisterDoublePref(prefs::kAudioVolumePercent,
-                                    kDefaultVolumePercent);
-  }
-  if (!local_state->FindPreference(prefs::kAudioMute)) {
-    local_state->RegisterIntegerPref(prefs::kAudioMute,
-                                     kPrefMuteOff);
-  }
-
-  if (!local_state->FindPreference(prefs::kAudioOutputAllowed)) {
-    // Register the prefs backing the audio muting policies.
-    local_state->RegisterBooleanPref(prefs::kAudioOutputAllowed,
-                                     true);
-  }
+void AudioHandler::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDoublePref(prefs::kAudioVolumePercent,
+                               kDefaultVolumePercent);
+  registry->RegisterIntegerPref(prefs::kAudioMute, kPrefMuteOff);
+  // Register the prefs backing the audio muting policies.
+  registry->RegisterBooleanPref(prefs::kAudioOutputAllowed, true);
   // This pref has moved to the media subsystem but we should verify it is there
   // before we use it.
-  if (!local_state->FindPreference(prefs::kAudioCaptureAllowed)) {
-    local_state->RegisterBooleanPref(prefs::kAudioCaptureAllowed,
-                                     true);
-  }
+  registry->RegisterBooleanPref(prefs::kAudioCaptureAllowed, true);
 }
 
 double AudioHandler::GetVolumePercent() {

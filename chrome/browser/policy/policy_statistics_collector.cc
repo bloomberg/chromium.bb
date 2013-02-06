@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/task_runner.h"
 #include "chrome/browser/policy/policy_service.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "policy/policy_constants.h"
@@ -49,8 +50,8 @@ void PolicyStatisticsCollector::Initialize() {
 }
 
 // static
-void PolicyStatisticsCollector::RegisterPrefs(PrefServiceSimple* prefs) {
-  prefs->RegisterInt64Pref(prefs::kLastPolicyStatisticsUpdate, 0);
+void PolicyStatisticsCollector::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterInt64Pref(prefs::kLastPolicyStatisticsUpdate, 0);
 }
 
 void PolicyStatisticsCollector::RecordPolicyUse(int id) {

@@ -15,6 +15,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics/variations/variations_util.h"
@@ -208,10 +209,10 @@ void VariationsService::SetCreateTrialsFromSeedCalledForTesting(bool called) {
 }
 
 // static
-void VariationsService::RegisterPrefs(PrefServiceSimple* prefs) {
-  prefs->RegisterStringPref(prefs::kVariationsSeed, std::string());
-  prefs->RegisterInt64Pref(prefs::kVariationsSeedDate,
-                           base::Time().ToInternalValue());
+void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kVariationsSeed, std::string());
+  registry->RegisterInt64Pref(prefs::kVariationsSeedDate,
+                              base::Time().ToInternalValue());
 }
 
 // static

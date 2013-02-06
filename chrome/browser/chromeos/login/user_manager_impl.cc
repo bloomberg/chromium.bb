@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/power/session_length_limiter.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -158,16 +159,16 @@ bool ParseUserList(const ListValue& users_list,
 }  // namespace
 
 // static
-void UserManager::RegisterPrefs(PrefServiceSimple* local_state) {
-  local_state->RegisterListPref(kRegularUsers);
-  local_state->RegisterListPref(kPublicAccounts);
-  local_state->RegisterListPref(kLocallyManagedUsersFirstRun);
-  local_state->RegisterIntegerPref(kLocallyManagedUsersNextId, 0);
-  local_state->RegisterStringPref(kPublicAccountPendingDataRemoval, "");
-  local_state->RegisterDictionaryPref(kUserOAuthTokenStatus);
-  local_state->RegisterDictionaryPref(kUserDisplayName);
-  local_state->RegisterDictionaryPref(kUserDisplayEmail);
-  SessionLengthLimiter::RegisterPrefs(local_state);
+void UserManager::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterListPref(kRegularUsers);
+  registry->RegisterListPref(kPublicAccounts);
+  registry->RegisterListPref(kLocallyManagedUsersFirstRun);
+  registry->RegisterIntegerPref(kLocallyManagedUsersNextId, 0);
+  registry->RegisterStringPref(kPublicAccountPendingDataRemoval, "");
+  registry->RegisterDictionaryPref(kUserOAuthTokenStatus);
+  registry->RegisterDictionaryPref(kUserDisplayName);
+  registry->RegisterDictionaryPref(kUserDisplayEmail);
+  SessionLengthLimiter::RegisterPrefs(registry);
 }
 
 UserManagerImpl::UserManagerImpl()

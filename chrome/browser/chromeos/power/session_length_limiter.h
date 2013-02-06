@@ -13,7 +13,7 @@
 #include "base/timer.h"
 
 class PrefService;
-class PrefServiceSimple;
+class PrefRegistrySimple;
 
 namespace chromeos {
 
@@ -30,7 +30,7 @@ class SessionLengthLimiter {
   };
 
   // Registers preferences.
-  static void RegisterPrefs(PrefServiceSimple* local_state);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   SessionLengthLimiter(Delegate* delegate, bool browser_restarted);
   ~SessionLengthLimiter();

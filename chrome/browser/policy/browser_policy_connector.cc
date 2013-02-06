@@ -21,8 +21,8 @@
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
 #include "chrome/browser/policy/policy_service_impl.h"
 #include "chrome/browser/policy/policy_statistics_collector.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/pref_service_simple.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -405,12 +405,12 @@ bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
 }
 
 // static
-void BrowserPolicyConnector::RegisterPrefs(PrefServiceSimple* local_state) {
-  local_state->RegisterIntegerPref(prefs::kUserPolicyRefreshRate,
-                                   kDefaultPolicyRefreshRateMs);
+void BrowserPolicyConnector::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kUserPolicyRefreshRate,
+                                kDefaultPolicyRefreshRateMs);
 #if defined(OS_CHROMEOS)
-  local_state->RegisterIntegerPref(prefs::kDevicePolicyRefreshRate,
-                                   kDefaultPolicyRefreshRateMs);
+  registry->RegisterIntegerPref(prefs::kDevicePolicyRefreshRate,
+                                kDefaultPolicyRefreshRateMs);
 #endif
 }
 

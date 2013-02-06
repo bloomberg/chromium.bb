@@ -16,7 +16,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-class PrefServiceSimple;
+class PrefRegistrySimple;
 
 namespace base {
 class DictionaryValue;
@@ -119,7 +119,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   static ServicesCustomizationDocument* GetInstance();
 
   // Registers preferences.
-  static void RegisterPrefs(PrefServiceSimple* local_state);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Return true if the customization was applied. Customization is applied only
   // once per machine.

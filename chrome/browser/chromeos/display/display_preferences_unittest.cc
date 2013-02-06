@@ -27,7 +27,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     ash::test::AshTestBase::SetUp();
-    RegisterDisplayLocalStatePrefs(&local_state_);
+    RegisterDisplayLocalStatePrefs(local_state_.registry());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
   }
 

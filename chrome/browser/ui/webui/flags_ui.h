@@ -8,7 +8,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "ui/base/layout.h"
 
-class PrefServiceSimple;
+class PrefRegistrySimple;
 
 namespace base {
 class RefCountedMemory;
@@ -20,7 +20,7 @@ class FlagsUI : public content::WebUIController {
 
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
-  static void RegisterPrefs(PrefServiceSimple* prefs);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FlagsUI);

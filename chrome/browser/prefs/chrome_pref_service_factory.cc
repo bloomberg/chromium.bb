@@ -14,6 +14,7 @@
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
+#include "chrome/browser/prefs/pref_registry.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_service_syncable_builder.h"
 #include "chrome/browser/prefs/pref_value_store.h"
@@ -56,7 +57,7 @@ void PrepareBuilder(
     const FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
-    PrefStore* extension_prefs,
+    const scoped_refptr<PrefStore>& extension_prefs,
     bool async) {
 #if defined(OS_LINUX)
   // We'd like to see what fraction of our users have the preferences
@@ -98,11 +99,12 @@ PrefServiceBase* PrefServiceBase::FromBrowserContext(BrowserContext* context) {
 
 namespace chrome_prefs {
 
-PrefServiceSimple* CreateLocalState(
+PrefService* CreateLocalState(
     const FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
-    PrefStore* extension_prefs,
+    const scoped_refptr<PrefStore>& extension_prefs,
+    const scoped_refptr<PrefRegistry>& pref_registry,
     bool async) {
   PrefServiceSyncableBuilder builder;
   PrepareBuilder(&builder,
@@ -111,14 +113,14 @@ PrefServiceSimple* CreateLocalState(
                  policy_service,
                  extension_prefs,
                  async);
-  return builder.CreateSimple();
+  return builder.Create(pref_registry);
 }
 
 PrefServiceSyncable* CreateProfilePrefs(
     const FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
-    PrefStore* extension_prefs,
+    const scoped_refptr<PrefStore>& extension_prefs,
     bool async) {
   PrefServiceSyncableBuilder builder;
   PrepareBuilder(&builder,

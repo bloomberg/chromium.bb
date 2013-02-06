@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -33,8 +34,8 @@ ManagedMode* ManagedMode::GetInstance() {
 }
 
 // static
-void ManagedMode::RegisterPrefs(PrefServiceSimple* prefs) {
-  prefs->RegisterBooleanPref(prefs::kInManagedMode, false);
+void ManagedMode::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kInManagedMode, false);
 }
 
 // static

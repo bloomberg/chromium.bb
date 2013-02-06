@@ -4,16 +4,22 @@
 
 #include "chrome/browser/notifications/notification_prefs_manager.h"
 
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 
 // static
-void NotificationPrefsManager::RegisterPrefs(PrefServiceSimple* prefs) {
-  prefs->RegisterIntegerPref(prefs::kDesktopNotificationPosition,
-                             BalloonCollection::DEFAULT_POSITION);
+void NotificationPrefsManager::RegisterPrefs(PrefService* prefs,
+                                             PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kDesktopNotificationPosition,
+                                BalloonCollection::DEFAULT_POSITION);
 #if defined(OS_CHROMEOS)
   // Option menu for changing desktop notification position on ChromeOS is
   // disabled. Force preference to default.
+  //
+  // TODO(joi): This shouldn't be done during registration;
+  // registration should all be done up front, before there even
+  // exists a PrefService.
   prefs->SetInteger(prefs::kDesktopNotificationPosition,
                     BalloonCollection::DEFAULT_POSITION);
 #endif

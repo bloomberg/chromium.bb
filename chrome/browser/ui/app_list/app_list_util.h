@@ -7,7 +7,7 @@
 
 #include "base/file_path.h"
 
-class PrefServiceSimple;
+class PrefRegistrySimple;
 class Profile;
 
 namespace chrome {
@@ -22,7 +22,7 @@ void InitAppList(Profile* profile);
 void ShowAppList(Profile* profile);
 
 // Register local state preferences for the app list.
-void RegisterAppListPrefs(PrefServiceSimple* prefs);
+void RegisterAppListPrefs(PrefRegistrySimple* registry);
 
 // Change the profile that the app list is showing.
 void SetAppListProfile(const FilePath& profile_file_path);

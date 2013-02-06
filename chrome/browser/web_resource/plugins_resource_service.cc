@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/plugins/plugin_finder.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -65,10 +66,10 @@ PluginsResourceService::~PluginsResourceService() {
 }
 
 // static
-void PluginsResourceService::RegisterPrefs(PrefServiceSimple* local_state) {
-  local_state->RegisterDictionaryPref(
-      prefs::kPluginsMetadata, new base::DictionaryValue());
-  local_state->RegisterStringPref(prefs::kPluginsResourceCacheUpdate, "0");
+void PluginsResourceService::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(prefs::kPluginsMetadata,
+                                   new base::DictionaryValue());
+  registry->RegisterStringPref(prefs::kPluginsResourceCacheUpdate, "0");
 }
 
 void PluginsResourceService::Unpack(const DictionaryValue& parsed_json) {

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -86,7 +87,7 @@ class OffTheRecordProfileImplTest : public BrowserWithTestWindowTest {
 
   virtual void SetUp() OVERRIDE {
     prefs_.reset(new TestingPrefServiceSimple);
-    chrome::RegisterLocalState(prefs_.get());
+    chrome::RegisterLocalState(prefs_->registry(), prefs_.get());
 
     browser_process()->SetLocalState(prefs_.get());
 
@@ -105,7 +106,7 @@ class OffTheRecordProfileImplTest : public BrowserWithTestWindowTest {
     return TestingBrowserProcess::GetGlobal();
   }
 
-  scoped_ptr<PrefServiceSimple> prefs_;
+  scoped_ptr<TestingPrefServiceSimple> prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImplTest);
 };

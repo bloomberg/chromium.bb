@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -28,8 +28,8 @@ KeywordEditorController::~KeywordEditorController() {
 // static
 // TODO(rsesek): Other platforms besides Mac should remember window
 // placement. http://crbug.com/22269
-void KeywordEditorController::RegisterPrefs(PrefServiceSimple* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kKeywordEditorWindowPlacement);
+void KeywordEditorController::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(prefs::kKeywordEditorWindowPlacement);
 }
 
 int KeywordEditorController::AddTemplateURL(const string16& title,

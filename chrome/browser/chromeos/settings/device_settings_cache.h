@@ -10,7 +10,7 @@ class PolicyData;
 }
 
 class PrefService;
-class PrefServiceSimple;
+class PrefRegistrySimple;
 
 namespace chromeos {
 
@@ -20,7 +20,7 @@ namespace chromeos {
 // case.
 namespace device_settings_cache {
 // Registers required pref section.
-void RegisterPrefs(PrefServiceSimple* local_state);
+void RegisterPrefs(PrefRegistrySimple* registry);
 
 // Stores a new policy blob inside the cache stored in |local_state|.
 bool Store(const enterprise_management::PolicyData &policy,

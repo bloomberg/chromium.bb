@@ -10,8 +10,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/prefs/persistent_pref_store.h"
 #include "base/prefs/pref_store.h"
+#include "chrome/browser/prefs/pref_registry.h"
 
-class PrefServiceSimple;
+class PrefService;
 
 namespace base {
 class FilePath;
@@ -45,9 +46,9 @@ class PrefServiceBuilder {
 
   PrefServiceBuilder& WithAsync(bool async);
 
-  // Creates a PrefServiceSimple object initialized with the
-  // parameters from this builder.
-  virtual PrefServiceSimple* CreateSimple();
+  // Creates a PrefService object initialized with the parameters from
+  // this builder.
+  virtual PrefService* Create(PrefRegistry* registry);
 
  protected:
   virtual void ResetDefaultState();

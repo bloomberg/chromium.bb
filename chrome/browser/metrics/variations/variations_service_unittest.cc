@@ -340,7 +340,7 @@ TEST(VariationsServiceTest, IsStudyExpired) {
 TEST(VariationsServiceTest, LoadSeed) {
   TestingPrefServiceSimple pref_service;
 
-  VariationsService::RegisterPrefs(&pref_service);
+  VariationsService::RegisterPrefs(pref_service.registry());
 
   // Store good seed data to test if loading from prefs works.
   TrialsSeed seed = CreateTestSeed();
@@ -380,7 +380,7 @@ TEST(VariationsServiceTest, LoadSeed) {
 TEST(VariationsServiceTest, StoreSeed) {
   TestingPrefServiceSimple pref_service;
 
-  VariationsService::RegisterPrefs(&pref_service);
+  VariationsService::RegisterPrefs(pref_service.registry());
   const base::Time now = base::Time::Now();
 
   TrialsSeed seed = CreateTestSeed();

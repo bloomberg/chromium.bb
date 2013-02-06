@@ -10,10 +10,10 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/synchronization/lock.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/string16.h"
+#include "base/synchronization/lock.h"
 #include "webkit/plugins/webplugininfo.h"
 
 namespace base {
@@ -22,7 +22,7 @@ class DictionaryValue;
 
 class GURL;
 class PluginMetadata;
-class PrefServiceSimple;
+class PrefRegistrySimple;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 class PluginInstaller;
@@ -33,7 +33,7 @@ class PluginInstaller;
 // After that it can be safely used on any other thread.
 class PluginFinder {
  public:
-  static void RegisterPrefs(PrefServiceSimple* local_state);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   static PluginFinder* GetInstance();
 

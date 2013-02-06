@@ -26,7 +26,7 @@
 #endif
 
 class PrefService;
-class PrefServiceSimple;
+class PrefRegistrySimple;
 
 namespace chrome_variations {
 
@@ -62,7 +62,7 @@ class VariationsService
   void SetCreateTrialsFromSeedCalledForTesting(bool called);
 
   // Register Variations related prefs in Local State.
-  static void RegisterPrefs(PrefServiceSimple* prefs);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Factory method for creating a VariationsService.
   static VariationsService* Create();

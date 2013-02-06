@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_version_info.h"
@@ -380,8 +381,8 @@ MetricsLog::MetricsLog(const std::string& client_id, int session_id)
 MetricsLog::~MetricsLog() {}
 
 // static
-void MetricsLog::RegisterPrefs(PrefServiceSimple* local_state) {
-  local_state->RegisterListPref(prefs::kStabilityPluginStats);
+void MetricsLog::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterListPref(prefs::kStabilityPluginStats);
 }
 
 // static

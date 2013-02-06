@@ -19,6 +19,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/mock_pref_change_callback.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -44,7 +45,7 @@ TEST(PrefServiceTest, NoObserverFire) {
   TestingPrefServiceSimple prefs;
 
   const char pref_name[] = "homepage";
-  prefs.RegisterStringPref(pref_name, std::string());
+  prefs.registry()->RegisterStringPref(pref_name, std::string());
 
   const char new_pref_value[] = "http://www.google.com/";
   MockPrefChangeCallback obs(&prefs);
@@ -86,7 +87,7 @@ TEST(PrefServiceTest, HasPrefPath) {
 
   // Register the path. This doesn't set a value, so the path still shouldn't
   // exist.
-  prefs.RegisterStringPref(path, std::string());
+  prefs.registry()->RegisterStringPref(path, std::string());
   EXPECT_FALSE(prefs.HasPrefPath(path));
 
   // Set a value and make sure we have a path.
@@ -99,7 +100,7 @@ TEST(PrefServiceTest, Observers) {
 
   TestingPrefServiceSimple prefs;
   prefs.SetUserPref(pref_name, Value::CreateStringValue("http://www.cnn.com"));
-  prefs.RegisterStringPref(pref_name, std::string());
+  prefs.registry()->RegisterStringPref(pref_name, std::string());
 
   const char new_pref_value[] = "http://www.google.com/";
   const StringValue expected_new_pref_value(new_pref_value);
@@ -153,7 +154,8 @@ TEST(PrefServiceTest, Observers) {
 TEST(PrefServiceTest, GetValueChangedType) {
   const int kTestValue = 10;
   TestingPrefServiceSimple prefs;
-  prefs.RegisterIntegerPref(prefs::kStabilityLaunchCount, kTestValue);
+  prefs.registry()->RegisterIntegerPref(
+      prefs::kStabilityLaunchCount, kTestValue);
 
   // Check falling back to a recommended value.
   prefs.SetUserPref(prefs::kStabilityLaunchCount,
@@ -171,7 +173,7 @@ TEST(PrefServiceTest, GetValueChangedType) {
 
 TEST(PrefServiceTest, UpdateCommandLinePrefStore) {
   TestingPrefServiceSimple prefs;
-  prefs.RegisterBooleanPref(prefs::kCloudPrintProxyEnabled, false);
+  prefs.registry()->RegisterBooleanPref(prefs::kCloudPrintProxyEnabled, false);
 
   // Check to make sure the value is as expected.
   const PrefService::Preference* pref =
@@ -205,7 +207,8 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
   const int kUserValue = 10;
   const int kRecommendedValue = 15;
   TestingPrefServiceSimple prefs;
-  prefs.RegisterIntegerPref(prefs::kStabilityLaunchCount, kDefaultValue);
+  prefs.registry()->RegisterIntegerPref(
+      prefs::kStabilityLaunchCount, kDefaultValue);
 
   // Create pref with a default value only.
   const PrefService::Preference* pref =
@@ -373,7 +376,7 @@ const char PrefServiceSetValueTest::kValue[] = "value";
 TEST_F(PrefServiceSetValueTest, SetStringValue) {
   const char default_string[] = "default";
   const StringValue default_value(default_string);
-  prefs_.RegisterStringPref(kName, default_string);
+  prefs_.registry()->RegisterStringPref(kName, default_string);
 
   PrefChangeRegistrar registrar;
   registrar.Init(&prefs_);
@@ -395,7 +398,7 @@ TEST_F(PrefServiceSetValueTest, SetStringValue) {
 }
 
 TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
-  prefs_.RegisterDictionaryPref(kName);
+  prefs_.registry()->RegisterDictionaryPref(kName);
   PrefChangeRegistrar registrar;
   registrar.Init(&prefs_);
   registrar.Add(kName, observer_.GetCallback());
@@ -421,7 +424,7 @@ TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
 }
 
 TEST_F(PrefServiceSetValueTest, SetListValue) {
-  prefs_.RegisterListPref(kName);
+  prefs_.registry()->RegisterListPref(kName);
   PrefChangeRegistrar registrar;
   registrar.Init(&prefs_);
   registrar.Add(kName, observer_.GetCallback());

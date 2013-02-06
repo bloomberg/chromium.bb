@@ -12,6 +12,8 @@
 #include "base/value_conversions.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
+#include "chrome/browser/prefs/pref_registry.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
@@ -67,14 +69,14 @@ PrefServiceSyncable::PrefServiceSyncable(
     PrefNotifierImpl* pref_notifier,
     PrefValueStore* pref_value_store,
     PersistentPrefStore* user_prefs,
-    DefaultPrefStore* default_store,
+    PrefRegistry* pref_registry,
     base::Callback<void(PersistentPrefStore::PrefReadError)>
         read_error_callback,
     bool async)
   : PrefService(pref_notifier,
                 pref_value_store,
                 user_prefs,
-                default_store,
+                pref_registry,
                 read_error_callback,
                 async) {
   pref_sync_associator_.SetPrefService(this);
@@ -93,6 +95,18 @@ PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
   OverlayUserPrefStore* incognito_pref_store =
       new OverlayUserPrefStore(user_pref_store_.get());
   PrefsTabHelper::InitIncognitoUserPrefStore(incognito_pref_store);
+
+  // For the incognito service, we need a registry that shares the
+  // same default prefs, but does not interfere with callbacks on
+  // registration/unregistration made to the main service, or allow
+  // any registrations.
+  //
+  // TODO(joi): We can directly reuse the same PrefRegistry once
+  // PrefService no longer registers for callbacks on registration and
+  // unregistration.
+  scoped_refptr<PrefRegistry> incognito_registry = new PrefRegistry;
+  incognito_registry->defaults_ = pref_registry_->defaults_;
+
   PrefServiceSyncable* incognito_service = new PrefServiceSyncable(
       pref_notifier,
       pref_value_store_->CloneAndSpecialize(
@@ -101,10 +115,10 @@ PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
           NULL,  // command_line_prefs
           incognito_pref_store,
           NULL,  // recommended
-          default_store_.get(),
+          incognito_registry->defaults(),
           pref_notifier),
       incognito_pref_store,
-      default_store_.get(),
+      incognito_registry,
       read_error_callback_,
       false);
   return incognito_service;
@@ -124,7 +138,10 @@ void PrefServiceSyncable::RemoveObserver(
 }
 
 void PrefServiceSyncable::UnregisterPreference(const char* path) {
-  PrefService::UnregisterPreference(path);
+  // TODO(joi): Temporary until we have PrefRegistrySyncable.
+  static_cast<PrefRegistrySimple*>(
+      DeprecatedGetPrefRegistry())->DeprecatedUnregisterPreference(path);
+
   if (pref_sync_associator_.IsPrefRegistered(path)) {
     pref_sync_associator_.UnregisterPref(path);
   }
@@ -271,7 +288,9 @@ void PrefServiceSyncable::OnIsSyncingChanged() {
 
 void PrefServiceSyncable::RegisterSyncablePreference(
     const char* path, Value* default_value, PrefSyncStatus sync_status) {
-  PrefService::RegisterPreference(path, default_value);
+  // TODO(joi): Temporary until we have PrefRegistrySyncable.
+  static_cast<PrefRegistrySimple*>(
+      DeprecatedGetPrefRegistry())->RegisterPreference(path, default_value);
   // Register with sync if necessary.
   if (sync_status == SYNCABLE_PREF)
     pref_sync_associator_.RegisterPref(path);

@@ -4,17 +4,16 @@
 
 #include "chrome/browser/ui/tabs/tab_strip_layout_type_prefs.h"
 
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/ui/tabs/tab_strip_layout_type.h"
 #include "chrome/common/pref_names.h"
 
 namespace chrome {
 
-void RegisterTabStripLayoutTypePrefs(PrefServiceSimple* local_state) {
+void RegisterTabStripLayoutTypePrefs(PrefRegistrySimple* registry) {
   // This value is device dependant, so it goes in local state.
-  local_state->RegisterIntegerPref(
-      prefs::kTabStripLayoutType,
-      static_cast<int>(TAB_STRIP_LAYOUT_SHRINK));
+  registry->RegisterIntegerPref(prefs::kTabStripLayoutType,
+                                static_cast<int>(TAB_STRIP_LAYOUT_SHRINK));
 }
 
 }  // namespace chrome

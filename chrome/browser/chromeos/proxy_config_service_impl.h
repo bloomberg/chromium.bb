@@ -199,7 +199,7 @@ class ProxyConfigServiceImpl
                                net::ProxyConfig* proxy_config);
 
   // Register UseShardProxies preference.
-  static void RegisterPrefs(PrefServiceSimple* pref_service);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
   static void RegisterUserPrefs(PrefServiceSyncable* pref_service);
 
 #if defined(UNIT_TEST)

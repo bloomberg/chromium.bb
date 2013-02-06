@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/extensions/test_extension_service.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -100,7 +101,8 @@ class ComponentLoaderTest : public testing::Test {
 
     // Register the local state prefs.
 #if defined(OS_CHROMEOS)
-    local_state_.RegisterBooleanPref(prefs::kSpokenFeedbackEnabled, false);
+    local_state_.registry()->RegisterBooleanPref(
+        prefs::kSpokenFeedbackEnabled, false);
 #endif
   }
 

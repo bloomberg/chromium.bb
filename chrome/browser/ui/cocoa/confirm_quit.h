@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_CONFIRM_QUIT_H_
 #define CHROME_BROWSER_UI_COCOA_CONFIRM_QUIT_H_
 
-class PrefServiceSimple;
+class PrefRegistrySimple;
 
 namespace confirm_quit {
 
@@ -26,7 +26,7 @@ enum ConfirmQuitMetric {
 void RecordHistogram(ConfirmQuitMetric sample);
 
 // Registers the preference in app-wide local state.
-void RegisterLocalState(PrefServiceSimple* local_state);
+void RegisterLocalState(PrefRegistrySimple* registry);
 
 }  // namespace confirm_quit
 

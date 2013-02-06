@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_BROWSER_SHUTDOWN_H__
 #define CHROME_BROWSER_BROWSER_SHUTDOWN_H__
 
-class PrefServiceSimple;
+class PrefRegistrySimple;
 
 namespace browser_shutdown {
 
@@ -20,7 +20,7 @@ enum ShutdownType {
   END_SESSION
 };
 
-void RegisterPrefs(PrefServiceSimple* local_state);
+void RegisterPrefs(PrefRegistrySimple* registry);
 
 // Called when the browser starts shutting down so that we can measure shutdown
 // time.

@@ -9,6 +9,7 @@
 #include "base/port.h"
 #include "base/prefs/public/pref_service_base.h"
 #include "chrome/browser/autofill/risk/proto/fingerprint.pb.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -97,8 +98,9 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
 // Test that getting a fingerprint works on some basic level.
 IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
   TestingPrefServiceSimple prefs;
-  prefs.RegisterStringPref(prefs::kDefaultCharset, kCharset);
-  prefs.RegisterStringPref(prefs::kAcceptLanguages, kAcceptLanguages);
+  prefs.registry()->RegisterStringPref(prefs::kDefaultCharset, kCharset);
+  prefs.registry()->RegisterStringPref(prefs::kAcceptLanguages,
+                                       kAcceptLanguages);
 
   GetFingerprint(
       kGaiaId, kWindowBounds, kContentBounds, prefs,

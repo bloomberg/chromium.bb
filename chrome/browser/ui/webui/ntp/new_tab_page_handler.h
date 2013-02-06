@@ -10,7 +10,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-class PrefServiceSimple;
+class PrefRegistrySimple;
 class PrefServiceSyncable;
 class Profile;
 

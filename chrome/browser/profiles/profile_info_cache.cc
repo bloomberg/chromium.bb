@@ -18,6 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -823,6 +824,6 @@ std::vector<string16> ProfileInfoCache::GetProfileNames() {
 }
 
 // static
-void ProfileInfoCache::RegisterPrefs(PrefServiceSimple* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kProfileInfoCache);
+void ProfileInfoCache::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(prefs::kProfileInfoCache);
 }
