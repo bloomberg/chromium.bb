@@ -29,6 +29,10 @@ const int kDockDetachedPanelThreshold = 30;
 const int kGluePanelsDistanceThreshold = 15;
 const int kGluePanelsOverlapThreshold = 10;
 
+// The minimum distance between the panel edge and the screen (or work area)
+// edge such that the panel can snap to the screen (or work area) edge.
+const int kSnapPanelToScreenEdgeThreshold = 25;
+
 int GetHorizontalOverlap(const gfx::Rect& bounds1, const gfx::Rect& bounds2) {
   // Check for no overlap.
   if (bounds1.right() <= bounds2.x() || bounds1.x() >= bounds2.right())
@@ -118,6 +122,11 @@ int PanelDragController::GetGluePanelOverlapThresholdForTesting() {
   return kGluePanelsOverlapThreshold;
 }
 
+// static
+int PanelDragController::GetSnapPanelToScreenEdgeThresholdForTesting() {
+  return kSnapPanelToScreenEdgeThreshold;
+}
+
 PanelDragController::PanelDragController(PanelManager* panel_manager)
     : panel_manager_(panel_manager),
       panel_stacking_enabled_(PanelManager::IsPanelStackingEnabled()),
@@ -170,7 +179,8 @@ void PanelDragController::Drag(const gfx::Point& mouse_location) {
   // Check if the dragging panel can be detached.
   TryDetach(target_position);
 
-  // Check if the dragging panel can snap to other panel.
+  // Check if the dragging panel can snap to other panel or edge of the working
+  // area.
   if (panel_stacking_enabled_)
     TrySnap(&target_position);
 
@@ -591,16 +601,49 @@ void PanelDragController::TrySnap(gfx::Point* target_position) {
   if (dragging_panel_->collection()->type() == PanelCollection::DOCKED)
     return;
 
+  // Check if the panel can snap to other panel.
   gfx::Rect target_bounds;
   GlueEdge target_edge;
   Panel* target_panel = FindPanelToGlue(*target_position,
                                         SNAP,
                                         &target_bounds,
                                         &target_edge);
-  if (!target_panel)
+  if (target_panel) {
+    *target_position = target_bounds.origin();
     return;
+  }
 
-  *target_position = target_bounds.origin();
+  // Check if the panel can snap to the left/right edge of the working area.
+  gfx::Rect display_area = panel_manager_->display_area();
+  if (abs(target_position->x() - display_area.x()) <
+      kSnapPanelToScreenEdgeThreshold) {
+    target_position->set_x(display_area.x());
+  } else {
+    int width = dragging_panel_->GetBounds().width();
+    if (abs(display_area.right() - target_position->x() - width) <
+        kSnapPanelToScreenEdgeThreshold)
+      target_position->set_x(display_area.right() - width);
+  }
+
+  // Check if the panel can snap to the top/bottom edge of the working area.
+  if (abs(target_position->y() - display_area.y()) <
+      kSnapPanelToScreenEdgeThreshold) {
+    target_position->set_y(display_area.y());
+  } else {
+    // If the panel is in a stack, the height is from the top edge of this panel
+    // to the bottom edge of the last panel in the stack.
+    int height;
+    StackedPanelCollection* stack = dragging_panel_->stack();
+    if (stack) {
+      height = stack->bottom_panel()->GetBounds().bottom() -
+          dragging_panel_->GetBounds().y();
+    } else {
+      height = dragging_panel_->GetBounds().height();
+    }
+    if (abs(display_area.bottom() - target_position->y() - height) <
+        kSnapPanelToScreenEdgeThreshold)
+      target_position->set_y(display_area.bottom() - height);
+  }
 }
 
 Panel* PanelDragController::FindPanelToGlue(

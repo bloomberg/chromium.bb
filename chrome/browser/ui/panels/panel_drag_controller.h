@@ -41,6 +41,7 @@ class PanelDragController {
   static int GetDockDetachedPanelThresholdForTesting();
   static int GetGluePanelDistanceThresholdForTesting();
   static int GetGluePanelOverlapThresholdForTesting();
+  static int GetSnapPanelToScreenEdgeThresholdForTesting();
 
  private:
   enum GlueAction {

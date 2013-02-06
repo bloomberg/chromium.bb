@@ -1598,8 +1598,8 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupPanelAndPanelFromTop) {
       panel_manager->detached_collection();
 
   // Create two detached panels.
-  Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(300, 200, 200, 100));
-  Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(100, 100, 150, 150));
+  Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(300, 300, 200, 100));
+  Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(100, 200, 150, 150));
   ASSERT_EQ(2, detached_collection->num_panels());
   ASSERT_EQ(0, panel_manager->num_stacks());
   EXPECT_EQ(PanelCollection::DETACHED, panel1->collection()->type());
@@ -2313,7 +2313,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest,
 
   // Create 4 stacked panels.
   StackedPanelCollection* stack = panel_manager->CreateStack();
-  gfx::Rect panel1_initial_bounds = gfx::Rect(100, 50, 200, 150);
+  gfx::Rect panel1_initial_bounds = gfx::Rect(100, 120, 200, 100);
   Panel* panel1 = CreateStackedPanel("1", panel1_initial_bounds, stack);
   gfx::Rect panel2_initial_bounds = gfx::Rect(0, 0, 150, 100);
   Panel* panel2 = CreateStackedPanel("2", panel2_initial_bounds, stack);
@@ -2839,6 +2839,90 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragTopStackedPanel) {
   EXPECT_EQ(panel2_expected_bounds, panel2->GetBounds());
   panel3_expected_bounds.Offset(drag_delta);
   EXPECT_EQ(panel3_expected_bounds, panel3->GetBounds());
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, SnapDetachedPanelToScreenEdge) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  gfx::Rect display_area = panel_manager->display_area();
+  int small_distance =
+      PanelDragController::GetSnapPanelToScreenEdgeThresholdForTesting() / 2;
+
+  // Create one detached panel.
+  gfx::Rect panel_initial_bounds = gfx::Rect(300, 100, 200, 150);
+  Panel* panel = CreateDetachedPanel("1", panel_initial_bounds);
+  gfx::Rect panel_expected_bounds(panel_initial_bounds);
+  EXPECT_EQ(panel_expected_bounds, panel->GetBounds());
+
+  // Drag the panel close to the right screen edge.
+  // Expect that the panel should snap to the screen edge.
+  gfx::Vector2d drag_delta(
+      display_area.right() - small_distance - panel->GetBounds().right(), 0);
+  DragPanelByDelta(panel, drag_delta);
+  panel_expected_bounds.set_x(
+      display_area.right() - panel->GetBounds().width());
+  EXPECT_EQ(panel_expected_bounds, panel->GetBounds());
+
+  // Drag the panel close to the top-left corner of the screen.
+  // Expect that the panel should snap to the screen corner.
+  gfx::Vector2d drag_delta2(
+      display_area.x() + small_distance - panel->GetBounds().x(),
+      display_area.y() - small_distance - panel->GetBounds().y());
+  DragPanelByDelta(panel, drag_delta2);
+  panel_expected_bounds.set_origin(display_area.origin());
+  EXPECT_EQ(panel_expected_bounds, panel->GetBounds());
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, SnapStackedPanelToScreenEdge) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  gfx::Rect display_area = panel_manager->display_area();
+  int small_distance =
+      PanelDragController::GetSnapPanelToScreenEdgeThresholdForTesting() / 2;
+
+  // Create 2 stacked panels.
+  StackedPanelCollection* stack = panel_manager->CreateStack();
+  gfx::Rect panel1_initial_bounds = gfx::Rect(300, 100, 200, 150);
+  Panel* panel1 = CreateStackedPanel("1", panel1_initial_bounds, stack);
+  gfx::Rect panel2_initial_bounds = gfx::Rect(0, 0, 150, 100);
+  Panel* panel2 = CreateStackedPanel("2", panel2_initial_bounds, stack);
+
+  gfx::Rect panel1_expected_bounds(panel1_initial_bounds);
+  EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
+  gfx::Rect panel2_expected_bounds = GetStackedAtBottomPanelBounds(
+      panel2_initial_bounds, panel1_expected_bounds);
+  EXPECT_EQ(panel2_expected_bounds, panel2->GetBounds());
+
+  // Drag the stack close to the left screen edge.
+  // Expect that the stack should snap to the screen edge.
+  gfx::Vector2d drag_delta(
+      display_area.x() + small_distance - panel1->GetBounds().x(), 0);
+  DragPanelByDelta(panel1, drag_delta);
+
+  panel1_expected_bounds.set_x(display_area.x());
+  EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
+  panel2_expected_bounds.set_x(display_area.x());
+  EXPECT_EQ(panel2_expected_bounds, panel2->GetBounds());
+
+  // Drag the stack close to the bottom-right corner of the screen.
+  // Expect that the stack should snap to the screen corner.
+  gfx::Vector2d drag_delta2(
+      display_area.right() + small_distance - panel1->GetBounds().right(),
+      display_area.bottom() - small_distance - panel1->GetBounds().bottom() -
+          panel2->GetBounds().height());
+  DragPanelByDelta(panel1, drag_delta2);
+
+  int expected_x = display_area.right() - panel1->GetBounds().width();
+  panel1_expected_bounds.set_x(expected_x);
+  panel1_expected_bounds.set_y(display_area.bottom() -
+      panel1->GetBounds().height() - panel2->GetBounds().height());
+  EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
+  panel2_expected_bounds.set_x(expected_x);
+  panel2_expected_bounds.set_y(display_area.bottom() -
+      panel2->GetBounds().height());
+  EXPECT_EQ(panel2_expected_bounds, panel2->GetBounds());
 
   panel_manager->CloseAll();
 }
