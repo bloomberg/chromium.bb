@@ -65,7 +65,7 @@ class ASH_EXPORT RootWindowController {
   static RootWindowController* ForLauncher(aura::Window* window);
 
   // Returns a RootWindowController of the window's root window.
-  static RootWindowController* ForWindow(aura::Window* window);
+  static RootWindowController* ForWindow(const aura::Window* window);
 
   // Returns the RootWindowController of the active root window.
   static internal::RootWindowController* ForActiveRootWindow();

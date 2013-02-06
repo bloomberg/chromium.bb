@@ -48,6 +48,9 @@ ASH_EXPORT bool IsActiveWindowFullscreen();
 // Returns true if |window| can be maximized.
 ASH_EXPORT bool CanMaximizeWindow(const aura::Window* window);
 
+// Returns true if |window| can be minimized.
+ASH_EXPORT bool CanMinimizeWindow(const aura::Window* window);
+
 // Returns true if |window| can be resized.
 ASH_EXPORT bool CanResizeWindow(const aura::Window* window);
 

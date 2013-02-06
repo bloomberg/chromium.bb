@@ -715,7 +715,7 @@ bool AcceleratorController::PerformAction(int action,
       // Disable the shortcut for minimizing full screen window due to
       // crbug.com/131709, which is a crashing issue related to minimizing
       // full screen pepper window.
-      if (!wm::IsWindowFullscreen(window)) {
+      if (!wm::IsWindowFullscreen(window) && wm::CanMinimizeWindow(window)) {
         wm::MinimizeWindow(window);
         return true;
       }

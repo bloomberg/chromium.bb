@@ -212,7 +212,8 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       if (fabs(event->details().velocity_y()) >
           kMinVertVelocityForWindowMinimize) {
         // Minimize/maximize.
-        if (event->details().velocity_y() > 0) {
+        if (event->details().velocity_y() > 0 &&
+            wm::CanMinimizeWindow(target)) {
           wm::MinimizeWindow(target);
           SetWindowAlwaysRestoresToRestoreBounds(target, true);
           SetRestoreBoundsInParent(target, pre_drag_window_bounds_);

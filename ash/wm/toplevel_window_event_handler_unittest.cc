@@ -4,10 +4,12 @@
 
 #include "ash/wm/toplevel_window_event_handler.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/session_state_controller_impl.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "ash/wm/workspace_controller.h"
@@ -76,6 +78,7 @@ class ToplevelWindowEventHandlerTest : public AshTestBase {
   aura::Window* CreateWindow(int hittest_code) {
     TestWindowDelegate* d1 = new TestWindowDelegate(hittest_code);
     aura::Window* w1 = new aura::Window(d1);
+    w1->SetType(aura::client::WINDOW_TYPE_NORMAL);
     w1->set_id(1);
     w1->Init(ui::LAYER_TEXTURED);
     aura::Window* parent =
@@ -381,7 +384,11 @@ TEST_F(ToplevelWindowEventHandlerTest, DontGotWiderThanScreen) {
 
 // Verifies that touch-gestures drag the window correctly.
 TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
-  scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+  scoped_ptr<aura::Window> target(
+      CreateTestWindowInShellWithDelegate(
+          new TestWindowDelegate(HTCAPTION),
+          0,
+          gfx::Rect(0, 0, 100, 100)));
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        target.get());
   gfx::Rect old_bounds = target->bounds();
@@ -461,6 +468,34 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   EXPECT_TRUE(GetWindowAlwaysRestoresToRestoreBounds(target.get()));
   EXPECT_EQ(old_bounds.ToString(),
             GetRestoreBoundsInScreen(target.get())->ToString());
+}
+
+// Tests that a gesture cannot minimize a window in login/lock screen.
+TEST_F(ToplevelWindowEventHandlerTest, GestureDragMinimizeLoginScreen) {
+  SessionStateControllerImpl* state_controller =
+      static_cast<SessionStateControllerImpl*>
+      (Shell::GetInstance()->session_state_controller());
+  state_controller->OnLoginStateChanged(user::LOGGED_IN_NONE);
+  state_controller->OnLockStateChanged(false);
+  SetUserLoggedIn(false);
+
+  scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+  aura::Window* lock = internal::RootWindowController::ForWindow(target.get())->
+      GetContainer(internal::kShellWindowId_LockSystemModalContainer);
+  lock->AddChild(target.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       target.get());
+  gfx::Rect old_bounds = target->bounds();
+  gfx::Point location(5, 5);
+  target->SetProperty(aura::client::kCanMaximizeKey, true);
+
+  gfx::Point end = location;
+  end.Offset(0, 100);
+  generator.GestureScrollSequence(location, end,
+      base::TimeDelta::FromMilliseconds(5),
+      10);
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(wm::IsWindowMinimized(target.get()));
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {

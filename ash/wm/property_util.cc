@@ -92,7 +92,7 @@ void SetDefaultPersistsAcrossAllWorkspaces(bool value) {
 }
 
 internal::RootWindowController* GetRootWindowController(
-    aura::RootWindow* root_window) {
+    const aura::RootWindow* root_window) {
   return root_window ?
       root_window->GetProperty(internal::kRootWindowControllerKey) : NULL;
 }

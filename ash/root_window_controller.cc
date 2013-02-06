@@ -186,7 +186,8 @@ RootWindowController* RootWindowController::ForLauncher(aura::Window* window) {
 }
 
 // static
-RootWindowController* RootWindowController::ForWindow(aura::Window* window) {
+RootWindowController* RootWindowController::ForWindow(
+    const aura::Window* window) {
   return GetRootWindowController(window->GetRootWindow());
 }
 

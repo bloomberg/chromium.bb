@@ -134,7 +134,8 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
       if (event.details().swipe_up()) {
         if (wm::CanMaximizeWindow(target))
           wm::MaximizeWindow(target);
-      } else if (event.details().swipe_down()) {
+      } else if (event.details().swipe_down() &&
+                 wm::CanMinimizeWindow(target)) {
         wm::MinimizeWindow(target);
       } else if (wm::CanSnapWindow(target)) {
         ui::ScopedLayerAnimationSettings scoped_setter(

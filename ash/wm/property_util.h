@@ -85,7 +85,7 @@ ASH_EXPORT void SetRootWindowController(
     aura::RootWindow* root_window,
     internal::RootWindowController* controller);
 ASH_EXPORT internal::RootWindowController* GetRootWindowController(
-    aura::RootWindow* root_window);
+    const aura::RootWindow* root_window);
 
 }
 
