@@ -1718,6 +1718,9 @@ const char kSyncMaxInvalidationVersions[] = "sync.max_invalidation_versions";
 // disable/enable events.
 const char kSyncSessionsGUID[] = "sync.session_sync_guid";
 
+// An ID to uniquely identify this client to the invalidator service.
+const char kInvalidatorClientId[] = "invalidator.client_id";
+
 // Opaque state from the invalidation subsystem that is persisted via prefs.
 // The value is base 64 encoded.
 const char kInvalidatorInvalidationState[] = "invalidator.invalidation_state";

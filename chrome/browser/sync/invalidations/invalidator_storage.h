@@ -47,6 +47,8 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
                                        int64 max_version,
                                        const std::string& payload) OVERRIDE;
   virtual void Forget(const syncer::ObjectIdSet& ids) OVERRIDE;
+  virtual void SetInvalidatorClientId(const std::string& client_id) OVERRIDE;
+  virtual std::string GetInvalidatorClientId() const OVERRIDE;
   virtual void SetBootstrapData(const std::string& data) OVERRIDE;
   virtual std::string GetBootstrapData() const OVERRIDE;
   virtual void GenerateAckHandles(

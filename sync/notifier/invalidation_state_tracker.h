@@ -62,6 +62,12 @@ class InvalidationStateTracker {
   // Removes all state tracked for |ids|.
   virtual void Forget(const ObjectIdSet& ids) = 0;
 
+  // The per-client unique ID used to register the invalidation client with the
+  // server.  This is used to squelch invalidation notifications that originate
+  // from changes made by this client.
+  virtual void SetInvalidatorClientId(const std::string& data) = 0;
+  virtual std::string GetInvalidatorClientId() const = 0;
+
   // Used by invalidation::InvalidationClient for persistence. |data| is an
   // opaque blob that an invalidation client can use after a restart to
   // bootstrap itself. |data| is binary data (not valid UTF8, embedded nulls,

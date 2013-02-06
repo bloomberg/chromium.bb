@@ -226,6 +226,10 @@ class SyncInvalidationListenerTest : public testing::Test {
     return fake_tracker_.GetMaxVersion(id);
   }
 
+  std::string GetInvalidatorClientId() const {
+    return fake_tracker_.GetInvalidatorClientId();
+  }
+
   std::string GetBootstrapData() const {
     return fake_tracker_.GetBootstrapData();
   }
@@ -300,6 +304,11 @@ class SyncInvalidationListenerTest : public testing::Test {
                   MakeWeakHandle(fake_tracker_.AsWeakPtr()),
                   &fake_delegate_);
     DCHECK(fake_invalidation_client_);
+
+    // TODO(rlarocque): This is necessary for the deferred write of the client
+    // ID to take place.  We can remove this statement when we remove the
+    // WriteInvalidatorClientId test.  See crbug.com/124142.
+    message_loop_.RunUntilIdle();
   }
 
   void StopClient() {
@@ -325,6 +334,14 @@ class SyncInvalidationListenerTest : public testing::Test {
   FakeInvalidationClient* fake_invalidation_client_;
   SyncInvalidationListener client_;
 };
+
+// Verify the client ID is written to the state tracker on client start.
+// TODO(rlarocque): Remove this test when migration code is removed.
+// See crbug.com/124142.
+TEST_F(SyncInvalidationListenerTest, WriteInvalidatorClientId) {
+  // The client is started by the harness, so we don't have to do anything here.
+  EXPECT_EQ(kClientId, GetInvalidatorClientId());
+}
 
 // Write a new state to the client.  It should propagate to the
 // tracker.

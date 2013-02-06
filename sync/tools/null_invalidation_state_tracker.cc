@@ -37,6 +37,15 @@ void NullInvalidationStateTracker::Forget(const ObjectIdSet& ids) {
   }
 }
 
+void NullInvalidationStateTracker::SetInvalidatorClientId(
+    const std::string& data) {
+  LOG(INFO) << "Setting invalidator client ID to: " << data;
+}
+
+std::string NullInvalidationStateTracker::GetInvalidatorClientId() const {
+  return std::string();
+}
+
 std::string NullInvalidationStateTracker::GetBootstrapData() const {
   return std::string();
 }

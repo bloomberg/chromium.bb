@@ -47,6 +47,15 @@ void FakeInvalidationStateTracker::Forget(const ObjectIdSet& ids) {
   }
 }
 
+void FakeInvalidationStateTracker::SetInvalidatorClientId(
+    const std::string& client_id) {
+  invalidator_client_id_ = client_id;
+}
+
+std::string FakeInvalidationStateTracker::GetInvalidatorClientId() const {
+  return invalidator_client_id_;
+}
+
 void FakeInvalidationStateTracker::SetBootstrapData(
     const std::string& data) {
   bootstrap_data_ = data;

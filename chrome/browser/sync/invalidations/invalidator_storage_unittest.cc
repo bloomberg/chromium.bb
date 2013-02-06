@@ -107,15 +107,20 @@ TEST_F(InvalidatorStorageTest, Forget) {
   EXPECT_EQ(expected_states, storage.GetAllInvalidationStates());
 }
 
-// Clearing the storage should erase all version map entries and the bootstrap
-// data.
+// Clearing the storage should erase all version map entries, bootstrap data,
+// and the client ID.
 TEST_F(InvalidatorStorageTest, Clear) {
   InvalidatorStorage storage(&pref_service_);
   EXPECT_TRUE(storage.GetAllInvalidationStates().empty());
   EXPECT_TRUE(storage.GetBootstrapData().empty());
+  EXPECT_TRUE(storage.GetInvalidatorClientId().empty());
+
+  storage.SetInvalidatorClientId("fake_id");
+  EXPECT_EQ("fake_id", storage.GetInvalidatorClientId());
 
   storage.SetBootstrapData("test");
   EXPECT_EQ("test", storage.GetBootstrapData());
+
   {
     InvalidationStateMap expected_states;
     expected_states[kAppNotificationsId_].version = 3;
@@ -127,6 +132,7 @@ TEST_F(InvalidatorStorageTest, Clear) {
 
   EXPECT_TRUE(storage.GetAllInvalidationStates().empty());
   EXPECT_TRUE(storage.GetBootstrapData().empty());
+  EXPECT_TRUE(storage.GetInvalidatorClientId().empty());
 }
 
 TEST_F(InvalidatorStorageTest, SerializeEmptyMap) {
@@ -399,6 +405,14 @@ TEST_F(InvalidatorStorageTest, MigrateLegacyPreferences) {
   EXPECT_EQ(10, map[kAutofillId_].version);
   EXPECT_EQ(32, map[kBookmarksId_].version);
   EXPECT_EQ(54, map[kPreferencesId_].version);
+}
+
+TEST_F(InvalidatorStorageTest, SetGetNotifierClientId) {
+  InvalidatorStorage storage(&pref_service_);
+  const std::string client_id("fK6eDzAIuKqx9A4+93bljg==");
+
+  storage.SetInvalidatorClientId(client_id);
+  EXPECT_EQ(client_id, storage.GetInvalidatorClientId());
 }
 
 TEST_F(InvalidatorStorageTest, SetGetBootstrapData) {

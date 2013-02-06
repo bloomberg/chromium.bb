@@ -104,6 +104,9 @@ InvalidatorStorage::InvalidatorStorage(PrefServiceSyncable* pref_service)
     pref_service_->RegisterStringPref(prefs::kInvalidatorInvalidationState,
                                       std::string(),
                                       PrefServiceSyncable::UNSYNCABLE_PREF);
+    pref_service_->RegisterStringPref(prefs::kInvalidatorClientId,
+                                      std::string(),
+                                      PrefServiceSyncable::UNSYNCABLE_PREF);
 
     MigrateMaxInvalidationVersionsPref();
   }
@@ -256,6 +259,17 @@ void InvalidatorStorage::DeserializeMap(
   }
 }
 
+void InvalidatorStorage::SetInvalidatorClientId(const std::string& client_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  pref_service_->SetString(prefs::kInvalidatorClientId, client_id);
+}
+
+std::string InvalidatorStorage::GetInvalidatorClientId() const {
+  return pref_service_ ?
+      pref_service_->GetString(prefs::kInvalidatorClientId) :
+          std::string();
+}
+
 void InvalidatorStorage::SetBootstrapData(const std::string& data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   std::string base64_data;
@@ -275,6 +289,7 @@ std::string InvalidatorStorage::GetBootstrapData() const {
 void InvalidatorStorage::Clear() {
   DCHECK(thread_checker_.CalledOnValidThread());
   pref_service_->ClearPref(prefs::kInvalidatorMaxInvalidationVersions);
+  pref_service_->ClearPref(prefs::kInvalidatorClientId);
   pref_service_->ClearPref(prefs::kInvalidatorInvalidationState);
 }
 

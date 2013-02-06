@@ -24,6 +24,9 @@ class NullInvalidationStateTracker
                                        const std::string& payload) OVERRIDE;
   virtual void Forget(const ObjectIdSet& ids) OVERRIDE;
 
+  virtual void SetInvalidatorClientId(const std::string& data) OVERRIDE;
+  virtual std::string GetInvalidatorClientId() const OVERRIDE;
+
   virtual std::string GetBootstrapData() const OVERRIDE;
   virtual void SetBootstrapData(const std::string& data) OVERRIDE;
 

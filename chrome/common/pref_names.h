@@ -615,6 +615,7 @@ extern const char kSyncAcknowledgedSyncTypes[];
 extern const char kSyncMaxInvalidationVersions[];
 extern const char kSyncSessionsGUID[];
 
+extern const char kInvalidatorClientId[];
 extern const char kInvalidatorInvalidationState[];
 extern const char kInvalidatorMaxInvalidationVersions[];
 
