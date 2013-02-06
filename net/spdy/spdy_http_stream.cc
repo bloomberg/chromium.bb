@@ -190,7 +190,7 @@ bool SpdyHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
   // The reused flag can only be correctly set once a stream has an ID.  Streams
   // get their IDs once the request has been successfully sent, so this does not
   // behave that differently from other stream types.
-  if (!stream_ || stream_->stream_id() == 0)
+  if (!spdy_session_ || !stream_ || stream_->stream_id() == 0)
     return false;
   return spdy_session_->GetLoadTimingInfo(stream_->stream_id(),
                                           load_timing_info);
