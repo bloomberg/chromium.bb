@@ -50,17 +50,17 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
       const net::HttpNetworkSession* network_session,
       net::SSLCertRequestInfo* cert_request_info,
       const base::Callback<void(net::X509Certificate*)>& callback);
-  ~SSLClientCertificateSelector();
+  virtual ~SSLClientCertificateSelector();
 
   void Show();
 
   // SSLClientAuthObserver implementation:
-  virtual void OnCertSelectedByNotification();
+  virtual void OnCertSelectedByNotification() OVERRIDE;
 
   // ConstrainedWindowGtkDelegate implementation:
-  virtual GtkWidget* GetWidgetRoot() { return root_widget_.get(); }
-  virtual GtkWidget* GetFocusWidget();
-  virtual void DeleteDelegate();
+  virtual GtkWidget* GetWidgetRoot() OVERRIDE { return root_widget_.get(); }
+  virtual GtkWidget* GetFocusWidget() OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
 
  private:
   void PopulateCerts();

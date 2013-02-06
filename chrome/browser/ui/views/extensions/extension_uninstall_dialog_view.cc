@@ -67,7 +67,7 @@ class ExtensionUninstallDialogViews : public ExtensionUninstallDialog {
   ExtensionUninstallDialogDelegateView* view() { return view_; }
 
  private:
-  void Show() OVERRIDE;
+  virtual void Show() OVERRIDE;
 
   ExtensionUninstallDialogDelegateView* view_;
 

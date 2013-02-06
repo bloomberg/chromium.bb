@@ -140,7 +140,7 @@ class InfobarView : public views::View {
   }
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() {
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     if (!visible())
       return gfx::Size();
 
@@ -150,7 +150,7 @@ class InfobarView : public views::View {
     return size;
   }
 
-  virtual void Layout() {
+  virtual void Layout() OVERRIDE {
     content_->SetBounds(
         0, views::kRelatedControlVerticalSpacing,
         width(), height() - views::kRelatedControlVerticalSpacing);
@@ -158,7 +158,7 @@ class InfobarView : public views::View {
 
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child) {
+                                    views::View* child) OVERRIDE {
     if (is_add && child == this)
       Init();
   }

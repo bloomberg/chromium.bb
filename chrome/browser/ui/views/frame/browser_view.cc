@@ -206,7 +206,7 @@ class BookmarkExtensionBackground : public views::Background {
                               Browser* browser);
 
   // View methods overridden from views:Background.
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const;
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE;
 
  private:
   BrowserView* browser_view_;
@@ -286,7 +286,7 @@ class ResizeCorner : public views::View {
     EnableCanvasFlippingForRTLUI(true);
   }
 
-  virtual void OnPaint(gfx::Canvas* canvas) {
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     views::Widget* widget = GetWidget();
     if (!widget || (widget->IsMaximized() || widget->IsFullscreen()))
       return;
@@ -305,13 +305,13 @@ class ResizeCorner : public views::View {
     return gfx::Size();
   }
 
-  virtual gfx::Size GetPreferredSize() {
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     views::Widget* widget = GetWidget();
     return (!widget || widget->IsMaximized() || widget->IsFullscreen()) ?
         gfx::Size() : GetSize();
   }
 
-  virtual void Layout() {
+  virtual void Layout() OVERRIDE {
     if (parent()) {
       gfx::Size ps = GetPreferredSize();
       // No need to handle Right to left text direction here,

@@ -47,7 +47,7 @@ class FaviconDelegate : public ui::MenuModelDelegate {
  public:
   FaviconDelegate() : was_called_(false) {}
 
-  void OnIconChanged(int model_index) {
+  virtual void OnIconChanged(int model_index) OVERRIDE {
     was_called_ = true;
     MessageLoop::current()->Quit();
   }

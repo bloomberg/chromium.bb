@@ -125,7 +125,7 @@ class AboutMemoryHandler : public MemoryDetails {
   virtual void OnDetailsAvailable() OVERRIDE;
 
  private:
-  ~AboutMemoryHandler() {}
+  virtual ~AboutMemoryHandler() {}
 
   void BindProcessMetrics(DictionaryValue* data,
                           ProcessMemoryInformation* info);

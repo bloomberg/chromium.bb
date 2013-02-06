@@ -63,7 +63,7 @@ class LauncherPlatformPerAppAppBrowserTest
     return ash::test::ShellTestApi(ash::Shell::GetInstance()).launcher_model();
   }
 
-  virtual void RunTestOnMainThreadLoop() {
+  virtual void RunTestOnMainThreadLoop() OVERRIDE {
     launcher_ = ash::Launcher::ForPrimaryDisplay();
     controller_ = static_cast<ChromeLauncherController*>(launcher_->delegate());
     return extensions::PlatformAppBrowserTest::RunTestOnMainThreadLoop();
@@ -95,7 +95,7 @@ class LauncherPerAppAppBrowserTest : public ExtensionBrowserTest {
     command_line->AppendSwitch(ash::switches::kAshEnablePerAppLauncher);
   }
 
-  virtual void RunTestOnMainThreadLoop() {
+  virtual void RunTestOnMainThreadLoop() OVERRIDE {
     launcher_ = ash::Launcher::ForPrimaryDisplay();
     model_ =
         ash::test::ShellTestApi(ash::Shell::GetInstance()).launcher_model();

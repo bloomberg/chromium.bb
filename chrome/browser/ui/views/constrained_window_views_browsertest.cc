@@ -58,7 +58,7 @@ class TestConstrainedDialog : public views::DialogDelegate {
         done_(false) {
   }
 
-  ~TestConstrainedDialog() {}
+  virtual ~TestConstrainedDialog() {}
 
   virtual views::View* GetInitiallyFocusedView() OVERRIDE {
     return contents_ ? contents_->GetInitiallyFocusedView() : NULL;

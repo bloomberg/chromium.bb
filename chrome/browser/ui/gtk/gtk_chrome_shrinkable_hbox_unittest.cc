@@ -26,7 +26,7 @@ class GtkChromeShrinkableHBoxTest : public testing::Test {
     gtk_container_set_border_width(GTK_CONTAINER(box_), kBorderWidth);
   }
 
-  ~GtkChromeShrinkableHBoxTest() {
+  virtual ~GtkChromeShrinkableHBoxTest() {
     gtk_widget_destroy(window_);
   }
 

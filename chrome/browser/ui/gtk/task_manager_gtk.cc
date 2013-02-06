@@ -274,14 +274,14 @@ class TaskManagerGtk::ContextMenuController
 
  private:
   // ui::SimpleMenuModel::Delegate implementation:
-  virtual bool IsCommandIdEnabled(int command_id) const {
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
     if (!task_manager_)
       return false;
 
     return true;
   }
 
-  virtual bool IsCommandIdChecked(int command_id) const {
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
     if (!task_manager_)
       return false;
 
@@ -291,11 +291,11 @@ class TaskManagerGtk::ContextMenuController
 
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) {
+      ui::Accelerator* accelerator) OVERRIDE {
     return false;
   }
 
-  virtual void ExecuteCommand(int command_id) {
+  virtual void ExecuteCommand(int command_id) OVERRIDE {
     if (!task_manager_)
       return;
 

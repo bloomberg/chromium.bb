@@ -53,9 +53,10 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
   }
 
   // Overridden from WindowSizer::StateProvider:
-  virtual bool GetPersistentState(gfx::Rect* bounds,
-                                  gfx::Rect* work_area,
-                                  ui::WindowShowState* show_state) const {
+  virtual bool GetPersistentState(
+      gfx::Rect* bounds,
+      gfx::Rect* work_area,
+      ui::WindowShowState* show_state) const OVERRIDE {
     DCHECK(bounds);
     DCHECK(show_state);
 
@@ -97,7 +98,7 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
 
   virtual bool GetLastActiveWindowState(
       gfx::Rect* bounds,
-      ui::WindowShowState* show_state) const {
+      ui::WindowShowState* show_state) const OVERRIDE {
     DCHECK(show_state);
     // Applications are always restored with the same position.
     if (!app_name_.empty())

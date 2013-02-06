@@ -53,12 +53,12 @@ class DownloadStartedAnimationGtk : public ui::LinearAnimation,
   void Close();
 
   // Animation implementation.
-  virtual void AnimateToState(double state);
+  virtual void AnimateToState(double state) OVERRIDE;
 
   // NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // The top level window that floats over the browser and displays the
   // image.

@@ -33,7 +33,7 @@ class FaviconBitmapHandler : public content::WebContentsObserver {
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   }
 
-  ~FaviconBitmapHandler() {}
+  virtual ~FaviconBitmapHandler() {}
 
   const SkBitmap& bitmap() const { return bitmap_; }
 

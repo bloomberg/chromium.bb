@@ -143,7 +143,7 @@ class LoginHandlerViews : public LoginHandler,
   friend class base::RefCountedThreadSafe<LoginHandlerViews>;
   friend class LoginPrompt;
 
-  ~LoginHandlerViews() {}
+  virtual ~LoginHandlerViews() {}
 
   // The LoginView that contains the user's login information
   LoginView* login_view_;

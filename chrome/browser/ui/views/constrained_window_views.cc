@@ -110,7 +110,8 @@ class XPWindowResources : public views::WindowResources {
   }
   virtual ~XPWindowResources() {}
 
-  virtual gfx::ImageSkia* GetPartImage(views::FramePartImage part_id) const {
+  virtual gfx::ImageSkia* GetPartImage(
+      views::FramePartImage part_id) const OVERRIDE {
     return images_[part_id];
   }
 
@@ -140,7 +141,8 @@ class VistaWindowResources : public views::WindowResources {
   }
   virtual ~VistaWindowResources() {}
 
-  virtual gfx::ImageSkia* GetPartImage(views::FramePartImage part_id) const {
+  virtual gfx::ImageSkia* GetPartImage(
+      views::FramePartImage part_id) const OVERRIDE {
     return images_[part_id];
   }
 
@@ -173,7 +175,7 @@ class ConstrainedWindowFrameView : public views::NonClientFrameView,
                              bool browser_is_off_the_record);
   virtual ~ConstrainedWindowFrameView();
 
-  void UpdateWindowTitle();
+  virtual void UpdateWindowTitle() OVERRIDE;
 
   // Overridden from views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;

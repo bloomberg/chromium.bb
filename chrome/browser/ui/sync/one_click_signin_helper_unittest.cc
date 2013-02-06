@@ -164,7 +164,7 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
 
    // Override ProfileSyncService::Shutdown() to avoid CHECK on
    // |invalidator_registrar_|.
-   void Shutdown() OVERRIDE {};
+   virtual void Shutdown() OVERRIDE {};
 
   private:
    explicit OneClickTestProfileSyncService(Profile* profile)

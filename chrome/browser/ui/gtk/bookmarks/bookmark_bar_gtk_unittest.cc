@@ -22,7 +22,7 @@ using content::BrowserThread;
 // rendering here so all we need is a non-NULL object.
 class EmptyTabstripOriginProvider : public TabstripOriginProvider {
  public:
-  virtual gfx::Point GetTabStripOriginForWidget(GtkWidget* widget) {
+  virtual gfx::Point GetTabStripOriginForWidget(GtkWidget* widget) OVERRIDE {
     return gfx::Point(0, 0);
   }
 };

@@ -155,10 +155,10 @@ class StatusBubbleViews::StatusView : public views::Label,
   // Animation functions.
   double GetCurrentOpacity();
   void SetOpacity(double opacity);
-  void AnimateToState(double state);
-  void AnimationEnded(const Animation* animation);
+  virtual void AnimateToState(double state) OVERRIDE;
+  virtual void AnimationEnded(const Animation* animation) OVERRIDE;
 
-  virtual void OnPaint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   BubbleStage stage_;
   BubbleStyle style_;
@@ -487,8 +487,8 @@ class StatusBubbleViews::StatusViewExpander : public ui::LinearAnimation,
   // Animation functions.
   int GetCurrentBubbleWidth();
   void SetBubbleWidth(int width);
-  void AnimateToState(double state);
-  void AnimationEnded(const ui::Animation* animation);
+  virtual void AnimateToState(double state) OVERRIDE;
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
 
   // Manager that owns us.
   StatusBubbleViews* status_bubble_;

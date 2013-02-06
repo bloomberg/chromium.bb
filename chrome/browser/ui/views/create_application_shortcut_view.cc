@@ -68,7 +68,7 @@ class AppInfoView : public views::View {
   void UpdateIcon(const gfx::Image& image);
 
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   // Initializes the controls

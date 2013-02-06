@@ -52,7 +52,7 @@ class URLFetcherTrampoline : public net::URLFetcherDelegate {
 
   explicit URLFetcherTrampoline(const ForwardingCallback& callback)
       : callback_(callback) {}
-  ~URLFetcherTrampoline() {}
+  virtual ~URLFetcherTrampoline() {}
 
   // net::URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;

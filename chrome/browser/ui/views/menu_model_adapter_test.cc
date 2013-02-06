@@ -107,7 +107,7 @@ class SubMenuModel : public CommonMenuModel {
       : showing_(false) {
   }
 
-  ~SubMenuModel() {
+  virtual ~SubMenuModel() {
   }
 
   bool showing() const {
@@ -132,12 +132,12 @@ class SubMenuModel : public CommonMenuModel {
     return ASCIIToUTF16("Item");
   }
 
-  virtual void MenuWillShow() {
+  virtual void MenuWillShow() OVERRIDE {
     showing_ = true;
   }
 
   // Called when the menu has been closed.
-  virtual void MenuClosed() {
+  virtual void MenuClosed() OVERRIDE {
     showing_ = false;
   }
 
@@ -151,7 +151,7 @@ class TopMenuModel : public CommonMenuModel {
   TopMenuModel() {
   }
 
-  ~TopMenuModel() {
+  virtual ~TopMenuModel() {
   }
 
   bool IsSubmenuShowing() {

@@ -19,7 +19,7 @@ class BaseError : public GlobalError {
 
   static int count() { return count_; }
 
-  bool HasBadge() OVERRIDE { return false; }
+  virtual bool HasBadge() OVERRIDE { return false; }
   virtual int GetBadgeResourceID() OVERRIDE {
     ADD_FAILURE();
     return 0;
@@ -84,8 +84,8 @@ int BaseError::count_ = 0;
 class BadgeError : public BaseError {
  public:
   explicit BadgeError(int resource_id) : resource_id_(resource_id) {}
-  bool HasBadge() OVERRIDE { return true; }
-  Severity GetSeverity() OVERRIDE {
+  virtual bool HasBadge() OVERRIDE { return true; }
+  virtual Severity GetSeverity() OVERRIDE {
     return static_cast<Severity>(resource_id_);
   }
   virtual int GetBadgeResourceID() OVERRIDE { return resource_id_; }

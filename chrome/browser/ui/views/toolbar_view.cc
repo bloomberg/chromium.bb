@@ -128,11 +128,11 @@ class BadgeImageSource: public gfx::CanvasImageSource {
         badge_(badge) {
   }
 
-  ~BadgeImageSource() {
+  virtual ~BadgeImageSource() {
   }
 
   // Overridden from gfx::CanvasImageSource:
-  void Draw(gfx::Canvas* canvas) OVERRIDE {
+  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
     canvas->DrawImageInt(icon_, 0, 0);
     canvas->DrawImageInt(badge_, icon_.width() - badge_.width(),
                          kBadgeTopMargin);

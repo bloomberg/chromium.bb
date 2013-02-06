@@ -28,7 +28,7 @@ class MenuError : public GlobalError {
 
   int execute_count() { return execute_count_; }
 
-  bool HasBadge() OVERRIDE { return false; }
+  virtual bool HasBadge() OVERRIDE { return false; }
   virtual int GetBadgeResourceID() OVERRIDE {
     ADD_FAILURE();
     return 0;
@@ -85,7 +85,7 @@ class WrenchMenuModelTest : public BrowserWithTestWindowTest,
   // Don't handle accelerators.
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) { return false; }
+      ui::Accelerator* accelerator) OVERRIDE { return false; }
 };
 
 // Copies parts of MenuModelTest::Delegate and combines them with the
@@ -102,19 +102,19 @@ class TestWrenchMenuModel : public WrenchMenuModel {
   }
 
   // Testing overrides to ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const {
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
     bool val = WrenchMenuModel::IsCommandIdChecked(command_id);
     if (val)
       checked_count_++;
     return val;
   }
 
-  virtual bool IsCommandIdEnabled(int command_id) const {
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
     ++enable_count_;
     return true;
   }
 
-  virtual void ExecuteCommand(int command_id) { ++execute_count_; }
+  virtual void ExecuteCommand(int command_id) OVERRIDE { ++execute_count_; }
 
   int execute_count_;
   mutable int checked_count_;

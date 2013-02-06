@@ -62,7 +62,7 @@ class MockSelectFileDialogListener : public ui::SelectFileDialog::Listener {
   }
   virtual void MultiFilesSelected(
       const std::vector<FilePath>& files, void* params) OVERRIDE {}
-  virtual void FileSelectionCanceled(void* params) {
+  virtual void FileSelectionCanceled(void* params) OVERRIDE {
     canceled_ = true;
     params_ = params;
   }

@@ -60,11 +60,11 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
  private:
   // Inherited from FocusChangeListener
   virtual void OnWillChangeFocus(views::View* focused_before,
-                                 views::View* focused_now) {
+                                 views::View* focused_now) OVERRIDE {
   }
 
   virtual void OnDidChangeFocus(views::View* focused_before,
-                                views::View* focused_now) {
+                                views::View* focused_now) OVERRIDE {
     if (focused_now && focused_now->id() != previous_view_id_) {
       MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     }

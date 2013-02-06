@@ -187,7 +187,7 @@ class SuggestionsSourceStub : public SuggestionsSource {
     items_.push_back(item);
   }
 
-  void SetCombiner(SuggestionsCombiner* combiner) OVERRIDE {
+  virtual void SetCombiner(SuggestionsCombiner* combiner) OVERRIDE {
     DCHECK(!combiner_);
     combiner_ = combiner;
   }

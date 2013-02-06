@@ -130,7 +130,7 @@ class BookmarkEditorGtk::ContextMenuController
   };
 
   // Overridden from ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdEnabled(int command_id) const {
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
     if (editor_ == NULL)
       return false;
 
@@ -144,16 +144,17 @@ class BookmarkEditorGtk::ContextMenuController
     return false;
   }
 
-  virtual bool IsCommandIdChecked(int command_id) const {
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
     return false;
   }
 
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          ui::Accelerator* accelerator) {
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE {
     return false;
   }
 
-  virtual void ExecuteCommand(int command_id) {
+  virtual void ExecuteCommand(int command_id) OVERRIDE {
     if (!editor_)
       return;
 

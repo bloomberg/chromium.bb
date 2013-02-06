@@ -81,7 +81,7 @@ class PortalFrameLoadObserver : public content::RenderViewHostObserver {
   }
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PortalFrameLoadObserver, message)
       IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FrameLoadingError, OnFrameLoadError)
@@ -151,9 +151,10 @@ class MobileSetupHandler
 
  private:
   // Changes internal state.
-  void OnActivationStateChanged(CellularNetwork* network,
-                                MobileActivator::PlanActivationState new_state,
-                                const std::string& error_description);
+  virtual void OnActivationStateChanged(
+      CellularNetwork* network,
+      MobileActivator::PlanActivationState new_state,
+      const std::string& error_description) OVERRIDE;
 
   // Handlers for JS WebUI messages.
   void HandleSetTransactionStatus(const ListValue* args);

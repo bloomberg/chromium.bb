@@ -77,7 +77,8 @@ class SourceWindowObserver : content::WebContentsObserver {
   virtual ~SourceWindowObserver() {}
 
   // Implement WebContentsObserver
-  virtual void WebContentsDestroyed(content::WebContents* web_contents) {
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE {
     if (controller_)
       controller_->SourceWebContentsDestroyed(web_contents);
     delete this;

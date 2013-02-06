@@ -92,11 +92,11 @@ class DockView : public views::View {
  public:
   explicit DockView(DockInfo::Type type) : type_(type) {}
 
-  virtual gfx::Size GetPreferredSize() {
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     return gfx::Size(DockInfo::popup_width(), DockInfo::popup_height());
   }
 
-  virtual void OnPaintBackground(gfx::Canvas* canvas) {
+  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
     // Fill the background rect.
     SkPaint paint;
     paint.setColor(SkColorSetRGB(108, 108, 108));

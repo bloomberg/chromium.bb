@@ -152,7 +152,7 @@ class ContentSettingTitleLinkAndCustomModel
 
  private:
   void SetCustomLink();
-  virtual void OnCustomLinkClicked() {}
+  virtual void OnCustomLinkClicked() OVERRIDE {}
 };
 
 ContentSettingTitleLinkAndCustomModel::ContentSettingTitleLinkAndCustomModel(
@@ -450,7 +450,7 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
 
  private:
   void SetPopups();
-  virtual void OnPopupClicked(int index);
+  virtual void OnPopupClicked(int index) OVERRIDE;
 };
 
 ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(

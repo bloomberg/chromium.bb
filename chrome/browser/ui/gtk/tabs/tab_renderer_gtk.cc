@@ -287,7 +287,7 @@ class TabRendererGtk::FaviconCrashAnimation : public ui::LinearAnimation,
   virtual ~FaviconCrashAnimation() {}
 
   // ui::Animation overrides:
-  virtual void AnimateToState(double state) {
+  virtual void AnimateToState(double state) OVERRIDE {
     const double kHidingOffset = 27;
 
     if (state < .5) {
@@ -302,7 +302,7 @@ class TabRendererGtk::FaviconCrashAnimation : public ui::LinearAnimation,
   }
 
   // ui::AnimationDelegate overrides:
-  virtual void AnimationCanceled(const ui::Animation* animation) {
+  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE {
     target_->SetFaviconHidingOffset(0);
   }
 

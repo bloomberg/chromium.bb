@@ -51,12 +51,12 @@ class DownloadStartedAnimationWin : public ui::LinearAnimation,
   void Close();
 
   // Animation
-  virtual void AnimateToState(double state);
+  virtual void AnimateToState(double state) OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // We use a HWND for the popup so that it may float above any HWNDs in our UI.
   views::Widget* popup_;

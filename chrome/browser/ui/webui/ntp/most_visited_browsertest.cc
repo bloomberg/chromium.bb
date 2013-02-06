@@ -12,12 +12,12 @@ class MostVisitedWebUITest : public WebUIBrowserTest {
  public:
   virtual ~MostVisitedWebUITest() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     WebUIBrowserTest::SetUpInProcessBrowserTestFixture();
     AddLibrary(FilePath(FILE_PATH_LITERAL("most_visited_page_test.js")));
   }
 
-  virtual void SetUpOnMainThread() {
+  virtual void SetUpOnMainThread() OVERRIDE {
     WebUIBrowserTest::SetUpOnMainThread();
     ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   }

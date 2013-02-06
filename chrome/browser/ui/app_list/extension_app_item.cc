@@ -127,7 +127,7 @@ class TabOverlayImageSource : public gfx::CanvasImageSource {
 
  private:
   // gfx::CanvasImageSource overrides:
-  void Draw(gfx::Canvas* canvas) OVERRIDE {
+  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
     using extension_misc::EXTENSION_ICON_SMALL;
     using extension_misc::EXTENSION_ICON_MEDIUM;
 

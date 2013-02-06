@@ -33,16 +33,16 @@ class WebContentsModalDialogCloseTest : public WebContentsModalDialog {
       : web_contents_(web_contents) {
   }
 
-  virtual void ShowWebContentsModalDialog() {}
-  virtual void CloseWebContentsModalDialog() {
+  virtual void ShowWebContentsModalDialog() OVERRIDE {}
+  virtual void CloseWebContentsModalDialog() OVERRIDE {
     WebContentsModalDialogManager* web_contents_modal_dialog_manager =
         WebContentsModalDialogManager::FromWebContents(web_contents_);
     web_contents_modal_dialog_manager->WillClose(this);
     close_count++;
   }
-  virtual void FocusWebContentsModalDialog() {}
-  virtual void PulseWebContentsModalDialog() {}
-  virtual gfx::NativeWindow GetNativeWindow() {
+  virtual void FocusWebContentsModalDialog() OVERRIDE {}
+  virtual void PulseWebContentsModalDialog() OVERRIDE {}
+  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE {
     NOTREACHED();
     return NULL;
   }

@@ -77,11 +77,11 @@ class MockDownloadsDOMHandler : public DownloadsDOMHandler {
   void reset_download_updated() { download_updated_.reset(); }
 
  protected:
-  virtual content::WebContents* GetWebUIWebContents() {
+  virtual content::WebContents* GetWebUIWebContents() OVERRIDE {
     return NULL;
   }
 
-  virtual void CallDownloadsList(const base::ListValue& downloads) {
+  virtual void CallDownloadsList(const base::ListValue& downloads) OVERRIDE {
     downloads_list_.reset(downloads.DeepCopy());
     if (waiting_list_) {
       content::BrowserThread::PostTask(
@@ -89,7 +89,7 @@ class MockDownloadsDOMHandler : public DownloadsDOMHandler {
     }
   }
 
-  virtual void CallDownloadUpdated(const base::ListValue& download) {
+  virtual void CallDownloadUpdated(const base::ListValue& download) OVERRIDE {
     download_updated_.reset(download.DeepCopy());
     if (waiting_updated_) {
       content::BrowserThread::PostTask(

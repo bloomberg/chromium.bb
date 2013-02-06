@@ -21,7 +21,7 @@ class BubbleViewError : public GlobalError {
 
   int bubble_view_close_count() { return bubble_view_close_count_; }
 
-  bool HasBadge() OVERRIDE { return false; }
+  virtual bool HasBadge() OVERRIDE { return false; }
   virtual int GetBadgeResourceID() OVERRIDE {
     ADD_FAILURE();
     return 0;

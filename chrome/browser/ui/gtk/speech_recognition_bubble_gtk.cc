@@ -47,7 +47,7 @@ class SpeechRecognitionBubbleGtk : public SpeechRecognitionBubbleBase,
   SpeechRecognitionBubbleGtk(WebContents* web_contents,
                              Delegate* delegate,
                              const gfx::Rect& element_rect);
-  ~SpeechRecognitionBubbleGtk();
+  virtual ~SpeechRecognitionBubbleGtk();
 
  private:
   // SpeechRecognitionBubbleBase:

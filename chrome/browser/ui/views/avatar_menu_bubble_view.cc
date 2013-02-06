@@ -71,10 +71,10 @@ class BadgeImageSource: public gfx::CanvasImageSource {
                    const gfx::Size& icon_size,
                    const gfx::ImageSkia& badge);
 
-  ~BadgeImageSource();
+  virtual ~BadgeImageSource();
 
   // Overridden from CanvasImageSource:
-  void Draw(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Draw(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   gfx::Size ComputeSize(const gfx::ImageSkia& icon,

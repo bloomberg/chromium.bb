@@ -61,7 +61,7 @@ class SystemInfoUIHTMLSource : public content::URLDataSource{
   }
 
  private:
-  ~SystemInfoUIHTMLSource() {}
+  virtual ~SystemInfoUIHTMLSource() {}
 
   void SysInfoComplete(scoped_ptr<SystemLogsResponse> response);
   void RequestComplete();

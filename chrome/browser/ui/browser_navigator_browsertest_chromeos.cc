@@ -23,7 +23,7 @@ GURL GetGoogleURL() {
 // Subclass that tests navigation while in the Guest session.
 class BrowserGuestSessionNavigatorTest: public BrowserNavigatorTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     CommandLine command_line_copy = *command_line;
     command_line_copy.AppendSwitchASCII(switches::kLoginProfile, "user");
     chromeos::LoginUtils::Get()->GetOffTheRecordCommandLine(GetGoogleURL(),

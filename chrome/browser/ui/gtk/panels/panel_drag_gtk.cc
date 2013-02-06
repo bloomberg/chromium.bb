@@ -65,15 +65,15 @@ class MoveDragDelegate : public PanelDragDelegate {
  public:
   explicit MoveDragDelegate(Panel* panel)
       : PanelDragDelegate(panel) {}
-  ~MoveDragDelegate() {}
+  virtual ~MoveDragDelegate() {}
 
-  void DragStarted(gfx::Point point) OVERRIDE {
+  virtual void DragStarted(gfx::Point point) OVERRIDE {
     panel_manager()->StartDragging(panel(), point);
   }
-  void Dragged(gfx::Point point) OVERRIDE {
+  virtual void Dragged(gfx::Point point) OVERRIDE {
     panel_manager()->Drag(point);
   }
-  void DragEnded(bool canceled) OVERRIDE {
+  virtual void DragEnded(bool canceled) OVERRIDE {
     panel_manager()->EndDragging(canceled);
   }
 
@@ -86,15 +86,15 @@ class ResizeDragDelegate : public PanelDragDelegate {
   ResizeDragDelegate(Panel* panel, GdkWindowEdge edge)
       : PanelDragDelegate(panel),
         resizing_side_(GdkWindowEdgeToResizingSide(edge)) {}
-  ~ResizeDragDelegate() {}
+  virtual ~ResizeDragDelegate() {}
 
-  void DragStarted(gfx::Point point) OVERRIDE {
+  virtual void DragStarted(gfx::Point point) OVERRIDE {
     panel_manager()->StartResizingByMouse(panel(), point, resizing_side_);
   }
-  void Dragged(gfx::Point point) OVERRIDE {
+  virtual void Dragged(gfx::Point point) OVERRIDE {
     panel_manager()->ResizeByMouse(point);
   }
-  void DragEnded(bool canceled) OVERRIDE {
+  virtual void DragEnded(bool canceled) OVERRIDE {
     panel_manager()->EndResizingByMouse(canceled);
   }
  private:

@@ -74,8 +74,8 @@ class TestingOmniboxView : public OmniboxView {
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE {
     return 0;
   }
-  virtual gfx::Font GetFont() { return gfx::Font(); }
-  virtual int WidthOfTextAfterCursor() { return 0; }
+  virtual gfx::Font GetFont() OVERRIDE { return gfx::Font(); }
+  virtual int WidthOfTextAfterCursor() OVERRIDE { return 0; }
 #endif
 
   virtual int GetOmniboxTextLength() const OVERRIDE { return 0; }

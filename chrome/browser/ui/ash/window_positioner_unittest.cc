@@ -59,7 +59,7 @@ TestBrowserWindowAura::~TestBrowserWindowAura() {}
 class WindowPositionerTest : public AshTestBase {
  public:
   WindowPositionerTest();
-  ~WindowPositionerTest();
+  virtual ~WindowPositionerTest();
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;

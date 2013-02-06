@@ -240,7 +240,8 @@ class InstalledBubbleContent : public views::View,
     AddChildView(close_button_);
   }
 
-  virtual void ButtonPressed(views::Button* sender, const ui::Event& event) {
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE {
     if (sender == close_button_)
       bubble_->StartFade(false);
     else
@@ -381,7 +382,7 @@ class InstalledBubbleContent : public views::View,
     return height;
   }
 
-  virtual gfx::Size GetPreferredSize() {
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     int width = kHorizOuterMargin;
     width += kIconSize;
     width += views::kPanelHorizMargin;
@@ -416,7 +417,7 @@ class InstalledBubbleContent : public views::View,
     return gfx::Size(width, std::max(height, kIconSize + 2 * kVertOuterMargin));
   }
 
-  virtual void Layout() {
+  virtual void Layout() OVERRIDE {
     int x = kHorizOuterMargin;
     int y = kVertOuterMargin;
 
@@ -473,7 +474,7 @@ class InstalledBubbleContent : public views::View,
     close_button_->SetBounds(x - 1, y - 1, sz.width(), sz.height());
   }
 
-  virtual void OnPaint(gfx::Canvas* canvas) {
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     for (ScopedVector<gfx::RenderText>::const_iterator it =
              sign_in_promo_lines_.begin();
          it != sign_in_promo_lines_.end(); ++it)

@@ -244,11 +244,11 @@ class ResetDraggingStateDelegate
   explicit ResetDraggingStateDelegate(Tab* tab) : tab_(tab) {
   }
 
-  virtual void AnimationEnded(const ui::Animation* animation) {
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
     tab_->set_dragging(false);
   }
 
-  virtual void AnimationCanceled(const ui::Animation* animation) {
+  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE {
     tab_->set_dragging(false);
   }
 

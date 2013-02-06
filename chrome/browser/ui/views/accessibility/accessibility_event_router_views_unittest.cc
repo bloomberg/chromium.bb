@@ -75,7 +75,7 @@ class ViewWithNameAndRole : public views::View {
         role_(role) {
   }
 
-  void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
     views::View::GetAccessibleState(state);
     state->name = name_;
     state->role = role_;
@@ -138,7 +138,7 @@ class AccessibilityEventRouterViewsTest
   // ACCESSIBILITY_CONTROL_FOCUSED event.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     ASSERT_EQ(type, chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED);
     const AccessibilityControlInfo* info =
         content::Details<const AccessibilityControlInfo>(details).ptr();

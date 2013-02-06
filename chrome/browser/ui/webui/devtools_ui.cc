@@ -45,7 +45,7 @@ class DevToolsDataSource : public content::URLDataSource {
   virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE;
 
  private:
-  ~DevToolsDataSource() {}
+  virtual ~DevToolsDataSource() {}
   DISALLOW_COPY_AND_ASSIGN(DevToolsDataSource);
 };
 

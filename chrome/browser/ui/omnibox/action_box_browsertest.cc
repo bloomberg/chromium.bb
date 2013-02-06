@@ -32,7 +32,7 @@ class ActionBoxTest : public InProcessBrowserTest,
  protected:
   ActionBoxTest() {}
 
-  virtual void SetUpOnMainThread() {
+  virtual void SetUpOnMainThread() OVERRIDE {
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
     ASSERT_NO_FATAL_FAILURE(SetupComponents());
     chrome::FocusLocationBar(browser());

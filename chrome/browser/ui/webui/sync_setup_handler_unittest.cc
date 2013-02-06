@@ -327,7 +327,7 @@ class TestingSyncSetupHandler : public SyncSetupHandler {
         profile_(profile) {
     set_web_ui(web_ui);
   }
-  ~TestingSyncSetupHandler() {
+  virtual ~TestingSyncSetupHandler() {
     set_web_ui(NULL);
   }
 
@@ -340,7 +340,7 @@ class TestingSyncSetupHandler : public SyncSetupHandler {
   using SyncSetupHandler::have_signin_tracker;
 
  private:
-  void DisplayGaiaLoginInNewTabOrWindow() OVERRIDE {}
+  virtual void DisplayGaiaLoginInNewTabOrWindow() OVERRIDE {}
 
   // Weak pointer to parent profile.
   Profile* profile_;

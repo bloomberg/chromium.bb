@@ -55,7 +55,7 @@ class LauncherPlatformAppBrowserTest
     return ash::test::ShellTestApi(ash::Shell::GetInstance()).launcher_model();
   }
 
-  virtual void RunTestOnMainThreadLoop() {
+  virtual void RunTestOnMainThreadLoop() OVERRIDE {
     launcher_ = ash::Launcher::ForPrimaryDisplay();
     controller_ = static_cast<ChromeLauncherController*>(launcher_->delegate());
     return extensions::PlatformAppBrowserTest::RunTestOnMainThreadLoop();
@@ -84,7 +84,7 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
 
   virtual ~LauncherAppBrowserTest() {}
 
-  virtual void RunTestOnMainThreadLoop() {
+  virtual void RunTestOnMainThreadLoop() OVERRIDE {
     launcher_ = ash::Launcher::ForPrimaryDisplay();
     model_ =
         ash::test::ShellTestApi(ash::Shell::GetInstance()).launcher_model();

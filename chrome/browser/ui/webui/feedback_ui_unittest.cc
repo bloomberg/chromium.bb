@@ -34,7 +34,7 @@ std::string GetScreenshotUrl(const std::string timestamp) {
 class FeedbackUITest : public testing::Test {
  public:
   FeedbackUITest() {}
-  ~FeedbackUITest() {}
+  virtual ~FeedbackUITest() {}
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }

@@ -564,7 +564,7 @@ class IntentRowView : public views::View,
                              const ui::Event& event) OVERRIDE;
 
   // LinkListener implementation.
-  void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // Start an animating throbber for this row, and hide the star rating and the
   // install button.

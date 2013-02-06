@@ -199,7 +199,7 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
     interstitial_page_->Show();
   }
 
-  virtual std::string GetHTMLContents() {
+  virtual std::string GetHTMLContents() OVERRIDE {
     return html_contents_;
   }
 

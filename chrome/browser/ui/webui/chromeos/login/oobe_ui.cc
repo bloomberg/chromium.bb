@@ -66,8 +66,8 @@ class OobeUIHTMLSource : public content::URLDataSource {
   virtual void StartDataRequest(
       const std::string& path,
       bool is_incognito,
-      const content::URLDataSource::GotDataCallback& callback);
-  virtual std::string GetMimeType(const std::string&) const {
+      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
+  virtual std::string GetMimeType(const std::string&) const OVERRIDE {
     return "text/html";
   }
   virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE {

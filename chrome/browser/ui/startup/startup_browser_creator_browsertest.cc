@@ -115,11 +115,11 @@ class OpenURLsPopupObserver : public chrome::BrowserListObserver {
  public:
   OpenURLsPopupObserver() : added_browser_(NULL) { }
 
-  virtual void OnBrowserAdded(Browser* browser) {
+  virtual void OnBrowserAdded(Browser* browser) OVERRIDE {
     added_browser_ = browser;
   }
 
-  virtual void OnBrowserRemoved(Browser* browser) { }
+  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE { }
 
   Browser* added_browser_;
 };
