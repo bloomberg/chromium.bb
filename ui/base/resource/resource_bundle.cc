@@ -55,54 +55,6 @@ const unsigned char kPngDataChunkType[4] = { 'I', 'D', 'A', 'T' };
 
 ResourceBundle* g_shared_instance_ = NULL;
 
-bool ShouldHighlightMissingScaledResources() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kHighlightMissingScaledResources);
-}
-
-// A wrapper for PNGCodec::Decode that returns information about custom chunks.
-// For security reasons we can't alter PNGCodec to return this information. Our
-// PNG files are preprocessed by GRIT, and any special chunks should occur
-// immediately after the IHDR chunk.
-bool DecodePNG(const unsigned char* buf,
-               size_t size,
-               SkBitmap* bitmap,
-               bool* fell_back_to_1x) {
-  *fell_back_to_1x = false;
-
-  if (size < arraysize(kPngMagic) ||
-      memcmp(buf, kPngMagic, arraysize(kPngMagic)) != 0) {
-    // Data invalid or a JPEG.
-    return false;
-  }
-  size_t pos = arraysize(kPngMagic);
-
-  // Scan for custom chunks until we find one, find the IDAT chunk, or run out
-  // of chunks.
-  for (;;) {
-    if (size - pos < kPngChunkMetadataSize)
-      break;
-    uint32 length = 0;
-    net::ReadBigEndian(reinterpret_cast<const char*>(buf + pos), &length);
-    if (size - pos - kPngChunkMetadataSize < length)
-      break;
-    if (length == 0 && memcmp(buf + pos + sizeof(uint32), kPngScaleChunkType,
-                              arraysize(kPngScaleChunkType)) == 0) {
-      *fell_back_to_1x = true;
-      break;
-    }
-    if (memcmp(buf + pos + sizeof(uint32), kPngDataChunkType,
-               arraysize(kPngDataChunkType)) == 0) {
-      // Stop looking for custom chunks, any custom chunks should be before an
-      // IDAT chunk.
-      break;
-    }
-    pos += length + kPngChunkMetadataSize;
-  }
-  // Pass the data to the PNG decoder.
-  return gfx::PNGCodec::Decode(buf, size, bitmap);
-}
-
 }  // namespace
 
 // An ImageSkiaSource that loads bitmaps for the requested scale factor from
@@ -713,6 +665,55 @@ gfx::Image& ResourceBundle::GetEmptyImage() {
     empty_image_ = gfx::Image::CreateFrom1xBitmap(bitmap);
   }
   return empty_image_;
+}
+
+// static
+bool ResourceBundle::ShouldHighlightMissingScaledResources() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kHighlightMissingScaledResources);
+}
+
+// static
+bool ResourceBundle::PNGContainsFallbackMarker(const unsigned char* buf,
+                               size_t size) {
+  if (size < arraysize(kPngMagic) ||
+      memcmp(buf, kPngMagic, arraysize(kPngMagic)) != 0) {
+    // Data invalid or a JPEG.
+    return false;
+  }
+  size_t pos = arraysize(kPngMagic);
+
+  // Scan for custom chunks until we find one, find the IDAT chunk, or run out
+  // of chunks.
+  for (;;) {
+    if (size - pos < kPngChunkMetadataSize)
+      break;
+    uint32 length = 0;
+    net::ReadBigEndian(reinterpret_cast<const char*>(buf + pos), &length);
+    if (size - pos - kPngChunkMetadataSize < length)
+      break;
+    if (length == 0 && memcmp(buf + pos + sizeof(uint32), kPngScaleChunkType,
+                              arraysize(kPngScaleChunkType)) == 0) {
+      return true;
+    }
+    if (memcmp(buf + pos + sizeof(uint32), kPngDataChunkType,
+               arraysize(kPngDataChunkType)) == 0) {
+      // Stop looking for custom chunks, any custom chunks should be before an
+      // IDAT chunk.
+      break;
+    }
+    pos += length + kPngChunkMetadataSize;
+  }
+  return false;
+}
+
+// static
+bool ResourceBundle::DecodePNG(const unsigned char* buf,
+                               size_t size,
+                               SkBitmap* bitmap,
+                               bool* fell_back_to_1x) {
+  *fell_back_to_1x = PNGContainsFallbackMarker(buf, size);
+  return gfx::PNGCodec::Decode(buf, size, bitmap);
 }
 
 }  // namespace ui

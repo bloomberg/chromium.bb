@@ -4,6 +4,7 @@
 
 #include "ui/base/resource/resource_bundle.h"
 
+#import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIKit.h>
 
 #include "base/basictypes.h"
@@ -112,14 +113,56 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
     scoped_refptr<base::RefCountedStaticMemory> data(
         LoadDataResourceBytesForScale(resource_id, scale_factor));
 
+    if (!data.get()) {
+      LOG(WARNING) << "Unable to load image with id " << resource_id;
+      return GetEmptyImage();
+    }
+
     // Create a data object from the raw bytes.
     scoped_nsobject<NSData> ns_data(
         [[NSData alloc] initWithBytes:data->front() length:data->size()]);
 
-    // Create the image from the data. The gfx::Image will take ownership.
+    bool is_fallback = PNGContainsFallbackMarker(data->front(), data->size());
+    // Create the image from the data.
+    CGFloat target_scale = ui::GetScaleFactorScale(scale_factor);
+    CGFloat source_scale = is_fallback ? 1.0 : target_scale;
     scoped_nsobject<UIImage> ui_image(
-        [[UIImage alloc] initWithData:ns_data
-                                scale:ui::GetScaleFactorScale(scale_factor)]);
+        [[UIImage alloc] initWithData:ns_data scale:source_scale]);
+
+    // If the image is a 1x fallback, scale it up to a full-size representation.
+    if (is_fallback) {
+      CGSize source_size = [ui_image size];
+      CGSize target_size = CGSizeMake(source_size.width * target_scale,
+                                      source_size.height * target_scale);
+      base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
+          CGColorSpaceCreateDeviceRGB());
+      base::mac::ScopedCFTypeRef<CGContextRef> context(
+          CGBitmapContextCreate(
+              NULL,
+              target_size.width, target_size.height,
+              8, target_size.width * 4,
+              color_space,
+              kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
+
+      CGRect target_rect = CGRectMake(0, 0,
+                                      target_size.width, target_size.height);
+      CGContextSetBlendMode(context, kCGBlendModeCopy);
+      CGContextDrawImage(context, target_rect, [ui_image CGImage]);
+
+      if (ShouldHighlightMissingScaledResources()) {
+        CGContextSetFillColorSpace(context, color_space);
+        CGFloat components[4] = { 1.0, 0.0, 0.0, 0.3 };  // Translucent red.
+        CGContextSetFillColor(context, components);
+        CGContextSetBlendMode(context, kCGBlendModeNormal);
+        CGContextFillRect(context, target_rect);
+      }
+
+      base::mac::ScopedCFTypeRef<CGImageRef> cg_image(
+          CGBitmapContextCreateImage(context));
+      ui_image.reset([[UIImage alloc] initWithCGImage:cg_image
+                                                scale:target_scale
+                                          orientation:UIImageOrientationUp]);
+    }
 
     if (!ui_image.get()) {
       LOG(WARNING) << "Unable to load image with id " << resource_id;
@@ -127,6 +170,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
       return GetEmptyImage();
     }
 
+    // The gfx::Image takes ownership.
     image = gfx::Image(ui_image.release());
   }
 

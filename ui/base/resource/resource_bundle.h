@@ -319,6 +319,23 @@ class UI_EXPORT ResourceBundle {
                   SkBitmap* bitmap,
                   bool* fell_back_to_1x) const;
 
+  // Returns true if missing scaled resources should be visually indicated when
+  // drawing the fallback (e.g., by tinting the image).
+  static bool ShouldHighlightMissingScaledResources();
+
+  // Returns true if the data in |buf| is a PNG that has the special marker
+  // added by GRIT that indicates that the image is actually 1x data.
+  static bool PNGContainsFallbackMarker(const unsigned char* buf, size_t size);
+
+  // A wrapper for PNGCodec::Decode that returns information about custom
+  // chunks. For security reasons we can't alter PNGCodec to return this
+  // information. Our PNG files are preprocessed by GRIT, and any special chunks
+  // should occur immediately after the IHDR chunk.
+  static bool DecodePNG(const unsigned char* buf,
+                        size_t size,
+                        SkBitmap* bitmap,
+                        bool* fell_back_to_1x);
+
   // Returns an empty image for when a resource cannot be loaded. This is a
   // bright red bitmap.
   gfx::Image& GetEmptyImage();
