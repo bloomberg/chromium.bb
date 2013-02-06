@@ -95,10 +95,12 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
 #if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
      && NACL_BUILD_SUBARCH == 32)
   nap->pcrel_thunk = 0;
+  nap->pcrel_thunk_end = 0;
 #endif
 #if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
      && NACL_BUILD_SUBARCH == 64)
   nap->dispatch_thunk = 0;
+  nap->dispatch_thunk_end = 0;
   nap->get_tls_fast_path1 = 0;
   nap->get_tls_fast_path2 = 0;
 #endif

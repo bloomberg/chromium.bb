@@ -102,6 +102,9 @@ int NaClMakeDispatchThunk(struct NaClApp *nap) {
     }
   } else {
     nap->dispatch_thunk = dispatch_thunk;
+    nap->dispatch_thunk_end =
+        dispatch_thunk + ((uintptr_t) &NaClDispatchThunkEnd
+                          - (uintptr_t) &NaClDispatchThunk);
     nap->get_tls_fast_path1 = get_tls_fast_path1;
     nap->get_tls_fast_path2 = get_tls_fast_path2;
   }

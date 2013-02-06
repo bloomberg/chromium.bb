@@ -29,6 +29,8 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
   /* TODO(mcgrathr): Use a safe cast here. */
   NaClCPUFeaturesX86    *features = (NaClCPUFeaturesX86 *) nap->cpu_features;
   uintptr_t             naclsyscallseg;
+  size_t                thunk_size = ((uintptr_t) &NaClPcrelThunk_end
+                                      - (uintptr_t) &NaClPcrelThunk);
 
   if (0 != (error = NaCl_page_alloc_randomized(&thunk_addr,
                                                NACL_MAP_PAGESIZE))) {
@@ -61,9 +63,7 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
   patch_abs32[1].target = ((uintptr_t) &NaClPcrelThunk_globals_patch) - 4;
   patch_abs32[1].value = (uintptr_t) &nacl_user;
   patch_abs32[2].target = ((uintptr_t) &NaClPcrelThunk_end) - 4;
-  patch_abs32[2].value = naclsyscallseg - ((uintptr_t) thunk_addr +
-                                           ((uintptr_t) &NaClPcrelThunk_end
-                                            - (uintptr_t) &NaClPcrelThunk));
+  patch_abs32[2].value = naclsyscallseg - ((uintptr_t) thunk_addr + thunk_size);
 
   NaClPatchInfoCtor(&patch_info);
 
@@ -72,8 +72,7 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
 
   patch_info.dst = (uintptr_t) thunk_addr;
   patch_info.src = (uintptr_t) &NaClPcrelThunk;
-  patch_info.nbytes = ((uintptr_t) &NaClPcrelThunk_end
-                       - (uintptr_t) &NaClPcrelThunk);
+  patch_info.nbytes = thunk_size;
 
   NaClApplyPatchToMemory(&patch_info);
 
@@ -95,6 +94,7 @@ cleanup:
     }
   } else {
     nap->pcrel_thunk = (uintptr_t) thunk_addr;
+    nap->pcrel_thunk_end = (uintptr_t) thunk_addr + thunk_size;
   }
   return retval;
 }

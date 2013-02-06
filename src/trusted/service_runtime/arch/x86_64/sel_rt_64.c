@@ -87,18 +87,18 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 
 void NaClThreadContextToSignalContext(const struct NaClThreadContext *th_ctx,
                                       struct NaClSignalContext *sig_ctx) {
-  sig_ctx->rax       = th_ctx->rax;
+  sig_ctx->rax       = 0;
   sig_ctx->rbx       = th_ctx->rbx;
-  sig_ctx->rcx       = th_ctx->rcx;
-  sig_ctx->rdx       = th_ctx->rdx;
-  sig_ctx->rsi       = th_ctx->rsi;
-  sig_ctx->rdi       = th_ctx->rdi;
+  sig_ctx->rcx       = 0;
+  sig_ctx->rdx       = 0;
+  sig_ctx->rsi       = 0;
+  sig_ctx->rdi       = 0;
   sig_ctx->rbp       = th_ctx->rbp;
   sig_ctx->stack_ptr = th_ctx->rsp;
-  sig_ctx->r8        = th_ctx->r8;
-  sig_ctx->r9        = th_ctx->r9;
-  sig_ctx->r10       = th_ctx->r10;
-  sig_ctx->r11       = th_ctx->r11;
+  sig_ctx->r8        = 0;
+  sig_ctx->r9        = 0;
+  sig_ctx->r10       = 0;
+  sig_ctx->r11       = 0;
   sig_ctx->r12       = th_ctx->r12;
   sig_ctx->r13       = th_ctx->r13;
   sig_ctx->r14       = th_ctx->r14;
@@ -111,4 +111,22 @@ void NaClThreadContextToSignalContext(const struct NaClThreadContext *th_ctx,
   sig_ctx->es        = 0;
   sig_ctx->fs        = 0;
   sig_ctx->gs        = 0;
+}
+
+
+void NaClSignalContextUnsetClobberedRegisters(
+    struct NaClSignalContext *sig_ctx) {
+  sig_ctx->rax       = 0;
+
+  sig_ctx->rcx       = 0;
+  sig_ctx->rdx       = 0;
+  sig_ctx->rsi       = 0;
+  sig_ctx->rdi       = 0;
+
+  sig_ctx->r8        = 0;
+  sig_ctx->r9        = 0;
+  sig_ctx->r10       = 0;
+  sig_ctx->r11       = 0;
+
+  sig_ctx->flags     = 0;
 }

@@ -51,6 +51,8 @@ uint16_t NaClGetSs(void);
 
 void    NaClSyscallSegSSE(void);
 void    NaClSyscallSegNoSSE(void);
+void    NaClSyscallSegRegsSavedSSE(void);
+void    NaClSyscallSegRegsSavedNoSSE(void);
 
 /*
  * On a context switch through the syscall interface, not all
@@ -273,14 +275,16 @@ EXTERN_C_END
 # define MACROARG1      $0
 # define MACROARG2      $1
 # define MACROARG3      $2
+# define MACROARG4      $3
 # define MACROIMMED(x)  $$##x
 #else
-# define MACRO(name)    .macro name arg1, arg2=0, arg3=
+# define MACRO(name)    .macro name arg1, arg2=0, arg3=, arg4=
 # define ENDMACRO       .endm
 # define MACROENTRY     DEFINE_GLOBAL_HIDDEN_IDENTIFIER(\arg1):
 # define MACROARG1      \arg1
 # define MACROARG2      \arg2
 # define MACROARG3      \arg3
+# define MACROARG4      \arg4
 # define MACROIMMED(x)  $##x
 #endif
 

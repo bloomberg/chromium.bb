@@ -153,8 +153,8 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
          * Record the value of %rsp that we will restore when
          * returning to untrusted code from the syscall.
          */
-        leaq    0x10(%rsp), %rbx
-        movq    %rbx, NACL_THREAD_CONTEXT_OFFSET_RSP(%rdx)
+        leaq    0x10(%rsp), %rcx
+        movq    %rcx, NACL_THREAD_CONTEXT_OFFSET_RSP(%rdx)
         movq    %r12, NACL_THREAD_CONTEXT_OFFSET_R12(%rdx)
         movq    %r13, NACL_THREAD_CONTEXT_OFFSET_R13(%rdx)
         movq    %r14, NACL_THREAD_CONTEXT_OFFSET_R14(%rdx)
@@ -174,6 +174,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
          */
         stmxcsr NACL_THREAD_CONTEXT_OFFSET_MXCSR(%rdx)
         ldmxcsr NACL_THREAD_CONTEXT_OFFSET_SYS_MXCSR(%rdx)
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSegRegsSaved):
 
         movq    NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR(%rdx), %rsp
 #if NACL_LINUX || NACL_OSX

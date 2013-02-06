@@ -29,6 +29,7 @@ void NaClDoFxsave(void *fxsave);
 void NaClDoFxrstor(void *fxsave);
 
 void NaClSyscallSeg(void);
+void NaClSyscallSegRegsSaved(void);
 
 typedef uint64_t  nacl_reg_t;  /* general purpose register type */
 

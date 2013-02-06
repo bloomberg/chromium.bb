@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2009 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_SEL_RT_H__
@@ -30,6 +30,9 @@ uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext *th_ctx);
 
 void NaClThreadContextToSignalContext(const struct NaClThreadContext *th_ctx,
                                       struct NaClSignalContext *sig_ctx);
+
+void NaClSignalContextUnsetClobberedRegisters(
+    struct NaClSignalContext *sig_ctx);
 
 EXTERN_C_END
 

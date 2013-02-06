@@ -5,6 +5,7 @@
  */
 
 #include <signal.h>
+#include <string.h>
 
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/portability_io.h"
@@ -23,6 +24,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/thread_suspension_unwind.h"
 #include "native_client/tests/common/register_set.h"
 #include "native_client/tests/signal_handler_single_step/step_test_common.h"
 
@@ -79,6 +81,8 @@ static enum NaClSignalResult TrapSignalHandler(int signal, void *ucontext) {
   uint32_t prog_ctr;
   int is_inside_trampoline;
   int is_untrusted;
+  char buf[100];
+  int len;
   struct NaClSignalContext *expected_regs = &g_test_shm->expected_regs;
 
   if (signal != SIGTRAP) {
@@ -114,6 +118,10 @@ static enum NaClSignalResult TrapSignalHandler(int signal, void *ucontext) {
                                    (uintptr_t) g_test_shm->regs_should_match))
     return NACL_SIGNAL_RETURN;
 
+  len = snprintf(buf, sizeof(buf), "prog_ctr=0x%"NACL_PRIxNACL_REG": ",
+                 context.prog_ctr);
+  SignalSafeWrite(buf, len);
+
   if (is_untrusted) {
     SignalSafeLogStringLiteral("Untrusted context\n");
     RegsUnsetNonCalleeSavedRegisters(&context);
@@ -123,17 +131,25 @@ static enum NaClSignalResult TrapSignalHandler(int signal, void *ucontext) {
      * so there are multiple values that prog_ctr can have here.
      */
     context.prog_ctr = expected_regs->prog_ctr;
-    RegsAssertEqual(expected_regs, &context);
+    RegsAssertEqual(&context, expected_regs);
   } else if ((g_natp->suspend_state & NACL_APP_THREAD_TRUSTED) != 0) {
     SignalSafeLogStringLiteral("Trusted (syscall) context\n");
     NaClThreadContextToSignalContext(&g_natp->user, &context);
-    RegsAssertEqual(expected_regs, &context);
+    RegsAssertEqual(&context, expected_regs);
   } else {
-    SignalSafeLogStringLiteral("Inside a context switch\n");
-    /*
-     * TODO(mseaborn): We should be able to reconstruct untrusted
-     * registers here.
-     */
+    enum NaClUnwindCase unwind_case = 0;
+    const char *str;
+
+    SignalSafeLogStringLiteral("Inside a context switch: ");
+
+    NaClGetRegistersForContextSwitch(g_natp, &context, &unwind_case);
+
+    str = NaClUnwindCaseToString(unwind_case);
+    CHECK(str != NULL);
+    SignalSafeWrite(str, strlen(str));
+    SignalSafeLogStringLiteral("\n");
+
+    RegsAssertEqual(&context, expected_regs);
   }
   return NACL_SIGNAL_RETURN;
 }

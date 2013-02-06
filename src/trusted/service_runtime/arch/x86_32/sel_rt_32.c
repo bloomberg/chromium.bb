@@ -143,3 +143,12 @@ void NaClThreadContextToSignalContext(const struct NaClThreadContext *th_ctx,
   sig_ctx->fs        = th_ctx->fs;
   sig_ctx->gs        = th_ctx->gs;
 }
+
+
+void NaClSignalContextUnsetClobberedRegisters(
+    struct NaClSignalContext *sig_ctx) {
+  sig_ctx->eax       = 0;
+  sig_ctx->ecx       = 0;
+  sig_ctx->edx       = 0;
+  sig_ctx->flags     = 0;
+}

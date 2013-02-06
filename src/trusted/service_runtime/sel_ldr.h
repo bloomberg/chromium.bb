@@ -135,9 +135,11 @@ struct NaClApp {
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   uintptr_t                 pcrel_thunk;
+  uintptr_t                 pcrel_thunk_end;
 #endif
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
   uintptr_t                 dispatch_thunk;
+  uintptr_t                 dispatch_thunk_end;
   uintptr_t                 get_tls_fast_path1;
   uintptr_t                 get_tls_fast_path2;
 #endif

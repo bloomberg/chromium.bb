@@ -68,6 +68,7 @@ ldr_inputs = [
     'sel_qualify.c',
     'sel_validate_image.c',
     'thread_suspension_common.c',
+    'thread_suspension_unwind.c',
 ]
 
 if env.Bit('build_x86_32'):

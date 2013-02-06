@@ -102,6 +102,7 @@ MACROENTRY
         stmxcsr NACL_THREAD_CONTEXT_OFFSET_MXCSR(%edx)
         ldmxcsr NACL_THREAD_CONTEXT_OFFSET_SYS_MXCSR(%edx)
 .endif
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG3): /* NaClSyscallSegRegsSaved */
 
         /*
          * We do not save segment registers, which untrusted code is
@@ -130,10 +131,14 @@ MACROENTRY
          * If stack usage in the above code changes, modify initial %esp
          * computation -- see nacl_switch_to_app.c:NaClStartThreadInApp.
          */
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG3):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG4): /* NaClSyscallThreadCaptureFault */
 1:      hlt
         /* noret */
 ENDMACRO
 
-        syscallseg NaClSyscallSegNoSSE, 0, NaClSyscallThreadCaptureFaultNoSSE
-        syscallseg NaClSyscallSegSSE, 1, NaClSyscallThreadCaptureFaultSSE
+        /*
+         * Note that long lines are required here because "\" does not
+         * work in the Windows build.
+         */
+        syscallseg NaClSyscallSegNoSSE, 0, NaClSyscallSegRegsSavedNoSSE, NaClSyscallThreadCaptureFaultNoSSE
+        syscallseg NaClSyscallSegSSE, 1, NaClSyscallSegRegsSavedSSE, NaClSyscallThreadCaptureFaultSSE
