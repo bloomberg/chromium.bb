@@ -347,6 +347,7 @@
             'browser/chromeos/cros/cros_in_process_browser_test.h',
             'browser/chromeos/cros/cros_mock.cc',
             'browser/chromeos/cros/cros_mock.h',
+            'browser/chromeos/input_method/textinput_browsertest.cc',
             'browser/chromeos/login/login_browsertest.cc',
             'browser/chromeos/login/mock_authenticator.cc',
             'browser/chromeos/login/mock_authenticator.h',
