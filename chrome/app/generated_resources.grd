@@ -8350,6 +8350,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_MEDIA_VIDEO_EXCEPTION_HEADER" desc="A column header for the action column of the media video exceptions dialog">
         Video
       </message>
+      <message name="IDS_CONTENT_SETTING_CHANGED_INFOBAR_BUTTON" desc="The string used in the infobar button allowing the user to reload the page directly from the infobar.">
+        Reload
+      </message>
 
       <!-- Mac and ChromeOS users do not close their browser. Mac users quit it and ChromeOS users log out. -->
       <if expr="not is_macosx and not pp_ifdef('chromeos')">
@@ -11248,7 +11251,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         </message>
       </if>
 
-
       <!-- One click sign in infobar -->
       <message name="IDS_ONE_CLICK_SIGNIN_INFOBAR_OK_BUTTON" desc="The string used in the infobar button that the user presses to accept one click sign in.">
         OK, sync
@@ -11256,7 +11258,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_ONE_CLICK_SIGNIN_INFOBAR_CANCEL_BUTTON" desc="The string used in the infobar button that the user presses to never see this infobar again.">
         No thanks
       </message>
-      
+
       <!-- One click sign in bubble and dialog -->
       <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE" desc="The message of the one click sign in dialog.">
         Now you can access your bookmarks, history, and other settings on all of your signed in devices.
@@ -14799,10 +14801,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_GEOLOCATION_BLOCKED_TOOLTIP" desc="Location bar icon tooltip text when a page is blocked from using geolocation.">
       This page has been blocked from tracking your location.
     </message>
-    
+
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP" desc="Location bar icon tooltip text when a page wants to use registerProtocolHandler.">
       This page wants to install a service handler.
     </message>
+
+    <!-- MediaStream messages -->
     <message name="IDS_MEDIASTREAM_BUBBLE_CLEAR_LINK" desc="Link on the mediastream bubble that resets the media content setting for the current site.">
       Clear these settings for future visits
     </message>
@@ -14821,7 +14825,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_MEDIASTREAM_BLOCKED_TOOLTIP" desc="Location bar icon tooltip text when a page is blocked from using media streams (camera, microphone).">
       This page has been blocked from accessing your camera and microphone.
     </message>
-
+    <message name="IDS_MEDIASTREAM_SETTING_CHANGED_INFOBAR_MESSAGE" desc="Infobar message for reloading when media (camera, michrophone) settings was changed by user.">
+      New camera and microphone settings will take effect after reloading the page.
+    </message>
 
     <!-- ProcessSingleton -->
     <message name="IDS_PROFILE_IN_USE_LINUX" desc="Message shown when the browser cannot start because the profile is in use on a different host.">
