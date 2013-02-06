@@ -47,6 +47,7 @@ static int g_in_untrusted_code = 0;
 static int g_context_switch_count = 0;
 
 static int g_instruction_count = 0;
+static int g_instruction_byte_count = 0;
 static int g_jump_count = 0;
 static nacl_reg_t g_last_prog_ctr = 0;
 
@@ -98,6 +99,9 @@ static enum NaClSignalResult TrapSignalHandler(int signal, void *ucontext) {
      */
     if (context.prog_ctr - g_last_prog_ctr > 15) {
       g_jump_count++;
+    } else {
+      /* Measure total size of instructions, except for taken branches. */
+      g_instruction_byte_count += context.prog_ctr - g_last_prog_ctr;
     }
     g_last_prog_ctr = context.prog_ctr;
 
@@ -106,17 +110,22 @@ static enum NaClSignalResult TrapSignalHandler(int signal, void *ucontext) {
       g_context_switch_count++;
       g_in_untrusted_code = is_untrusted;
 
-      SignalSafePrintf("Switching to %s: "
-                       "since previous switch: %i instructions, %i jumps\n",
+      SignalSafePrintf("Switching to %s: since previous switch: "
+                       "%i instructions, %i instruction bytes, %i jumps\n",
                        is_untrusted ? "untrusted" : "trusted",
-                       g_instruction_count, g_jump_count);
+                       g_instruction_count,
+                       g_instruction_byte_count,
+                       g_jump_count);
       if (is_untrusted && g_call_count == kNumberOfCallsToTest - 1) {
         SignalSafePrintf("RESULT InstructionsPerSyscall: value= "
                          "%i instructions\n", g_instruction_count);
+        SignalSafePrintf("RESULT InstructionBytesPerSyscall: value= "
+                         "%i instructions\n", g_instruction_byte_count);
         SignalSafePrintf("RESULT JumpsPerSyscall: value= "
                          "%i jumps\n", g_jump_count);
       }
       g_instruction_count = 0;
+      g_instruction_byte_count = 0;
       g_jump_count = 0;
     }
     return NACL_SIGNAL_RETURN;
