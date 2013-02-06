@@ -71,18 +71,18 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
   }
 
   // QuicConnectionHelperInterface
-  virtual void SetConnection(QuicConnection* connection) {}
+  virtual void SetConnection(QuicConnection* connection) OVERRIDE {}
 
-  virtual const QuicClock* GetClock() const {
+  virtual const QuicClock* GetClock() const OVERRIDE {
     return clock_;
   }
 
-  virtual QuicRandom* GetRandomGenerator() {
+  virtual QuicRandom* GetRandomGenerator() OVERRIDE {
     return random_generator_;
   }
 
   virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
-                                int* error) {
+                                int* error) OVERRIDE {
     QuicFramer framer(QuicDecrypter::Create(kNULL),
                       QuicEncrypter::Create(kNULL));
     FramerVisitorCapturingAcks visitor;
@@ -103,28 +103,28 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
     return packet.length();
   }
 
-  virtual void SetRetransmissionAlarm(QuicTime::Delta delay) {
+  virtual void SetRetransmissionAlarm(QuicTime::Delta delay) OVERRIDE {
     retransmission_alarm_ = clock_->Now().Add(delay);
   }
 
-  virtual void SetSendAlarm(QuicTime::Delta delay) {
+  virtual void SetSendAlarm(QuicTime::Delta delay) OVERRIDE {
     send_alarm_ = clock_->Now().Add(delay);
   }
 
-  virtual void SetTimeoutAlarm(QuicTime::Delta delay) {
+  virtual void SetTimeoutAlarm(QuicTime::Delta delay) OVERRIDE {
     timeout_alarm_ = clock_->Now().Add(delay);
   }
 
-  virtual bool IsSendAlarmSet() {
+  virtual bool IsSendAlarmSet() OVERRIDE {
     return send_alarm_ > clock_->Now();
   }
 
-  virtual void UnregisterSendAlarmIfRegistered() {
+  virtual void UnregisterSendAlarmIfRegistered() OVERRIDE {
     send_alarm_ = QuicTime::Zero();
   }
 
-  virtual void SetAckAlarm(QuicTime::Delta delay) {}
-  virtual void ClearAckAlarm() {}
+  virtual void SetAckAlarm(QuicTime::Delta delay) OVERRIDE {}
+  virtual void ClearAckAlarm() OVERRIDE {}
 
   QuicTime retransmission_alarm() const {
     return retransmission_alarm_;

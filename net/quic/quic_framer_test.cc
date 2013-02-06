@@ -50,15 +50,15 @@ class TestEncrypter : public QuicEncrypter {
  public:
   virtual ~TestEncrypter() {}
   virtual QuicData* Encrypt(StringPiece associated_data,
-                            StringPiece plaintext) {
+                            StringPiece plaintext) OVERRIDE {
     associated_data_ = associated_data.as_string();
     plaintext_ = plaintext.as_string();
     return new QuicData(plaintext.data(), plaintext.length());
   }
-  virtual size_t GetMaxPlaintextSize(size_t ciphertext_size) {
+  virtual size_t GetMaxPlaintextSize(size_t ciphertext_size) OVERRIDE {
     return ciphertext_size;
   }
-  virtual size_t GetCiphertextSize(size_t plaintext_size) {
+  virtual size_t GetCiphertextSize(size_t plaintext_size) OVERRIDE {
     return plaintext_size;
   }
   string associated_data_;
@@ -69,7 +69,7 @@ class TestDecrypter : public QuicDecrypter {
  public:
   virtual ~TestDecrypter() {}
   virtual QuicData* Decrypt(StringPiece associated_data,
-                            StringPiece ciphertext) {
+                            StringPiece ciphertext) OVERRIDE {
     associated_data_ = associated_data.as_string();
     ciphertext_ = ciphertext.as_string();
     return new QuicData(ciphertext.data(), ciphertext.length());
@@ -90,71 +90,72 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
         accept_packet_(true) {
   }
 
-  ~TestQuicVisitor() {
+  virtual ~TestQuicVisitor() {
     STLDeleteElements(&stream_frames_);
     STLDeleteElements(&ack_frames_);
     STLDeleteElements(&congestion_feedback_frames_);
     STLDeleteElements(&fec_data_);
   }
 
-  virtual void OnError(QuicFramer* f) {
+  virtual void OnError(QuicFramer* f) OVERRIDE {
     DLOG(INFO) << "QuicFramer Error: " << QuicUtils::ErrorToString(f->error())
                << " (" << f->error() << ")";
     error_count_++;
   }
 
-  virtual void OnPacket() {}
+  virtual void OnPacket() OVERRIDE {}
 
-  virtual void OnPublicResetPacket(const QuicPublicResetPacket& packet) {
+  virtual void OnPublicResetPacket(
+      const QuicPublicResetPacket& packet) OVERRIDE {
     public_reset_packet_.reset(new QuicPublicResetPacket(packet));
   }
 
-  virtual void OnRevivedPacket() {
+  virtual void OnRevivedPacket() OVERRIDE {
     revived_packets_++;
   }
 
-  virtual bool OnPacketHeader(const QuicPacketHeader& header) {
+  virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE {
     packet_count_++;
     header_.reset(new QuicPacketHeader(header));
     return accept_packet_;
   }
 
-  virtual void OnStreamFrame(const QuicStreamFrame& frame) {
+  virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {
     frame_count_++;
     stream_frames_.push_back(new QuicStreamFrame(frame));
   }
 
-  virtual void OnFecProtectedPayload(StringPiece payload) {
+  virtual void OnFecProtectedPayload(StringPiece payload) OVERRIDE {
     fec_protected_payload_ = payload.as_string();
   }
 
-  virtual void OnAckFrame(const QuicAckFrame& frame) {
+  virtual void OnAckFrame(const QuicAckFrame& frame) OVERRIDE {
     frame_count_++;
     ack_frames_.push_back(new QuicAckFrame(frame));
   }
 
   virtual void OnCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& frame) {
+      const QuicCongestionFeedbackFrame& frame) OVERRIDE {
     frame_count_++;
     congestion_feedback_frames_.push_back(
         new QuicCongestionFeedbackFrame(frame));
   }
 
-  virtual void OnFecData(const QuicFecData& fec) {
+  virtual void OnFecData(const QuicFecData& fec) OVERRIDE {
     fec_count_++;
     fec_data_.push_back(new QuicFecData(fec));
   }
 
-  virtual void OnPacketComplete() {
+  virtual void OnPacketComplete() OVERRIDE {
     complete_packets_++;
   }
 
-  virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) {
+  virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE {
     rst_stream_frame_ = frame;
   }
 
   virtual void OnConnectionCloseFrame(
-      const QuicConnectionCloseFrame& frame) {
+      const QuicConnectionCloseFrame& frame) OVERRIDE {
     connection_close_frame_ = frame;
   }
 

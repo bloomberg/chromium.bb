@@ -119,7 +119,7 @@ class MockSocketStreamDelegate : public net::SocketStream::Delegate {
     if (!on_received_data_.is_null())
       on_received_data_.Run();
   }
-  virtual void OnClose(net::SocketStream* socket) {
+  virtual void OnClose(net::SocketStream* socket) OVERRIDE {
     if (!on_close_.is_null())
       on_close_.Run();
   }

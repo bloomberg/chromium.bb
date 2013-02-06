@@ -25,7 +25,8 @@ class MockQuicCryptoStream : public QuicCryptoStream {
       : QuicCryptoStream(session) {
   }
 
-  void OnHandshakeMessage(const CryptoHandshakeMessage& message) {
+  virtual void OnHandshakeMessage(
+      const CryptoHandshakeMessage& message) OVERRIDE {
     messages_.push_back(message);
   }
 

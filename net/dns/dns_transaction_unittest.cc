@@ -440,7 +440,7 @@ class DnsTransactionTest : public testing::Test {
     }
   }
 
-  void SetUp() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     // By default set one server,
     ConfigureNumServers(1);
     // and no retransmissions,
@@ -450,7 +450,7 @@ class DnsTransactionTest : public testing::Test {
     ConfigureFactory();
   }
 
-  void TearDown() OVERRIDE {
+  virtual void TearDown() OVERRIDE {
     // Check that all socket data was at least written to.
     for (size_t i = 0; i < socket_data_.size(); ++i) {
       EXPECT_TRUE(socket_data_[i]->was_written()) << i;

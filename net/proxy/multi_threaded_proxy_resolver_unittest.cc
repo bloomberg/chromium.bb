@@ -223,7 +223,7 @@ class BlockableProxyResolverFactory : public ProxyResolverFactory {
  public:
   BlockableProxyResolverFactory() : ProxyResolverFactory(true) {}
 
-  ~BlockableProxyResolverFactory() {
+  virtual ~BlockableProxyResolverFactory() {
     STLDeleteElements(&resolvers_);
   }
 

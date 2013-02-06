@@ -34,12 +34,13 @@ class TestCryptoVisitor : public ::net::CryptoFramerVisitorInterface {
       : error_count_(0) {
   }
 
-  virtual void OnError(CryptoFramer* framer) {
+  virtual void OnError(CryptoFramer* framer) OVERRIDE {
     DLOG(ERROR) << "CryptoFramer Error: " << framer->error();
     ++error_count_;
   }
 
-  virtual void OnHandshakeMessage(const CryptoHandshakeMessage& message) {
+  virtual void OnHandshakeMessage(
+      const CryptoHandshakeMessage& message) OVERRIDE {
     messages_.push_back(message);
   }
 

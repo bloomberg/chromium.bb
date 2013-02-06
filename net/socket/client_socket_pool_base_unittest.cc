@@ -137,8 +137,8 @@ class MockClientSocket : public StreamSocket {
     was_used_to_convey_data_ = true;
     return len;
   }
-  virtual bool SetReceiveBufferSize(int32 size) { return true; }
-  virtual bool SetSendBufferSize(int32 size) { return true; }
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE { return true; }
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE { return true; }
 
   // StreamSocket implementation.
   virtual int Connect(const CompletionCallback& callback) OVERRIDE {
@@ -146,41 +146,41 @@ class MockClientSocket : public StreamSocket {
     return OK;
   }
 
-  virtual void Disconnect() { connected_ = false; }
-  virtual bool IsConnected() const { return connected_; }
-  virtual bool IsConnectedAndIdle() const { return connected_; }
+  virtual void Disconnect() OVERRIDE { connected_ = false; }
+  virtual bool IsConnected() const OVERRIDE { return connected_; }
+  virtual bool IsConnectedAndIdle() const OVERRIDE { return connected_; }
 
-  virtual int GetPeerAddress(IPEndPoint* /* address */) const {
+  virtual int GetPeerAddress(IPEndPoint* /* address */) const OVERRIDE {
     return ERR_UNEXPECTED;
   }
 
-  virtual int GetLocalAddress(IPEndPoint* /* address */) const {
+  virtual int GetLocalAddress(IPEndPoint* /* address */) const OVERRIDE {
     return ERR_UNEXPECTED;
   }
 
-  virtual const BoundNetLog& NetLog() const {
+  virtual const BoundNetLog& NetLog() const OVERRIDE {
     return net_log_;
   }
 
-  virtual void SetSubresourceSpeculation() {}
-  virtual void SetOmniboxSpeculation() {}
-  virtual bool WasEverUsed() const {
+  virtual void SetSubresourceSpeculation() OVERRIDE {}
+  virtual void SetOmniboxSpeculation() OVERRIDE {}
+  virtual bool WasEverUsed() const OVERRIDE {
     return was_used_to_convey_data_ || num_bytes_read_ > 0;
   }
-  virtual bool UsingTCPFastOpen() const { return false; }
-  virtual int64 NumBytesRead() const { return num_bytes_read_; }
-  virtual base::TimeDelta GetConnectTimeMicros() const {
+  virtual bool UsingTCPFastOpen() const OVERRIDE { return false; }
+  virtual int64 NumBytesRead() const OVERRIDE { return num_bytes_read_; }
+  virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE {
     static const base::TimeDelta kDummyConnectTimeMicros =
         base::TimeDelta::FromMicroseconds(10);
     return kDummyConnectTimeMicros;  // Dummy value.
   }
-  virtual bool WasNpnNegotiated() const {
+  virtual bool WasNpnNegotiated() const OVERRIDE {
     return false;
   }
-  virtual NextProto GetNegotiatedProtocol() const {
+  virtual NextProto GetNegotiatedProtocol() const OVERRIDE {
     return kProtoUnknown;
   }
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) {
+  virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE {
     return false;
   }
 
@@ -203,7 +203,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
       NetLog* net_log,
-      const NetLog::Source& source) {
+      const NetLog::Source& source) OVERRIDE {
     NOTREACHED();
     return NULL;
   }
@@ -211,7 +211,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
   virtual StreamSocket* CreateTransportClientSocket(
       const AddressList& addresses,
       NetLog* /* net_log */,
-      const NetLog::Source& /*source*/) {
+      const NetLog::Source& /*source*/) OVERRIDE {
     allocation_count_++;
     return NULL;
   }
@@ -220,12 +220,12 @@ class MockClientSocketFactory : public ClientSocketFactory {
       ClientSocketHandle* transport_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
-      const SSLClientSocketContext& context) {
+      const SSLClientSocketContext& context) OVERRIDE {
     NOTIMPLEMENTED();
     return NULL;
   }
 
-  virtual void ClearSSLSessionCache() {
+  virtual void ClearSSLSessionCache() OVERRIDE {
     NOTIMPLEMENTED();
   }
 
@@ -277,9 +277,9 @@ class TestConnectJob : public ConnectJob {
     DoConnect(waiting_success_, true /* async */, false /* recoverable */);
   }
 
-  virtual LoadState GetLoadState() const { return load_state_; }
+  virtual LoadState GetLoadState() const OVERRIDE { return load_state_; }
 
-  virtual void GetAdditionalErrorState(ClientSocketHandle* handle) {
+  virtual void GetAdditionalErrorState(ClientSocketHandle* handle) OVERRIDE {
     if (store_additional_error_state_) {
       // Set all of the additional error state fields in some way.
       handle->set_is_ssl_error(true);
@@ -292,7 +292,7 @@ class TestConnectJob : public ConnectJob {
  private:
   // ConnectJob implementation.
 
-  virtual int ConnectInternal() {
+  virtual int ConnectInternal() OVERRIDE {
     AddressList ignored;
     client_socket_factory_->CreateTransportClientSocket(
         ignored, NULL, net::NetLog::Source());
@@ -457,7 +457,7 @@ class TestConnectJobFactory
   virtual ConnectJob* NewConnectJob(
       const std::string& group_name,
       const TestClientSocketPoolBase::Request& request,
-      ConnectJob::Delegate* delegate) const {
+      ConnectJob::Delegate* delegate) const OVERRIDE {
     EXPECT_TRUE(!job_types_ || !job_types_->empty());
     TestConnectJob::JobType job_type = job_type_;
     if (job_types_ && !job_types_->empty()) {
@@ -473,7 +473,7 @@ class TestConnectJobFactory
                               net_log_);
   }
 
-  virtual base::TimeDelta ConnectionTimeout() const {
+  virtual base::TimeDelta ConnectionTimeout() const OVERRIDE {
     return timeout_duration_;
   }
 
@@ -640,7 +640,7 @@ class TestConnectJobDelegate : public ConnectJob::Delegate {
       : have_result_(false), waiting_for_result_(false), result_(OK) {}
   virtual ~TestConnectJobDelegate() {}
 
-  virtual void OnConnectJobComplete(int result, ConnectJob* job) {
+  virtual void OnConnectJobComplete(int result, ConnectJob* job) OVERRIDE {
     result_ = result;
     scoped_ptr<StreamSocket> socket(job->ReleaseSocket());
     // socket.get() should be NULL iff result != OK

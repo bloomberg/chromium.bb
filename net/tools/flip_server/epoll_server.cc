@@ -60,7 +60,7 @@ namespace net {
 // Clears the pipe and returns.  Used for waking the epoll server up.
 class ReadPipeCallback : public EpollCallbackInterface {
  public:
-  void OnEvent(int fd, EpollEvent* event) {
+  virtual void OnEvent(int fd, EpollEvent* event) OVERRIDE {
     DCHECK(event->in_events == EPOLLIN);
     int data;
     int data_read = 1;
@@ -69,10 +69,10 @@ class ReadPipeCallback : public EpollCallbackInterface {
       data_read = read(fd, &data, sizeof(data));
     }
   }
-  void OnShutdown(EpollServer *eps, int fd) {}
-  void OnRegistration(EpollServer*, int, int) {}
-  void OnModification(int, int) {}       // COV_NF_LINE
-  void OnUnregistration(int, bool) {}    // COV_NF_LINE
+  virtual void OnShutdown(EpollServer *eps, int fd) OVERRIDE {}
+  virtual void OnRegistration(EpollServer*, int, int) OVERRIDE {}
+  virtual void OnModification(int, int) OVERRIDE {}       // COV_NF_LINE
+  virtual void OnUnregistration(int, bool) OVERRIDE {}    // COV_NF_LINE
 };
 
 ////////////////////////////////////////////////////////////////////////////////

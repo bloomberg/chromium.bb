@@ -163,7 +163,7 @@ class MockHostResolverProc : public HostResolverProc {
   }
 
  protected:
-  ~MockHostResolverProc() {}
+  virtual ~MockHostResolverProc() {}
 
  private:
   mutable base::Lock lock_;

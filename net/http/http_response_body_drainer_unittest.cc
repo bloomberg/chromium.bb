@@ -216,7 +216,7 @@ class HttpResponseBodyDrainerTest : public testing::Test {
         mock_stream_(new MockHttpStream(&result_waiter_)),
         drainer_(new HttpResponseBodyDrainer(mock_stream_)) {}
 
-  ~HttpResponseBodyDrainerTest() {}
+  virtual ~HttpResponseBodyDrainerTest() {}
 
   HttpNetworkSession* CreateNetworkSession() const {
     HttpNetworkSession::Params params;

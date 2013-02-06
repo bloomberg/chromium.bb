@@ -72,7 +72,7 @@ class URLRequestFtpJobTest : public testing::Test {
                          &network_delegate_) {
   }
 
-  ~URLRequestFtpJobTest() {
+  virtual ~URLRequestFtpJobTest() {
     // Clean up any remaining tasks that mess up unrelated tests.
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();

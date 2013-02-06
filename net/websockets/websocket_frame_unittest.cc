@@ -369,7 +369,7 @@ class WebSocketFrameTestMaskBenchmark : public testing::Test {
   WebSocketFrameTestMaskBenchmark()
       : iterations_(kDefaultIterations) {}
 
-  void SetUp() {
+  virtual void SetUp() {
     std::string iterations(
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             kBenchmarkIterations));

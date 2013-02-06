@@ -125,7 +125,7 @@ class ProxyResolverV8Tracing::Job
     string16 message;
   };
 
-  ~Job();
+  virtual ~Job();
 
   void CheckIsOnWorkerThread() const;
   void CheckIsOnOriginThread() const;

@@ -98,7 +98,7 @@ class RuleBasedProxyScriptFetcher : public ProxyScriptFetcher {
   // ProxyScriptFetcher implementation.
   virtual int Fetch(const GURL& url,
                     string16* text,
-                    const CompletionCallback& callback) {
+                    const CompletionCallback& callback) OVERRIDE {
     const Rules::Rule& rule = rules_->GetRuleByUrl(url);
     int rv = rule.fetch_error;
     EXPECT_NE(ERR_UNEXPECTED, rv);
@@ -107,9 +107,9 @@ class RuleBasedProxyScriptFetcher : public ProxyScriptFetcher {
     return rv;
   }
 
-  virtual void Cancel() {}
+  virtual void Cancel() OVERRIDE {}
 
-  virtual URLRequestContext* GetRequestContext() const { return NULL; }
+  virtual URLRequestContext* GetRequestContext() const OVERRIDE { return NULL; }
 
  private:
   const Rules* rules_;
@@ -457,15 +457,16 @@ class SynchronousSuccessDhcpFetcher : public DhcpProxyScriptFetcher {
       : gurl_("http://dhcppac/"), expected_text_(expected_text) {
   }
 
-  int Fetch(string16* utf16_text, const CompletionCallback& callback) OVERRIDE {
+  virtual int Fetch(string16* utf16_text,
+                    const CompletionCallback& callback) OVERRIDE {
     *utf16_text = expected_text_;
     return OK;
   }
 
-  void Cancel() OVERRIDE {
+  virtual void Cancel() OVERRIDE {
   }
 
-  const GURL& GetPacURL() const OVERRIDE {
+  virtual const GURL& GetPacURL() const OVERRIDE {
     return gurl_;
   }
 
@@ -536,9 +537,10 @@ class AsyncFailDhcpFetcher
       public base::SupportsWeakPtr<AsyncFailDhcpFetcher> {
  public:
   AsyncFailDhcpFetcher() {}
-  ~AsyncFailDhcpFetcher() {}
+  virtual ~AsyncFailDhcpFetcher() {}
 
-  int Fetch(string16* utf16_text, const CompletionCallback& callback) OVERRIDE {
+  virtual int Fetch(string16* utf16_text,
+                    const CompletionCallback& callback) OVERRIDE {
     callback_ = callback;
     MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -546,11 +548,11 @@ class AsyncFailDhcpFetcher
     return ERR_IO_PENDING;
   }
 
-  void Cancel() OVERRIDE {
+  virtual void Cancel() OVERRIDE {
     callback_.Reset();
   }
 
-  const GURL& GetPacURL() const OVERRIDE {
+  virtual const GURL& GetPacURL() const OVERRIDE {
     return dummy_gurl_;
   }
 

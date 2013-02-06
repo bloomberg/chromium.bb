@@ -1810,24 +1810,25 @@ class FlushablePersistentStore : public CookieMonster::PersistentCookieStore {
  public:
   FlushablePersistentStore() : flush_count_(0) {}
 
-  void Load(const LoadedCallback& loaded_callback) {
+  virtual void Load(const LoadedCallback& loaded_callback) OVERRIDE {
     std::vector<CanonicalCookie*> out_cookies;
     MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&net::LoadedCallbackTask::Run,
                  new net::LoadedCallbackTask(loaded_callback, out_cookies)));
   }
 
-  void LoadCookiesForKey(const std::string& key,
-      const LoadedCallback& loaded_callback) {
+  virtual void LoadCookiesForKey(
+      const std::string& key,
+      const LoadedCallback& loaded_callback) OVERRIDE {
     Load(loaded_callback);
   }
 
-  void AddCookie(const CanonicalCookie&) {}
-  void UpdateCookieAccessTime(const CanonicalCookie&) {}
-  void DeleteCookie(const CanonicalCookie&) {}
-  void SetForceKeepSessionState() {}
+  virtual void AddCookie(const CanonicalCookie&) OVERRIDE {}
+  virtual void UpdateCookieAccessTime(const CanonicalCookie&) OVERRIDE {}
+  virtual void DeleteCookie(const CanonicalCookie&) OVERRIDE {}
+  virtual void SetForceKeepSessionState() OVERRIDE {}
 
-  void Flush(const base::Closure& callback) {
+  virtual void Flush(const base::Closure& callback) OVERRIDE {
     ++flush_count_;
     if (!callback.is_null())
       callback.Run();

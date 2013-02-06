@@ -28,29 +28,29 @@ class VisitorShim : public QuicConnectionVisitorInterface {
   virtual bool OnPacket(const IPEndPoint& self_address,
                         const IPEndPoint& peer_address,
                         const QuicPacketHeader& header,
-                        const vector<QuicStreamFrame>& frame) {
+                        const vector<QuicStreamFrame>& frame) OVERRIDE {
     bool accepted = session_->OnPacket(self_address, peer_address, header,
                                        frame);
     session_->PostProcessAfterData();
     return accepted;
   }
-  virtual void OnRstStream(const QuicRstStreamFrame& frame) {
+  virtual void OnRstStream(const QuicRstStreamFrame& frame) OVERRIDE {
     session_->OnRstStream(frame);
     session_->PostProcessAfterData();
   }
 
-  virtual void OnAck(AckedPackets acked_packets) {
+  virtual void OnAck(AckedPackets acked_packets) OVERRIDE {
     session_->OnAck(acked_packets);
     session_->PostProcessAfterData();
   }
 
-  virtual bool OnCanWrite() {
+  virtual bool OnCanWrite() OVERRIDE {
     bool rc = session_->OnCanWrite();
     session_->PostProcessAfterData();
     return rc;
   }
 
-  virtual void ConnectionClose(QuicErrorCode error, bool from_peer) {
+  virtual void ConnectionClose(QuicErrorCode error, bool from_peer) OVERRIDE {
     session_->ConnectionClose(error, from_peer);
     // The session will go away, so don't bother with cleanup.
   }

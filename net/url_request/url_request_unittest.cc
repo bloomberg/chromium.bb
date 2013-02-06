@@ -895,11 +895,11 @@ class RestartTestJob : public URLRequestTestJob {
   RestartTestJob(URLRequest* request, NetworkDelegate* network_delegate)
     : URLRequestTestJob(request, network_delegate, true) {}
  protected:
-  virtual void StartAsync() {
+  virtual void StartAsync() OVERRIDE {
     this->NotifyRestartRequired();
   }
  private:
-  ~RestartTestJob() {}
+  virtual ~RestartTestJob() {}
 };
 
 class CancelTestJob : public URLRequestTestJob {
@@ -907,11 +907,11 @@ class CancelTestJob : public URLRequestTestJob {
   explicit CancelTestJob(URLRequest* request, NetworkDelegate* network_delegate)
     : URLRequestTestJob(request, network_delegate, true) {}
  protected:
-  virtual void StartAsync() {
+  virtual void StartAsync() OVERRIDE {
     request_->Cancel();
   }
  private:
-  ~CancelTestJob() {}
+  virtual ~CancelTestJob() {}
 };
 
 class CancelThenRestartTestJob : public URLRequestTestJob {
@@ -921,12 +921,12 @@ class CancelThenRestartTestJob : public URLRequestTestJob {
       : URLRequestTestJob(request, network_delegate, true) {
   }
  protected:
-  virtual void StartAsync() {
+  virtual void StartAsync() OVERRIDE {
     request_->Cancel();
     this->NotifyRestartRequired();
   }
  private:
-  ~CancelThenRestartTestJob() {}
+  virtual ~CancelThenRestartTestJob() {}
 };
 
 // An Interceptor for use with interceptor tests
@@ -946,12 +946,13 @@ class TestInterceptor : URLRequest::Interceptor {
     URLRequest::Deprecated::RegisterRequestInterceptor(this);
   }
 
-  ~TestInterceptor() {
+  virtual ~TestInterceptor() {
     URLRequest::Deprecated::UnregisterRequestInterceptor(this);
   }
 
-  virtual URLRequestJob* MaybeIntercept(URLRequest* request,
-                                        NetworkDelegate* network_delegate) {
+  virtual URLRequestJob* MaybeIntercept(
+      URLRequest* request,
+      NetworkDelegate* network_delegate) OVERRIDE {
     if (restart_main_request_) {
       restart_main_request_ = false;
       did_restart_main_ = true;
@@ -987,7 +988,7 @@ class TestInterceptor : URLRequest::Interceptor {
   virtual URLRequestJob* MaybeInterceptRedirect(
       URLRequest* request,
       NetworkDelegate* network_delegate,
-      const GURL& location) {
+      const GURL& location) OVERRIDE {
     if (cancel_redirect_request_) {
       cancel_redirect_request_ = false;
       did_cancel_redirect_ = true;
@@ -1005,7 +1006,7 @@ class TestInterceptor : URLRequest::Interceptor {
   }
 
   virtual URLRequestJob* MaybeInterceptResponse(
-      URLRequest* request, NetworkDelegate* network_delegate) {
+      URLRequest* request, NetworkDelegate* network_delegate) OVERRIDE {
     if (cancel_final_request_) {
       cancel_final_request_ = false;
       did_cancel_final_ = true;
@@ -3034,9 +3035,9 @@ const char kExtraHeader[] = "Allow-Snafu";
 const char kExtraValue[] = "fubar";
 
 class RedirectWithAdditionalHeadersDelegate : public TestDelegate {
-  void OnReceivedRedirect(net::URLRequest* request,
-                          const GURL& new_url,
-                          bool* defer_redirect) {
+  virtual void OnReceivedRedirect(net::URLRequest* request,
+                                  const GURL& new_url,
+                                  bool* defer_redirect) OVERRIDE {
     TestDelegate::OnReceivedRedirect(request, new_url, defer_redirect);
     request->SetExtraRequestHeaderByName(kExtraHeader, kExtraValue, false);
   }
@@ -3070,9 +3071,9 @@ namespace {
 const char kExtraHeaderToRemove[] = "To-Be-Removed";
 
 class RedirectWithHeaderRemovalDelegate : public TestDelegate {
-  void OnReceivedRedirect(net::URLRequest* request,
+  virtual void OnReceivedRedirect(net::URLRequest* request,
                           const GURL& new_url,
-                          bool* defer_redirect) {
+                          bool* defer_redirect) OVERRIDE {
     TestDelegate::OnReceivedRedirect(request, new_url, defer_redirect);
     request->RemoveRequestHeaderByName(kExtraHeaderToRemove);
   }
@@ -4457,7 +4458,7 @@ class SSLClientAuthTestDelegate : public TestDelegate {
   }
   virtual void OnCertificateRequested(
       URLRequest* request,
-      SSLCertRequestInfo* cert_request_info) {
+      SSLCertRequestInfo* cert_request_info) OVERRIDE {
     on_certificate_requested_count_++;
     MessageLoop::current()->Quit();
   }
@@ -4734,7 +4735,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
     *out_cert_status = r.ssl_info().cert_status;
   }
 
-  ~HTTPSOCSPTest() {
+  virtual ~HTTPSOCSPTest() {
 #if defined(USE_NSS) || defined(OS_IOS)
     ShutdownNSSHttpIO();
 #endif

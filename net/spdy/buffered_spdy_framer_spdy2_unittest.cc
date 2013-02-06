@@ -25,70 +25,76 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
         header_stream_id_(-1) {
   }
 
-  void OnError(SpdyFramer::SpdyError error_code) {
+  virtual void OnError(SpdyFramer::SpdyError error_code) OVERRIDE {
     LOG(INFO) << "SpdyFramer Error: " << error_code;
     error_count_++;
   }
 
-  void OnStreamError(SpdyStreamId stream_id,
-                     const std::string& description) {
+  virtual void OnStreamError(
+      SpdyStreamId stream_id,
+      const std::string& description) OVERRIDE {
     LOG(INFO) << "SpdyFramer Error on stream: " << stream_id  << " "
               << description;
     error_count_++;
   }
 
-  void OnSynStream(SpdyStreamId stream_id,
-                   SpdyStreamId associated_stream_id,
-                   SpdyPriority priority,
-                   uint8 credential_slot,
-                   bool fin,
-                   bool unidirectional,
-                   const SpdyHeaderBlock& headers) {
+  virtual void OnSynStream(SpdyStreamId stream_id,
+                           SpdyStreamId associated_stream_id,
+                           SpdyPriority priority,
+                           uint8 credential_slot,
+                           bool fin,
+                           bool unidirectional,
+                           const SpdyHeaderBlock& headers) OVERRIDE {
     header_stream_id_ = stream_id;
     EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
     syn_frame_count_++;
     headers_ = headers;
   }
 
-  void OnSynReply(SpdyStreamId stream_id,
-                  bool fin,
-                  const SpdyHeaderBlock& headers) {
+  virtual void OnSynReply(SpdyStreamId stream_id,
+                          bool fin,
+                          const SpdyHeaderBlock& headers) OVERRIDE {
     header_stream_id_ = stream_id;
     EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
     syn_reply_frame_count_++;
     headers_ = headers;
   }
 
-  void OnHeaders(SpdyStreamId stream_id,
-                 bool fin,
-                 const SpdyHeaderBlock& headers) {
+  virtual void OnHeaders(SpdyStreamId stream_id,
+                         bool fin,
+                         const SpdyHeaderBlock& headers) OVERRIDE {
     header_stream_id_ = stream_id;
     EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
     headers_frame_count_++;
     headers_ = headers;
   }
 
-  void OnStreamFrameData(SpdyStreamId stream_id,
-                         const char* data,
-                         size_t len,
-                         SpdyDataFlags flags) {
+  virtual void OnStreamFrameData(SpdyStreamId stream_id,
+                                 const char* data,
+                                 size_t len,
+                                 SpdyDataFlags flags) OVERRIDE {
     LOG(FATAL) << "Unexpected OnStreamFrameData call.";
   }
 
-  void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) {
+  virtual void OnSetting(SpdySettingsIds id,
+                         uint8 flags,
+                         uint32 value) OVERRIDE {
     setting_count_++;
   }
 
-  void OnPing(uint32 unique_id) {}
+  virtual void OnPing(uint32 unique_id) OVERRIDE {}
 
-  void OnRstStream(SpdyStreamId stream_id, SpdyStatusCodes status) {}
+  virtual void OnRstStream(SpdyStreamId stream_id,
+                           SpdyStatusCodes status) OVERRIDE {
+  }
 
-  void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                SpdyGoAwayStatus status) {}
+  virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
+                        SpdyGoAwayStatus status) OVERRIDE {
+  }
 
-  void OnControlFrameCompressed(
+  virtual void OnControlFrameCompressed(
       const SpdyControlFrame& uncompressed_frame,
-      const SpdyControlFrame& compressed_frame) {
+      const SpdyControlFrame& compressed_frame) OVERRIDE {
   }
 
   bool OnCredentialFrameData(const char*, size_t) {
@@ -103,7 +109,9 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   void OnRstStream(const SpdyRstStreamControlFrame& frame) {}
   void OnGoAway(const SpdyGoAwayControlFrame& frame) {}
   void OnPing(const SpdyPingControlFrame& frame) {}
-  void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) {}
+  virtual void OnWindowUpdate(SpdyStreamId stream_id,
+                              int delta_window_size) OVERRIDE {
+  }
   void OnCredential(const SpdyCredentialControlFrame& frame) {}
 
   // Convenience function which runs a framer simulation with particular input.

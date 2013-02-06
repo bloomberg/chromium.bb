@@ -26,7 +26,7 @@ class CubicTest : public ::testing::Test {
       : one_ms_(QuicTime::Delta::FromMilliseconds(1)),
         hundred_ms_(QuicTime::Delta::FromMilliseconds(100)) {
   }
-  void SetUp() {
+  virtual void SetUp() {
     cubic_.reset(new CubicPeer(&clock_));
   }
   const QuicTime::Delta one_ms_;

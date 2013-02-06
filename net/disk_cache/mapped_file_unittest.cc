@@ -22,7 +22,7 @@ class FileCallbackTest: public disk_cache::FileIOCallback {
   }
   virtual ~FileCallbackTest() {}
 
-  virtual void OnFileIOComplete(int bytes_copied);
+  virtual void OnFileIOComplete(int bytes_copied) OVERRIDE;
 
  private:
   int id_;

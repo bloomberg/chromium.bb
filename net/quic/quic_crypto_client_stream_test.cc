@@ -20,7 +20,7 @@ class TestQuicVisitor : public NoOpFramerVisitor {
   TestQuicVisitor() {}
 
   // NoOpFramerVisitor
-  virtual void OnStreamFrame(const QuicStreamFrame& frame) {
+  virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {
     frame_ = frame;
   }
 
@@ -38,12 +38,13 @@ class TestCryptoVisitor : public CryptoFramerVisitorInterface {
       : error_count_(0) {
   }
 
-  virtual void OnError(CryptoFramer* framer) {
+  virtual void OnError(CryptoFramer* framer) OVERRIDE {
     DLOG(ERROR) << "CryptoFramer Error: " << framer->error();
     ++error_count_;
   }
 
-  virtual void OnHandshakeMessage(const CryptoHandshakeMessage& message) {
+  virtual void OnHandshakeMessage(
+      const CryptoHandshakeMessage& message) OVERRIDE {
     messages_.push_back(message);
   }
 
@@ -61,7 +62,7 @@ class TestMockHelper : public MockHelper  {
   virtual ~TestMockHelper() {}
 
   virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
-                                int* error) {
+                                int* error) OVERRIDE {
     packet_count_++;
 
     // The first packet should be ClientHello.
@@ -158,8 +159,10 @@ class TestMockSession : public MockSession {
   }
   virtual ~TestMockSession() {}
 
-  virtual QuicConsumedData WriteData(QuicStreamId id, StringPiece data,
-                                     QuicStreamOffset offset, bool fin) {
+  virtual QuicConsumedData WriteData(QuicStreamId id,
+                                     StringPiece data,
+                                     QuicStreamOffset offset,
+                                     bool fin) OVERRIDE {
     return QuicSession::WriteData(id, data, offset, fin);
   }
 };

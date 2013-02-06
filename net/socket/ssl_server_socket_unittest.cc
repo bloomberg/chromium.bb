@@ -237,15 +237,15 @@ class FakeSocket : public StreamSocket {
     return base::TimeDelta::FromMicroseconds(-1);
   }
 
-  virtual bool WasNpnNegotiated() const {
+  virtual bool WasNpnNegotiated() const OVERRIDE {
     return false;
   }
 
-  virtual NextProto GetNegotiatedProtocol() const {
+  virtual NextProto GetNegotiatedProtocol() const OVERRIDE {
     return kProtoUnknown;
   }
 
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) {
+  virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE {
     return false;
   }
 

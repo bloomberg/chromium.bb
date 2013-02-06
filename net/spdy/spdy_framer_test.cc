@@ -101,7 +101,7 @@ class SpdyFramerTestUtil {
                              SpdyPriority priority,
                              uint8 slot,
                              bool fin,
-                             bool unidirectional) {
+                             bool unidirectional) OVERRIDE {
       SpdyFramer framer(version_);
       const SpdyHeaderBlock null_headers;
       int flags = CONTROL_FLAG_NONE;
@@ -124,7 +124,7 @@ class SpdyFramerTestUtil {
       size_ += SpdySynStreamControlFrame::size();
     }
 
-    virtual void OnSynReply(SpdyStreamId stream_id, bool fin) {
+    virtual void OnSynReply(SpdyStreamId stream_id, bool fin) OVERRIDE {
       SpdyFramer framer(version_);
       const SpdyHeaderBlock null_headers;
       int flags = CONTROL_FLAG_NONE;
@@ -141,7 +141,7 @@ class SpdyFramerTestUtil {
       size_ += SpdySynStreamControlFrame::size();
     }
 
-    virtual void OnHeaders(SpdyStreamId stream_id, bool fin) {
+    virtual void OnHeaders(SpdyStreamId stream_id, bool fin) OVERRIDE {
       SpdyFramer framer(version_);
       const SpdyHeaderBlock null_headers;
       int flags = CONTROL_FLAG_NONE;
@@ -160,7 +160,7 @@ class SpdyFramerTestUtil {
 
     virtual bool OnControlFrameHeaderData(SpdyStreamId stream_id,
                                           const char* header_data,
-                                          size_t len) {
+                                          size_t len) OVERRIDE {
       CHECK(buffer_.get() != NULL);
       CHECK_GE(kMaxDecompressedSize, size_ + len);
       CHECK(!finished_);
@@ -175,39 +175,43 @@ class SpdyFramerTestUtil {
     }
 
     virtual bool OnCredentialFrameData(const char* header_data,
-                                       size_t len) {
+                                       size_t len) OVERRIDE {
       LOG(FATAL) << "Unexpected CREDENTIAL Frame";
       return false;
     }
 
-    virtual void OnError(SpdyFramer* framer) { LOG(FATAL); }
-    virtual void OnDataFrameHeader(const SpdyDataFrame* frame) {
+    virtual void OnError(SpdyFramer* framer) OVERRIDE { LOG(FATAL); }
+    virtual void OnDataFrameHeader(const SpdyDataFrame* frame) OVERRIDE {
       LOG(FATAL) << "Unexpected data frame header";
     }
     virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                    const char* data,
                                    size_t len,
-                                   SpdyDataFlags flags) {
+                                   SpdyDataFlags flags) OVERRIDE {
       LOG(FATAL);
     }
-    virtual void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) {
+    virtual void OnSetting(SpdySettingsIds id,
+                           uint8 flags,
+                           uint32 value) OVERRIDE {
       LOG(FATAL);
     }
     virtual void OnControlFrameCompressed(
         const SpdyControlFrame& uncompressed_frame,
-        const SpdyControlFrame& compressed_frame) {
+        const SpdyControlFrame& compressed_frame) OVERRIDE {
     }
-    virtual void OnPing(uint32 unique_id) {
+    virtual void OnPing(uint32 unique_id) OVERRIDE {
       LOG(FATAL);
     }
-    virtual void OnRstStream(SpdyStreamId stream_id, SpdyStatusCodes status) {
+    virtual void OnRstStream(SpdyStreamId stream_id,
+                             SpdyStatusCodes status) OVERRIDE {
       LOG(FATAL);
     }
     virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                          SpdyGoAwayStatus status) {
+                          SpdyGoAwayStatus status) OVERRIDE {
       LOG(FATAL);
     }
-    virtual void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) {
+    virtual void OnWindowUpdate(SpdyStreamId stream_id,
+                                int delta_window_size) OVERRIDE {
       LOG(FATAL);
     }
 
@@ -233,8 +237,10 @@ class SpdyFramerTestUtil {
   DISALLOW_COPY_AND_ASSIGN(SpdyFramerTestUtil);
 };
 
-string HexDumpWithMarks(const unsigned char* data, int length,
-                             const bool* marks, int mark_length) {
+string HexDumpWithMarks(const unsigned char* data,
+                        int length,
+                        const bool* marks,
+                        int mark_length) {
   static const char kHexChars[] = "0123456789abcdef";
   static const int kColumns = 4;
 
@@ -334,21 +340,21 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface  {
       credential_buffer_size_(kDefaultCredentialBufferSize) {
   }
 
-  void OnError(SpdyFramer* f) {
+  virtual void OnError(SpdyFramer* f) OVERRIDE {
     LOG(INFO) << "SpdyFramer Error: "
               << SpdyFramer::ErrorCodeToString(f->error_code());
     error_count_++;
   }
 
-  void OnDataFrameHeader(const SpdyDataFrame* frame) {
+  virtual void OnDataFrameHeader(const SpdyDataFrame* frame) OVERRIDE {
     data_frame_count_++;
     header_stream_id_ = frame->stream_id();
   }
 
-  void OnStreamFrameData(SpdyStreamId stream_id,
-                         const char* data,
-                         size_t len,
-                         SpdyDataFlags flags) {
+  virtual void OnStreamFrameData(SpdyStreamId stream_id,
+                                 const char* data,
+                                 size_t len,
+                                 SpdyDataFlags flags) OVERRIDE {
     EXPECT_EQ(header_stream_id_, stream_id);
     if (len == 0)
       ++zero_length_data_frame_count_;
@@ -368,7 +374,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface  {
                            SpdyPriority priority,
                            uint8 credential_slot,
                            bool fin,
-                           bool unidirectional) {
+                           bool unidirectional) OVERRIDE {
     syn_frame_count_++;
     InitHeaderStreaming(SYN_STREAM, stream_id);
     if (fin) {
@@ -376,7 +382,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface  {
     }
   }
 
-  virtual void OnSynReply(SpdyStreamId stream_id, bool fin) {
+  virtual void OnSynReply(SpdyStreamId stream_id, bool fin) OVERRIDE {
     syn_reply_frame_count_++;
     InitHeaderStreaming(HEADERS, stream_id);
     if (fin) {
@@ -384,7 +390,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface  {
     }
   }
 
-  virtual void OnHeaders(SpdyStreamId stream_id, bool fin) {
+  virtual void OnHeaders(SpdyStreamId stream_id, bool fin) OVERRIDE {
     headers_frame_count_++;
     InitHeaderStreaming(SYN_REPLY, stream_id);
     if (fin) {
@@ -392,36 +398,40 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface  {
     }
   }
 
-  virtual void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) {
+  virtual void OnSetting(SpdySettingsIds id,
+                         uint8 flags,
+                         uint32 value) OVERRIDE {
     setting_count_++;
   }
 
   virtual void OnControlFrameCompressed(
       const SpdyControlFrame& uncompressed_frame,
-      const SpdyControlFrame& compressed_frame) {
+      const SpdyControlFrame& compressed_frame) OVERRIDE {
   }
 
-  virtual void OnPing(uint32 unique_id) {
+  virtual void OnPing(uint32 unique_id) OVERRIDE {
     DLOG(FATAL);
   }
 
-  virtual void OnRstStream(SpdyStreamId stream_id, SpdyStatusCodes status) {
+  virtual void OnRstStream(SpdyStreamId stream_id,
+                           SpdyStatusCodes status) OVERRIDE {
     fin_frame_count_++;
   }
 
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                        SpdyGoAwayStatus status) {
+                        SpdyGoAwayStatus status) OVERRIDE {
     goaway_count_++;
   }
 
-  virtual void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) {
+  virtual void OnWindowUpdate(SpdyStreamId stream_id,
+                              int delta_window_size) OVERRIDE {
     last_window_update_stream_ = stream_id;
     last_window_update_delta_ = delta_window_size;
   }
 
-  bool OnControlFrameHeaderData(SpdyStreamId stream_id,
-                                const char* header_data,
-                                size_t len) {
+  virtual bool OnControlFrameHeaderData(SpdyStreamId stream_id,
+                                        const char* header_data,
+                                        size_t len) OVERRIDE {
     ++control_frame_header_data_count_;
     CHECK_EQ(header_stream_id_, stream_id);
     if (len == 0) {
@@ -443,8 +453,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface  {
     return true;
   }
 
-  bool OnCredentialFrameData(const char* credential_data,
-                             size_t len) {
+  virtual bool OnCredentialFrameData(const char* credential_data,
+                                     size_t len) OVERRIDE {
     if (len == 0) {
       if (!framer_.ParseCredentialData(credential_buffer_.get(),
                                        credential_buffer_length_,

@@ -123,7 +123,7 @@ class MockSocketStreamDelegate : public net::SocketStream::Delegate {
     if (!on_received_data_.is_null())
       on_received_data_.Run();
   }
-  virtual void OnClose(net::SocketStream* socket) {
+  virtual void OnClose(net::SocketStream* socket) OVERRIDE {
     if (!on_close_.is_null())
       on_close_.Run();
   }
@@ -306,16 +306,17 @@ class MockHttpTransactionFactory : public net::HttpTransactionFactory {
     EXPECT_EQ(net::OK,
               session_->InitializeWithSocket(connection, false, net::OK));
   }
-  virtual int CreateTransaction(scoped_ptr<net::HttpTransaction>* trans,
-                                net::HttpTransactionDelegate* delegate) {
+  virtual int CreateTransaction(
+      scoped_ptr<net::HttpTransaction>* trans,
+      net::HttpTransactionDelegate* delegate) OVERRIDE {
     NOTREACHED();
     return net::ERR_UNEXPECTED;
   }
-  virtual net::HttpCache* GetCache() {
+  virtual net::HttpCache* GetCache() OVERRIDE {
     NOTREACHED();
     return NULL;
   }
-  virtual net::HttpNetworkSession* GetSession() {
+  virtual net::HttpNetworkSession* GetSession() OVERRIDE {
     return http_session_.get();
   }
  private:

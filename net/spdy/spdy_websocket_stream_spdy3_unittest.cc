@@ -76,7 +76,7 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
     on_close_ = callback;
   }
 
-  virtual void OnCreatedSpdyStream(int result) {
+  virtual void OnCreatedSpdyStream(int result) OVERRIDE {
     events_.push_back(
         SpdyWebSocketStreamEvent(SpdyWebSocketStreamEvent::EVENT_CREATED,
                                  SpdyHeaderBlock(),
@@ -85,7 +85,7 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
     if (!on_created_.is_null())
       on_created_.Run(&events_.back());
   }
-  virtual void OnSentSpdyHeaders(int result) {
+  virtual void OnSentSpdyHeaders(int result) OVERRIDE {
     events_.push_back(
         SpdyWebSocketStreamEvent(SpdyWebSocketStreamEvent::EVENT_SENT_HEADERS,
                                  SpdyHeaderBlock(),
@@ -95,7 +95,7 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
       on_sent_data_.Run(&events_.back());
   }
   virtual int OnReceivedSpdyResponseHeader(
-      const SpdyHeaderBlock& headers, int status) {
+      const SpdyHeaderBlock& headers, int status) OVERRIDE {
     events_.push_back(
         SpdyWebSocketStreamEvent(
             SpdyWebSocketStreamEvent::EVENT_RECEIVED_HEADER,
@@ -106,7 +106,7 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
       on_received_header_.Run(&events_.back());
     return status;
   }
-  virtual void OnSentSpdyData(int amount_sent) {
+  virtual void OnSentSpdyData(int amount_sent) OVERRIDE {
     events_.push_back(
         SpdyWebSocketStreamEvent(
             SpdyWebSocketStreamEvent::EVENT_SENT_DATA,
@@ -116,7 +116,7 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
     if (!on_sent_data_.is_null())
       on_sent_data_.Run(&events_.back());
   }
-  virtual void OnReceivedSpdyData(const char* data, int length) {
+  virtual void OnReceivedSpdyData(const char* data, int length) OVERRIDE {
     events_.push_back(
         SpdyWebSocketStreamEvent(
             SpdyWebSocketStreamEvent::EVENT_RECEIVED_DATA,
@@ -126,7 +126,7 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
     if (!on_received_data_.is_null())
       on_received_data_.Run(&events_.back());
   }
-  virtual void OnCloseSpdyStream() {
+  virtual void OnCloseSpdyStream() OVERRIDE {
     events_.push_back(
         SpdyWebSocketStreamEvent(
             SpdyWebSocketStreamEvent::EVENT_CLOSE,

@@ -21,11 +21,12 @@ class DummySocketStreamDelegate : public net::SocketStream::Delegate {
   DummySocketStreamDelegate() {}
   virtual ~DummySocketStreamDelegate() {}
   virtual void OnConnected(
-      net::SocketStream* socket, int max_pending_send_allowed) {}
-  virtual void OnSentData(net::SocketStream* socket, int amount_sent) {}
+      net::SocketStream* socket, int max_pending_send_allowed) OVERRIDE {}
+  virtual void OnSentData(net::SocketStream* socket,
+                          int amount_sent) OVERRIDE {}
   virtual void OnReceivedData(net::SocketStream* socket,
-                              const char* data, int len) {}
-  virtual void OnClose(net::SocketStream* socket) {}
+                              const char* data, int len) OVERRIDE {}
+  virtual void OnClose(net::SocketStream* socket) OVERRIDE {}
 };
 
 namespace net {

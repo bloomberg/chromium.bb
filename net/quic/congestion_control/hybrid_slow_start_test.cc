@@ -17,7 +17,7 @@ class HybridSlowStartTest : public ::testing::Test {
      : one_ms_(QuicTime::Delta::FromMilliseconds(1)),
        rtt_(QuicTime::Delta::FromMilliseconds(60)) {
   }
-  void SetUp() {
+  virtual void SetUp() {
     slowStart_.reset(new HybridSlowStart(&clock_));
   }
   const QuicTime::Delta one_ms_;

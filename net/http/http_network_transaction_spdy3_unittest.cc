@@ -8476,7 +8476,7 @@ class CapturingProxyResolver : public ProxyResolver {
                              ProxyInfo* results,
                              const CompletionCallback& callback,
                              RequestHandle* request,
-                             const BoundNetLog& net_log) {
+                             const BoundNetLog& net_log) OVERRIDE {
     ProxyServer proxy_server(ProxyServer::SCHEME_HTTP,
                              HostPortPair("myproxy", 80));
     results->UseProxyServer(proxy_server);
@@ -8484,7 +8484,7 @@ class CapturingProxyResolver : public ProxyResolver {
     return OK;
   }
 
-  virtual void CancelRequest(RequestHandle request) {
+  virtual void CancelRequest(RequestHandle request) OVERRIDE {
     NOTREACHED();
   }
 
@@ -8493,12 +8493,12 @@ class CapturingProxyResolver : public ProxyResolver {
     return LOAD_STATE_IDLE;
   }
 
-  virtual void CancelSetPacScript() {
+  virtual void CancelSetPacScript() OVERRIDE {
     NOTREACHED();
   }
 
   virtual int SetPacScript(const scoped_refptr<ProxyResolverScriptData>&,
-                           const CompletionCallback& /*callback*/) {
+                           const CompletionCallback& /*callback*/) OVERRIDE {
     return OK;
   }
 
@@ -9346,7 +9346,7 @@ class TLSDecompressionFailureSocketDataProvider : public SocketDataProvider {
       : fail_all_(fail_all) {
   }
 
-  virtual MockRead GetNextRead() {
+  virtual MockRead GetNextRead() OVERRIDE {
     if (fail_all_)
       return MockRead(SYNCHRONOUS, ERR_SSL_DECOMPRESSION_FAILURE_ALERT);
 
@@ -9354,11 +9354,11 @@ class TLSDecompressionFailureSocketDataProvider : public SocketDataProvider {
                     "HTTP/1.1 200 OK\r\nContent-Length: 3\r\n\r\nok.\r\n");
   }
 
-  virtual MockWriteResult OnWrite(const std::string& data) {
+  virtual MockWriteResult OnWrite(const std::string& data) OVERRIDE {
     return MockWriteResult(SYNCHRONOUS /* async */, data.size());
   }
 
-  void Reset() {
+  virtual void Reset() OVERRIDE {
   }
 
  private:

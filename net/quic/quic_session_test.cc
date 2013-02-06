@@ -27,7 +27,8 @@ class TestCryptoStream : public QuicCryptoStream {
       : QuicCryptoStream(session) {
   }
 
-  void OnHandshakeMessage(const CryptoHandshakeMessage& message) {
+  virtual void OnHandshakeMessage(
+      const CryptoHandshakeMessage& message) OVERRIDE {
     SetHandshakeComplete(QUIC_NO_ERROR);
   }
 };
@@ -52,17 +53,17 @@ class TestSession : public QuicSession {
         crypto_stream_(this) {
   }
 
-  virtual QuicCryptoStream* GetCryptoStream() {
+  virtual QuicCryptoStream* GetCryptoStream() OVERRIDE {
     return &crypto_stream_;
   }
 
-  virtual TestStream* CreateOutgoingReliableStream() {
+  virtual TestStream* CreateOutgoingReliableStream() OVERRIDE {
     TestStream* stream = new TestStream(GetNextStreamId(), this);
     ActivateStream(stream);
     return stream;
   }
 
-  virtual TestStream* CreateIncomingReliableStream(QuicStreamId id) {
+  virtual TestStream* CreateIncomingReliableStream(QuicStreamId id) OVERRIDE {
     return new TestStream(id, this);
   }
 

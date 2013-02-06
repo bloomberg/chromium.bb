@@ -111,7 +111,7 @@ class SpdySessionSpdy3Test : public PlatformTest {
         pair_(test_host_port_pair_, ProxyServer::Direct()) {
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     g_delta_seconds = 0;
   }
 

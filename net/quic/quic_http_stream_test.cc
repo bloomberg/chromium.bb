@@ -86,7 +86,7 @@ class AutoClosingStream : public QuicHttpStream {
       : QuicHttpStream(stream, use_spdy) {
   }
 
-  virtual int OnDataReceived(const char* data, int length) {
+  virtual int OnDataReceived(const char* data, int length) OVERRIDE {
     Close(false);
     return OK;
   }

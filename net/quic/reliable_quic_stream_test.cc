@@ -28,7 +28,7 @@ class QuicReliableTestStream : public ReliableQuicStream {
   QuicReliableTestStream(QuicStreamId id, QuicSession* session)
       : ReliableQuicStream(id, session) {
   }
-  virtual uint32 ProcessData(const char* data, uint32 data_len) {
+  virtual uint32 ProcessData(const char* data, uint32 data_len) OVERRIDE {
     return 0;
   }
   using ReliableQuicStream::WriteData;

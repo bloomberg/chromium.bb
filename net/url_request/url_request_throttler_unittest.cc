@@ -64,11 +64,11 @@ class MockURLRequestThrottlerEntry : public URLRequestThrottlerEntry {
     backoff_policy_.num_errors_to_ignore = 0;
   }
 
-  const BackoffEntry* GetBackoffEntry() const {
+  virtual const BackoffEntry* GetBackoffEntry() const OVERRIDE {
     return &mock_backoff_entry_;
   }
 
-  BackoffEntry* GetBackoffEntry() {
+  virtual BackoffEntry* GetBackoffEntry() OVERRIDE {
     return &mock_backoff_entry_;
   }
 

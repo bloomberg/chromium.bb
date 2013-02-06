@@ -27,7 +27,7 @@ class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
                                 CreateReason reason,
                                 int nonce_count,
                                 const BoundNetLog& net_log,
-                                scoped_ptr<HttpAuthHandler>* handler) {
+                                scoped_ptr<HttpAuthHandler>* handler) OVERRIDE {
     handler->reset();
     return return_code_;
   }
