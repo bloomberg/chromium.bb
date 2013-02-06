@@ -97,6 +97,8 @@ CONTENT_EXPORT extern const char kEnableBrowserPluginCompositing[];
 CONTENT_EXPORT extern const char kEnableBrowserPluginForAllViewTypes[];
 CONTENT_EXPORT extern const char kEnableBrowserPluginGuestViews[];
 CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];
+CONTENT_EXPORT extern const char kEnableHighDpiCompositingForFixedPosition[];
+CONTENT_EXPORT extern const char kDisableCompositingForFixedPosition[];
 CONTENT_EXPORT extern const char kEnableCssShaders[];
 CONTENT_EXPORT extern const char kEnableDeviceMotion[];
 CONTENT_EXPORT extern const char kEnableDownloadResumption[];

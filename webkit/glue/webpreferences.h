@@ -116,7 +116,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool unified_textchecker_enabled;
   bool accelerated_compositing_enabled;
   bool force_compositing_mode;
-  bool fixed_position_compositing_enabled;
   bool accelerated_compositing_for_3d_transforms_enabled;
   bool accelerated_compositing_for_animation_enabled;
   bool accelerated_compositing_for_video_enabled;

@@ -93,7 +93,6 @@ WebPreferences::WebPreferences()
       unified_textchecker_enabled(false),
       accelerated_compositing_enabled(false),
       force_compositing_mode(false),
-      fixed_position_compositing_enabled(false),
       accelerated_compositing_for_3d_transforms_enabled(false),
       accelerated_compositing_for_animation_enabled(false),
       accelerated_compositing_for_video_enabled(false),
@@ -391,11 +390,6 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Enable gpu-accelerated compositing if requested on the command line.
   settings->setAcceleratedCompositingEnabled(accelerated_compositing_enabled);
-
-  // Enable compositing for fixed position elements if requested
-  // on the command line.
-  settings->setAcceleratedCompositingForFixedPositionEnabled(
-      fixed_position_compositing_enabled);
 
   // Enable gpu-accelerated 2d canvas if requested on the command line.
   settings->setAccelerated2dCanvasEnabled(accelerated_2d_canvas_enabled);

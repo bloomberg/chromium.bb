@@ -268,9 +268,22 @@ const char kEnableBrowserPluginForAllViewTypes[] =
 const char kEnableBrowserPluginGuestViews[] =
     "enable-browser-plugin-guest-views";
 
-// Enables the creation of compositing layers for fixed position elements.
+// Enable/Disable the creation of compositing layers for fixed position
+// elements. Three options are needed to support four possible scenarios:
+//  1. Default (disabled)
+//  2. Enabled always (to allow dogfooding)
+//  3. Disabled always (to give safety fallback for users)
+//  4. Enabled only if we detect a highDPI display
+//
+// Option #4 may soon be the default, because the feature is needed soon for
+// high DPI, but cannot be used (yet) for low DPI. Options #2 and #3 will
+// override Option #4.
 const char kEnableCompositingForFixedPosition[] =
      "enable-fixed-position-compositing";
+const char kDisableCompositingForFixedPosition[] =
+     "disable-fixed-position-compositing";
+const char kEnableHighDpiCompositingForFixedPosition[] =
+     "enable-high-dpi-fixed-position-compositing";
 
 // Enables CSS3 custom filters
 const char kEnableCssShaders[]              = "enable-css-shaders";

@@ -533,6 +533,26 @@ static WindowOpenDisposition NavigationPolicyToDisposition(
   }
 }
 
+static bool ShouldUseFixedPositionCompositing(float device_scale_factor) {
+  // Compositing for fixed-position elements is dependent on
+  // device_scale_factor if high-DPI flag is set, with no other
+  // overriding switch. http://crbug.com/172738
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(switches::kDisableCompositingForFixedPosition))
+    return false;
+
+  if (command_line.HasSwitch(switches::kEnableCompositingForFixedPosition))
+    return true;
+
+  if (device_scale_factor > 1.0f &&
+      command_line.HasSwitch(
+          switches::kEnableHighDpiCompositingForFixedPosition))
+    return true;
+
+  return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 struct RenderViewImpl::PendingFileChooser {
@@ -706,6 +726,9 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
   g_view_map.Get().insert(std::make_pair(webview(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(routing_id_, this));
   webview()->setDeviceScaleFactor(device_scale_factor_);
+  webview()->settings()->setAcceleratedCompositingForFixedPositionEnabled(
+      ShouldUseFixedPositionCompositing(device_scale_factor_));
+
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
 
@@ -6130,8 +6153,11 @@ void RenderViewImpl::OnImeConfirmComposition(
 
 void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
   RenderWidget::SetDeviceScaleFactor(device_scale_factor);
-  if (webview())
+  if (webview()) {
     webview()->setDeviceScaleFactor(device_scale_factor);
+    webview()->settings()->setAcceleratedCompositingForFixedPositionEnabled(
+        ShouldUseFixedPositionCompositing(device_scale_factor_));
+  }
 }
 
 ui::TextInputType RenderViewImpl::GetTextInputType() {
