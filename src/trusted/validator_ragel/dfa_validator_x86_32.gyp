@@ -8,9 +8,6 @@
   'includes': [
     '../../../build/common.gypi',
   ],
-  'target_defaults': {
-    'defines': [ 'NACL_TRUSTED_BUT_NOT_TCB' ],
-  },
   'conditions': [
     ['target_arch=="ia32"', {
       'targets': [
