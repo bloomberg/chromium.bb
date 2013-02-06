@@ -28,6 +28,15 @@ using std::numeric_limits;
 
 namespace {
 
+// This function acts as a compiler optimization barrier. We use it to
+// prevent the compiler from making an expression a compile-time constant.
+// We also use it so that the compiler doesn't discard certain return values
+// as something we don't need (see the comment with calloc below).
+template <typename Type>
+Type HideValueFromCompiler(volatile Type value) {
+  return value;
+}
+
 // Check that we can not allocate a memory range that cannot be indexed
 // via an int. This is used to mitigate vulnerabilities in libraries that use
 // int instead of size_t.
@@ -67,27 +76,27 @@ TEST(SecurityTest, ALLOC_TEST(IsTCMallocDynamicallyBypassed)) {
 
 TEST(SecurityTest, ALLOC_TEST(MemoryAllocationRestrictionsMalloc)) {
   if (!IsTcMallocBypassed()) {
-    scoped_ptr<char, base::FreeDeleter>
-        ptr(static_cast<char*>(malloc(kTooBigAllocSize)));
-    ASSERT_TRUE(ptr == NULL);
+    scoped_ptr<char, base::FreeDeleter> ptr(static_cast<char*>(
+        HideValueFromCompiler(malloc(kTooBigAllocSize))));
+    ASSERT_TRUE(!ptr);
   }
 }
 
 TEST(SecurityTest, ALLOC_TEST(MemoryAllocationRestrictionsCalloc)) {
   if (!IsTcMallocBypassed()) {
-    scoped_ptr<char, base::FreeDeleter>
-        ptr(static_cast<char*>(calloc(kTooBigAllocSize, 1)));
-    ASSERT_TRUE(ptr == NULL);
+    scoped_ptr<char, base::FreeDeleter> ptr(static_cast<char*>(
+        HideValueFromCompiler(calloc(kTooBigAllocSize, 1))));
+    ASSERT_TRUE(!ptr);
   }
 }
 
 TEST(SecurityTest, ALLOC_TEST(MemoryAllocationRestrictionsRealloc)) {
   if (!IsTcMallocBypassed()) {
     char* orig_ptr = static_cast<char*>(malloc(1));
-    ASSERT_TRUE(orig_ptr != NULL);
-    scoped_ptr<char, base::FreeDeleter>
-        ptr(static_cast<char*>(realloc(orig_ptr, kTooBigAllocSize)));
-    ASSERT_TRUE(ptr == NULL);
+    ASSERT_TRUE(orig_ptr);
+    scoped_ptr<char, base::FreeDeleter> ptr(static_cast<char*>(
+        HideValueFromCompiler(realloc(orig_ptr, kTooBigAllocSize))));
+    ASSERT_TRUE(!ptr);
     // If realloc() did not succeed, we need to free orig_ptr.
     free(orig_ptr);
   }
@@ -99,15 +108,17 @@ typedef struct {
 
 TEST(SecurityTest, ALLOC_TEST(MemoryAllocationRestrictionsNew)) {
   if (!IsTcMallocBypassed()) {
-    scoped_ptr<VeryLargeStruct> ptr(new (nothrow) VeryLargeStruct);
-    ASSERT_TRUE(ptr == NULL);
+    scoped_ptr<VeryLargeStruct> ptr(
+        HideValueFromCompiler(new (nothrow) VeryLargeStruct));
+    ASSERT_TRUE(!ptr);
   }
 }
 
 TEST(SecurityTest, ALLOC_TEST(MemoryAllocationRestrictionsNewArray)) {
   if (!IsTcMallocBypassed()) {
-    scoped_ptr<char[]> ptr(new (nothrow) char[kTooBigAllocSize]);
-    ASSERT_TRUE(ptr == NULL);
+    scoped_ptr<char[]> ptr(
+        HideValueFromCompiler(new (nothrow) char[kTooBigAllocSize]));
+    ASSERT_TRUE(!ptr);
   }
 }
 
@@ -143,15 +154,6 @@ void OverflowTestsSoftExpectTrue(bool overflow_detected) {
   }
 }
 
-// This function acts as a compiler optimization barrier. We use it to
-// prevent the compiler from making an expression a compile-time constant.
-// We also use it so that the compiler doesn't discard certain return values
-// as something we don't need (see the comment with calloc below).
-template <typename Type>
-Type HideValueFromCompiler(volatile Type value) {
-  return value;
-}
-
 // Test array[TooBig][X] and array[X][TooBig] allocations for int overflows.
 // IOS doesn't honor nothrow, so disable the test there.
 // Disable on Windows, we suspect some are failing because of it.
@@ -169,12 +171,12 @@ TEST(SecurityTest, DISABLE_ON_IOS_AND_WIN(NewOverflow)) {
   {
     scoped_ptr<char[][kArraySize]> array_pointer(new (nothrow)
         char[kDynamicArraySize2][kArraySize]);
-    OverflowTestsSoftExpectTrue(array_pointer == NULL);
+    OverflowTestsSoftExpectTrue(!array_pointer);
   }
   {
     scoped_ptr<char[][kArraySize2]> array_pointer(new (nothrow)
         char[kDynamicArraySize][kArraySize2]);
-    OverflowTestsSoftExpectTrue(array_pointer == NULL);
+    OverflowTestsSoftExpectTrue(!array_pointer);
   }
 }
 
