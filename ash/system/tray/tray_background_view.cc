@@ -327,7 +327,7 @@ gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
         bool rtl = base::i18n::IsRTL();
         rect.Inset(
             rtl ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0,
-            4,
+            kTrayBubbleAnchorTopInsetBottomAnchor,
             rtl ? 0 : kPaddingFromRightEdgeOfScreenBottomAlignment,
             kPaddingFromBottomOfScreenBottomAlignment);
       } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT) {

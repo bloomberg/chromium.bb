@@ -14,6 +14,9 @@ const int kPaddingFromOuterEdgeOfLauncherVerticalAlignment = 8;
 const int kPaddingFromInnerEdgeOfLauncherVerticalAlignment = 9;
 const int kPaddingFromBottomOfScreenVerticalAlignment = 10;
 
+// Top inset of system tray bubble for bottom anchor alignment.
+const int kTrayBubbleAnchorTopInsetBottomAnchor = 3;
+
 const int kTrayImageItemHorizontalPaddingBottomAlignment = 1;
 const int kTrayImageItemHorizontalPaddingVerticalAlignment = 1;
 const int kTrayImageItemVerticalPaddingVerticalAlignment = 1;
