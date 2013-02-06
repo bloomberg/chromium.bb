@@ -20,7 +20,7 @@ class WebContents;
 
 // An interface consisting of methods that can be called to produce and manage
 // JavaScript dialogs.
-class JavaScriptDialogManager {
+class CONTENT_EXPORT JavaScriptDialogManager {
  public:
   typedef base::Callback<void(bool /* success */,
                               const string16& /* user_input */)>
@@ -43,6 +43,11 @@ class JavaScriptDialogManager {
                                      const string16& message_text,
                                      bool is_reload,
                                      const DialogClosedCallback& callback) = 0;
+
+  // Accepts or dismisses the active JavaScript dialog, which must be owned
+  // by the given |web_contents|. Returns true if the dialog was handled.
+  virtual bool HandleJavaScriptDialog(WebContents* web_contents,
+                                      bool accept);
 
   // Cancels all pending dialogs and resets any saved JavaScript dialog state
   // for the given WebContents.

@@ -12,8 +12,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
@@ -54,6 +56,9 @@ class ChromeJavaScriptDialogManager : public JavaScriptDialogManager,
       const string16& message_text,
       bool is_reload,
       const DialogClosedCallback& callback) OVERRIDE;
+
+  virtual bool HandleJavaScriptDialog(WebContents* web_contents,
+                                      bool accept) OVERRIDE;
 
   virtual void ResetJavaScriptState(WebContents* web_contents) OVERRIDE;
 
@@ -198,6 +203,24 @@ void ChromeJavaScriptDialogManager::RunBeforeUnloadDialog(
       is_reload,
       base::Bind(&ChromeJavaScriptDialogManager::OnDialogClosed,
                  base::Unretained(this), callback)));
+}
+
+bool ChromeJavaScriptDialogManager::HandleJavaScriptDialog(
+    WebContents* web_contents,
+    bool accept) {
+  AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
+  if (!dialog_queue->HasActiveDialog() ||
+      !dialog_queue->active_dialog()->IsJavaScriptModalDialog() ||
+      dialog_queue->active_dialog()->web_contents() != web_contents) {
+    return false;
+  }
+  NativeAppModalDialog* dialog = static_cast<JavaScriptAppModalDialog*>(
+      dialog_queue->active_dialog())->native_dialog();
+  if (accept)
+    dialog->AcceptAppModalDialog();
+  else
+    dialog->CancelAppModalDialog();
+  return true;
 }
 
 void ChromeJavaScriptDialogManager::ResetJavaScriptState(

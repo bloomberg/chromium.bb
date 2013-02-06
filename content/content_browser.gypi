@@ -89,6 +89,7 @@
     'public/browser/indexed_db_context.h',
     'public/browser/interstitial_page.h',
     'public/browser/invalidate_type.h',
+    'public/browser/javascript_dialog_manager.cc',
     'public/browser/javascript_dialog_manager.h',
     'public/browser/keyboard_listener.h',
     'public/browser/load_from_memory_cache_details.cc',

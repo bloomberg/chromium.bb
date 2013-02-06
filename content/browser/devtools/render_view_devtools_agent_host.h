@@ -62,6 +62,8 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
   bool CaptureScreenshot(std::string* base_64_data);
 
+  bool HandleJavaScriptDialog(bool accept);
+
   RenderViewHost* render_view_host_;
   scoped_ptr<DevToolsAgentHostRvhObserver> rvh_observer_;
   std::string state_;
