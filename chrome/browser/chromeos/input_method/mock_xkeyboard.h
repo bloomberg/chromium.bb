@@ -44,9 +44,6 @@ class MockXKeyboard : public XKeyboard {
   DISALLOW_COPY_AND_ASSIGN(MockXKeyboard);
 };
 
-// TODO(yusukes): Use the mock in
-// chrome/browser/ui/ash/caps_lock_handler_browsertest.cc.
-
 }  // namespace input_method
 }  // namespace chromeos
 
