@@ -151,6 +151,8 @@ class BackingStoreCopier : public WebContentsObserver {
 
   BackingStoreCopier(int render_process_id, int render_view_id);
 
+  virtual ~BackingStoreCopier();
+
   // If non-NULL, use the given |override| to access the backing store.
   // This is used for unit testing.
   void SetRenderWidgetHostForTesting(RenderWidgetHost* override);
@@ -161,6 +163,11 @@ class BackingStoreCopier : public WebContentsObserver {
   // the timestamp at which the capture was completed.
   void StartCopy(int frame_number, int desired_width, int desired_height,
                  const DoneCB& done_cb);
+
+  // Stops observing an existing WebContents instance, if any.  This must be
+  // called before BackingStoreCopier is destroyed.  Must be run on the UI
+  // BrowserThread.
+  void StopObservingWebContents();
 
   virtual void DidShowFullscreenWidget(int routing_id) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -174,6 +181,8 @@ class BackingStoreCopier : public WebContentsObserver {
   }
 
  private:
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
+
   void LookUpAndObserveWebContents();
 
   void CopyFromBackingStoreComplete(int frame_number,
@@ -290,6 +299,25 @@ BackingStoreCopier::BackingStoreCopier(int render_process_id,
     : render_process_id_(render_process_id), render_view_id_(render_view_id),
       fullscreen_widget_id_(MSG_ROUTING_NONE), rwh_for_testing_(NULL) {}
 
+BackingStoreCopier::~BackingStoreCopier() {
+  DCHECK(!web_contents());
+}
+
+void BackingStoreCopier::StopObservingWebContents() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (web_contents()) {
+    web_contents()->DecrementCapturerCount();
+    Observe(NULL);
+  }
+}
+
+void BackingStoreCopier::WebContentsDestroyed(WebContents* web_contents) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  web_contents->DecrementCapturerCount();
+}
+
 void BackingStoreCopier::LookUpAndObserveWebContents() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -309,8 +337,10 @@ void BackingStoreCopier::LookUpAndObserveWebContents() {
                     << render_process_id_ << ", " << render_view_id_
                     << ") returned NULL.";
   Observe(rvh ? WebContents::FromRenderViewHost(rvh) : NULL);
-  DVLOG_IF(1, !web_contents())
-      << "WebContents::FromRenderViewHost(" << rvh << ") returned NULL.";
+  if (web_contents())
+    web_contents()->IncrementCapturerCount();
+  else
+    DVLOG(1) << "WebContents::FromRenderViewHost(" << rvh << ") returned NULL.";
 
   if (fullscreen_widget_id_ == MSG_ROUTING_NONE && web_contents()) {
     fullscreen_widget_id_ = static_cast<WebContentsImpl*>(web_contents())->
@@ -714,6 +744,8 @@ class CaptureMachine
                       const SkBitmap* frame_buffer);
   void DeliverComplete(const SkBitmap* frame_buffer);
 
+  void DoShutdownTasksOnUIThread();
+
   // Specialized RefCounted traits for CaptureMachine, so that operator delete
   // is called from an "outside" thread.  See comments for "traits" in
   // base/memory/ref_counted.h.
@@ -840,6 +872,10 @@ void CaptureMachine::DeAllocate() {
     Stop();
   }
   if (state_ == kAllocated) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&CaptureMachine::DoShutdownTasksOnUIThread, this));
+
     TransitionStateTo(kIdle);
   }
 }
@@ -1017,6 +1053,10 @@ void CaptureMachine::RenderComplete(int frame_number,
 
 void CaptureMachine::DeliverComplete(const SkBitmap* frame_buffer) {
   renderer_.Release(frame_buffer);
+}
+
+void CaptureMachine::DoShutdownTasksOnUIThread() {
+  copier_.StopObservingWebContents();
 }
 
 WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(

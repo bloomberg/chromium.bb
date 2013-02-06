@@ -216,7 +216,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual uint64 GetUploadPosition() const OVERRIDE;
   virtual const std::string& GetEncoding() const OVERRIDE;
   virtual bool DisplayedInsecureContent() const OVERRIDE;
-  virtual void SetCapturingContents(bool cap) OVERRIDE;
+  virtual void IncrementCapturerCount() OVERRIDE;
+  virtual void DecrementCapturerCount() OVERRIDE;
   virtual bool IsCrashed() const OVERRIDE;
   virtual void SetIsCrashed(base::TerminationStatus status,
                             int error_code) OVERRIDE;
@@ -792,8 +793,13 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Data for misc internal state ----------------------------------------------
 
-  // Whether the WebContents is currently being screenshotted.
-  bool capturing_contents_;
+  // When > 0, the WebContents is currently being captured (e.g., for
+  // screenshots or mirroring); and the underlying RenderWidgetHost should not
+  // be told it is hidden.
+  int capturer_count_;
+
+  // Tracks whether RWHV should be visible once capturer_count_ becomes zero.
+  bool should_normally_be_visible_;
 
   // See getter above.
   bool is_being_destroyed_;

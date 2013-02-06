@@ -435,9 +435,6 @@ void DraggedTabControllerGtk::Attach(TabStripGtk* attached_tabstrip,
       drag_data_->get(i)->original_delegate_ = NULL;
     }
 
-    // Return the WebContents to normalcy.
-    drag_data_->GetSourceWebContents()->SetCapturingContents(false);
-
     // We need to ask the tabstrip we're attached to ensure that the ideal
     // bounds for all its tabs are correctly generated, because the calculation
     // in GetInsertionIndexForDraggedBounds needs them to be to figure out the

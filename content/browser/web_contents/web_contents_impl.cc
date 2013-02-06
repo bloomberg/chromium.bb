@@ -309,7 +309,8 @@ WebContentsImpl::WebContentsImpl(
       upload_size_(0),
       upload_position_(0),
       displayed_insecure_content_(false),
-      capturing_contents_(false),
+      capturer_count_(0),
+      should_normally_be_visible_(true),
       is_being_destroyed_(false),
       notify_disconnection_(false),
       dialog_manager_(NULL),
@@ -1016,8 +1017,24 @@ bool WebContentsImpl::DisplayedInsecureContent() const {
   return displayed_insecure_content_;
 }
 
-void WebContentsImpl::SetCapturingContents(bool cap) {
-  capturing_contents_ = cap;
+void WebContentsImpl::IncrementCapturerCount() {
+  ++capturer_count_;
+  DVLOG(1) << "There are now " << capturer_count_
+           << " capturing(s) of WebContentsImpl@" << this;
+}
+
+void WebContentsImpl::DecrementCapturerCount() {
+  --capturer_count_;
+  DVLOG(1) << "There are now " << capturer_count_
+           << " capturing(s) of WebContentsImpl@" << this;
+  DCHECK_LE(0, capturer_count_);
+
+  // While capturer_count_ was greater than zero, the WasHidden() calls to RWHV
+  // were being prevented.  If there are no more capturers, make the call now.
+  if (capturer_count_ == 0 && !should_normally_be_visible_) {
+    DVLOG(1) << "Executing delayed WasHidden().";
+    WasHidden();
+  }
 }
 
 bool WebContentsImpl::IsCrashed() const {
@@ -1076,17 +1093,19 @@ void WebContentsImpl::WasShown() {
     rvh->ResizeRectChanged(GetRootWindowResizerRect());
   }
 
-  bool is_visible = true;
+  should_normally_be_visible_ = true;
   NotificationService::current()->Notify(
       NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
       Source<WebContents>(this),
-      Details<bool>(&is_visible));
+      Details<const bool>(&should_normally_be_visible_));
 }
 
 void WebContentsImpl::WasHidden() {
-  if (!capturing_contents_) {
+  // If there are entities capturing screenshots or video (e.g., mirroring),
+  // don't activate the "disable rendering" optimization.
+  if (capturer_count_ == 0) {
     // |GetRenderViewHost()| can be NULL if the user middle clicks a link to
-    // open a tab in then background, then closes the tab before selecting it.
+    // open a tab in the background, then closes the tab before selecting it.
     // This is because closing the tab calls WebContentsImpl::Destroy(), which
     // removes the |GetRenderViewHost()|; then when we actually destroy the
     // window, OnWindowPosChanged() notices and calls WasHidden() (which
@@ -1097,11 +1116,11 @@ void WebContentsImpl::WasHidden() {
       rwhv->WasHidden();
   }
 
-  bool is_visible = false;
+  should_normally_be_visible_ = false;
   NotificationService::current()->Notify(
       NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
       Source<WebContents>(this),
-      Details<bool>(&is_visible));
+      Details<const bool>(&should_normally_be_visible_));
 }
 
 bool WebContentsImpl::NeedToFireBeforeUnload() {

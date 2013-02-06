@@ -220,9 +220,11 @@ class WebContents : public PageNavigator,
 
   // Internal state ------------------------------------------------------------
 
-  // This flag indicates whether the WebContents is currently being
-  // screenshotted.
-  virtual void SetCapturingContents(bool cap) = 0;
+  // Indicates whether the WebContents is being captured (e.g., for screenshots
+  // or mirroring).  Increment calls must be balanced with an equivalent number
+  // of decrement calls.
+  virtual void IncrementCapturerCount() = 0;
+  virtual void DecrementCapturerCount() = 0;
 
   // Indicates whether this tab should be considered crashed. The setter will
   // also notify the delegate when the flag is changed.

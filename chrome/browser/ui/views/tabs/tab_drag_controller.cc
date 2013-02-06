@@ -1140,7 +1140,7 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
       }
 
       // Return the WebContents to normalcy.
-      source_dragged_contents()->SetCapturingContents(false);
+      source_dragged_contents()->DecrementCapturerCount();
     }
 
     // Inserting counts as a move. We don't want the tabs to jitter when the
@@ -1229,7 +1229,7 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
   // Prevent the WebContents HWND from being hidden by any of the model
   // operations performed during the drag.
   if (!detach_into_browser_)
-    source_dragged_contents()->SetCapturingContents(true);
+    source_dragged_contents()->IncrementCapturerCount();
 
   std::vector<gfx::Rect> drag_bounds = CalculateBoundsForDraggedTabs(0);
   TabStripModel* attached_model = GetModel(attached_tabstrip_);
@@ -1663,6 +1663,13 @@ void TabDragController::RevertDrag() {
 
   if (detach_into_browser_ && source_tabstrip_)
     source_tabstrip_->GetWidget()->Activate();
+
+  // Return the WebContents to normalcy.  If the tab was attached to a
+  // TabStrip before the revert, the decrement has already occurred.
+  // If the tab was destroyed, don't attempt to dereference the
+  // WebContents pointer.
+  if (!detach_into_browser_ && !attached_tabstrip_ && source_dragged_contents())
+    source_dragged_contents()->DecrementCapturerCount();
 }
 
 void TabDragController::ResetSelection(TabStripModel* model) {
@@ -1808,6 +1815,10 @@ void TabDragController::CompleteDrag() {
             contentses, window_bounds, dock_info_, widget->IsMaximized());
     ResetSelection(new_browser->tab_strip_model());
     new_browser->window()->Show();
+
+    // Return the WebContents to normalcy.
+    if (!detach_into_browser_)
+      source_dragged_contents()->DecrementCapturerCount();
   }
 
   CleanUpHiddenFrame();
