@@ -566,6 +566,7 @@
         'desktop_background/desktop_background_controller_unittest.cc',
         'dip_unittest.cc',
         'display/display_controller_unittest.cc',
+        'display/display_error_dialog_unittest.cc',
         'display/mouse_cursor_event_filter_unittest.cc',
         'display/display_manager_unittest.cc',
         'display/screen_position_controller_unittest.cc',

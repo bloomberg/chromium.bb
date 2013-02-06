@@ -5,8 +5,10 @@
 #ifndef ASH_DISPLAY_DISPLAY_ERROR_DIALOG_H_
 #define ASH_DISPLAY_DISPLAY_ERROR_DIALOG_H_
 
+#include "ash/ash_export.h"
 #include "ash/display/display_controller.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace aura {
@@ -27,13 +29,18 @@ namespace internal {
 
 // Dialog used to show an error messages when unable to change the display
 // configuration to mirroring.
-class DisplayErrorDialog : public views::DialogDelegateView,
-                           public ash::DisplayController::Observer {
+class ASH_EXPORT DisplayErrorDialog : public views::DialogDelegateView,
+                                      public ash::DisplayController::Observer {
  public:
   // Shows the error dialog.
   static void ShowDialog();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DisplayErrorDialogTest, Normal);
+  FRIEND_TEST_ALL_PREFIXES(DisplayErrorDialogTest, CallTwice);
+  FRIEND_TEST_ALL_PREFIXES(DisplayErrorDialogTest, SingleDisplay);
+  FRIEND_TEST_ALL_PREFIXES(DisplayErrorDialogTest, DisplayDisconnected);
+
   DisplayErrorDialog();
   virtual ~DisplayErrorDialog();
 
@@ -48,6 +55,9 @@ class DisplayErrorDialog : public views::DialogDelegateView,
 
   // ash::DisplayController::Observer overrides:
   virtual void OnDisplayConfigurationChanging() OVERRIDE;
+
+  // Returns the pointer of the current instance of this dialog.
+  static DisplayErrorDialog* GetInstanceForTest();
 
   views::Label* label_;
 

@@ -7,6 +7,7 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "grit/ash_strings.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
@@ -39,15 +40,22 @@ void  DisplayErrorDialog::ShowDialog() {
     return;
   }
 
-  const gfx::Display& secondary_display = ash::ScreenAsh::GetSecondaryDisplay();
+  gfx::Screen* screen = Shell::GetScreen();
+  const gfx::Display& target_display =
+      (screen->GetNumDisplays() > 1) ?
+      ScreenAsh::GetSecondaryDisplay() : screen->GetPrimaryDisplay();
 
   g_instance = new DisplayErrorDialog();
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = g_instance;
-  // Makes |widget| belong to the secondary display.  Size and location are
+  // Makes |widget| belong to the target display.  Size and location are
   // fixed by CenterWindow() below.
-  params.bounds = secondary_display.bounds();
+  params.bounds = target_display.bounds();
+  DisplayController* display_controller =
+      Shell::GetInstance()->display_controller();
+  params.context =
+      display_controller->GetRootWindowForDisplayId(target_display.id());
   params.keep_on_top = true;
   widget->Init(params);
 
@@ -91,6 +99,11 @@ gfx::Size DisplayErrorDialog::GetPreferredSize() {
 
 void DisplayErrorDialog::OnDisplayConfigurationChanging() {
   GetWidget()->Close();
+}
+
+// static
+DisplayErrorDialog* DisplayErrorDialog::GetInstanceForTest() {
+  return g_instance;
 }
 
 }  // namespace internal
