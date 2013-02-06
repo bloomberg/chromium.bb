@@ -862,7 +862,7 @@ class FlexibleCallbackRunner : public base::DelegateSimpleThread::Delegate {
       return;
     }
   }
-  virtual void Run() {
+  virtual void Run() OVERRIDE {
     if (delay_ < base::TimeDelta()) return;
     base::PlatformThread::Sleep(delay_);
     status_cb_.Run(status_);

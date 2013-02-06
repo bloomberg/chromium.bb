@@ -22,7 +22,7 @@ static const int kSampleRate = 48000;
 class AudioBusTest : public testing::Test {
  public:
   AudioBusTest() {}
-  ~AudioBusTest() {
+  virtual ~AudioBusTest() {
     for (size_t i = 0; i < data_.size(); ++i)
       base::AlignedFree(data_[i]);
   }

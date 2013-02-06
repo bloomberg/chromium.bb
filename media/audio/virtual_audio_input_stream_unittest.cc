@@ -109,7 +109,7 @@ class VirtualAudioInputStreamTest
                    this));
   }
 
-  ~VirtualAudioInputStreamTest() {
+  virtual ~VirtualAudioInputStreamTest() {
     audio_manager_->GetMessageLoop()->PostTask(
         FROM_HERE,
         base::Bind(&AudioManager::RemoveOutputDeviceChangeListener,

@@ -30,7 +30,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
       : bytes_enqueued_(0) {
   }
 
-  ~AudioRendererAlgorithmTest() {}
+  virtual ~AudioRendererAlgorithmTest() {}
 
   void Initialize() {
     Initialize(kDefaultChannelLayout, kDefaultSampleBits, kSamplesPerSecond);

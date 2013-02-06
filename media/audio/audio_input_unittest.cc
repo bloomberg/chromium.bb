@@ -25,8 +25,11 @@ class TestInputCallback : public AudioInputStream::AudioInputCallback {
         had_error_(0),
         max_data_bytes_(max_data_bytes) {
   }
-  virtual void OnData(AudioInputStream* stream, const uint8* data,
-                      uint32 size, uint32 hardware_delay_bytes, double volume) {
+  virtual void OnData(AudioInputStream* stream,
+                      const uint8* data,
+                      uint32 size,
+                      uint32 hardware_delay_bytes,
+                      double volume) OVERRIDE {
     ++callback_count_;
     // Read the first byte to make sure memory is good.
     if (size) {
@@ -35,8 +38,8 @@ class TestInputCallback : public AudioInputStream::AudioInputCallback {
       EXPECT_GE(value, 0);
     }
   }
-  virtual void OnClose(AudioInputStream* stream) {}
-  virtual void OnError(AudioInputStream* stream, int code) {
+  virtual void OnClose(AudioInputStream* stream) OVERRIDE {}
+  virtual void OnError(AudioInputStream* stream, int code) OVERRIDE {
     ++had_error_;
   }
   // Returns how many times OnData() has been called.
