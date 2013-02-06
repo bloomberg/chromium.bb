@@ -17,7 +17,6 @@ from webelement import WebElement
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
-
 from common import chrome_paths
 from common import unittest_util
 
@@ -39,7 +38,10 @@ class ChromeDriverTest(unittest.TestCase):
     return ChromeDriverTest._http_server.GetUrl() + file_path
 
   def setUp(self):
-    self._driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB, _CHROME_BINARY)
+    self._driver = chromedriver.ChromeDriver(
+        _CHROMEDRIVER_LIB,
+        chrome_binary=_CHROME_BINARY,
+        android_package=_ANDROID_PACKAGE)
 
   def tearDown(self):
     self._driver.Quit()
@@ -58,7 +60,7 @@ class ChromeDriverTest(unittest.TestCase):
     script = ('document.body.innerHTML = "<div>b</div><div>c</div>";' +
               'return {stuff: document.querySelectorAll("div")};')
     stuff = self._driver.ExecuteScript(script)['stuff']
-    script = 'return arguments[0].innerHTML + arguments[1].innerHTML';
+    script = 'return arguments[0].innerHTML + arguments[1].innerHTML'
     self.assertEquals(
         'bc', self._driver.ExecuteScript(script, stuff[0], stuff[1]))
 
@@ -129,7 +131,7 @@ class ChromeDriverTest(unittest.TestCase):
         '  document.body.appendChild(document.createElement("br"));'
         '});'
         'return div;')
-    div.HoverOver();
+    div.HoverOver()
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
   def testClickElement(self):
@@ -152,7 +154,7 @@ class ChromeDriverTest(unittest.TestCase):
         '  document.body.appendChild(document.createElement("br"));'
         '});'
         'return input;')
-    text.Clear();
+    text.Clear()
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
   def testSendKeysToElement(self):
@@ -163,8 +165,8 @@ class ChromeDriverTest(unittest.TestCase):
         '  document.body.appendChild(document.createElement("br"));'
         '});'
         'return input;')
-    text.SendKeys('0123456789+-*/ Hi');
-    text.SendKeys(', there!');
+    text.SendKeys('0123456789+-*/ Hi')
+    text.SendKeys(', there!')
     value = self._driver.ExecuteScript('return arguments[0].value;', text)
     self.assertEquals('0123456789+-*/ Hi, there!', value)
 
@@ -223,10 +225,10 @@ class ChromeDriverTest(unittest.TestCase):
         '  var div = document.getElementsByTagName("div")[0];'
         '  div.innerHTML="new2<a></a>";'
         '});')
-    self._driver.MouseMoveTo(None, 50, 50);
-    self._driver.MouseButtonDown();
+    self._driver.MouseMoveTo(None, 50, 50)
+    self._driver.MouseButtonDown()
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
-    self._driver.MouseButtonUp();
+    self._driver.MouseButtonUp()
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'a')))
 
   def testMouseDoubleClick(self):
@@ -240,40 +242,45 @@ class ChromeDriverTest(unittest.TestCase):
         '  div.innerHTML="new<br>";'
         '});'
         'return div;')
-    self._driver.MouseMoveTo(div, 1, 1);
-    self._driver.MouseDoubleClick();
+    self._driver.MouseMoveTo(div, 1, 1)
+    self._driver.MouseDoubleClick()
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
 if __name__ == '__main__':
   parser = optparse.OptionParser()
   parser.add_option(
-      '', '--chromedriver', type='string', default=None,
+      '', '--chromedriver',
       help='Path to a build of the chromedriver library(REQUIRED!)')
   parser.add_option(
-      '', '--chrome', type='string', default=None,
-      help='Path to a build of the chrome binary')
+      '', '--chrome', help='Path to a build of the chrome binary')
   parser.add_option(
       '', '--filter', type='string', default='*',
-      help='Filter for specifying what tests to run, "*" will run all. E.g., ' +
-           '*testStartStop')
+      help=('Filter for specifying what tests to run, "*" will run all. E.g., '
+            '*testStartStop'))
+  parser.add_option(
+      '', '--android-package', help='Android package name')
   options, args = parser.parse_args()
 
-  if (options.chromedriver is None or not os.path.exists(options.chromedriver)):
+  if not options.chromedriver or not os.path.exists(options.chromedriver):
     parser.error('chromedriver is required or the given path is invalid.' +
                  'Please run "%s --help" for help' % __file__)
 
   global _CHROMEDRIVER_LIB
   _CHROMEDRIVER_LIB = os.path.abspath(options.chromedriver)
+
   global _CHROME_BINARY
-  if options.chrome is not None:
+  if options.chrome:
     _CHROME_BINARY = os.path.abspath(options.chrome)
   else:
     _CHROME_BINARY = None
 
+  global _ANDROID_PACKAGE
+  _ANDROID_PACKAGE = options.android_package
+
   all_tests_suite = unittest.defaultTestLoader.loadTestsFromModule(
       sys.modules[__name__])
   tests = unittest_util.FilterTestSuite(all_tests_suite, options.filter)
-  ChromeDriverTest.GlobalSetUp();
+  ChromeDriverTest.GlobalSetUp()
   result = unittest.TextTestRunner().run(tests)
-  ChromeDriverTest.GlobalTearDown();
+  ChromeDriverTest.GlobalTearDown()
   sys.exit(len(result.failures) + len(result.errors))

@@ -8,7 +8,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/process_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
@@ -101,25 +100,17 @@ const char* GetAsString(KeyEventType type) {
 
 }  // namespace
 
-ChromeImpl::ChromeImpl(base::ProcessHandle process,
-                       URLRequestContextGetter* context_getter,
-                       base::ScopedTempDir* user_data_dir,
+ChromeImpl::ChromeImpl(URLRequestContextGetter* context_getter,
                        int port,
                        const SyncWebSocketFactory& socket_factory)
-    : process_(process),
-      context_getter_(context_getter),
+    : context_getter_(context_getter),
       port_(port),
       socket_factory_(socket_factory),
       frame_tracker_(new FrameTracker()),
       navigation_tracker_(new NavigationTracker()) {
-  if (user_data_dir->IsValid()) {
-    CHECK(user_data_dir_.Set(user_data_dir->Take()));
-  }
 }
 
-ChromeImpl::~ChromeImpl() {
-  base::CloseProcessHandle(process_);
-}
+ChromeImpl::~ChromeImpl() {}
 
 Status ChromeImpl::Init() {
   base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(20);
@@ -149,6 +140,10 @@ Status ChromeImpl::Init() {
   client_->AddListener(frame_tracker_.get());
   client_->AddListener(navigation_tracker_.get());
   return Status(kOk);
+}
+
+int ChromeImpl::GetPort() {
+  return port_;
 }
 
 Status ChromeImpl::Load(const std::string& url) {
@@ -247,12 +242,6 @@ Status ChromeImpl::DispatchKeyEvents(const std::list<KeyEvent>& events) {
     if (status.IsError())
       return status;
   }
-  return Status(kOk);
-}
-
-Status ChromeImpl::Quit() {
-  if (!base::KillProcess(process_, 0, true))
-    return Status(kUnknownError, "cannot kill Chrome");
   return Status(kOk);
 }
 

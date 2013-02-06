@@ -12,7 +12,6 @@
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome.h"
-#include "chrome/test/chromedriver/chrome_launcher.h"
 #include "chrome/test/chromedriver/command_executor_impl.h"
 #include "chrome/test/chromedriver/commands.h"
 #include "chrome/test/chromedriver/fake_session_accessor.h"
@@ -84,90 +83,6 @@ class StubChrome : public Chrome {
     return Status(kOk);
   }
 };
-
-class OkChrome : public StubChrome {
- public:
-  OkChrome() {}
-  virtual ~OkChrome() {}
-
-  // Overridden from StubChrome:
-  virtual Status EvaluateScript(const std::string& frame,
-                                const std::string& function,
-                                scoped_ptr<base::Value>* result) OVERRIDE {
-    result->reset(base::Value::CreateStringValue("99.0.99999.0"));
-    return Status(kOk);
-  }
-};
-
-class OkLauncher : public ChromeLauncher {
- public:
-  OkLauncher() {}
-  virtual ~OkLauncher() {}
-
-  // Overridden from ChromeLauncher:
-  virtual Status Launch(const FilePath& chrome_exe,
-                        scoped_ptr<Chrome>* chrome) OVERRIDE {
-    chrome->reset(new OkChrome());
-    return Status(kOk);
-  }
-};
-
-}  // namespace
-
-TEST(CommandsTest, NewSession) {
-  OkLauncher launcher;
-  SessionMap map;
-  base::DictionaryValue params;
-  scoped_ptr<base::Value> value;
-  std::string session_id;
-  Status status =
-      ExecuteNewSession(&map, &launcher, params, "", &value, &session_id);
-  ASSERT_EQ(kOk, status.code());
-  ASSERT_TRUE(value);
-  base::DictionaryValue* dict;
-  ASSERT_TRUE(value->GetAsDictionary(&dict));
-  std::string browserName;
-  ASSERT_TRUE(dict->GetString("browserName", &browserName));
-  ASSERT_STREQ("chrome", browserName.c_str());
-
-  scoped_refptr<SessionAccessor> accessor;
-  ASSERT_TRUE(map.Get(session_id, &accessor));
-  scoped_ptr<base::AutoLock> lock;
-  Session* session = accessor->Access(&lock);
-  ASSERT_TRUE(session);
-  ASSERT_STREQ(session_id.c_str(), session->id.c_str());
-  ASSERT_TRUE(session->chrome);
-}
-
-namespace {
-
-class FailLauncher : public ChromeLauncher {
- public:
-  FailLauncher() {}
-  virtual ~FailLauncher() {}
-
-  // Overridden from ChromeLauncher:
-  virtual Status Launch(const FilePath& chrome_exe,
-                        scoped_ptr<Chrome>* chrome) OVERRIDE {
-    return Status(kUnknownError);
-  }
-};
-
-}  // namespace
-
-TEST(CommandsTest, NewSessionLauncherFails) {
-  FailLauncher launcher;
-  SessionMap map;
-  base::DictionaryValue params;
-  scoped_ptr<base::Value> value;
-  std::string session_id;
-  Status status =
-      ExecuteNewSession(&map, &launcher, params, "", &value, &session_id);
-  ASSERT_EQ(kSessionNotCreatedException, status.code());
-  ASSERT_FALSE(value);
-}
-
-namespace {
 
 Status ExecuteStubQuit(
     int* count,

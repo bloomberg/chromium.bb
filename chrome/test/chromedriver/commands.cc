@@ -16,10 +16,13 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome.h"
-#include "chrome/test/chromedriver/chrome_launcher.h"
+#include "chrome/test/chromedriver/chrome_android_impl.h"
+#include "chrome/test/chromedriver/chrome_desktop_impl.h"
+#include "chrome/test/chromedriver/chrome_impl.h"
 #include "chrome/test/chromedriver/element_util.h"
 #include "chrome/test/chromedriver/js.h"
 #include "chrome/test/chromedriver/key_converter.h"
+#include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/status.h"
 #include "chrome/test/chromedriver/ui_events.h"
@@ -154,24 +157,43 @@ Status ExecuteGetStatus(
 
 Status ExecuteNewSession(
     SessionMap* session_map,
-    ChromeLauncher* launcher,
+    scoped_refptr<URLRequestContextGetter> context_getter,
+    const SyncWebSocketFactory& socket_factory,
     const base::DictionaryValue& params,
     const std::string& session_id,
     scoped_ptr<base::Value>* out_value,
     std::string* out_session_id) {
+
   scoped_ptr<Chrome> chrome;
-  FilePath::StringType path_str;
-  FilePath chrome_exe;
-  if (params.GetString("desiredCapabilities.chromeOptions.binary", &path_str)) {
-    chrome_exe = FilePath(path_str);
-    if (!file_util::PathExists(chrome_exe)) {
-      std::string message = base::StringPrintf(
-          "no chrome binary at %" PRFilePath,
-          path_str.c_str());
-      return Status(kUnknownError, message);
+  Status status(kOk);
+  int port = 33081;
+  std::string landing_url("data:text/html;charset=utf-8,");
+  std::string android_package;
+
+  if (params.GetString("desiredCapabilities.chromeOptions.android_package",
+                       &android_package)) {
+    scoped_ptr<ChromeAndroidImpl> chrome_android(new ChromeAndroidImpl(
+        context_getter, port, socket_factory));
+    status = chrome_android->Launch(android_package, landing_url);
+    chrome.reset(chrome_android.release());
+  } else {
+    FilePath::StringType path_str;
+    FilePath chrome_exe;
+    if (params.GetString("desiredCapabilities.chromeOptions.binary",
+                         &path_str)) {
+      chrome_exe = FilePath(path_str);
+      if (!file_util::PathExists(chrome_exe)) {
+        std::string message = base::StringPrintf(
+            "no chrome binary at %" PRFilePath,
+            path_str.c_str());
+        return Status(kUnknownError, message);
+      }
     }
+    scoped_ptr<ChromeDesktopImpl> chrome_desktop(new ChromeDesktopImpl(
+        context_getter, port, socket_factory));
+    status = chrome_desktop->Launch(chrome_exe, landing_url);
+    chrome.reset(chrome_desktop.release());
   }
-  Status status = launcher->Launch(chrome_exe, &chrome);
   if (status.IsError())
     return Status(kSessionNotCreatedException, status.message());
 

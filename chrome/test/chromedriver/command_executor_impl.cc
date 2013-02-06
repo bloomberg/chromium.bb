@@ -9,10 +9,8 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/values.h"
-#include "chrome/test/chromedriver/chrome_launcher_impl.h"
 #include "chrome/test/chromedriver/command_names.h"
 #include "chrome/test/chromedriver/commands.h"
-#include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_command.h"
@@ -48,9 +46,7 @@ void CommandExecutorImpl::Init() {
   CHECK(io_thread_.StartWithOptions(options));
   context_getter_ = new URLRequestContextGetter(
       io_thread_.message_loop_proxy());
-  launcher_.reset(new ChromeLauncherImpl(
-      context_getter_,
-      CreateSyncWebSocketFactory(context_getter_)));
+  socket_factory_ = CreateSyncWebSocketFactory(context_getter_);
 
   // Session commands.
   base::Callback<Status(
@@ -152,7 +148,8 @@ void CommandExecutorImpl::Init() {
   command_map_.Set(CommandNames::kStatus, base::Bind(&ExecuteGetStatus));
   command_map_.Set(
       CommandNames::kNewSession,
-      base::Bind(&ExecuteNewSession, &session_map_, launcher_.get()));
+      base::Bind(&ExecuteNewSession, &session_map_, context_getter_,
+                 socket_factory_));
   command_map_.Set(
       CommandNames::kQuitAll,
       base::Bind(&ExecuteQuitAll, quit_command, &session_map_));

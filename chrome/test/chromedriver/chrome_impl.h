@@ -9,10 +9,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process.h"
 #include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 
@@ -31,14 +29,10 @@ class URLRequestContextGetter;
 
 class ChromeImpl : public Chrome {
  public:
-  ChromeImpl(base::ProcessHandle process,
-             URLRequestContextGetter* context_getter,
-             base::ScopedTempDir* user_data_dir,
+  ChromeImpl(URLRequestContextGetter* context_getter,
              int port,
              const SyncWebSocketFactory& socket_factory);
   virtual ~ChromeImpl();
-
-  Status Init();
 
   // Overridden from Chrome:
   virtual Status Load(const std::string& url) OVERRIDE;
@@ -57,15 +51,16 @@ class ChromeImpl : public Chrome {
   virtual Status DispatchMouseEvents(
       const std::list<MouseEvent>& events) OVERRIDE;
   virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events) OVERRIDE;
-  virtual Status Quit() OVERRIDE;
   virtual Status WaitForPendingNavigations(
       const std::string& frame_id) OVERRIDE;
   virtual Status GetMainFrame(std::string* out_frame) OVERRIDE;
 
+ protected:
+  virtual Status Init();
+  virtual int GetPort();
+
  private:
-  base::ProcessHandle process_;
   scoped_refptr<URLRequestContextGetter> context_getter_;
-  base::ScopedTempDir user_data_dir_;
   int port_;
   SyncWebSocketFactory socket_factory_;
   scoped_ptr<DomTracker> dom_tracker_;

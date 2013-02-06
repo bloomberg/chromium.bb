@@ -15,6 +15,7 @@
 #include "base/threading/thread.h"
 #include "chrome/test/chromedriver/command.h"
 #include "chrome/test/chromedriver/command_executor.h"
+#include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 #include "chrome/test/chromedriver/session_map.h"
 #include "chrome/test/chromedriver/status.h"
 #include "chrome/test/chromedriver/synchronized_map.h"
@@ -49,8 +50,8 @@ class CommandExecutorImpl : public CommandExecutor {
 
   base::Thread io_thread_;
   scoped_refptr<URLRequestContextGetter> context_getter_;
+  SyncWebSocketFactory socket_factory_;
   SessionMap session_map_;
-  scoped_ptr<ChromeLauncherImpl> launcher_;
   SynchronizedMap<std::string, Command> command_map_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandExecutorImpl);

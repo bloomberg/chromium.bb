@@ -9,8 +9,10 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/command.h"
+#include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 #include "chrome/test/chromedriver/session_map.h"
 
 namespace base {
@@ -20,6 +22,7 @@ class Value;
 
 class ChromeLauncher;
 struct Session;
+class URLRequestContextGetter;
 
 // Gets status/info about ChromeDriver.
 Status ExecuteGetStatus(
@@ -31,7 +34,8 @@ Status ExecuteGetStatus(
 // Creates a new session.
 Status ExecuteNewSession(
     SessionMap* session_map,
-    ChromeLauncher* launcher,
+    scoped_refptr<URLRequestContextGetter> context_getter,
+    const SyncWebSocketFactory& socket_factory,
     const base::DictionaryValue& params,
     const std::string& session_id,
     scoped_ptr<base::Value>* out_value,
