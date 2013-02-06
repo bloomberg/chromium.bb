@@ -104,6 +104,13 @@ class MEDIA_EXPORT CoreAudioUtil {
   static HRESULT GetSharedModeMixFormat(IAudioClient* client,
                                         WAVEFORMATPCMEX* format);
 
+  // Get the mix format that the audio engine uses internally for processing
+  // of shared-mode streams using the default IMMDevice where flow direction
+  // and role is define by |data_flow| and |role|.
+  static HRESULT GetDefaultSharedModeMixFormat(EDataFlow data_flow,
+                                               ERole role,
+                                               WAVEFORMATPCMEX* format);
+
   // Returns true if the specified |client| supports the format in |format|
   // for the given |share_mode| (shared or exclusive).
   static bool IsFormatSupported(IAudioClient* client,
@@ -155,6 +162,12 @@ class MEDIA_EXPORT CoreAudioUtil {
   // input data from a capture endpoint buffer.
   static ScopedComPtr<IAudioCaptureClient> CreateCaptureClient(
       IAudioClient* client);
+
+  // Fills up the endpoint rendering buffer with silence for an existing
+  // IAudioClient given by |client| and a corresponding IAudioRenderClient
+  // given by |render_client|.
+  static bool FillRenderEndpointBufferWithSilence(
+      IAudioClient* client, IAudioRenderClient* render_client);
 
  private:
   CoreAudioUtil() {}

@@ -117,6 +117,9 @@ class MEDIA_EXPORT WASAPIUnifiedStream
   // True when successfully opened.
   bool opened_;
 
+  // Volume level from 0 to 1.
+  double volume_;
+
   // Size in bytes of each audio frame (4 bytes for 16-bit stereo PCM).
   size_t frame_size_;
 

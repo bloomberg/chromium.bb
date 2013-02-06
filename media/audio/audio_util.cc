@@ -132,9 +132,8 @@ int GetAudioHardwareSampleRate() {
 
   // Hardware sample-rate on Windows can be configured, so we must query.
   // TODO(henrika): improve possibility to specify an audio endpoint.
-  // Use the default device (same as for Wave) for now to be compatible
-  // or possibly remove the ERole argument completely until it is in use.
-  return WASAPIAudioOutputStream::HardwareSampleRate(eConsole);
+  // Use the default device (same as for Wave) for now to be compatible.
+  return WASAPIAudioOutputStream::HardwareSampleRate();
 #elif defined(OS_ANDROID)
   return 16000;
 #else
@@ -176,6 +175,10 @@ size_t GetAudioHardwareBufferSize() {
 #if defined(OS_MACOSX)
   return 128;
 #elif defined(OS_WIN)
+  // TODO(henrika): resolve conflict with GetUserBufferSize().
+  // If the user tries to set a buffer size using GetUserBufferSize() it will
+  // most likely fail since only the native/perfect buffer size is allowed.
+
   // Buffer size to use when a proper size can't be determined from the system.
   static const int kFallbackBufferSize = 2048;
 
@@ -193,42 +196,10 @@ size_t GetAudioHardwareBufferSize() {
     return 256;
   }
 
-  // TODO(henrika): remove when the --enable-webaudio-input flag is no longer
-  // utilized.
-  if (cmd_line->HasSwitch(switches::kEnableWebAudioInput)) {
-    AudioParameters params;
-    HRESULT hr = CoreAudioUtil::GetPreferredAudioParameters(eRender, eConsole,
-                                                            &params);
-    return FAILED(hr) ? kFallbackBufferSize : params.frames_per_buffer();
-  }
-
-  // This call must be done on a COM thread configured as MTA.
-  // TODO(tommi): http://code.google.com/p/chromium/issues/detail?id=103835.
-  int mixing_sample_rate =
-      WASAPIAudioOutputStream::HardwareSampleRate(eConsole);
-
-  // Windows will return a sample rate of 0 when no audio output is available
-  // (i.e. via RemoteDesktop with remote audio disabled), but we should never
-  // return a buffer size of zero.
-  if (mixing_sample_rate == 0)
-    return kFallbackBufferSize;
-
-  // Use different buffer sizes depening on the sample rate . The existing
-  // WASAPI implementation is tuned to provide the most stable callback
-  // sequence using these combinations.
-  if (mixing_sample_rate % 11025 == 0)
-    // Use buffer size of ~10.15873 ms.
-    return (112 * (mixing_sample_rate / 11025));
-
-  if (mixing_sample_rate % 8000 == 0)
-    // Use buffer size of 10ms.
-    return (80 * (mixing_sample_rate / 8000));
-
-  // Ensure we always return a buffer size which is somewhat appropriate.
-  LOG(ERROR) << "Unknown sample rate " << mixing_sample_rate << " detected.";
-  if (mixing_sample_rate > limits::kMinSampleRate)
-    return (mixing_sample_rate / 100);
-  return kFallbackBufferSize;
+  AudioParameters params;
+  HRESULT hr = CoreAudioUtil::GetPreferredAudioParameters(eRender, eConsole,
+                                                          &params);
+  return FAILED(hr) ? kFallbackBufferSize : params.frames_per_buffer();
 #else
   return 2048;
 #endif

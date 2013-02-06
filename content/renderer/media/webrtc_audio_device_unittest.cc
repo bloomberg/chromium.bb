@@ -41,7 +41,7 @@ scoped_ptr<media::AudioHardwareConfig> CreateRealHardwareConfig() {
 }
 
 // Return true if at least one element in the array matches |value|.
-bool FindElementInArray(int* array, int size, int value) {
+bool FindElementInArray(const int* array, int size, int value) {
   return (std::find(&array[0], &array[0] + size, value) != &array[size]);
 }
 
@@ -56,7 +56,7 @@ bool HardwareSampleRatesAreValid() {
   // The actual WebRTC client can limit these ranges further depending on
   // platform but this is the maximum range we support today.
   int valid_input_rates[] = {16000, 32000, 44100, 48000, 96000};
-  int valid_output_rates[] = {44100, 48000, 96000};
+  int valid_output_rates[] = {16000, 32000, 44100, 48000, 96000};
 
   media::AudioHardwareConfig* hardware_config =
       RenderThreadImpl::current()->GetAudioHardwareConfig();
@@ -448,7 +448,7 @@ TEST_F(WebRTCAudioDeviceTest, DISABLED_PlayLocalFile) {
   // Play 2 seconds worth of audio and then quit.
   message_loop_.PostDelayedTask(FROM_HERE,
                                 MessageLoop::QuitClosure(),
-                                base::TimeDelta::FromSeconds(2));
+                                base::TimeDelta::FromSeconds(6));
   message_loop_.Run();
 
   renderer->Stop();

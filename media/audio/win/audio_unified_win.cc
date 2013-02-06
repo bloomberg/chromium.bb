@@ -9,6 +9,7 @@
 #include "base/debug/trace_event.h"
 #include "base/time.h"
 #include "base/win/scoped_com_initializer.h"
+#include "media/audio/audio_util.h"
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/avrt_wrapper_win.h"
 #include "media/audio/win/core_audio_util_win.h"
@@ -76,6 +77,7 @@ WASAPIUnifiedStream::WASAPIUnifiedStream(AudioManagerWin* manager,
       share_mode_(CoreAudioUtil::GetShareMode()),
       audio_io_thread_(NULL),
       opened_(false),
+      volume_(1.0),
       endpoint_render_buffer_size_frames_(0),
       endpoint_capture_buffer_size_frames_(0),
       num_written_frames_(0),
@@ -246,12 +248,15 @@ void WASAPIUnifiedStream::Start(AudioSourceCallback* callback) {
     return;
   }
 
-  // Reset the counter for number of rendered frames taking into account the
-  // fact that we always initialize the render side with silence.
-  UINT32 num_queued_frames = 0;
-  audio_output_client_->GetCurrentPadding(&num_queued_frames);
-  DCHECK_EQ(num_queued_frames, endpoint_render_buffer_size_frames_);
-  num_written_frames_ = num_queued_frames;
+  // Ensure that the endpoint buffer is prepared with silence.
+  if (share_mode_ == AUDCLNT_SHAREMODE_SHARED) {
+    if (!CoreAudioUtil::FillRenderEndpointBufferWithSilence(
+             audio_output_client_, audio_render_client_)) {
+      DLOG(WARNING) << "Failed to prepare endpoint buffers with silence.";
+      return;
+    }
+  }
+  num_written_frames_ = endpoint_render_buffer_size_frames_;
 
   // Start output streaming data between the endpoint buffer and the audio
   // engine.
@@ -328,11 +333,15 @@ void WASAPIUnifiedStream::Close() {
 }
 
 void WASAPIUnifiedStream::SetVolume(double volume) {
-  NOTIMPLEMENTED();
+  DVLOG(1) << "SetVolume(volume=" << volume << ")";
+  if (volume < 0 || volume > 1)
+    return;
+  volume_ = volume;
 }
 
 void WASAPIUnifiedStream::GetVolume(double* volume) {
-  NOTIMPLEMENTED();
+  DVLOG(1) << "GetVolume()";
+  *volume = static_cast<double>(volume_);
 }
 
 // static
@@ -522,6 +531,13 @@ void WASAPIUnifiedStream::Run() {
           // |audio_data| as destination.
           render_bus_->ToInterleaved(
               packet_size_frames_, bytes_per_sample, audio_data);
+
+          // Perform in-place, software-volume adjustments.
+          media::AdjustVolume(audio_data,
+                              frames_filled * format_.Format.nBlockAlign,
+                              render_bus_->channels(),
+                              bytes_per_sample,
+                              volume_);
 
           // Release the buffer space acquired in the GetBuffer() call.
           audio_render_client_->ReleaseBuffer(packet_size_frames_, 0);

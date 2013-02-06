@@ -373,7 +373,7 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
           loopback_fifo_->max_frames()) {
         loopback_fifo_->Push(audio_source);
       } else {
-        DLOG(WARNING) << "FIFO is full";
+        DVLOG(1) << "FIFO is full";
       }
     }
   }

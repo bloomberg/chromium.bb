@@ -28,6 +28,7 @@
 
 using ::testing::_;
 using ::testing::AnyNumber;
+using ::testing::AtLeast;
 using ::testing::Between;
 using ::testing::CreateFunctor;
 using ::testing::DoAll;
@@ -44,7 +45,6 @@ static const char kSpeechFile_16b_s_44k[] = "speech_16b_stereo_44kHz.raw";
 static const size_t kFileDurationMs = 20000;
 static const size_t kNumFileSegments = 2;
 static const int kBitsPerSample = 16;
-static const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
 static const size_t kMaxDeltaSamples = 1000;
 static const char* kDeltaTimeMsFileName = "delta_times_ms.txt";
 
@@ -52,7 +52,7 @@ MATCHER_P(HasValidDelay, value, "") {
   // It is difficult to come up with a perfect test condition for the delay
   // estimation. For now, verify that the produced output delay is always
   // larger than the selected buffer size.
-  return arg.hardware_delay_bytes > value.hardware_delay_bytes;
+  return arg.hardware_delay_bytes >= value.hardware_delay_bytes;
 }
 
 // Used to terminate a loop from a different thread than the loop belongs to.
@@ -181,11 +181,6 @@ static bool CanRunAudioTests(AudioManager* audio_man) {
     return false;
   }
 
-  if (WASAPIAudioOutputStream::HardwareChannelLayout() != kChannelLayout) {
-    LOG(WARNING) << "This test requires stereo audio output.";
-    return false;
-  }
-
   return true;
 }
 
@@ -194,16 +189,15 @@ static bool CanRunAudioTests(AudioManager* audio_man) {
 class AudioOutputStreamWrapper {
  public:
   explicit AudioOutputStreamWrapper(AudioManager* audio_manager)
-      : com_init_(ScopedCOMInitializer::kMTA),
-        audio_man_(audio_manager),
+      : audio_man_(audio_manager),
         format_(AudioParameters::AUDIO_PCM_LOW_LATENCY),
-        channel_layout_(kChannelLayout),
         bits_per_sample_(kBitsPerSample) {
-    // Use native/mixing sample rate and 10ms frame size as default.
-    sample_rate_ = static_cast<int>(
-        WASAPIAudioOutputStream::HardwareSampleRate(eConsole));
-    samples_per_packet_ = sample_rate_ / 100;
-    DCHECK(sample_rate_);
+    AudioParameters preferred_params;
+    EXPECT_TRUE(SUCCEEDED(CoreAudioUtil::GetPreferredAudioParameters(
+        eRender, eConsole, &preferred_params)));
+    channel_layout_ = preferred_params.channel_layout();
+    sample_rate_ = preferred_params.sample_rate();
+    samples_per_packet_ = preferred_params.frames_per_buffer();
   }
 
   ~AudioOutputStreamWrapper() {}
@@ -243,7 +237,6 @@ class AudioOutputStreamWrapper {
     return aos;
   }
 
-  ScopedCOMInitializer com_init_;
   AudioManager* audio_man_;
   AudioParameters::Format format_;
   ChannelLayout channel_layout_;
@@ -261,9 +254,7 @@ static AudioOutputStream* CreateDefaultAudioOutputStream(
 }
 
 // Verify that we can retrieve the current hardware/mixing sample rate
-// for all supported device roles. The ERole enumeration defines constants
-// that indicate the role that the system/user has assigned to an audio
-// endpoint device.
+// for the default audio device.
 // TODO(henrika): modify this test when we support full device enumeration.
 TEST(WASAPIAudioOutputStreamTest, HardwareSampleRate) {
   // Skip this test in exclusive mode since the resulting rate is only utilized
@@ -272,22 +263,10 @@ TEST(WASAPIAudioOutputStreamTest, HardwareSampleRate) {
   if (!CanRunAudioTests(audio_manager.get()) || ExclusiveModeIsEnabled())
     return;
 
-  ScopedCOMInitializer com_init(ScopedCOMInitializer::kMTA);
-
   // Default device intended for games, system notification sounds,
   // and voice commands.
   int fs = static_cast<int>(
-      WASAPIAudioOutputStream::HardwareSampleRate(eConsole));
-  EXPECT_GE(fs, 0);
-
-  // Default communication device intended for e.g. VoIP communication.
-  fs = static_cast<int>(
-      WASAPIAudioOutputStream::HardwareSampleRate(eCommunications));
-  EXPECT_GE(fs, 0);
-
-  // Multimedia device for music, movies and live music recording.
-  fs = static_cast<int>(
-      WASAPIAudioOutputStream::HardwareSampleRate(eMultimedia));
+      WASAPIAudioOutputStream::HardwareSampleRate());
   EXPECT_GE(fs, 0);
 }
 
@@ -297,29 +276,6 @@ TEST(WASAPIAudioOutputStreamTest, CreateAndClose) {
   if (!CanRunAudioTests(audio_manager.get()))
     return;
   AudioOutputStream* aos = CreateDefaultAudioOutputStream(audio_manager.get());
-  aos->Close();
-}
-
-// Verify that the created object is configured to use the same number of
-// audio channels as is reported by the static HardwareChannelCount() method.
-TEST(WASAPIAudioOutputStreamTest, HardwareChannelCount) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
-  if (!CanRunAudioTests(audio_manager.get()))
-    return;
-
-  ScopedCOMInitializer com_init(ScopedCOMInitializer::kMTA);
-
-  // First, verify that we can read a valid native/hardware channel-count.
-  int hardware_channel_count = WASAPIAudioOutputStream::HardwareChannelCount();
-  EXPECT_GE(hardware_channel_count, 1);
-
-  AudioOutputStreamWrapper aosw(audio_manager.get());
-  WASAPIAudioOutputStream* aos =
-      static_cast<WASAPIAudioOutputStream*>(aosw.Create());
-
-  // Next, ensure that the created output stream object is really using the
-  // hardware channel-count.
-  EXPECT_EQ(hardware_channel_count, aos->GetEndpointChannelCountForTesting());
   aos->Close();
 }
 
@@ -439,8 +395,8 @@ TEST(WASAPIAudioOutputStreamTest, MiscCallingSequences) {
   aos->Close();
 }
 
-// Use default packet size (10ms) and verify that rendering starts.
-TEST(WASAPIAudioOutputStreamTest, PacketSizeInMilliseconds) {
+// Use preferred packet size and verify that rendering starts.
+TEST(WASAPIAudioOutputStreamTest, ValidPacketSize) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
   if (!CanRunAudioTests(audio_manager.get()))
     return;
@@ -475,42 +431,24 @@ TEST(WASAPIAudioOutputStreamTest, PacketSizeInMilliseconds) {
   aos->Close();
 }
 
-// Use a fixed packets size (independent of sample rate) and verify
-// that rendering starts.
-TEST(WASAPIAudioOutputStreamTest, PacketSizeInSamples) {
+// Use a non-preferred packet size and verify that Open() fails.
+TEST(WASAPIAudioOutputStreamTest, InvalidPacketSize) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
   if (!CanRunAudioTests(audio_manager.get()))
     return;
 
-  MessageLoopForUI loop;
-  MockAudioSourceCallback source;
+  if (ExclusiveModeIsEnabled())
+    return;
 
-  // Create default WASAPI output stream which reads data in stereo using
-  // the native mixing rate and channel count. The buffer size is set to
-  // 1024 samples.
+  AudioParameters preferred_params;
+  EXPECT_TRUE(SUCCEEDED(CoreAudioUtil::GetPreferredAudioParameters(
+      eRender, eConsole, &preferred_params)));
+  int too_large_packet_size = 2 * preferred_params.frames_per_buffer();
+
   AudioOutputStreamWrapper aosw(audio_manager.get());
-  AudioOutputStream* aos = aosw.Create(1024);
-  EXPECT_TRUE(aos->Open());
+  AudioOutputStream* aos = aosw.Create(too_large_packet_size);
+  EXPECT_FALSE(aos->Open());
 
-  // Derive the expected size in bytes of each packet.
-  uint32 bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
-                           (aosw.bits_per_sample() / 8);
-
-  // Set up expected minimum delay estimation.
-  AudioBuffersState state(0, bytes_per_packet);
-
-  // Ensure that callbacks start correctly.
-  EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(state)))
-      .WillOnce(DoAll(
-          QuitLoop(loop.message_loop_proxy()),
-          Return(aosw.samples_per_packet())))
-      .WillRepeatedly(Return(aosw.samples_per_packet()));
-
-  aos->Start(&source);
-  loop.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(),
-                       TestTimeouts::action_timeout());
-  loop.Run();
-  aos->Stop();
   aos->Close();
 }
 
@@ -704,7 +642,7 @@ TEST(WASAPIAudioOutputStreamTest, ExclusiveModeMinBufferSizeAt48kHz) {
   // Set up expected minimum delay estimation.
   AudioBuffersState state(0, bytes_per_packet);
 
-  // Wait for the first callback and verify its parameters.
+ // Wait for the first callback and verify its parameters.
   EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(state)))
       .WillOnce(DoAll(
           QuitLoop(loop.message_loop_proxy()),

@@ -21,17 +21,10 @@
 //   render thread and at the same time stops audio streaming.
 // - The same thread that called stop will call Close() where we cleanup
 //   and notify the audio manager, which likely will destroy this object.
-// - Initial tests on Windows 7 shows that this implementation results in a
-//   latency of approximately 35 ms if the selected packet size is less than
-//   or equal to 20 ms. Using a packet size of 10 ms does not result in a
-//   lower latency but only affects the size of the data buffer in each
-//   OnMoreData() callback.
 // - A total typical delay of 35 ms contains three parts:
 //    o Audio endpoint device period (~10 ms).
 //    o Stream latency between the buffer and endpoint device (~5 ms).
 //    o Endpoint buffer (~20 ms to ensure glitch-free rendering).
-// - Note that, if the user selects a packet size of e.g. 100 ms, the total
-//   delay will be approximately 115 ms (10 + 5 + 100).
 //
 // Implementation notes:
 //
@@ -39,18 +32,11 @@
 // - This implementation is single-threaded, hence:
 //    o Construction and destruction must take place from the same thread.
 //    o All APIs must be called from the creating thread as well.
-// - It is recommended to first acquire the native sample rate of the default
-//   input device and then use the same rate when creating this object. Use
-//   WASAPIAudioOutputStream::HardwareSampleRate() to retrieve the sample rate.
+// - It is required to first acquire the native audio parameters of the default
+//   output device and then use the same rate when creating this object. Use
+//   e.g. WASAPIAudioOutputStream::HardwareSampleRate() to retrieve the sample
+//   rate. Open() will fail unless "perfect" audio parameters are utilized.
 // - Calling Close() also leads to self destruction.
-// - Stream switching is not supported if the user shifts the audio device
-//   after Open() is called but before Start() has been called.
-// - Stream switching can fail if streaming starts on one device with a
-//   supported format (X) and the new default device - to which we would like
-//   to switch - uses another format (Y), which is not supported given the
-//   configured audio parameters.
-// - The audio device must be opened with the same number of channels as it
-//   supports natively (see HardwareChannelCount()) otherwise Open() will fail.
 // - Support for 8-bit audio has not yet been verified and tested.
 //
 // Core Audio API details:
@@ -164,17 +150,13 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
 
   // Retrieves the sample rate the audio engine uses for its internal
   // processing/mixing of shared-mode streams for the default endpoint device.
-  static int HardwareSampleRate(ERole device_role);
+  static int HardwareSampleRate();
 
   // Returns AUDCLNT_SHAREMODE_EXCLUSIVE if --enable-exclusive-mode is used
   // as command-line flag and AUDCLNT_SHAREMODE_SHARED otherwise (default).
   static AUDCLNT_SHAREMODE GetShareMode();
 
   bool started() const { return render_thread_.get() != NULL; }
-
-  // Returns the number of channels the audio engine uses for its internal
-  // processing/mixing of shared-mode streams for the default endpoint device.
-  int GetEndpointChannelCountForTesting() { return format_.Format.nChannels; }
 
  private:
   // DelegateSimpleThread::Delegate implementation.
@@ -183,22 +165,13 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // Issues the OnError() callback to the |sink_|.
   void HandleError(HRESULT err);
 
-  // The Open() method is divided into these sub methods.
-  HRESULT SetRenderDevice();
-  HRESULT ActivateRenderDevice();
-  bool DesiredFormatIsSupported();
-  HRESULT InitializeAudioEngine();
-
-  // Called when the device will be opened in shared mode and use the
-  // internal audio engine's mix format.
-  HRESULT SharedModeInitialization();
-
   // Called when the device will be opened in exclusive mode and use the
   // application specified format.
-  HRESULT ExclusiveModeInitialization();
-
-  // Converts unique endpoint ID to user-friendly device name.
-  std::string GetDeviceName(LPCWSTR device_id) const;
+  // TODO(henrika): rewrite and move to CoreAudioUtil when removing flag
+  // for exclusive audio mode.
+  HRESULT ExclusiveModeInitialization(IAudioClient* client,
+                                      HANDLE event_handle,
+                                      size_t* endpoint_buffer_size);
 
   // Contains the thread ID of the creating thread.
   base::PlatformThreadId creating_thread_id_;
@@ -215,24 +188,16 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // Use this for multiple channel and hi-resolution PCM data.
   WAVEFORMATPCMEX format_;
 
-  // Copy of the audio format which we know the audio engine supports.
-  // It is recommended to ensure that the sample rate in |format_| is identical
-  // to the sample rate in |audio_engine_mix_format_|.
-  base::win::ScopedCoMem<WAVEFORMATPCMEX> audio_engine_mix_format_;
-
+  // Set to true when stream is successfully opened.
   bool opened_;
 
-  // Set to true as soon as a new default device is detected, and cleared when
-  // the streaming has switched from using the old device to the new device.
-  // All additional device detections during an active state are ignored to
-  // ensure that the ongoing switch can finalize without disruptions.
-  bool restart_rendering_mode_;
+  // We check if the input audio parameters are identical (bit depth is
+  // excluded) to the preferred (native) audio parameters during construction.
+  // Open() will fail if |audio_parmeters_are_valid_| is false.
+  bool audio_parmeters_are_valid_;
 
   // Volume level from 0 to 1.
   float volume_;
-
-  // Size in bytes of each audio frame (4 bytes for 16-bit stereo PCM).
-  size_t frame_size_;
 
   // Size in audio frames of each audio packet where an audio packet
   // is defined as the block of data which the source is expected to deliver
@@ -256,11 +221,6 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // where AUDCLNT_SHAREMODE_SHARED is the default.
   AUDCLNT_SHAREMODE share_mode_;
 
-  // The channel count set by the client in |params| which is provided to the
-  // constructor. The client must feed the AudioSourceCallback::OnMoreData()
-  // callback with PCM-data that contains this number of channels.
-  int client_channel_count_;
-
   // Counts the number of audio frames written to the endpoint buffer.
   UINT64 num_written_frames_;
 
@@ -269,9 +229,6 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
 
   // An IMMDeviceEnumerator interface which represents a device enumerator.
   base::win::ScopedComPtr<IMMDeviceEnumerator> device_enumerator_;
-
-  // An IMMDevice interface which represents an audio endpoint device.
-  base::win::ScopedComPtr<IMMDevice> endpoint_device_;
 
   // An IAudioClient interface which enables a client to create and initialize
   // an audio stream between an audio application and the audio engine.
