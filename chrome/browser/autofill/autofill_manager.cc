@@ -581,7 +581,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
     // If form is known to be at the start of the autofillable flow (i.e, when
     // Autofill server said so), then trigger payments UI while also returning
     // standard autofill suggestions to renderer process.
-    if (page_meta_data_.IsStartOfAutofillableFlow()) {
+    if (autocheckout_manager_.IsStartOfAutofillableFlow()) {
       AutocheckoutInfoBarDelegate::Create(
           *metric_logger_,
           form.origin,
@@ -880,11 +880,16 @@ void AutofillManager::ReturnAutocompleteData(const FormStructure* result) {
 
 void AutofillManager::OnLoadedServerPredictions(
     const std::string& response_xml) {
+  scoped_ptr<autofill::AutocheckoutPageMetaData> page_meta_data(
+      new autofill::AutocheckoutPageMetaData());
+
   // Parse and store the server predictions.
   FormStructure::ParseQueryResponse(response_xml,
                                     form_structures_.get(),
-                                    &page_meta_data_,
+                                    page_meta_data.get(),
                                     *metric_logger_);
+
+  autocheckout_manager_.OnLoadedPageMetaData(page_meta_data.Pass());
 
   // If the corresponding flag is set, annotate forms with the predicted types.
   SendAutofillTypePredictions(form_structures_.get());

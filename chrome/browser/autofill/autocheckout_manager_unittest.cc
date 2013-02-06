@@ -186,6 +186,9 @@ class TestAutofillManagerDelegate : public autofill::AutofillManagerDelegate {
   virtual void RequestAutocompleteDialogClosed() OVERRIDE {
   }
 
+  virtual void UpdateProgressBar(double value) OVERRIDE {
+  }
+
  private:
   content::BrowserContext* browser_context_;
 };
@@ -271,8 +274,14 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
 TEST_F(AutocheckoutManagerTest, TestFillForms) {
   // Simulate the user submitting some data via the requestAutocomplete UI.
   autofill_manager_->SetUserSuppliedData(FakeUserSubmittedFormStructure());
-  autocheckout_manager_->SetProceedElementDescriptor(
-      autofill::WebElementDescriptor());
+
+  // Set up page meta data.
+  scoped_ptr<autofill::AutocheckoutPageMetaData> page_meta_data(
+      new autofill::AutocheckoutPageMetaData());
+  page_meta_data->proceed_element_descriptor.reset(
+      new autofill::WebElementDescriptor());
+  autocheckout_manager_->OnLoadedPageMetaData(page_meta_data.Pass());
+
   GURL frame_url;
   content::SSLStatus ssl_status;
   autocheckout_manager_->ShowAutocheckoutDialog(frame_url, ssl_status);
@@ -296,8 +305,6 @@ TEST_F(AutocheckoutManagerTest, TestFillForms) {
 
   // Test if autocheckout manager can fill form on second page.
   autofill_manager_->SetFormStructure(CreateTestCreditCardFormStructure());
-  autocheckout_manager_->SetProceedElementDescriptor(
-      autofill::WebElementDescriptor());
 
   autocheckout_manager_->FillForms();
 

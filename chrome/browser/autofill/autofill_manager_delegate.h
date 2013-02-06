@@ -87,6 +87,9 @@ class AutofillManagerDelegate {
 
   // Called when the dialog for request autocomplete closes.
   virtual void RequestAutocompleteDialogClosed() = 0;
+
+  // Updates the Autocheckout progress bar. |value| must be in [0.0, 1.0].
+  virtual void UpdateProgressBar(double value) = 0;
 };
 
 }  // namespace autofill

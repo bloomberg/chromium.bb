@@ -105,6 +105,10 @@ void TabAutofillManagerDelegate::RequestAutocompleteDialogClosed() {
   autofill_dialog_controller_ = NULL;
 }
 
+void TabAutofillManagerDelegate::UpdateProgressBar(double value) {
+  autofill_dialog_controller_->UpdateProgressBar(value);
+}
+
 void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {
   if (autofill_dialog_controller_)
     autofill_dialog_controller_->Hide();

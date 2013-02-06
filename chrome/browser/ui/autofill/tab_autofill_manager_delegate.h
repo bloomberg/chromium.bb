@@ -47,6 +47,7 @@ class TabAutofillManagerDelegate
       const content::SSLStatus& ssl_status,
       const base::Callback<void(const FormStructure*)>& callback) OVERRIDE;
   virtual void RequestAutocompleteDialogClosed() OVERRIDE;
+  virtual void UpdateProgressBar(double value) OVERRIDE;
 
   // content::WebContentsObserver implementation.
   virtual void DidNavigateMainFrame(

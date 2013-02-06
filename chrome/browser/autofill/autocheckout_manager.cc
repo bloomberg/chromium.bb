@@ -75,16 +75,10 @@ AutocheckoutManager::AutocheckoutManager(AutofillManager* autofill_manager)
 AutocheckoutManager::~AutocheckoutManager() {
 }
 
-void AutocheckoutManager::SetProceedElementDescriptor(
-    const autofill::WebElementDescriptor& proceed) {
-  // make a local copy.
-  proceed_descriptor_.reset(new autofill::WebElementDescriptor(proceed));
-}
-
 void AutocheckoutManager::FillForms() {
-  // The proceed element should already have been set via a call to
-  // SetProceedElementDescriptor().
-  DCHECK(proceed_descriptor_);
+  // |page_meta_data_| should have been set by OnLoadedPageMetaData and this
+  // function should only be called if page has a proceed element.
+  DCHECK(page_meta_data_ && page_meta_data_->proceed_element_descriptor);
 
   // Fill the forms on the page with data given by user.
   std::vector<FormData> filled_forms;
@@ -110,9 +104,15 @@ void AutocheckoutManager::FillForms() {
   if (!host)
     return;
 
-  host->Send(new AutofillMsg_FillFormsAndClick(host->GetRoutingID(),
-                                               filled_forms,
-                                               *proceed_descriptor_));
+  host->Send(new AutofillMsg_FillFormsAndClick(
+      host->GetRoutingID(),
+      filled_forms,
+      *page_meta_data_->proceed_element_descriptor));
+}
+
+void AutocheckoutManager::OnLoadedPageMetaData(
+    scoped_ptr<autofill::AutocheckoutPageMetaData> page_meta_data) {
+  page_meta_data_ = page_meta_data.Pass();
 }
 
 void AutocheckoutManager::ShowAutocheckoutDialog(
@@ -123,6 +123,14 @@ void AutocheckoutManager::ShowAutocheckoutDialog(
                  weak_ptr_factory_.GetWeakPtr());
   autofill_manager_->ShowRequestAutocompleteDialog(
       BuildAutocheckoutFormData(), frame_url, ssl_status, callback);
+}
+
+bool AutocheckoutManager::IsStartOfAutofillableFlow() const {
+  return page_meta_data_ && page_meta_data_->IsStartOfAutofillableFlow();
+}
+
+bool AutocheckoutManager::IsInAutofillableFlow() const {
+  return page_meta_data_ && page_meta_data_->IsInAutofillableFlow();
 }
 
 void AutocheckoutManager::ReturnAutocheckoutData(const FormStructure* result) {
