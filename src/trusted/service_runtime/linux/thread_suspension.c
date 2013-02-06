@@ -65,19 +65,17 @@ void NaClAppThreadSetSuspendState(struct NaClAppThread *natp,
                                   enum NaClSuspendState old_state,
                                   enum NaClSuspendState new_state) {
   while (1) {
-    Atomic32 state = natp->suspend_state;
+    Atomic32 state = CompareAndSwap(&natp->suspend_state, old_state, new_state);
+    if (NACL_LIKELY(state == (Atomic32) old_state)) {
+      break;
+    }
     if ((state & NACL_APP_THREAD_SUSPENDING) != 0) {
       /* We have been asked to suspend, so wait. */
       FutexWait(&natp->suspend_state, state);
-      continue;  /* Retry */
+    } else {
+      NaClLog(LOG_FATAL, "NaClAppThreadSetSuspendState: Unexpected state: %i\n",
+              state);
     }
-
-    CHECK(state == (Atomic32) old_state);
-    if (CompareAndSwap(&natp->suspend_state, old_state, new_state)
-        != (Atomic32) old_state) {
-      continue;  /* Retry */
-    }
-    break;
   }
 }
 
