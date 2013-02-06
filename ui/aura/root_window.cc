@@ -844,6 +844,11 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
     }
   }
 
+  // The gesture recognizer processes touch events in the system coordinates. So
+  // keep a copy of the touch event here before possibly converting the event to
+  // a window's local coordinate system.
+  ui::TouchEvent event_for_gr(*event);
+
   ui::EventResult result = ui::ER_UNHANDLED;
   if (!target && !bounds().Contains(event->location())) {
     // If the initial touch is outside the root window, target the root.
@@ -858,17 +863,16 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
         return false;
     }
 
-    ui::TouchEvent translated_event(
-        *event, static_cast<Window*>(this), target);
-    ProcessEvent(target ? target : NULL, &translated_event);
-    handled = translated_event.handled();
-    result = translated_event.result();
+    event->ConvertLocationToTarget(static_cast<Window*>(this), target);
+    ProcessEvent(target, event);
+    handled = event->handled();
+    result = event->result();
   }
 
   // Get the list of GestureEvents from GestureRecognizer.
   scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
   gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
-      *event, result, target));
+      event_for_gr, result, target));
 
   return ProcessGestures(gestures.get()) ? true : handled;
 }
