@@ -330,11 +330,17 @@ void URLFetcherCore::Stop() {
 
 void URLFetcherCore::SetUploadData(const std::string& upload_content_type,
                                    const std::string& upload_content) {
+  DCHECK(!is_chunked_upload_);
+  DCHECK(!upload_content_);
+  DCHECK(upload_content_type_.empty());
+
+  // Empty |upload_content_type| is allowed iff the |upload_content| is empty.
+  DCHECK(upload_content.empty() || !upload_content_type.empty());
+
+  upload_content_type_ = upload_content_type;
   scoped_ptr<UploadElementReader> reader(
       UploadOwnedBytesElementReader::CreateWithString(upload_content));
-  SetUploadDataStream(
-      upload_content_type,
-      make_scoped_ptr(UploadDataStream::CreateWithReader(reader.Pass(), 0)));
+  upload_content_.reset(UploadDataStream::CreateWithReader(reader.Pass(), 0));
 }
 
 void URLFetcherCore::SetUploadDataStream(
@@ -343,6 +349,11 @@ void URLFetcherCore::SetUploadDataStream(
   DCHECK(!is_chunked_upload_);
   DCHECK(!upload_content_);
   DCHECK(upload_content_type_.empty());
+
+  // Empty |upload_content_type| is not allowed here, because it is impossible
+  // to ensure non-empty |upload_content| as it may not be initialized yet.
+  DCHECK(!upload_content_type.empty());
+
   upload_content_type_ = upload_content_type;
   upload_content_ = upload_content.Pass();
 }
@@ -351,6 +362,11 @@ void URLFetcherCore::SetChunkedUpload(const std::string& content_type) {
   DCHECK(is_chunked_upload_ ||
          (upload_content_type_.empty() &&
           !upload_content_));
+
+  // Empty |content_type| is not allowed here, because it is impossible
+  // to ensure non-empty upload content as it is not yet supplied.
+  DCHECK(!content_type.empty());
+
   upload_content_type_ = content_type;
   upload_content_.reset();
   is_chunked_upload_ = true;
@@ -734,13 +750,16 @@ void URLFetcherCore::StartURLRequest() {
     case URLFetcher::POST:
     case URLFetcher::PUT:
     case URLFetcher::PATCH:
-      DCHECK(!upload_content_type_.empty());
+      // Upload content must be set.
+      DCHECK(is_chunked_upload_ || upload_content_);
 
       request_->set_method(
           request_type_ == URLFetcher::POST ? "POST" :
           request_type_ == URLFetcher::PUT ? "PUT" : "PATCH");
-      extra_request_headers_.SetHeader(HttpRequestHeaders::kContentType,
-                                       upload_content_type_);
+      if (!upload_content_type_.empty()) {
+        extra_request_headers_.SetHeader(HttpRequestHeaders::kContentType,
+                                         upload_content_type_);
+      }
       if (upload_content_)
         request_->set_upload(upload_content_.Pass());
       current_upload_bytes_ = -1;

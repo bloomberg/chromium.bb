@@ -83,8 +83,9 @@ class NET_EXPORT URLFetcher {
     PUT,
     PATCH,
 
-    // This is POST method with no body, no content-type header and
-    // no content-length header.
+    // DEPRECATED: Now POST should work well for empty body, and this value
+    //   will be removed soon.
+    // This is POST method with no body, and no content-type header.
     POST_WITHOUT_BODY,
   };
 
@@ -288,8 +289,9 @@ class NET_EXPORT URLFetcher {
   // true, caller takes responsibility for the file, and it will not
   // be removed once the URLFetcher is destroyed.  User should not take
   // ownership more than once, or call this method after taking ownership.
-  virtual bool GetResponseAsFilePath(bool take_ownership,
-                                     base::FilePath* out_response_path) const = 0;
+  virtual bool GetResponseAsFilePath(
+      bool take_ownership,
+      base::FilePath* out_response_path) const = 0;
 };
 
 }  // namespace net
