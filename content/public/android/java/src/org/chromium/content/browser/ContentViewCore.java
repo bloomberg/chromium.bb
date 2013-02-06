@@ -256,9 +256,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     // Delegate that will handle GET downloads, and be notified of completion of POST downloads.
     private ContentViewDownloadDelegate mDownloadDelegate;
 
-    // Whether a physical keyboard is connected.
-    private boolean mKeyboardConnected;
-
     // The AccessibilityInjector that handles loading Accessibility scripts into the web page.
     private AccessibilityInjector mAccessibilityInjector;
 
@@ -582,8 +579,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         mNativePageScaleFactor = 1.0f;
         initPopupZoomer(mContext);
         mImeAdapter = createImeAdapter(mContext);
-        mKeyboardConnected = mContainerView.getResources().getConfiguration().keyboard
-                != Configuration.KEYBOARD_NOKEYS;
         TraceEvent.end();
     }
 
@@ -1289,9 +1284,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     public void onConfigurationChanged(Configuration newConfig) {
         TraceEvent.begin();
 
-        mKeyboardConnected = newConfig.keyboard != Configuration.KEYBOARD_NOKEYS;
-
-        if (mKeyboardConnected) {
+        if (newConfig.keyboard != Configuration.KEYBOARD_NOKEYS) {
             mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore),
                     ImeAdapter.sTextInputTypeNone);
             InputMethodManager manager = (InputMethodManager)
@@ -1440,7 +1433,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             return mContainerViewInternals.super_dispatchKeyEvent(event);
         }
 
-        if (mKeyboardConnected && mImeAdapter.dispatchKeyEvent(event)) return true;
+        if (mImeAdapter.dispatchKeyEvent(event)) return true;
 
         return mContainerViewInternals.super_dispatchKeyEvent(event);
     }
