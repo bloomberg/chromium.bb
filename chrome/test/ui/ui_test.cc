@@ -205,7 +205,8 @@ void UITestBase::SetLaunchSwitches() {
   }
   if (!test_name_.empty())
     launch_arguments_.AppendSwitchASCII(switches::kTestName, test_name_);
-#if defined(USE_AURA)
+  // TODO: !OS_WIN is temporary, will remove shortly.
+#if defined(USE_AURA) && !defined(OS_WIN)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableTestCompositor)) {
     launch_arguments_.AppendSwitch(switches::kTestCompositor);

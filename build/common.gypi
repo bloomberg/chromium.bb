@@ -64,11 +64,11 @@
               'use_aura%': 1,
             }],
 
-            # For now, Windows builds that |use_aura| should also imply using
-            # ash. This rule should be removed for the future when Windows is
-            # using the aura windows without the ash interface.
-            ['use_aura==1 and OS=="win"', {
+            # Temporarily turn on aura for windows to get perf numbers. Will
+            # revert ASAP.
+            ['OS=="win"', {
               'use_ash%': 1,
+              'use_aura%': 1,
             }],
             ['use_ash==1', {
               'use_aura%': 1,
