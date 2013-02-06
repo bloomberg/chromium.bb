@@ -209,7 +209,8 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
             owningLayerDrawScale.y());
         // This assumes that the owning layer clips its subtree when a mask is
         // present.
-        DCHECK(gfx::RectF(unclippedSurfaceSize).Contains(contentRect()));
+        DCHECK(gfx::RectF(unclippedSurfaceSize).Contains(
+            gfx::Rect(contentRect().size())));
 
         float uvScaleX = contentRect().width() / unclippedSurfaceSize.width();
         float uvScaleY = contentRect().height() / unclippedSurfaceSize.height();
