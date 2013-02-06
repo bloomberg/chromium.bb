@@ -1233,6 +1233,12 @@ enum NotificationType {
   // if it is leaving.
   NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED,
 
+  // Session Restore --------------------------------------------------------
+
+  // Sent when synchronous (startup) session restore completes. No details or
+  // source.
+  NOTIFICATION_SESSION_RESTORE_DONE,
+
   // Note:-
   // Currently only Content and Chrome define and use notifications.
   // Custom notifications not belonging to Content and Chrome should start

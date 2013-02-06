@@ -868,7 +868,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
   // clobbered.
   ui_test_utils::NavigateToURL(new_browser, url3_);
 
-  // Restore the session again, globbering the existing tab.
+  // Restore the session again, clobbering the existing tab.
   SessionRestore::RestoreSession(
       profile, new_browser,
       new_browser->host_desktop_type(),

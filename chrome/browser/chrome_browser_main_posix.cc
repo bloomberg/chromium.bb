@@ -19,8 +19,13 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/sessions/session_restore.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/chrome_browser_main_extra_parts_gtk.h"
@@ -77,6 +82,75 @@ void SIGTERMHandler(int signal) {
   GracefulShutdownHandler(signal);
 }
 
+// ExitHandler takes care of servicing an exit (from a signal) at the
+// appropriate time. Specifically if we get an exit and have not finished
+// session restore we delay the exit. To do otherwise means we're exiting part
+// way through startup which causes all sorts of problems.
+class ExitHandler : public content::NotificationObserver {
+ public:
+  // Invokes exit when appropriate.
+  static void ExitWhenPossibleOnUIThread();
+
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+ private:
+  ExitHandler();
+  virtual ~ExitHandler();
+
+  // Does the appropriate call to Exit.
+  static void Exit();
+
+  content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExitHandler);
+};
+
+// static
+void ExitHandler::ExitWhenPossibleOnUIThread() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (SessionRestore::IsRestoringSynchronously()) {
+    // ExitHandler takes care of deleting itself.
+    new ExitHandler();
+  } else {
+    Exit();
+  }
+}
+
+void ExitHandler::Observe(int type,
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
+  if (!SessionRestore::IsRestoringSynchronously()) {
+    // At this point the message loop may not be running (meaning we haven't
+    // gotten through browser startup, but are close). Post the task to at which
+    // point the message loop is running.
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&ExitHandler::Exit));
+    delete this;
+  }
+}
+
+ExitHandler::ExitHandler() {
+  registrar_.Add(
+      this, chrome::NOTIFICATION_SESSION_RESTORE_DONE,
+      content::NotificationService::AllBrowserContextsAndSources());
+}
+
+ExitHandler::~ExitHandler() {
+}
+
+// static
+void ExitHandler::Exit() {
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, exiting on signal should be always clean.
+  browser::ExitCleanly();
+#else
+  browser::AttemptExit();
+#endif
+}
+
 class ShutdownDetector : public base::PlatformThread::Delegate {
  public:
   explicit ShutdownDetector(int shutdown_fd);
@@ -93,7 +167,6 @@ ShutdownDetector::ShutdownDetector(int shutdown_fd)
     : shutdown_fd_(shutdown_fd) {
   CHECK_NE(shutdown_fd_, -1);
 }
-
 
 // These functions are used to help us diagnose crash dumps that happen
 // during the shutdown process.
@@ -138,12 +211,7 @@ void ShutdownDetector::ThreadMain() {
     bytes_read += ret;
   } while (bytes_read < sizeof(signal));
   VLOG(1) << "Handling shutdown for signal " << signal << ".";
-#if defined(OS_CHROMEOS)
-  // On ChromeOS, exiting on signal should be always clean.
-  base::Closure task = base::Bind(&browser::ExitCleanly);
-#else
-  base::Closure task = base::Bind(&browser::AttemptExit);
-#endif
+  base::Closure task = base::Bind(&ExitHandler::ExitWhenPossibleOnUIThread);
 
   if (!BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, task)) {
     // Without a UI thread to post the exit task to, there aren't many

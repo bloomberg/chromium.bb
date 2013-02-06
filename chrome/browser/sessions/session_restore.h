@@ -72,6 +72,9 @@ class SessionRestore {
   // Returns true if we're in the process of restoring |profile|.
   static bool IsRestoring(const Profile* profile);
 
+  // Returns true if synchronously restoring a session.
+  static bool IsRestoringSynchronously();
+
   // The max number of non-selected tabs SessionRestore loads when restoring
   // a session. A value of 0 indicates all tabs are loaded at once.
   static size_t num_tabs_to_load_;

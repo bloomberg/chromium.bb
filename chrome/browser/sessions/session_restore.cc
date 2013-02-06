@@ -526,6 +526,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
     g_browser_process->AddRefModule();
   }
 
+  bool synchronous() const { return synchronous_; }
+
   Browser* Restore() {
     SessionService* session_service =
         SessionServiceFactory::GetForProfile(profile_);
@@ -541,6 +543,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
       }
       Browser* browser = ProcessSessionWindows(&windows_, active_window_id_);
       delete this;
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_SESSION_RESTORE_DONE,
+          content::NotificationService::AllSources(),
+          content::NotificationService::NoDetails());
       return browser;
     }
 
@@ -1210,6 +1216,19 @@ bool SessionRestore::IsRestoring(const Profile* profile) {
            active_session_restorers->begin();
        it != active_session_restorers->end(); ++it) {
     if ((*it)->profile() == profile)
+      return true;
+  }
+  return false;
+}
+
+// static
+bool SessionRestore::IsRestoringSynchronously() {
+  if (!active_session_restorers)
+    return false;
+  for (std::set<SessionRestoreImpl*>::const_iterator it =
+           active_session_restorers->begin();
+       it != active_session_restorers->end(); ++it) {
+    if ((*it)->synchronous())
       return true;
   }
   return false;
