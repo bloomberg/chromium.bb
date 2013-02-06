@@ -845,6 +845,20 @@ For Chromium, processes used to display diagnostics information (such as this "a
         </message>
       </if>
 
+      <!-- Enterprise sign-in profile linking -->
+      <message name="IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_DIALOG_TITLE" desc="The title of the dialog to confirm linking the browser profile with the signed-in enterprise account">
+	Link your Chromium profile
+      </message>
+      <message name="IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_MESSAGE" desc="The warning message displayed to an enterprise user about to link their profile to their Google account. This message is followed by a 'Learn more' link.">
+	You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account.
+      </message>
+      <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_PROMPT" desc="The text of the prompt to create a new profile after signing into an enterprise account">
+	If you prefer to keep your existing Chromium data separate, you can create a new Chromium user for <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>.
+      </message>
+      <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_NO" desc="Text of the button to link the current profile with the signed-in enterprise account">
+	Link my Chromium data to this account
+      </message>
+
       <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
         Chromium Autofill settings
       </message>

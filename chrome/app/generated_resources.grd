@@ -11285,6 +11285,17 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Use default settings
       </message>
 
+      <!-- Enterprise sign-in profile linking -->
+      <message name="IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_LEARN_MORE" desc="The link to get more information about profile linking after signing into an enterprise account">
+	Learn more
+      </message>
+      <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_YES" desc="Text of the button to create a new profile after enterprise account signin">
+	Create a new user
+      </message>
+      <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_CANCEL" desc="Text of the button to cancel signin">
+	Cancel
+      </message>
+
       <!-- Cookies Window -->
       <message name="IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE" desc="The title of the redesigned Cookies Window that lets you manage cookies, storage quota for websites and other permissions per-website">
         Cookies and site data
