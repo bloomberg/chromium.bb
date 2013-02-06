@@ -20,14 +20,14 @@
 #include "native_client/tests/minnacl/minimal_test_syscalls.h"
 
 static int32_t NotImplementedDecoder(struct NaClAppThread *natp) {
-  NaClCopyInDropLock(natp->nap);
+  NaClCopyDropLock(natp->nap);
   printf("Error: entered an unexpected syscall!\n");
   fflush(stdout);
   _exit(1);
 }
 
 static int32_t MySyscallInvoke(struct NaClAppThread *natp) {
-  NaClCopyInDropLock(natp->nap);
+  NaClCopyDropLock(natp->nap);
   printf("Inside custom test 'invoke' syscall\n");
   fflush(stdout);
   /* Return a value that the test guest program checks for. */
@@ -35,7 +35,7 @@ static int32_t MySyscallInvoke(struct NaClAppThread *natp) {
 }
 
 static int32_t MySyscallExit(struct NaClAppThread *natp) {
-  NaClCopyInDropLock(natp->nap);
+  NaClCopyDropLock(natp->nap);
   printf("Inside custom test 'exit' syscall\n");
   fflush(stdout);
   _exit(0);

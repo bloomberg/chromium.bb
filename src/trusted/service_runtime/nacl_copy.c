@@ -12,14 +12,6 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
-void NaClCopyInTakeLock(struct NaClApp *nap) {
-  NaClXMutexLock(&nap->mu);
-}
-
-void NaClCopyInDropLock(struct NaClApp *nap) {
-  NaClXMutexUnlock(&nap->mu);
-}
-
 int NaClCopyInFromUser(struct NaClApp *nap,
                        void           *dst_sys_ptr,
                        uintptr_t      src_usr_addr,
@@ -30,9 +22,9 @@ int NaClCopyInFromUser(struct NaClApp *nap,
   if (kNaClBadAddress == src_sys_addr) {
     return 0;
   }
-  NaClXMutexLock(&nap->mu);
+  NaClCopyTakeLock(nap);
   memcpy((void *) dst_sys_ptr, (void *) src_sys_addr, num_bytes);
-  NaClXMutexUnlock(&nap->mu);
+  NaClCopyDropLock(nap);
 
   return 1;
 }
@@ -49,7 +41,7 @@ int NaClCopyInFromUserAndDropLock(struct NaClApp *nap,
   }
 
   memcpy((void *) dst_sys_ptr, (void *) src_sys_addr, num_bytes);
-  NaClXMutexUnlock(&nap->mu);
+  NaClCopyDropLock(nap);
 
   return 1;
 }
@@ -66,9 +58,9 @@ int NaClCopyInFromUserZStr(struct NaClApp *nap,
     dst_buffer[0] = '\0';
     return 0;
   }
-  NaClXMutexLock(&nap->mu);
+  NaClCopyTakeLock(nap);
   strncpy(dst_buffer, (char *) src_sys_addr, dst_buffer_bytes);
-  NaClXMutexUnlock(&nap->mu);
+  NaClCopyDropLock(nap);
 
   /* POSIX strncpy pads with NUL characters */
   if (dst_buffer[dst_buffer_bytes - 1] != '\0') {
@@ -89,9 +81,9 @@ int NaClCopyOutToUser(struct NaClApp  *nap,
   if (kNaClBadAddress == dst_sys_addr) {
     return 0;
   }
-  NaClXMutexLock(&nap->mu);
+  NaClCopyTakeLock(nap);
   memcpy((void *) dst_sys_addr, src_sys_ptr, num_bytes);
-  NaClXMutexUnlock(&nap->mu);
+  NaClCopyDropLock(nap);
 
   return 1;
 }

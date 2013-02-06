@@ -140,7 +140,7 @@ static int32_t SuspendTestSyscall(struct NaClAppThread *natp) {
   struct SuspendTestShm *test_shm;
   uint32_t next_val = 0;
 
-  NaClCopyInDropLock(natp->nap);
+  NaClCopyDropLock(natp->nap);
   CHECK(NaClCopyInFromUser(natp->nap, &test_shm_uptr, natp->usr_syscall_args,
                            sizeof(test_shm_uptr)));
   test_shm = (struct SuspendTestShm *) NaClUserToSysAddrRange(

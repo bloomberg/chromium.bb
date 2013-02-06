@@ -26,7 +26,7 @@ static int32_t TestSyscall(struct NaClAppThread *natp) {
         (uintptr_t) &NaClSyscallThreadCaptureFaultNoSSE;
   }
 
-  NaClCopyInDropLock(natp->nap);
+  NaClCopyDropLock(natp->nap);
 
   natp->user.gs = natp->user.trusted_gs;
 

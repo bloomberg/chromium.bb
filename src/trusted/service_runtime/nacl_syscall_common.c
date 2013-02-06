@@ -92,7 +92,7 @@ struct NaClSyscallTableEntry nacl_syscall[NACL_MAX_SYSCALLS] = {{0}};
 
 
 int32_t NaClSysNotImplementedDecoder(struct NaClAppThread *natp) {
-  NaClCopyInDropLock(natp->nap);
+  NaClCopyDropLock(natp->nap);
   return -NACL_ABI_ENOSYS;
 }
 

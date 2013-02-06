@@ -10,6 +10,8 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 EXTERN_C_BEGIN
 
@@ -47,15 +49,10 @@ int NaClCopyInFromUser(struct NaClApp *nap,
                        uintptr_t      src_usr_addr,
                        size_t         num_bytes) NACL_WUR;
 
-void NaClCopyInTakeLock(struct NaClApp *nap);
-
 int NaClCopyInFromUserAndDropLock(struct NaClApp *nap,
                                   void           *dst_sys_ptr,
                                   uintptr_t      src_usr_addr,
                                   size_t         num_bytes) NACL_WUR;
-
-void NaClCopyInDropLock(struct NaClApp *nap);
-
 
 /*
  * Similarly to strncpy from untrusted address space to trusted
@@ -82,6 +79,37 @@ int NaClCopyOutToUser(struct NaClApp  *nap,
                       uintptr_t       dst_usr_addr,
                       void            *src_sys_ptr,
                       size_t          num_bytes) NACL_WUR;
+
+/*
+ * We use locking to prevent reads/writes of untrusted address space
+ * while a hole is opened up in untrusted address space.
+ *
+ * Address space holes only occur on Windows, so we don't need this
+ * locking in non-Windows builds, but we enable it in non-Windows
+ * debug builds to help with earlier detection of deadlocks during
+ * development.
+ */
+#if NACL_WINDOWS || defined(_DEBUG)
+
+static INLINE void NaClCopyTakeLock(struct NaClApp *nap) {
+  NaClXMutexLock(&nap->mu);
+}
+
+static INLINE void NaClCopyDropLock(struct NaClApp *nap) {
+  NaClXMutexUnlock(&nap->mu);
+}
+
+#else
+
+static INLINE void NaClCopyTakeLock(struct NaClApp *nap) {
+  UNREFERENCED_PARAMETER(nap);
+}
+
+static INLINE void NaClCopyDropLock(struct NaClApp *nap) {
+  UNREFERENCED_PARAMETER(nap);
+}
+
+#endif
 
 EXTERN_C_END
 

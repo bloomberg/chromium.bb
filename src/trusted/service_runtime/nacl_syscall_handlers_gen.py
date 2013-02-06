@@ -249,7 +249,7 @@ def ArgList(architecture, alist):
 
 def MemoryArgStruct(architecture, name, alist):
   if not alist:
-    return '  NaClCopyInDropLock(natp->nap);'
+    return '  NaClCopyDropLock(natp->nap);'
 
   # Note: although this return value might be computed more
   # concisely with a list comprehension, we instead use a

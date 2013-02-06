@@ -42,7 +42,7 @@
  * NACL_APP_THREAD_UNTRUSTED, which has two consequences:
  *
  *  1) We may read untrusted address space without calling
- *     NaClCopyInTakeLock() first, because this function's execution
+ *     NaClCopyTakeLock() first, because this function's execution
  *     will be suspended while any mmap hole is opened up on Windows.
  *
  *  2) We may not claim any locks.  This means we may not call
@@ -115,7 +115,7 @@ NORETURN void NaClSyscallCSegHook(struct NaClThreadContext *ntcp) {
 
   nap = natp->nap;
 
-  NaClCopyInTakeLock(nap);
+  NaClCopyTakeLock(nap);
   /*
    * held until syscall args are copied, which occurs in the generated
    * code.
@@ -146,7 +146,7 @@ NORETURN void NaClSyscallCSegHook(struct NaClThreadContext *ntcp) {
   if (NACL_UNLIKELY(sysnum >= NACL_MAX_SYSCALLS)) {
     NaClLog(2, "INVALID system call %"NACL_PRIdS"\n", sysnum);
     sysret = -NACL_ABI_EINVAL;
-    NaClCopyInDropLock(nap);
+    NaClCopyDropLock(nap);
   } else {
     sysret = (*(nap->syscall_table[sysnum].handler))(natp);
     /* Implicitly drops lock */

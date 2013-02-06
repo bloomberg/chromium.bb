@@ -59,7 +59,7 @@ static struct RegsTestShm *g_test_shm;
 
 
 static int32_t TestSyscall(struct NaClAppThread *natp) {
-  NaClCopyInDropLock(natp->nap);
+  NaClCopyDropLock(natp->nap);
 
   if (g_call_count == 0) {
     g_natp = natp;
