@@ -6485,7 +6485,7 @@
    fun:_ZN14ProfileManager11DoFinalInitEP7Profileb
    fun:_ZN14ProfileManager10AddProfileEP7Profile
    fun:_ZN14ProfileManager10GetProfileE*
-   fun:_ZN14ProfileManager18GetLastUsedProfileE*
+   ...
    fun:_ZN12_GLOBAL__N_113CreateProfileERKN7content18MainFunctionParamsE*
    fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
    fun:_ZN22ChromeBrowserMainParts21PreMainMessageLoopRunEv
