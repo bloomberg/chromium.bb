@@ -401,6 +401,16 @@ bool ThreadProxy::reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int
     return true;
 }
 
+void ThreadProxy::reduceWastedContentsTextureMemoryOnImplThread()
+{
+    DCHECK(isImplThread());
+
+    if (!m_layerTreeHost->contentsTextureManager())
+        return;
+
+    m_layerTreeHost->contentsTextureManager()->reduceWastedMemoryOnImplThread(m_layerTreeHostImpl->resourceProvider());
+}
+
 void ThreadProxy::sendManagedMemoryStats()
 {
     DCHECK(isImplThread());

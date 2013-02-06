@@ -307,6 +307,12 @@ bool SingleThreadProxy::reduceContentsTextureMemoryOnImplThread(size_t limitByte
     return m_layerTreeHost->contentsTextureManager()->reduceMemoryOnImplThread(limitBytes, priorityCutoff, m_layerTreeHostImpl->resourceProvider());
 }
 
+void SingleThreadProxy::reduceWastedContentsTextureMemoryOnImplThread()
+{
+    // implSidePainting only.
+    NOTREACHED();
+}
+
 void SingleThreadProxy::sendManagedMemoryStats()
 {
     DCHECK(Proxy::isImplThread());

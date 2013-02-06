@@ -27,6 +27,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
       scoped_ptr<AnimationEventsVector>,
       base::Time) OVERRIDE { }
   virtual bool reduceContentsTextureMemoryOnImplThread(size_t, int) OVERRIDE;
+  virtual void reduceWastedContentsTextureMemoryOnImplThread() OVERRIDE { }
   virtual void sendManagedMemoryStats() OVERRIDE { }
   virtual bool isInsideDraw() OVERRIDE;
   virtual void renewTreePriority() OVERRIDE { }

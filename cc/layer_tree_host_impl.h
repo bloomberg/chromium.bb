@@ -56,6 +56,7 @@ public:
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) = 0;
     // Returns true if resources were deleted by this call.
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) = 0;
+    virtual void reduceWastedContentsTextureMemoryOnImplThread() = 0;
     virtual void sendManagedMemoryStats() = 0;
     virtual bool isInsideDraw() = 0;
     virtual void renewTreePriority() = 0;

@@ -1001,12 +1001,9 @@ void LayerTreeHostImpl::activatePendingTree()
 
     m_activeTree->DidBecomeActive();
 
-    // Reduce wasted memory now that unlinked resources are guaranteed to
-    // not be used. This should never evict currently used resources.
-    bool evictedResources = m_client->reduceContentsTextureMemoryOnImplThread(
-        std::numeric_limits<size_t>::max(),
-        PriorityCalculator::allowEverythingCutoff());
-    DCHECK(!evictedResources);
+    // Reduce wasted memory now that unlinked resources are guaranteed not
+    // to be used.
+    m_client->reduceWastedContentsTextureMemoryOnImplThread();
 
     m_client->onCanDrawStateChanged(canDraw());
     m_client->onHasPendingTreeStateChanged(pendingTree());

@@ -99,6 +99,7 @@ public:
     virtual void setNeedsManageTilesOnImplThread() OVERRIDE { }
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) OVERRIDE { }
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE { return m_reduceMemoryResult; }
+    virtual void reduceWastedContentsTextureMemoryOnImplThread() OVERRIDE { }
     virtual void sendManagedMemoryStats() OVERRIDE { }
     virtual bool isInsideDraw() OVERRIDE { return false; }
     virtual void renewTreePriority() OVERRIDE { }

@@ -59,6 +59,7 @@ public:
     virtual void setNeedsManageTilesOnImplThread() OVERRIDE;
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) OVERRIDE;
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE;
+    virtual void reduceWastedContentsTextureMemoryOnImplThread() OVERRIDE;
     virtual void sendManagedMemoryStats() OVERRIDE;
     virtual bool isInsideDraw() OVERRIDE;
     virtual void renewTreePriority() OVERRIDE { }

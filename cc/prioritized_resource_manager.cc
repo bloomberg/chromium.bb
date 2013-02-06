@@ -335,15 +335,22 @@ bool PrioritizedResourceManager::reduceMemoryOnImplThread(size_t limitBytes, int
     // the list are not sorted by priority. Sort them before doing the eviction.
     if (m_backingsTailNotSorted)
         sortBackings();
-    if (evictBackingsToReduceMemory(limitBytes,
-                                    priorityCutoff,
-                                    EvictAnything,
-                                    DoNotUnlinkBackings,
-                                    resourceProvider))
-      return true;
+    return evictBackingsToReduceMemory(limitBytes,
+                                       priorityCutoff,
+                                       EvictAnything,
+                                       DoNotUnlinkBackings,
+                                       resourceProvider);
+}
 
+void PrioritizedResourceManager::reduceWastedMemoryOnImplThread(ResourceProvider* resourceProvider)
+{
+    DCHECK(m_proxy->isImplThread());
+    DCHECK(resourceProvider);
+    // If we are in the process of uploading a new frame then the backings at the very end of
+    // the list are not sorted by priority. Sort them before doing the eviction.
+    if (m_backingsTailNotSorted)
+        sortBackings();
     reduceWastedMemory(resourceProvider);
-    return false;
 }
 
 void PrioritizedResourceManager::unlinkAndClearEvictedBackings()
