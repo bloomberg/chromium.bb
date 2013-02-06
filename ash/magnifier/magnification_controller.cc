@@ -506,18 +506,18 @@ bool MagnificationControllerImpl::IsEnabled() const {
 // MagnificationControllerImpl: aura::EventFilter implementation
 
 void MagnificationControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
-  if (IsMagnified() && event->type() == ui::ET_MOUSE_MOVED) {
-    aura::Window* target = static_cast<aura::Window*>(event->target());
-    aura::RootWindow* current_root = target->GetRootWindow();
-    gfx::Rect root_bounds = current_root->bounds();
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  aura::RootWindow* current_root = target->GetRootWindow();
+  gfx::Rect root_bounds = current_root->bounds();
 
-    if (root_bounds.Contains(event->root_location())) {
-      if (current_root != root_window_)
-        SwitchTargetRootWindow(current_root);
+  if (root_bounds.Contains(event->root_location())) {
+    if (current_root != root_window_)
+      SwitchTargetRootWindow(current_root);
 
-      point_of_interest_ = event->root_location();
+    point_of_interest_ = event->root_location();
+
+    if (IsMagnified() && event->type() == ui::ET_MOUSE_MOVED)
       OnMouseMove(event->root_location());
-    }
   }
 }
 
