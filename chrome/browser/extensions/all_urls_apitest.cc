@@ -16,7 +16,7 @@ const std::string kAllUrlsTarget =
 
 typedef ExtensionApiTest AllUrlsApiTest;
 
-#if defined(OS_WINDOWS) && !defined(NDEBUG)
+#if defined(OS_WIN) && !defined(NDEBUG)
 // http://crbug.com/174341
 #define MAYBE_WhitelistedExtension DISABLED_WhitelistedExtension
 #else
