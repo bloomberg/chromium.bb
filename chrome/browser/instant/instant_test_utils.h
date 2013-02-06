@@ -38,6 +38,14 @@ class InstantTestModelObserver : public InstantModelObserver {
 };
 
 class InstantTestBase : public InProcessBrowserTest {
+ public:
+  InstantTestBase()
+      : https_test_server_(
+            net::TestServer::TYPE_HTTPS,
+            net::BaseTestServer::SSLOptions(),
+            FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
+  }
+
  protected:
   void SetupInstant();
   void SetupInstantUsingTemplateURL();
@@ -72,6 +80,9 @@ class InstantTestBase : public InProcessBrowserTest {
                          bool expected) WARN_UNUSED_RESULT;
 
   GURL instant_url_;
+
+  // HTTPS Testing server, started on demand.
+  net::TestServer https_test_server_;
 };
 
 #endif  // CHROME_BROWSER_INSTANT_INSTANT_TEST_UTILS_H_

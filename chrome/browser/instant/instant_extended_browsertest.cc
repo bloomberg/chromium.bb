@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/instant/instant_loader.h"
 #include "chrome/browser/instant/instant_test_utils.h"
 #include "chrome/browser/ui/search/search.h"
@@ -12,8 +13,9 @@ class InstantExtendedTest : public InstantTestBase {
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     chrome::search::EnableInstantExtendedAPIForTesting();
-    ASSERT_TRUE(test_server()->Start());
-    instant_url_ = test_server()->GetURL("files/instant_extended.html");
+    ASSERT_TRUE(https_test_server_.Start());
+    instant_url_ = https_test_server_.
+        GetURL("files/instant_extended.html?strk=1&");
   }
 };
 
@@ -79,4 +81,55 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, InputShowsOverlay) {
   SetOmniboxTextAndWaitForInstantToShow("query");
   EXPECT_TRUE(instant()->model()->mode().is_search_suggestions());
   EXPECT_EQ(preview_tab, instant()->GetPreviewContents());
+}
+
+// Test that omnibox text is correctly set when overlay is committed with Enter.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponEnterCommit) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  // The page will autocomplete once we set the omnibox value.
+  EXPECT_TRUE(ExecuteScript("suggestion = 'santa claus';"));
+
+  // Set the text, and wait for suggestions to show up.
+  SetOmniboxTextAndWaitForInstantToShow("santa");
+  EXPECT_EQ(ASCIIToUTF16("santa"), omnibox()->GetText());
+
+  // Test that the current suggestion is correctly set.
+  EXPECT_EQ(ASCIIToUTF16(" claus"), omnibox()->GetInstantSuggestion());
+
+  // Commit the search by pressing Enter.
+  browser()->window()->GetLocationBar()->AcceptInput();
+
+  // 'Enter' commits the query as it was typed.
+  EXPECT_EQ(ASCIIToUTF16("santa"), omnibox()->GetText());
+
+  // Suggestion should be cleared at this point.
+  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+}
+
+// Test that omnibox text is correctly set when overlay is committed with focus
+// lost.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponFocusLostCommit) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  // Set autocomplete text (grey text).
+  EXPECT_TRUE(ExecuteScript("suggestion = 'johnny depp';"));
+
+  // Set the text, and wait for suggestions to show up.
+  SetOmniboxTextAndWaitForInstantToShow("johnny");
+  EXPECT_EQ(ASCIIToUTF16("johnny"), omnibox()->GetText());
+
+  // Test that the current suggestion is correctly set.
+  EXPECT_EQ(ASCIIToUTF16(" depp"), omnibox()->GetInstantSuggestion());
+
+  // Commit the overlay by lost focus (e.g. clicking on the page).
+  instant()->CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
+
+  // Search term extraction should kick in with the autocompleted text.
+  EXPECT_EQ(ASCIIToUTF16("johnny depp"), omnibox()->GetText());
+
+  // Suggestion should be cleared at this point.
+  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
 }

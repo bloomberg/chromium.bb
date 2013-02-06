@@ -28,7 +28,7 @@ class InstantTest : public InstantTestBase {
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ASSERT_TRUE(test_server()->Start());
-    instant_url_ = test_server()->GetURL("files/instant.html");
+    instant_url_ = test_server()->GetURL("files/instant.html?");
   }
 
   bool UpdateSearchState(content::WebContents* contents) WARN_UNUSED_RESULT {

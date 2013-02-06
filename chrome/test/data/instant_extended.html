@@ -5,6 +5,7 @@
 var apiHandle;
 var onnativesuggestioncalls = 0;
 var onsubmitcalls = 0;
+var suggestion;
 
 function getApiHandle() {
   if (window.navigator && window.navigator.searchBox)
@@ -16,15 +17,25 @@ function getApiHandle() {
 
 function handleNativeSuggestions() {
   onnativesuggestioncalls++;
-  apiHandle.show(2 /* QUERY_SUGGESTIONS */, 300);
+  // Showing the loader at 100% height.
+  apiHandle.show(2 /* QUERY_SUGGESTIONS */);
 }
 
 function handleSubmit() {
   onsubmitcalls++;
 }
 
+function handleOnChange() {
+  if (suggestion) {
+    apiHandle.setAutocompleteText(suggestion, 2);
+    // Ensure this is only called once for this suggestion.
+    suggestion = null;
+  }
+}
+
 function setUp() {
   apiHandle = getApiHandle();
+  apiHandle.onchange = handleOnChange;
   apiHandle.onnativesuggestions = handleNativeSuggestions;
   apiHandle.onsubmit = handleSubmit;
   if (apiHandle.value)

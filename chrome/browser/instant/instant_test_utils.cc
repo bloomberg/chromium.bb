@@ -69,8 +69,12 @@ void InstantTestBase::SetupInstantUsingTemplateURL() {
   ui_test_utils::WaitForTemplateURLServiceToLoad(service);
 
   TemplateURLData data;
-  data.SetURL("http://does/not/exist?q={searchTerms}");
+  // Necessary to use exact URL for both the main URL and the alternate URL for
+  // search term extraction to work in InstantExtended.
+  data.SetURL(instant_url_.spec() + "q={searchTerms}");
   data.instant_url = instant_url_.spec();
+  data.alternate_urls.push_back(instant_url_.spec() + "#q={searchTerms}");
+  data.search_terms_replacement_key = "strk";
 
   TemplateURL* template_url = new TemplateURL(browser()->profile(), data);
   service->Add(template_url);  // Takes ownership of |template_url|.
