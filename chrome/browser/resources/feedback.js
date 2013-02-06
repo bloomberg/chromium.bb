@@ -16,12 +16,26 @@ savedThumbnailIds['current-screenshots'] = '';
 savedThumbnailIds['saved-screenshots'] = '';
 
 var categoryTag = '';
+var filePath = '';
 var forceDisableScreenshots = false;
 
 
 // Globals to manage reading data from the attach a file option.
 var attachFileBinaryData = '';
 var lastReader = null;
+
+/**
+ * Returns the base filename for a given path. Handles only Unix style paths.
+ * @param {string} path The path to return the basename for.
+ * @return {string} Basename for the path.
+ */
+function getBaseName(path) {
+  lastSeparator = path.lastIndexOf('/');
+  if (lastSeparator == -1)
+    return '';
+  else
+    return path.substr(lastSeparator + 1);
+}
 
 /**
  * Selects an image thumbnail in the specified div.
@@ -174,10 +188,15 @@ function sendReport() {
   }
 
   if ($('attach-file-checkbox') &&
-      $('attach-file-checkbox').checked &&
-      attachFileBinaryData) {
-    reportArray = reportArray.concat(
-        [$('attach-file').files[0].name, btoa(attachFileBinaryData)]);
+      $('attach-file-checkbox').checked) {
+    if (attachFileBinaryData) {
+      reportArray = reportArray.concat(
+          [$('attach-file').files[0].name, btoa(attachFileBinaryData)]);
+    }
+  } else if ($('attach-file-custom-checkbox') &&
+             $('attach-file-custom-checkbox').checked) {
+    if (filePath)
+      reportArray = reportArray.concat([filePath, '']);
   }
 
   // open the landing page in a new tab, sendReport will close this one.
@@ -284,6 +303,7 @@ function load() {
     'description': '',
     'categoryTag': '',
     'customPageUrl': '',
+    'filePath': '',
   };
   var queryPos = window.location.hash.indexOf('?');
   if (queryPos !== -1) {
@@ -304,13 +324,37 @@ function load() {
   // If a page url is spcified in the parameters, override the default page url.
   if (parameters['customPageUrl'] != '') {
     $('page-url-text').value = parameters['customPageUrl'];
-    // and disable the page image, since it doesn't make sense on a custum url.
+    // and disable the page image, since it doesn't make sense on a custom url.
     $('screenshot-checkbox').checked = false;
     forceDisableScreenshots = true;
   }
 
   // Pick up the category tag (for most cases this will be an empty string)
   categoryTag = parameters['categoryTag'];
+
+  // Pick up the file path for the attached file (only user for this at the
+  // moment is the quick office extension).
+  filePath = parameters['filePath'];
+
+  if (filePath != '') {
+    var baseName = getBaseName(filePath);
+    if (baseName) {
+      // Don't let the user choose another file, we were invoked by an
+      // extension already providing us the file, this report should only
+      // attach that file, or no file at all.
+      $('attach-file-container').hidden = true;
+
+      // Set our filename and unhide the "Attach this file" span.
+      $('attach-file-custom-name').textContent = baseName;
+      $('attach-file-custom-container').hidden = false;
+      // No screenshots if we're being invoked by an extension - screenshot was
+      // never taken.
+      $('screenshot-checkbox').checked = false;
+      forceDisableScreenshots = true;
+    } else {
+      filePath = '';
+    }
+  }
 
   chrome.send('getDialogDefaults');
   chrome.send('refreshCurrentScreenshot');

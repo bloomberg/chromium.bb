@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
+#include "chrome/browser/feedback/feedback_data.h"
 #include "chrome/browser/feedback/proto/common.pb.h"
 #include "chrome/browser/feedback/proto/dom.pb.h"
 #include "chrome/browser/feedback/proto/extension.pb.h"
@@ -65,29 +67,12 @@ class FeedbackUtil {
   static void SetOSVersion(std::string *os_version);
 
   // Send the feedback report after the specified delay
-  static void DispatchFeedback(Profile* profile, std::string* feedback_data,
+  static void DispatchFeedback(Profile* profile,
+                               std::string* feedback_data,
                                int64 delay);
 
-
   // Generates bug report data.
-  static void SendReport(
-      Profile* profile
-      , const std::string& category_tag
-      , const std::string& page_url_text
-      , const std::string& description
-      , const std::string& user_email_text
-      , ScreenshotDataPtr png_data
-      , int png_width
-      , int png_height
-#if defined(OS_CHROMEOS)
-      , const char* zipped_logs_data
-      , int zipped_logs_length
-      , const chromeos::system::LogDictionaryType* const sys_info
-      , const std::string& timestamp
-      , const std::string& attached_filename
-      , const std::string& attached_filedata
-#endif
-  );
+  static void SendReport(const FeedbackData& data);
   // Redirects the user to Google's phishing reporting page.
   static void ReportPhishing(content::WebContents* current_tab,
                              const std::string& phishing_url);
@@ -106,7 +91,8 @@ class FeedbackUtil {
       const std::string& key, const std::string& value);
 
   // Send the feedback report
-  static void SendFeedback(Profile* profile, std::string* feedback_data,
+  static void SendFeedback(Profile* profile,
+                           std::string* feedback_data,
                            int64 previous_delay);
 
 #if defined(OS_CHROMEOS)

@@ -111,10 +111,45 @@ FeedbackData::FeedbackData()
 {
 }
 
-FeedbackData::~FeedbackData() {}
+FeedbackData::FeedbackData(Profile* profile,
+                           const std::string& category_tag,
+                           const std::string& page_url,
+                           const std::string& description,
+                           const std::string& user_email,
+                           ScreenshotDataPtr image
+#if defined(OS_CHROMEOS)
+                           , chromeos::system::LogDictionaryType* sys_info
+                           , std::string* zip_content
+                           , const std::string& timestamp
+                           , const std::string& attached_filename
+                           , std::string* attached_filedata
+#endif
+                           ) {
+  UpdateData(profile,
+             category_tag,
+             page_url,
+             description,
+             user_email,
+             image
+#if defined(OS_CHROMEOS)
+             , sys_info
+             , true
+             , timestamp
+             , attached_filename
+             , attached_filedata
+#endif
+             );
+#if defined(OS_CHROMEOS)
+  sys_info_ = sys_info;
+  zip_content_ = zip_content;
+#endif
+}
+
+
+FeedbackData::~FeedbackData() {
+}
 
 void FeedbackData::UpdateData(Profile* profile,
-                              const std::string& target_tab_url,
                               const std::string& category_tag,
                               const std::string& page_url,
                               const std::string& description,
@@ -125,12 +160,11 @@ void FeedbackData::UpdateData(Profile* profile,
                               , const bool sent_report
                               , const std::string& timestamp
                               , const std::string& attached_filename
-                              , const std::string& attached_filedata
+                              , std::string* attached_filedata
 #endif
                               ) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_ = profile;
-  target_tab_url_ = target_tab_url;
   category_tag_ = category_tag;
   page_url_ = page_url;
   description_ = description;
@@ -155,37 +189,11 @@ void FeedbackData::SendReport() {
   sent_report_ = true;
 #endif
 
-  gfx::Rect& screen_size = FeedbackUtil::GetScreenshotSize();
-  FeedbackUtil::SendReport(profile_
-                           , category_tag_
-                           , page_url_
-                           , description_
-                           , user_email_
-                           , image_
-                           , screen_size.width()
-                           , screen_size.height()
-#if defined(OS_CHROMEOS)
-                           , zip_content_ ? zip_content_->c_str() : NULL
-                           , zip_content_ ? zip_content_->length() : 0
-                           , send_sys_info_ ? sys_info_ : NULL
-                           , timestamp_
-                           , attached_filename_
-                           , attached_filedata_
-#endif
-                           );
+  FeedbackUtil::SendReport(*this);
 
-#if defined(OS_CHROMEOS)
-  if (sys_info_) {
-    delete sys_info_;
-    sys_info_ = NULL;
-  }
-  if (zip_content_) {
-    delete zip_content_;
-    zip_content_ = NULL;
-  }
-#endif
-
-  // Delete this object once the report has been sent.
+  // Either the report is sent, and and this object may delete itself, or the
+  // report is pending the attached file read, and another FeedbackData has
+  // been created to hold this data - hence delete this object.
   delete this;
 }
 

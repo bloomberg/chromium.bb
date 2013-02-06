@@ -70,7 +70,9 @@
       <div id="current-screenshots" class="thumbnail-list"></div>
     </div>
 <if expr="pp_ifdef('chromeos')">
-    <div>
+    <!-- Attach a file -->
+    <!-- Normal -->
+    <div id="attach-file-container">
       <input id="attach-file-checkbox" type="checkbox">
       <input id="attach-file" type="file">
       <div id="attach-error" class="attach-file-notification"
@@ -78,11 +80,20 @@
       <div id="reading-file" class="attach-file-notification"
           i18n-content="reading-file" hidden></div>
     </div>
+    <!-- Custom -->
+    <div id="attach-file-custom-container" class="input-text-container checkbox"
+      hidden>
+      <label id="attach-file-container-label">
+        <input id="attach-file-custom-checkbox" type="checkbox">
+        <span i18n-content="attach-file-custom-label"></span>
+      </label>
+      <span id="attach-file-custom-name" ></span>
+    </div>
     <div id="attach-file-note" i18n-values=".innerHTML:attach-file-note"></div>
 </if>
     <div id="privacy-note" i18n-values=".innerHTML:privacy-note"></div>
+    <!-- Buttons -->
     <div id="buttons-pane">
-      <!-- Buttons -->
       <input id="send-report-button" type="submit"
           class="feedback-button" i18n-values="value:send-report">
       <input id="cancel-button" type="submit"

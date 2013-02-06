@@ -8098,6 +8098,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         The attached file is uploaded to Google servers for debugging.&lt;br&gt;
         Note: You can attach one file per feedback report (3 MB limit)
       </message>
+      <message name="IDS_FEEDBACK_ATTACH_FILE_LABEL" desc="Text for the label for the attached filename">
+        Attach this file:
+      </message>
       <message name="IDS_FEEDBACK_READING_FILE" desc="Text to display if reading a file when the user clicks the send report button">
         Reading file..
       </message>

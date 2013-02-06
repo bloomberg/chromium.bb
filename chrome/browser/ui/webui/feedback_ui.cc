@@ -319,6 +319,8 @@ content::WebUIDataSource* CreateFeedbackUIHTMLSource(bool successful_init) {
                              IDS_FEEDBACK_CHOOSE_DIFFERENT_SCREENSHOT);
   source->AddLocalizedString("choose-original-screenshot",
                              IDS_FEEDBACK_CHOOSE_ORIGINAL_SCREENSHOT);
+  source->AddLocalizedString("attach-file-custom-label",
+                             IDS_FEEDBACK_ATTACH_FILE_LABEL);
   source->AddLocalizedString("attach-file-note",
                              IDS_FEEDBACK_ATTACH_FILE_NOTE);
   source->AddLocalizedString("attach-file-to-big",
@@ -627,24 +629,30 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
     CancelFeedbackCollection();
 
   std::string attached_filename;
-  std::string attached_filedata;
+  std::string* attached_filedata = NULL;
   // If we have an attached file, we'll still have more data in the list.
   if (i != list_value->end()) {
     (*i++)->GetAsString(&attached_filename);
-    std::string encoded_filedata;
-    (*i++)->GetAsString(&encoded_filedata);
-    if (!base::Base64Decode(
-        base::StringPiece(encoded_filedata), &attached_filedata)) {
-      LOG(ERROR) << "Unable to attach file: " << attached_filename;
-      // Clear the filename so feedback_util doesn't try to attach the file.
-      attached_filename = "";
+    if (FilePath::IsSeparator(attached_filename[0])) {
+      // We have an attached filepath, not filename, hence we need read this
+      // this file in chrome. We won't have any file data, skip over it.
+      i++;
+    } else {
+      std::string encoded_filedata;
+      attached_filedata = new std::string;
+      (*i++)->GetAsString(&encoded_filedata);
+      if (!base::Base64Decode(
+          base::StringPiece(encoded_filedata), attached_filedata)) {
+        LOG(ERROR) << "Unable to attach file: " << attached_filename;
+        // Clear the filename so feedback_util doesn't try to attach the file.
+        attached_filename = "";
+      }
     }
   }
 #endif
 
   // Update the data in feedback_data_ so it can be sent
   feedback_data_->UpdateData(Profile::FromWebUI(web_ui())
-                             , target_tab_url_
                              , std::string()
                              , page_url
                              , description

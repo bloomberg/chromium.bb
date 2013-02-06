@@ -20,12 +20,26 @@ class Profile;
 class FeedbackData {
  public:
   FeedbackData();
+  FeedbackData(Profile* profile,
+               const std::string& category_tag,
+               const std::string& page_url,
+               const std::string& description,
+               const std::string& user_email,
+               ScreenshotDataPtr image
+#if defined(OS_CHROMEOS)
+               , chromeos::system::LogDictionaryType* sys_info
+               , std::string* zip_content
+               , const std::string& timestamp
+               , const std::string& attached_filename
+               , std::string* attached_filedata
+#endif
+               );
+
   ~FeedbackData();
 
   void SendReport();
 
   void UpdateData(Profile* profile,
-                  const std::string& target_tab_url,
                   const std::string& category_tag,
                   const std::string& page_url,
                   const std::string& description,
@@ -36,7 +50,7 @@ class FeedbackData {
                   , const bool sent_report
                   , const std::string& timestamp
                   , const std::string& attached_filename
-                  , const std::string& attached_filedata
+                  , std::string* attached_filedata
 #endif
                   );
 
@@ -45,26 +59,24 @@ class FeedbackData {
                        std::string* zip_content);
 #endif
 
-  const std::string& target_tab_url() const { return target_tab_url_; }
-
+  Profile* profile() const { return profile_; }
   const std::string& category_tag() const { return category_tag_; }
   const std::string& page_url() const { return page_url_; }
   const std::string& description() const { return description_; }
   const std::string& user_email() const { return user_email_; }
   ScreenshotDataPtr image() const { return image_; }
 #if defined(OS_CHROMEOS)
-  chromeos::system::LogDictionaryType* sys_info() const { return sys_info_; }
-  bool send_sys_info() const { return send_sys_info_; }
-  bool sent_report() const { return sent_report_; }
+  chromeos::system::LogDictionaryType* sys_info() const {
+    return send_sys_info_ ? sys_info_ : NULL; }
   std::string* zip_content() const { return zip_content_; }
+  const std::string timestamp() const { return timestamp_; }
+  const std::string attached_filename() const { return attached_filename_; }
+  std::string* attached_filedata() const { return attached_filedata_; }
 #endif
 
 
  private:
   Profile* profile_;
-
-  // Target tab url.
-  std::string target_tab_url_;
 
   std::string category_tag_;
   std::string page_url_;
@@ -73,13 +85,19 @@ class FeedbackData {
   ScreenshotDataPtr image_;
 
 #if defined(OS_CHROMEOS)
-  // Chromeos specific values for SendReport.
+  // Chromeos specific values for SendReport. Will be deleted in
+  // feedback_util::SendReport once consumed or in SyslogsComplete if
+  // we don't send the logs with the report.
   chromeos::system::LogDictionaryType* sys_info_;
-  // Content of the compressed system logs.
+
+  // Content of the compressed system logs. Will be deleted in
+  // feedback_util::SendReport once consumed or in SyslogsComplete if
+  // we don't send the logs with the report.
   std::string* zip_content_;
   std::string timestamp_;
   std::string attached_filename_;
-  std::string attached_filedata_;
+  // Will be deleted in feedback_util::SendReport once consumed.
+  std::string* attached_filedata_;
 
   // NOTE: Extra boolean sent_report_ is required because callback may
   // occur before or after we call SendReport().
