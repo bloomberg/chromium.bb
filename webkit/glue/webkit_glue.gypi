@@ -283,6 +283,8 @@
         'cpp_variant.h',
         'dom_operations.cc',
         'dom_operations.h',
+        'fling_curve_configuration.cc',
+        'fling_curve_configuration.h',
         'fling_animator_impl_android.cc',
         'fling_animator_impl_android.h',
         'ftp_directory_listing_response_delegate.cc',

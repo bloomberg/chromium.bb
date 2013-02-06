@@ -22,12 +22,7 @@ namespace webkit_glue {
 // proportional to the initial velocity.
 class TouchFlingGestureCurve : public WebKit::WebGestureCurve {
  public:
-  static WebGestureCurve* CreateForTouchPad(
-      const WebKit::WebFloatPoint& velocity,
-      const WebKit::WebSize& cumulativeScroll);
-  static WebGestureCurve* CreateForTouchScreen(
-      const WebKit::WebFloatPoint& velocity,
-      const WebKit::WebSize& cumulativeScroll);
+
   WEBKIT_GLUE_EXPORT static WebGestureCurve* Create(
       const WebKit::WebFloatPoint& initial_velocity,
       float p0, float p1, float p2,

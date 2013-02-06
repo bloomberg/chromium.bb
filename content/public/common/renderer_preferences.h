@@ -13,6 +13,7 @@
 #define CONTENT_PUBLIC_COMMON_RENDERER_PREFERENCES_H_
 
 #include <string>
+#include <vector>
 
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -38,6 +39,7 @@ enum RendererPreferencesSubpixelRenderingEnum {
 
 struct CONTENT_EXPORT RendererPreferences {
   RendererPreferences();
+  ~RendererPreferences();
 
   // Whether the renderer's current browser context accept drops from the OS
   // that result in navigations away from the current page.
@@ -118,6 +120,12 @@ struct CONTENT_EXPORT RendererPreferences {
   // names to the browser process. See http://crbug.com/169110 for more
   // information.
   bool report_frame_name_changes;
+
+  // Controls deacceleration of touchpad-initiated flings.
+  std::vector<float> touchpad_fling_profile;
+
+  // Controls deacceleration of touchscreen-initiated flings.
+  std::vector<float> touchscreen_fling_profile;
 };
 
 }  // namespace content

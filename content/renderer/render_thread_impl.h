@@ -305,6 +305,9 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
     return &histogram_customizer_;
   }
 
+  void SetFlingCurveParameters(const std::vector<float>& new_touchpad,
+                               const std::vector<float>& new_touchscreen);
+
  private:
   virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
 

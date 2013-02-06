@@ -24,12 +24,6 @@ namespace {
 
 const char* kCurveName = "TouchFlingGestureCurve";
 
-// The touchscreen-specific parameters listed below are a matched set,
-// and should not be changed independently of one another.
-const float kDefaultAlpha = -5.70762e+03f;
-const float kDefaultBeta= 1.72e+02f;
-const float kDefaultGamma= 3.7e+00f;
-
 inline double position(double t, float* p) {
   return p[0] * exp(-p[2] * t) - p[1] * t - p[0];
 }
@@ -71,24 +65,6 @@ namespace webkit_glue {
 // The curve is modelled as a 4th order polynomial, starting at t = 0,
 // and ending at t = curve_duration_. Attempts to generate
 // position/velocity estimates outside this range are undefined.
-
-WebGestureCurve* TouchFlingGestureCurve::CreateForTouchPad(
-    const WebFloatPoint& velocity,
-    const WebSize& cumulative_scroll) {
-  // The default parameters listed below are a matched set,
-  // and should not be changed independently of one another.
-  return Create(velocity, kDefaultAlpha, kDefaultBeta, kDefaultGamma,
-                cumulative_scroll);
-}
-
-WebGestureCurve* TouchFlingGestureCurve::CreateForTouchScreen(
-    const WebFloatPoint& velocity,
-    const WebSize& cumulative_scroll) {
-  // The touchscreen-specific parameters listed below are a matched set,
-  // and should not be changed independently of one another.
-  return Create(velocity, kDefaultAlpha, kDefaultBeta, kDefaultGamma,
-                cumulative_scroll);
-}
 
 WebGestureCurve* TouchFlingGestureCurve::Create(
     const WebFloatPoint& initial_velocity,

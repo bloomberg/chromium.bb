@@ -43,6 +43,7 @@
 #include "ui/base/layout.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
+#include "webkit/glue/fling_curve_configuration.h"
 #include "webkit/glue/touch_fling_gesture_curve.h"
 #include "webkit/glue/web_discardable_memory_impl.h"
 #include "webkit/glue/webkit_glue.h"
@@ -361,10 +362,17 @@ WebKitPlatformSupportImpl::WebKitPlatformSupportImpl()
       shared_timer_fire_time_(0.0),
       shared_timer_suspended_(0),
       current_thread_slot_(&DestroyCurrentThread),
-      compositor_support_(new webkit::WebCompositorSupportImpl) {
+      compositor_support_(new webkit::WebCompositorSupportImpl),
+      fling_curve_configuration_(new FlingCurveConfiguration) {
 }
 
 WebKitPlatformSupportImpl::~WebKitPlatformSupportImpl() {
+}
+
+void WebKitPlatformSupportImpl::SetFlingCurveParameters(
+    const std::vector<float>& new_touchpad,
+    const std::vector<float>& new_touchscreen) {
+  fling_curve_configuration_->SetCurveParameters(new_touchpad, new_touchscreen);
 }
 
 WebThemeEngine* WebKitPlatformSupportImpl::themeEngine() {
@@ -905,10 +913,11 @@ WebKit::WebGestureCurve* WebKitPlatformSupportImpl::createFlingAnimationCurve(
 #endif
 
   if (device_source == WebKit::WebGestureEvent::Touchscreen)
-    return TouchFlingGestureCurve::CreateForTouchScreen(velocity,
-                                                        cumulative_scroll);
+    return fling_curve_configuration_->CreateForTouchScreen(velocity,
+                                                            cumulative_scroll);
 
-  return TouchFlingGestureCurve::CreateForTouchPad(velocity, cumulative_scroll);
+  return fling_curve_configuration_->CreateForTouchPad(velocity,
+                                                       cumulative_scroll);
 }
 
 WebKit::WebDiscardableMemory*
@@ -921,5 +930,6 @@ WebKit::WebDiscardableMemory*
     return discardable.release();
   return NULL;
 }
+
 
 }  // namespace webkit_glue
