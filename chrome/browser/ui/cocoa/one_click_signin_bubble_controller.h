@@ -2,28 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_ONE_CLICK_SIGNIN_DIALOG_CONTROLLER_H_
-#define CHROME_BROWSER_UI_COCOA_ONE_CLICK_SIGNIN_DIALOG_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_COCOA_ONE_CLICK_SIGNIN_BUBBLE_CONTROLLER_H_
+#define CHROME_BROWSER_UI_COCOA_ONE_CLICK_SIGNIN_BUBBLE_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/callback.h"
+#include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 
 @class BrowserWindowController;
+@class OneClickSigninViewController;
 
 // Displays the one-click signin confirmation bubble (after syncing
 // has started).
 @interface OneClickSigninBubbleController : BaseBubbleController {
- @private
-  IBOutlet NSTextField* messageField_;
-  IBOutlet NSButton* advancedLink_;
-
-  // TODO(akalin): Make sure this callback is called only once, like on
-  // other platforms.
-  BrowserWindow::StartSyncCallback start_sync_callback_;
+  scoped_nsobject<OneClickSigninViewController> viewController_;
 }
+
+@property(readonly, nonatomic) OneClickSigninViewController* viewController;
 
 // Initializes with a browser window controller, under whose wrench
 // menu this bubble will be displayed, and callbacks which are called
@@ -32,18 +30,9 @@
 // The bubble is not automatically displayed; call showWindow:id to
 // display.  The bubble is auto-released on close.
 - (id)initWithBrowserWindowController:(BrowserWindowController*)controller
-                  start_sync_callback:
-                      (const BrowserWindow::StartSyncCallback&)
-                          start_sync_callback;
-
-// Starts sync and closes the bubble.
-- (IBAction)ok:(id)sender;
-
-- (IBAction)onClickUndo:(id)sender;
-
-// Calls |advancedCallback_|.
-- (IBAction)onClickAdvancedLink:(id)sender;
+                             callback:(const BrowserWindow::StartSyncCallback&)
+                                          syncCallback;
 
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_ONE_CLICK_SIGNIN_DIALOG_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_COCOA_ONE_CLICK_SIGNIN_BUBBLE_CONTROLLER_H_

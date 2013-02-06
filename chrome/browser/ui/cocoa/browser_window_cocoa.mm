@@ -59,6 +59,7 @@
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
 #import "chrome/browser/ui/cocoa/one_click_signin_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/one_click_signin_dialog_controller.h"
 #endif
 
 using content::NativeWebKeyboardEvent;
@@ -480,11 +481,18 @@ void BrowserWindowCocoa::ShowChromeToMobileBubble() {
 void BrowserWindowCocoa::ShowOneClickSigninBubble(
     OneClickSigninBubbleType type,
     const StartSyncCallback& start_sync_callback) {
-  OneClickSigninBubbleController* bubble_controller =
-      [[OneClickSigninBubbleController alloc]
-        initWithBrowserWindowController:cocoa_controller()
-                    start_sync_callback:start_sync_callback];
-  [bubble_controller showWindow:nil];
+  if (type == ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE) {
+    scoped_nsobject<OneClickSigninBubbleController> bubble_controller(
+        [[OneClickSigninBubbleController alloc]
+            initWithBrowserWindowController:cocoa_controller()
+                                   callback:start_sync_callback]);
+    [bubble_controller showWindow:nil];
+  } else {
+    WebContents* web_contents =
+        browser_->tab_strip_model()->GetActiveWebContents();
+    // Deletes itself when the dialog closes.
+    new OneClickSigninDialogController(web_contents, start_sync_callback);
+  }
 }
 #endif
 
