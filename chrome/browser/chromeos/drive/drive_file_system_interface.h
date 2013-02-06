@@ -248,14 +248,11 @@ class DriveFileSystemInterface {
   // system in order to be retrieved. If the file is not cached, the file
   // will be downloaded through GData API or Drive V2 API.
   //
-  // Can be called from UI/IO thread. |get_file_callback| and
-  // |get_content_callback| are run on the calling thread.
-  // |get_file_callback| must not be null.
-  // |get_content_callback| may be null.
-  virtual void GetFileByPath(
-      const FilePath& file_path,
-      const GetFileCallback& get_file_callback,
-      const google_apis::GetContentCallback& get_content_callback) = 0;
+  // Can be called from UI/IO thread.
+  // |callback| is run on the calling thread.
+  // |callback| must not be null.
+  virtual void GetFileByPath(const FilePath& file_path,
+                             const GetFileCallback& callback) = 0;
 
   // Gets a file by the given |resource_id| from the Drive server. Used for
   // fetching pinned-but-not-fetched files.

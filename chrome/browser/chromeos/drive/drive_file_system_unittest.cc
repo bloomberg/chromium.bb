@@ -1822,8 +1822,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
   file_system_->GetFileByPath(
       file_in_root,
       base::Bind(&test_util::CopyResultsFromGetFileCallback,
-                 &error, &file_path, &file_type),
-      google_apis::GetContentCallback());
+                 &error, &file_path, &file_type));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(DRIVE_FILE_OK, error);
@@ -1849,8 +1848,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
   file_system_->GetFileByPath(
       file_in_root,
       base::Bind(&test_util::CopyResultsFromGetFileCallback,
-                 &error, &file_path, &file_type),
-      google_apis::GetContentCallback());
+                 &error, &file_path, &file_type));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(DRIVE_FILE_ERROR_NO_SPACE, error);
@@ -1901,8 +1899,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   file_system_->GetFileByPath(
       file_in_root,
       base::Bind(&test_util::CopyResultsFromGetFileCallback,
-                 &error, &file_path, &file_type),
-      google_apis::GetContentCallback());
+                 &error, &file_path, &file_type));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(DRIVE_FILE_OK, error);
@@ -1940,8 +1937,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
   file_system_->GetFileByPath(
       file_in_root,
       base::Bind(&test_util::CopyResultsFromGetFileCallback,
-                 &error, &file_path, &file_type),
-      google_apis::GetContentCallback());
+                 &error, &file_path, &file_type));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(DRIVE_FILE_ERROR_NO_SPACE, error);
@@ -1973,8 +1969,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
   file_system_->GetFileByPath(
       file_in_root,
       base::Bind(&test_util::CopyResultsFromGetFileCallback,
-                 &error, &file_path, &file_type),
-      google_apis::GetContentCallback());
+                 &error, &file_path, &file_type));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(REGULAR_FILE, file_type);
@@ -1995,8 +1990,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_HostedDocument) {
   file_system_->GetFileByPath(
       file_in_root,
       base::Bind(&test_util::CopyResultsFromGetFileCallback,
-                 &error, &file_path, &file_type),
-      google_apis::GetContentCallback());
+                 &error, &file_path, &file_type));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(HOSTED_DOCUMENT, file_type);

@@ -124,8 +124,7 @@ void CopyOperation::TransferFileFromRemoteToLocal(
       base::Bind(&CopyOperation::OnGetFileCompleteForTransferFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  local_dest_file_path,
-                 callback),
-      google_apis::GetContentCallback());
+                 callback));
 }
 
 void CopyOperation::OnGetFileCompleteForTransferFile(
@@ -308,8 +307,7 @@ void CopyOperation::CopyAfterGetEntryInfoPair(
       base::Bind(&CopyOperation::OnGetFileCompleteForCopy,
                  weak_ptr_factory_.GetWeakPtr(),
                  dest_file_path,
-                 callback),
-      google_apis::GetContentCallback());
+                 callback));
 }
 
 void CopyOperation::OnGetFileCompleteForCopy(

@@ -109,10 +109,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void CreateFile(const FilePath& file_path,
                           bool is_exclusive,
                           const FileOperationCallback& callback) OVERRIDE;
-  virtual void GetFileByPath(
-      const FilePath& file_path,
-      const GetFileCallback& get_file_callback,
-      const google_apis::GetContentCallback& get_content_callback) OVERRIDE;
+  virtual void GetFileByPath(const FilePath& file_path,
+                             const GetFileCallback& callback) OVERRIDE;
   virtual void GetFileByResourceId(
       const std::string& resource_id,
       const GetFileCallback& get_file_callback,
@@ -278,12 +276,10 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Invoked upon completion of GetEntryInfoByPath initiated by
   // GetFileByPath. It then continues to invoke GetResolvedFileByPath.
-  // |get_file_callback| must not be null.
-  // |get_content_callback| may be null.
+  // |callback| must not be null.
   void OnGetEntryInfoCompleteForGetFileByPath(
       const FilePath& file_path,
-      const GetFileCallback& get_file_callback,
-      const google_apis::GetContentCallback& get_content_callback,
+      const GetFileCallback& callback,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> file_info);
 
@@ -524,10 +520,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void CreateFileOnUIThread(const FilePath& file_path,
                             bool is_exclusive,
                             const FileOperationCallback& callback);
-  void GetFileByPathOnUIThread(
-      const FilePath& file_path,
-      const GetFileCallback& get_file_callback,
-      const google_apis::GetContentCallback& get_content_callback);
+  void GetFileByPathOnUIThread(const FilePath& file_path,
+                               const GetFileCallback& callback);
   void GetFileByResourceIdOnUIThread(
       const std::string& resource_id,
       const GetFileCallback& get_file_callback,

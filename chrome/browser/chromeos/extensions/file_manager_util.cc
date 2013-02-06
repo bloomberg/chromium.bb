@@ -900,8 +900,7 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
         return false;
       system_service->file_system()->GetFileByPath(
           drive::util::ExtractDrivePath(path),
-          base::Bind(&OnCRXDownloadCallback, browser),
-          google_apis::GetContentCallback());
+          base::Bind(&OnCRXDownloadCallback, browser));
     } else {
       InstallCRX(browser, path);
     }

@@ -2705,8 +2705,7 @@ void GetDriveFilesFunction::GetFileOrSendResponse() {
 
   system_service->file_system()->GetFileByPath(
       drive_path,
-      base::Bind(&GetDriveFilesFunction::OnFileReady, this),
-      google_apis::GetContentCallback());
+      base::Bind(&GetDriveFilesFunction::OnFileReady, this));
 }
 
 

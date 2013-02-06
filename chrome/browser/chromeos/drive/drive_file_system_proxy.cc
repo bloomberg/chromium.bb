@@ -496,8 +496,7 @@ void DriveFileSystemProxy::OpenFile(
                                   base::Bind(&OnGetFileByPathForOpen,
                                              callback,
                                              file_flags,
-                                             peer_handle),
-                                  google_apis::GetContentCallback());
+                                             peer_handle));
     }
   } else if ((file_flags & base::PLATFORM_FILE_CREATE) ||
              (file_flags & base::PLATFORM_FILE_CREATE_ALWAYS)) {
@@ -588,8 +587,7 @@ void DriveFileSystemProxy::OnGetEntryInfoByPath(
   file_system_->GetFileByPath(entry_path,
                               base::Bind(&CallSnapshotFileCallback,
                                          callback,
-                                         file_info),
-                              google_apis::GetContentCallback());
+                                         file_info));
 }
 
 void DriveFileSystemProxy::CreateWritableSnapshotFile(
