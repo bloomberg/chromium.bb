@@ -49,7 +49,7 @@ class MyChannelDescriptorListener : public IPC::Listener {
       : expected_inode_num_(expected_inode_num),
         num_fds_received_(0) {}
 
-  virtual bool OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     PickleIterator iter(message);
 
     ++num_fds_received_;
@@ -64,7 +64,7 @@ class MyChannelDescriptorListener : public IPC::Listener {
     return true;
   }
 
-  virtual void OnChannelError() {
+  virtual void OnChannelError() OVERRIDE {
     MessageLoop::current()->Quit();
   }
 

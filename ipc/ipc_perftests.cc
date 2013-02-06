@@ -86,7 +86,7 @@ class ChannelReflectorListener : public IPC::Listener {
     VLOG(1) << "Client listener up";
   }
 
-  ~ChannelReflectorListener() {
+  virtual ~ChannelReflectorListener() {
     VLOG(1) << "Client listener down";
     latency_tracker_.ShowResults();
   }
@@ -96,7 +96,7 @@ class ChannelReflectorListener : public IPC::Listener {
     channel_ = channel;
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     CHECK(channel_);
 
     PickleIterator iter(message);
@@ -146,7 +146,7 @@ class PerformanceChannelListener : public IPC::Listener {
     VLOG(1) << "Server listener up";
   }
 
-  ~PerformanceChannelListener() {
+  virtual ~PerformanceChannelListener() {
     VLOG(1) << "Server listener down";
   }
 
@@ -164,7 +164,7 @@ class PerformanceChannelListener : public IPC::Listener {
     payload_ = std::string(msg_size_, 'a');
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     CHECK(channel_);
 
     PickleIterator iter(message);
