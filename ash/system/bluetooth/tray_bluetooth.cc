@@ -115,7 +115,7 @@ class BluetoothDetailedView : public TrayDetailsView,
   void BluetoothStopDiscovering() {
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->system_tray_delegate();
-    if (bluetooth_discovering_) {
+    if (delegate && bluetooth_discovering_) {
       bluetooth_discovering_ = false;
       delegate->BluetoothStopDiscovering();
       throbber_->Stop();
