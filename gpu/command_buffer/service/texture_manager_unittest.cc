@@ -34,11 +34,11 @@ class TextureManagerTest : public testing::Test {
       : feature_info_(new FeatureInfo()) {
   }
 
-  ~TextureManagerTest() {
+  virtual ~TextureManagerTest() {
   }
 
  protected:
-  void SetUp() {
+  virtual void SetUp() {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::GLInterface::SetGLInterface(gl_.get());
 
@@ -345,7 +345,7 @@ class TextureInfoTestBase : public testing::Test {
   TextureInfoTestBase()
       : feature_info_(new FeatureInfo()) {
   }
-  ~TextureInfoTestBase() {
+  virtual ~TextureInfoTestBase() {
     info_ = NULL;
   }
 

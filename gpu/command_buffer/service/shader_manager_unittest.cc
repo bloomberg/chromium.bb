@@ -20,7 +20,7 @@ class ShaderManagerTest : public testing::Test {
   ShaderManagerTest() {
   }
 
-  ~ShaderManagerTest() {
+  virtual ~ShaderManagerTest() {
     manager_.Destroy(false);
   }
 

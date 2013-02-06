@@ -23,7 +23,7 @@ class VertexAttribManagerTest : public testing::Test {
   VertexAttribManagerTest() {
   }
 
-  ~VertexAttribManagerTest() {
+  virtual ~VertexAttribManagerTest() {
   }
 
  protected:

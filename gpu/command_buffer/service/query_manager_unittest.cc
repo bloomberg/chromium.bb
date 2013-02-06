@@ -32,7 +32,7 @@ class QueryManagerTest : public testing::Test {
 
   QueryManagerTest() {
   }
-  ~QueryManagerTest() {
+  virtual ~QueryManagerTest() {
   }
 
  protected:

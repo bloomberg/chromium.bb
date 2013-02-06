@@ -51,15 +51,15 @@ TEST(CommonDecoderBucket, SetData) {
 class TestCommonDecoder : public CommonDecoder {
  public:
   // Overridden from AsyncAPIInterface
-  const char* GetCommandName(unsigned int command_id) const {
+  virtual const char* GetCommandName(unsigned int command_id) const OVERRIDE {
     return GetCommonCommandName(static_cast<cmd::CommandId>(command_id));
   }
 
   // Overridden from AsyncAPIInterface
-  error::Error DoCommand(
+  virtual error::Error DoCommand(
       unsigned int command,
       unsigned int arg_count,
-      const void* cmd_data) {
+      const void* cmd_data) OVERRIDE {
     return DoCommonCommand(command, arg_count, cmd_data);
   }
 
@@ -84,7 +84,7 @@ class MockCommandBufferEngine : public CommandBufferEngine {
   }
 
   // Overridden from CommandBufferEngine.
-  virtual Buffer GetSharedMemoryBuffer(int32 shm_id) {
+  virtual Buffer GetSharedMemoryBuffer(int32 shm_id) OVERRIDE {
     Buffer buffer;
     if (IsValidSharedMemoryId(shm_id)) {
       buffer.ptr = buffer_;
@@ -107,7 +107,7 @@ class MockCommandBufferEngine : public CommandBufferEngine {
   }
 
   // Overridden from CommandBufferEngine.
-  virtual void set_token(int32 token) {
+  virtual void set_token(int32 token) OVERRIDE {
     token_ = token;
   }
 
@@ -116,13 +116,13 @@ class MockCommandBufferEngine : public CommandBufferEngine {
   }
 
   // Overridden from CommandBufferEngine.
-  virtual bool SetGetBuffer(int32 transfer_buffer_id) {
+  virtual bool SetGetBuffer(int32 transfer_buffer_id) OVERRIDE {
     NOTREACHED();
     return false;
   }
 
   // Overridden from CommandBufferEngine.
-  virtual bool SetGetOffset(int32 offset) {
+  virtual bool SetGetOffset(int32 offset) OVERRIDE {
     if (static_cast<size_t>(offset) < kBufferSize) {
       get_offset_ = offset;
       return true;
@@ -131,7 +131,7 @@ class MockCommandBufferEngine : public CommandBufferEngine {
   }
 
   // Overridden from CommandBufferEngine.
-  virtual int32 GetGetOffset() {
+  virtual int32 GetGetOffset() OVERRIDE {
     return get_offset_;
   }
 

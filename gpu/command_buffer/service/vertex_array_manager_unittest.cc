@@ -24,7 +24,7 @@ class VertexArrayManagerTest : public testing::Test {
   VertexArrayManagerTest() {
   }
 
-  ~VertexArrayManagerTest() {
+  virtual ~VertexArrayManagerTest() {
   }
 
  protected:

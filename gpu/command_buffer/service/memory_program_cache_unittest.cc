@@ -75,7 +75,7 @@ class MemoryProgramCacheTest : public testing::Test {
       : cache_(new MemoryProgramCache(kCacheSizeBytes)),
         vertex_shader_(NULL),
         fragment_shader_(NULL) { }
-  ~MemoryProgramCacheTest() {
+  virtual ~MemoryProgramCacheTest() {
     shader_manager_.Destroy(false);
   }
 

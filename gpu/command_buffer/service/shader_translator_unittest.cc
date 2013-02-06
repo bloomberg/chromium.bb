@@ -13,7 +13,7 @@ class ShaderTranslatorTest : public testing::Test {
   ShaderTranslatorTest() {
   }
 
-  ~ShaderTranslatorTest() {
+  virtual ~ShaderTranslatorTest() {
   }
 
  protected:

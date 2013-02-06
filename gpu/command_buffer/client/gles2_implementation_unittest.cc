@@ -114,7 +114,7 @@ class MockTransferBuffer : public TransferBufferInterface {
 
   virtual ~MockTransferBuffer() { }
 
-  bool Initialize(
+  virtual bool Initialize(
       unsigned int starting_buffer_size,
       unsigned int result_size,
       unsigned int /* min_buffer_size */,

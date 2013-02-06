@@ -37,7 +37,7 @@ namespace gles2 {
 class ProgramManagerTest : public testing::Test {
  public:
   ProgramManagerTest() : manager_(NULL) { }
-  ~ProgramManagerTest() {
+  virtual ~ProgramManagerTest() {
     manager_.Destroy(false);
   }
 
@@ -138,7 +138,7 @@ class ProgramManagerWithShaderTest : public testing::Test {
       :  manager_(NULL), program_info_(NULL) {
   }
 
-  ~ProgramManagerWithShaderTest() {
+  virtual ~ProgramManagerWithShaderTest() {
     manager_.Destroy(false);
     shader_manager_.Destroy(false);
   }
@@ -1165,7 +1165,7 @@ class ProgramManagerWithCacheTest : public testing::Test {
         fragment_shader_(NULL),
         program_info_(NULL) {
   }
-  ~ProgramManagerWithCacheTest() {
+  virtual ~ProgramManagerWithCacheTest() {
     manager_.Destroy(false);
     shader_manager_.Destroy(false);
   }

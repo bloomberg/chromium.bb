@@ -26,7 +26,7 @@ class FramebufferManagerTest : public testing::Test {
         renderbuffer_manager_(NULL, kMaxRenderbufferSize, kMaxSamples) {
 
   }
-  ~FramebufferManagerTest() {
+  virtual ~FramebufferManagerTest() {
     manager_.Destroy(false);
     texture_manager_.Destroy(false);
     renderbuffer_manager_.Destroy(false);
@@ -119,7 +119,7 @@ class FramebufferInfoTest : public testing::Test {
           NULL, new FeatureInfo(), kMaxTextureSize, kMaxCubemapSize),
         renderbuffer_manager_(NULL, kMaxRenderbufferSize, kMaxSamples) {
   }
-  ~FramebufferInfoTest() {
+  virtual ~FramebufferInfoTest() {
     manager_.Destroy(false);
     texture_manager_.Destroy(false);
     renderbuffer_manager_.Destroy(false);
