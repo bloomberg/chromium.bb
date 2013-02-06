@@ -574,11 +574,11 @@ TEST_F(ProxyResolverV8TracingTest, InfiniteDNSSequence2) {
   EXPECT_EQ(1u, request_log.GetSize());
 }
 
-// Tests a PAC script which does DNS resolves during initialization.
-TEST_F(ProxyResolverV8TracingTest, DnsDuringInit) {
+void DnsDuringInitHelper(bool synchronous_host_resolver) {
   CapturingNetLog log;
   CapturingBoundNetLog request_log;
   MockCachingHostResolver host_resolver;
+  host_resolver.set_synchronous_mode(synchronous_host_resolver);
   MockErrorObserver* error_observer = new MockErrorObserver;
   ProxyResolverV8Tracing resolver(&host_resolver, error_observer, &log);
 
@@ -627,6 +627,14 @@ TEST_F(ProxyResolverV8TracingTest, DnsDuringInit) {
 
   EXPECT_EQ("{\"message\":\"Watsup\"}", entries[0].GetParamsJson());
   EXPECT_EQ("{\"message\":\"Watsup2\"}", entries[1].GetParamsJson());
+}
+
+// Tests a PAC script which does DNS resolves during initialization.
+TEST_F(ProxyResolverV8TracingTest, DnsDuringInit) {
+  // Test with both both a host resolver that always completes asynchronously,
+  // and then again with one that completes synchronously.
+  DnsDuringInitHelper(false);
+  DnsDuringInitHelper(true);
 }
 
 void CrashCallback(int) {
