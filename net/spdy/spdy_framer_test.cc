@@ -6,6 +6,7 @@
 #include <iostream>
 #include <limits>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
@@ -307,7 +308,8 @@ void CompareCharArraysWithHexError(
       << HexDumpWithMarks(actual, actual_len, marks.get(), max_len);
 }
 
-class TestSpdyVisitor : public SpdyFramerVisitorInterface  {
+class TestSpdyVisitor : public SpdyFramerVisitorInterface,
+                        public SpdyFramerDebugVisitorInterface {
  public:
   static const size_t kDefaultHeaderBufferSize = 16 * 1024;
   static const size_t kDefaultCredentialBufferSize = 16 * 1024;
@@ -329,6 +331,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface  {
       control_frame_header_data_count_(0),
       zero_length_control_frame_header_data_count_(0),
       data_frame_count_(0),
+      last_decompressed_size_(0),
+      last_compressed_size_(0),
       header_buffer_(new char[kDefaultHeaderBufferSize]),
       header_buffer_length_(0),
       header_buffer_size_(kDefaultHeaderBufferSize),
@@ -474,6 +478,12 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface  {
     return true;
   }
 
+  virtual void OnCompressedHeaderBlock(size_t decompressed_size,
+                                       size_t compressed_size) OVERRIDE {
+    last_decompressed_size_ = decompressed_size;
+    last_compressed_size_ = compressed_size;
+  }
+
   // Convenience function which runs a framer simulation with particular input.
   void SimulateInFramer(const unsigned char* input, size_t size) {
     framer_.set_enable_compression(use_compression_);
@@ -541,6 +551,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface  {
   // The count of zero-length control frame header data chunks received.
   int zero_length_control_frame_header_data_count_;
   int data_frame_count_;
+  size_t last_decompressed_size_;
+  size_t last_compressed_size_;
 
   // Header block streaming state:
   scoped_array<char> header_buffer_;
@@ -902,7 +914,9 @@ TEST_P(SpdyFramerTest, BasicCompression) {
   headers["content-type"] = "text/html";
   headers["content-length"] = "12";
 
+  TestSpdyVisitor visitor(spdy_version_);
   SpdyFramer framer(spdy_version_);
+  framer.set_debug_visitor(&visitor);
   framer.set_enable_compression(true);
   scoped_ptr<SpdySynStreamControlFrame> frame1(
       framer.CreateSynStream(1,  // stream id
@@ -912,6 +926,21 @@ TEST_P(SpdyFramerTest, BasicCompression) {
                              CONTROL_FLAG_NONE,
                              true,  // compress
                              &headers));
+  if (IsSpdy2()) {
+    EXPECT_EQ(139u, visitor.last_decompressed_size_);
+#if defined(USE_SYSTEM_ZLIB)
+    EXPECT_EQ(93u, visitor.last_compressed_size_);
+#else  // !defined(USE_SYSTEM_ZLIB)
+    EXPECT_EQ(135u, visitor.last_compressed_size_);
+#endif  // !defined(USE_SYSTEM_ZLIB)
+  } else {
+    EXPECT_EQ(165u, visitor.last_decompressed_size_);
+#if defined(USE_SYSTEM_ZLIB)
+    EXPECT_EQ(72u, visitor.last_compressed_size_);
+#else  // !defined(USE_SYSTEM_ZLIB)
+    EXPECT_EQ(117u, visitor.last_compressed_size_);
+#endif  // !defined(USE_SYSTEM_ZLIB)
+  }
   scoped_ptr<SpdySynStreamControlFrame> frame2(
       framer.CreateSynStream(1,  // stream id
                              0,  // associated stream id

@@ -214,6 +214,22 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
       const SpdyControlFrame& compressed_frame) = 0;
 };
 
+// Optionally, and in addition to SpdyFramerVisitorInterface, a class supporting
+// SpdyFramerDebugVisitorInterface may be used in conjunction with SpdyFramer in
+// order to extract debug/internal information about the SpdyFramer as it
+// operates.
+//
+// Most SPDY implementations need not bother with this interface at all.
+class SpdyFramerDebugVisitorInterface {
+ public:
+  virtual ~SpdyFramerDebugVisitorInterface() {}
+
+  // Called after compressing header blocks.
+  // Provides decompressed and compressed sizes.
+  virtual void OnCompressedHeaderBlock(size_t decompressed_len,
+                                       size_t compressed_len) {}
+};
+
 class NET_EXPORT_PRIVATE SpdyFramer {
  public:
   // SPDY states.
@@ -282,6 +298,13 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // will be used.
   void set_visitor(SpdyFramerVisitorInterface* visitor) {
     visitor_ = visitor;
+  }
+
+  // Set debug callbacks to be called from the framer. The debug visitor is
+  // completely optional and need not be set in order for normal operation.
+  // If this is called multiple times, only the last visitor will be used.
+  void set_debug_visitor(SpdyFramerDebugVisitorInterface* debug_visitor) {
+    debug_visitor_ = debug_visitor;
   }
 
   // Pass data into the framer for parsing.
@@ -579,6 +602,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   scoped_ptr<z_stream> header_decompressor_;
 
   SpdyFramerVisitorInterface* visitor_;
+  SpdyFramerDebugVisitorInterface* debug_visitor_;
 
   std::string display_protocol_;
 

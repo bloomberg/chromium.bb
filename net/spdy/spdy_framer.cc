@@ -123,6 +123,7 @@ SpdyFramer::SpdyFramer(int version)
       current_frame_len_(0),
       enable_compression_(true),
       visitor_(NULL),
+      debug_visitor_(NULL),
       display_protocol_("SPDY"),
       spdy_version_(version),
       syn_frame_processed_(false),
@@ -1675,6 +1676,10 @@ SpdyControlFrame* SpdyFramer::CompressControlFrame(
 
   if (visitor_)
     visitor_->OnControlFrameCompressed(frame, *new_frame);
+
+  if (debug_visitor_ != NULL) {
+    debug_visitor_->OnCompressedHeaderBlock(payload_length, compressed_size);
+  }
 
   return new_frame.release();
 }
