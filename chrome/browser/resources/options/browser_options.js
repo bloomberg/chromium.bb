@@ -1150,10 +1150,12 @@ cr.define('options', function() {
      * Set the enabled state for the proxy settings button.
      * @private
      */
-    setupProxySettingsSection_: function(disabled, label) {
+    setupProxySettingsSection_: function(disabled, extensionControlled) {
       if (!cr.isChromeOS) {
         $('proxiesConfigureButton').disabled = disabled;
-        $('proxiesLabel').textContent = label;
+        $('proxiesLabel').textContent =
+            loadTimeData.getString(extensionControlled ?
+                'proxiesLabelExtension' : 'proxiesLabelSystem');
       }
     },
 

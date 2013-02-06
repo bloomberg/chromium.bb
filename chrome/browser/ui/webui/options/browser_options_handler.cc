@@ -241,7 +241,9 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 #if defined(ENABLE_SETTINGS_APP)
     { "profilesAppListSwitch", IDS_SETTINGS_APP_PROFILES_SWITCH_BUTTON_LABEL },
 #endif
-    { "proxiesLabel", IDS_OPTIONS_PROXIES_LABEL },
+    { "proxiesLabelExtension", IDS_OPTIONS_EXTENSION_PROXIES_LABEL },
+    { "proxiesLabelSystem", IDS_OPTIONS_SYSTEM_PROXIES_LABEL,
+      IDS_PRODUCT_NAME },
     { "safeBrowsingEnableProtection",
       IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION },
     { "sectionTitleAppearance", IDS_APPEARANCE_GROUP_NAME },
@@ -371,6 +373,8 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "profilesSingleUser", IDS_PROFILES_SINGLE_USER_MESSAGE,
       IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME },
     { "languageSectionLabel", IDS_OPTIONS_ADVANCED_LANGUAGE_LABEL,
+      IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME },
+    { "proxiesLabelSystem", IDS_OPTIONS_SYSTEM_PROXIES_LABEL,
       IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME },
   };
   DictionaryValue* app_values = NULL;
@@ -1404,19 +1408,10 @@ void BrowserOptionsHandler::SetupProxySettingsSection() {
 
   base::FundamentalValue disabled(proxy_prefs_.IsManaged() ||
                                   is_extension_controlled);
+  base::FundamentalValue extension_controlled(is_extension_controlled);
+  web_ui()->CallJavascriptFunction("BrowserOptions.setupProxySettingsSection",
+                                   disabled, extension_controlled);
 
-  // Get the appropriate info string to describe the button.
-  string16 label_str;
-  if (is_extension_controlled) {
-    label_str = l10n_util::GetStringUTF16(IDS_OPTIONS_EXTENSION_PROXIES_LABEL);
-  } else {
-    label_str = l10n_util::GetStringFUTF16(IDS_OPTIONS_SYSTEM_PROXIES_LABEL,
-        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  }
-  StringValue label(label_str);
-
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setupProxySettingsSection", disabled, label);
 #endif  // !defined(OS_CHROMEOS)
 }
 
