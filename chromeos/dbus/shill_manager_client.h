@@ -117,7 +117,7 @@ class CHROMEOS_EXPORT ShillManagerClient {
   // Calls ConfigureService method.
   // |callback| is called after the method call succeeds.
   virtual void ConfigureService(const base::DictionaryValue& properties,
-                                const base::Closure& callback,
+                                const ObjectPathCallback& callback,
                                 const ErrorCallback& error_callback) = 0;
 
   // Calls GetService method.

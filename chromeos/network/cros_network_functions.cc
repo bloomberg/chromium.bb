@@ -145,6 +145,9 @@ bool GetTimeProperty(const base::DictionaryValue& dictionary,
 // Does nothing. Used as a callback.
 void DoNothingWithCallStatus(DBusMethodCallStatus call_status) {}
 
+// Does nothing. Used as a callback.
+void DoNothingWithObjectPath(const dbus::ObjectPath& object_path) {}
+
 // Ignores errors.
 void IgnoreErrors(const std::string& error_name,
                   const std::string& error_message) {}
@@ -492,10 +495,10 @@ void CrosRequestVirtualNetworkProperties(
       flimflam::kVPNDomainProperty,
       new base::StringValue(service_name));
 
-  // shill.Manger.GetService() will apply the property changes in
+  // shill.Manger.ConfigureService() will apply the property changes in
   // |properties| and pass a new or existing service to OnGetService().
   // OnGetService will then call GetProperties which will then call callback.
-  DBusThreadManager::Get()->GetShillManagerClient()->GetService(
+  DBusThreadManager::Get()->GetShillManagerClient()->ConfigureService(
       properties, base::Bind(&OnGetService, callback),
       base::Bind(&IgnoreErrors));
 }
@@ -651,7 +654,7 @@ void CrosRequestIPConfigRefresh(const std::string& ipconfig_path) {
 
 void CrosConfigureService(const base::DictionaryValue& properties) {
   DBusThreadManager::Get()->GetShillManagerClient()->ConfigureService(
-      properties, base::Bind(&DoNothing),
+      properties, base::Bind(&DoNothingWithObjectPath),
       base::Bind(&IgnoreErrors));
 }
 

@@ -99,6 +99,11 @@ void RunCreateNetworkCallback(
   callback.Run(service_path.value());
 }
 
+void IgnoreObjectPathCallback(const base::Closure& callback,
+                              const dbus::ObjectPath& object_path) {
+  callback.Run();
+}
+
 }  // namespace
 
 NetworkConfigurationHandler::NetworkConfigurationHandler() {
@@ -146,7 +151,7 @@ void NetworkConfigurationHandler::SetProperties(
     const network_handler::ErrorCallback& error_callback) const {
   DBusThreadManager::Get()->GetShillManagerClient()->ConfigureService(
       properties,
-      callback,
+      base::Bind(&IgnoreObjectPathCallback, callback),
       base::Bind(&network_handler::ShillErrorCallbackFunction,
                  kLogModule, service_path, error_callback));
 }

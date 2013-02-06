@@ -143,16 +143,16 @@ class ShillManagerClientImpl : public ShillManagerClient {
 
   virtual void ConfigureService(
       const base::DictionaryValue& properties,
-      const base::Closure& callback,
+      const ObjectPathCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {
     DCHECK(AreServicePropertiesValid(properties));
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  flimflam::kConfigureServiceFunction);
     dbus::MessageWriter writer(&method_call);
     AppendServicePropertiesDictionary(&writer, properties);
-    helper_.CallVoidMethodWithErrorCallback(&method_call,
-                                            callback,
-                                            error_callback);
+    helper_.CallObjectPathMethodWithErrorCallback(&method_call,
+                                                  callback,
+                                                  error_callback);
   }
 
   virtual void GetService(
@@ -308,11 +308,12 @@ class ShillManagerClientStubImpl : public ShillManagerClient,
 
   virtual void ConfigureService(
       const base::DictionaryValue& properties,
-      const base::Closure& callback,
+      const ObjectPathCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {
     if (callback.is_null())
       return;
-    MessageLoop::current()->PostTask(FROM_HERE, callback);
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, dbus::ObjectPath()));
   }
 
   virtual void GetService(

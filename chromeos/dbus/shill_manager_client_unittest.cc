@@ -346,7 +346,10 @@ TEST_F(ShillManagerClientTest, DisableTechnology) {
 
 TEST_F(ShillManagerClientTest, ConfigureService) {
   // Create response.
+  const dbus::ObjectPath object_path("/");
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  writer.AppendObjectPath(object_path);
   // Create the argument dictionary.
   scoped_ptr<base::DictionaryValue> arg(CreateExampleProperties());
   // Set expectations.
@@ -354,12 +357,11 @@ TEST_F(ShillManagerClientTest, ConfigureService) {
                        base::Bind(&ExpectDictionaryValueArgument, arg.get()),
                        response.get());
   // Call method.
-  MockClosure mock_closure;
   MockErrorCallback mock_error_callback;
   client_->ConfigureService(*arg,
-                            mock_closure.GetCallback(),
+                            base::Bind(&ExpectObjectPathResultWithoutStatus,
+                                       object_path),
                             mock_error_callback.GetCallback());
-  EXPECT_CALL(mock_closure, Run()).Times(1);
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.

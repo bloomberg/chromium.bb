@@ -106,9 +106,9 @@ class NetworkConfigurationHandlerTest : public testing::Test {
 
   // Handles responses for SetProperties method calls.
   void OnSetProperties(const base::DictionaryValue& properties,
-                       const base::Closure& callback,
+                       const ObjectPathCallback& callback,
                        const ShillClientHelper::ErrorCallback& error_callback) {
-    callback.Run();
+    callback.Run(dbus::ObjectPath());
   }
 
   // Handles responses for ClearProperties method calls.
