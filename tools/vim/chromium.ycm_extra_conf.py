@@ -40,16 +40,9 @@
 import os
 import subprocess
 
+
 # Flags from YCM's default config.
 flags = [
-'-Wall',
-'-Wextra',
-'-Werror',
-'-Wno-long-long',
-'-Wno-variadic-macros',
-'-Wno-unused-parameter',
-'-fexceptions',
-'-DNDEBUG',
 '-DUSE_CLANG_COMPLETER',
 '-std=c++11',
 '-x',
@@ -81,8 +74,8 @@ def FindChromeSrcFromFilename(filename):
 def GetClangCommandFromNinjaForFilename(chrome_root, filename):
   """Returns the command line to build |filename|.
 
-  Figures out where the .o file for this source file will end up. Then asks
-  ninja how it would build that object and parses the result.
+  Asks ninja how it would build the source file. If the specified file is a
+  header, tries to find its companion source file first.
 
   Args:
     chrome_root: (String) Path to src/.
@@ -93,6 +86,24 @@ def GetClangCommandFromNinjaForFilename(chrome_root, filename):
   """
   if not chrome_root:
     return []
+
+  # Generally, everyone benefits from including Chromium's src/, because all of
+  # Chromium's includes are relative to that.
+  chrome_flags = ['-I' + os.path.join(chrome_root)]
+
+  # Header files can't be built. Instead, try to match a header file to its
+  # corresponding source file.
+  if filename.endswith('.h'):
+    alternates = ['.cc', '.cpp']
+    for alt_extension in alternates:
+      alt_name = filename[:-2] + alt_extension
+      if os.path.exists(alt_name):
+        filename = alt_name
+        break
+    else:
+      # If this is a standalone .h file with no source, the best we can do is
+      # try to use the default flags.
+      return chrome_flags
 
   # Ninja needs the path to the source file from the output build directory.
   # Cut off the common part and /.
@@ -105,21 +116,20 @@ def GetClangCommandFromNinjaForFilename(chrome_root, filename):
                        stdout=subprocess.PIPE)
   stdout, stderr = p.communicate()
   if p.returncode:
-    return []
+    return chrome_flags
 
   # Ninja might execute several commands to build something. We want the last
   # clang command.
   clang_line = None
   for line in reversed(stdout.split('\n')):
-    if line.startswith('clang'):
+    if 'clang' in line:
       clang_line = line
       break
-  if not clang_line:
-    return []
+  else:
+    return chrome_flags
 
   # Parse out the -I and -D flags. These seem to be the only ones that are
   # important for YCM's purposes.
-  chrome_flags = []
   for flag in clang_line.split(' '):
     if flag.startswith('-I'):
       # Relative paths need to be resolved, because they're relative to the
@@ -130,12 +140,9 @@ def GetClangCommandFromNinjaForFilename(chrome_root, filename):
         abs_path = os.path.normpath(os.path.join(
             chrome_root, 'out', 'Release', flag[2:]))
         chrome_flags.append('-I' + abs_path)
-    elif flag.startswith('-D'):
+    elif flag.startswith('-') and flag[1] in 'DWFfmO':
       chrome_flags.append(flag)
 
-  # Also include Chromium's src/, because all of Chromium's includes are
-  # relative to that.
-  chrome_flags.append('-I' + os.path.join(chrome_root))
   return chrome_flags
 
 
