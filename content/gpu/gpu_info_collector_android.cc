@@ -4,6 +4,7 @@
 
 #include "content/gpu/gpu_info_collector.h"
 
+#include "base/android/build_info.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
@@ -66,10 +67,14 @@ bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
   bool is_nvidia = vendor.find("nvidia") != std::string::npos;
   bool is_mali_t604 = is_arm && renderer.find("mali-t604") != std::string::npos;
 
+  bool sdk_17_or_greater =
+      base::android::BuildInfo::GetInstance()->sdk_int() >= 17;
+
   // IMG: avoid context switching perf problems, crashes with share groups
   // Mali-T604: http://crbug.com/154715
   // QualComm, NVIDIA: Crashes with share groups
-  if (is_img || is_mali_t604 || is_qualcomm || is_nvidia) {
+  if (is_img || is_mali_t604 || is_qualcomm ||
+      (is_nvidia && sdk_17_or_greater)) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableVirtualGLContexts);
   }
