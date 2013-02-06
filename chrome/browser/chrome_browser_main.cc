@@ -137,6 +137,8 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
+#include "ui/base/touch/touch_device.h"
+#include "ui/base/ui_base_switches.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -209,6 +211,16 @@
 using content::BrowserThread;
 
 namespace {
+
+enum UMATouchEventsState {
+  UMA_TOUCH_EVENTS_ENABLED,
+  UMA_TOUCH_EVENTS_AUTO_ENABLED,
+  UMA_TOUCH_EVENTS_AUTO_DISABLED,
+  UMA_TOUCH_EVENTS_DISABLED,
+  // NOTE: Add states only immediately above this line. Make sure to
+  // update the enum list in tools/histogram/histograms.xml accordingly.
+  UMA_TOUCH_EVENTS_STATE_COUNT
+};
 
 void LogIntelMicroArchitecture() {
   base::CPU cpu;
@@ -429,6 +441,31 @@ void RecordDefaultBrowserUMAStat() {
       ShellIntegration::GetDefaultBrowser();
   UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.State", default_state,
                             ShellIntegration::NUM_DEFAULT_STATES);
+}
+
+void RecordTouchEventState(const CommandLine& command_line) {
+  const std::string touch_enabled_switch =
+      command_line.HasSwitch(switches::kTouchEvents) ?
+      command_line.GetSwitchValueASCII(switches::kTouchEvents) :
+      switches::kTouchEventsAuto;
+
+  if (touch_enabled_switch.empty() ||
+      touch_enabled_switch == switches::kTouchEventsEnabled) {
+    UMA_HISTOGRAM_ENUMERATION("Touchscreen.TouchEventsEnabled",
+                              UMA_TOUCH_EVENTS_ENABLED,
+                              UMA_TOUCH_EVENTS_STATE_COUNT);
+  } else if (touch_enabled_switch == switches::kTouchEventsAuto) {
+    bool touch_device_present = ui::IsTouchDevicePresent();
+    UMA_HISTOGRAM_ENUMERATION("Touchscreen.TouchEventsEnabled",
+                              touch_device_present ?
+                                  UMA_TOUCH_EVENTS_AUTO_ENABLED :
+                                  UMA_TOUCH_EVENTS_AUTO_DISABLED,
+                              UMA_TOUCH_EVENTS_STATE_COUNT);
+  } else if (touch_enabled_switch == switches::kTouchEventsDisabled) {
+    UMA_HISTOGRAM_ENUMERATION("Touchscreen.TouchEventsEnabled",
+                              UMA_TOUCH_EVENTS_DISABLED,
+                              UMA_TOUCH_EVENTS_STATE_COUNT);
+  }
 }
 
 void RegisterComponentsForUpdate(const CommandLine& command_line) {
@@ -1546,6 +1583,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
   browser_creator_.reset();
 #endif  // !defined(OS_ANDROID)
+
+  RecordTouchEventState(parsed_command_line());
 
   PostBrowserStart();
 

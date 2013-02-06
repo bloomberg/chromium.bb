@@ -61,7 +61,7 @@
 #include "ui/base/ime/win/tsf_input_scope.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/text/text_elider.h"
-#include "ui/base/touch/touch_device_win.h"
+#include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/dpi.h"

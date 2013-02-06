@@ -78,7 +78,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/layout.h"
-#include "ui/base/touch/touch_device_win.h"
+#include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -95,11 +95,6 @@
 #include "base/mac/foundation_util.h"
 #include "ui/surface/io_surface_support_mac.h"
 #endif
-
-#if defined(USE_AURA) && defined(USE_X11)
-#include "ui/aura/window.h"
-#include "ui/base/touch/touch_factory.h"
-#endif // defined (USE_AURA) && defined(USE_X11)
 
 #if defined(ENABLE_JAVA_BRIDGE)
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
@@ -544,16 +539,7 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnableGpuBenchmarking);
 
   bool touch_device_present = false;
-#if defined(USE_AURA) && defined(USE_X11)
-  touch_device_present =
-      ui::TouchFactory::GetInstance()->IsTouchDevicePresent();
-#endif
-#if defined(OS_WIN)
   touch_device_present = ui::IsTouchDevicePresent();
-#endif
-#if defined(OS_ANDROID)
-  touch_device_present = true;
-#endif
   const std::string touch_enabled_switch =
       command_line.HasSwitch(switches::kTouchEvents) ?
       command_line.GetSwitchValueASCII(switches::kTouchEvents) :

@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -22,7 +23,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
-#include "ui/base/touch/touch_device_win.h"
 #include <Windows.h>
 #endif  // defined(OS_WIN)
 

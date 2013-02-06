@@ -263,6 +263,10 @@
         'base/text/utf16_indexing.h',
         'base/theme_provider.cc',
         'base/theme_provider.h',
+        'base/touch/touch_device.cc',
+        'base/touch/touch_device.h',
+        'base/touch/touch_device_android.cc',
+        'base/touch/touch_device_win.cc',
         'base/touch/touch_factory.cc',
         'base/touch/touch_factory.h',
         'base/ui_base_exports.cc',
@@ -666,8 +670,12 @@
           ],
         }],
         ['chromeos==1', {
+          'sources': [
+            'base/touch/touch_device_aurax11.cc',
+          ],
           'sources!': [
             'base/clipboard/clipboard_aurax11.cc',
+            'base/touch/touch_device.cc',
           ],
         }],
         ['OS=="win"', {
@@ -676,10 +684,9 @@
             'gfx/gdi_util.h',
             'gfx/icon_util.cc',
             'gfx/icon_util.h',
-            'base/touch/touch_device_win.cc',
-            'base/touch/touch_device_win.h',
           ],
           'sources!': [
+            'base/touch/touch_device.cc',
             'base/touch/touch_factory.cc',
             'base/touch/touch_factory.h',
             'gfx/pango_util.h',
@@ -793,6 +800,7 @@
           'sources!': [
             'base/dragdrop/drag_utils.cc',
             'base/dragdrop/drag_utils.h',
+            'base/touch/touch_device.cc',
             'base/touch/touch_factory.cc',
             'base/touch/touch_factory.h',
             'gfx/pango_util.cc',
