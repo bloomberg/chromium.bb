@@ -298,20 +298,20 @@ void ManagedModeNavigationObserver::PreviewInfobarDismissed() {
 }
 
 void ManagedModeNavigationObserver::AddSavedURLsToWhitelistAndClearState() {
-  ListValue whitelist;
+  std::vector<GURL> urls;
   for (std::set<GURL>::const_iterator it = navigated_urls_.begin();
        it != navigated_urls_.end();
        ++it) {
-    whitelist.AppendString(it->scheme() + "://." + it->host() + it->path());
+    urls.push_back(*it);
   }
+  managed_user_service_->SetManualBehaviorForURLs(
+      urls, ManagedUserService::MANUAL_ALLOW);
   if (last_url_.is_valid()) {
-    if (last_url_.SchemeIs("https")) {
-      whitelist.AppendString("https://" + last_url_.host());
-    } else {
-      whitelist.AppendString(last_url_.host());
-    }
+    std::vector<std::string> hosts;
+    hosts.push_back(last_url_.host());
+    managed_user_service_->SetManualBehaviorForHosts(
+        hosts, ManagedUserService::MANUAL_ALLOW);
   }
-  managed_user_service_->AddToManualList(true, whitelist);
   ClearObserverState();
 }
 
@@ -336,9 +336,6 @@ void ManagedModeNavigationObserver::SetStateToRecordingAfterPreview() {
 
 bool ManagedModeNavigationObserver::CanTemporarilyNavigateHost(
     const GURL& url) {
-  if (last_url_.scheme() == "https") {
-    return url.scheme() == "https" && last_url_.host() == url.host();
-  }
   return last_url_.host() == url.host();
 }
 

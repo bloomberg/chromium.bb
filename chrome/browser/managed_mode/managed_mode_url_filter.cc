@@ -159,13 +159,7 @@ scoped_ptr<ManagedModeURLFilter::Contents> LoadWhitelistsOnBlockingPoolThread(
 
 ManagedModeURLFilter::ManagedModeURLFilter()
     : default_behavior_(ALLOW),
-      contents_(new Contents()),
-      url_manual_list_allow_(new policy::URLBlacklist()),
-      url_manual_list_block_(new policy::URLBlacklist()) {
-  // Set empty manual lists in the begining.
-  base::ListValue whitelist;
-  base::ListValue blacklist;
-  SetManualLists(&whitelist, &blacklist);
+      contents_(new Contents()) {
   // Detach from the current thread so we can be constructed on a different
   // thread than the one where we're used.
   DetachFromThread();
@@ -183,6 +177,18 @@ ManagedModeURLFilter::BehaviorFromInt(int behavior_value) {
   return static_cast<FilteringBehavior>(behavior_value);
 }
 
+// static
+GURL ManagedModeURLFilter::Normalize(const GURL& url) {
+  GURL normalized_url = url;
+  GURL::Replacements replacements;
+  // Strip username, password, query, and ref.
+  replacements.ClearUsername();
+  replacements.ClearPassword();
+  replacements.ClearQuery();
+  replacements.ClearRef();
+  return url.ReplaceComponents(replacements);
+}
+
 ManagedModeURLFilter::FilteringBehavior
 ManagedModeURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
   DCHECK(CalledOnValidThread());
@@ -197,13 +203,16 @@ ManagedModeURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
     return ALLOW;
 #endif
 
-  // TODO(sergiu): Find a less confusing way to do this. Options include
-  // renaming the functions in policy::URLBlacklist or adding a function that
-  // checks if the URL is allowed instead of blocked.
-  if (!url_manual_list_allow_->IsURLBlocked(url))
-    return ALLOW;
-  if (url_manual_list_block_->IsURLBlocked(url))
-    return BLOCK;
+  // Check manual overrides for the exact URL.
+  std::map<GURL, bool>::const_iterator url_it = url_map_.find(Normalize(url));
+  if (url_it != url_map_.end())
+    return url_it->second ? ALLOW : BLOCK;
+
+  // Check manual overrides for the hostname.
+  std::map<std::string, bool>::const_iterator host_it =
+      host_map_.find(url.host());
+  if (host_it != host_map_.end())
+    return host_it->second ? ALLOW : BLOCK;
 
   // Check the list of URL patterns.
   std::set<URLMatcherConditionSet::ID> matching_ids =
@@ -276,49 +285,20 @@ void ManagedModeURLFilter::SetFromPatterns(
       base::Bind(&ManagedModeURLFilter::SetContents, this));
 }
 
-void ManagedModeURLFilter::SetManualLists(const ListValue* whitelist,
-                                          const ListValue* blacklist) {
+void ManagedModeURLFilter::SetManualHosts(
+    const std::map<std::string, bool>* host_map) {
   DCHECK(CalledOnValidThread());
-  url_manual_list_block_.reset(new policy::URLBlacklist);
-  url_manual_list_allow_.reset(new policy::URLBlacklist);
-  url_manual_list_block_->Block(blacklist);
-  ListValue all_sites;
-  all_sites.Append(new base::StringValue("*"));
-  url_manual_list_allow_->Allow(whitelist);
-  url_manual_list_allow_->Block(&all_sites);
-
-  // Debug
-  DVLOG(1) << "Loaded whitelist: ";
-  for (ListValue::const_iterator it = whitelist->begin();
-       it != whitelist->end(); ++it){
-    std::string item;
-    (*it)->GetAsString(&item);
-    DVLOG(1) << item;
-  }
-  DVLOG(1) << "Loaded blacklist: ";
-  for (ListValue::const_iterator it = blacklist->begin();
-       it != blacklist->end(); ++it){
-    std::string item;
-    (*it)->GetAsString(&item);
-    DVLOG(1) << item;
-  }
-
-  UMA_HISTOGRAM_CUSTOM_COUNTS("ManagedMode.ManualWhitelistEntries",
-      url_manual_list_allow_->Size(), 1, 1000, 50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("ManagedMode.ManualBlacklistEntries",
-      url_manual_list_block_->Size(), 1, 1000, 50);
+  host_map_ = *host_map;
+  UMA_HISTOGRAM_CUSTOM_COUNTS("ManagedMode.ManualHostsEntries",
+                              host_map->size(), 1, 1000, 50);
 }
 
-void ManagedModeURLFilter::AddURLPatternToManualList(
-    const bool is_whitelist,
-    const std::string& url) {
+void ManagedModeURLFilter::SetManualURLs(
+    const std::map<GURL, bool>* url_map) {
   DCHECK(CalledOnValidThread());
-  ListValue list;
-  list.AppendString(url);
-  if (is_whitelist)
-    url_manual_list_allow_->Allow(&list);
-  else
-    url_manual_list_block_->Block(&list);
+  url_map_ = *url_map;
+  UMA_HISTOGRAM_CUSTOM_COUNTS("ManagedMode.ManualURLsEntries",
+                              url_map->size(), 1, 1000, 50);
 }
 
 void ManagedModeURLFilter::AddObserver(Observer* observer) {

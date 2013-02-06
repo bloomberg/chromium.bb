@@ -193,7 +193,8 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest, SimpleURLNotInAnyLists) {
   CheckShownPageIsInterstitial(tab);
   ActOnInterstitialAndInfobar(tab, INTERSTITIAL_PROCEED, INFOBAR_ACCEPT);
 
-  EXPECT_TRUE(managed_user_service_->IsInManualList(true, "www.example.com"));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForHost("www.example.com"));
 }
 
 // Same as above just that the URL redirects to a second URL first. The initial
@@ -211,42 +212,48 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest, RedirectedURLsNotInAnyLists) {
   CheckShownPageIsInterstitial(tab);
   ActOnInterstitialAndInfobar(tab, INTERSTITIAL_PROCEED, INFOBAR_ACCEPT);
 
-  EXPECT_TRUE(managed_user_service_->IsInManualList(
-      true, "http://.www.a.com/server-redirect"));
-  EXPECT_TRUE(managed_user_service_->IsInManualList(true, "www.example.com"));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForURL(
+                GURL("http://www.a.com/server-redirect")));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForHost("www.example.com"));
 }
 
 // Navigates to a URL in the whitelist. No interstitial should be shown and
 // the browser should navigate to the page.
 IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest, SimpleURLInWhitelist) {
   GURL test_url("http://www.example.com/files/simple.html");
-  ListValue whitelist;
-  whitelist.AppendString(test_url.host());
-  managed_user_service_->AddToManualList(true, whitelist);
+  std::vector<std::string> hosts;
+  hosts.push_back(test_url.host());
+  managed_user_service_->SetManualBehaviorForHosts(
+      hosts, ManagedUserService::MANUAL_ALLOW);
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForHost(test_url.host()));
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   CheckShownPageIsNotInterstitial(tab);
-
-  EXPECT_TRUE(managed_user_service_->IsInManualList(true, "www.example.com"));
 }
 
 // Navigates to a URL which redirects to another URL, both in the whitelist.
 // No interstitial should be shown and the browser should navigate to the page.
 IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
                        RedirectedURLsBothInWhitelist) {
+  std::string a_domain = "www.a.com";
   std::vector<std::string> url_list;
-  url_list.push_back("www.a.com");
-  std::string last_url("www.example.com/files/simple.html");
+  url_list.push_back(a_domain);
+  std::string example_domain = "www.example.com";
+  std::string last_url = example_domain + "/files/simple.html";
   GURL test_url(GetRedirectURL(url_list, last_url));
 
   // Add both hostnames to the whitelist, should navigate without interstitial.
-  ListValue whitelist;
-  whitelist.AppendString("www.a.com");
-  whitelist.AppendString("www.example.com");
-  managed_user_service_->AddToManualList(true, whitelist);
+  std::vector<std::string> hosts;
+  hosts.push_back(a_domain);
+  hosts.push_back(example_domain);
+  managed_user_service_->SetManualBehaviorForHosts(
+      hosts, ManagedUserService::MANUAL_ALLOW);
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
@@ -254,8 +261,10 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
 
   CheckShownPageIsNotInterstitial(tab);
 
-  EXPECT_TRUE(managed_user_service_->IsInManualList(true, "www.a.com"));
-  EXPECT_TRUE(managed_user_service_->IsInManualList(true, "www.example.com"));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForHost(a_domain));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForHost(example_domain));
 }
 
 // Only one URL is in the whitelist and the second not, so it should redirect,
@@ -263,15 +272,18 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
 // websites should be in the whitelist.
 IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
                        RedirectedURLFirstInWhitelist) {
+  std::string a_domain = "www.a.com";
   std::vector<std::string> url_list;
-  url_list.push_back("www.a.com");
-  std::string last_url("www.example.com/files/simple.html");
+  url_list.push_back(a_domain);
+  std::string example_domain = "www.example.com";
+  std::string last_url = example_domain + "/files/simple.html";
   GURL test_url(GetRedirectURL(url_list, last_url));
 
   // Add the first URL to the whitelist.
-  ListValue whitelist;
-  whitelist.AppendString("www.a.com");
-  managed_user_service_->AddToManualList(true, whitelist);
+  std::vector<std::string> hosts;
+  hosts.push_back(a_domain);
+  managed_user_service_->SetManualBehaviorForHosts(
+      hosts, ManagedUserService::MANUAL_ALLOW);
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
@@ -281,8 +293,10 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   CheckShownPageIsInterstitial(tab);
   ActOnInterstitialAndInfobar(tab, INTERSTITIAL_PROCEED, INFOBAR_ACCEPT);
 
-  EXPECT_TRUE(managed_user_service_->IsInManualList(true, "www.a.com"));
-  EXPECT_TRUE(managed_user_service_->IsInManualList(true, "www.example.com"));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForHost(a_domain));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForHost(example_domain));
 }
 
 // This test navigates to a URL which is not in the whitelist but redirects to
@@ -297,9 +311,10 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   GURL test_url(GetRedirectURL(url_list, last_url));
 
   // Add the last URL to the whitelist.
-  ListValue whitelist;
-  whitelist.AppendString("www.example.com");
-  managed_user_service_->AddToManualList(true, whitelist);
+  std::vector<std::string> hosts;
+  hosts.push_back("www.example.com");
+  managed_user_service_->SetManualBehaviorForHosts(
+      hosts, ManagedUserService::MANUAL_ALLOW);
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
@@ -310,9 +325,11 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   ActOnInterstitialAndInfobar(tab, INTERSTITIAL_PROCEED,
                                    INFOBAR_ALREADY_ADDED);
 
-  EXPECT_TRUE(managed_user_service_->IsInManualList(
-      true, "http://.www.a.com/server-redirect"));
-  EXPECT_TRUE(managed_user_service_->IsInManualList(true, "www.example.com"));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForURL(
+                GURL("http://www.a.com/server-redirect")));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForHost("www.example.com"));
 }
 
 // Tests whether going back after being shown an interstitial works. No
@@ -330,7 +347,8 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
 
   EXPECT_EQ(tab->GetURL().spec(), "about:blank");
 
-  EXPECT_FALSE(managed_user_service_->IsInManualList(true, "www.example.com"));
+  EXPECT_EQ(ManagedUserService::MANUAL_NONE,
+            managed_user_service_->GetManualBehaviorForHost("www.example.com"));
 }
 
 // Like SimpleURLNotInAnyLists just that it navigates to a page on the allowed
@@ -346,7 +364,9 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   CheckShownPageIsInterstitial(tab);
   ActOnInterstitialAndInfobar(tab, INTERSTITIAL_PROCEED, INFOBAR_ACCEPT);
 
-  EXPECT_TRUE(managed_user_service_->IsInManualList(true, "www.example.com"));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForHost(
+                "www.example.com"));
 
   // Navigate to a different page on the same host.
   test_url = GURL("http://www.example.com/files/english_page.html");
@@ -369,7 +389,8 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   CheckShownPageIsInterstitial(tab);
   ActOnInterstitialAndInfobar(tab, INTERSTITIAL_PROCEED, INFOBAR_ACCEPT);
 
-  EXPECT_TRUE(managed_user_service_->IsInManualList(true, "www.example.com"));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForHost("www.example.com"));
 
   // Reload the page
   tab->GetController().Reload(false);
@@ -378,25 +399,6 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   CheckShownPageIsNotInterstitial(tab);
   CheckNumberOfInfobars(0);
   EXPECT_EQ(tab->GetURL().spec(), test_url.spec());
-}
-
-// Navigates to an HTTPS page not in any lists, similar to the simple test but
-// over HTTPS (expected behavior is that only the HTTPS version of the site
-// gets whitelisted, compared to the simple case where all protocols get
-// whitelisted).
-IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
-                       SimpleHTTPSURLNotInAnyLists) {
-  // Navigate to an HTTPS URL.
-  GURL test_url("https://www.example.com/files/simple.html");
-  ui_test_utils::NavigateToURL(browser(), test_url);
-
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-
-  CheckShownPageIsInterstitial(tab);
-  ActOnInterstitialAndInfobar(tab, INTERSTITIAL_PROCEED, INFOBAR_ACCEPT);
-
-  // Check that the https:// version is added in the whitelist.
-  EXPECT_TRUE(managed_user_service_->IsInManualList(true, "https://www.example.com"));
 }
 
 // The test navigates to a page, the interstitial is shown and preview is
@@ -461,7 +463,8 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
 
   CheckNumberOfInfobars(0);
 
-  EXPECT_TRUE(managed_user_service_->IsInManualList(true, "www.example.com"));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForHost("www.example.com"));
 }
 
 // The test navigates to a page, the interstitial is shown and preview is
@@ -506,7 +509,9 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
 
   ActOnInterstitialAndInfobar(tab, INTERSTITIAL_PROCEED, INFOBAR_ACCEPT);
 
-  EXPECT_FALSE(managed_user_service_->IsInManualList(true, "www.example.com"));
-  EXPECT_TRUE(managed_user_service_->IsInManualList(true,
-                                                    "www.new-example.com"));
+  EXPECT_EQ(ManagedUserService::MANUAL_NONE,
+            managed_user_service_->GetManualBehaviorForHost("www.example.com"));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForHost(
+                "www.new-example.com"));
 }

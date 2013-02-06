@@ -22,7 +22,14 @@ class URLBlacklist;
 class GURL;
 
 // This class manages the filtering behavior for a given URL, i.e. it tells
-// callers if a given URL should be allowed, blocked or warned about.
+// callers if a given URL should be allowed, blocked or warned about. It uses
+// information from multiple sources:
+//   * A default setting (allow, block or warn).
+//   * The set of installed and enabled content packs, which contain whitelists
+//     of URL patterns that should be allowed.
+//   * User-specified manual overrides (allow or block) for either sites
+//     (hostnames) or exact URLs, which take precedence over the previous
+//     sources.
 // References to it can be passed around on different threads (the refcounting
 // is thread-safe), but the object itself should always be accessed on the same
 // thread (member access isn't thread-safe).
@@ -48,6 +55,9 @@ class ManagedModeURLFilter
 
   static FilteringBehavior BehaviorFromInt(int behavior_value);
 
+  // Normalizes a URL for matching purposes.
+  static GURL Normalize(const GURL& url);
+
   void GetSites(const GURL& url,
                 std::vector<ManagedModeSiteList::Site*>* sites) const;
 
@@ -67,14 +77,11 @@ class ManagedModeURLFilter
   // This method is only used for testing.
   void SetFromPatterns(const std::vector<std::string>& patterns);
 
-  // Sets the manual lists.
-  void SetManualLists(const ListValue* whitelist,
-                      const ListValue* blacklist);
+  // Sets the set of manually allowed or blocked hosts.
+  void SetManualHosts(const std::map<std::string, bool>* host_map);
 
-  // Adds a pattern to a manual list. If |is_whitelist| is true it gets added
-  // to the whitelist, else to the blacklist.
-  void AddURLPatternToManualList(const bool is_whitelist,
-                                 const std::string& url_pattern);
+  // Sets the set of manually allowed or blocked URLs.
+  void SetManualURLs(const std::map<GURL, bool>* url_map);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -90,11 +97,13 @@ class ManagedModeURLFilter
   FilteringBehavior default_behavior_;
   scoped_ptr<Contents> contents_;
 
-  // The |url_manual_list_allow_| blocks all URLs except the ones that are
-  // added while the |url_manual_list_block_| blocks only the URLs that are
-  // added to it.
-  scoped_ptr<policy::URLBlacklist> url_manual_list_allow_;
-  scoped_ptr<policy::URLBlacklist> url_manual_list_block_;
+  // Maps from a URL to whether it is manually allowed (true) or blocked
+  // (false).
+  std::map<GURL, bool> url_map_;
+
+  // Maps from a hostname to whether it is manually allowed (true) or blocked
+  // (false).
+  std::map<std::string, bool> host_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedModeURLFilter);
 };
