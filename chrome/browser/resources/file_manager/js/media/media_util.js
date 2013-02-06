@@ -53,6 +53,24 @@ ThumbnailLoader.MAX_PIXEL_COUNT = 1 << 21; // 2 MPix
 ThumbnailLoader.MAX_FILE_SIZE = 1 << 20; // 1 Mb
 
 /**
+ * In percents (0.0 - 1.0), how much area can be cropped to fill an image
+ * in a container, when loading a thumbnail in FillMode.AUTO mode.
+ * The specified 30% value allows to fill 16:9, 3:2 pictures in 4:3 element.
+ * @type {number}
+ */
+ThumbnailLoader.AUTO_FILL_THRESHOLD = 0.3;
+
+/**
+ * Type of displaying a thumbnail within a box.
+ * @enum
+ */
+ThumbnailLoader.FillMode = {
+  FILL: 0,  // Fill whole box. Image may be cropped.
+  FIT: 1,   // Keep aspect ratio, do not crop.
+  AUTO: 2   // Try to fill, but if incompatible aspect ratio, then fit.
+};
+
+/**
  * If an image file does not have an embedded thumbnail we might want to use
  * the image itself as a thumbnail. If the image is too large it hurts
  * the performance a lot so we allow it only for moderately sized files.
@@ -72,14 +90,14 @@ ThumbnailLoader.canUseImageUrl_ = function(metadata) {
 /**
  *
  * @param {HTMLElement} box Container element.
- * @param {boolean} fill True if fill, false if fit.
+ * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
  * @param {function(HTMLImageElement, object} opt_onSuccess Success callback,
  *   accepts the image and the transform.
  * @param {function} opt_onError Error callback.
  * @param {function} opt_onGeneric Callback for generic image used.
  */
 ThumbnailLoader.prototype.load = function(
-    box, fill, opt_onSuccess, opt_onError, opt_onGeneric) {
+    box, fillMode, opt_onSuccess, opt_onError, opt_onGeneric) {
   if (!this.thumbnailUrl_) {
     // Relevant CSS rules are in file_types.css.
     box.setAttribute('generic-thumbnail', this.mediaType_);
@@ -89,7 +107,7 @@ ThumbnailLoader.prototype.load = function(
 
   this.image_ = box.ownerDocument.createElement('img');
   this.image_.onload = function() {
-    this.attachImage(box, fill);
+    this.attachImage(box, fillMode);
     if (opt_onSuccess)
       opt_onSuccess(this.image_, this.transform_);
   }.bind(this);
@@ -98,7 +116,7 @@ ThumbnailLoader.prototype.load = function(
       opt_onError();
     if (this.fallbackUrl_) {
       new ThumbnailLoader(this.fallbackUrl_, null, this.mediaType_).
-          load(box, fill, opt_onSuccess);
+          load(box, fillMode, opt_onSuccess);
     } else {
       box.setAttribute('generic-thumbnail', this.mediaType_);
     }
@@ -162,16 +180,17 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
 /**
  * Attach the image to a given element.
  * @param {Element} container Parent element.
- * @param {boolean} fill True for fill, false for fit.
+ * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
  */
-ThumbnailLoader.prototype.attachImage = function(container, fill) {
+ThumbnailLoader.prototype.attachImage = function(container, fillMode) {
   if (!this.hasValidImage()) {
     container.setAttribute('generic-thumbnail', this.mediaType_);
     return;
   }
 
   util.applyTransform(container, this.transform_);
-  ThumbnailLoader.centerImage_(container, this.image_, fill, this.isRotated_());
+  ThumbnailLoader.centerImage_(
+      container, this.image_, fillMode, this.isRotated_());
   if (this.image_.parentNode != container) {
     container.textContent = '';
     container.appendChild(this.image_);
@@ -187,12 +206,11 @@ ThumbnailLoader.prototype.attachImage = function(container, fill) {
  *
  * @param {HTMLElement} box Containing element.
  * @param {HTMLImageElement} img Image element.
- * @param {boolean} fill True: the image should fill the entire container,
- *                       false: the image should fully fit into the container.
+ * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
  * @param {boolean} rotate True if the image should be rotated 90 degrees.
  * @private
  */
-ThumbnailLoader.centerImage_ = function(box, img, fill, rotate) {
+ThumbnailLoader.centerImage_ = function(box, img, fillMode, rotate) {
   var imageWidth = img.width;
   var imageHeight = img.height;
 
@@ -201,6 +219,26 @@ ThumbnailLoader.centerImage_ = function(box, img, fill, rotate) {
 
   var boxWidth = box.clientWidth;
   var boxHeight = box.clientHeight;
+
+  var fill;
+  switch (fillMode) {
+    case ThumbnailLoader.FillMode.FILL:
+      fill = true;
+      break;
+    case ThumbnailLoader.FillMode.FIT:
+      fill = false;
+      break;
+    case ThumbnailLoader.FillMode.AUTO:
+      var imageRatio = imageWidth / imageHeight;
+      var boxRatio = 1.0;
+      if (boxWidth && boxHeight)
+        boxRatio = boxWidth / boxHeight;
+      // Cropped area in percents.
+      var ratioFactor = boxRatio / imageRatio;
+      fill = (ratioFactor >= 1.0 - ThumbnailLoader.AUTO_FILL_THRESHOLD) &&
+             (ratioFactor <= 1.0 + ThumbnailLoader.AUTO_FILL_THRESHOLD);
+      break;
+  }
 
   if (boxWidth && boxHeight) {
     // When we know the box size we can position the image correctly even

@@ -216,7 +216,8 @@ FileTransferController.prototype = {
         metadataTypes,
         function(metadata) {
           new ThumbnailLoader(imageUrl, metadata).
-              load(this.preloadedThumbnailImageNode_, true);
+              load(this.preloadedThumbnailImageNode_,
+                   ThumbnailLoader.FillMode.FILL);
         }.bind(this));
   },
 

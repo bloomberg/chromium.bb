@@ -282,7 +282,7 @@ PhotoImport.prototype.decorateGridItem_ = function(li, entry) {
   this.metadataCache_.get(entry, 'thumbnail|filesystem',
       function(metadata) {
         new ThumbnailLoader(entry.toURL(), metadata).
-            load(box, false /* fit, not fill*/);
+            load(box, ThumbnailLoader.FillMode.FIT);
       });
   frame.appendChild(box);
 

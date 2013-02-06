@@ -70,7 +70,8 @@ FileGrid.decorateThumbnail = function(li, entry, metadataCache) {
   li.appendChild(frame);
 
   var box = li.ownerDocument.createElement('div');
-  FileGrid.decorateThumbnailBox(box, entry, metadataCache, false);
+  FileGrid.decorateThumbnailBox(
+      box, entry, metadataCache, ThumbnailLoader.FillMode.AUTO);
   frame.appendChild(box);
 
   var bottom = li.ownerDocument.createElement('div');
@@ -86,13 +87,13 @@ FileGrid.decorateThumbnail = function(li, entry, metadataCache) {
  * @param {HTMLDivElement} box Box to decorate.
  * @param {Entry} entry Entry which thumbnail is generating for.
  * @param {MetadataCache} metadataCache To retrieve metadata.
- * @param {boolean} fill True if fill, false if fit.
+ * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
  * @param {function(HTMLElement)} opt_imageLoadCallback Callback called when
  *                                the image has been loaded before inserting
  *                                it into the DOM.
  */
 FileGrid.decorateThumbnailBox = function(
-    box, entry, metadataCache, fill, opt_imageLoadCallback) {
+    box, entry, metadataCache, fillMode, opt_imageLoadCallback) {
   var self = this;
 
   box.className = 'img-container';
@@ -126,7 +127,7 @@ FileGrid.decorateThumbnailBox = function(
   metadataCache.get(imageUrl, metadataTypes,
       function(metadata) {
         new ThumbnailLoader(imageUrl, metadata).
-            load(box, fill, opt_imageLoadCallback, onImageLoadError);
+            load(box, fillMode, opt_imageLoadCallback, onImageLoadError);
       });
 };
 

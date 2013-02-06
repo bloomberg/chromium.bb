@@ -110,7 +110,7 @@ SelectAlbumDialog.prototype.renderItem = function(item) {
   cr.defineProperty(result, 'lead', cr.PropertyKind.BOOL_ATTR);
   cr.defineProperty(result, 'selected', cr.PropertyKind.BOOL_ATTR);
 
-  new ThumbnailLoader(item.url).load(box, true /* fill */);
+  new ThumbnailLoader(item.url).load(box, ThumbnailLoader.FillMode.FILL);
 
   return result;
 };

@@ -1605,7 +1605,8 @@ Mosaic.Tile.prototype.layout = function(left, top, width, height) {
   if (this.hasAttribute('selected'))
     this.scrollIntoView();
 
-  this.thumbnailLoader_.attachImage(this.wrapper_, true /* fill */);
+  this.thumbnailLoader_.attachImage(this.wrapper_,
+                                    ThumbnailLoader.FillMode.FILL);
 };
 
 /**

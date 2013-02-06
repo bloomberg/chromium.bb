@@ -332,7 +332,7 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
 Ribbon.prototype.setThumbnailImage_ = function(thumbnail, url, metadata) {
   new ThumbnailLoader(url, metadata).load(
       thumbnail.querySelector('.image-wrapper'),
-      true /* fill */,
+      ThumbnailLoader.FillMode.FILL /* fill */,
       null /* success callback */,
       this.onThumbnailError_.bind(null, url));
 };
