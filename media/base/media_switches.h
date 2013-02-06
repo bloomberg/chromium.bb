@@ -51,6 +51,10 @@ MEDIA_EXPORT extern const char kEnableVp9Playback[];
 
 MEDIA_EXPORT extern const char kForceAudioMirroring[];
 
+#if defined(OS_WIN)
+MEDIA_EXPORT extern const char kWaveOutBuffers[];
+#endif
+
 }  // namespace switches
 
 #endif  // MEDIA_BASE_MEDIA_SWITCHES_H_

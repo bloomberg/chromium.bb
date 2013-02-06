@@ -262,6 +262,14 @@ size_t GetHighLatencyOutputBufferSize(int sample_rate) {
 #if defined(OS_WIN)
 
 int NumberOfWaveOutBuffers() {
+  // Use the user provided buffer count if provided.
+  int buffers = 0;
+  std::string buffers_str(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kWaveOutBuffers));
+  if (base::StringToInt(buffers_str, &buffers) && buffers > 0) {
+    return buffers;
+  }
+
   // Use 4 buffers for Vista, 3 for everyone else:
   //  - The entire Windows audio stack was rewritten for Windows Vista and wave
   //    out performance was degraded compared to XP.

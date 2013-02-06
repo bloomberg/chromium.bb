@@ -66,4 +66,8 @@ const char kEnableVp9Playback[] = "enable-vp9-playback";
 // with WebRTC apps for audio mirroring testing.
 const char kForceAudioMirroring[] = "force-audio-mirroring";
 
+#if defined(OS_WIN)
+const char kWaveOutBuffers[] = "waveout-buffers";
+#endif
+
 }  // namespace switches
