@@ -25,13 +25,17 @@ remoting.HostPlugin.prototype.disconnect = function() {};
  *  @return {void} Nothing. */
 remoting.HostPlugin.prototype.localize = function(callback) {};
 
-/** @return {string} Local hostname. */
-remoting.HostPlugin.prototype.getHostName = function() {};
+/** @param {function(string):void} callback Callback to be called with the
+ *      local hostname.
+ *  @return {void} Nothing. */
+remoting.HostPlugin.prototype.getHostName = function(callback) {};
 
 /** @param {string} hostId The host ID.
  *  @param {string} pin The PIN.
- *  @return {string} The hash encoded with Base64. */
-remoting.HostPlugin.prototype.getPinHash = function(hostId, pin) {};
+ *  @param {function(string):void} callback Callback to be called with the hash
+ *      encoded with Base64.
+ *  @return {void} Nothing. */
+remoting.HostPlugin.prototype.getPinHash = function(hostId, pin, callback) {};
 
 /** @param {function(string, string):void} callback Callback to be called
  *  after new key is generated.

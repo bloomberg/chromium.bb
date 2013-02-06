@@ -1080,19 +1080,28 @@ bool HostNPScriptObject::Localize(const NPVariant* args,
 bool HostNPScriptObject::GetHostName(const NPVariant* args,
                                      uint32_t arg_count,
                                      NPVariant* result) {
-  if (arg_count != 0) {
+  if (arg_count != 1) {
     SetException("getHostName: bad number of arguments");
     return false;
   }
-  DCHECK(result);
-  *result = NPVariantFromString(net::GetHostName());
+
+  ScopedRefNPObject callback_obj(ObjectFromNPVariant(args[0]));
+  if (!callback_obj.get()) {
+    SetException("getHostName: invalid callback parameter");
+    return false;
+  }
+
+  NPVariant host_name_val = NPVariantFromString(net::GetHostName());
+  InvokeAndIgnoreResult(callback_obj.get(), &host_name_val, 1);
+  g_npnetscape_funcs->releasevariantvalue(&host_name_val);
+
   return true;
 }
 
 bool HostNPScriptObject::GetPinHash(const NPVariant* args,
                                     uint32_t arg_count,
                                     NPVariant* result) {
-  if (arg_count != 2) {
+  if (arg_count != 3) {
     SetException("getPinHash: bad number of arguments");
     return false;
   }
@@ -1109,7 +1118,16 @@ bool HostNPScriptObject::GetPinHash(const NPVariant* args,
   }
   std::string pin = StringFromNPVariant(args[1]);
 
-  *result = NPVariantFromString(remoting::MakeHostPinHash(host_id, pin));
+  ScopedRefNPObject callback_obj(ObjectFromNPVariant(args[2]));
+  if (!callback_obj.get()) {
+    SetException("getPinHash: invalid callback parameter");
+    return false;
+  }
+
+  NPVariant pin_hash_val = NPVariantFromString(
+      remoting::MakeHostPinHash(host_id, pin));
+  InvokeAndIgnoreResult(callback_obj.get(), &pin_hash_val, 1);
+  g_npnetscape_funcs->releasevariantvalue(&pin_hash_val);
 
   return true;
 }

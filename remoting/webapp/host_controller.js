@@ -91,6 +91,7 @@ remoting.HostController.prototype.getConsent = function(callback) {
 
 /**
  * Registers and starts the host.
+ *
  * @param {string} hostPin Host PIN.
  * @param {boolean} consent The user's consent to crash dump reporting.
  * @param {function(remoting.HostController.AsyncResult):void} callback
@@ -100,7 +101,6 @@ remoting.HostController.prototype.getConsent = function(callback) {
 remoting.HostController.prototype.start = function(hostPin, consent, callback) {
   /** @type {remoting.HostController} */
   var that = this;
-  var hostName = this.plugin_.getHostName();
 
   /** @return {string} */
   function generateUuid() {
@@ -134,28 +134,18 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
     callback(result);
   };
 
-  /** @param {string} publicKey
-   *  @param {string} privateKey
-   *  @param {XMLHttpRequest} xhr */
-  function onRegistered(publicKey, privateKey, xhr) {
+  /**
+   * @param {string} hostName
+   * @param {string} publicKey
+   * @param {string} privateKey
+   * @param {XMLHttpRequest} xhr
+   */
+  function onRegistered(hostName, publicKey, privateKey, xhr) {
     var success = (xhr.status == 200);
 
     if (success) {
-      var hostSecretHash =
-          that.plugin_.getPinHash(newHostId, hostPin);
-      var hostConfig = JSON.stringify({
-          xmpp_login: remoting.identity.getCachedEmail(),
-          oauth_refresh_token: remoting.oauth2.exportRefreshToken(),
-          host_id: newHostId,
-          host_name: hostName,
-          host_secret_hash: hostSecretHash,
-          private_key: privateKey
-      });
-      /** @param {remoting.HostController.AsyncResult} result */
-      var onStartDaemon = function(result) {
-        onStarted(callback, result, hostName, publicKey);
-      };
-      that.plugin_.startDaemon(hostConfig, consent, onStartDaemon);
+      that.plugin_.getPinHash(newHostId, hostPin, startHostWithHash.bind(
+          null, hostName, publicKey, privateKey, xhr));
     } else {
       console.log('Failed to register the host. Status: ' + xhr.status +
                   ' response: ' + xhr.responseText);
@@ -164,11 +154,36 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
   };
 
   /**
+   * @param {string} hostName
+   * @param {string} publicKey
+   * @param {string} privateKey
+   * @param {XMLHttpRequest} xhr
+   * @param {string} hostSecretHash
+   */
+  function startHostWithHash(hostName, publicKey, privateKey, xhr,
+                             hostSecretHash) {
+    var hostConfig = JSON.stringify({
+        xmpp_login: remoting.identity.getCachedEmail(),
+        oauth_refresh_token: remoting.oauth2.exportRefreshToken(),
+        host_id: newHostId,
+        host_name: hostName,
+        host_secret_hash: hostSecretHash,
+        private_key: privateKey
+    });
+    /** @param {remoting.HostController.AsyncResult} result */
+    var onStartDaemon = function(result) {
+      onStarted(callback, result, hostName, publicKey);
+    };
+    that.plugin_.startDaemon(hostConfig, consent, onStartDaemon);
+  }
+
+  /**
+   * @param {string} hostName
    * @param {string} privateKey
    * @param {string} publicKey
    * @param {string} oauthToken
    */
-  function doRegisterHost(privateKey, publicKey, oauthToken) {
+  function doRegisterHost(hostName, privateKey, publicKey, oauthToken) {
     var headers = {
       'Authorization': 'OAuth ' + oauthToken,
       'Content-type' : 'application/json; charset=UTF-8'
@@ -182,18 +197,21 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
     remoting.xhr.post(
         remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/',
         /** @param {XMLHttpRequest} xhr */
-        function (xhr) { onRegistered(publicKey, privateKey, xhr); },
+        function (xhr) { onRegistered(hostName, publicKey, privateKey, xhr); },
         JSON.stringify(newHostDetails),
         headers);
   };
 
-  /** @param {string} privateKey
-   *  @param {string} publicKey */
-  function onKeyGenerated(privateKey, publicKey) {
+  /**
+   * @param {string} hostName
+   * @param {string} privateKey
+   * @param {string} publicKey
+   */
+  function onKeyGenerated(hostName, privateKey, publicKey) {
     remoting.identity.callWithToken(
         /** @param {string} oauthToken */
         function(oauthToken) {
-          doRegisterHost(privateKey, publicKey, oauthToken);
+          doRegisterHost(hostName, privateKey, publicKey, oauthToken);
         },
         /** @param {remoting.Error} error */
         function(error) {
@@ -202,7 +220,15 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
         });
   };
 
-  this.plugin_.generateKeyPair(onKeyGenerated);
+  /**
+   * @param {string} hostName
+   * @return {void} Nothing.
+   */
+  function startWithHostname(hostName) {
+    that.plugin_.generateKeyPair(onKeyGenerated.bind(null, hostName));
+  }
+
+  this.plugin_.getHostName(startWithHostname);
 };
 
 /**
@@ -270,8 +296,13 @@ remoting.HostController.prototype.updatePin = function(newPin, callback) {
       return;
     }
     var hostId = config['host_id'];
+    that.plugin_.getPinHash(hostId, newPin, updateDaemonConfigWithHash);
+  };
+
+  /** @param {string} pinHash */
+  function updateDaemonConfigWithHash(pinHash) {
     var newConfig = JSON.stringify({
-        host_secret_hash: that.plugin_.getPinHash(hostId, newPin)
+        host_secret_hash: pinHash
       });
     that.plugin_.updateDaemonConfig(newConfig, callback);
   };

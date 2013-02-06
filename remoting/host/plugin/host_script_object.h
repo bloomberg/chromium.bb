@@ -105,7 +105,9 @@ class HostNPScriptObject {
   //////////////////////////////////////////////////////////
   // Plugin methods for Me2Me host.
 
-  // Returns host name. No arguments.
+  // Fetches the host name, passing it to the supplied callback. Args are:
+  //   function(string) callback
+  // Returns false if the parameters are invalid.
   bool GetHostName(const NPVariant* args,
                    uint32_t arg_count,
                    NPVariant* result);
@@ -113,7 +115,9 @@ class HostNPScriptObject {
   // Calculates PIN hash value to be stored in the config. Args are:
   //   string hostId Host ID.
   //   string pin The PIN.
-  // Returns the resulting hash value encoded with Base64.
+  //   function(string) callback
+  // Passes the resulting hash value base64-encoded to the callback.
+  // Returns false if the parameters are invalid.
   bool GetPinHash(const NPVariant* args,
                   uint32_t arg_count,
                   NPVariant* result);
