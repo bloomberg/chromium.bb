@@ -37,7 +37,7 @@ class MTPRecursiveDeviceObjectEnumerator
   virtual ~MTPRecursiveDeviceObjectEnumerator();
 
   // AbstractFileEnumerator:
-  virtual FilePath Next() OVERRIDE;
+  virtual base::FilePath Next() OVERRIDE;
   virtual int64 Size() OVERRIDE;
   virtual bool IsDirectory() OVERRIDE;
   virtual base::Time LastModifiedTime() OVERRIDE;

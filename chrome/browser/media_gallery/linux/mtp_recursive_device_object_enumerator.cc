@@ -30,12 +30,12 @@ MTPRecursiveDeviceObjectEnumerator::MTPRecursiveDeviceObjectEnumerator(
 MTPRecursiveDeviceObjectEnumerator::~MTPRecursiveDeviceObjectEnumerator() {
 }
 
-FilePath MTPRecursiveDeviceObjectEnumerator::Next() {
+base::FilePath MTPRecursiveDeviceObjectEnumerator::Next() {
   if (on_shutdown_event_->IsSignaled()) {
     // Process is in shut down mode.
-    return FilePath();
+    return base::FilePath();
   }
-  FilePath path = current_enumerator_->Next();
+  base::FilePath path = current_enumerator_->Next();
   if (path.empty()) {
     scoped_ptr<MTPDeviceObjectEnumerator> next_enumerator =
         GetNextSubdirectoryEnumerator();
@@ -46,7 +46,7 @@ FilePath MTPRecursiveDeviceObjectEnumerator::Next() {
       // If there's no |next_enumerator|, then |current_enumerator_| is the
       // last enumerator and it remains in its end state. Thus it is retained
       // to act as an EmptyFileEnumerator. Return early since this is the end.
-      return FilePath();
+      return base::FilePath();
     }
   }
 

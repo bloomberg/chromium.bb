@@ -31,7 +31,7 @@ class MTPReadFileWorker
   MTPReadFileWorker(const std::string& handle,
                     const std::string& src_path,
                     uint32 total_size,
-                    const FilePath& dest_path,
+                    const base::FilePath& dest_path,
                     base::SequencedTaskRunner* task_runner,
                     base::WaitableEvent* task_completed_event,
                     base::WaitableEvent* shutdown_event);
@@ -79,7 +79,7 @@ class MTPReadFileWorker
   const uint32 total_bytes_;
 
   // Where to write the data read from the device.
-  const FilePath dest_path_;
+  const base::FilePath dest_path_;
 
   /****************************************************************************
    * The variables below are accessed on both |media_task_runner_| and the UI

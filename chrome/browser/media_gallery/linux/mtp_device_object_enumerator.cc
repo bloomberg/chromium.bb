@@ -18,15 +18,15 @@ MTPDeviceObjectEnumerator::MTPDeviceObjectEnumerator(
 MTPDeviceObjectEnumerator::~MTPDeviceObjectEnumerator() {
 }
 
-FilePath MTPDeviceObjectEnumerator::Next() {
+base::FilePath MTPDeviceObjectEnumerator::Next() {
   if (IsIndexReadyAndInRange())
     ++index_;  // Normal traversal.
   else if (!is_index_ready_)
     is_index_ready_ = true;  // First time calling Next().
 
   if (!HasMoreEntries())
-    return FilePath();
-  return FilePath(file_entries_[index_].file_name());
+    return base::FilePath();
+  return base::FilePath(file_entries_[index_].file_name());
 }
 
 int64 MTPDeviceObjectEnumerator::Size() {
