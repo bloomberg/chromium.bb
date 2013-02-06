@@ -491,6 +491,8 @@ void TileManager::AssignGpuMemoryToTiles() {
                         "budget", global_state_.memory_limit_in_bytes,
                         "over", bytes_that_exceeded_memory_budget);
   }
+  memory_stats_from_last_assign_.total_budget_in_bytes =
+      global_state_.memory_limit_in_bytes;
   memory_stats_from_last_assign_.bytes_allocated =
       bytes_allocatable - bytes_left;
   memory_stats_from_last_assign_.bytes_unreleasable = unreleasable_bytes;

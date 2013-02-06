@@ -410,13 +410,19 @@ int HeadsUpDisplayLayerImpl::drawMemoryDisplay(SkCanvas* canvas, MemoryHistory* 
     double curMB = curEntry.bytes_total() / megabyte;
 
     text = base::StringPrintf(
-        "%6.1f MB used",
+        "%6.1f MB GPU memory used",
         (curEntry.bytes_unreleasable + curEntry.bytes_allocated) / megabyte);
     drawTextLeftAligned(canvas, &paint, textRun1, text);
 
-    text = base::StringPrintf(
-        "%6.1f MB over budget",
-        (curEntry.bytes_over) / megabyte);
+    if (curEntry.bytes_over) {
+      text = base::StringPrintf(
+          "%6.1f MB over",
+          (curEntry.bytes_over) / megabyte);
+    } else {
+      text = base::StringPrintf(
+          "%6.1f MB maximum",
+          (curEntry.total_budget_in_bytes) / megabyte);
+    }
     drawTextLeftAligned(canvas, &paint, textRun2, text);
 
     return top + height + 2;

@@ -21,9 +21,12 @@ class MemoryHistory {
 
   struct Entry {
   Entry()
-      : bytes_allocated(0),
+      : total_budget_in_bytes(0),
+        bytes_allocated(0),
+        bytes_unreleasable(0),
         bytes_over(0) { }
 
+      size_t total_budget_in_bytes;
       size_t bytes_allocated;
       size_t bytes_unreleasable;
       size_t bytes_over;
