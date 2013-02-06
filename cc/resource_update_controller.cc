@@ -37,14 +37,14 @@ const size_t maxBlockingUpdateIntervals = 4;
 skia::RefPtr<SkCanvas> createAcceleratedCanvas(
     GrContext* grContext, gfx::Size canvasSize, unsigned textureId)
 {
-    GrPlatformTextureDesc textureDesc;
-    textureDesc.fFlags = kRenderTarget_GrPlatformTextureFlag;
+    GrBackendTextureDesc textureDesc;
+    textureDesc.fFlags = kRenderTarget_GrBackendTextureFlag;
     textureDesc.fWidth = canvasSize.width();
     textureDesc.fHeight = canvasSize.height();
     textureDesc.fConfig = kSkia8888_GrPixelConfig;
     textureDesc.fTextureHandle = textureId;
     skia::RefPtr<GrTexture> target =
-        skia::AdoptRef(grContext->createPlatformTexture(textureDesc));
+        skia::AdoptRef(grContext->wrapBackendTexture(textureDesc));
     skia::RefPtr<SkDevice> device =
         skia::AdoptRef(new SkGpuDevice(grContext, target.get()));
     return skia::AdoptRef(new SkCanvas(device.get()));

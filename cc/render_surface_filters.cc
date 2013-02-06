@@ -242,12 +242,12 @@ public:
         , m_currentTexture(0)
     {
         // Wrap the source texture in a Ganesh platform texture.
-        GrPlatformTextureDesc platformTextureDescription;
-        platformTextureDescription.fWidth = size.width();
-        platformTextureDescription.fHeight = size.height();
-        platformTextureDescription.fConfig = kSkia8888_GrPixelConfig;
-        platformTextureDescription.fTextureHandle = textureId;
-        skia::RefPtr<GrTexture> texture = skia::AdoptRef(grContext->createPlatformTexture(platformTextureDescription));
+        GrBackendTextureDesc backendTextureDescription;
+        backendTextureDescription.fWidth = size.width();
+        backendTextureDescription.fHeight = size.height();
+        backendTextureDescription.fConfig = kSkia8888_GrPixelConfig;
+        backendTextureDescription.fTextureHandle = textureId;
+        skia::RefPtr<GrTexture> texture = skia::AdoptRef(grContext->wrapBackendTexture(backendTextureDescription));
         // Place the platform texture inside an SkBitmap.
         m_source.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
         skia::RefPtr<SkGrPixelRef> pixelRef = skia::AdoptRef(new SkGrPixelRef(texture.get()));

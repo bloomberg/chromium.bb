@@ -417,12 +417,12 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     ResourceProvider::ScopedWriteLockGL lock(renderer->resourceProvider(), sourceTexture->id());
 
     // Wrap the source texture in a Ganesh platform texture.
-    GrPlatformTextureDesc platformTextureDescription;
-    platformTextureDescription.fWidth = sourceTexture->size().width();
-    platformTextureDescription.fHeight = sourceTexture->size().height();
-    platformTextureDescription.fConfig = kSkia8888_GrPixelConfig;
-    platformTextureDescription.fTextureHandle = lock.textureId();
-    skia::RefPtr<GrTexture> texture = skia::AdoptRef(grContext->createPlatformTexture(platformTextureDescription));
+    GrBackendTextureDesc backendTextureDescription;
+    backendTextureDescription.fWidth = sourceTexture->size().width();
+    backendTextureDescription.fHeight = sourceTexture->size().height();
+    backendTextureDescription.fConfig = kSkia8888_GrPixelConfig;
+    backendTextureDescription.fTextureHandle = lock.textureId();
+    skia::RefPtr<GrTexture> texture = skia::AdoptRef(grContext->wrapBackendTexture(backendTextureDescription));
 
     // Place the platform texture inside an SkBitmap.
     SkBitmap source;
