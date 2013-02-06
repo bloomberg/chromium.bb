@@ -42,7 +42,6 @@
       'app/nibs/ImportProgressDialog.xib',
       'app/nibs/MainMenu.xib',
       'app/nibs/OneClickSigninBubble.xib',
-      'app/nibs/OneClickSigninDialog.xib',
       'app/nibs/SadTab.xib',
       'app/nibs/SaveAccessoryView.xib',
       'app/nibs/SpeechRecognitionBubble.xib',
