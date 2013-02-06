@@ -402,7 +402,7 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
         base::Value::CreateStringValue(state));
   }
 
-  virtual void RemoveService(const std::string& service_path) {
+  virtual void RemoveService(const std::string& service_path) OVERRIDE {
     stub_services_.RemoveWithoutPathExpansion(service_path, NULL);
   }
 

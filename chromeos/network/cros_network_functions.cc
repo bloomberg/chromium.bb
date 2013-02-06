@@ -44,7 +44,7 @@ class NetworkManagerPropertiesWatcher
   }
 
   virtual void OnPropertyChanged(const std::string& name,
-                                 const base::Value& value) {
+                                 const base::Value& value) OVERRIDE {
     callback_.Run(flimflam::kFlimflamServicePath, name, value);
   }
  private:
@@ -70,7 +70,7 @@ class NetworkServicePropertiesWatcher
   }
 
   virtual void OnPropertyChanged(const std::string& name,
-                                 const base::Value& value) {
+                                 const base::Value& value) OVERRIDE {
     callback_.Run(service_path_, name, value);
   }
 
@@ -98,7 +98,7 @@ class NetworkDevicePropertiesWatcher
   }
 
   virtual void OnPropertyChanged(const std::string& name,
-                                 const base::Value& value) {
+                                 const base::Value& value) OVERRIDE {
     callback_.Run(device_path_, name, value);
   }
 

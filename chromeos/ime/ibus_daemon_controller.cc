@@ -19,37 +19,38 @@ class IBusDaemonControllerImpl : public IBusDaemonController {
  public:
   IBusDaemonControllerImpl() {}
 
-  ~IBusDaemonControllerImpl() {}
+  virtual ~IBusDaemonControllerImpl() {}
 
   // IBusDaemonController override:
-  void Initialize(
+  virtual void Initialize(
       const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
+      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner)
+      OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
     // TODO(nona): Implement this.
   }
 
   // IBusDaemonController override:
-  void AddObserver(Observer* observer) {
+  virtual void AddObserver(Observer* observer) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
     // TODO(nona): Implement this.
   }
 
   // IBusDaemonController override:
-  void RemoveObserver(Observer* observer) {
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
     // TODO(nona): Implement this.
   }
 
   // IBusDaemonController override:
-  bool Start() OVERRIDE {
+  virtual bool Start() OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
     // TODO(nona): Implement this.
     return true;
   }
 
   // IBusDaemonController override:
-  bool Stop() OVERRIDE {
+  virtual bool Stop() OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
     // TODO(nona): Implement this.
     return true;
@@ -67,7 +68,7 @@ class IBusDaemonControllerStubImpl : public IBusDaemonController {
   virtual ~IBusDaemonControllerStubImpl() {}
 
   // IBusDaemonController overrides:
-  void Initialize(
+  virtual void Initialize(
       const scoped_refptr<base::SequencedTaskRunner>& ui_runner,
       const scoped_refptr<base::SequencedTaskRunner>& file_runner) OVERRIDE {}
   virtual void AddObserver(Observer* observer) OVERRIDE {}

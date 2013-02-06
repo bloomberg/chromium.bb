@@ -27,7 +27,7 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
       : bus_(bus) {
   }
 
-  ~ShillDeviceClientImpl() {
+  virtual ~ShillDeviceClientImpl() {
     for (HelperMap::iterator iter = helpers_.begin();
          iter != helpers_.end(); ++iter) {
       // This *should* never happen, yet we're getting crash reports that
@@ -429,7 +429,7 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
 
   virtual void SetDeviceProperty(const std::string& device_path,
                                  const std::string& name,
-                                 const base::Value& value) {
+                                 const base::Value& value) OVERRIDE {
     SetProperty(dbus::ObjectPath(device_path), name, value,
                 base::Bind(&base::DoNothing),
                 base::Bind(&ShillDeviceClientStubImpl::ErrorFunction));

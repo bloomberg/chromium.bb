@@ -58,7 +58,7 @@ class StringSubstitutionStub : public StringSubstitution {
  public:
   StringSubstitutionStub() {}
   virtual bool GetSubstitute(std::string placeholder,
-                             std::string* substitute) const {
+                             std::string* substitute) const OVERRIDE {
     if (placeholder == substitutes::kLoginIDField)
       *substitute = kLoginId;
     else if (placeholder == substitutes::kEmailField)

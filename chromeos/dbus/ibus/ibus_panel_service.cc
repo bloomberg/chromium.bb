@@ -137,14 +137,14 @@ class IBusPanelServiceImpl : public IBusPanelService {
 
   // IBusPanelService override.
   virtual void SetUpCandidateWindowHandler(
-      IBusPanelCandidateWindowHandlerInterface* handler) {
+      IBusPanelCandidateWindowHandlerInterface* handler) OVERRIDE {
     DCHECK(handler);
     candidate_window_handler_ = handler;
   }
 
   // IBusPanelService override.
   virtual void SetUpPropertyHandler(
-      IBusPanelPropertyHandlerInterface* handler) {
+      IBusPanelPropertyHandlerInterface* handler) OVERRIDE {
     DCHECK(handler);
     property_handler_ = handler;
   }
@@ -399,13 +399,13 @@ class IBusPanelServiceDaemonlessImpl : public IBusPanelService {
 
   // IBusPanelService override.
   virtual void SetUpCandidateWindowHandler(
-      IBusPanelCandidateWindowHandlerInterface* handler) {
+      IBusPanelCandidateWindowHandlerInterface* handler) OVERRIDE {
     // TODO(nona): Implement this.
   }
 
   // IBusPanelService override.
   virtual void SetUpPropertyHandler(
-      IBusPanelPropertyHandlerInterface* handler) {
+      IBusPanelPropertyHandlerInterface* handler) OVERRIDE {
     // TODO(nona): Implement this.
   }
 

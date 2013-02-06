@@ -191,7 +191,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   virtual void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_name,
-      const RetrievePolicyCallback& callback) {
+      const RetrievePolicyCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
         login_manager::kSessionManagerRetrieveDeviceLocalAccountPolicy);
