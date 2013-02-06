@@ -189,7 +189,6 @@
       'webapp/server_log_entry.js',
       'webapp/stats_accumulator.js',
       'webapp/storage.js',
-      'webapp/suspend_monitor.js',
       'webapp/toolbar.js',
       'webapp/ui_mode.js',
       'webapp/wcs.js',

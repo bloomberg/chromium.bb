@@ -128,7 +128,7 @@ remoting.onVisibilityChanged = function() {
  */
 remoting.disconnect = function() {
   if (remoting.clientSession) {
-    remoting.clientSession.disconnect();
+    remoting.clientSession.disconnect(true);
     remoting.clientSession = null;
     console.log('Disconnected.');
     if (remoting.currentConnectionType == remoting.ClientSession.Mode.IT2ME) {
@@ -351,7 +351,7 @@ function showConnectError_(errorTag) {
   l10n.localizeElementFromTag(errorDiv, /** @type {string} */ (errorTag));
   remoting.accessCode = '';
   if (remoting.clientSession) {
-    remoting.clientSession.disconnect();
+    remoting.clientSession.disconnect(false);
     remoting.clientSession = null;
   }
   if (remoting.currentConnectionType == remoting.ClientSession.Mode.IT2ME) {
@@ -538,8 +538,8 @@ function connectMe2MeWithAccessToken_(token, clientJid) {
           remoting.hostJid, clientJid, remoting.hostPublicKey,
           pin, 'spake2_hmac,spake2_plain', remoting.hostId,
           remoting.ClientSession.Mode.ME2ME, onClientStateChange_);
-  // Don't log errors for cached JIDs.
-  remoting.clientSession.logErrors(!remoting.retryIfOffline);
+  // Don't log host offline errors for cached JIDs.
+  remoting.clientSession.logHostOfflineErrors(!remoting.retryIfOffline);
   remoting.clientSession.createPluginAndConnect(
       document.getElementById('session-mode'));
 }

@@ -58,13 +58,6 @@ remoting.init = function() {
   remoting.toolbar = new remoting.Toolbar(
       document.getElementById('session-toolbar'));
   remoting.clipboard = new remoting.Clipboard();
-  remoting.suspendMonitor = new remoting.SuspendMonitor(
-      function() {
-        if (remoting.clientSession) {
-          remoting.clientSession.logErrors(false);
-        }
-      }
-  );
   var sandbox = /** @type {HTMLIFrameElement} */
       document.getElementById('wcs-sandbox');
   remoting.wcsSandbox = new remoting.WcsSandboxContainer(sandbox.contentWindow);

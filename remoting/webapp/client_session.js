@@ -70,12 +70,12 @@ remoting.ClientSession = function(hostJid, clientJid,
   this.bumpScrollTimer_ = null;
 
   /**
-   * Allow error reporting to be suppressed in situations where it would not
-   * be useful, for example, when the device is offline.
+   * Allow host-offline error reporting to be suppressed in situations where it
+   * would not be useful, for example, when using a cached host JID.
    *
    * @type {boolean} @private
    */
-  this.logErrors_ = true;
+  this.logHostOfflineErrors_ = true;
 
   /** @private */
   this.callPluginLostFocus_ = this.pluginLostFocus_.bind(this);
@@ -124,6 +124,7 @@ remoting.ClientSession = function(hostJid, clientJid,
 // no corresponding plugin state transition.
 /** @enum {number} */
 remoting.ClientSession.State = {
+  CONNECTION_CANCELED: -5,  // Connection closed (gracefully) before connecting.
   CONNECTION_DROPPED: -4,  // Succeeded, but subsequently closed with an error.
   CREATED: -3,
   BAD_PLUGIN_VERSION: -2,
@@ -379,14 +380,18 @@ remoting.ClientSession.prototype.removePlugin = function() {
 /**
  * Deletes the <embed> element from the container and disconnects.
  *
+ * @param {boolean} isUserInitiated True for user-initiated disconnects, False
+ *     for disconnects due to connection failures.
  * @return {void} Nothing.
  */
-remoting.ClientSession.prototype.disconnect = function() {
-  // The plugin won't send a state change notification, so we explicitly log
-  // the fact that the connection has closed.
-  this.logToServer.logClientSessionStateChange(
-      remoting.ClientSession.State.CLOSED,
-      remoting.ClientSession.ConnectionError.NONE, this.mode);
+remoting.ClientSession.prototype.disconnect = function(isUserInitiated) {
+  if (isUserInitiated) {
+    // The plugin won't send a state change notification, so we explicitly log
+    // the fact that the connection has closed.
+    this.logToServer.logClientSessionStateChange(
+        remoting.ClientSession.State.CLOSED,
+        remoting.ClientSession.ConnectionError.NONE, this.mode);
+  }
   remoting.wcsSandbox.setOnIq(null);
   this.sendIq_(
       '<cli:iq ' +
@@ -632,22 +637,26 @@ remoting.ClientSession.prototype.onConnectionReady_ = function(ready) {
 remoting.ClientSession.prototype.setState_ = function(newState) {
   var oldState = this.state;
   this.state = newState;
+  var state = this.state;
+  if (oldState == remoting.ClientSession.State.CONNECTING) {
+    if (this.state == remoting.ClientSession.State.CLOSED) {
+      state = remoting.ClientSession.State.CONNECTION_CANCELED;
+    } else if (this.state == remoting.ClientSession.State.FAILED &&
+        this.error == remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE &&
+        !this.logHostOfflineErrors_) {
+      // The upper layer requested host-offline errors to be suppressed, for
+      // example, because this connection attempt is using a cached host JID.
+      console.log('Suppressing host-offline error.');
+      state = remoting.ClientSession.State.CONNECTION_CANCELED;
+    }
+  } else if (oldState == remoting.ClientSession.State.CONNECTED &&
+             this.state == remoting.ClientSession.State.FAILED) {
+    state = remoting.ClientSession.State.CONNECTION_DROPPED;
+  }
+  this.logToServer.logClientSessionStateChange(state, this.error, this.mode);
   if (this.onStateChange) {
     this.onStateChange(oldState, newState);
   }
-  // If connection errors are being suppressed from the logs, translate
-  // FAILED to CLOSED here. This ensures that the duration is still logged.
-  var state = this.state;
-  if (this.state == remoting.ClientSession.State.FAILED) {
-    if (oldState == remoting.ClientSession.State.CONNECTING &&
-        !this.logErrors_) {
-      console.log('Suppressing error.');
-      state = remoting.ClientSession.State.CLOSED;
-    } else if (oldState == remoting.ClientSession.State.CONNECTED) {
-      state = remoting.ClientSession.State.CONNECTION_DROPPED;
-    }
-  }
-  this.logToServer.logClientSessionStateChange(state, this.error, this.mode);
 };
 
 /**
@@ -831,14 +840,15 @@ remoting.ClientSession.prototype.logStatistics = function(stats) {
 };
 
 /**
- * Enable or disable logging of connection errors. For example, if attempting
- * a connection using a cached JID, errors should not be logged because the
- * JID will be refreshed and the connection retried.
+ * Enable or disable logging of connection errors due to a host being offline.
+ * For example, if attempting a connection using a cached JID, host-offline
+ * errors should not be logged because the JID will be refreshed and the
+ * connection retried.
  *
- * @param {boolean} enable True to log errors; false to suppress them.
+ * @param {boolean} enable True to log host-offline errors; false to suppress.
  */
-remoting.ClientSession.prototype.logErrors = function(enable) {
-  this.logErrors_ = enable;
+remoting.ClientSession.prototype.logHostOfflineErrors = function(enable) {
+  this.logHostOfflineErrors_ = enable;
 };
 
 /**

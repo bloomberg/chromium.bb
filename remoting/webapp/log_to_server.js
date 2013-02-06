@@ -69,11 +69,13 @@ remoting.LogToServer.prototype.logClientSessionStateChange =
   entry.addWebappVersionField();
   entry.addSessionIdField(this.sessionId);
   // Maybe clear the session start time, and log the session duration.
-  if (remoting.LogToServer.isEndOfSession(state) &&
+  if (remoting.LogToServer.shouldAddDuration(state) &&
       (this.sessionStartTime != 0)) {
     entry.addSessionDurationField(
         (new Date().getTime() - this.sessionStartTime) / 1000.0);
-    this.sessionStartTime = 0;
+    if (remoting.LogToServer.isEndOfSession(state)) {
+      this.sessionStartTime = 0;
+    }
   }
   this.log(entry);
   // Don't accumulate connection statistics across state changes.
@@ -110,7 +112,23 @@ remoting.LogToServer.isStartOfSession = function(state) {
 remoting.LogToServer.isEndOfSession = function(state) {
   return ((state == remoting.ClientSession.State.CLOSED) ||
       (state == remoting.ClientSession.State.FAILED) ||
-      (state == remoting.ClientSession.State.CONNECTION_DROPPED));
+      (state == remoting.ClientSession.State.CONNECTION_DROPPED) ||
+      (state == remoting.ClientSession.State.CONNECTION_CANCELED));
+};
+
+/**
+ * Whether the duration should be added to the log entry for this state.
+ *
+ * @private
+ * @param {remoting.ClientSession.State} state
+ * @return {boolean}
+ */
+remoting.LogToServer.shouldAddDuration = function(state) {
+  // Duration is added to log entries at the end of the session, as well as at
+  // some intermediate states where it is relevant (e.g. to determine how long
+  // it took for a session to become CONNECTED).
+  return (remoting.LogToServer.isEndOfSession(state) ||
+      (state == remoting.ClientSession.State.CONNECTED));
 };
 
 /**
