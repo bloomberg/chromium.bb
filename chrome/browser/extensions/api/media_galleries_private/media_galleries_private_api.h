@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/api/media_galleries_private/gallery_watch_state_tracker.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
@@ -17,7 +18,6 @@ class Profile;
 
 namespace extensions {
 
-class MediaGalleryExtensionNotificationObserver;
 class MediaGalleriesPrivateEventRouter;
 
 // The profile-keyed service that manages the media galleries private extension
@@ -41,6 +41,7 @@ class MediaGalleriesPrivateAPI : public ProfileKeyedAPI,
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
 
   MediaGalleriesPrivateEventRouter* GetEventRouter();
+  GalleryWatchStateTracker* GetGalleryWatchStateTracker();
 
  private:
   friend class ProfileKeyedAPIFactory<MediaGalleriesPrivateAPI>;
@@ -56,8 +57,7 @@ class MediaGalleriesPrivateAPI : public ProfileKeyedAPI,
   // Current profile.
   Profile* profile_;
 
-  scoped_ptr<MediaGalleryExtensionNotificationObserver>
-      extension_notification_observer_;
+  GalleryWatchStateTracker tracker_;
 
   // Created lazily on first access.
   scoped_ptr<MediaGalleriesPrivateEventRouter>

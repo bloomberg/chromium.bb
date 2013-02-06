@@ -102,6 +102,15 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
   MediaGalleryPrefIdSet LookUpGalleriesByDeviceId(
       const std::string& device_id) const;
 
+  // Returns the absolute file path of the gallery specified by the
+  // |gallery_id|. Returns an empty file path if the |gallery_id| is invalid.
+  // Set |include_unpermitted_galleries| to true to get the file path of the
+  // gallery to which this |extension| has no access permission.
+  base::FilePath LookUpGalleryPathForExtension(
+      MediaGalleryPrefId gallery_id,
+      const extensions::Extension* extension,
+      bool include_unpermitted_galleries);
+
   // Teaches the registry about a new gallery.
   // Returns the gallery's pref id.
   MediaGalleryPrefId AddGallery(const std::string& device_id,

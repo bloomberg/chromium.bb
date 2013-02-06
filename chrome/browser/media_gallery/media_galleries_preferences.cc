@@ -8,6 +8,8 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/media_galleries_private/gallery_watch_state_tracker.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -265,6 +267,22 @@ MediaGalleryPrefIdSet MediaGalleriesPreferences::LookUpGalleriesByDeviceId(
   return found->second;
 }
 
+base::FilePath MediaGalleriesPreferences::LookUpGalleryPathForExtension(
+    MediaGalleryPrefId gallery_id,
+    const extensions::Extension* extension,
+    bool include_unpermitted_galleries) {
+  DCHECK(extension);
+  if (!include_unpermitted_galleries &&
+      !ContainsKey(GalleriesForExtension(*extension), gallery_id))
+    return base::FilePath();
+
+  MediaGalleriesPrefInfoMap::const_iterator it =
+      known_galleries_.find(gallery_id);
+  if (it == known_galleries_.end())
+    return base::FilePath();
+  return MediaStorageUtil::FindDevicePathById(it->second.device_id);
+}
+
 MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
     const std::string& device_id, const string16& display_name,
     const base::FilePath& relative_path, bool user_added) {
@@ -413,10 +431,20 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
   if (gallery_info == known_galleries_.end())
     return;
 
+#if defined(ENABLE_EXTENSIONS)
+  extensions::GalleryWatchStateTracker* state_tracker =
+      extensions::GalleryWatchStateTracker::GetForProfile(profile_);
+#endif
   bool all_permission = HasAutoDetectedGalleryPermission(extension);
   if (has_permission && all_permission) {
     if (gallery_info->second.type == MediaGalleryPrefInfo::kAutoDetected) {
       GetExtensionPrefs()->UnsetMediaGalleryPermission(extension.id(), pref_id);
+#if defined(ENABLE_EXTENSIONS)
+      if (state_tracker) {
+        state_tracker->OnGalleryPermissionChanged(extension.id(), pref_id,
+                                                  true);
+      }
+#endif
       return;
     }
   }
@@ -427,6 +455,12 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
     GetExtensionPrefs()->SetMediaGalleryPermission(extension.id(), pref_id,
                                                    has_permission);
   }
+#if defined(ENABLE_EXTENSIONS)
+  if (state_tracker) {
+    state_tracker->OnGalleryPermissionChanged(extension.id(), pref_id,
+                                              has_permission);
+  }
+#endif
 }
 
 void MediaGalleriesPreferences::Shutdown() {

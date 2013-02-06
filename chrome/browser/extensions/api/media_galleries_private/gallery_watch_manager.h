@@ -34,38 +34,61 @@ class GalleryWatchManager {
   // Notifies about the profile shutdown event.
   static void OnProfileShutdown(void* profile_id);
 
+  // Sets up a gallery watch for the extension specified by the |extension_id|.
+  // |profile_id| specifies the extension profile identifier.
+  // |gallery_id| specifies the gallery identifier.
+  // |watch_path| specifies the absolute gallery path.
+  // Returns true, if the watch setup operation was successful.
+  static bool SetupGalleryWatch(
+      void* profile_id,
+      chrome::MediaGalleryPrefId gallery_id,
+      const base::FilePath& watch_path,
+      const std::string& extension_id,
+      base::WeakPtr<MediaGalleriesPrivateEventRouter> event_router);
+
+  // Cancels the gallery watch for the extension specified by the
+  // |extension_id|. |profile_id| specifies the extension profile identifier.
+  // |watch_path| specifies the absolute gallery path.
+  static void RemoveGalleryWatch(void* profile_id,
+                                 const base::FilePath& watch_path,
+                                 const std::string& extension_id);
+
+  // Notifies about the extension unloaded/uninstalled event.
+  static void OnExtensionUnloaded(void* profile_id,
+                                  const std::string& extension_id);
+
+ private:
+  class GalleryFilePathWatcher;
+  typedef std::map<base::FilePath, GalleryFilePathWatcher*> WatcherMap;
+
+  // Use GetForProfile().
+  GalleryWatchManager();
+  ~GalleryWatchManager();
+
   // Initiates a gallery watch operation for the extension specified by
   // the |extension_id|. |gallery_id| specifies the gallery identifier and
   // |watch_path| specifies the absolute path of the gallery. Returns true,
   // if the watch was set successfully.
   bool StartGalleryWatch(
       chrome::MediaGalleryPrefId gallery_id,
-      const FilePath& watch_path,
+      const base::FilePath& watch_path,
       const std::string& extension_id,
       base::WeakPtr<MediaGalleriesPrivateEventRouter> event_router);
 
   // Cancels the gallery watch operation for the extension specified by the
   // |extension_id|. |watch_path| specifies the absolute path of the gallery.
-  void StopGalleryWatch(const FilePath& watch_path,
+  void StopGalleryWatch(const base::FilePath& watch_path,
                         const std::string& extension_id);
 
-  // Handles the extension unloaded/uninstalled/destroyed event.
-  void OnExtensionDestroyed(const std::string& extension_id);
-
- private:
-  class GalleryFilePathWatcher;
-  typedef std::map<FilePath, GalleryFilePathWatcher* > WatcherMap;
-
-  // Use GetForProfile().
-  GalleryWatchManager();
-  ~GalleryWatchManager();
+  // Handles the extension unloaded/uninstalled event.
+  void HandleExtensionUnloadedEvent(const std::string& extension_id);
 
   // Deletes the gallery watchers.
   void DeleteAllWatchers();
 
   // Removes the GalleryFilePathWatcher entry associated with the given
   // |watch_path|.
-  void RemoveGalleryFilePathWatcherEntry(const FilePath& watch_path);
+  void RemoveGalleryFilePathWatcherEntry(const base::FilePath& watch_path);
 
   // Map to manage the gallery file path watchers.
   // Key: Gallery watch path.
