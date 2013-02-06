@@ -20,7 +20,6 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   virtual void onCanDrawStateChanged(bool) OVERRIDE { }
   virtual void onHasPendingTreeStateChanged(bool) OVERRIDE { }
   virtual void setNeedsRedrawOnImplThread() OVERRIDE { }
-  virtual void didSwapUseIncompleteTileOnImplThread() OVERRIDE { }
   virtual void didUploadVisibleHighResolutionTileOnImplThread() OVERRIDE { }
   virtual void setNeedsCommitOnImplThread() OVERRIDE { }
   virtual void setNeedsManageTilesOnImplThread() OVERRIDE { }

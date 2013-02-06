@@ -228,6 +228,7 @@ public:
     gfx::Size contentBounds() const { return m_drawProperties.content_bounds; }
     virtual void calculateContentsScale(
         float idealContentsScale,
+        bool animatingTransformToScreen,
         float* contentsScaleX,
         float* contentsScaleY,
         gfx::Size* contentBounds);

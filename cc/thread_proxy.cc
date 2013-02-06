@@ -847,8 +847,12 @@ ScheduledActionDrawAndSwapResult ThreadProxy::scheduledActionDrawAndSwapInternal
         }
         m_readbackRequestOnImplThread->completion.signal();
         m_readbackRequestOnImplThread = 0;
-    } else if (drawFrame)
+    } else if (drawFrame) {
         result.didSwap = m_layerTreeHostImpl->swapBuffers();
+
+        if (frame.containsIncompleteTile)
+          didSwapUseIncompleteTileOnImplThread();
+    }
 
     // Tell the main thread that the the newly-commited frame was drawn.
     if (m_nextFrameIsNewlyCommittedFrameOnImplThread) {

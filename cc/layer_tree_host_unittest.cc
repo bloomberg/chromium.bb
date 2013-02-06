@@ -865,12 +865,15 @@ public:
 
     virtual void calculateContentsScale(
         float idealContentsScale,
+        bool animatingTransformToScreen,
         float* contentsScaleX,
         float* contentsScaleY,
         gfx::Size* contentBounds) OVERRIDE
     {
+        // Skip over the ContentLayer's method to the base Layer class.
         Layer::calculateContentsScale(
              idealContentsScale,
+             animatingTransformToScreen,
              contentsScaleX,
              contentsScaleY,
              contentBounds);

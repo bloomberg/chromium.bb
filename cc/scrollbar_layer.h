@@ -41,6 +41,7 @@ public:
     virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
     virtual void calculateContentsScale(
         float idealContentsScale,
+        bool animatingTransformToScreen,
         float* contentsScaleX,
         float* contentsScaleY,
         gfx::Size* contentBounds) OVERRIDE;

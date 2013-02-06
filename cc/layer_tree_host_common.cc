@@ -405,10 +405,11 @@ gfx::Transform computeScrollCompensationMatrixForChildren(LayerImpl* layer, cons
 }
 
 template<typename LayerType>
-static inline void calculateContentsScale(LayerType* layer, float contentsScale)
+static inline void calculateContentsScale(LayerType* layer, float contentsScale, bool animatingTransformToScreen)
 {
     layer->calculateContentsScale(
         contentsScale,
+        animatingTransformToScreen,
         &layer->drawProperties().contents_scale_x,
         &layer->drawProperties().contents_scale_y,
         &layer->drawProperties().content_bounds);
@@ -418,6 +419,7 @@ static inline void calculateContentsScale(LayerType* layer, float contentsScale)
     {
         maskLayer->calculateContentsScale(
             contentsScale,
+            animatingTransformToScreen,
             &maskLayer->drawProperties().contents_scale_x,
             &maskLayer->drawProperties().contents_scale_y,
             &maskLayer->drawProperties().content_bounds);
@@ -428,6 +430,7 @@ static inline void calculateContentsScale(LayerType* layer, float contentsScale)
     {
         replicaMaskLayer->calculateContentsScale(
             contentsScale,
+            animatingTransformToScreen,
             &replicaMaskLayer->drawProperties().contents_scale_x,
             &replicaMaskLayer->drawProperties().contents_scale_y,
             &replicaMaskLayer->drawProperties().content_bounds);
@@ -438,7 +441,7 @@ static inline void updateLayerContentsScale(LayerImpl* layer, const gfx::Transfo
 {
     gfx::Vector2dF transformScale = MathUtil::computeTransform2dScaleComponents(combinedTransform, deviceScaleFactor * pageScaleFactor);
     float contentsScale = std::max(transformScale.x(), transformScale.y());
-    calculateContentsScale(layer, contentsScale);
+    calculateContentsScale(layer, contentsScale, animatingTransformToScreen);
 }
 
 static inline void updateLayerContentsScale(Layer* layer, const gfx::Transform& combinedTransform, float deviceScaleFactor, float pageScaleFactor, bool animatingTransformToScreen)
@@ -465,7 +468,7 @@ static inline void updateLayerContentsScale(Layer* layer, const gfx::Transform& 
     if (!layer->boundsContainPageScale())
         contentsScale *= pageScaleFactor;
 
-    calculateContentsScale(layer, contentsScale);
+    calculateContentsScale(layer, contentsScale, animatingTransformToScreen);
 }
 
 template<typename LayerType, typename LayerList>

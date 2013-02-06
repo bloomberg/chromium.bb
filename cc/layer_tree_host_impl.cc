@@ -120,6 +120,7 @@ private:
 };
 
 LayerTreeHostImpl::FrameData::FrameData()
+    : containsIncompleteTile(false)
 {
 }
 
@@ -509,6 +510,9 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
                 drawFrame = false;
         }
 
+        if (appendQuadsData.hadIncompleteTile) 
+            frame.containsIncompleteTile = true;
+
         occlusionTracker.leaveLayer(it);
     }
 
@@ -843,15 +847,7 @@ const RendererCapabilities& LayerTreeHostImpl::rendererCapabilities() const
 
 bool LayerTreeHostImpl::swapBuffers()
 {
-    DCHECK(m_renderer);
-    bool result = m_renderer->swapBuffers();
-
-    if (m_settings.implSidePainting &&
-        !activeTree()->AreVisibleResourcesReady()) {
-        m_client->didSwapUseIncompleteTileOnImplThread();
-    }
-
-    return result;
+    return m_renderer->swapBuffers();
 }
 
 const gfx::Size& LayerTreeHostImpl::deviceViewportSize() const

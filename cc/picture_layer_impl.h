@@ -40,6 +40,7 @@ public:
   virtual void didLoseOutputSurface() OVERRIDE;
   virtual void calculateContentsScale(
       float ideal_contents_scale,
+      bool animating_transform_to_screen,
       float* contents_scale_x,
       float* contents_scale_y,
       gfx::Size* content_bounds) OVERRIDE;
@@ -73,7 +74,7 @@ protected:
   PictureLayerTiling* AddTiling(float contents_scale);
   void RemoveTiling(float contents_scale);
   void SyncFromActiveLayer(const PictureLayerImpl* other);
-  void ManageTilings();
+  void ManageTilings(bool animating_transform_to_screen);
   void CleanUpTilingsOnActiveLayer(
       std::vector<PictureLayerTiling*> used_tilings);
   PictureLayerImpl* PendingTwin() const;

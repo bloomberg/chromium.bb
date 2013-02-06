@@ -314,6 +314,7 @@ void Layer::setBackgroundColor(SkColor backgroundColor)
 
 void Layer::calculateContentsScale(
     float idealContentsScale,
+    bool animatingTransformToScreen,
     float* contentsScaleX,
     float* contentsScaleY,
     gfx::Size* contentBounds)

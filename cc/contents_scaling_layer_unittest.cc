@@ -33,6 +33,7 @@ class MockContentsScalingLayer : public ContentsScalingLayer {
       // Simulate calcDrawProperties.
       calculateContentsScale(
           contentsScale,
+          false,  // animating_transform_to_screen
           &drawProperties().contents_scale_x,
           &drawProperties().contents_scale_y,
           &drawProperties().content_bounds);

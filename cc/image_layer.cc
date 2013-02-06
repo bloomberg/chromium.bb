@@ -77,6 +77,7 @@ LayerUpdater* ImageLayer::updater() const
 
 void ImageLayer::calculateContentsScale(
     float ideal_contents_scale,
+    bool animating_transform_to_screen,
     float* contentsScaleX,
     float* contentsScaleY,
     gfx::Size* contentBounds)

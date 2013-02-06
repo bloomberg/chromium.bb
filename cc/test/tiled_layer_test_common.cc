@@ -138,6 +138,7 @@ void FakeTiledLayer::updateContentsScale(float idealContentsScale)
 {
     calculateContentsScale(
         idealContentsScale,
+        false,  // animating_transform_to_screen
         &drawProperties().contents_scale_x,
         &drawProperties().contents_scale_y,
         &drawProperties().content_bounds);
@@ -156,6 +157,7 @@ void FakeTiledLayerWithScaledBounds::setContentBounds(const gfx::Size& contentBo
 
 void FakeTiledLayerWithScaledBounds::calculateContentsScale(
     float idealContentsScale,
+    bool animatingTransformToScreen,
     float* contentsScaleX,
     float* contentsScaleY,
     gfx::Size* contentBounds)

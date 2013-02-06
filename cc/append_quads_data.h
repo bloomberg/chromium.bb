@@ -13,6 +13,7 @@ namespace cc {
 struct AppendQuadsData {
     AppendQuadsData()
         : hadOcclusionFromOutsideTargetSurface(false)
+        , hadIncompleteTile(false)
         , numMissingTiles(0)
         , renderPassId(0, 0)
     {
@@ -20,6 +21,7 @@ struct AppendQuadsData {
 
     explicit AppendQuadsData(RenderPass::Id renderPassId)
         : hadOcclusionFromOutsideTargetSurface(false)
+        , hadIncompleteTile(false)
         , numMissingTiles(0)
         , renderPassId(renderPassId)
     {
@@ -27,6 +29,8 @@ struct AppendQuadsData {
 
     // Set by the QuadCuller.
     bool hadOcclusionFromOutsideTargetSurface;
+    // Set by the layer appending quads.
+    bool hadIncompleteTile;
     // Set by the layer appending quads.
     int64 numMissingTiles;
     // Given to the layer appending quads.

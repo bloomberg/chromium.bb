@@ -181,13 +181,15 @@ class PictureLayerImplTest : public testing::Test {
     }
   }
 
-  void SetContentsScaleOnBothLayers(float scale) {
+  void SetContentsScaleOnBothLayers(float scale, bool animating_transform) {
     float result_scale_x, result_scale_y;
     gfx::Size result_bounds;
     pending_layer_->calculateContentsScale(
-        scale, &result_scale_x, &result_scale_y, &result_bounds);
+        scale, animating_transform,
+        &result_scale_x, &result_scale_y, &result_bounds);
     active_layer_->calculateContentsScale(
-        scale, &result_scale_x, &result_scale_y, &result_bounds);
+        scale, animating_transform,
+        &result_scale_x, &result_scale_y, &result_bounds);
   }
 
  protected:
@@ -397,7 +399,7 @@ TEST_F(PictureLayerImplTest, ManageTilingsWithNoRecording) {
   host_impl_.pendingTree()->SetPageScaleFactorAndLimits(1.f, 1.f, 1.f);
 
   pending_layer_->calculateContentsScale(
-      1.f, &result_scale_x, &result_scale_y, &result_bounds);
+      1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
 
   EXPECT_EQ(0u, pending_layer_->tilings().num_tilings());
 }
@@ -425,7 +427,7 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
   host_impl_.pendingTree()->SetPageScaleFactorAndLimits(3.2f, 3.2f, 3.2f);
 
   pending_layer_->calculateContentsScale(
-      1.3f, &result_scale_x, &result_scale_y, &result_bounds);
+      1.3f, false, &result_scale_x, &result_scale_y, &result_bounds);
   ASSERT_EQ(2u, pending_layer_->tilings().num_tilings());
   EXPECT_FLOAT_EQ(
       1.3f,
@@ -437,7 +439,7 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
   // If we change the layer's CSS scale factor, then we should not get new
   // tilings.
   pending_layer_->calculateContentsScale(
-      1.8f, &result_scale_x, &result_scale_y, &result_bounds);
+      1.8f, false, &result_scale_x, &result_scale_y, &result_bounds);
   ASSERT_EQ(2u, pending_layer_->tilings().num_tilings());
   EXPECT_FLOAT_EQ(
       1.3f,
@@ -450,7 +452,7 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
   host_impl_.pendingTree()->SetPageScaleFactorAndLimits(2.2f, 2.2f, 2.2f);
 
   pending_layer_->calculateContentsScale(
-      1.8f, &result_scale_x, &result_scale_y, &result_bounds);
+      1.8f, false, &result_scale_x, &result_scale_y, &result_bounds);
   ASSERT_EQ(4u, pending_layer_->tilings().num_tilings());
   EXPECT_FLOAT_EQ(
       1.8f,
@@ -463,7 +465,7 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
   host_impl_.setDeviceScaleFactor(1.4f);
 
   pending_layer_->calculateContentsScale(
-      1.9f, &result_scale_x, &result_scale_y, &result_bounds);
+      1.9f, false, &result_scale_x, &result_scale_y, &result_bounds);
   ASSERT_EQ(6u, pending_layer_->tilings().num_tilings());
   EXPECT_FLOAT_EQ(
       1.9f,
@@ -478,7 +480,7 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
   host_impl_.pendingTree()->SetPageScaleFactorAndLimits(1.4f, 1.4f, 1.4f);
 
   pending_layer_->calculateContentsScale(
-      1.9f, &result_scale_x, &result_scale_y, &result_bounds);
+      1.9f, false, &result_scale_x, &result_scale_y, &result_bounds);
   ASSERT_EQ(6u, pending_layer_->tilings().num_tilings());
   EXPECT_FLOAT_EQ(
       1.9f,
@@ -512,7 +514,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   host_impl_.pendingTree()->SetPageScaleFactorAndLimits(3.2f, 3.2f, 3.2f);
   host_impl_.activeTree()->SetPageScaleFactorAndLimits(3.2f, 3.2f, 3.2f);
 
-  SetContentsScaleOnBothLayers(1.f);
+  SetContentsScaleOnBothLayers(1.f, false);
   ASSERT_EQ(2u, active_layer_->tilings().num_tilings());
 
   // We only have ideal tilings, so they aren't removed.
@@ -521,7 +523,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   ASSERT_EQ(2u, active_layer_->tilings().num_tilings());
 
   // Changing the ideal but not creating new tilings.
-  SetContentsScaleOnBothLayers(1.5f);
+  SetContentsScaleOnBothLayers(1.5f, false);
   ASSERT_EQ(2u, active_layer_->tilings().num_tilings());
 
   // The tilings are still our target scale, so they aren't removed.
@@ -532,7 +534,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   // Create a 1.2 scale tiling. Now we have 1.0 and 1.2 tilings. Ideal = 1.2.
   host_impl_.pendingTree()->SetPageScaleFactorAndLimits(1.2f, 1.2f, 1.2f);
   host_impl_.activeTree()->SetPageScaleFactorAndLimits(1.2f, 1.2f, 1.2f);
-  SetContentsScaleOnBothLayers(1.2f);
+  SetContentsScaleOnBothLayers(1.2f, false);
   ASSERT_EQ(4u, active_layer_->tilings().num_tilings());
   EXPECT_FLOAT_EQ(
       1.f,
@@ -549,7 +551,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   ASSERT_EQ(4u, active_layer_->tilings().num_tilings());
 
   // Now move the ideal scale to 0.5. Our target stays 1.2.
-  SetContentsScaleOnBothLayers(0.5f);
+  SetContentsScaleOnBothLayers(0.5f, false);
 
   // All the tilings are between are target and the ideal, so they are not
   // removed.
@@ -558,7 +560,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   ASSERT_EQ(4u, active_layer_->tilings().num_tilings());
 
   // Now move the ideal scale to 1.0. Our target stays 1.2.
-  SetContentsScaleOnBothLayers(1.f);
+  SetContentsScaleOnBothLayers(1.f, false);
 
   // All the tilings are between are target and the ideal, so they are not
   // removed.
@@ -568,7 +570,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
 
   // Now move the ideal scale to 1.1 on the active layer. Our target stays 1.2.
   active_layer_->calculateContentsScale(
-      1.1f, &result_scale_x, &result_scale_y, &result_bounds);
+      1.1f, false, &result_scale_x, &result_scale_y, &result_bounds);
 
   // Because the pending layer's ideal scale is still 1.0, our tilings fall
   // in the range [1.0,1.2] and are kept.
@@ -579,7 +581,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   // Move the ideal scale on the pending layer to 1.1 as well. Our target stays
   // 1.2 still.
   pending_layer_->calculateContentsScale(
-      1.1f, &result_scale_x, &result_scale_y, &result_bounds);
+      1.1f, false, &result_scale_x, &result_scale_y, &result_bounds);
 
   // Our 1.0 tiling now falls outside the range between our ideal scale and our
   // target raster scale. But it is in our used tilings set, so nothing is

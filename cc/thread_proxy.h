@@ -63,7 +63,6 @@ public:
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE;
     virtual void onHasPendingTreeStateChanged(bool hasPendingTree) OVERRIDE;
     virtual void setNeedsRedrawOnImplThread() OVERRIDE;
-    virtual void didSwapUseIncompleteTileOnImplThread() OVERRIDE;
     virtual void didUploadVisibleHighResolutionTileOnImplThread() OVERRIDE;
     virtual void setNeedsCommitOnImplThread() OVERRIDE;
     virtual void setNeedsManageTilesOnImplThread() OVERRIDE;
@@ -145,6 +144,7 @@ private:
     void commitPendingOnImplThreadForTesting(CommitPendingRequest* request);
     void capturePictureOnImplThread(CompletionEvent*, skia::RefPtr<SkPicture>*);
     void renewTreePriorityOnImplThread();
+    void didSwapUseIncompleteTileOnImplThread();
 
     // Accessed on main thread only.
     bool m_animateRequested; // Set only when setNeedsAnimate is called.

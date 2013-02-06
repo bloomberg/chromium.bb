@@ -162,8 +162,13 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
         if (quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData))
             appendQuadsData.numMissingTiles++;
       }
+
+      appendQuadsData.hadIncompleteTile = true;
       continue;
     }
+
+    if (iter->contents_scale() != ideal_contents_scale_)
+      appendQuadsData.hadIncompleteTile = true;
 
     gfx::RectF texture_rect = iter.texture_rect();
     gfx::Rect opaque_rect = iter->opaque_rect();
@@ -256,6 +261,7 @@ void PictureLayerImpl::didLoseOutputSurface() {
 
 void PictureLayerImpl::calculateContentsScale(
     float ideal_contents_scale,
+    bool animating_transform_to_screen,
     float* contents_scale_x,
     float* contents_scale_y,
     gfx::Size* content_bounds) {
@@ -280,7 +286,7 @@ void PictureLayerImpl::calculateContentsScale(
   ideal_device_scale_ = ideal_device_scale;
   ideal_source_scale_ = std::max(ideal_source_scale, min_source_scale);
 
-  ManageTilings();
+  ManageTilings(animating_transform_to_screen);
 
   // The content scale and bounds for a PictureLayerImpl is somewhat fictitious.
   // There are (usually) several tilings at different scales.  However, the
@@ -436,6 +442,7 @@ ResourceProvider::ResourceId PictureLayerImpl::contentsResourceId() const {
 }
 
 bool PictureLayerImpl::areVisibleResourcesReady() const {
+  DCHECK(layerTreeImpl()->IsPendingTree());
   DCHECK(ideal_contents_scale_);
 
   const gfx::Rect& rect = visibleContentRect();
@@ -448,17 +455,15 @@ bool PictureLayerImpl::areVisibleResourcesReady() const {
   float min_acceptable_scale =
       std::min(raster_contents_scale, ideal_contents_scale_);
 
-  if (layerTreeImpl()->IsPendingTree()) {
-    if (PictureLayerImpl* twin = ActiveTwin()) {
-      float twin_raster_contents_scale =
-          twin->raster_page_scale_ *
-          twin->raster_device_scale_ *
-          twin->raster_source_scale_;
+  if (PictureLayerImpl* twin = ActiveTwin()) {
+    float twin_raster_contents_scale =
+        twin->raster_page_scale_ *
+        twin->raster_device_scale_ *
+        twin->raster_source_scale_;
 
-      min_acceptable_scale = std::min(
-          min_acceptable_scale,
-          std::min(twin->ideal_contents_scale_, twin_raster_contents_scale));
-    }
+    min_acceptable_scale = std::min(
+        min_acceptable_scale,
+        std::min(twin->ideal_contents_scale_, twin_raster_contents_scale));
   }
 
   Region missing_region = rect;
@@ -536,7 +541,7 @@ inline bool IsCloserToThan(
 
 }  // namespace
 
-void PictureLayerImpl::ManageTilings() {
+void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
   DCHECK(ideal_contents_scale_);
   DCHECK(ideal_page_scale_);
   DCHECK(ideal_device_scale_);
@@ -549,9 +554,6 @@ void PictureLayerImpl::ManageTilings() {
 
   bool is_active_layer = layerTreeImpl()->IsActiveTree();
   bool is_pinching = layerTreeImpl()->PinchGestureActive();
-  bool is_animating =
-      drawTransformIsAnimating() ||
-      screenSpaceTransformIsAnimating();
 
   bool change_target_tiling = false;
 
@@ -564,9 +566,9 @@ void PictureLayerImpl::ManageTilings() {
   // appropriate rate.
 
   if (is_active_layer) {
-    if (raster_source_scale_was_animating_ && !is_animating)
+    if (raster_source_scale_was_animating_ && !animating_transform_to_screen)
       change_target_tiling = true;
-    raster_source_scale_was_animating_ = is_animating;
+    raster_source_scale_was_animating_ = animating_transform_to_screen;
   }
 
   if (is_active_layer && is_pinching) {
@@ -594,12 +596,14 @@ void PictureLayerImpl::ManageTilings() {
   raster_device_scale_ = ideal_device_scale_;
   raster_source_scale_ = ideal_source_scale_;
 
-  // Don't allow animating CSS scales to drop below 1.
-  if (is_animating)
-    raster_source_scale_ = std::max(raster_source_scale_, 1.f);
+  float raster_contents_scale = ideal_contents_scale_;
 
-  float raster_contents_scale =
-      raster_page_scale_ * raster_device_scale_ * raster_source_scale_;
+  // Don't allow animating CSS scales to drop below 1.
+  if (animating_transform_to_screen) {
+    raster_contents_scale = std::max(
+        raster_contents_scale, 1.f * ideal_page_scale_ * ideal_device_scale_);
+  }
+
   float low_res_raster_contents_scale = std::max(
       raster_contents_scale * low_res_factor,
       layerTreeImpl()->settings().minimumContentsScale);

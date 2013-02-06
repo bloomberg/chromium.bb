@@ -85,12 +85,14 @@ float ScrollbarLayer::clampScaleToMaxTextureSize(float scale) {
 
 void ScrollbarLayer::calculateContentsScale(
   float idealContentsScale,
+  bool animatingTransformToScreen,
   float* contentsScaleX,
   float* contentsScaleY,
   gfx::Size* contentBounds)
 {
     ContentsScalingLayer::calculateContentsScale(
         clampScaleToMaxTextureSize(idealContentsScale),
+        animatingTransformToScreen,
         contentsScaleX,
         contentsScaleY,
         contentBounds);

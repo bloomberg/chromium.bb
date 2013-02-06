@@ -805,6 +805,7 @@ void LayerImpl::setContentsScale(float contentsScaleX, float contentsScaleY)
 
 void LayerImpl::calculateContentsScale(
     float idealContentsScale,
+    bool animatingTransformToScreen,
     float* contentsScaleX,
     float* contentsScaleY,
     gfx::Size* contentBounds)

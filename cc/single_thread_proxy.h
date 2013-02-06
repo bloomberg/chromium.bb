@@ -54,7 +54,6 @@ public:
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE { }
     virtual void onHasPendingTreeStateChanged(bool havePendingTree) OVERRIDE;
     virtual void setNeedsRedrawOnImplThread() OVERRIDE;
-    virtual void didSwapUseIncompleteTileOnImplThread() OVERRIDE;
     virtual void didUploadVisibleHighResolutionTileOnImplThread() OVERRIDE;
     virtual void setNeedsCommitOnImplThread() OVERRIDE;
     virtual void setNeedsManageTilesOnImplThread() OVERRIDE;

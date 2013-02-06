@@ -67,7 +67,6 @@ public:
         , m_hasPendingTree(false)
         , m_didRequestCommit(false)
         , m_didRequestRedraw(false)
-        , m_didSwapUseIncompleteTile(false)
         , m_didUploadVisibleHighResolutionTile(false)
         , m_reduceMemoryResult(true)
     {
@@ -95,7 +94,6 @@ public:
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE { m_onCanDrawStateChangedCalled = true; }
     virtual void onHasPendingTreeStateChanged(bool hasPendingTree) OVERRIDE { m_hasPendingTree = hasPendingTree; }
     virtual void setNeedsRedrawOnImplThread() OVERRIDE { m_didRequestRedraw = true; }
-    virtual void didSwapUseIncompleteTileOnImplThread() OVERRIDE { m_didSwapUseIncompleteTile = true; }
     virtual void didUploadVisibleHighResolutionTileOnImplThread() OVERRIDE { m_didUploadVisibleHighResolutionTile = true; }
     virtual void setNeedsCommitOnImplThread() OVERRIDE { m_didRequestCommit = true; }
     virtual void setNeedsManageTilesOnImplThread() OVERRIDE { }
@@ -229,7 +227,6 @@ protected:
     bool m_hasPendingTree;
     bool m_didRequestCommit;
     bool m_didRequestRedraw;
-    bool m_didSwapUseIncompleteTile;
     bool m_didUploadVisibleHighResolutionTile;
     bool m_reduceMemoryResult;
 };
