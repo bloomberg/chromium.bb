@@ -14,12 +14,12 @@ class SQLConnectionTest : public testing::Test {
  public:
   SQLConnectionTest() {}
 
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(db_.Open(db_path()));
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     db_.Close();
   }
 

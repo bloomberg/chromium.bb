@@ -40,7 +40,7 @@ class SQLStatementTest : public testing::Test {
  public:
   SQLStatementTest() : error_(SQLITE_OK) {}
 
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(db_.Open(temp_dir_.path().AppendASCII("SQLStatementTest.db")));
     // The error delegate will set |error_| and |sql_text_| when any sqlite
@@ -48,7 +48,7 @@ class SQLStatementTest : public testing::Test {
     db_.set_error_delegate(new StatementErrorHandler(&error_, &sql_text_));
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     // If any error happened the original sql statement can be found in
     // |sql_text_|.
     EXPECT_EQ(SQLITE_OK, error_);
