@@ -56,6 +56,14 @@ enum NigoriMigrationResult {
   MIGRATION_RESULT_SIZE,
 };
 
+enum NigoriMigrationState {
+  MIGRATED,
+  NOT_MIGRATED_CRYPTO_NOT_READY,
+  NOT_MIGRATED_NO_KEYSTORE_KEY,
+  NOT_MIGRATED_UNKNOWN_REASON,
+  MIGRATION_STATE_SIZE,
+};
+
 // The new passphrase state is sufficient to determine whether a nigori node
 // is migrated to support keystore encryption. In addition though, we also
 // want to verify the conditions for proper keystore encryption functionality.
@@ -246,6 +254,48 @@ void SyncEncryptionHandlerImpl::Init() {
                              trans.GetWrappedTrans())) {
     WriteEncryptionStateToNigori(&trans);
   }
+
+  bool has_pending_keys = UnlockVault(
+      trans.GetWrappedTrans()).cryptographer.has_pending_keys();
+  bool is_ready = UnlockVault(
+      trans.GetWrappedTrans()).cryptographer.is_ready();
+  // Log the state of the cryptographer regardless of migration state.
+  UMA_HISTOGRAM_BOOLEAN("Sync.CryptographerReady", is_ready);
+  UMA_HISTOGRAM_BOOLEAN("Sync.CryptographerPendingKeys", has_pending_keys);
+  if (IsNigoriMigratedToKeystore(node.GetNigoriSpecifics())) {
+    // This account has a nigori node that has been migrated to support
+    // keystore.
+    UMA_HISTOGRAM_ENUMERATION("Sync.NigoriMigrationState",
+                              MIGRATED,
+                              MIGRATION_STATE_SIZE);
+    if (has_pending_keys && passphrase_type_ == KEYSTORE_PASSPHRASE) {
+      // If this is happening, it means the keystore decryptor is either
+      // undecryptable with the available keystore keys or does not match the
+      // nigori keybag's encryption key. Otherwise we're simply missing the
+      // keystore key.
+      UMA_HISTOGRAM_BOOLEAN("Sync.KeystoreDecryptionFailed",
+                            !keystore_key_.empty());
+    }
+  } else if (!is_ready) {
+    // Migration cannot occur until the cryptographer is ready (initialized
+    // with GAIA password and any pending keys resolved).
+    UMA_HISTOGRAM_ENUMERATION("Sync.NigoriMigrationState",
+                              NOT_MIGRATED_CRYPTO_NOT_READY,
+                              MIGRATION_STATE_SIZE);
+  } else if (keystore_key_.empty()) {
+    // The client has no keystore key, either because it is not yet enabled or
+    // the server is not sending a valid keystore key.
+    UMA_HISTOGRAM_ENUMERATION("Sync.NigoriMigrationState",
+                              NOT_MIGRATED_NO_KEYSTORE_KEY,
+                              MIGRATION_STATE_SIZE);
+  } else {
+    // If the above conditions have been met and the nigori node is still not
+    // migrated, something failed in the migration process.
+    UMA_HISTOGRAM_ENUMERATION("Sync.NigoriMigrationState",
+                              NOT_MIGRATED_UNKNOWN_REASON,
+                              MIGRATION_STATE_SIZE);
+  }
+
 
   // Always trigger an encrypted types and cryptographer state change event at
   // init time so observers get the initial values.
