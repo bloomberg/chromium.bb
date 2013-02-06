@@ -125,67 +125,35 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
                          "com.example.invalid", kExpected));
 }
 
-#if defined(OS_LINUX) && !defined(NDEBUG)
-// http://crbug.com/174294; not using MAYBE_ because IN_PROC_BROWSER_TEST_P does
-// not expand the test name macro correctly, TODO(vabr, bauerb)
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_BasicPlayback_AudioOnly) {
-#else
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback_AudioOnly) {
-#endif
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(
       TestSimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly,
                          GetParam(), kExpected));
 }
 
-#if defined(OS_LINUX) && !defined(NDEBUG)
-// http://crbug.com/174294; not using MAYBE_ because IN_PROC_BROWSER_TEST_P does
-// not expand the test name macro correctly, TODO(vabr, bauerb)
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
-                       DISABLED_BasicPlayback_AudioClearVideo) {
-#else
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback_AudioClearVideo) {
-#endif
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(
       TestSimplePlayback("bear-320x240-av-enc_a.webm", kWebMAudioVideo,
                          GetParam(), kExpected));
 }
 
-#if defined(OS_LINUX) && !defined(NDEBUG)
-// http://crbug.com/174294; not using MAYBE_ because IN_PROC_BROWSER_TEST_P does
-// not expand the test name macro correctly, TODO(vabr, bauerb)
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_BasicPlayback_VideoAudio) {
-#else
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback_VideoAudio) {
-#endif
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(
       TestSimplePlayback("bear-320x240-av-enc_av.webm", kWebMAudioVideo,
                          GetParam(), kExpected));
 }
 
-#if defined(OS_LINUX) && !defined(NDEBUG)
-// http://crbug.com/174294; not using MAYBE_ because IN_PROC_BROWSER_TEST_P does
-// not expand the test name macro correctly, TODO(vabr, bauerb)
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_BasicPlayback_VideoOnly) {
-#else
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback_VideoOnly) {
-#endif
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(
       TestSimplePlayback("bear-320x240-v-enc_v.webm", kWebMVideoOnly,
                          GetParam(), kExpected));
 }
 
-#if defined(OS_LINUX) && !defined(NDEBUG)
-// http://crbug.com/174294; not using MAYBE_ because IN_PROC_BROWSER_TEST_P does
-// not expand the test name macro correctly, TODO(vabr, bauerb)
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
-                       DISABLED_BasicPlayback_VideoClearAudio) {
-#else
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback_VideoClearAudio) {
-#endif
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(
       TestSimplePlayback("bear-320x240-av-enc_v.webm", kWebMAudioVideo,

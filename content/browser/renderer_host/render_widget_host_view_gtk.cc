@@ -878,27 +878,29 @@ void RenderWidgetHostViewGtk::Destroy() {
     gdk_display_keyboard_ungrab(display, GDK_CURRENT_TIME);
   }
 
-  // If this is a popup or fullscreen widget, then we need to destroy the window
-  // that we created to hold it.
-  if (IsPopup() || is_fullscreen_) {
-    GtkWidget* window = gtk_widget_get_parent(view_.get());
+  if (view_.get()) {
+    // If this is a popup or fullscreen widget, then we need to destroy the
+    // window that we created to hold it.
+    if (IsPopup() || is_fullscreen_) {
+      GtkWidget* window = gtk_widget_get_parent(view_.get());
 
-    ui::ActiveWindowWatcherX::RemoveObserver(this);
+      ui::ActiveWindowWatcherX::RemoveObserver(this);
 
-    // Disconnect the destroy handler so that we don't try to shutdown twice.
-    if (is_fullscreen_)
-      g_signal_handler_disconnect(window, destroy_handler_id_);
+      // Disconnect the destroy handler so that we don't try to shutdown twice.
+      if (is_fullscreen_)
+        g_signal_handler_disconnect(window, destroy_handler_id_);
 
-    gtk_widget_destroy(window);
+      gtk_widget_destroy(window);
+    }
+
+    // Remove |view_| from all containers now, so nothing else can hold a
+    // reference to |view_|'s widget except possibly a gtk signal handler if
+    // this code is currently executing within the context of a gtk signal
+    // handler.  Note that |view_| is still alive after this call.  It will be
+    // deallocated in the destructor.
+    // See http://crbug.com/11847 for details.
+    gtk_widget_destroy(view_.get());
   }
-
-  // Remove |view_| from all containers now, so nothing else can hold a
-  // reference to |view_|'s widget except possibly a gtk signal handler if
-  // this code is currently executing within the context of a gtk signal
-  // handler.  Note that |view_| is still alive after this call.  It will be
-  // deallocated in the destructor.
-  // See http://crbug.com/11847 for details.
-  gtk_widget_destroy(view_.get());
 
   // The RenderWidgetHost's destruction led here, so don't call it.
   host_ = NULL;
