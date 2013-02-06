@@ -22,6 +22,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
@@ -167,7 +168,7 @@ class FilePathWatcherTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    loop_.RunUntilIdle();
+    RunLoop().RunUntilIdle();
   }
 
   void DeleteDelegateOnFileThread(TestDelegate* delegate) {

@@ -10,6 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,7 +64,7 @@ TEST_F(ImportantFileWriterTest, Basic) {
                              MessageLoopProxy::current());
   EXPECT_FALSE(file_util::PathExists(writer.path()));
   writer.WriteNow("foo");
-  loop_.RunUntilIdle();
+  RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(file_util::PathExists(writer.path()));
   EXPECT_EQ("foo", GetFileContent(writer.path()));

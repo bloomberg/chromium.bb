@@ -327,7 +327,7 @@ void RunTest_PostDelayedTask_SharedTimer(
   // and then run all pending to force them both to have run.  This is just
   // encouraging flakiness if there is any.
   PlatformThread::Sleep(TimeDelta::FromMilliseconds(100));
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(run_time1.is_null());
   EXPECT_FALSE(run_time2.is_null());
@@ -383,7 +383,7 @@ void RunTest_PostDelayedTask_SharedTimer_SubPump() {
   // and then run all pending to force them both to have run.  This is just
   // encouraging flakiness if there is any.
   PlatformThread::Sleep(TimeDelta::FromMilliseconds(100));
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(run_time.is_null());
 }

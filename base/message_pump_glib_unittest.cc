@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,6 +23,7 @@
 #include <gtk/gtk.h>
 #endif
 
+namespace base {
 namespace {
 
 // This class injects dummy "events" into the GLib loop. When "handled" these
@@ -189,7 +191,7 @@ TEST_F(MessagePumpGLibTest, TestQuit) {
   // Checks that Quit works and that the basic infrastructure is working.
 
   // Quit from a task
-  loop()->RunUntilIdle();
+  RunLoop().RunUntilIdle();
   EXPECT_EQ(0, injector()->processed_events());
 
   injector()->Reset();
@@ -574,3 +576,5 @@ TEST_F(MessagePumpGLibTest, TestGtkLoop) {
       base::Bind(&TestGtkLoopInternal, base::Unretained(injector())));
   loop()->Run();
 }
+
+}  // namespace base

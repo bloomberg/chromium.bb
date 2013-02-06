@@ -207,7 +207,7 @@ TEST_F(JsonPrefStoreTest, BasicAsync) {
     EXPECT_CALL(mock_observer, OnInitializationCompleted(true)).Times(1);
     EXPECT_CALL(*mock_error_delegate,
                 OnError(PersistentPrefStore::PREF_READ_ERROR_NONE)).Times(0);
-    message_loop_.RunUntilIdle();
+    RunLoop().RunUntilIdle();
     pref_store->RemoveObserver(&mock_observer);
 
     ASSERT_FALSE(pref_store->ReadOnly());
@@ -244,7 +244,7 @@ TEST_F(JsonPrefStoreTest, AsyncNonExistingFile) {
   EXPECT_CALL(mock_observer, OnInitializationCompleted(true)).Times(1);
   EXPECT_CALL(*mock_error_delegate,
               OnError(PersistentPrefStore::PREF_READ_ERROR_NO_FILE)).Times(1);
-  message_loop_.RunUntilIdle();
+  RunLoop().RunUntilIdle();
   pref_store->RemoveObserver(&mock_observer);
 
   EXPECT_FALSE(pref_store->ReadOnly());
