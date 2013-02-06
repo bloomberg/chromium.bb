@@ -47,6 +47,7 @@ void IndexedDBDatabaseCallbacks::onVersionChange(
 void IndexedDBDatabaseCallbacks::onAbort(
     long long host_transaction_id,
     const WebKit::WebIDBDatabaseError& error) {
+    dispatcher_host_->FinishTransaction(host_transaction_id, false);
     dispatcher_host_->Send(
         new IndexedDBMsg_DatabaseCallbacksAbort(
             ipc_thread_id_, ipc_database_id_,
@@ -55,7 +56,7 @@ void IndexedDBDatabaseCallbacks::onAbort(
 }
 
 void IndexedDBDatabaseCallbacks::onComplete(long long host_transaction_id) {
-    dispatcher_host_->TransactionIdComplete(host_transaction_id);
+    dispatcher_host_->FinishTransaction(host_transaction_id, true);
     dispatcher_host_->Send(
         new IndexedDBMsg_DatabaseCallbacksComplete(
             ipc_thread_id_, ipc_database_id_,

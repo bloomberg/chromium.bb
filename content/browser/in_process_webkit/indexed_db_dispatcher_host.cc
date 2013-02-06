@@ -276,9 +276,13 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
       webkit_base::FilePathToWebString(indexed_db_path));
 }
 
-void IndexedDBDispatcherHost::TransactionIdComplete(int64 host_transaction_id) {
-  Context()->TransactionComplete(
-      database_dispatcher_host_->transaction_url_map_[host_transaction_id]);
+void IndexedDBDispatcherHost::FinishTransaction(
+    int64 host_transaction_id, bool committed) {
+  if (committed)
+    Context()->TransactionComplete(
+        database_dispatcher_host_->transaction_url_map_[host_transaction_id]);
+  database_dispatcher_host_->transaction_url_map_.erase(host_transaction_id);
+  database_dispatcher_host_->transaction_size_map_.erase(host_transaction_id);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -480,7 +484,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
                 params.put_mode, callbacks.release(),
                 params.index_ids,
                 params.index_keys);
-  WebIDBTransactionIDToSizeMap* map =
+  TransactionIDToSizeMap* map =
       &parent_->database_dispatcher_host_->transaction_size_map_;
   // Size can't be big enough to overflow because it represents the
   // actual bytes passed through IPC.
@@ -613,7 +617,6 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCommit(
     return;
 
   int64 host_transaction_id = parent_->HostTransactionId(transaction_id);
-  // TODO(alecflett) move the map to the parent DispatcherHost (parent_)
   if (parent_->Context()->WouldBeOverQuota(
           transaction_url_map_[host_transaction_id],
           transaction_size_map_[host_transaction_id])) {

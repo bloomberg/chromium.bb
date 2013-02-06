@@ -67,7 +67,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
-  void TransactionIdComplete(int64 host_transaction_id);
+  void FinishTransaction(int64 host_transaction_id, bool committed);
 
   // A shortcut for accessing our context.
   IndexedDBContextImpl* Context() { return indexed_db_context_; }
@@ -113,7 +113,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   typedef std::map<int32, GURL> WebIDBObjectIDToURLMap;
 
   typedef std::map<int64, GURL> TransactionIDToURLMap;
-  typedef std::map<int64, uint64> WebIDBTransactionIDToSizeMap;
+  typedef std::map<int64, uint64> TransactionIDToSizeMap;
 
   class DatabaseDispatcherHost {
    public:
@@ -166,7 +166,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     IndexedDBDispatcherHost* parent_;
     IDMap<WebKit::WebIDBDatabase, IDMapOwnPointer> map_;
     WebIDBObjectIDToURLMap database_url_map_;
-    WebIDBTransactionIDToSizeMap transaction_size_map_;
+    TransactionIDToSizeMap transaction_size_map_;
     TransactionIDToURLMap transaction_url_map_;
   };
 
