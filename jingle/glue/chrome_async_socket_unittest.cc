@@ -41,7 +41,7 @@ class AsyncSocketDataProvider : public net::SocketDataProvider {
 
   // If there's no read, sets the "has pending read" flag.  Otherwise,
   // pops the next read.
-  virtual net::MockRead GetNextRead() {
+  virtual net::MockRead GetNextRead() OVERRIDE {
     if (reads_.empty()) {
       DCHECK(!has_pending_read_);
       has_pending_read_ = true;
@@ -55,7 +55,7 @@ class AsyncSocketDataProvider : public net::SocketDataProvider {
 
   // Simply pops the next write and, if applicable, compares it to
   // |data|.
-  virtual net::MockWriteResult OnWrite(const std::string& data) {
+  virtual net::MockWriteResult OnWrite(const std::string& data) OVERRIDE {
     DCHECK(!writes_.empty());
     net::MockWrite mock_write = writes_.front();
     writes_.pop_front();
@@ -72,7 +72,7 @@ class AsyncSocketDataProvider : public net::SocketDataProvider {
 
   // We ignore resets so we can pre-load the socket data provider with
   // read/write events.
-  virtual void Reset() {}
+  virtual void Reset() OVERRIDE {}
 
   // If there is a pending read, completes it with the given read.
   // Otherwise, queues up the given read.
@@ -112,14 +112,14 @@ class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
 
   // ResolvingClientSocketFactory implementation.
   virtual net::StreamSocket* CreateTransportClientSocket(
-      const net::HostPortPair& host_and_port) {
+      const net::HostPortPair& host_and_port) OVERRIDE {
     return mock_client_socket_factory_->CreateTransportClientSocket(
         address_list_, NULL, net::NetLog::Source());
   }
 
   virtual net::SSLClientSocket* CreateSSLClientSocket(
       net::ClientSocketHandle* transport_socket,
-      const net::HostPortPair& host_and_port) {
+      const net::HostPortPair& host_and_port) OVERRIDE {
     net::SSLClientSocketContext context;
     context.cert_verifier = cert_verifier_.get();
     return mock_client_socket_factory_->CreateSSLClientSocket(

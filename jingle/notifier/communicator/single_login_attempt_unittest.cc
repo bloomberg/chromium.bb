@@ -35,7 +35,7 @@ class FakeDelegate : public SingleLoginAttempt::Delegate {
  public:
   FakeDelegate() : state_(IDLE) {}
 
-  void OnConnect(
+  virtual void OnConnect(
       base::WeakPtr<buzz::XmppTaskParentInterface> base_task) OVERRIDE {
     state_ = CONNECTED;
     base_task_ = base_task;

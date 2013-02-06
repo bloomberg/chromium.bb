@@ -113,7 +113,7 @@ class FakeSocket : public net::Socket {
 
   // net::Socket interface.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) {
+                   const net::CompletionCallback& callback) OVERRIDE {
     CHECK(read_callback_.is_null());
     CHECK(buf);
 
