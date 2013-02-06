@@ -197,14 +197,11 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
       seen_tilings.push_back(iter.CurrentTiling());
   }
 
-  // During a pinch, a user could zoom in and out, so throwing away a tiling may
-  // be premature. Animations could also cause us to scale in or out, and we
-  // don't want to discard tilings in this case, either.
-  bool is_animating = layerTreeImpl()->PinchGestureActive() ||
-      drawTransformIsAnimating() ||
-      screenSpaceTransformIsAnimating();
-  if (!is_animating)
-    CleanUpTilingsOnActiveLayer(seen_tilings);
+  // Aggressively remove any tilings that are not seen to save memory. Note
+  // that this is at the expense of doing cause more frequent re-painting. A
+  // better scheme would be to maintain a tighter visibleContentRect for the
+  // finer tilings.
+  CleanUpTilingsOnActiveLayer(seen_tilings);
 }
 
 void PictureLayerImpl::dumpLayerProperties(std::string*, int indent) const {
