@@ -30,7 +30,7 @@ class VerticalCandidateLabel : public views::Label {
 
   // Returns the preferred size, but guarantees that the width has at
   // least kMinCandidateLabelWidth pixels.
-  virtual gfx::Size GetPreferredSize() {
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     gfx::Size size = Label::GetPreferredSize();
     // Hack. +2 is needed to prevent labels from getting elided like
     // "abc..." in some cases. TODO(satorux): Figure out why it's

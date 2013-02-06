@@ -135,7 +135,7 @@ class FileBrowserResourceThrottleExtensionApiTest : public ExtensionApiTest {
     FileBrowserHandler::set_extension_whitelisted_for_test(NULL);
   }
 
-  virtual void SetUpOnMainThread() {
+  virtual void SetUpOnMainThread() OVERRIDE {
     // Init test server.
     test_server_.reset(new HttpServer());
     test_server_->InitializeAndWaitUntilReady();
@@ -144,7 +144,7 @@ class FileBrowserResourceThrottleExtensionApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpOnMainThread();
   }
 
-  virtual void CleanUpOnMainThread() {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     // Tear down the test server.
     test_server_->ShutdownAndWaitUntilComplete();
     test_server_.reset();

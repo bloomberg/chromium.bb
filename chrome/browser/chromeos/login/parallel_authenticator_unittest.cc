@@ -67,7 +67,7 @@ class ParallelAuthenticatorTest : public testing::Test {
     hash_ascii_.append(std::string(16, '0'));
   }
 
-  ~ParallelAuthenticatorTest() {
+  virtual ~ParallelAuthenticatorTest() {
     DCHECK(!mock_caller_);
   }
 

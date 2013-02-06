@@ -36,7 +36,7 @@ class LoginAttemptObserver : public chromeos::LoginStatusConsumer {
   void WaitForAttempt();
 
   // Overridden from LoginStatusConsumer:
-  virtual void OnLoginFailure(const chromeos::LoginFailure& error) {
+  virtual void OnLoginFailure(const chromeos::LoginFailure& error) OVERRIDE {
     LoginAttempted();
   }
 
@@ -44,7 +44,7 @@ class LoginAttemptObserver : public chromeos::LoginStatusConsumer {
       const std::string& username,
       const std::string& password,
       bool pending_requests,
-      bool using_oauth) {
+      bool using_oauth) OVERRIDE {
     LoginAttempted();
   }
 

@@ -39,7 +39,7 @@ class KioskModeSettingsTest : public testing::Test {
     cros_settings->AddSettingsProvider(&stub_settings_provider_);
   }
 
-  ~KioskModeSettingsTest() {
+  virtual ~KioskModeSettingsTest() {
     // Restore the real DeviceSettingsProvider.
     CrosSettings* cros_settings = CrosSettings::Get();
     EXPECT_TRUE(

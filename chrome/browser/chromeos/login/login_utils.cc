@@ -244,7 +244,7 @@ class LoginUtilsImpl
   virtual std::string GetOffTheRecordCommandLine(
       const GURL& start_url,
       const CommandLine& base_command_line,
-      CommandLine *command_line);
+      CommandLine *command_line) OVERRIDE;
 
  private:
   // Restarts OAuth session authentication check.
@@ -905,7 +905,7 @@ class WarmingObserver : public NetworkLibrary::NetworkManagerObserver,
   virtual ~WarmingObserver() {}
 
   // If we're now connected, prewarm the auth url.
-  virtual void OnNetworkManagerChanged(NetworkLibrary* netlib) {
+  virtual void OnNetworkManagerChanged(NetworkLibrary* netlib) OVERRIDE {
     if (netlib->Connected()) {
       const int kConnectionsNeeded = 1;
       chrome_browser_net::PreconnectOnUIThread(
@@ -921,7 +921,7 @@ class WarmingObserver : public NetworkLibrary::NetworkManagerObserver,
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED: {
       Profile* profile = content::Source<Profile>(source).ptr();

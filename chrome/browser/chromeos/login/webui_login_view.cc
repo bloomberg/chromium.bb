@@ -70,7 +70,7 @@ class SnifferObserver : public content::RenderViewHostObserver {
   virtual ~SnifferObserver() {}
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(SnifferObserver, message)
       IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FrameLoadingError, OnError)

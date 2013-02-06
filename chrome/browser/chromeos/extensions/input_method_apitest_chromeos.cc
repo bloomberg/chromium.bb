@@ -44,7 +44,7 @@ class SetInputMethodListener : public content::NotificationObserver {
   // Implements the content::NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     const std::string& content = *content::Details<std::string>(details).ptr();
     const std::string expected_message = StringPrintf("%s:%s",
                                                       kSetInputMethodMessage,
@@ -68,7 +68,7 @@ class SetInputMethodListener : public content::NotificationObserver {
 };
 
 class ExtensionInputMethodApiTest : public ExtensionApiTest {
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kWhitelistedExtensionID, "ilanclmaeigfpnmdlgelmhkpkegdioip");

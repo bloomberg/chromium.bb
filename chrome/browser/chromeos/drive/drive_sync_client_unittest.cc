@@ -67,9 +67,9 @@ class TestObserver : public DriveSyncClientObserver {
   TestObserver() : start_count_(0), idle_count_(0), stop_count_(0) {}
 
   // DriveSyncClientObserver overrides.
-  virtual void OnSyncTaskStarted() { ++start_count_; }
-  virtual void OnSyncClientStopped() { ++stop_count_; }
-  virtual void OnSyncClientIdle() { ++idle_count_; }
+  virtual void OnSyncTaskStarted() OVERRIDE { ++start_count_; }
+  virtual void OnSyncClientStopped() OVERRIDE { ++stop_count_; }
+  virtual void OnSyncClientIdle() OVERRIDE { ++idle_count_; }
 
   int start_count() const { return start_count_; }
   int stop_count() const { return stop_count_; }

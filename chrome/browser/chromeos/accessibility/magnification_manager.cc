@@ -55,15 +55,15 @@ class MagnificationManagerImpl : public MagnificationManager,
   }
 
   // MagnificationManager implimentation:
-  bool IsMagnifierEnabled() const OVERRIDE {
+  virtual bool IsMagnifierEnabled() const OVERRIDE {
     return enabled_;
   }
 
-  ash::MagnifierType GetMagnifierType() const OVERRIDE {
+  virtual ash::MagnifierType GetMagnifierType() const OVERRIDE {
     return type_;
   }
 
-  void SetMagnifierEnabled(bool enabled) OVERRIDE {
+  virtual void SetMagnifierEnabled(bool enabled) OVERRIDE {
     // This method may be invoked even when the other magnifier settings (e.g.
     // type or scale) are changed, so we need to call magnification controller
     // even if |enabled| is unchanged. Only if |enabled| is false and the
@@ -94,7 +94,7 @@ class MagnificationManagerImpl : public MagnificationManager,
     }
   }
 
-  void SetMagnifierType(ash::MagnifierType type) OVERRIDE {
+  virtual void SetMagnifierType(ash::MagnifierType type) OVERRIDE {
     if (type_ == type)
       return;
 
@@ -118,13 +118,13 @@ class MagnificationManagerImpl : public MagnificationManager,
     }
   }
 
-  void SaveScreenMagnifierScale(double scale) OVERRIDE {
+  virtual void SaveScreenMagnifierScale(double scale) OVERRIDE {
     Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
     DCHECK(profile->GetPrefs());
     profile->GetPrefs()->SetDouble(prefs::kScreenMagnifierScale, scale);
   }
 
-  double GetSavedScreenMagnifierScale() const OVERRIDE {
+  virtual double GetSavedScreenMagnifierScale() const OVERRIDE {
     Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
     DCHECK(profile->GetPrefs());
     if (profile->GetPrefs()->HasPrefPath(prefs::kScreenMagnifierScale))

@@ -47,11 +47,11 @@ class ScreensaverUnpackerClient
       : crx_path_(crx_path),
         unpack_callback_(unpacker_callback) {}
 
-  void OnUnpackSuccess(const FilePath& temp_dir,
-                       const FilePath& extension_root,
-                       const base::DictionaryValue* original_manifest,
-                       const Extension* extension) OVERRIDE;
-  void OnUnpackFailure(const string16& error) OVERRIDE;
+  virtual void OnUnpackSuccess(const FilePath& temp_dir,
+                               const FilePath& extension_root,
+                               const base::DictionaryValue* original_manifest,
+                               const Extension* extension) OVERRIDE;
+  virtual void OnUnpackFailure(const string16& error) OVERRIDE;
 
  protected:
   virtual ~ScreensaverUnpackerClient() {}

@@ -19,7 +19,7 @@ public:
     return base::TimeDelta::FromMilliseconds(0);
   }
 
-  KioskModeSettings* GetKioskModeSettings() OVERRIDE {
+  virtual KioskModeSettings* GetKioskModeSettings() OVERRIDE {
     return mock_settings_;
   }
 

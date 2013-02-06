@@ -145,19 +145,19 @@ class StubLogin : public LoginStatusConsumer,
         std::string());
   }
 
-  ~StubLogin() {
+  virtual ~StubLogin() {
     LoginUtils::Get()->DelegateDeleted(this);
   }
 
-  void OnLoginFailure(const LoginFailure& error) {
+  virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE {
     LOG(ERROR) << "Login Failure: " << error.GetErrorString();
     delete this;
   }
 
-  void OnLoginSuccess(const std::string& username,
-                      const std::string& password,
-                      bool pending_requests,
-                      bool using_oauth) {
+  virtual void OnLoginSuccess(const std::string& username,
+                              const std::string& password,
+                              bool pending_requests,
+                              bool using_oauth) OVERRIDE {
     pending_requests_ = pending_requests;
     if (!profile_prepared_) {
       // Will call OnProfilePrepared in the end.
@@ -173,7 +173,7 @@ class StubLogin : public LoginStatusConsumer,
   }
 
   // LoginUtils::Delegate implementation:
-  virtual void OnProfilePrepared(Profile* profile) {
+  virtual void OnProfilePrepared(Profile* profile) OVERRIDE {
     profile_prepared_ = true;
     LoginUtils::Get()->DoBrowserLaunch(profile, NULL);
     if (!pending_requests_)

@@ -38,7 +38,7 @@ class TestContactManagerObserver : public ContactManagerObserver {
         num_updates_(0) {
     contact_manager_->AddObserver(this, profile_);
   }
-  ~TestContactManagerObserver() {
+  virtual ~TestContactManagerObserver() {
     contact_manager_->RemoveObserver(this, profile_);
   }
 
@@ -46,7 +46,7 @@ class TestContactManagerObserver : public ContactManagerObserver {
   void reset_stats() { num_updates_ = 0; }
 
   // ContactManagerObserver overrides:
-  void OnContactsUpdated(Profile* profile) OVERRIDE {
+  virtual void OnContactsUpdated(Profile* profile) OVERRIDE {
     CHECK(profile == profile_);
     num_updates_++;
   }

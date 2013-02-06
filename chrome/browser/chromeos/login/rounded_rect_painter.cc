@@ -118,8 +118,8 @@ class RoundedRectBorder : public views::Border {
       : border_(border) {
   }
 
-  virtual void Paint(const views::View& view, gfx::Canvas* canvas);
-  virtual gfx::Insets GetInsets() const;
+  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Insets GetInsets() const OVERRIDE;
 
  private:
   const BorderDefinition* const border_;
@@ -150,7 +150,7 @@ class RoundedBackground : public views::Background {
     SetNativeControlColor(background_color);
   }
 
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const {
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
     SkRect rect;
     rect.iset(0, 0, view->width(), view->height());
     SkPath path;

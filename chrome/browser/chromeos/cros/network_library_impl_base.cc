@@ -1048,7 +1048,7 @@ class UserStringSubstitution : public onc::StringSubstitution {
  public:
   UserStringSubstitution() {}
   virtual bool GetSubstitute(std::string placeholder,
-                             std::string* substitute) const {
+                             std::string* substitute) const OVERRIDE {
     if (!UserManager::Get()->IsUserLoggedIn())
       return false;
     const User* logged_in_user = UserManager::Get()->GetLoggedInUser();

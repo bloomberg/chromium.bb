@@ -85,13 +85,13 @@ class MagnificationManagerTest : public ash::test::AshTestBase {
   MagnificationManagerTest() {
   }
 
-  void SetUp() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     ash::test::AshTestBase::SetUp();
     MagnificationManager::Initialize();
     ASSERT_TRUE(MagnificationManager::Get());
   }
 
-  void TearDown() OVERRIDE {
+  virtual void TearDown() OVERRIDE {
     MagnificationManager::Shutdown();
     ash::test::AshTestBase::TearDown();
   }

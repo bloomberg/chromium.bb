@@ -125,7 +125,7 @@ class WindowStateManager : public aura::WindowObserver {
  private:
   WindowStateManager() {}
 
-  ~WindowStateManager() {
+  virtual ~WindowStateManager() {
     for (std::vector<aura::Window*>::iterator iter = windows_.begin();
          iter != windows_.end(); ++iter) {
       (*iter)->RemoveObserver(this);

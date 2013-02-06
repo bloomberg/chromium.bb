@@ -43,7 +43,7 @@ class LoginTestBase : public CrosInProcessBrowserTest {
   }
 
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     cros_mock_->InitStatusAreaMocks();
     cros_mock_->SetStatusAreaMocksExpectations();
     cros_mock_->InitMockCryptohomeLibrary();
@@ -68,11 +68,11 @@ class LoginTestBase : public CrosInProcessBrowserTest {
 
 class LoginUserTest : public LoginTestBase {
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     LoginTestBase::SetUpInProcessBrowserTestFixture();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitchASCII(switches::kLoginUser, "TestUser@gmail.com");
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
     command_line->AppendSwitch(switches::kNoFirstRun);
@@ -81,7 +81,7 @@ class LoginUserTest : public LoginTestBase {
 
 class LoginGuestTest : public LoginTestBase {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kGuestSession);
     command_line->AppendSwitch(switches::kIncognito);
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
@@ -91,7 +91,7 @@ class LoginGuestTest : public LoginTestBase {
 
 class LoginCursorTest : public LoginTestBase {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kLoginManager);
   }
 };
@@ -150,12 +150,12 @@ class TestContentBrowserClient : public chrome::ChromeContentBrowserClient {
 
 class LoginSigninTest : public CrosInProcessBrowserTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     content_browser_client_.reset(new TestContentBrowserClient());
     original_content_browser_client_ = content::GetContentClient()->browser();
     content::GetContentClient()->set_browser_for_testing(

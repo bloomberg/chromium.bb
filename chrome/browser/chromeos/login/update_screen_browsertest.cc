@@ -38,7 +38,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
                        mock_network_library_(NULL) {}
 
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     MockDBusThreadManager* mock_dbus_thread_manager =
         new MockDBusThreadManager;
     EXPECT_CALL(*mock_dbus_thread_manager, GetSystemBus())
@@ -87,7 +87,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
         .WillRepeatedly(Return(true));
   }
 
-  virtual void SetUpOnMainThread() {
+  virtual void SetUpOnMainThread() OVERRIDE {
     WizardInProcessBrowserTest::SetUpOnMainThread();
     mock_screen_observer_.reset(new MockScreenObserver());
     ASSERT_TRUE(WizardController::default_controller() != NULL);
@@ -98,7 +98,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     update_screen_->screen_observer_ = mock_screen_observer_.get();
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() {
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
     WizardInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
     DBusThreadManager::Shutdown();
   }

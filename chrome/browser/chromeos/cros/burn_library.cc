@@ -46,7 +46,7 @@ class BurnLibraryImpl : public BurnLibrary {
   void OnImageUnzipped(scoped_refptr<base::RefCountedString> source_image_file);
 
  private:
-  void Init();
+  virtual void Init() OVERRIDE;
   void BurnImage();
   static void DevicesUnmountedCallback(void* object, bool success);
   void UpdateBurnStatus(const ImageBurnStatus& status, BurnEvent evt);

@@ -568,7 +568,7 @@ class SSLChan : public MessageLoopForIO::Watcher {
       OnSocketConnect(result);
   }
 
-  ~SSLChan() {
+  virtual ~SSLChan() {
     phase_ = PHASE_CLOSED;
     write_pipe_controller_.StopWatchingFileDescriptor();
     read_pipe_controller_.StopWatchingFileDescriptor();

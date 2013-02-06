@@ -144,7 +144,7 @@ class RegistryNotifiedOnProcessExitTestRunner : public TestRunner {
                                      MessageLoop::QuitClosure());
   }
 
-  virtual void StartRegistryTest(ProcessProxyRegistry* registry) {
+  virtual void StartRegistryTest(ProcessProxyRegistry* registry) OVERRIDE {
     EXPECT_TRUE(registry->SendInput(pid_, "p"));
   }
 
@@ -171,7 +171,7 @@ class SigIntTestRunner : public TestRunner {
     }
  }
 
-  virtual void StartRegistryTest(ProcessProxyRegistry* registry) {
+  virtual void StartRegistryTest(ProcessProxyRegistry* registry) OVERRIDE {
     // Send SingInt and verify the process exited.
     EXPECT_TRUE(registry->SendInput(pid_, "\003"));
   }
@@ -182,7 +182,7 @@ class SigIntTestRunner : public TestRunner {
 class ProcessProxyTest : public InProcessBrowserTest {
  public:
   ProcessProxyTest() {}
-  ~ProcessProxyTest() {}
+  virtual ~ProcessProxyTest() {}
 
  protected:
   void InitRegistryTest() {

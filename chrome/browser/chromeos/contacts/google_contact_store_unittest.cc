@@ -31,13 +31,13 @@ namespace test {
 class TestContactStoreObserver : public ContactStoreObserver {
  public:
   TestContactStoreObserver() : num_updates_(0) {}
-  ~TestContactStoreObserver() {}
+  virtual ~TestContactStoreObserver() {}
 
   int num_updates() const { return num_updates_; }
   void reset_stats() { num_updates_ = 0; }
 
   // ContactStoreObserver overrides:
-  void OnContactsUpdated(ContactStore* store) OVERRIDE {
+  virtual void OnContactsUpdated(ContactStore* store) OVERRIDE {
     DCHECK(store);
     num_updates_++;
   }

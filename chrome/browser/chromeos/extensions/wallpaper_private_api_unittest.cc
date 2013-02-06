@@ -30,7 +30,7 @@ class TestMinimizeFunction : public WallpaperMinimizeInactiveWindowsFunction {
  public:
   TestMinimizeFunction() {}
 
-  bool RunImpl() OVERRIDE {
+  virtual bool RunImpl() OVERRIDE {
     return WallpaperMinimizeInactiveWindowsFunction::RunImpl();
   }
 
@@ -42,7 +42,7 @@ class TestRestoreFunction : public WallpaperRestoreMinimizedWindowsFunction {
  public:
   TestRestoreFunction() {}
 
-  bool RunImpl() OVERRIDE {
+  virtual bool RunImpl() OVERRIDE {
     return WallpaperRestoreMinimizedWindowsFunction::RunImpl();
   }
  protected:

@@ -46,8 +46,8 @@ class StubEnrollmentDelegate : public EnrollmentDelegate {
       : did_enroll(false),
         correct_args(false) {}
 
-  void Enroll(const std::vector<std::string>& uri_list,
-              const base::Closure& closure) {
+  virtual void Enroll(const std::vector<std::string>& uri_list,
+                      const base::Closure& closure) OVERRIDE {
     std::vector<std::string> expected_uri_list;
     expected_uri_list.push_back("http://youtu.be/dQw4w9WgXcQ");
     expected_uri_list.push_back("chrome-extension://abc/keygen-cert.html");

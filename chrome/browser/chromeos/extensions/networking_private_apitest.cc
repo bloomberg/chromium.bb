@@ -14,7 +14,7 @@ namespace chromeos {
 class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
  public:
   // Whitelist the extension ID of the test extension.
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kWhitelistedExtensionID, "epcifkihnkjgphfkloaaleeakhpmgdmn");

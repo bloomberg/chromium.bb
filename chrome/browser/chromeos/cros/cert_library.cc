@@ -132,7 +132,7 @@ class CertLibraryImpl
     net::CertDatabase::GetInstance()->AddObserver(this);
   }
 
-  ~CertLibraryImpl() {
+  virtual ~CertLibraryImpl() {
     DCHECK(request_task_.is_null());
     net::CertDatabase::GetInstance()->RemoveObserver(this);
   }

@@ -53,7 +53,7 @@ class Waiter : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     DCHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED ||
            type == chrome::NOTIFICATION_FULLSCREEN_CHANGED);
     if (running_)
@@ -110,7 +110,7 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
   }
 
  private:
-  virtual void SetUpInProcessBrowserTestFixture() {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     MockDBusThreadManager* mock_dbus_thread_manager =
         new MockDBusThreadManager;
     EXPECT_CALL(*mock_dbus_thread_manager, GetSystemBus())
@@ -139,7 +139,7 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     ui::LayerAnimator::set_disable_animations_for_test(true);
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
   }
 
