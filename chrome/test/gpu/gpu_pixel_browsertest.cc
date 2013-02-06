@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -22,6 +21,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
@@ -52,11 +52,6 @@ struct ReferencePixel {
 const char kGeneratedDir[] = "generated-dir";
 // Command line flag for overriding the default location for reference images.
 const char kReferenceDir[] = "reference-dir";
-
-// Corner shadow size.
-const int kCornerDecorationSize = 15;
-// Side shadow size.
-const int kSideDecorationSize = 2;
 
 // Reads and decodes a PNG image to a bitmap. Returns true on success. The PNG
 // should have been encoded using |gfx::PNGCodec::Encode|.
@@ -123,7 +118,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     if (command_line->HasSwitch(switches::kUseGpuInTests))
       ref_img_option_ = kReferenceImageLocal;
 
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
+    ASSERT_TRUE(PathService::Get(content::DIR_TEST_DATA, &test_data_dir_));
     test_data_dir_ = test_data_dir_.AppendASCII("gpu");
 
     if (command_line->HasSwitch(kGeneratedDir))
@@ -176,36 +171,10 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     content::DOMMessageQueue message_queue;
     ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(url));
 
-    // Wait for notification that page is loaded.
-    ASSERT_TRUE(message_queue.WaitForMessage(NULL));
-    message_queue.ClearQueue();
-
-    gfx::Rect new_bounds = GetNewTabContainerBounds(tab_container_size);
-
-    std::ostringstream js_call;
-    js_call << "preCallResizeInChromium(";
-    js_call << new_bounds.width() << ", " << new_bounds.height();
-    js_call << ");";
-
-    ASSERT_TRUE(content::ExecuteScript(
-        browser()->tab_strip_model()->GetActiveWebContents(), js_call.str()));
-
     std::string message;
+    // Wait for notification that page is loaded.
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
-    message_queue.ClearQueue();
-    browser()->window()->SetBounds(new_bounds);
-
-    // Wait for message from test page indicating the rendering is done.
-    while (message.compare("\"resized\"")) {
-      ASSERT_TRUE(message_queue.WaitForMessage(&message));
-      message_queue.ClearQueue();
-    }
-
-    bool ignore_bottom_corners = false;
-#if defined(OS_MACOSX)
-    // On Mac Lion, bottom corners have shadows with random pixels.
-    ignore_bottom_corners = true;
-#endif
+    EXPECT_STREQ("\"SUCCESS\"", message.c_str()) << message;
 
     SkBitmap bitmap;
     ASSERT_TRUE(TabSnapShotToImage(&bitmap));
@@ -213,7 +182,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     if (ref_img_option_ == kReferenceImageNone && ref_pixels && ref_pixel_count)
       same_pixels = ComparePixels(bitmap, ref_pixels, ref_pixel_count);
     else
-      same_pixels = CompareImages(bitmap, ignore_bottom_corners);
+      same_pixels = CompareImages(bitmap);
     EXPECT_TRUE(same_pixels);
 
 #if defined(OS_WIN)
@@ -260,7 +229,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   //     FAIL_<ref_image_name>, DIFF_<ref_image_name>
   // E.g.,
   //     FAIL_WebGLTeapot_19762.png, DIFF_WebGLTeapot_19762.png
-  bool CompareImages(const SkBitmap& gen_bmp, bool skip_bottom_corners) {
+  bool CompareImages(const SkBitmap& gen_bmp) {
     SkBitmap ref_bmp_on_disk;
 
     FilePath img_path = ref_img_dir_.AppendASCII(test_name_ + ".png");
@@ -344,13 +313,6 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       uint32_t kAlphaMask = 0x00FFFFFF;
       for (int x = 0; x < gen_bmp.width(); ++x) {
         for (int y = 0; y < gen_bmp.height(); ++y) {
-          if (skip_bottom_corners &&
-              (((x < kCornerDecorationSize ||
-                 x >= gen_bmp.width() - kCornerDecorationSize) &&
-                y >= gen_bmp.height() - kCornerDecorationSize) ||
-               (x < kSideDecorationSize ||
-                x >= gen_bmp.width() - kSideDecorationSize)))
-            continue;
           if ((*gen_bmp.getAddr32(x, y) & kAlphaMask) !=
               (*ref_bmp->getAddr32(x, y) & kAlphaMask)) {
             ++diff_pixels_count;
@@ -421,24 +383,6 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       }
     }
     return true;
-  }
-
-  // Returns a gfx::Rect representing the bounds that the browser window should
-  // have if the tab contents have the desired size.
-  gfx::Rect GetNewTabContainerBounds(const gfx::Size& desired_size) {
-    gfx::Rect container_rect;
-    browser()->tab_strip_model()->GetActiveWebContents()->GetContainerBounds(
-        &container_rect);
-    // Size cannot be negative, so use a point.
-    gfx::Point correction(
-        desired_size.width() - container_rect.size().width(),
-        desired_size.height() - container_rect.size().height());
-
-    gfx::Rect window_rect = browser()->window()->GetRestoredBounds();
-    gfx::Size new_size = window_rect.size();
-    new_size.Enlarge(correction.x(), correction.y());
-    window_rect.set_size(new_size);
-    return window_rect;
   }
 
   // Take snapshot of the current tab, encode it as PNG, and save to a SkBitmap.
