@@ -18,6 +18,7 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/common/sandbox_linux.h"
@@ -537,11 +538,11 @@ bool IsAllowedGetOrModifySocket(int sysno) {
   switch (sysno) {
     case __NR_pipe:
     case __NR_pipe2:
+      return true;
+    default:
 #if defined(__x86_64__) || defined(__arm__)
     case __NR_socketpair:  // We will want to inspect its argument.
 #endif
-      return true;
-    default:
       return false;
   }
 }
@@ -1171,6 +1172,15 @@ bool IsBaselinePolicyWatched(int sysno) {
 }
 
 ErrorCode BaselinePolicy(int sysno) {
+#if defined(__x86_64__) || defined(__arm__)
+  if (sysno == __NR_socketpair) {
+    // Only allow AF_UNIX, PF_UNIX. Crash if anything else is seen.
+    COMPILE_ASSERT(AF_UNIX == PF_UNIX, af_unix_pf_unix_different);
+    return Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, AF_UNIX,
+                         ErrorCode(ErrorCode::ERR_ALLOWED),
+                         Sandbox::Trap(CrashSIGSYS_Handler, NULL));
+  }
+#endif
   if (IsBaselinePolicyAllowed(sysno)) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
