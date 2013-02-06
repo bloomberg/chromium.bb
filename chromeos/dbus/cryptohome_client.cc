@@ -627,8 +627,8 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   virtual void GetSanitizedUsername(
       const std::string& username,
       const StringDBusMethodCallback& callback) OVERRIDE {
-    const char kStubSanitizedUsername[] =
-        "0123456789ABCDEF0123456789ABCDEF01234567";
+    const std::string kStubSanitizedUsername(
+        "0123456789ABCDEF0123456789ABCDEF01234567");
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, kStubSanitizedUsername));

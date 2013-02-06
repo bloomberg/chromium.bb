@@ -108,7 +108,11 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_speech_synthesizer_client_.get()));
   EXPECT_CALL(*this, GetUpdateEngineClient())
       .WillRepeatedly(Return(mock_update_engine_client_.get()));
+  EXPECT_CALL(*this, GetIBusInputContextClient())
+      .WillRepeatedly(ReturnNull());
 
+  EXPECT_CALL(*this, GetSystemBus())
+      .WillRepeatedly(ReturnNull());
   EXPECT_CALL(*this, GetIBusBus())
       .WillRepeatedly(ReturnNull());
 
@@ -117,9 +121,15 @@ MockDBusThreadManager::MockDBusThreadManager()
       .Times(AnyNumber());
   EXPECT_CALL(*mock_power_manager_client_.get(), RemoveObserver(_))
       .Times(AnyNumber());
+  EXPECT_CALL(*mock_power_manager_client_.get(), NotifyUserActivity(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_power_manager_client_.get(), NotifyVideoActivity(_, _))
+      .Times(AnyNumber());
   EXPECT_CALL(*mock_session_manager_client_.get(), AddObserver(_))
       .Times(AnyNumber());
   EXPECT_CALL(*mock_session_manager_client_.get(), RemoveObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_session_manager_client_.get(), HasObserver(_))
       .Times(AnyNumber());
   EXPECT_CALL(*mock_update_engine_client_.get(), AddObserver(_))
       .Times(AnyNumber());
@@ -153,6 +163,9 @@ MockDBusThreadManager::MockDBusThreadManager()
   // Called from DiskMountManager::Initialize(), ChromeBrowserMainPartsChromeos.
   EXPECT_CALL(*mock_cros_disks_client_.get(), SetUpConnections(_, _))
       .Times(AnyNumber());
+  EXPECT_CALL(*mock_cros_disks_client_.get(),
+              EnumerateAutoMountableDevices(_, _))
+      .Times(AnyNumber());
 
   // Called from BluetoothManagerImpl ctor.
   EXPECT_CALL(*mock_bluetooth_manager_client_.get(), DefaultAdapter(_))
@@ -167,6 +180,15 @@ MockDBusThreadManager::MockDBusThreadManager()
   // Called from BrightnessController::GetBrightnessPercent as part of ash tray
   // initialization.
   EXPECT_CALL(*mock_power_manager_client_.get(), GetScreenBrightnessPercent(_))
+      .Times(AnyNumber());
+
+  // Called from GeolocationHandler::Init().
+  EXPECT_CALL(*mock_shill_manager_client_.get(), GetProperties(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_shill_manager_client_.get(), AddPropertyChangedObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_shill_manager_client_.get(),
+              RemovePropertyChangedObserver(_))
       .Times(AnyNumber());
 }
 
