@@ -209,4 +209,12 @@ public class NetworkChangeNotifier {
     public static NetworkChangeNotifierAutoDetect getAutoDetectorForTest() {
         return getInstance().mAutoDetector;
     }
+
+    /**
+     * Checks if there currently is connectivity.
+     */
+    public static boolean isOnline() {
+        int connectionType = getInstance().getCurrentConnectionType();
+        return connectionType != CONNECTION_UNKNOWN && connectionType != CONNECTION_NONE;
+    }
 }

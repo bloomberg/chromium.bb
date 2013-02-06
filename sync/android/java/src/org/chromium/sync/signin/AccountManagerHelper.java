@@ -19,8 +19,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 
+import org.chromium.net.NetworkChangeNotifier;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.List;
 
 /**
@@ -35,6 +39,8 @@ public class AccountManagerHelper {
     private static final String GOOGLE_ACCOUNT_TYPE = "com.google";
 
     private static final Object lock = new Object();
+
+    private static final int MAX_TRIES = 3;
 
     private static AccountManagerHelper sAccountManagerHelper;
 
@@ -132,71 +138,126 @@ public class AccountManagerHelper {
      * - Assumes that the account is a valid account.
      * - Should not be called on the main thread.
      */
+    @Deprecated
     public String getAuthTokenFromBackground(Account account, String authTokenType) {
-        try {
             AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account,
                     authTokenType, false, null, null);
+            AtomicBoolean errorEncountered = new AtomicBoolean(false);
+            return getAuthTokenInner(future, errorEncountered);
+    }
+
+    /**
+     * Gets the auth token and returns the response asynchronously.
+     * This should be called when we have a foreground activity that needs an auth token.
+     * If encountered an IO error, it will attempt to retry when the network is back.
+     *
+     * - Assumes that the account is a valid account.
+     */
+    public void getAuthTokenFromForeground(Account account, String authTokenType,
+                GetAuthTokenCallback callback) {
+        AtomicInteger numTries = new AtomicInteger(0);
+        AtomicBoolean errorEncountered = new AtomicBoolean(false);
+        getAuthTokenAsynchronously(account, authTokenType, callback, numTries, errorEncountered,
+                null);
+    }
+
+    @Deprecated
+    public void getAuthTokenFromForeground(Activity activity, Account account,
+            String authTokenType, GetAuthTokenCallback callback) {
+        getAuthTokenFromForeground(account, authTokenType, callback);
+    }
+
+    private class ConnectionRetry implements NetworkChangeNotifier.ConnectionTypeObserver {
+        private final Account mAccount;
+        private final String mAuthTokenType;
+        private final GetAuthTokenCallback mCallback;
+        private final AtomicInteger mNumTries;
+        private final AtomicBoolean mErrorEncountered;
+
+        ConnectionRetry(Account account, String authTokenType, GetAuthTokenCallback callback,
+                AtomicInteger numTries, AtomicBoolean errorEncountered) {
+            mAccount = account;
+            mAuthTokenType = authTokenType;
+            mCallback = callback;
+            mNumTries = numTries;
+            mErrorEncountered = errorEncountered;
+        }
+
+        @Override
+        public void onConnectionTypeChanged(int connectionType) {
+            assert mNumTries.get() <= MAX_TRIES;
+            if (mNumTries.get() == MAX_TRIES) {
+                NetworkChangeNotifier.removeConnectionTypeObserver(this);
+                return;
+            }
+            if (NetworkChangeNotifier.isOnline()) {
+                NetworkChangeNotifier.removeConnectionTypeObserver(this);
+                getAuthTokenAsynchronously(mAccount, mAuthTokenType, mCallback, mNumTries,
+                        mErrorEncountered, this);
+            }
+        }
+    }
+
+    // Gets the auth token synchronously
+    private String getAuthTokenInner(AccountManagerFuture<Bundle> future,
+            AtomicBoolean errorEncountered) {
+        try {
             Bundle result = future.getResult();
-            if (result == null) {
+            if (result != null) {
+                if (result.containsKey(AccountManager.KEY_INTENT)) {
+                    Log.d(TAG, "Starting intent to get auth credentials");
+                    // Need to start intent to get credentials
+                    Intent intent = result.getParcelable(AccountManager.KEY_INTENT);
+                    int flags = intent.getFlags();
+                    flags |= Intent.FLAG_ACTIVITY_NEW_TASK;
+                    intent.setFlags(flags);
+                    mApplicationContext.startActivity(intent);
+                    return null;
+                }
+                return result.getString(AccountManager.KEY_AUTHTOKEN);
+            } else {
                 Log.w(TAG, "Auth token - getAuthToken returned null");
-                return null;
             }
-            if (result.containsKey(AccountManager.KEY_INTENT)) {
-                Log.d(TAG, "Starting intent to get auth credentials");
-                // Need to start intent to get credentials
-                Intent intent = result.getParcelable(AccountManager.KEY_INTENT);
-                int flags = intent.getFlags();
-                flags |= Intent.FLAG_ACTIVITY_NEW_TASK;
-                intent.setFlags(flags);
-                mApplicationContext.startActivity(intent);
-                return null;
-            }
-            return result.getString(AccountManager.KEY_AUTHTOKEN);
         } catch (OperationCanceledException e) {
             Log.w(TAG, "Auth token - operation cancelled", e);
         } catch (AuthenticatorException e) {
             Log.w(TAG, "Auth token - authenticator exception", e);
         } catch (IOException e) {
             Log.w(TAG, "Auth token - IO exception", e);
+            errorEncountered.set(true);
         }
         return null;
     }
 
-    /**
-     * Gets the auth token and returns the response asynchronously on the UI thread.
-     * This should be called when we have a foreground activity that needs an auth token.
-     *
-     * - Assumes that the account is a valid account.
-     */
-   public void getAuthTokenFromForeground(Activity activity, Account account,
-           String authTokenType, final GetAuthTokenCallback callback) {
-       final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account,
-               authTokenType, null, activity, null, null);
-       new AsyncTask<Void, Void, String>() {
-           @Override
-           public String doInBackground(Void... params) {
-               try {
-                   Bundle result = future.getResult();
-                   if (result != null) {
-                       return result.getString(AccountManager.KEY_AUTHTOKEN);
-                   } else {
-                       Log.w(TAG, "Auth token - getAuthToken returned null");
-                   }
-               } catch (OperationCanceledException e) {
-                   Log.w(TAG, "Auth token - operation cancelled", e);
-               } catch (AuthenticatorException e) {
-                   Log.w(TAG, "Auth token - authenticator exception", e);
-               } catch (IOException e) {
-                   Log.w(TAG, "Auth token - IO exception", e);
-               }
-               return null;
-           }
-           @Override
-           public void onPostExecute(String authToken) {
-               callback.tokenAvailable(authToken);
-           }
-       }.execute();
-   }
+    private void getAuthTokenAsynchronously(final Account account, final String authTokenType,
+            final GetAuthTokenCallback callback, final AtomicInteger numTries,
+            final AtomicBoolean errorEncountered, final ConnectionRetry retry) {
+        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account,
+                authTokenType, false, null, null);
+        errorEncountered.set(false);
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            public String doInBackground(Void... params) {
+                return getAuthTokenInner(future, errorEncountered);
+            }
+            @Override
+            public void onPostExecute(String authToken) {
+                if (authToken != null || !errorEncountered.get() ||
+                        numTries.incrementAndGet() == MAX_TRIES) {
+                    callback.tokenAvailable(authToken);
+                    return;
+                }
+                if (retry == null) {
+                    ConnectionRetry newRetry = new ConnectionRetry(account, authTokenType, callback,
+                            numTries, errorEncountered);
+                    NetworkChangeNotifier.addConnectionTypeObserver(newRetry);
+                }
+                else {
+                    NetworkChangeNotifier.addConnectionTypeObserver(retry);
+                }
+            }
+        }.execute();
+    }
 
     /**
      * Invalidates the old token (if non-null/non-empty) and synchronously generates a new one.
