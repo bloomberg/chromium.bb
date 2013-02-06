@@ -17,6 +17,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"
+#include "grit/chromium_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::ProcessEntry;
 using content::BrowserThread;
@@ -49,7 +51,7 @@ static const char kBrowserPrettyNames[][10] = {
 static const struct {
   const char process_name[16];
   BrowserType browser;
-  } kBrowserBinaryNames[] = {
+} kBrowserBinaryNames[] = {
   { "firefox", FIREFOX },
   { "firefox-3.5", FIREFOX },
   { "firefox-3.0", FIREFOX },
@@ -192,7 +194,7 @@ void MemoryDetails::CollectProcessData(
 
   ProcessData current_browser =
       GetProcessDataMemoryInformation(GetAllChildren(process_map, getpid()));
-  current_browser.name = WideToUTF16(chrome::kBrowserAppName);
+  current_browser.name = l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   current_browser.process_name = ASCIIToUTF16("chrome");
 
   for (std::vector<ProcessMemoryInformation>::iterator

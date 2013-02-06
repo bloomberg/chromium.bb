@@ -21,7 +21,6 @@ const wchar_t kChromeLaunchShortcut[] = L"Chromium.lnk";
 const wchar_t kChromeUninstallShortcut[] = L"Uninstall Chromium.lnk";
 const wchar_t kChromeUninstallDialogName[] = L"Uninstall Chromium";
 #endif
-const wchar_t kBrowserAppName[] = L"Google - Google Chrome";
 const wchar_t kBrowserTabName[] = L"New Tab - Google Chrome";
 const wchar_t kChromeFrameAppDir[] = L"Google\\Chrome Frame\\Application\\";
 const wchar_t kChromeFrameAppName[] = L"Google Chrome Frame";

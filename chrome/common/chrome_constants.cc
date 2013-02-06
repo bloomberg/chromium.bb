@@ -126,11 +126,6 @@ const char* const kHelperFlavorSuffixes[] = {
 #endif  // OS_MACOSX
 
 const wchar_t kNaClAppName[] = L"nacl64";
-#if defined(GOOGLE_CHROME_BUILD)
-const wchar_t kBrowserAppName[] = L"Chrome";
-#else
-const wchar_t kBrowserAppName[] = L"Chromium";
-#endif
 
 #if defined(OS_WIN)
 const FilePath::CharType kMetroDriverDll[] = FPL("metro_driver.dll");

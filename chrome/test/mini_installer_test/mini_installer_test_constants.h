@@ -28,7 +28,6 @@ extern const wchar_t kIEExecutable[];
 extern const wchar_t kWinFolder[];
 
 // Window names.
-extern const wchar_t kBrowserAppName[];
 extern const wchar_t kBrowserTabName[];
 extern const wchar_t kChromeBuildType[];
 extern const wchar_t kChromeFrameAppName[];
