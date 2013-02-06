@@ -497,6 +497,13 @@ Object.defineProperty(HistoryModel.prototype, 'offset', {
   }
 });
 
+// Setter for HistoryModel.requestedPage_.
+Object.defineProperty(HistoryModel.prototype, 'requestedPage', {
+  set: function(page) {
+    this.requestedPage_ = page;
+  }
+});
+
 // HistoryModel, Private: -----------------------------------------------------
 
 /**
@@ -549,18 +556,18 @@ HistoryModel.prototype.clearModel_ = function() {
  * @private
  */
 HistoryModel.prototype.updateSearch_ = function() {
-  var doneLoading = this.isQueryFinished_ ||
+  var doneLoading = this.rangeInDays_ != HistoryModel.Range.ALL_TIME ||
+                    this.isQueryFinished_ ||
                     this.canFillPage_(this.requestedPage_);
 
   // Try to fetch more results if more results can arrive and the page is not
   // full.
-  if (this.rangeInDays_ == HistoryModel.Range.ALL_TIME &&
-      !doneLoading && !this.inFlight_) {
+  if (!doneLoading && !this.inFlight_) {
     this.queryHistory_();
   }
 
   // Show the result or a message if no results were returned.
-  this.view_.onModelReady();
+  this.view_.onModelReady(doneLoading);
 };
 
 /**
@@ -755,6 +762,8 @@ HistoryView.prototype.setRangeInDays = function(range) {
   this.model_.rangeInDays = range;
   this.model_.offset = 0;
   this.pageIndex_ = 0;
+  if (range == HistoryModel.Range.ALL_TIME)
+    this.model_.requestedPage = 0;
   this.model_.reload();
   pageState.setUIState(this.model_.getSearchText(), this.pageIndex_,
       this.model_.getGroupByDomain(), range, this.getOffset());
@@ -796,9 +805,10 @@ HistoryView.prototype.getOffset = function() {
 /**
  * Callback for the history model to let it know that it has data ready for us
  * to view.
+ * @param {boolean} doneLoading Whether the current request is complete.
  */
-HistoryView.prototype.onModelReady = function() {
-  this.displayResults_();
+HistoryView.prototype.onModelReady = function(doneLoading) {
+  this.displayResults_(doneLoading);
   this.updateNavBar_();
 };
 
@@ -1002,9 +1012,10 @@ HistoryView.prototype.addDayResults_ = function(visits, parentElement) {
 
 /**
  * Update the page with results.
+ * @param {boolean} doneLoading Whether the current request is complete.
  * @private
  */
-HistoryView.prototype.displayResults_ = function() {
+HistoryView.prototype.displayResults_ = function(doneLoading) {
   // Either show a page of results received for the all time results or all the
   // received results for the weekly and monthly view.
   var results = this.model_.visits_;
@@ -1026,7 +1037,7 @@ HistoryView.prototype.displayResults_ = function() {
     }
 
     var searchResults = createElementWithClassName('ol', 'search-results');
-    if (results.length == 0) {
+    if (results.length == 0 && doneLoading) {
       var noSearchResults = document.createElement('div');
       noSearchResults.textContent = loadTimeData.getString('nosearchresults');
       searchResults.appendChild(noSearchResults);
@@ -1058,7 +1069,7 @@ HistoryView.prototype.displayResults_ = function() {
           this.model_.queryEndTime)));
     }
 
-    if (results.length == 0 && !this.model_.inFlight_) {
+    if (results.length == 0 && doneLoading) {
       var noResults = resultsFragment.appendChild(
           document.createElement('div'));
       noResults.textContent = loadTimeData.getString('noresults');
