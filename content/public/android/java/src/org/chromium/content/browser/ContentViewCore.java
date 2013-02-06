@@ -666,7 +666,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      * been called.
      */
     public void destroy() {
-        hidePopupDialog();
         if (mNativeContentViewCore != 0) {
             nativeOnJavaContentViewCoreDestroyed(mNativeContentViewCore);
         }
@@ -1238,6 +1237,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             }
         }
         setAccessibilityState(false);
+        hidePopupDialog();
     }
 
     /**
