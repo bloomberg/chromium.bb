@@ -6,15 +6,6 @@
   {{ super() }}
 
   <script language="javascript" type="text/javascript">
-    function expand(treatment) {
-      // Expand the size of a treatment and shrink all the others
-      treatments = treatment.parentElement.children;
-      for (var i = 0; i < treatments.length; i++) {
-        treatments[i].className = 'treatment inactive';
-      }
-      treatment.className = 'treatment active';
-    }
-
     function submitReview() {
       var keys = [
         {% for treatment in treatments %}
@@ -158,14 +149,14 @@
   {% endif %}
 
   <p>
-    Below is a list of treatments for this experiment.  Each treatment
-    represents a variation on the touchpad processing algorithm.  To participate
-    in this experiment, please try out each of the treatments, and then rank
-    your experiences.
+    This experiment consists of {{ treatments|length }} </i>treatments</i>.
+    Each treatment is a variation on the touchpad settings.  To participate in
+    this experiment, you will try out each of these treatments and then
+    provide us with feedback regarding their performance.
   </p>
 
   <p>
-    Each treatment has a command you can run on your Chromebook to temporarily
+    Below you will find a command you can run on your Chromebook to temporarily
     alter the way your touchpad works.  To try out an experiment, simply open
     up Crosh with Ctrl + Alt + t and paste in the given command.  Note that to
     paste into the terminal you must either right click and press paste or use
@@ -173,10 +164,10 @@
   </p>
 
   <p>
-    Once you have applied a treatment, please follow the instructions on how
-    to best experience the changes and judge them more accurately.
-    Finally, once you have tried all of the treatments, use the form on the
-    right to rank your experiences and click "Submit" to record your responses.
+    You will be given on-screen instructions on how to switch between the
+    different treatments once you run that command. Finally, once you have 
+    tried all of the treatments, use the form on the right to rank your 
+    experiences and click "Submit" to record your responses.
   </p>
 
   <ul>
@@ -186,35 +177,16 @@
         {{ experiment.owner }}
       </a>
     <li> Created: {{ experiment.created }}
-    <li> Treatments:
-      {% for treatment in treatments %}
-        <div class="treatment {% if loop.first %}
-                                active
-                              {% else %}
-                                inactive
-                              {% endif %}" onclick="expand(this)">
-          <h2> Treatment #{{ loop.index0 }} </h2>
-          <div class="tooltip"> click to expand... </div>
-          <div class="details">
-            <div class="command">
-              try_touch_experiment
-              {# Convert the properties and their values to a hex encoding #}
-              {# Properties are separated from values by colons (hex 3a) #}
-              {# Value/Property pairs are separated by commas (hex 2c) #}
-              {% for prop in properties if
-                    prop.parent_key() == treatment.key() %}
-                {{- prop.name.encode("hex") -}}
-                3a
-                {{- prop.value.encode("hex") -}}
-                {%- if not loop.last %}2c{% endif -%}
-              {% endfor %}
-            </div>
-
-            {{ experiment.instructions|safe }}
-          </div>
-        </div>
-      {% endfor %}
+    <li> Treatments: {{ treatments|length }}
   </ul>
+
+  <div class="treatment">
+    <h2> Experiment Command </h2>
+    <div class="command">
+      try_touch_experiment
+      {{ experiment|encode_experiment(treatments, properties) }}
+    </div>
+  </div>
 {% endblock %}
 
 {% block second_column %}

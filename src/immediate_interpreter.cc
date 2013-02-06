@@ -666,6 +666,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
                e = prev_gs_fingers_.end();
            it != e; ++it) {
         if (!hwstate.GetFingerState(*it)) {
+          Log("Found a finger lifting during a scroll!!!!!!!!!");
           current_gesture_type_ =
               current_gesture_type_ == kGestureTypeScroll ?
               kGestureTypeFling : kGestureTypeSwipeLift;

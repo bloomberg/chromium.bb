@@ -24,6 +24,7 @@ jinja_environment.filters['average'] = filters.average
 jinja_environment.filters['row_class'] = filters.row_class
 jinja_environment.filters['sign_test'] = filters.sign_test
 jinja_environment.filters['variance'] = filters.variance
+jinja_environment.filters['encode_experiment'] = filters.encode_experiment
 
 def load_experiment(experiment_id):
     experiment = Experiment.gql('WHERE __key__ = KEY(:1)', experiment_id).get()

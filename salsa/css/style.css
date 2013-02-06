@@ -126,26 +126,6 @@ h2 {
     border-color: #ccc
 }
 
-.inactive {
-    cursor: pointer;
-}
-
-.inactive .details {
-    display: none;
-}
-
-.active .details {
-    display: block;
-}
-
-.inactive .tooltip {
-    display: block;
-}
-
-.active .tooltip {
-    display: none;
-}
-
 .delete {
     float: right;
 }

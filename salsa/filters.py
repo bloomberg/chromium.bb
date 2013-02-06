@@ -35,3 +35,28 @@ def sign_test(x, y):
     p_value = sum([binomial_pmf(i, n, 0.5) for i in range(w, n + 1)])
 
     return p_value
+
+def encode_property(prop):
+    """ Return an encoded version of a property by merging it's encoded
+    name and value with the hex value for the : character (3a)
+
+    NAME:VALUE
+    """
+    return "%s3a%s" % (prop.name.encode("hex"), prop.value.encode("hex"))
+
+def encode_treatment(treatment, properties):
+    """ Return an encoded version of a treatment by merging it's encoded
+    properties with the hex value for the , character (0x2c)
+
+    PROPERTY 1,PROPERTY 2, PROPERTY 3
+    """
+    return "2c".join([encode_property(p) for p in properties
+                      if p.parent_key() == treatment.key()])
+
+def encode_experiment(experiment, treatments, properties):
+    """ Return an encoded version of an experiment by merging it's encoded
+    treatments with the hex value for the + character (0x2b)
+
+    TREATMENT 1+TREATMENT 2+TREATMENT 3
+    """
+    return "2b".join([encode_treatment(t, properties) for t in treatments])
