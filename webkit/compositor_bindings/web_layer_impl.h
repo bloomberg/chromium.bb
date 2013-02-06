@@ -24,6 +24,8 @@ public:
     WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebLayerImpl(scoped_refptr<cc::Layer>);
     virtual ~WebLayerImpl();
 
+    WEBKIT_COMPOSITOR_BINDINGS_EXPORT cc::Layer* layer() const;
+
     // WebLayer implementation.
     virtual int id() const OVERRIDE;
     virtual void invalidateRect(const WebFloatRect&) OVERRIDE;
@@ -94,8 +96,6 @@ public:
     virtual void setFixedToContainerLayer(bool) OVERRIDE;
     virtual bool fixedToContainerLayer() const;
     virtual void setScrollClient(WebLayerScrollClient*) OVERRIDE;
-
-    cc::Layer* layer() const;
 
 protected:
     scoped_refptr<cc::Layer> m_layer;

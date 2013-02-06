@@ -794,6 +794,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void OnWasShown(bool needs_repainting) OVERRIDE;
   virtual bool SupportsAsynchronousSwapBuffers() OVERRIDE;
   virtual bool ForceCompositingModeEnabled() OVERRIDE;
+  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface() OVERRIDE;
   virtual void OnImeSetComposition(
       const string16& text,
       const std::vector<WebKit::WebCompositionUnderline>& underlines,

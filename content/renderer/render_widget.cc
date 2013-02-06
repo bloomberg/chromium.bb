@@ -21,6 +21,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/compositor_thread.h"
+#include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
@@ -253,8 +254,8 @@ void RenderWidget::CompleteInit() {
   if (webwidget_ && is_threaded_compositing_enabled_) {
     webwidget_->enterForceCompositingMode(true);
   }
-  if (web_layer_tree_view_) {
-    web_layer_tree_view_->setSurfaceReady();
+  if (compositor_) {
+    compositor_->setSurfaceReady();
   }
   DoDeferredUpdate();
 
@@ -512,6 +513,10 @@ bool RenderWidget::ForceCompositingModeEnabled() {
   return false;
 }
 
+scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
+  return scoped_ptr<cc::OutputSurface>();
+}
+
 void RenderWidget::OnSwapBuffersAborted() {
   TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersAborted");
   while (!updates_pending_swap_.empty()) {
@@ -676,8 +681,8 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
 
   bool frame_pending = paint_aggregator_.HasPendingUpdate();
   if (is_accelerated_compositing_active_) {
-    frame_pending = web_layer_tree_view_ &&
-                    web_layer_tree_view_->commitRequested();
+    frame_pending = compositor_ &&
+                    compositor_->commitRequested();
   }
 
   bool is_input_throttled =
@@ -913,8 +918,8 @@ void RenderWidget::AnimateIfNeeded() {
     animation_timer_.Start(FROM_HERE, animationInterval, this,
                            &RenderWidget::AnimationCallback);
     animation_update_pending_ = false;
-    if (is_accelerated_compositing_active_ && web_layer_tree_view_) {
-      web_layer_tree_view_->layer_tree_host()->updateAnimations(
+    if (is_accelerated_compositing_active_ && compositor_) {
+      compositor_->layer_tree_host()->updateAnimations(
           base::TimeTicks::Now());
     } else {
       webwidget_->animate(0.0);
@@ -1173,8 +1178,8 @@ void RenderWidget::DoDeferredUpdate() {
 
 void RenderWidget::Composite() {
   DCHECK(is_accelerated_compositing_active_);
-  if (web_layer_tree_view_)  // TODO(jamesr): Figure out how this can be null.
-    web_layer_tree_view_->composite();
+  if (compositor_)  // TODO(jamesr): Figure out how this can be null.
+    compositor_->composite();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1315,27 +1320,17 @@ void RenderWidget::initializeLayerTreeView(
     WebKit::WebLayerTreeViewClient* client,
     const WebKit::WebLayer& root_layer,
     const WebKit::WebLayerTreeView::Settings& settings) {
-  DCHECK(!web_layer_tree_view_);
-  web_layer_tree_view_.reset(new WebKit::WebLayerTreeViewImpl(client));
-
-  scoped_ptr<cc::Thread> impl_thread;
-  CompositorThread* compositor_thread =
-      RenderThreadImpl::current()->compositor_thread();
-  if (compositor_thread)
-    impl_thread = cc::ThreadImpl::createForDifferentThread(
-        compositor_thread->message_loop()->message_loop_proxy());
-  if (!web_layer_tree_view_->initialize(settings, impl_thread.Pass())) {
-    web_layer_tree_view_.reset();
+  compositor_ = RenderWidgetCompositor::Create(this, client, settings);
+  if (!compositor_)
     return;
-  }
-  web_layer_tree_view_->setRootLayer(root_layer);
-  if (init_complete_) {
-    web_layer_tree_view_->setSurfaceReady();
-  }
+
+  compositor_->setRootLayer(root_layer);
+  if (init_complete_)
+    compositor_->setSurfaceReady();
 }
 
 WebKit::WebLayerTreeView* RenderWidget::layerTreeView() {
-  return web_layer_tree_view_.get();
+  return compositor_.get();
 }
 
 void RenderWidget::willBeginCompositorFrame() {
@@ -1400,8 +1395,8 @@ void RenderWidget::didCompleteSwapBuffers() {
 void RenderWidget::scheduleComposite() {
   TRACE_EVENT0("gpu", "RenderWidget::scheduleComposite");
   if (RenderThreadImpl::current()->compositor_thread() &&
-      web_layer_tree_view_) {
-    web_layer_tree_view_->setNeedsRedraw();
+      compositor_) {
+    compositor_->setNeedsRedraw();
   } else {
     // TODO(nduca): replace with something a little less hacky.  The reason this
     // hack is still used is because the Invalidate-DoDeferredUpdate loop
@@ -1493,7 +1488,7 @@ void RenderWidget::closeWidgetSoon() {
 void RenderWidget::Close() {
   if (webwidget_) {
     webwidget_->willCloseLayerTreeView();
-    web_layer_tree_view_.reset();
+    compositor_.reset();
     webwidget_->close();
     webwidget_ = NULL;
   }
@@ -1708,8 +1703,8 @@ void RenderWidget::OnRepaint(const gfx::Size& size_to_paint) {
 
   set_next_paint_is_repaint_ack();
   if (is_accelerated_compositing_active_) {
-    if (web_layer_tree_view_)
-      web_layer_tree_view_->setNeedsRedraw();
+    if (compositor_)
+      compositor_->setNeedsRedraw();
     scheduleComposite();
   } else {
     gfx::Rect repaint_rect(size_to_paint.width(), size_to_paint.height());
@@ -2053,8 +2048,8 @@ void RenderWidget::CleanupWindowInPluginMoves(gfx::PluginWindowHandle window) {
 
 void RenderWidget::GetRenderingStats(
     WebKit::WebRenderingStatsImpl& stats) const {
-  if (web_layer_tree_view_)
-    web_layer_tree_view_->renderingStats(stats);
+  if (compositor_)
+    compositor_->layer_tree_host()->renderingStats(&stats.rendering_stats);
 
   stats.rendering_stats.numAnimationFrames +=
       software_stats_.numAnimationFrames;

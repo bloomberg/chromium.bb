@@ -100,6 +100,8 @@
     'renderer/gpu/gpu_benchmarking_extension.h',
     'renderer/gpu/stream_texture_host_android.cc',
     'renderer/gpu/stream_texture_host_android.h',
+    'renderer/gpu/render_widget_compositor.cc',
+    'renderer/gpu/render_widget_compositor.h',
     'renderer/hyphenator/hyphenator.cc',
     'renderer/hyphenator/hyphenator.h',
     'renderer/idle_user_detector.cc',

@@ -8,12 +8,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/input_handler.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebInputHandler.h"
+#include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace WebKit {
 
 class WebToCCInputHandlerAdapter : public cc::InputHandler {
 public:
-    static scoped_ptr<WebToCCInputHandlerAdapter> create(scoped_ptr<WebInputHandler>);
+    WEBKIT_COMPOSITOR_BINDINGS_EXPORT static scoped_ptr<WebToCCInputHandlerAdapter> create(scoped_ptr<WebInputHandler>);
     virtual ~WebToCCInputHandlerAdapter();
 
     // cc::InputHandler implementation.

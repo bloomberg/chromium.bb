@@ -1,0 +1,333 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/renderer/gpu/render_widget_compositor.h"
+
+#include "base/command_line.h"
+#include "base/logging.h"
+#include "base/string_number_conversions.h"
+#include "base/time.h"
+#include "cc/font_atlas.h"
+#include "cc/layer.h"
+#include "cc/layer_tree_debug_state.h"
+#include "cc/layer_tree_host.h"
+#include "cc/switches.h"
+#include "cc/thread_impl.h"
+#include "content/renderer/gpu/compositor_thread.h"
+#include "content/renderer/render_thread_impl.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "webkit/compositor_bindings/web_layer_impl.h"
+#include "webkit/compositor_bindings/web_to_ccinput_handler_adapter.h"
+
+namespace cc {
+class Layer;
+}
+
+using WebKit::WebFloatPoint;
+using WebKit::WebSize;
+using WebKit::WebRect;
+
+namespace content {
+
+// static
+scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
+      RenderWidget* widget,
+      WebKit::WebLayerTreeViewClient* client,
+      WebKit::WebLayerTreeView::Settings web_settings) {
+  scoped_ptr<RenderWidgetCompositor> comp(
+      new RenderWidgetCompositor(widget, client));
+
+  cc::LayerTreeSettings settings;
+  settings.acceleratePainting = web_settings.acceleratePainting;
+  settings.renderVSyncEnabled = web_settings.renderVSyncEnabled;
+  settings.perTilePaintingEnabled = web_settings.perTilePaintingEnabled;
+  settings.rightAlignedSchedulingEnabled =
+    CommandLine::ForCurrentProcess()->HasSwitch(
+        cc::switches::kEnableRightAlignedScheduling);
+  settings.acceleratedAnimationEnabled =
+    web_settings.acceleratedAnimationEnabled;
+  settings.pageScalePinchZoomEnabled = web_settings.pageScalePinchZoomEnabled;
+  settings.refreshRate = web_settings.refreshRate;
+  settings.defaultTileSize = web_settings.defaultTileSize;
+  settings.maxUntiledLayerSize = web_settings.maxUntiledLayerSize;
+  settings.initialDebugState.showFPSCounter = web_settings.showFPSCounter;
+  settings.initialDebugState.showPaintRects = web_settings.showPaintRects;
+  settings.initialDebugState.showPlatformLayerTree =
+    web_settings.showPlatformLayerTree;
+  settings.initialDebugState.showDebugBorders = web_settings.showDebugBorders;
+  settings.implSidePainting =
+    CommandLine::ForCurrentProcess()->HasSwitch(
+        cc::switches::kEnableImplSidePainting);
+  settings.recordRenderingStats = web_settings.recordRenderingStats;
+  settings.useCheapnessEstimator =
+    CommandLine::ForCurrentProcess()->HasSwitch(
+        cc::switches::kUseCheapnessEstimator);
+
+  settings.calculateTopControlsPosition =
+    CommandLine::ForCurrentProcess()->HasSwitch(
+        cc::switches::kEnableTopControlsPositionCalculation);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        cc::switches::kTopControlsHeight)) {
+      std::string controls_height_str =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            cc::switches::kTopControlsHeight);
+      double controls_height;
+      if (base::StringToDouble(controls_height_str, &controls_height) &&
+          controls_height > 0)
+        settings.topControlsHeight = controls_height;
+  }
+  if (settings.calculateTopControlsPosition &&
+      (settings.topControlsHeight <= 0 || !settings.compositorFrameMessage)) {
+    DCHECK(false) << "Top controls repositioning enabled without valid height "
+                     "or compositorFrameMessage set.";
+    settings.calculateTopControlsPosition = false;
+  }
+
+  if (!comp->initialize(settings))
+    return scoped_ptr<RenderWidgetCompositor>();
+
+  return comp.Pass();
+}
+
+RenderWidgetCompositor::RenderWidgetCompositor(
+    RenderWidget* widget, WebKit::WebLayerTreeViewClient* client)
+  : widget_(widget),
+    client_(client) {
+}
+
+RenderWidgetCompositor::~RenderWidgetCompositor() {}
+
+bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
+  scoped_ptr<cc::Thread> impl_thread;
+  CompositorThread* compositor_thread =
+      RenderThreadImpl::current()->compositor_thread();
+  threaded_ = !!compositor_thread;
+  if (compositor_thread)
+    impl_thread = cc::ThreadImpl::createForDifferentThread(
+        compositor_thread->message_loop()->message_loop_proxy());
+  layer_tree_host_ = cc::LayerTreeHost::create(this,
+                                               settings,
+                                               impl_thread.Pass());
+  return layer_tree_host_;
+}
+
+void RenderWidgetCompositor::setSurfaceReady() {
+  layer_tree_host_->setSurfaceReady();
+}
+
+void RenderWidgetCompositor::setRootLayer(const WebKit::WebLayer& layer) {
+  layer_tree_host_->setRootLayer(
+      static_cast<const WebKit::WebLayerImpl*>(&layer)->layer());
+}
+
+void RenderWidgetCompositor::clearRootLayer() {
+  layer_tree_host_->setRootLayer(scoped_refptr<cc::Layer>());
+}
+
+void RenderWidgetCompositor::setViewportSize(
+    const WebSize& layout_viewport_size,
+    const WebSize& device_viewport_size) {
+  layer_tree_host_->setViewportSize(layout_viewport_size, device_viewport_size);
+}
+
+WebSize RenderWidgetCompositor::layoutViewportSize() const {
+  return layer_tree_host_->layoutViewportSize();
+}
+
+WebSize RenderWidgetCompositor::deviceViewportSize() const {
+  return layer_tree_host_->deviceViewportSize();
+}
+
+WebFloatPoint RenderWidgetCompositor::adjustEventPointForPinchZoom(
+    const WebFloatPoint& point) const {
+  return point;
+}
+
+void RenderWidgetCompositor::setDeviceScaleFactor(float device_scale) {
+  layer_tree_host_->setDeviceScaleFactor(device_scale);
+}
+
+float RenderWidgetCompositor::deviceScaleFactor() const {
+  return layer_tree_host_->deviceScaleFactor();
+}
+
+void RenderWidgetCompositor::setBackgroundColor(WebKit::WebColor color) {
+  layer_tree_host_->setBackgroundColor(color);
+}
+
+void RenderWidgetCompositor::setHasTransparentBackground(bool transparent) {
+  layer_tree_host_->setHasTransparentBackground(transparent);
+}
+
+void RenderWidgetCompositor::setVisible(bool visible) {
+  layer_tree_host_->setVisible(visible);
+}
+
+void RenderWidgetCompositor::setPageScaleFactorAndLimits(
+    float page_scale_factor, float minimum, float maximum) {
+  layer_tree_host_->setPageScaleFactorAndLimits(
+      page_scale_factor, minimum, maximum);
+}
+
+void RenderWidgetCompositor::startPageScaleAnimation(
+    const WebKit::WebPoint& destination,
+    bool use_anchor,
+    float new_page_scale,
+    double duration_sec) {
+  base::TimeDelta duration = base::TimeDelta::FromMicroseconds(
+      duration_sec * base::Time::kMicrosecondsPerSecond);
+  layer_tree_host_->startPageScaleAnimation(
+      gfx::Vector2d(destination.x, destination.y),
+      use_anchor,
+      new_page_scale,
+      duration);
+}
+
+void RenderWidgetCompositor::setNeedsAnimate() {
+  layer_tree_host_->setNeedsAnimate();
+}
+
+void RenderWidgetCompositor::setNeedsRedraw() {
+  if (threaded_)
+    layer_tree_host_->setNeedsAnimate();
+  else
+    widget_->scheduleAnimation();
+}
+
+bool RenderWidgetCompositor::commitRequested() const {
+  return layer_tree_host_->commitRequested();
+}
+
+void RenderWidgetCompositor::composite() {
+  layer_tree_host_->composite();
+}
+
+void RenderWidgetCompositor::updateAnimations(double frame_begin_time_sec) {
+  base::TimeTicks frame_begin_time =
+    base::TimeTicks::FromInternalValue(frame_begin_time_sec *
+                                       base::Time::kMicrosecondsPerSecond);
+  layer_tree_host_->updateAnimations(frame_begin_time);
+}
+
+void RenderWidgetCompositor::didStopFlinging() {
+  layer_tree_host_->didStopFlinging();
+}
+
+bool RenderWidgetCompositor::compositeAndReadback(void *pixels,
+                                                  const WebRect& rect) {
+  return layer_tree_host_->compositeAndReadback(pixels, rect);
+}
+
+void RenderWidgetCompositor::finishAllRendering() {
+  layer_tree_host_->finishAllRendering();
+}
+
+void RenderWidgetCompositor::setDeferCommits(bool defer_commits) {
+  layer_tree_host_->setDeferCommits(defer_commits);
+}
+
+void RenderWidgetCompositor::setShowFPSCounter(bool show) {
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->debugState();
+  debug_state.showFPSCounter = show;
+  layer_tree_host_->setDebugState(debug_state);
+}
+
+void RenderWidgetCompositor::setShowPaintRects(bool show) {
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->debugState();
+  debug_state.showPaintRects = show;
+  layer_tree_host_->setDebugState(debug_state);
+}
+
+void RenderWidgetCompositor::setContinuousPaintingEnabled(bool enabled) {
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->debugState();
+  debug_state.continuousPainting = enabled;
+  layer_tree_host_->setDebugState(debug_state);
+}
+
+// TODO(jamesr): This should go through WebWidget.
+void RenderWidgetCompositor::willBeginFrame() {
+  client_->willBeginFrame();
+}
+
+// TODO(jamesr): This should go through WebWidget.
+void RenderWidgetCompositor::didBeginFrame() {
+  client_->didBeginFrame();
+}
+
+void RenderWidgetCompositor::animate(double monotonic_frame_begin_time) {
+  client_->updateAnimations(monotonic_frame_begin_time);
+}
+
+// Can delete from WebLayerTreeViewClient
+void RenderWidgetCompositor::layout() {
+  widget_->webwidget()->layout();
+}
+
+// TODO(jamesr): This should go through WebWidget.
+void RenderWidgetCompositor::applyScrollAndScale(gfx::Vector2d scroll_delta,
+                                                 float page_scale) {
+  client_->applyScrollAndScale(scroll_delta, page_scale);
+}
+
+scoped_ptr<cc::OutputSurface> RenderWidgetCompositor::createOutputSurface() {
+  return widget_->CreateOutputSurface();
+}
+
+// TODO(jamesr): This should go through WebWidget
+void RenderWidgetCompositor::didRecreateOutputSurface(bool success) {
+  client_->didRecreateOutputSurface(success);
+}
+
+// TODO(jamesr): This should go through WebWidget
+scoped_ptr<cc::InputHandler> RenderWidgetCompositor::createInputHandler() {
+  scoped_ptr<cc::InputHandler> ret;
+  scoped_ptr<WebKit::WebInputHandler> web_handler(
+      client_->createInputHandler());
+  if (web_handler)
+     ret = WebKit::WebToCCInputHandlerAdapter::create(web_handler.Pass());
+  return ret.Pass();
+}
+
+// TODO(jamesr): This should go through WebWidget
+void RenderWidgetCompositor::willCommit() {
+  client_->willCommit();
+}
+
+void RenderWidgetCompositor::didCommit() {
+  // TODO(jamesr): There is no chromium-side implementation of this first call,
+  // remove if it's not needed.
+  widget_->didCommitCompositorFrame();
+  widget_->didBecomeReadyForAdditionalInput();
+}
+
+void RenderWidgetCompositor::didCommitAndDrawFrame() {
+  widget_->didCommitAndDrawCompositorFrame();
+}
+
+void RenderWidgetCompositor::didCompleteSwapBuffers() {
+  widget_->didCompleteSwapBuffers();
+}
+
+// TODO(jamesr): This goes through WebViewImpl just to do suppression, refactor
+// that piece out.
+void RenderWidgetCompositor::scheduleComposite() {
+  client_->scheduleComposite();
+}
+
+scoped_ptr<cc::FontAtlas> RenderWidgetCompositor::createFontAtlas() {
+  int font_height;
+  WebRect ascii_to_web_rect_table[128];
+  gfx::Rect ascii_to_rect_table[128];
+  SkBitmap bitmap;
+
+  client_->createFontAtlas(bitmap, ascii_to_web_rect_table, font_height);
+
+  for (int i = 0; i < 128; ++i)
+    ascii_to_rect_table[i] = ascii_to_web_rect_table[i];
+
+  return cc::FontAtlas::create(bitmap, ascii_to_rect_table, font_height).Pass();
+}
+
+}  // namespace content

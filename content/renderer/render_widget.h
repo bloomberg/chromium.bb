@@ -51,6 +51,8 @@ struct WebPoint;
 class WebTouchEvent;
 }
 
+namespace cc { class OutputSurface; }
+
 namespace ui {
 class Range;
 }
@@ -67,6 +69,7 @@ class PluginInstance;
 
 namespace content {
 struct GpuRenderingStats;
+class RenderWidgetCompositor;
 class RenderWidgetTest;
 
 // RenderWidget provides a communication bridge between a WebWidget and
@@ -169,6 +172,8 @@ class CONTENT_EXPORT RenderWidget
   // uploading.
   // This call is relatively expensive as it blocks on the GPU process
   bool GetGpuRenderingStats(GpuRenderingStats*) const;
+
+  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface();
 
   // Callback for use with BeginSmoothScroll.
   typedef base::Callback<void()> SmoothScrollCompletionCallback;
@@ -456,7 +461,7 @@ class CONTENT_EXPORT RenderWidget
   WebKit::WebWidget* webwidget_;
 
   // This is lazily constructed and must not outlive webwidget_.
-  scoped_ptr<WebKit::WebLayerTreeViewImpl> web_layer_tree_view_;
+  scoped_ptr<RenderWidgetCompositor> compositor_;
 
   // Set to the ID of the view that initiated creating this view, if any. When
   // the view was initiated by the browser (the common case), this will be
