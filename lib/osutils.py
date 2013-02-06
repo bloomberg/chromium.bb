@@ -358,26 +358,29 @@ def SetEnvironment(env):
   os.environ.update(env)
 
 
-def SourceEnvironment(env_file, whitelist):
+def SourceEnvironment(script, whitelist):
   """Returns the environment exported by a shell script.
 
+  Note that the script is actually executed (sourced), so do not use this on
+  files that have side effects (such as modify the file system).  Stdout will
+  be sent to /dev/null, so just echoing is OK.
+
   Arguments:
-    env_file: The shell script to 'source'.
-    whitelist: A list of environment variables to retrieve values for.
+    script: The shell script to 'source'.
+    whitelist: An iterable of environment variables to retrieve values for.
 
   Returns:
     A dictionary containing the values of the whitelisted environment
     variables that are set.
   """
-  dump_script = []
+  dump_script = ['source "%s" >/dev/null' % script]
   for var in whitelist:
     dump_script.append(
-        '[ -n "${%(var)s}" ] && echo %(var)s="${%(var)s}"\n' % {'var': var})
+        '[[ "${%(var)s+set}" == "set" ]] && echo %(var)s="${%(var)s}"'
+        % {'var': var})
+  dump_script.append('exit 0')
 
-  with TempDirContextManager() as tempdir:
-    dump_env = os.path.join(tempdir, 'dump_env')
-    WriteFile(dump_env, dump_script)
-    output = cros_build_lib.RunCommand(
-        'source %s; source %s; true' % (env_file, dump_env),
-        env={}, shell=True, redirect_stdout=True).output
-    return cros_build_lib.LoadKeyValueFile(cStringIO.StringIO(output))
+  output = cros_build_lib.RunCommand(['bash'], env={}, redirect_stdout=True,
+                                     print_cmd=False,
+                                     input='\n'.join(dump_script)).output
+  return cros_build_lib.LoadKeyValueFile(cStringIO.StringIO(output))

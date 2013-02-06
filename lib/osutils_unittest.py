@@ -157,18 +157,20 @@ class SourceEnvironmentTest(cros_test_lib.TempDirTestCase):
   ENV_WHITELIST = {
       'ENV1': 'monkeys like bananas',
       'ENV3': 'merci',
+      'ENV6': '',
   }
 
   ENV_OTHER = {
-    'ENV2': 'bananas are yellow',
-    'ENV4': 'de rien',
+      'ENV2': 'bananas are yellow',
+      'ENV4': 'de rien',
   }
 
-  ENV = """\
+  ENV = """
 declare -x ENV1="monkeys like bananas"
 declare -x ENV2="bananas are yellow"
 declare -x ENV3="merci"
 declare -x ENV4="de rien"
+declare -x ENV6=''
 """
 
   def setUp(self):
@@ -177,7 +179,7 @@ declare -x ENV4="de rien"
 
   def testWhiteList(self):
     env_dict = osutils.SourceEnvironment(
-        self.env_file, ('ENV1', 'ENV3', 'ENV5'))
+        self.env_file, ('ENV1', 'ENV3', 'ENV5', 'ENV6'))
     self.assertEquals(env_dict, self.ENV_WHITELIST)
 
 
