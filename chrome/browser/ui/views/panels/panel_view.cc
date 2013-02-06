@@ -33,9 +33,8 @@
 #include "ui/gfx/icon_util.h"
 #endif
 
-#if defined(OS_WIN) && defined(USE_AURA)
-#include "ui/aura/root_window.h"
-#include "ui/aura/window.h"
+#if defined(OS_WIN)
+#include "chrome/browser/ui/views/hwnd_util.h"
 #endif
 
 namespace {
@@ -781,13 +780,8 @@ void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {
 #if defined(OS_WIN)
   // The panel window is in focus (actually accepting keystrokes) if it is
   // active and belongs to a foreground application.
-#if !defined(USE_AURA)
-  bool focused = active && widget->GetNativeWindow() == ::GetForegroundWindow();
-#else  // USE_AURA
   bool focused = active &&
-      widget->GetNativeView()->GetRootWindow()->GetAcceleratedWidget() ==
-          ::GetForegroundWindow();
-#endif
+      chrome::HWNDForWidget(widget) == ::GetForegroundWindow();
 #else
   NOTIMPLEMENTED();
   bool focused = active;
@@ -915,13 +909,7 @@ void PanelView::UpdateWindowAttribute(int attribute_index,
                                       int attribute_value_to_set,
                                       int attribute_value_to_reset,
                                       bool update_frame) {
-  HWND native_window;
-#if defined(USE_AURA)
-  native_window =
-      window_->GetNativeWindow()->GetRootWindow()->GetAcceleratedWidget();
-#else
-  native_window = window_->GetNativeWindow();
-#endif
+  HWND native_window = chrome::HWNDForWidget(window_);
   int value = ::GetWindowLong(native_window, attribute_index);
   int expected_value = value;
   if (attribute_value_to_set)

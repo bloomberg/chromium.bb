@@ -1580,6 +1580,9 @@
         'browser/ui/views/hung_renderer_view.h',
         'browser/ui/views/hung_renderer_view_win.cc',
         'browser/ui/views/hung_renderer_view_win.h',
+        'browser/ui/views/hwnd_util.h',
+        'browser/ui/views/hwnd_util_aurawin.cc',
+        'browser/ui/views/hwnd_util_win.cc',
         'browser/ui/views/immersive_mode_controller.h',
         'browser/ui/views/immersive_mode_controller.cc',
         'browser/ui/views/importer/import_lock_dialog_view.cc',
@@ -2437,6 +2440,7 @@
           'conditions': [
             ['OS=="win"', {
               'sources/': [
+                ['exclude', '^browser/ui/views/hwnd_util_win.cc'],
                 ['exclude', '^browser/ui/views/theme_image_mapper.cc'],
                 ['exclude', '^browser/ui/webui/certificate_viewer_webui.cc'],
                 ['exclude', '^browser/ui/webui/certificate_viewer_webui.h'],
@@ -2448,6 +2452,7 @@
               ],
             }, {
               'sources/': [
+                ['exclude', '^browser/ui/views/hwnd_util.h'],
                 ['exclude', '^browser/ui/views/frame/glass_browser_frame_view.cc'],
                 ['exclude', '^browser/ui/views/frame/glass_browser_frame_view.h'],
               ],
