@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "ui/gfx/gtk_util.h"
 
+class ExtensionContextMenuModel;
 class ExtensionResource;
 class ExtensionViewGtk;
 class MenuGtk;
@@ -47,7 +48,7 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
 
   // Returns the context menu model for this extension. Can be NULL if
   // extension context menus are disabled.
-  ui::MenuModel* BuildMenuModel();
+  ExtensionContextMenuModel* BuildMenuModel();
 
   CHROMEGTK_CALLBACK_1(ExtensionInfoBarGtk, void, OnSizeAllocate,
                        GtkAllocation*);
@@ -73,6 +74,9 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
   // to reattach the view since the alignment_ will have the |hbox_| packing
   // child properties. Reparenting becomes easier too.
   GtkWidget* alignment_;
+
+  // The model for the current menu displayed.
+  scoped_refptr<ExtensionContextMenuModel> context_menu_model_;
 
   base::WeakPtrFactory<ExtensionInfoBarGtk> weak_ptr_factory_;
 

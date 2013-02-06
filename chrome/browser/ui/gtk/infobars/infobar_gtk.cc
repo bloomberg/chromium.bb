@@ -193,8 +193,7 @@ void InfoBarGtk::AddLabelWithInlineLink(const string16& display_text,
 void InfoBarGtk::ShowMenuWithModel(GtkWidget* sender,
                                    MenuGtk::Delegate* delegate,
                                    ui::MenuModel* model) {
-  menu_model_.reset(model);
-  menu_.reset(new MenuGtk(delegate, menu_model_.get()));
+  menu_.reset(new MenuGtk(delegate, model));
   menu_->PopupForWidget(sender, 1, gtk_get_current_event_time());
 }
 
@@ -289,7 +288,6 @@ void InfoBarGtk::PlatformSpecificOnCloseSoon() {
   // We must close all menus and prevent any signals from being emitted while
   // we are animating the info bar closed.
   menu_.reset();
-  menu_model_.reset();
   signals_.reset();
 }
 

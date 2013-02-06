@@ -157,7 +157,7 @@ Browser* ExtensionInfoBarGtk::GetBrowser() {
   return BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent)->browser();
 }
 
-ui::MenuModel* ExtensionInfoBarGtk::BuildMenuModel() {
+ExtensionContextMenuModel* ExtensionInfoBarGtk::BuildMenuModel() {
   const extensions::Extension* extension = delegate_->extension();
   if (!extension->ShowConfigureContextMenus())
     return NULL;
@@ -182,13 +182,13 @@ gboolean ExtensionInfoBarGtk::OnButtonPress(GtkWidget* widget,
   if (event->button != 1)
     return FALSE;
 
-  ui::MenuModel* model = BuildMenuModel();
-  if (!model)
+  context_menu_model_ = BuildMenuModel();
+  if (!context_menu_model_)
     return FALSE;
 
   gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(widget),
                                     GTK_STATE_ACTIVE);
-  ShowMenuWithModel(widget, this, model);
+  ShowMenuWithModel(widget, this, context_menu_model_);
 
   return TRUE;
 }

@@ -64,6 +64,9 @@ class TranslateInfoBarBase : public InfoBarGtk {
   // Changes the color of the background from normal to error color and back.
   scoped_ptr<ui::SlideAnimation> background_color_animation_;
 
+  // The model for the current menu displayed.
+  scoped_ptr<ui::MenuModel> menu_model_;
+
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarBase);
 };
 

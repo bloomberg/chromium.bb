@@ -193,7 +193,8 @@ TranslateInfoBarDelegate* TranslateInfoBarBase::GetDelegate() {
 }
 
 void TranslateInfoBarBase::OnOptionsClicked(GtkWidget* sender) {
-  ShowMenuWithModel(sender, NULL, new OptionsMenuModel(GetDelegate()));
+  menu_model_.reset(new OptionsMenuModel(GetDelegate()));
+  ShowMenuWithModel(sender, NULL, menu_model_.get());
 }
 
 // TranslateInfoBarDelegate specific method:
