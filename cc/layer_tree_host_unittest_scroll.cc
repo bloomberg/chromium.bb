@@ -618,5 +618,48 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
 
 MULTI_THREAD_TEST_F(ImplSidePaintingScrollTestSimple);
 
+class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
+    : public LayerTreeHostScrollTest {
+ public:
+  LayerTreeHostScrollTestScrollZeroMaxScrollOffset() {}
+
+  virtual void beginTest() OVERRIDE {
+    postSetNeedsCommitToMainThread();
+  }
+
+  virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    LayerImpl* root = impl->rootLayer();
+    root->setScrollable(true);
+
+    root->setMaxScrollOffset(gfx::Vector2d(100, 100));
+    EXPECT_EQ(
+        InputHandlerClient::ScrollStarted,
+        root->tryScroll(
+            gfx::PointF(0.0f, 1.0f),
+            InputHandlerClient::Gesture));
+
+    root->setMaxScrollOffset(gfx::Vector2d(0, 0));
+    EXPECT_EQ(
+        InputHandlerClient::ScrollIgnored,
+        root->tryScroll(
+            gfx::PointF(0.0f, 1.0f),
+            InputHandlerClient::Gesture));
+
+    root->setMaxScrollOffset(gfx::Vector2d(-100, -100));
+    EXPECT_EQ(
+        InputHandlerClient::ScrollIgnored,
+        root->tryScroll(
+            gfx::PointF(0.0f, 1.0f),
+            InputHandlerClient::Gesture));
+
+    endTest();
+  }
+
+  virtual void afterTest() OVERRIDE {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollZeroMaxScrollOffset)
+
+
 }  // namespace
 }  // namespace cc

@@ -279,6 +279,11 @@ InputHandlerClient::ScrollStatus LayerImpl::tryScroll(const gfx::PointF& screenS
         return InputHandlerClient::ScrollIgnored;
     }
 
+    if (m_maxScrollOffset.x() <= 0 && m_maxScrollOffset.y() <= 0) {
+        TRACE_EVENT0("cc", "LayerImpl::tryScroll: Ignored. Technically scrollable, but has no affordance in either direction.");
+        return InputHandlerClient::ScrollIgnored;
+    }
+
     return InputHandlerClient::ScrollStarted;
 }
 
