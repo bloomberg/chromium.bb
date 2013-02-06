@@ -120,7 +120,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // NOTE: this is not necessarily valid immediately after calling Init, as
   // Init starts the process asynchronously.  It's guaranteed to be valid after
   // the first IPC arrives.
-  virtual base::ProcessHandle GetHandle() = 0;
+  virtual base::ProcessHandle GetHandle() const = 0;
 
   // Transport DIB functions ---------------------------------------------------
 

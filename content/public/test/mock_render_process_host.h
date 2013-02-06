@@ -52,7 +52,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual bool FastShutdownIfPossible() OVERRIDE;
   virtual bool FastShutdownStarted() const OVERRIDE;
   virtual void DumpHandles() OVERRIDE;
-  virtual base::ProcessHandle GetHandle() OVERRIDE;
+  virtual base::ProcessHandle GetHandle() const OVERRIDE;
   virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id) OVERRIDE;
   virtual int GetID() const OVERRIDE;
   virtual bool HasConnection() const OVERRIDE;

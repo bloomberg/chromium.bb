@@ -882,7 +882,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     renderer_cmd->AppendSwitch(switches::kEnableDeferredImageDecoding);
 }
 
-base::ProcessHandle RenderProcessHostImpl::GetHandle() {
+base::ProcessHandle RenderProcessHostImpl::GetHandle() const {
   if (run_renderer_in_process())
     return base::Process::Current().handle();
 

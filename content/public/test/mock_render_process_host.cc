@@ -105,7 +105,7 @@ bool MockRenderProcessHost::FastShutdownStarted() const {
 void MockRenderProcessHost::DumpHandles() {
 }
 
-base::ProcessHandle MockRenderProcessHost::GetHandle() {
+base::ProcessHandle MockRenderProcessHost::GetHandle() const {
   // Return the current-process handle for the IPC::GetFileHandleForProcess
   // function.
   return base::Process::Current().handle();

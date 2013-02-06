@@ -81,7 +81,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual StoragePartition* GetStoragePartition() const OVERRIDE;
   virtual bool FastShutdownIfPossible() OVERRIDE;
   virtual void DumpHandles() OVERRIDE;
-  virtual base::ProcessHandle GetHandle() OVERRIDE;
+  virtual base::ProcessHandle GetHandle() const OVERRIDE;
   virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id) OVERRIDE;
   virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual bool InSameStoragePartition(
