@@ -97,10 +97,7 @@ void WebLayerTreeViewImpl::clearRootLayer()
 
 void WebLayerTreeViewImpl::setViewportSize(const WebSize& layoutViewportSize, const WebSize& deviceViewportSize)
 {
-    if (!deviceViewportSize.isEmpty())
-        m_layerTreeHost->setViewportSize(layoutViewportSize, deviceViewportSize);
-    else
-        m_layerTreeHost->setViewportSize(layoutViewportSize, layoutViewportSize);
+    m_layerTreeHost->setViewportSize(layoutViewportSize, deviceViewportSize);
 }
 
 WebSize WebLayerTreeViewImpl::layoutViewportSize() const
