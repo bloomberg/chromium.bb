@@ -269,11 +269,17 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
   if (!path.IsAbsolute())
     return false;
 
+  // TODO(gbillock): Eliminate this in favor of a mock storage notifications.
   if (g_test_get_device_info_from_path_function) {
     return g_test_get_device_info_from_path_function(path, device_id,
                                                      device_name,
                                                      relative_path);
   }
+
+  // TODO(gbillock): rationalize this sequence into call(s) to
+  // RemovableStorageNotifications and uniform use/loading of
+  // the display name into StorageInfo, or else delegate name
+  // construction as well.
 
   bool found_device = false;
   RemovableStorageNotifications::StorageInfo device_info;

@@ -10,10 +10,13 @@
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
 
+class ChromeBrowserMainPartsLinux;
+class ChromeBrowserMainPartsMac;
 class MediaGalleriesPrivateApiTest;
 
 namespace chrome {
 
+class MediaFileSystemRegistryTest;
 class RemovableStorageObserver;
 
 // Base class for platform-specific instances watching for removable storage
@@ -36,7 +39,16 @@ class RemovableStorageNotifications {
     base::FilePath::StringType location;
   };
 
-  virtual ~RemovableStorageNotifications();
+  // This interface is provided to generators of storage notifications.
+  class Receiver {
+   public:
+    virtual ~Receiver();
+
+    virtual void ProcessAttach(const std::string& id,
+                               const string16& name,
+                               const base::FilePath::StringType& location) = 0;
+    virtual void ProcessDetach(const std::string& id) = 0;
+  };
 
   // Returns a pointer to an object owned by the BrowserMainParts, with lifetime
   // somewhat shorter than a process Singleton.
@@ -73,23 +85,26 @@ class RemovableStorageNotifications {
 
  protected:
   RemovableStorageNotifications();
+  virtual ~RemovableStorageNotifications();
 
-  friend class MediaFileSystemRegistryTest;
+  // TODO(gbillock): Clean up ownerships and get rid of these friends.
+  friend class ::ChromeBrowserMainPartsLinux;
+  friend class ::ChromeBrowserMainPartsMac;
   friend class ::MediaGalleriesPrivateApiTest;
-  friend class MediaStorageUtilTest;
-  // TODO(gbillock): remove these friends by making the classes owned by the
-  // platform-specific implementation.
-  friend class MediaTransferProtocolDeviceObserverLinux;
-  friend class PortableDeviceWatcherWin;
-  friend class VolumeMountWatcherWin;
+  friend class MediaFileSystemRegistryTest;
 
-  void ProcessAttach(const std::string& id,
-                     const string16& name,
-                     const base::FilePath::StringType& location);
-  void ProcessDetach(const std::string& id);
+  virtual Receiver* receiver() const;
 
  private:
+  class ReceiverImpl;
+  friend class ReceiverImpl;
+
   typedef std::map<std::string, StorageInfo> RemovableStorageMap;
+
+  void ProcessAttach(const StorageInfo& storage);
+  void ProcessDetach(const std::string& id);
+
+  scoped_ptr<Receiver> receiver_;
 
   scoped_refptr<ObserverListThreadSafe<RemovableStorageObserver> >
       observer_list_;

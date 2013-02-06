@@ -91,6 +91,10 @@ class PortableDeviceWatcherWin {
   static string16 GetStoragePathFromStorageId(
       const std::string& storage_unique_id);
 
+  // Set the volume notifications object to be used when new
+  // devices are found.
+  void SetNotifications(RemovableStorageNotifications::Receiver* notifications);
+
  private:
   friend class test::TestPortableDeviceWatcherWin;
 
@@ -131,6 +135,9 @@ class PortableDeviceWatcherWin {
 
   // Used by |media_task_runner_| to create cancelable callbacks.
   base::WeakPtrFactory<PortableDeviceWatcherWin> weak_ptr_factory_;
+
+  // The notifications object to use to signal newly attached devices.
+  RemovableStorageNotifications::Receiver* storage_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(PortableDeviceWatcherWin);
 };

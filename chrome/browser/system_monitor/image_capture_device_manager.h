@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/system_monitor/removable_storage_notifications.h"
 
 @protocol ICDeviceBrowserDelegate;
 @class ImageCaptureDevice;
@@ -32,6 +33,10 @@ class ImageCaptureDeviceManager {
 
   // Returns a weak pointer to the internal ImageCapture interface protocol.
   id<ICDeviceBrowserDelegate> device_browser();
+
+  // Sets the receiver for device attach/detach notifications.
+  // TODO(gbillock): Move this to be a constructor argument.
+  void SetNotifications(RemovableStorageNotifications::Receiver* notifications);
 
  private:
   scoped_nsobject<ImageCaptureDeviceManagerImpl> device_browser_;

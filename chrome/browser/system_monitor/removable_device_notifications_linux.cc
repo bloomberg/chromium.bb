@@ -352,7 +352,7 @@ void RemovableDeviceNotificationsLinux::UpdateMtab() {
       if (MediaStorageUtil::IsRemovableDevice(old_iter->second.device_id)) {
         DCHECK(has_priority != priority->second.end());
         if (has_priority->second) {
-          ProcessDetach(old_iter->second.device_id);
+          receiver()->ProcessDetach(old_iter->second.device_id);
         }
         if (priority->second.size() > 1)
           multiple_mounted_devices_needing_reattachment.push_back(mount_device);
@@ -389,7 +389,7 @@ void RemovableDeviceNotificationsLinux::UpdateMtab() {
     const MountPointInfo& mount_info =
         mount_info_map_.find(mount_point)->second;
     DCHECK(MediaStorageUtil::IsRemovableDevice(mount_info.device_id));
-    ProcessAttach(
+    receiver()->ProcessAttach(
         mount_info.device_id, mount_info.device_name, mount_point.value());
   }
 
@@ -455,7 +455,7 @@ void RemovableDeviceNotificationsLinux::AddNewMount(
   mount_priority_map_[mount_device][mount_point] = removable;
 
   if (removable) {
-    ProcessAttach(
+    receiver()->ProcessAttach(
         device_id, GetDisplayNameForDevice(partition_size_in_bytes, name),
         mount_point.value());
   }

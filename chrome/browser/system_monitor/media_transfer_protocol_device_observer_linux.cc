@@ -136,7 +136,8 @@ MediaTransferProtocolDeviceObserverLinux()
 MediaTransferProtocolDeviceObserverLinux::
 MediaTransferProtocolDeviceObserverLinux(
     GetStorageInfoFunc get_storage_info_func)
-    : get_storage_info_func_(get_storage_info_func) {
+    : get_storage_info_func_(get_storage_info_func),
+      notifications_(NULL) {
   // In unit tests, we don't have a media transfer protocol manager.
   DCHECK(!device::MediaTransferProtocolManager::GetInstance());
   DCHECK(!g_mtp_device_observer);
@@ -185,15 +186,16 @@ bool MediaTransferProtocolDeviceObserverLinux::GetStorageInfoForPath(
   return true;
 }
 
+void MediaTransferProtocolDeviceObserverLinux::SetNotifications(
+    RemovableStorageNotifications::Receiver* notifications) {
+  notifications_ = notifications;
+}
+
 // device::MediaTransferProtocolManager::Observer override.
 void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
     bool is_attached,
     const std::string& storage_name) {
   DCHECK(!storage_name.empty());
-
-  RemovableStorageNotifications* notifications =
-      RemovableStorageNotifications::GetInstance();
-  DCHECK(notifications);
 
   // New storage is attached.
   if (is_attached) {
@@ -213,14 +215,14 @@ void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
     RemovableStorageNotifications::StorageInfo storage_info(
         device_id, device_name, location);
     storage_map_[location] = storage_info;
-    notifications->ProcessAttach(device_id, device_name, location);
+    notifications_->ProcessAttach(device_id, device_name, location);
   } else {
     // Existing storage is detached.
     StorageLocationToInfoMap::iterator it =
         storage_map_.find(GetDeviceLocationFromStorageName(storage_name));
     if (it == storage_map_.end())
       return;
-    notifications->ProcessDetach(it->second.device_id);
+    notifications_->ProcessDetach(it->second.device_id);
     storage_map_.erase(it);
   }
 }

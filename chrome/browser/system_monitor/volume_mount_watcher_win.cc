@@ -14,7 +14,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_device_notifications_utils.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
-#include "chrome/browser/system_monitor/removable_storage_notifications.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -144,7 +143,8 @@ const char* kWorkerPoolNamePrefix = "DeviceInfoPool";
 VolumeMountWatcherWin::VolumeMountWatcherWin()
     : device_info_worker_pool_(new base::SequencedWorkerPool(
           kWorkerPoolNumThreads, kWorkerPoolNamePrefix)),
-      weak_factory_(this) {
+      weak_factory_(this),
+      notifications_(NULL) {
   get_attached_devices_callback_ = base::Bind(&GetAttachedDevices);
   get_device_details_callback_ = base::Bind(&GetDeviceDetails);
 }
@@ -307,6 +307,11 @@ void VolumeMountWatcherWin::OnWindowMessage(UINT event_type, LPARAM data) {
   }
 }
 
+void VolumeMountWatcherWin::SetNotifications(
+    RemovableStorageNotifications::Receiver* notifications) {
+  notifications_ = notifications;
+}
+
 VolumeMountWatcherWin::~VolumeMountWatcherWin() {
   weak_factory_.InvalidateWeakPtrs();
 }
@@ -325,12 +330,10 @@ void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(
   if (!info.removable)
     return;
 
-  RemovableStorageNotifications* notifications =
-      RemovableStorageNotifications::GetInstance();
-  if (notifications) {
+  if (notifications_) {
     string16 display_name = GetDisplayNameForDevice(0, info.name);
-    notifications->ProcessAttach(info.device_id, display_name,
-                                 device_path.value());
+    notifications_->ProcessAttach(info.device_id, display_name,
+                                  device_path.value());
   }
 }
 
@@ -344,10 +347,8 @@ void VolumeMountWatcherWin::HandleDeviceDetachEventOnUIThread(
   if (device_info == device_metadata_.end())
     return;
 
-  RemovableStorageNotifications* notifications =
-      RemovableStorageNotifications::GetInstance();
-  if (notifications)
-    notifications->ProcessDetach(device_info->second.device_id);
+  if (notifications_)
+    notifications_->ProcessDetach(device_info->second.device_id);
   device_metadata_.erase(device_info);
 }
 

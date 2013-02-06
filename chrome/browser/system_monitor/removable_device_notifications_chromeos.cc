@@ -156,7 +156,7 @@ void RemovableDeviceNotificationsCros::OnMountEvent(
       MountMap::iterator it = mount_map_.find(mount_info.mount_path);
       if (it == mount_map_.end())
         return;
-      ProcessDetach(it->second.storage_info.device_id);
+      receiver()->ProcessDetach(it->second.storage_info.device_id);
       mount_map_.erase(it);
       break;
     }
@@ -246,7 +246,7 @@ void RemovableDeviceNotificationsCros::AddMountedPathOnUIThread(
       storage_size_in_bytes
   };
   mount_map_.insert(std::make_pair(mount_info.mount_path, object_info));
-  ProcessAttach(
+  receiver()->ProcessAttach(
       device_id,
       chrome::GetDisplayNameForDevice(storage_size_in_bytes, device_label),
       mount_info.mount_path);

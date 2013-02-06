@@ -25,9 +25,45 @@ RemovableStorageNotifications::StorageInfo::StorageInfo(
       location(device_location) {
 }
 
+RemovableStorageNotifications::Receiver::~Receiver() {
+}
+
+class RemovableStorageNotifications::ReceiverImpl
+    : public RemovableStorageNotifications::Receiver {
+ public:
+  explicit ReceiverImpl(RemovableStorageNotifications* notifications)
+      : notifications_(notifications) {}
+
+  virtual ~ReceiverImpl() {}
+
+  void ProcessAttach(const std::string& id,
+                     const string16& name,
+                     const base::FilePath::StringType& location) OVERRIDE;
+
+  void ProcessDetach(const std::string& id) OVERRIDE;
+
+ private:
+  RemovableStorageNotifications* notifications_;
+};
+
+void RemovableStorageNotifications::ReceiverImpl::ProcessAttach(
+    const std::string& id,
+    const string16& name,
+    const base::FilePath::StringType& location) {
+  notifications_->ProcessAttach(
+      RemovableStorageNotifications::StorageInfo(id, name, location));
+}
+
+void RemovableStorageNotifications::ReceiverImpl::ProcessDetach(
+    const std::string& id) {
+  notifications_->ProcessDetach(id);
+}
+
 RemovableStorageNotifications::RemovableStorageNotifications()
     : observer_list_(
           new ObserverListThreadSafe<RemovableStorageObserver>()) {
+  receiver_.reset(new ReceiverImpl(this));
+
   DCHECK(!g_removable_storage_notifications);
   g_removable_storage_notifications = this;
 }
@@ -37,29 +73,30 @@ RemovableStorageNotifications::~RemovableStorageNotifications() {
   g_removable_storage_notifications = NULL;
 }
 
+RemovableStorageNotifications::Receiver*
+RemovableStorageNotifications::receiver() const {
+  return receiver_.get();
+}
+
 void RemovableStorageNotifications::ProcessAttach(
-    const std::string& id,
-    const string16& name,
-    const base::FilePath::StringType& location) {
-  StorageInfo info(id, name, location);
+    const StorageInfo& info) {
   {
     base::AutoLock lock(storage_lock_);
-    if (ContainsKey(storage_map_, id)) {
+    if (ContainsKey(storage_map_, info.device_id)) {
       // This can happen if our unique id scheme fails. Ignore the incoming
       // non-unique attachment.
       return;
     }
-    storage_map_.insert(std::make_pair(id, info));
+    storage_map_.insert(std::make_pair(info.device_id, info));
   }
 
-  DVLOG(1) << "RemovableStorageAttached with name " << UTF16ToUTF8(name)
-           << " and id " << id;
+  DVLOG(1) << "RemovableStorageAttached with name " << UTF16ToUTF8(info.name)
+           << " and id " << info.device_id;
   observer_list_->Notify(
       &RemovableStorageObserver::OnRemovableStorageAttached, info);
 }
 
-void RemovableStorageNotifications::ProcessDetach(
-    const std::string& id) {
+void RemovableStorageNotifications::ProcessDetach(const std::string& id) {
   StorageInfo info;
   {
     base::AutoLock lock(storage_lock_);

@@ -7,8 +7,6 @@
 #import <ImageCaptureCore/ImageCaptureCore.h>
 
 #include "base/file_util.h"
-#include "base/system_monitor/system_monitor.h"
-#include "chrome/browser/system_monitor/disk_info_mac.h"
 #import "chrome/browser/system_monitor/image_capture_device.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,21 +20,27 @@ chrome::ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
 // This class is the surface for the Mac ICDeviceBrowser ImageCaptureCore API.
 // Owned by the ChromeBrowserParts and has browser process lifetime. Upon
 // creation, it gets a list of attached media volumes (asynchronously) which
-// it will eventually forward to the SystemMonitor as removable storage
-// notifications. It will also set up an ImageCaptureCore listener to be
-// told when new devices/volumes are discovered and existing ones are removed.
+// it will eventually forward to RemovableStorageNotifications. It will also
+// set up an ImageCaptureCore listener to be told when new devices/volumes
+// are discovered and existing ones are removed.
 @interface ImageCaptureDeviceManagerImpl
     : NSObject<ICDeviceBrowserDelegate> {
  @private
   scoped_nsobject<ICDeviceBrowser> deviceBrowser_;
   scoped_nsobject<NSMutableArray> cameras_;
+
+  // Guaranteed to outlive this class.
+  // TODO(gbillock): Update when ownership chains go up through
+  // a RemovableStorageNotifications subclass.
+  chrome::RemovableStorageNotifications::Receiver* notifications_;
 }
 
+- (void)setNotifications:(chrome::RemovableStorageNotifications::Receiver*)
+                         notifications;
 - (void)close;
 
-// The UUIDs passed here are available in the device attach notifications
-// given through SystemMonitor. They're gotten by cracking the device ID
-// and taking the unique ID output.
+// The UUIDs passed here are available in the device attach notifications.
+// They're gotten by cracking the device ID and taking the unique ID output.
 - (ImageCaptureDevice*)deviceForUUID:(const std::string&)uuid;
 
 @end
@@ -46,6 +50,7 @@ chrome::ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
 - (id)init {
   if ((self = [super init])) {
     cameras_.reset([[NSMutableArray alloc] init]);
+    notifications_ = NULL;
 
     deviceBrowser_.reset([[ICDeviceBrowser alloc] init]);
     [deviceBrowser_ setDelegate:self];
@@ -55,6 +60,11 @@ chrome::ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
     [deviceBrowser_ start];
   }
   return self;
+}
+
+- (void)setNotifications:(chrome::RemovableStorageNotifications::Receiver*)
+                         notifications {
+  notifications_ = notifications;
 }
 
 - (void)close {
@@ -87,7 +97,7 @@ chrome::ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
   [cameras_ addObject:addedDevice];
 
   // TODO(gbillock): use [cameraDevice mountPoint] here when possible.
-  base::SystemMonitor::Get()->ProcessRemovableStorageAttached(
+  notifications_->ProcessAttach(
       chrome::MediaStorageUtil::MakeDeviceId(
           chrome::MediaStorageUtil::MAC_IMAGE_CAPTURE,
           base::SysNSStringToUTF8([cameraDevice UUIDString])),
@@ -105,7 +115,7 @@ chrome::ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
   // May delete |device|.
   [cameras_ removeObject:device];
 
-  base::SystemMonitor::Get()->ProcessRemovableStorageDetached(
+  notifications_->ProcessDetach(
       chrome::MediaStorageUtil::MakeDeviceId(
           chrome::MediaStorageUtil::MAC_IMAGE_CAPTURE, uuid));
 }
@@ -122,6 +132,11 @@ ImageCaptureDeviceManager::ImageCaptureDeviceManager() {
 ImageCaptureDeviceManager::~ImageCaptureDeviceManager() {
   g_image_capture_device_manager = NULL;
   [device_browser_ close];
+}
+
+void ImageCaptureDeviceManager::SetNotifications(
+    RemovableStorageNotifications::Receiver* notifications) {
+  [device_browser_ setNotifications:notifications];
 }
 
 // static

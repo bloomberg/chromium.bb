@@ -30,6 +30,16 @@ class TestRemovableStorageNotifications
       string16* device_location,
       string16* storage_object_id) const OVERRIDE;
 #endif
+
+  // TODO(gbillock): Update tests to use receiver and
+  // get rid of ProcessAttach/ProcessDetach here.
+  void ProcessAttach(const std::string& id,
+                     const string16& name,
+                     const FilePath::StringType& location);
+
+  void ProcessDetach(const std::string& id);
+
+  virtual Receiver* receiver() const OVERRIDE;
 };
 
 }  // namespace test

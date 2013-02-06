@@ -478,6 +478,7 @@ PortableDeviceWatcherWin::DeviceStorageObject::DeviceStorageObject(
 
 PortableDeviceWatcherWin::PortableDeviceWatcherWin()
     : notifications_(NULL),
+      storage_notifications_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
@@ -545,6 +546,11 @@ string16 PortableDeviceWatcherWin::GetStoragePathFromStorageId(
   return UTF8ToUTF16("\\\\" + storage_unique_id);
 }
 
+void PortableDeviceWatcherWin::SetNotifications(
+    RemovableStorageNotifications::Receiver* notifications) {
+  storage_notifications_ = notifications;
+}
+
 void PortableDeviceWatcherWin::EnumerateAttachedDevices() {
   DCHECK(media_task_runner_.get());
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -594,9 +600,6 @@ void PortableDeviceWatcherWin::OnDidHandleDeviceAttachEvent(
   const string16& name = device_details->name;
   const string16& location = device_details->location;
   DCHECK(!ContainsKey(device_map_, location));
-  RemovableStorageNotifications* notifications =
-      RemovableStorageNotifications::GetInstance();
-  DCHECK(notifications);
   for (StorageObjects::const_iterator storage_iter = storage_objects.begin();
        storage_iter != storage_objects.end(); ++storage_iter) {
     const std::string& storage_id = storage_iter->object_persistent_id;
@@ -614,8 +617,11 @@ void PortableDeviceWatcherWin::OnDidHandleDeviceAttachEvent(
         L')');
     storage_map_[storage_id] = RemovableStorageNotifications::StorageInfo(
         storage_id, storage_name, location);
-    notifications->ProcessAttach(
-        storage_id, storage_name, GetStoragePathFromStorageId(storage_id));
+    if (storage_notifications_) {
+      storage_notifications_->ProcessAttach(
+          storage_id, storage_name,
+          GetStoragePathFromStorageId(storage_id));
+    }
   }
   device_map_[location] = storage_objects;
 }
@@ -627,10 +633,6 @@ void PortableDeviceWatcherWin::HandleDeviceDetachEvent(
   if (device_iter == device_map_.end())
     return;
 
-  RemovableStorageNotifications* notifications =
-      RemovableStorageNotifications::GetInstance();
-  DCHECK(notifications);
-
   const StorageObjects& storage_objects = device_iter->second;
   for (StorageObjects::const_iterator storage_object_iter =
        storage_objects.begin(); storage_object_iter != storage_objects.end();
@@ -638,7 +640,8 @@ void PortableDeviceWatcherWin::HandleDeviceDetachEvent(
     std::string storage_id = storage_object_iter->object_persistent_id;
     MTPStorageMap::iterator storage_map_iter = storage_map_.find(storage_id);
     DCHECK(storage_map_iter != storage_map_.end());
-    notifications->ProcessDetach(storage_map_iter->second.device_id);
+    if (storage_notifications_)
+      storage_notifications_->ProcessDetach(storage_map_iter->second.device_id);
     storage_map_.erase(storage_map_iter);
   }
   device_map_.erase(device_iter);

@@ -39,11 +39,11 @@ class TestStorageNotifications : public RemovableStorageNotifications {
   void ProcessAttach(const std::string& id,
                      const string16& name,
                      const base::FilePath::StringType& location) {
-    RemovableStorageNotifications::ProcessAttach(id, name, location);
+    receiver()->ProcessAttach(id, name, location);
   }
 
   void ProcessDetach(const std::string& id) {
-    RemovableStorageNotifications::ProcessDetach(id);
+    receiver()->ProcessDetach(id);
   }
 };
 

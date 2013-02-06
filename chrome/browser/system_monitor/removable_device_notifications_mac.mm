@@ -90,7 +90,7 @@ void RemovableDeviceNotificationsMac::UpdateDisk(
     // notification now. This is used for devices that are being removed or
     // devices that have changed.
     if (ShouldPostNotificationForDisk(it->second)) {
-      ProcessDetach(it->second.device_id());
+      receiver()->ProcessDetach(it->second.device_id());
     }
   }
 
@@ -104,7 +104,8 @@ void RemovableDeviceNotificationsMac::UpdateDisk(
     if (ShouldPostNotificationForDisk(info)) {
       string16 display_name = GetDisplayNameForDevice(
           info.total_size_in_bytes(), info.device_name());
-      ProcessAttach(info.device_id(), display_name, info.mount_point().value());
+      receiver()->ProcessAttach(
+          info.device_id(), display_name, info.mount_point().value());
     }
   }
 }

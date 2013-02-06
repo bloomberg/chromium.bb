@@ -100,7 +100,6 @@ void RemovableDeviceNotificationsWindowWinTest::TearDown() {
   window_->RemoveObserver(&observer_);
 }
 
-
 void RemovableDeviceNotificationsWindowWinTest::PreAttachDevices() {
   window_.reset();
   volume_mount_watcher_ = new TestVolumeMountWatcherWin;

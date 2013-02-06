@@ -152,9 +152,12 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
 }
 
 void ChromeBrowserMainPartsLinux::PostProfileInit() {
+  // TODO(gbillock): Make this owned by RemovableDeviceNotificationsLinux.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
     media_transfer_protocol_device_observer_.reset(
         new chrome::MediaTransferProtocolDeviceObserverLinux());
+    media_transfer_protocol_device_observer_->SetNotifications(
+      chrome::RemovableStorageNotifications::GetInstance()->receiver());
   }
 
   ChromeBrowserMainPartsPosix::PostProfileInit();

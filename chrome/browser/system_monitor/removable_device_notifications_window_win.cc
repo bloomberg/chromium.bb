@@ -43,10 +43,15 @@ RemovableDeviceNotificationsWindowWin::
       portable_device_watcher_(portable_device_watcher) {
   DCHECK(volume_mount_watcher_);
   DCHECK(portable_device_watcher_);
+  volume_mount_watcher_->SetNotifications(receiver());
+  portable_device_watcher_->SetNotifications(receiver());
 }
 
 RemovableDeviceNotificationsWindowWin::
     ~RemovableDeviceNotificationsWindowWin() {
+  volume_mount_watcher_->SetNotifications(NULL);
+  portable_device_watcher_->SetNotifications(NULL);
+
   if (window_)
     DestroyWindow(window_);
 

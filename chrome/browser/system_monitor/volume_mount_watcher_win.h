@@ -16,15 +16,16 @@
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/system_monitor/removable_storage_notifications.h"
 
 namespace chrome {
 
 // This class watches the volume mount points and sends notifications to
-// base::SystemMonitor about the device attach/detach events. This is a
-// singleton class instantiated by RemovableDeviceNotificationsWindowWin.
+// RemovableStorageNotifications about the device attach/detach events.
+// This is a singleton class instantiated by
+// RemovableDeviceNotificationsWindowWin.
 class VolumeMountWatcherWin {
  public:
-  // TODO(gbillock): Take the RemovableStorageNotifications as an argument.
   VolumeMountWatcherWin();
   virtual ~VolumeMountWatcherWin();
 
@@ -47,6 +48,10 @@ class VolumeMountWatcherWin {
   // Processes DEV_BROADCAST_VOLUME messages and triggers a
   // notification if appropriate.
   void OnWindowMessage(UINT event_type, LPARAM data);
+
+  // Set the volume notifications object to be used when new
+  // removable volumes are found.
+  void SetNotifications(RemovableStorageNotifications::Receiver* notifications);
 
  protected:
   struct MountPointInfo {
@@ -109,6 +114,10 @@ class VolumeMountWatcherWin {
   MountPointDeviceMetadataMap device_metadata_;
 
   base::WeakPtrFactory<VolumeMountWatcherWin> weak_factory_;
+
+  // The notifications object to use to signal newly attached volumes. Only
+  // removable devices will be notified.
+  RemovableStorageNotifications::Receiver* notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(VolumeMountWatcherWin);
 };

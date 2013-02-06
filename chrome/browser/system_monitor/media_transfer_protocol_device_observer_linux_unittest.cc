@@ -73,6 +73,7 @@ class MediaTransferProtocolDeviceObserverLinuxTest
   virtual void SetUp() OVERRIDE {
     mock_storage_observer_.reset(new MockRemovableStorageObserver);
     notifications_.AddObserver(mock_storage_observer_.get());
+    SetNotifications(notifications_.receiver());
   }
 
   virtual void TearDown() OVERRIDE {

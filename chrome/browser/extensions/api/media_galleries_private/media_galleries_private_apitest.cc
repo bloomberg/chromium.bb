@@ -86,14 +86,14 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
   }
 
   void Attach() {
-    chrome::RemovableStorageNotifications::GetInstance()->ProcessAttach(
-        device_id_, ASCIIToUTF16(kDeviceName), kDevicePath);
+    chrome::RemovableStorageNotifications::GetInstance()->receiver()->
+        ProcessAttach(device_id_, ASCIIToUTF16(kDeviceName), kDevicePath);
     WaitForDeviceEvents();
   }
 
   void Detach() {
-    chrome::RemovableStorageNotifications::GetInstance()->ProcessDetach(
-        device_id_);
+    chrome::RemovableStorageNotifications::GetInstance()->receiver()->
+        ProcessDetach(device_id_);
     WaitForDeviceEvents();
   }
 

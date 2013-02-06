@@ -42,6 +42,10 @@ class MediaTransferProtocolDeviceObserverLinux
       const base::FilePath& path,
       RemovableStorageNotifications::StorageInfo* storage_info) const;
 
+  // Set the volume notifications object to be used when new
+  // MTP devices are found.
+  void SetNotifications(RemovableStorageNotifications::Receiver* notifications);
+
  protected:
   // Only used in unit tests.
   explicit MediaTransferProtocolDeviceObserverLinux(
@@ -66,6 +70,12 @@ class MediaTransferProtocolDeviceObserverLinux
   // Function handler to get storage information. This is useful to set a mock
   // handler for unit testing.
   GetStorageInfoFunc get_storage_info_func_;
+
+  // The notifications object to use to signal newly attached devices.
+  // Guaranteed to outlive this class.
+  // TODO(gbillock): Edit this when this class is owned by a
+  // RemovableStorageNotifications subclass.
+  RemovableStorageNotifications::Receiver* notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDeviceObserverLinux);
 };

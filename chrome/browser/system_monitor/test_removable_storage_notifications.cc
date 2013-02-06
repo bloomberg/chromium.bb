@@ -32,5 +32,21 @@ bool TestRemovableStorageNotifications::GetMTPStorageInfoFromDeviceId(
 }
 #endif
 
+void TestRemovableStorageNotifications::ProcessAttach(
+    const std::string& id,
+    const string16& name,
+    const FilePath::StringType& location) {
+  receiver()->ProcessAttach(id, name, location);
+}
+
+void TestRemovableStorageNotifications::ProcessDetach(const std::string& id) {
+  receiver()->ProcessDetach(id);
+}
+
+RemovableStorageNotifications::Receiver*
+TestRemovableStorageNotifications::receiver() const {
+  return RemovableStorageNotifications::receiver();
+}
+
 }  // namespace test
 }  // namespace chrome

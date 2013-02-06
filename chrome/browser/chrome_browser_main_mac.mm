@@ -284,8 +284,13 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
 void ChromeBrowserMainPartsMac::PreProfileInit() {
   removable_device_notifications_mac_ =
       new chrome::RemovableDeviceNotificationsMac();
-  if (base::mac::IsOSLionOrLater())
+  // TODO(gbillock): Make the ImageCapture manager owned by
+  // RemovableDeviceNotificationsMac.
+  if (base::mac::IsOSLionOrLater()) {
     image_capture_device_manager_.reset(new chrome::ImageCaptureDeviceManager);
+    image_capture_device_manager_->SetNotifications(
+        removable_device_notifications_mac_->receiver());
+  }
 
   ChromeBrowserMainPartsPosix::PreProfileInit();
 }

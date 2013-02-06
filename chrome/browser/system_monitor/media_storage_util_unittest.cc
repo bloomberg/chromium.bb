@@ -30,8 +30,7 @@ class MediaStorageUtilTest : public testing::Test {
   void ProcessAttach(const std::string& id,
                      const string16& name,
                      const base::FilePath::StringType& location) {
-    RemovableStorageNotifications::GetInstance()->ProcessAttach(
-        id, name, location);
+    notifications_.ProcessAttach(id, name, location);
   }
 
  private:

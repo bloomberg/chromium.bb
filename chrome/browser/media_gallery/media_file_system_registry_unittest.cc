@@ -360,15 +360,16 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   std::vector<MediaFileSystemInfo> GetAutoAddedGalleries(
       ProfileState* profile_state);
 
+  // TODO(gbillock): Rework these once windows-specific code is gone.
   void ProcessAttach(const std::string& id,
                      const string16& name,
                      const base::FilePath::StringType& location) {
-    RemovableStorageNotifications::GetInstance()->ProcessAttach(
+    RemovableStorageNotifications::GetInstance()->receiver()->ProcessAttach(
         id, name, location);
   }
 
   void ProcessDetach(const std::string& id) {
-    RemovableStorageNotifications::GetInstance()->ProcessDetach(id);
+    RemovableStorageNotifications::GetInstance()->receiver()->ProcessDetach(id);
   }
 
  protected:
@@ -394,6 +395,7 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 
+// TODO(gbillock): Eliminate windows-specific code from this test.
 #if defined(OS_WIN)
   scoped_ptr<test::TestRemovableDeviceNotificationsWindowWin> window_;
 #else
