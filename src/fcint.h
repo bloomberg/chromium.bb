@@ -858,7 +858,7 @@ FcListPatternMatchAny (const FcPattern *p,
 
 enum {
   FC_INVALID_OBJECT = 0,
-#define FC_OBJECT(NAME, Type) FC_##NAME##_OBJECT,
+#define FC_OBJECT(NAME, Type, Cmp) FC_##NAME##_OBJECT,
 #include "fcobjs.h"
 #undef FC_OBJECT
   FC_ONE_AFTER_MAX_BASE_OBJECT
