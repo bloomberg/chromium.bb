@@ -2373,7 +2373,6 @@
           'dependencies': [
             '../chrome/common_constants.gyp:common_constants',
             '../v8/tools/gyp/v8.gyp:v8',
-            '../v8/tools/gyp/v8.gyp:v8_shell#host',
           ],
           'sources': [
             '../chrome/test/base/v8_unit_test.cc',

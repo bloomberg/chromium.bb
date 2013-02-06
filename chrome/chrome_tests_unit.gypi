@@ -1759,12 +1759,6 @@
             'nacl/nacl_validation_query_unittest.cc',
           ],
         }],
-        ['target_arch!="arm" and OS!="ios"', {
-          'dependencies': [
-            # build time dependency.
-            '../v8/tools/gyp/v8.gyp:v8_shell#host',
-          ],
-        }],
         ['enable_extensions==0', {
           'sources/': [
             ['exclude', '^browser/extensions/activity_database_unittest.cc'],

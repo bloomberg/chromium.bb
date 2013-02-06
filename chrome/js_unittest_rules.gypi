@@ -30,6 +30,10 @@
 # See src/chrome/test/base/run_all_remoting_unittests.cc for an example.
 
 {
+    'dependencies': [
+      # Used by rule js2unit below.
+      '../v8/tools/gyp/v8.gyp:v8_shell#host',
+    ],
   'rules': [
     {
       'rule_name': 'copyjs',
