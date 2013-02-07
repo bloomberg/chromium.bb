@@ -21,7 +21,6 @@ class RendererWebAudioDeviceImpl
       public media::AudioRendererSink::RenderCallback {
  public:
   RendererWebAudioDeviceImpl(const media::AudioParameters& params,
-                             int input_channels,
                              WebKit::WebAudioDevice::RenderCallback* callback);
   virtual ~RendererWebAudioDeviceImpl();
 
@@ -42,7 +41,6 @@ class RendererWebAudioDeviceImpl
 
  private:
   const media::AudioParameters params_;
-  int input_channels_;
 
   // Weak reference to the callback into WebKit code.
   WebKit::WebAudioDevice::RenderCallback* const client_callback_;

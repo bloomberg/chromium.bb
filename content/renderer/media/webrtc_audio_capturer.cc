@@ -101,7 +101,7 @@ bool WebRtcAudioCapturer::Initialize(media::ChannelLayout channel_layout,
   int buffer_size = GetBufferSizeForSampleRate(sample_rate);
 
   // Configure audio parameters for the default source.
-  params_.Reset(format, channel_layout, sample_rate, 16, buffer_size);
+  params_.Reset(format, channel_layout, 0, sample_rate, 16, buffer_size);
 
   // Tell all sinks which format we use.
   for (SinkList::const_iterator it = sinks_.begin();
@@ -194,6 +194,7 @@ void WebRtcAudioCapturer::SetCapturerSource(
 
     params_.Reset(params_.format(),
                   channel_layout,
+                  0,
                   sample_rate,
                   16,  // ignored since the audio stack uses float32.
                   buffer_size);

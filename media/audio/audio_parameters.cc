@@ -14,7 +14,8 @@ AudioParameters::AudioParameters()
       sample_rate_(0),
       bits_per_sample_(0),
       frames_per_buffer_(0),
-      channels_(0) {
+      channels_(0),
+      input_channels_(0) {
 }
 
 AudioParameters::AudioParameters(Format format, ChannelLayout channel_layout,
@@ -25,14 +26,30 @@ AudioParameters::AudioParameters(Format format, ChannelLayout channel_layout,
       sample_rate_(sample_rate),
       bits_per_sample_(bits_per_sample),
       frames_per_buffer_(frames_per_buffer),
-      channels_(ChannelLayoutToChannelCount(channel_layout)) {
+      channels_(ChannelLayoutToChannelCount(channel_layout)),
+      input_channels_(0) {
+}
+
+AudioParameters::AudioParameters(Format format, ChannelLayout channel_layout,
+                                 int input_channels,
+                                 int sample_rate, int bits_per_sample,
+                                 int frames_per_buffer)
+    : format_(format),
+      channel_layout_(channel_layout),
+      sample_rate_(sample_rate),
+      bits_per_sample_(bits_per_sample),
+      frames_per_buffer_(frames_per_buffer),
+      channels_(ChannelLayoutToChannelCount(channel_layout)),
+      input_channels_(input_channels) {
 }
 
 void AudioParameters::Reset(Format format, ChannelLayout channel_layout,
+                            int input_channels,
                             int sample_rate, int bits_per_sample,
                             int frames_per_buffer) {
   format_ = format;
   channel_layout_ = channel_layout;
+  input_channels_ = input_channels;
   sample_rate_ = sample_rate;
   bits_per_sample_ = bits_per_sample;
   frames_per_buffer_ = frames_per_buffer;
@@ -46,6 +63,8 @@ bool AudioParameters::IsValid() const {
          (channels_ <= media::limits::kMaxChannels) &&
          (channel_layout_ > CHANNEL_LAYOUT_UNSUPPORTED) &&
          (channel_layout_ < CHANNEL_LAYOUT_MAX) &&
+         (input_channels_ >= 0) &&
+         (input_channels_ <= media::limits::kMaxChannels) &&
          (sample_rate_ >= media::limits::kMinSampleRate) &&
          (sample_rate_ <= media::limits::kMaxSampleRate) &&
          (bits_per_sample_ > 0) &&

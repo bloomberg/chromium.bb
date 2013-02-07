@@ -43,9 +43,8 @@ void AudioMessageFilter::RemoveDelegate(int id) {
 }
 
 void AudioMessageFilter::CreateStream(int stream_id,
-                                      const media::AudioParameters& params,
-                                      int input_channels) {
-  Send(new AudioHostMsg_CreateStream(stream_id, params, input_channels));
+                                      const media::AudioParameters& params) {
+  Send(new AudioHostMsg_CreateStream(stream_id, params));
 }
 
 void AudioMessageFilter::AssociateStreamWithProducer(int stream_id,

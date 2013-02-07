@@ -22,10 +22,8 @@ namespace content {
 
 RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
     const media::AudioParameters& params,
-    int input_channels,
     WebAudioDevice::RenderCallback* callback)
     : params_(params),
-      input_channels_(input_channels),
       client_callback_(callback) {
   DCHECK(client_callback_);
 }
@@ -41,17 +39,7 @@ void RendererWebAudioDeviceImpl::start() {
     return;  // Already started.
 
   output_device_ = AudioDeviceFactory::NewOutputDevice();
-
-  // TODO(crogers): remove once we properly handle input device selection.
-  // https://code.google.com/p/chromium/issues/detail?id=147327
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableWebAudioInput)) {
-    // TODO(crogers): support more than hard-coded stereo:
-    // https://code.google.com/p/chromium/issues/detail?id=147326
-    output_device_->InitializeIO(params_, 2, this);
-  } else {
-    output_device_->InitializeIO(params_, input_channels_, this);
-  }
+  output_device_->Initialize(params_, this);
 
   // Assumption: This method is being invoked within a V8 call stack.  CHECKs
   // will fail in the call to frameForCurrentContext() otherwise.
@@ -97,20 +85,20 @@ void RendererWebAudioDeviceImpl::RenderIO(media::AudioBus* source,
   // Make the client callback for an I/O cycle.
   if (client_callback_) {
     // Wrap the input pointers using WebVector.
-    size_t input_channels =
+    size_t source_channels =
         source ? static_cast<size_t>(source->channels()) : 0;
-    WebVector<float*> web_audio_input_data(input_channels);
-    for (size_t i = 0; i < input_channels; ++i)
-      web_audio_input_data[i] = source->channel(i);
+    WebVector<float*> web_audio_source_data(source_channels);
+    for (size_t i = 0; i < source_channels; ++i)
+      web_audio_source_data[i] = source->channel(i);
 
     // Wrap the output pointers using WebVector.
-    WebVector<float*> web_audio_data(
+    WebVector<float*> web_audio_dest_data(
         static_cast<size_t>(dest->channels()));
     for (int i = 0; i < dest->channels(); ++i)
-      web_audio_data[i] = dest->channel(i);
+      web_audio_dest_data[i] = dest->channel(i);
 
-    client_callback_->render(web_audio_input_data,
-                             web_audio_data,
+    client_callback_->render(web_audio_source_data,
+                             web_audio_dest_data,
                              dest->frames());
   }
 }

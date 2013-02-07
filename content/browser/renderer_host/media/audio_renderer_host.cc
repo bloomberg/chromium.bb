@@ -252,9 +252,10 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
 }
 
 void AudioRendererHost::OnCreateStream(
-    int stream_id, const media::AudioParameters& params, int input_channels) {
+    int stream_id, const media::AudioParameters& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // media::AudioParameters is validated in the deserializer.
+  int input_channels = params.input_channels();
   if (input_channels < 0 ||
       input_channels > media::limits::kMaxChannels ||
       LookupById(stream_id) != NULL) {

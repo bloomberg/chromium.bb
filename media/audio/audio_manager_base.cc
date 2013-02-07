@@ -396,7 +396,8 @@ AudioParameters AudioManagerBase::GetPreferredLowLatencyOutputStreamParameters(
   // TODO(dalecurtis): This should include bits per channel and channel layout
   // eventually.
   return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, input_params.channel_layout(),
+      AudioParameters::AUDIO_PCM_LOW_LATENCY,
+      input_params.channel_layout(), input_params.input_channels(),
       GetAudioHardwareSampleRate(), 16, GetAudioHardwareBufferSize());
 #endif  // defined(OS_IOS)
 }

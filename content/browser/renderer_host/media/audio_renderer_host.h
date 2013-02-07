@@ -109,8 +109,7 @@ class CONTENT_EXPORT AudioRendererHost
   // successful this object would keep an internal entry of the stream for the
   // required properties.
   void OnCreateStream(int stream_id,
-                      const media::AudioParameters& params,
-                      int input_channels);
+                      const media::AudioParameters& params);
 
   // Track that the data for the audio stream referenced by |stream_id| is
   // produced by an entity in the render view referenced by |render_view_id|.

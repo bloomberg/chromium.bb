@@ -160,7 +160,7 @@ void PepperPlatformAudioOutputImpl::InitializeOnIOThread(
   stream_id_ = ipc_->AddDelegate(this);
   DCHECK_NE(0, stream_id_);
 
-  ipc_->CreateStream(stream_id_, params, 0);
+  ipc_->CreateStream(stream_id_, params);
   ipc_->AssociateStreamWithProducer(stream_id_, source_render_view_id);
 }
 

@@ -52,8 +52,8 @@ class MockAudioOutputIPC : public AudioOutputIPC {
   MOCK_METHOD1(AddDelegate, int(AudioOutputIPCDelegate* delegate));
   MOCK_METHOD1(RemoveDelegate, void(int stream_id));
 
-  MOCK_METHOD3(CreateStream,
-      void(int stream_id, const AudioParameters& params, int input_channels));
+  MOCK_METHOD2(CreateStream,
+      void(int stream_id, const AudioParameters& params));
   MOCK_METHOD1(PlayStream, void(int stream_id));
   MOCK_METHOD1(CloseStream, void(int stream_id));
   MOCK_METHOD2(SetVolume, void(int stream_id, double volume));
@@ -110,7 +110,7 @@ class AudioOutputDeviceTest
   // Must remain the first member of this class.
   base::ShadowingAtExitManager at_exit_manager_;
   MessageLoopForIO io_loop_;
-  const AudioParameters default_audio_parameters_;
+  AudioParameters default_audio_parameters_;
   StrictMock<MockRenderCallback> callback_;
   StrictMock<MockAudioOutputIPC> audio_output_ipc_;
   scoped_refptr<AudioOutputDevice> audio_device_;
@@ -148,25 +148,22 @@ int AudioOutputDeviceTest::CalculateMemorySize() {
 }
 
 AudioOutputDeviceTest::AudioOutputDeviceTest()
-    : default_audio_parameters_(AudioParameters::AUDIO_PCM_LINEAR,
-                                CHANNEL_LAYOUT_STEREO,
-                                48000, 16, 1024),
-      synchronized_io_(GetParam()),
+    : synchronized_io_(GetParam()),
       input_channels_(synchronized_io_ ? 2 : 0) {
+  default_audio_parameters_.Reset(
+      AudioParameters::AUDIO_PCM_LINEAR,
+      CHANNEL_LAYOUT_STEREO, input_channels_,
+      48000, 16, 1024);
+
   EXPECT_CALL(audio_output_ipc_, AddDelegate(_))
       .WillOnce(Return(kStreamId));
 
   audio_device_ = new AudioOutputDevice(
       &audio_output_ipc_, io_loop_.message_loop_proxy());
 
-  if (synchronized_io_) {
-    audio_device_->InitializeIO(default_audio_parameters_,
-                                input_channels_,
-                                &callback_);
-  } else {
-    audio_device_->Initialize(default_audio_parameters_,
-                              &callback_);
-  }
+  audio_device_->Initialize(default_audio_parameters_,
+                            &callback_);
+
   io_loop_.RunUntilIdle();
 }
 
@@ -179,7 +176,7 @@ AudioOutputDeviceTest::~AudioOutputDeviceTest() {
 void AudioOutputDeviceTest::StartAudioDevice() {
   audio_device_->Start();
 
-  EXPECT_CALL(audio_output_ipc_, CreateStream(kStreamId, _, _));
+  EXPECT_CALL(audio_output_ipc_, CreateStream(kStreamId, _));
 
   io_loop_.RunUntilIdle();
 }

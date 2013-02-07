@@ -92,10 +92,9 @@ IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyDeviceStarted,
 // Messages sent from the renderer to the browser.
 
 // Request that got sent to browser for creating an audio output stream
-IPC_MESSAGE_CONTROL3(AudioHostMsg_CreateStream,
+IPC_MESSAGE_CONTROL2(AudioHostMsg_CreateStream,
                      int /* stream_id */,
-                     media::AudioParameters, /* params */
-                     int /* input_channels */)
+                     media::AudioParameters /* params */)
 
 // Request that got sent to browser for creating an audio input stream
 IPC_MESSAGE_CONTROL4(AudioInputHostMsg_CreateStream,

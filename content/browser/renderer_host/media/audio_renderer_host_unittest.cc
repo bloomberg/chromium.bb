@@ -212,8 +212,7 @@ class AudioRendererHostTest : public testing::Test {
                               media::AudioParameters::AUDIO_FAKE,
                               media::CHANNEL_LAYOUT_STEREO,
                               media::AudioParameters::kAudioCDSampleRate, 16,
-                              media::AudioParameters::kAudioCDSampleRate / 10),
-                          0);
+                              media::AudioParameters::kAudioCDSampleRate / 10));
     message_loop_->Run();
 
     // Simulate the renderer process associating a stream with a render view.

@@ -41,19 +41,15 @@ class AudioRendererSink
 
   // Sets important information about the audio stream format.
   // It must be called before any of the other methods.
-  virtual void Initialize(const AudioParameters& params,
-                          RenderCallback* callback) = 0;
-
-  // InitializeIO() may be called instead of Initialize() for clients who wish
-  // to have synchronized input and output.  |input_channels| specifies the
+  // For clients wishing to have synchronized input and output,
+  // |params| may specify |input_channels| > 0, representing a
   // number of input channels which will be at the same sample-rate
   // and buffer-size as the output as specified in |params|.
-  // The callback's RenderIO() method will be called instead of Render(),
-  // providing the synchronized input data at the same time as when new
-  // output data is to be rendered.
-  virtual void InitializeIO(const AudioParameters& params,
-                            int input_channels,
-                            RenderCallback* callback) {}
+  // In this case, the callback's RenderIO() method will be called instead
+  // of Render(), providing the synchronized input data at the same time as
+  // when new output data is to be rendered.
+  virtual void Initialize(const AudioParameters& params,
+                          RenderCallback* callback) = 0;
 
   // Starts audio playback.
   virtual void Start() = 0;

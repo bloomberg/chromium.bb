@@ -46,7 +46,12 @@ class MEDIA_EXPORT AudioParameters {
   AudioParameters(Format format, ChannelLayout channel_layout,
                   int sample_rate, int bits_per_sample,
                   int frames_per_buffer);
+  AudioParameters(Format format, ChannelLayout channel_layout,
+                  int input_channels,
+                  int sample_rate, int bits_per_sample,
+                  int frames_per_buffer);
   void Reset(Format format, ChannelLayout channel_layout,
+             int input_channels,
              int sample_rate, int bits_per_sample,
              int frames_per_buffer);
 
@@ -69,6 +74,7 @@ class MEDIA_EXPORT AudioParameters {
   int bits_per_sample() const { return bits_per_sample_; }
   int frames_per_buffer() const { return frames_per_buffer_; }
   int channels() const { return channels_; }
+  int input_channels() const { return input_channels_; }
 
  private:
   Format format_;                 // Format of the stream.
@@ -79,6 +85,9 @@ class MEDIA_EXPORT AudioParameters {
 
   int channels_;                  // Number of channels. Value set based on
                                   // |channel_layout|.
+  int input_channels_;            // Optional number of input channels.
+                                  // Normally 0, but can be set to specify
+                                  // synchronized I/O.
 };
 
 // Comparison is useful when AudioParameters is used with std structures.
@@ -87,6 +96,8 @@ inline bool operator<(const AudioParameters& a, const AudioParameters& b) {
     return a.format() < b.format();
   if (a.channels() != b.channels())
     return a.channels() < b.channels();
+  if (a.input_channels() != b.input_channels())
+    return a.input_channels() < b.input_channels();
   if (a.sample_rate() != b.sample_rate())
     return a.sample_rate() < b.sample_rate();
   if (a.bits_per_sample() != b.bits_per_sample())

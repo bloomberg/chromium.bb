@@ -162,7 +162,8 @@ bool PepperPlatformAudioInputImpl::Initialize(
   client_ = client;
 
   params_.Reset(media::AudioParameters::AUDIO_PCM_LINEAR,
-                media::CHANNEL_LAYOUT_MONO, sample_rate, 16, frames_per_buffer);
+                media::CHANNEL_LAYOUT_MONO, 0,
+                sample_rate, 16, frames_per_buffer);
 
   if (device_id.empty()) {
     // Use the default device.

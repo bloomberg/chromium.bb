@@ -38,8 +38,8 @@ class CONTENT_EXPORT AudioMessageFilter
   // media::AudioOutputIPC implementation.
   virtual int AddDelegate(media::AudioOutputIPCDelegate* delegate) OVERRIDE;
   virtual void RemoveDelegate(int id) OVERRIDE;
-  virtual void CreateStream(int stream_id, const media::AudioParameters& params,
-                            int input_channels) OVERRIDE;
+  virtual void CreateStream(int stream_id,
+                            const media::AudioParameters& params) OVERRIDE;
   virtual void PlayStream(int stream_id) OVERRIDE;
   virtual void PauseStream(int stream_id) OVERRIDE;
   virtual void FlushStream(int stream_id) OVERRIDE;

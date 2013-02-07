@@ -80,9 +80,6 @@ class MEDIA_EXPORT AudioOutputDevice
   // AudioRendererSink implementation.
   virtual void Initialize(const AudioParameters& params,
                           RenderCallback* callback) OVERRIDE;
-  virtual void InitializeIO(const AudioParameters& params,
-                            int input_channels,
-                            RenderCallback* callback) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void Play() OVERRIDE;
@@ -126,8 +123,7 @@ class MEDIA_EXPORT AudioOutputDevice
   // The following methods are tasks posted on the IO thread that needs to
   // be executed on that thread. They interact with AudioMessageFilter and
   // sends IPC messages on that thread.
-  void CreateStreamOnIOThread(const AudioParameters& params,
-                              int input_channels);
+  void CreateStreamOnIOThread(const AudioParameters& params);
   void PlayOnIOThread();
   void PauseOnIOThread(bool flush);
   void ShutDownOnIOThread();
@@ -138,10 +134,6 @@ class MEDIA_EXPORT AudioOutputDevice
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
   AudioParameters audio_parameters_;
-
-  // The number of optional synchronized input channels having the same
-  // sample-rate and buffer-size as specified in audio_parameters_.
-  int input_channels_;
 
   RenderCallback* callback_;
 
