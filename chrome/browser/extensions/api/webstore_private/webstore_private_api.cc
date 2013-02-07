@@ -27,12 +27,10 @@
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/notification_details.h"
@@ -433,7 +431,6 @@ bool CompleteInstallFunction::RunImpl() {
     return false;
   }
 
-  // Balanced in OnExtensionInstallSuccess() or OnExtensionInstallFailure().
   AddRef();
 
 #if defined(OS_WIN)
@@ -452,29 +449,11 @@ bool CompleteInstallFunction::RunImpl() {
   }
 #endif
   AfterMaybeInstallAppLauncher(true);
-
   return true;
 }
 
 void CompleteInstallFunction::AfterMaybeInstallAppLauncher(bool ok) {
-  UpdateIsAppLauncherEnabled(base::Bind(
-      &CompleteInstallFunction::OnGetAppLauncherEnabled, this,
-      approval_->extension_id));
-}
-
-void CompleteInstallFunction::OnGetAppLauncherEnabled(
-    std::string id,
-    bool app_launcher_enabled) {
-  if (app_launcher_enabled) {
-    std::string name;
-    DCHECK(approval_->parsed_manifest->GetString(extension_manifest_keys::kName,
-                                                &name));
-#if defined(ENABLE_APP_LIST)
-    // Tell the app list about the install that we just started.
-    chrome::NotifyAppListOfBeginExtensionInstall(profile(), id, name);
-#endif
-  }
-
+  std::string id = approval_->extension_id;
   // The extension will install through the normal extension install flow, but
   // the whitelist entry will bypass the normal permissions install dialog.
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(

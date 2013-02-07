@@ -176,17 +176,24 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
   return item->contexts().Contains(extensions::MenuItem::LAUNCHER);
 }
 
+bool HasOverlay(const Extension* extension) {
+#if defined(OS_CHROMEOS)
+  return false;
+#else
+  return !extension->is_platform_app();
+#endif
+}
+
 }  // namespace
 
 ExtensionAppItem::ExtensionAppItem(Profile* profile,
-                                   const std::string& extension_id,
-                                   AppListControllerDelegate* controller,
-                                   const std::string& extension_name)
+                                   const Extension* extension,
+                                   AppListControllerDelegate* controller)
     : ChromeAppListItem(TYPE_APP),
       profile_(profile),
-      extension_id_(extension_id),
+      extension_id_(extension->id()),
       controller_(controller),
-      extension_name_(extension_name) {
+      has_overlay_(HasOverlay(extension)) {
   Reload();
   GetExtensionSorting(profile_)->EnsureValidOrdinals(extension_id_,
                                                      syncer::StringOrdinal());
@@ -195,22 +202,8 @@ ExtensionAppItem::ExtensionAppItem(Profile* profile,
 ExtensionAppItem::~ExtensionAppItem() {
 }
 
-bool ExtensionAppItem::HasOverlay() const {
-#if defined(OS_CHROMEOS)
-  return false;
-#else
-  const Extension* extension = GetExtension();
-  return extension && !extension->is_platform_app();
-#endif
-}
-
 void ExtensionAppItem::Reload() {
   const Extension* extension = GetExtension();
-  // If the extension isn't there, show the 'extension is installing' UI.
-  if (!extension) {
-    SetTitle(extension_name_);
-    return;
-  }
   SetTitle(extension->name());
   LoadImage(extension);
 }
@@ -275,7 +268,7 @@ void ExtensionAppItem::UpdateIcon() {
     icon = gfx::ImageSkiaOperations::CreateHSLShiftedImage(icon, shift);
   }
 
-  if (HasOverlay()) {
+  if (has_overlay_) {
     const gfx::Size size(extension_misc::EXTENSION_ICON_MEDIUM,
                          extension_misc::EXTENSION_ICON_MEDIUM);
     icon = gfx::ImageSkia(new TabOverlayImageSource(icon, size), size);
@@ -293,7 +286,7 @@ const Extension* ExtensionAppItem::GetExtension() const {
 
 void ExtensionAppItem::LoadImage(const Extension* extension) {
   int icon_size = extension_misc::EXTENSION_ICON_MEDIUM;
-  if (HasOverlay())
+  if (has_overlay_)
     icon_size = extension_misc::EXTENSION_ICON_SMALL;
 
   icon_.reset(new extensions::IconImage(

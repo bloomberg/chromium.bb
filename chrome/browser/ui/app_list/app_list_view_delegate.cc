@@ -54,11 +54,6 @@ app_list::SigninDelegate* AppListViewDelegate::GetSigninDelegate() {
   return signin_delegate_.get();
 }
 
-void AppListViewDelegate::OnBeginExtensionInstall(
-    const std::string& extension_id, const std::string& extension_name) {
-  apps_builder_->OnBeginExtensionInstall(extension_id, extension_name);
-}
-
 void AppListViewDelegate::ActivateAppListItem(
     app_list::AppListItemModel* item,
     int event_flags) {

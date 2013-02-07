@@ -74,25 +74,11 @@ void AppsModelBuilder::Build() {
   HighlightApp();
 }
 
-void AppsModelBuilder::OnBeginExtensionInstall(
-    const std::string& extension_id,
-    const std::string& extension_name) {
-  InsertApp(new ExtensionAppItem(profile_,
-                                 extension_id,
-                                 controller_,
-                                 extension_name));
-  highlight_app_id_ = extension_id;
-  HighlightApp();
-}
-
 void AppsModelBuilder::AddApps(const ExtensionSet* extensions, Apps* apps) {
   for (ExtensionSet::const_iterator app = extensions->begin();
        app != extensions->end(); ++app) {
     if ((*app)->ShouldDisplayInAppLauncher())
-      apps->push_back(new ExtensionAppItem(profile_,
-                                           (*app)->id(),
-                                           controller_,
-                                           ""));
+      apps->push_back(new ExtensionAppItem(profile_, *app, controller_));
   }
 }
 
@@ -207,10 +193,7 @@ void AppsModelBuilder::Observe(int type,
         return;
       }
 
-      InsertApp(new ExtensionAppItem(profile_,
-                                     extension->id(),
-                                     controller_,
-                                     ""));
+      InsertApp(new ExtensionAppItem(profile_, extension, controller_));
       HighlightApp();
       break;
     }

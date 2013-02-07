@@ -187,10 +187,6 @@ class AppListController : public ProfileInfoCacheObserver {
                             const string16& profile_name) OVERRIDE {}
   void OnProfileAvatarChanged(const FilePath& profile_path) OVERRIDE {}
 
-  void OnBeginExtensionInstall(Profile* profile,
-                               const std::string& extension_id,
-                               const std::string& extension_name);
-
  private:
   // Loads a profile asynchronously and calls OnProfileLoaded() when done.
   void LoadProfileAsync(const FilePath& profile_file_path);
@@ -229,9 +225,6 @@ class AppListController : public ProfileInfoCacheObserver {
 
   // Weak pointer. The view manages its own lifetime.
   app_list::AppListView* current_view_;
-
-  // Weak pointer. The view owns the view delegate.
-  AppListViewDelegate* view_delegate_;
 
   // Timer used to check if the taskbar or app list is active. Using a timer
   // means we don't need to hook Windows, which is apparently not possible
@@ -355,7 +348,6 @@ void AppListControllerDelegateWin::LaunchApp(
 
 AppListController::AppListController()
     : current_view_(NULL),
-      view_delegate_(NULL),
       profile_(NULL),
       can_close_app_list_(true),
       app_list_is_showing_(false),
@@ -448,13 +440,9 @@ void AppListController::ShowAppList(Profile* profile) {
   // Invalidate any pending profile path loads.
   profile_load_sequence_id_++;
 
-  // If the app list is already displaying |profile| just activate it (in case
-  // we have lost focus).
-  if (app_list_is_showing_ && (profile == profile_)) {
-    current_view_->Show();
-    current_view_->GetWidget()->Activate();
+  // Do nothing if the app list is already displaying |profile|.
+  if (app_list_is_showing_ && (profile == profile_))
     return;
-  }
 
   DismissAppList();
   PopulateViewFromProfile(profile);
@@ -485,9 +473,8 @@ void AppListController::PopulateViewFromProfile(Profile* profile) {
   profile_ = profile;
   // The controller will be owned by the view delegate, and the delegate is
   // owned by the app list view. The app list view manages it's own lifetime.
-  view_delegate_ = new AppListViewDelegate(new AppListControllerDelegateWin(),
-                                           profile_);
-  current_view_ = new app_list::AppListView(view_delegate_);
+  current_view_ = new app_list::AppListView(
+      new AppListViewDelegate(new AppListControllerDelegateWin(), profile_));
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
   current_view_->InitAsBubble(GetDesktopWindow(),
                               &pagination_model_,
@@ -519,7 +506,6 @@ void AppListController::DismissAppList() {
 
 void AppListController::AppListClosing() {
   current_view_ = NULL;
-  view_delegate_ = NULL;
   timer_.Stop();
 }
 
@@ -533,14 +519,6 @@ void AppListController::AppListActivationChanged(bool active) {
   timer_.Start(FROM_HERE,
                base::TimeDelta::FromMilliseconds(kFocusCheckIntervalMS), this,
                &AppListController::CheckTaskbarOrViewHasFocus);
-}
-
-void AppListController::OnBeginExtensionInstall(
-    Profile* profile,
-    const std::string& extension_id,
-    const std::string& extension_name) {
-  ShowAppList(profile);
-  view_delegate_->OnBeginExtensionInstall(extension_id, extension_name);
 }
 
 // Attempts to find the bounds of the Windows taskbar. Returns true on success.
@@ -843,13 +821,6 @@ Profile* GetCurrentAppListProfile() {
 
 bool IsAppListVisible() {
   return g_app_list_controller.Get().app_list_is_showing();
-}
-
-void NotifyAppListOfBeginExtensionInstall(Profile* profile,
-                                          const std::string& extension_id,
-                                          const std::string& extension_name) {
-  g_app_list_controller.Get().OnBeginExtensionInstall(profile, extension_id,
-                                                      extension_name);
 }
 
 }  // namespace chrome
