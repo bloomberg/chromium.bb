@@ -80,42 +80,6 @@ chrome.test.runTests([
           assertEq("WiFi", result.Type);
         }));
   },
-  function propertiesChangeEvent() {
-    var done = chrome.test.callbackAdded();
-    chrome.networkingPrivate.onNetworkChanged.addListener(
-        function (properties) {
-          assertEq(
-            [
-              {
-                "ConnectionState": "Connected",
-                "GUID": "stub_ethernet",
-                "Name": "eth0",
-                "Type": "Ethernet"
-              },
-              {
-                "ConnectionState": "Connecting",
-                "GUID": "stub_wifi1",
-                "Name": "wifi1",
-                "Type": "WiFi"
-              },
-              {
-                "ConnectionState": "NotConnected",
-                "GUID": "stub_wifi2",
-                "Name": "wifi2_PSK",
-                "Type": "WiFi"
-              },
-              {
-                "ConnectionState": "NotConnected",
-                "GUID": "stub_cellular1",
-                "Name": "cellular1",
-                "Type": "Cellular"
-              }
-            ], properties);
-          done();
-        });
-      chrome.networkingPrivate.startConnect("stub_wifi1",
-                                            callbackPass(function() {}));
-  },
   function startConnect() {
     chrome.networkingPrivate.startConnect("stub_wifi2",
                                           callbackPass(function() {}));

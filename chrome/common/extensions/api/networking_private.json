@@ -99,20 +99,6 @@
           }
         ]
       }
-    ],
-    "events": [
-      {
-        "name": "onNetworkChanged",
-        "type": "function",
-        "description": "Fired when the properties change on any of the networks.  Only contains the networks that changed, but each item contains all the properties for the changed network.",
-        "parameters": [
-          {
-            "name": "changes",
-            "type": "array",
-            "items": { "$ref": "NetworkProperties" }
-          }
-        ]
-      }
     ]
   }
 ]

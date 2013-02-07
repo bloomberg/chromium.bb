@@ -106,9 +106,6 @@ extern const char kOnNotificationClosed[];
 extern const char kOnNotificationClicked[];
 extern const char kOnNotificationButtonClicked[];
 
-// NetworkingPrivate
-extern const char kOnNetworkChanged[];
-
 }  // namespace event_names
 
 }  // namespace extensions
