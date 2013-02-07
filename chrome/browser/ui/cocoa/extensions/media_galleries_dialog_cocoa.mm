@@ -50,6 +50,14 @@ const CGFloat kCheckboxMaxWidth = 350;
 
 namespace chrome {
 
+namespace {
+
+NSString* GetUniqueIDForGallery(const MediaGalleryPrefInfo* gallery) {
+  return base::SysUTF8ToNSString(gallery->device_id + gallery->path.value());
+}
+
+}  // namespace
+
 MediaGalleriesDialogCocoa::MediaGalleriesDialogCocoa(
     MediaGalleriesDialogController* controller,
     MediaGalleriesCocoaController* cocoa_controller)
@@ -137,8 +145,8 @@ void MediaGalleriesDialogCocoa::OnCheckboxToggled(NSButton* checkbox) {
        const_reverse_iterator iter = permissions.rbegin();
        iter != permissions.rend(); iter++) {
     const MediaGalleryPrefInfo* gallery = &iter->second.pref_info;
-    NSString* device_id = base::SysUTF8ToNSString(gallery->device_id);
-    if ([[[checkbox cell] representedObject] isEqual:device_id]) {
+    NSString* unique_id = GetUniqueIDForGallery(gallery);
+    if ([[[checkbox cell] representedObject] isEqual:unique_id]) {
       controller_->DidToggleGallery(gallery, [checkbox state] == NSOnState);
       break;
     }
@@ -158,8 +166,8 @@ void MediaGalleriesDialogCocoa::UpdateGalleryCheckbox(
 
     scoped_nsobject<NSButton> new_checkbox(
         [[NSButton alloc] initWithFrame:NSZeroRect]);
-    NSString* device_id = base::SysUTF8ToNSString(gallery->device_id);
-    [[new_checkbox cell] setRepresentedObject:device_id];
+    NSString* unique_id = GetUniqueIDForGallery(gallery);
+    [[new_checkbox cell] setRepresentedObject:unique_id];
     [[new_checkbox cell] setLineBreakMode:NSLineBreakByTruncatingMiddle];
     [new_checkbox setButtonType:NSSwitchButton];
     [new_checkbox setTarget:cocoa_controller_];
@@ -193,10 +201,10 @@ void MediaGalleriesDialogCocoa::UpdateGallery(
     const MediaGalleryPrefInfo* gallery,
     bool permitted) {
   NSButton* checkbox = nil;
-  NSString* device_id = base::SysUTF8ToNSString(gallery->device_id);
+  NSString* unique_id = GetUniqueIDForGallery(gallery);
 
   for (NSButton* button in checkboxes_.get()) {
-    if ([[[button cell] representedObject] isEqual:device_id]) {
+    if ([[[button cell] representedObject] isEqual:unique_id]) {
       checkbox = button;
       break;
     }
