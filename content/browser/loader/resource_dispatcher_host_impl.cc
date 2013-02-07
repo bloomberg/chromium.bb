@@ -611,8 +611,9 @@ bool ResourceDispatcherHostImpl::AcceptAuthRequest(
                               resource_type,
                               HTTP_AUTH_RESOURCE_LAST);
 
-    if (resource_type == HTTP_AUTH_RESOURCE_BLOCKED_CROSS)
-      return false;
+    // TODO(tsepez): Return false on HTTP_AUTH_RESOURCE_BLOCKED_CROSS.
+    // The code once did this, but was changed due to http://crbug.com/174129.
+    // http://crbug.com/174179 has been filed to track this issue.
   }
 
   return true;

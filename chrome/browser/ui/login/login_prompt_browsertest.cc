@@ -754,7 +754,9 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, NoLoginPromptForFavicon) {
 }
 
 // Block crossdomain subresource login prompting as a phishing defense.
-IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, BlockCrossdomainPrompt) {
+// Disabled per http://crbug.com/174179.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
+                       DISABLED_BlockCrossdomainPrompt) {
   const char* kTestPage = "files/login/load_img_from_b.html";
 
   host_resolver()->AddRule("www.a.com", "127.0.0.1");
