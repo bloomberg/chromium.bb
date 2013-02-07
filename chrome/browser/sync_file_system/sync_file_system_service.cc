@@ -615,6 +615,7 @@ void SyncFileSystemServiceFactory::set_mock_remote_file_service(
 SyncFileSystemServiceFactory::SyncFileSystemServiceFactory()
     : ProfileKeyedServiceFactory("SyncFileSystemService",
                                  ProfileDependencyManager::GetInstance()) {
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
 SyncFileSystemServiceFactory::~SyncFileSystemServiceFactory() {}
