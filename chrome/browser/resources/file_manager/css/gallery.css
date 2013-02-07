@@ -1136,7 +1136,7 @@ body {
   -webkit-transition-property: -webkit-transform;
   -webkit-transition-timing-function: linear;
 
-  bottom: 0;
+  bottom: 55px;  /* Toolbar height. */
   left: 0;
   overflow-x: scroll;
   overflow-y: hidden;

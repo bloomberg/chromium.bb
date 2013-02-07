@@ -552,16 +552,15 @@ Mosaic.Layout = function(opt_mode, opt_maxDensity) {
 };
 
 /**
- * Blank space at the top of the mosaic element. We do not do that is CSS
- * because we want the mosaic to occupy the entire parent div which makes
- * animated transitions easier.
+ * Blank space at the top of the mosaic element. We do not do that in CSS
+ * to make transition effects easier.
  */
 Mosaic.Layout.PADDING_TOP = 50;
 
 /**
  * Blank space at the bottom of the mosaic element.
  */
-Mosaic.Layout.PADDING_BOTTOM = 70;
+Mosaic.Layout.PADDING_BOTTOM = 50;
 
 /**
  * Horizontal and vertical spacing between images. Should be kept in sync
