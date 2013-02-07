@@ -97,7 +97,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
-#include "chrome/browser/chromeos/extensions/networking_private_event_router_factory.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #if defined(FILE_MANAGER_EXTENSION)
 #include "chrome/browser/chromeos/extensions/file_browser_private_api_factory.h"
@@ -231,7 +230,7 @@ ProfileDependencyManager::~ProfileDependencyManager() {}
 // profile creation time.
 //
 // TODO(erg): This needs to be something else. I don't think putting every
-// FooServiceFactory here will scale or is desirable long term.
+// FooServiceFactory here will scale or is desireable long term.
 void ProfileDependencyManager::AssertFactoriesBuilt() {
   if (built_factories_)
     return;
@@ -315,9 +314,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   GoogleURLTrackerFactory::GetInstance();
   HistoryServiceFactory::GetInstance();
   MediaGalleriesPreferencesFactory::GetInstance();
-#if defined(OS_CHROMEOS)
-  chromeos::NetworkingPrivateEventRouterFactory::GetInstance();
-#endif
   NTPResourceCacheFactory::GetInstance();
   PasswordStoreFactory::GetInstance();
   PersonalDataManagerFactory::GetInstance();
