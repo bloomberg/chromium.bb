@@ -397,15 +397,20 @@ void AutocompleteProviderTest::RunExactKeymatchTest(
     bool allow_exact_keyword_match) {
   // Send the controller input which exactly matches the keyword provider we
   // created in ResetControllerWithKeywordAndSearchProviders().  The default
-  // match should thus be a keyword match iff |allow_exact_keyword_match| is
-  // true.
+  // match should thus be a search-other-engine match iff
+  // |allow_exact_keyword_match| is true.  Regardless, the match should
+  // be from SearchProvider.  (It provides all verbatim search matches,
+  // keyword or not.)
   controller_->Start(AutocompleteInput(
       ASCIIToUTF16("k test"), string16::npos, string16(), true, false,
       allow_exact_keyword_match, AutocompleteInput::SYNCHRONOUS_MATCHES));
   EXPECT_TRUE(controller_->done());
-  EXPECT_EQ(allow_exact_keyword_match ?
-      AutocompleteProvider::TYPE_KEYWORD : AutocompleteProvider::TYPE_SEARCH,
+  EXPECT_EQ(AutocompleteProvider::TYPE_SEARCH,
       controller_->result().default_match()->provider->type());
+  EXPECT_EQ(allow_exact_keyword_match ?
+      AutocompleteMatch::SEARCH_OTHER_ENGINE :
+      AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+      controller_->result().default_match()->type);
 }
 
 void AutocompleteProviderTest::Observe(

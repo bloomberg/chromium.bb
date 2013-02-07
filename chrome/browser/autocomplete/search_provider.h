@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 //
 // This file contains the Search autocomplete provider.  This provider is
-// responsible for all non-keyword autocomplete entries that start with
-// "Search <engine> for ...", including searching for the current input string,
-// search history, and search suggestions.  An instance of it gets created and
+// responsible for all autocomplete entries that start with "Search <engine>
+// for ...", including searching for the current input string, search
+// history, and search suggestions.  An instance of it gets created and
 // managed by the autocomplete controller.
 
 #ifndef CHROME_BROWSER_AUTOCOMPLETE_SEARCH_PROVIDER_H_
@@ -288,11 +288,15 @@ class SearchProvider : public AutocompleteProvider,
                               bool is_keyword,
                               MatchMap* map);
 
-  // Get the relevance score for the verbatim result; this value may be provided
-  // by the suggest server; otherwise it is calculated locally.
+  // Gets the relevance score for the verbatim result; this value may be
+  // provided by the suggest server; otherwise it is calculated locally.
   int GetVerbatimRelevance() const;
-  // Calculate the relevance score for the verbatim result.
+  // Calculates the relevance score for the verbatim result.
   int CalculateRelevanceForVerbatim() const;
+  // Calculates the relevance score for the keyword verbatim result (if the
+  // input matches one of the profile's keyword).
+  static int CalculateRelevanceForKeywordVerbatim(AutocompleteInput::Type type,
+                                                  bool prefer_keyword);
   // |time| is the time at which this query was last seen.  |is_keyword|
   // indicates whether the results correspond to the keyword provider or default
   // provider. |prevent_inline_autocomplete| is true if we should not inline
@@ -300,10 +304,10 @@ class SearchProvider : public AutocompleteProvider,
   int CalculateRelevanceForHistory(const base::Time& time,
                                    bool is_keyword,
                                    bool prevent_inline_autocomplete) const;
-  // Calculate the relevance for search suggestion results. Set |for_keyword| to
-  // true for relevance values applicable to keyword provider results.
+  // Calculates the relevance for search suggestion results. Set |for_keyword|
+  // to true for relevance values applicable to keyword provider results.
   int CalculateRelevanceForSuggestion(bool for_keyword) const;
-  // Calculate the relevance for navigation results. Set |for_keyword| to true
+  // Calculates the relevance for navigation results. Set |for_keyword| to true
   // for relevance values applicable to keyword provider results.
   int CalculateRelevanceForNavigation(bool for_keyword) const;
 

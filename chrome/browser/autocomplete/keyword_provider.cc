@@ -306,14 +306,24 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   // Any exact match is going to be the highest quality match, and thus at the
   // front of our vector.
   if (keyword_matches.front() == keyword) {
-    const TemplateURL* template_url(model->GetTemplateURLForKeyword(keyword));
+    const TemplateURL* template_url = model->GetTemplateURLForKeyword(keyword);
+    const bool is_extension_keyword = template_url->IsExtensionKeyword();
+
+    // Only create an exact match if |remaining_input| is empty or if
+    // this is an extension keyword.  If |remaining_input| is a
+    // non-empty non-extension keyword (i.e., a regular keyword that
+    // supports replacement and that has extra text following it),
+    // then SearchProvider creates the exact (a.k.a. verbatim) match.
+    if (!remaining_input.empty() && !is_extension_keyword)
+      return;
+
     // TODO(pkasting): We should probably check that if the user explicitly
     // typed a scheme, that scheme matches the one in |template_url|.
     matches_.push_back(CreateAutocompleteMatch(model, keyword, input,
                                                keyword.length(),
                                                remaining_input, -1));
 
-    if (profile_ && template_url->IsExtensionKeyword()) {
+    if (profile_ && is_extension_keyword) {
       if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
         if (template_url->GetExtensionId() != current_keyword_extension_id_)
           MaybeEndExtensionKeywordMode();
@@ -447,6 +457,15 @@ int KeywordProvider::CalculateRelevance(AutocompleteInput::Type type,
                                         bool supports_replacement,
                                         bool prefer_keyword,
                                         bool allow_exact_keyword_match) {
+  // This function is responsible for scoring suggestions of keywords
+  // themselves and the suggestion of the verbatim query on an
+  // extension keyword.  SearchProvider::CalculateRelevanceForKeywordVerbatim()
+  // scores verbatim query suggestions for non-extension keywords.
+  // These two functions are currently in sync, but there's no reason
+  // we couldn't decide in the future to score verbatim matches
+  // differently for extension and non-extension keywords.  If you
+  // make such a change, however, you should update this comment to
+  // describe it, so it's clear why the functions diverge.
   if (!complete)
     return (type == AutocompleteInput::URL) ? 700 : 450;
   if (!supports_replacement || (allow_exact_keyword_match && prefer_keyword))

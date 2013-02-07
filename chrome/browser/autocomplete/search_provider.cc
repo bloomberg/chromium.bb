@@ -786,7 +786,6 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   int did_not_accept_keyword_suggestion = keyword_suggest_results_.empty() ?
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE :
       TemplateURLRef::NO_SUGGESTION_CHOSEN;
-  // Keyword what you typed results are handled by the KeywordProvider.
 
   int verbatim_relevance = GetVerbatimRelevance();
   int did_not_accept_default_suggestion = default_suggest_results_.empty() ?
@@ -797,7 +796,23 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
                   did_not_accept_default_suggestion, false, &map);
   }
-  const size_t what_you_typed_size = map.size();
+  if (!keyword_input_.text().empty()) {
+    const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
+    // We only create the verbatim search query match for a keyword
+    // if it's not an extension keyword.  Extension keywords are handled
+    // in KeywordProvider::Start().  (Extensions are complicated...)
+    // Note: in this provider, SEARCH_OTHER_ENGINE must correspond
+    // to the keyword verbatim search query.  Do not create other matches
+    // of type SEARCH_OTHER_ENGINE.
+    if (keyword_url && !keyword_url->IsExtensionKeyword()) {
+      AddMatchToMap(keyword_input_.text(), keyword_input_.text(),
+                    CalculateRelevanceForKeywordVerbatim(
+                        input_.type(), input_.prefer_keyword()),
+                    AutocompleteMatch::SEARCH_OTHER_ENGINE,
+                    did_not_accept_keyword_suggestion, true, &map);
+    }
+  }
+  const size_t verbatim_matches_size = map.size();
   if (!default_provider_suggestion_.text.empty() &&
       default_provider_suggestion_.type == INSTANT_SUGGESTION_SEARCH &&
       !input_.prevent_inline_autocomplete())
@@ -833,8 +848,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   AddNavigationResultsToMatches(keyword_navigation_results_, true);
   AddNavigationResultsToMatches(default_navigation_results_, false);
 
-  // Allow an additional match for "what you typed" if it's present.
-  const size_t max_total_matches = kMaxMatches + what_you_typed_size;
+  // Allow additional match(es) for verbatim results if present.
+  const size_t max_total_matches = kMaxMatches + verbatim_matches_size;
   std::partial_sort(matches_.begin(),
       matches_.begin() + std::min(max_total_matches, matches_.size()),
       matches_.end(), &AutocompleteMatch::MoreRelevant);
@@ -868,12 +883,17 @@ bool SearchProvider::IsTopMatchHighRankSearchForURL() const {
   return input_.type() == AutocompleteInput::URL &&
          matches_.front().relevance > CalculateRelevanceForVerbatim() &&
          (matches_.front().type == AutocompleteMatch::SEARCH_SUGGEST ||
-          matches_.front().type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED);
+          matches_.front().type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
+          matches_.front().type == AutocompleteMatch::SEARCH_OTHER_ENGINE);
 }
 
 bool SearchProvider::IsTopMatchNotInlinable() const {
+  // Note: this test assumes the SEARCH_OTHER_ENGINE match corresponds to
+  // the verbatim search query on the keyword engine.  SearchProvider should
+  // not create any other match of type SEARCH_OTHER_ENGINE.
   return matches_.front().type != AutocompleteMatch::SEARCH_WHAT_YOU_TYPED &&
          matches_.front().type != AutocompleteMatch::URL_WHAT_YOU_TYPED &&
+         matches_.front().type != AutocompleteMatch::SEARCH_OTHER_ENGINE &&
          matches_.front().inline_autocomplete_offset == string16::npos &&
          matches_.front().fill_into_edit != input_.text();
 }
@@ -905,10 +925,11 @@ void SearchProvider::UpdateMatches() {
       ConvertResultsToAutocompleteMatches();
     }
     if (IsTopMatchNotInlinable()) {
-      // Disregard suggested relevances if the top match is not SWYT, inlinable,
-      // or URL_WHAT_YOU_TYPED (which may be top match regardless of inlining).
-      // For example, input "foo" should not invoke a search for "bar", which
-      // would happen if the "bar" search match outranked all other matches.
+      // Disregard suggested relevances if the top match is not a verbatim
+      // match, inlinable, or URL_WHAT_YOU_TYPED (which may be top match
+      // regardless of inlining).  For example, input "foo" should not
+      // invoke a search for "bar", which would happen if the "bar" search
+      // match outranked all other matches.
       ApplyCalculatedRelevance();
       ConvertResultsToAutocompleteMatches();
     }
@@ -1093,6 +1114,25 @@ int SearchProvider::CalculateRelevanceForVerbatim() const {
       NOTREACHED();
       return 0;
   }
+}
+
+// static
+int SearchProvider::CalculateRelevanceForKeywordVerbatim(
+    AutocompleteInput::Type type,
+    bool prefer_keyword) {
+  // This function is responsible for scoring verbatim query matches
+  // for non-extension keywords.  KeywordProvider::CalculateRelevance()
+  // scores verbatim query matches for extension keywords, as well as
+  // for keyword matches (i.e., suggestions of a keyword itself, not a
+  // suggestion of a query on a keyword search engine).  These two
+  // functions are currently in sync, but there's no reason we
+  // couldn't decide in the future to score verbatim matches
+  // differently for extension and non-extension keywords.  If you
+  // make such a change, however, you should update this comment to
+  // describe it, so it's clear why the functions diverge.
+  if (prefer_keyword)
+    return 1500;
+  return (type == AutocompleteInput::QUERY) ? 1450 : 1100;
 }
 
 int SearchProvider::CalculateRelevanceForHistory(

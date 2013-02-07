@@ -68,6 +68,28 @@ class SearchProviderTest : public testing::Test,
 
   virtual void TearDown();
 
+  struct ResultInfo {
+    ResultInfo() : result_type(AutocompleteMatch::NUM_TYPES) {
+    }
+    ResultInfo(GURL gurl,
+               AutocompleteMatch::Type result_type,
+               string16 fill_into_edit)
+      : gurl(gurl),
+        result_type(result_type),
+        fill_into_edit(fill_into_edit) {
+    }
+    const GURL gurl;
+    const AutocompleteMatch::Type result_type;
+    const string16 fill_into_edit;
+  };
+  struct TestData {
+    const string16 input;
+    const size_t num_results;
+    const ResultInfo output[3];
+  };
+
+  void RunTest(TestData* cases, int num_cases, bool prefer_keyword);
+
  protected:
   // Adds a search for |term|, using the engine |t_url| to the history, and
   // returns the URL for that search.
@@ -268,6 +290,34 @@ void SearchProviderTest::TearDown() {
 
   // Shutdown the provider before the profile.
   provider_ = NULL;
+}
+
+void SearchProviderTest::RunTest(TestData* cases,
+                                 int num_cases,
+                                 bool prefer_keyword) {
+  ACMatches matches;
+  for (int i = 0; i < num_cases; ++i) {
+    AutocompleteInput input(cases[i].input, string16::npos, string16(),
+                            false, prefer_keyword, true,
+                            AutocompleteInput::ALL_MATCHES);
+    provider_->Start(input, false);
+    matches = provider_->matches();
+    string16 diagnostic_details = ASCIIToUTF16("Input was: ") + cases[i].input +
+        ASCIIToUTF16("; prefer_keyword was: ") +
+        (prefer_keyword ? ASCIIToUTF16("true") : ASCIIToUTF16("false"));
+    EXPECT_EQ(cases[i].num_results, matches.size()) << diagnostic_details;
+    if (matches.size() == cases[i].num_results) {
+      for (size_t j = 0; j < cases[i].num_results; ++j) {
+        EXPECT_EQ(cases[i].output[j].gurl, matches[j].destination_url) <<
+            diagnostic_details;
+        EXPECT_EQ(cases[i].output[j].result_type, matches[j].type) <<
+            diagnostic_details;
+        EXPECT_EQ(cases[i].output[j].fill_into_edit,
+                  matches[j].fill_into_edit) <<
+            diagnostic_details;
+      }
+    }
+  }
 }
 
 GURL SearchProviderTest::AddSearchToHistory(TemplateURL* t_url,
@@ -787,8 +837,9 @@ TEST_F(SearchProviderTest, InlineMixedCaseMatches) {
   EXPECT_EQ(ASCIIToUTF16("FOO"), term_match.fill_into_edit);
 }
 
-// Verifies AutocompleteControllers sets descriptions for results correctly.
-TEST_F(SearchProviderTest, UpdateKeywordDescriptions) {
+// Verifies AutocompleteControllers return results (including keyword
+// results) in the right order and set descriptions for them correctly.
+TEST_F(SearchProviderTest, KeywordOrderingAndDescriptions) {
   // Add an entry that corresponds to a keyword search with 'term2'.
   AddSearchToHistory(keyword_t_url_, ASCIIToUTF16("term2"), 1);
   profile_.BlockUntilHistoryProcessesPendingRequests();
@@ -800,16 +851,114 @@ TEST_F(SearchProviderTest, UpdateKeywordDescriptions) {
       AutocompleteInput::ALL_MATCHES));
   const AutocompleteResult& result = controller.result();
 
-  // There should be two matches, one for the keyword one for what you typed.
-  ASSERT_EQ(2u, result.size());
+  // There should be three matches, one for the keyword history, one for
+  // keyword provider's what-you-typed, and one for the default provider's
+  // what you typed, in that order.
+  ASSERT_EQ(3u, result.size());
+  EXPECT_EQ(AutocompleteMatch::SEARCH_HISTORY, result.match_at(0).type);
+  EXPECT_EQ(AutocompleteMatch::SEARCH_OTHER_ENGINE, result.match_at(1).type);
+  EXPECT_EQ(AutocompleteMatch::SEARCH_WHAT_YOU_TYPED, result.match_at(2).type);
+  EXPECT_GT(result.match_at(0).relevance, result.match_at(1).relevance);
+  EXPECT_GT(result.match_at(1).relevance, result.match_at(2).relevance);
 
-  EXPECT_FALSE(result.match_at(0).keyword.empty());
-  EXPECT_FALSE(result.match_at(1).keyword.empty());
-  EXPECT_NE(result.match_at(0).keyword, result.match_at(1).keyword);
+  // The two keyword results should come with the keyword we expect.
+  EXPECT_EQ(ASCIIToUTF16("k"), result.match_at(0).keyword);
+  EXPECT_EQ(ASCIIToUTF16("k"), result.match_at(1).keyword);
+  // The default provider has a different keyword.  (We don't explicitly
+  // set it during this test, so all we do is assert that it's different.)
+  EXPECT_NE(result.match_at(0).keyword, result.match_at(2).keyword);
 
+  // The top result will always have a description.  The third result,
+  // coming from a different provider than the first two, should also.
+  // Whether the second result has one doesn't matter much.  (If it was
+  // missing, people would infer that it's the same search provider as
+  // the one above it.)
   EXPECT_FALSE(result.match_at(0).description.empty());
-  EXPECT_FALSE(result.match_at(1).description.empty());
-  EXPECT_NE(result.match_at(0).description, result.match_at(1).description);
+  EXPECT_FALSE(result.match_at(2).description.empty());
+  EXPECT_NE(result.match_at(0).description, result.match_at(2).description);
+}
+
+TEST_F(SearchProviderTest, KeywordVerbatim) {
+  TestData cases[] = {
+    // Test a simple keyword input.
+    { ASCIIToUTF16("k foo"), 2,
+      { ResultInfo(GURL("http://keyword/foo"),
+                   AutocompleteMatch::SEARCH_OTHER_ENGINE,
+                   ASCIIToUTF16("k foo")),
+        ResultInfo(GURL("http://defaultturl/k%20foo"),
+                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                   ASCIIToUTF16("k foo") ) } },
+
+    // Make sure extra whitespace after the keyword doesn't change the
+    // keyword verbatim query.
+    { ASCIIToUTF16("k   foo"), 2,
+      { ResultInfo(GURL("http://keyword/foo"),
+                   AutocompleteMatch::SEARCH_OTHER_ENGINE,
+                   ASCIIToUTF16("k foo")),
+        ResultInfo(GURL("http://defaultturl/k%20%20%20foo"),
+                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                   ASCIIToUTF16("k   foo")) } },
+    // Leading whitespace should be stripped before SearchProvider gets the
+    // input; hence there are no tests here about how it handles those inputs.
+
+    // But whitespace elsewhere in the query string should matter to both
+    // matches.
+    { ASCIIToUTF16("k  foo  bar"), 2,
+      { ResultInfo(GURL("http://keyword/foo%20%20bar"),
+                   AutocompleteMatch::SEARCH_OTHER_ENGINE,
+                   ASCIIToUTF16("k foo  bar")),
+        ResultInfo(GURL("http://defaultturl/k%20%20foo%20%20bar"),
+                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                   ASCIIToUTF16("k  foo  bar")) } },
+    // Note in the above test case we don't test trailing whitespace because
+    // SearchProvider still doesn't handle this well.  See related bugs:
+    // 102690, 99239, 164635.
+
+    // Keywords can be prefixed by certain things that should get ignored
+    // when constructing the keyword match.
+    { ASCIIToUTF16("www.k foo"), 2,
+      { ResultInfo(GURL("http://keyword/foo"),
+                   AutocompleteMatch::SEARCH_OTHER_ENGINE,
+                   ASCIIToUTF16("k foo")),
+        ResultInfo(GURL("http://defaultturl/www.k%20foo"),
+                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                   ASCIIToUTF16("www.k foo")) } },
+    { ASCIIToUTF16("http://k foo"), 2,
+      { ResultInfo(GURL("http://keyword/foo"),
+                   AutocompleteMatch::SEARCH_OTHER_ENGINE,
+                   ASCIIToUTF16("k foo")),
+        ResultInfo(GURL("http://defaultturl/http%3A//k%20foo"),
+                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                   ASCIIToUTF16("http://k foo")) } },
+    { ASCIIToUTF16("http://www.k foo"), 2,
+      { ResultInfo(GURL("http://keyword/foo"),
+                   AutocompleteMatch::SEARCH_OTHER_ENGINE,
+                   ASCIIToUTF16("k foo")),
+        ResultInfo(GURL("http://defaultturl/http%3A//www.k%20foo"),
+                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                   ASCIIToUTF16("http://www.k foo")) } },
+
+    // A keyword with no remaining input shouldn't get a keyword
+    // verbatim match.
+    { ASCIIToUTF16("k"), 1,
+      { ResultInfo(GURL("http://defaultturl/k"),
+                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                   ASCIIToUTF16("k")) } },
+    { ASCIIToUTF16("k "), 1,
+      { ResultInfo(GURL("http://defaultturl/k%20"),
+                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                   ASCIIToUTF16("k ")) } }
+
+    // The fact that verbatim queries to keyword are handled by KeywordProvider
+    // not SearchProvider is tested in
+    // chrome/browser/extensions/api/omnibox/omnibox_apitest.cc.
+  };
+
+  // Test not in keyword mode.
+  RunTest(cases, arraysize(cases), false);
+
+  // Test in keyword mode.  (Both modes should give the same result.)
+  RunTest(cases, arraysize(cases), true);
 }
 
 // Verifies Navsuggest results don't set a TemplateURL, which instant relies on.

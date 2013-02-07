@@ -88,10 +88,13 @@ TEST_F(KeywordProviderTest, Edit) {
 
     // Check that tokenization only collapses whitespace between first tokens,
     // no-query-input cases have a space appended, and action is not escaped.
-    {ASCIIToUTF16("z foo"),           1, {ASCIIToUTF16("z foo")}},
     {ASCIIToUTF16("z"),               1, {ASCIIToUTF16("z ")}},
     {ASCIIToUTF16("z    \t"),         1, {ASCIIToUTF16("z ")}},
-    {ASCIIToUTF16("z   a   b   c++"), 1, {ASCIIToUTF16("z a   b   c++")}},
+
+    // Check that exact, substituting keywords with a verbatim search term
+    // don't generate a result.  (These are handled by SearchProvider.)
+    {ASCIIToUTF16("z foo"),           0, {}},
+    {ASCIIToUTF16("z   a   b   c++"), 0, {}},
 
     // Matches should be limited to three, and sorted in quality order, not
     // alphabetical.
@@ -103,9 +106,11 @@ TEST_F(KeywordProviderTest, Edit) {
     {ASCIIToUTF16("www.a"),           3, {ASCIIToUTF16("aa "),
                                           ASCIIToUTF16("ab "),
                                           ASCIIToUTF16("aaaa ")}},
-    // Exact matches should prevent returning inexact matches.
-    {ASCIIToUTF16("aaaa foo"),        1, {ASCIIToUTF16("aaaa foo")}},
-    {ASCIIToUTF16("www.aaaa foo"),    1, {ASCIIToUTF16("aaaa foo")}},
+    // Exact matches should prevent returning inexact matches.  Also, the
+    // verbatim query for this keyword match should not be returned.  (It's
+    // returned by SearchProvider.)
+    {ASCIIToUTF16("aaaa foo"),        0, {}},
+    {ASCIIToUTF16("www.aaaa foo"),    0, {}},
 
     // Clean up keyword input properly.  "http" and "https" are the only
     // allowed schemes.
@@ -133,8 +138,8 @@ TEST_F(KeywordProviderTest, URL) {
 
     // Check that tokenization only collapses whitespace between first tokens
     // and query input, but not rest of URL, is escaped.
-    {ASCIIToUTF16("z   a   b   c++"), 1, {GURL("a+++b+++c%2B%2B=z")}},
-    {ASCIIToUTF16("www.www www"),     1, {GURL(" +%2B?=wwwfoo ")}},
+    {ASCIIToUTF16("w  bar +baz"),     2, {GURL(" +%2B?=bar+%2Bbazfoo "),
+                                          GURL("bar+%2Bbaz=z")}},
 
     // Substitution should work with various locations of the "%s".
     {ASCIIToUTF16("aaa 1a2b"),        2, {GURL("http://aaaa/?aaaa=1&b=1a2b&c"),
@@ -158,21 +163,28 @@ TEST_F(KeywordProviderTest, Contents) {
     {ASCIIToUTF16("z    \t"),         1,
         {ASCIIToUTF16("Search z for <enter query>")}},
 
-    // Check that tokenization only collapses whitespace between first tokens
-    // and contents are not escaped or unescaped.
-    {ASCIIToUTF16("z   a   b   c++"), 1,
-        {ASCIIToUTF16("Search z for a   b   c++")}},
-    {ASCIIToUTF16("www.www www"),     1, {ASCIIToUTF16("Search www for www")}},
+    // Exact keyword matches with remaining text should return nothing.
+    {ASCIIToUTF16("www.www www"),     0, {}},
+    {ASCIIToUTF16("z   a   b   c++"), 0, {}},
+
+    // Exact keyword matches with remaining text when the keyword is an
+    // extension keyword should return something.  This is tested in
+    // chrome/browser/extensions/api/omnibox/omnibox_apitest.cc's
+    // in OmniboxApiTest's Basic test.
 
     // Substitution should work with various locations of the "%s".
     {ASCIIToUTF16("aaa"),             2,
         {ASCIIToUTF16("Search aaaa for <enter query>"),
          ASCIIToUTF16("Search aaaaa for <enter query>")}},
-    {ASCIIToUTF16("a 1 2 3"),         3, {ASCIIToUTF16("Search aa for 1 2 3"),
-                                          ASCIIToUTF16("Search ab for 1 2 3"),
-                                        ASCIIToUTF16("Search aaaa for 1 2 3")}},
-    {ASCIIToUTF16("www.w w"),         2, {ASCIIToUTF16("Search www for w"),
-        ASCIIToUTF16("Search weasel for w")}},
+    {ASCIIToUTF16("www.w w"),         2,
+        {ASCIIToUTF16("Search www for w"),
+         ASCIIToUTF16("Search weasel for w")}},
+    // Also, check that tokenization only collapses whitespace between first
+    // tokens and contents are not escaped or unescaped.
+    {ASCIIToUTF16("a   1 2+ 3"),      3,
+        {ASCIIToUTF16("Search aa for 1 2+ 3"),
+         ASCIIToUTF16("Search ab for 1 2+ 3"),
+         ASCIIToUTF16("Search aaaa for 1 2+ 3")}},
   };
 
   RunTest<string16>(contents_cases, arraysize(contents_cases),
