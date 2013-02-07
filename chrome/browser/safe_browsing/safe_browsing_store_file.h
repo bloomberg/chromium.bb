@@ -233,7 +233,7 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
     // pre-reserved space is probably reasonable between each chunk
     // collected.
     SBAddPrefixes().swap(add_prefixes_);
-    std::vector<SBSubPrefix>().swap(sub_prefixes_);
+    SBSubPrefixes().swap(sub_prefixes_);
     std::vector<SBAddFullHash>().swap(add_hashes_);
     std::vector<SBSubFullHash>().swap(sub_hashes_);
     return true;
@@ -252,7 +252,7 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   // Buffers for collecting data between BeginChunk() and
   // FinishChunk().
   SBAddPrefixes add_prefixes_;
-  std::vector<SBSubPrefix> sub_prefixes_;
+  SBSubPrefixes sub_prefixes_;
   std::vector<SBAddFullHash> add_hashes_;
   std::vector<SBSubFullHash> sub_hashes_;
 

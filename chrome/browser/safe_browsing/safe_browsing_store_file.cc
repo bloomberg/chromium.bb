@@ -510,7 +510,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
   CHECK(add_full_hashes_result);
 
   SBAddPrefixes add_prefixes;
-  std::vector<SBSubPrefix> sub_prefixes;
+  SBSubPrefixes sub_prefixes;
   std::vector<SBAddFullHash> add_full_hashes;
   std::vector<SBSubFullHash> sub_full_hashes;
 

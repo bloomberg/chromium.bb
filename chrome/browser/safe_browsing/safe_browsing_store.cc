@@ -165,7 +165,7 @@ void SBCheckPrefixMisses(const SBAddPrefixes& add_prefixes,
 }
 
 void SBProcessSubs(SBAddPrefixes* add_prefixes,
-                   std::vector<SBSubPrefix>* sub_prefixes,
+                   SBSubPrefixes* sub_prefixes,
                    std::vector<SBAddFullHash>* add_full_hashes,
                    std::vector<SBSubFullHash>* sub_full_hashes,
                    const base::hash_set<int32>& add_chunks_deleted,

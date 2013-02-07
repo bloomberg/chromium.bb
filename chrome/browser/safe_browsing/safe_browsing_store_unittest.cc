@@ -114,7 +114,7 @@ TEST(SafeBrowsingStoreTest, SBSubFullHashLess) {
 TEST(SafeBrowsingStoreTest, SBProcessSubsEmpty) {
   SBAddPrefixes add_prefixes;
   std::vector<SBAddFullHash> add_hashes;
-  std::vector<SBSubPrefix> sub_prefixes;
+  SBSubPrefixes sub_prefixes;
   std::vector<SBSubFullHash> sub_hashes;
 
   const base::hash_set<int32> no_deletions;
@@ -150,7 +150,7 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
 
   SBAddPrefixes add_prefixes;
   std::vector<SBAddFullHash> add_hashes;
-  std::vector<SBSubPrefix> sub_prefixes;
+  SBSubPrefixes sub_prefixes;
   std::vector<SBSubFullHash> sub_hashes;
 
   // An add with prefix and a couple hashes, plus a sub for the prefix
@@ -228,7 +228,7 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsDeleteChunk) {
 
   SBAddPrefixes add_prefixes;
   std::vector<SBAddFullHash> add_hashes;
-  std::vector<SBSubPrefix> sub_prefixes;
+  SBSubPrefixes sub_prefixes;
   std::vector<SBSubFullHash> sub_hashes;
 
   // An add with prefix and a couple hashes, plus a sub for the prefix
