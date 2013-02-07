@@ -23,8 +23,10 @@
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
@@ -77,6 +79,10 @@ class LauncherPlatformPerAppAppBrowserTest
 
   ash::Launcher* launcher_;
   ChromeLauncherController* controller_;
+
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherPlatformPerAppAppBrowserTest);
 };
 
 // TODO(skuhne): Change name back to LauncherAppBrowserTest when the
@@ -103,6 +109,12 @@ class LauncherPerAppAppBrowserTest : public ExtensionBrowserTest {
     return ExtensionBrowserTest::RunTestOnMainThreadLoop();
   }
 
+  size_t NumberOfDetectedLauncherBrowsers() {
+    ChromeLauncherControllerPerApp* controller =
+        static_cast<ChromeLauncherControllerPerApp*>(launcher_->delegate());
+    return controller->GetBrowserApplicationList().size();
+  }
+
   const Extension* LoadAndLaunchExtension(
       const char* name,
       extension_misc::LaunchContainer container,
@@ -110,19 +122,21 @@ class LauncherPerAppAppBrowserTest : public ExtensionBrowserTest {
     EXPECT_TRUE(LoadExtension(test_data_dir_.AppendASCII(name)));
 
     ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service();
+        profile())->extension_service();
     const Extension* extension =
         service->GetExtensionById(last_loaded_extension_id_, false);
     EXPECT_TRUE(extension);
 
-    chrome::OpenApplication(chrome::AppLaunchParams(
-        browser()->profile(), extension, container, disposition));
+    chrome::OpenApplication(chrome::AppLaunchParams(profile(),
+                                                    extension,
+                                                    container,
+                                                    disposition));
     return extension;
   }
 
   ash::LauncherID CreateShortcut(const char* name) {
     ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service();
+        profile())->extension_service();
     LoadExtension(test_data_dir_.AppendASCII(name));
 
     // First get app_id.
@@ -135,7 +149,8 @@ class LauncherPerAppAppBrowserTest : public ExtensionBrowserTest {
         static_cast<ChromeLauncherController*>(launcher_->delegate());
     int item_count = model_->item_count();
     ash::LauncherID shortcut_id = controller->CreateAppShortcutLauncherItem(
-        app_id, item_count);
+        app_id,
+        item_count);
     controller->PersistPinnedState();
     EXPECT_EQ(++item_count, model_->item_count());
     ash::LauncherItem item = *model_->ItemByID(shortcut_id);
@@ -145,6 +160,28 @@ class LauncherPerAppAppBrowserTest : public ExtensionBrowserTest {
 
   ash::Launcher* launcher_;
   ash::LauncherModel* model_;
+
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherPerAppAppBrowserTest);
+};
+
+// TODO(skuhne): Change name to LauncherAppBrowserTestNoBrowser when the
+// old launcher gets ripped out.
+class LauncherPerAppAppBrowserTestNoDefaultBrowser
+    : public LauncherPerAppAppBrowserTest {
+ protected:
+  LauncherPerAppAppBrowserTestNoDefaultBrowser() {}
+  virtual ~LauncherPerAppAppBrowserTestNoDefaultBrowser() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    LauncherPerAppAppBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kNoStartupWindow);
+  }
+
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherPerAppAppBrowserTestNoDefaultBrowser);
 };
 
 // Test that we can launch a platform app and get a running item.
@@ -828,4 +865,27 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest,
   // The status should now be set to closed.
   EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(shortcut_id)->status);
 }
+
+// Checks that a windowed application does not add an item to the browser list.
+IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
+    WindowedAppDoesNotAddToBrowser) {
+  // Get the number of items in the browser menu.
+  size_t items = NumberOfDetectedLauncherBrowsers();
+  size_t running_browser = BrowserList::size();
+  EXPECT_EQ(0u, items);
+  EXPECT_EQ(0u, running_browser);
+
+  LoadAndLaunchExtension("app1", extension_misc::LAUNCH_WINDOW, NEW_WINDOW);
+
+  // No new browser should get detected, even though one more is running.
+  EXPECT_EQ(0u, NumberOfDetectedLauncherBrowsers());
+  EXPECT_EQ(++running_browser, BrowserList::size());
+
+  LoadAndLaunchExtension("app1", extension_misc::LAUNCH_TAB, NEW_WINDOW);
+
+  // A new browser should get detected and one more should be running.
+  EXPECT_GE(NumberOfDetectedLauncherBrowsers(), 1u);
+  EXPECT_EQ(++running_browser, BrowserList::size());
+}
+
 

@@ -284,8 +284,15 @@ TEST_F(ChromeLauncherControllerPerAppTest, PendingInsertionOrder) {
 void CheckMenuCreation(ChromeLauncherControllerPerApp* controller,
                        const ash::LauncherItem& item,
                        size_t expected_items,
-                       string16 title[]) {
+                       string16 title[],
+                       bool is_browser) {
   ChromeLauncherAppMenuItems items = controller->GetApplicationList(item);
+  // A new behavior has been added: Only show menus if there is at least one
+  // item available.
+  if (expected_items < 1 && is_browser) {
+    EXPECT_EQ(0u, items.size());
+    return;
+  }
   // There should be one item in there: The title.
   EXPECT_EQ(expected_items + 1, items.size());
   EXPECT_FALSE(items[0]->IsEnabled());
@@ -319,7 +326,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, BrowserMenuGeneration) {
   // Check that the browser list is empty at this time.
   ash::LauncherItem item_browser;
   item_browser.type = ash::TYPE_BROWSER_SHORTCUT;
-  CheckMenuCreation(&launcher_controller, item_browser, 0, NULL);
+  CheckMenuCreation(&launcher_controller, item_browser, 0, NULL, true);
 
   // Now make the created browser() visible by adding it to the active browser
   // list.
@@ -327,7 +334,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, BrowserMenuGeneration) {
   string16 title1 = ASCIIToUTF16("Test1");
   NavigateAndCommitActiveTabWithTitle(browser(), GURL("http://test1"), title1);
   string16 one_menu_item[] = {title1};
-  CheckMenuCreation(&launcher_controller, item_browser, 1, one_menu_item);
+  CheckMenuCreation(&launcher_controller, item_browser, 1, one_menu_item, true);
 
   // Create one more browser/window and check that one more was added.
   scoped_ptr<Browser> browser2(
@@ -341,7 +348,11 @@ TEST_F(ChromeLauncherControllerPerAppTest, BrowserMenuGeneration) {
   // Check that the list contains now two entries - make furthermore sure that
   // the active item is the first entry.
   string16 two_menu_items[] = {title2, title1};
-  CheckMenuCreation(&launcher_controller, item_browser, 2, two_menu_items);
+  CheckMenuCreation(&launcher_controller,
+                    item_browser,
+                    2,
+                    two_menu_items,
+                    true);
 
   // Apparently we have to close all tabs we have.
   chrome::CloseTab(browser2.get());
@@ -380,14 +391,14 @@ TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuGeneration) {
   ash::LauncherItem item_gmail;
   item_gmail.type = ash::TYPE_APP_SHORTCUT;
   item_gmail.id = gmail_id;
-  CheckMenuCreation(&launcher_controller, item_gmail, 0, NULL);
+  CheckMenuCreation(&launcher_controller, item_gmail, 0, NULL, false);
 
   // Set the gmail URL to a new tab.
   string16 title1 = ASCIIToUTF16("Test1");
   NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title1);
 
   string16 one_menu_item[] = {title1};
-  CheckMenuCreation(&launcher_controller, item_gmail, 1, one_menu_item);
+  CheckMenuCreation(&launcher_controller, item_gmail, 1, one_menu_item, false);
 
   // Create one empty tab.
   chrome::NewTab(browser());
@@ -402,20 +413,28 @@ TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuGeneration) {
   string16 title3 = ASCIIToUTF16("Test3");
   NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title3);
   string16 two_menu_items[] = {title3, title1};
-  CheckMenuCreation(&launcher_controller, item_gmail, 2, two_menu_items);
+  CheckMenuCreation(&launcher_controller, item_gmail, 2, two_menu_items, false);
 
   // Even though the item is in the V1 app list, it should also be in the
   // browser list.
   string16 browser_menu_item[] = {title3};
-  CheckMenuCreation(&launcher_controller, item_browser, 1, browser_menu_item);
+  CheckMenuCreation(&launcher_controller,
+                    item_browser,
+                    1,
+                    browser_menu_item,
+                    false);
 
   // Test that closing of (all) the item(s) does work (and all menus get
   // updated properly).
   launcher_controller.Close(item_gmail.id);
 
-  CheckMenuCreation(&launcher_controller, item_gmail, 0, NULL);
+  CheckMenuCreation(&launcher_controller, item_gmail, 0, NULL, false);
   string16 browser_menu_item2[] = {title2};
-  CheckMenuCreation(&launcher_controller, item_browser, 1, browser_menu_item2);
+  CheckMenuCreation(&launcher_controller,
+                    item_browser,
+                    1,
+                    browser_menu_item2,
+                    false);
 }
 
 // Checks that the generated menu list properly activates items.
@@ -442,7 +461,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuExecution) {
   item_gmail.type = ash::TYPE_APP_SHORTCUT;
   item_gmail.id = gmail_id;
   string16 two_menu_items[] = {title2, title1};
-  CheckMenuCreation(&launcher_controller, item_gmail, 2, two_menu_items);
+  CheckMenuCreation(&launcher_controller, item_gmail, 2, two_menu_items, false);
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
   // Execute the first item in the list (which shouldn't do anything since that
   // item is per definition already the active tab).
@@ -469,6 +488,3 @@ TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuExecution) {
   // Now the active tab should be the second item.
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
 }
-
-// TODO(skuhne) Add tests for:
-//   - V2 apps: create through item in launcher or directly

@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
@@ -59,12 +60,23 @@ ExtensionBrowserTest::ExtensionBrowserTest()
       current_channel_(chrome::VersionInfo::CHANNEL_DEV),
       override_prompt_for_external_extensions_(
           FeatureSwitch::prompt_for_external_extensions(), false),
-       override_sideload_wipeout_(
-          FeatureSwitch::sideload_wipeout(), false) {
+      override_sideload_wipeout_(
+          FeatureSwitch::sideload_wipeout(), false),
+      profile_(NULL) {
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
 }
 
 ExtensionBrowserTest::~ExtensionBrowserTest() {}
+
+Profile* ExtensionBrowserTest::profile() {
+  if (!profile_) {
+    if (browser())
+      profile_ = browser()->profile();
+    else
+      profile_ = ProfileManager::GetDefaultProfile();
+  }
+  return profile_;
+}
 
 void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
@@ -83,7 +95,7 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
     const FilePath& path, int flags) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+      profile())->extension_service();
   {
     content::NotificationRegistrar registrar;
     registrar.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -146,7 +158,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
   {
     content::WindowedNotificationObserver load_signal(
         chrome::NOTIFICATION_EXTENSION_LOADED,
-        content::Source<Profile>(browser()->profile()));
+        content::Source<Profile>(profile()));
     CHECK(!service->IsIncognitoEnabled(extension_id));
 
     if (flags & kFlagEnableIncognito) {
@@ -160,7 +172,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
   {
     content::WindowedNotificationObserver load_signal(
         chrome::NOTIFICATION_EXTENSION_LOADED,
-        content::Source<Profile>(browser()->profile()));
+        content::Source<Profile>(profile()));
     CHECK(service->AllowFileAccess(extension));
     if (!(flags & kFlagEnableFileAccess)) {
       service->SetAllowFileAccess(extension, false);
@@ -189,7 +201,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionIncognito(
 const Extension* ExtensionBrowserTest::LoadExtensionAsComponent(
     const FilePath& path) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+      profile())->extension_service();
 
   std::string manifest;
   if (!file_util::ReadFileToString(path.Append(Extension::kManifestFilename),
@@ -343,7 +355,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     Manifest::Location install_source,
     Browser* browser,
     bool from_webstore) {
-  ExtensionService* service = browser->profile()->GetExtensionService();
+  ExtensionService* service = profile()->GetExtensionService();
   service->set_show_extensions_prompts(false);
   size_t num_before = service->extensions()->size();
 
@@ -415,7 +427,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
 
 void ExtensionBrowserTest::ReloadExtension(const std::string& extension_id) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+      profile())->extension_service();
   service->ReloadExtension(extension_id);
   ui_test_utils::RegisterAndWait(this,
                                  chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -424,25 +436,25 @@ void ExtensionBrowserTest::ReloadExtension(const std::string& extension_id) {
 
 void ExtensionBrowserTest::UnloadExtension(const std::string& extension_id) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+      profile())->extension_service();
   service->UnloadExtension(extension_id, extension_misc::UNLOAD_REASON_DISABLE);
 }
 
 void ExtensionBrowserTest::UninstallExtension(const std::string& extension_id) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+      profile())->extension_service();
   service->UninstallExtension(extension_id, false, NULL);
 }
 
 void ExtensionBrowserTest::DisableExtension(const std::string& extension_id) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+      profile())->extension_service();
   service->DisableExtension(extension_id, Extension::DISABLE_USER_ACTION);
 }
 
 void ExtensionBrowserTest::EnableExtension(const std::string& extension_id) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+      profile())->extension_service();
   service->EnableExtension(extension_id);
 }
 
@@ -477,7 +489,7 @@ bool ExtensionBrowserTest::WaitForExtensionViewsToLoad() {
                 content::NotificationService::AllSources());
 
   ExtensionProcessManager* manager =
-      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
+      extensions::ExtensionSystem::Get(profile())->process_manager();
   ExtensionProcessManager::ViewSet all_views = manager->GetAllViews();
   for (ExtensionProcessManager::ViewSet::const_iterator iter =
            all_views.begin();
@@ -530,7 +542,7 @@ bool ExtensionBrowserTest::WaitForExtensionLoadError() {
 bool ExtensionBrowserTest::WaitForExtensionCrash(
     const std::string& extension_id) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+      profile())->extension_service();
 
   if (!service->GetExtensionById(extension_id, true)) {
     // The extension is already unloaded, presumably due to a crash.

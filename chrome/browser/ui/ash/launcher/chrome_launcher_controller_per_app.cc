@@ -1362,6 +1362,7 @@ ChromeLauncherControllerPerApp::GetV1ApplicationsFromController(
 ChromeLauncherAppMenuItems
 ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
   ChromeLauncherAppMenuItems items;
+  bool found_tabbed_browser = false;
   // Add the application name to the menu.
   items.push_back(new ChromeLauncherAppMenuItem(
       l10n_util::GetStringFUTF16(IDS_LAUNCHER_CHROME_BROWSER_NAME,
@@ -1371,6 +1372,8 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
            BrowserList::begin_last_active();
        it != BrowserList::end_last_active(); ++it, ++index) {
     Browser* browser = *it;
+    if (browser->is_type_tabbed())
+      found_tabbed_browser = true;
     TabStripModel* tab_strip = browser->tab_strip_model();
     WebContents* web_contents =
         tab_strip->GetWebContentsAt(tab_strip->active_index());
@@ -1380,5 +1383,9 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
         app_icon.IsEmpty() ? NULL : &app_icon,
         browser));
   }
+  // If only windowed applications are open, we return an empty list to
+  // enforce the creation of a new browser.
+  if (!found_tabbed_browser)
+    items.clear();
   return items.Pass();
 }

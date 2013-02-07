@@ -56,10 +56,12 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   virtual ~ExtensionBrowserTest();
 
   // Useful accessors.
-  Profile* profile() { return browser()->profile(); }
   ExtensionService* extension_service() {
     return extensions::ExtensionSystem::Get(profile())->extension_service();
   }
+
+  // Get the profile to use.
+  Profile* profile();
 
   // InProcessBrowserTest
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
@@ -271,6 +273,9 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   // Disable the sideload wipeout UI.
   extensions::FeatureSwitch::ScopedOverride
       override_sideload_wipeout_;
+
+  // The default profile to be used.
+  Profile* profile_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSERTEST_H_

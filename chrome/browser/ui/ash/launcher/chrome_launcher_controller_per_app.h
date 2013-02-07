@@ -316,6 +316,7 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
 
  private:
   friend class ChromeLauncherControllerPerAppTest;
+  friend class LauncherPerAppAppBrowserTest;
 
   // Updates the activation state of the Broswer item.
   void UpdateBrowserItemStatus();
