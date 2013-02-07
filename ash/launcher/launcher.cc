@@ -104,7 +104,7 @@ class Launcher::DimmerView : public views::View,
     launcher_->widget()->GetNativeWindow()->AddObserver(this);
   }
 
-  ~DimmerView() {
+  virtual ~DimmerView() {
     if (launcher_)
       launcher_->widget()->GetNativeWindow()->RemoveObserver(this);
   }

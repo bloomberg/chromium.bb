@@ -235,8 +235,8 @@ class DummyImeControlDelegate : public ImeControlDelegate {
   const ui::Accelerator& last_accelerator() const {
     return last_accelerator_;
   }
-  ui::Accelerator RemapAccelerator(
-      const ui::Accelerator& accelerator) {
+  virtual ui::Accelerator RemapAccelerator(
+      const ui::Accelerator& accelerator) OVERRIDE {
     return ui::Accelerator(accelerator);
   }
 

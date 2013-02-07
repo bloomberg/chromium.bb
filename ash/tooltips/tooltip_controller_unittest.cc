@@ -33,7 +33,8 @@ class TooltipTestView : public views::View {
   void set_tooltip_text(string16 tooltip_text) { tooltip_text_ = tooltip_text; }
 
   // Overridden from views::View
-  bool GetTooltipText(const gfx::Point& p, string16* tooltip) const {
+  virtual bool GetTooltipText(const gfx::Point& p,
+                              string16* tooltip) const OVERRIDE {
     *tooltip = tooltip_text_;
     return true;
   }

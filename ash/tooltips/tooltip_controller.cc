@@ -111,7 +111,7 @@ class TooltipController::Tooltip : public views::WidgetObserver {
     label_.set_owned_by_client();
   }
 
-  ~Tooltip() {
+  virtual ~Tooltip() {
     if (widget_) {
       widget_->RemoveObserver(this);
       widget_->Close();

@@ -49,7 +49,7 @@ class DontClobberRestoreBoundsWindowObserver : public aura::WindowObserver {
 
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
-                                       intptr_t old) {
+                                       intptr_t old) OVERRIDE {
     if (!window_)
       return;
 

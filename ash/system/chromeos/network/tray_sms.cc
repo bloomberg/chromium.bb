@@ -197,7 +197,7 @@ class TraySms::SmsDetailedView : public TrayDetailsView,
   }
 
   // Overridden from views::View.
-  gfx::Size GetPreferredSize() {
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     gfx::Size preferred_size = TrayDetailsView::GetPreferredSize();
     if (preferred_size.height() < kMessageListMinHeight)
       preferred_size.set_height(kMessageListMinHeight);

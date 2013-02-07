@@ -133,7 +133,7 @@ class DisplayView : public ash::internal::ActionableView {
     return true;
   }
 
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE {
     int label_max_width = bounds().width() - kTrayPopupPaddingHorizontal * 2 -
         kTrayPopupPaddingBetweenItems - image_->GetPreferredSize().width();
     label_->SizeToFit(label_max_width);

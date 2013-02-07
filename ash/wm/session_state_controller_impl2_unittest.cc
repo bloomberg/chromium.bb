@@ -137,7 +137,7 @@ class SessionStateControllerImpl2Test : public AshTestBase {
         ash::Shell::GetInstance()->delegate());
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     // TODO(antrim) : restore
     // animator_helper_->AdvanceUntilDone();
     AshTestBase::TearDown();

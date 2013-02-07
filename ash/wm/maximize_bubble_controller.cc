@@ -195,7 +195,7 @@ class BubbleMouseWatcherHost: public views::MouseWatcherHost {
 
   // Implementation of MouseWatcherHost.
   virtual bool Contains(const gfx::Point& screen_point,
-                        views::MouseWatcherHost::MouseEventType type);
+                        views::MouseWatcherHost::MouseEventType type) OVERRIDE;
  private:
   MaximizeBubbleController::Bubble* bubble_;
 
@@ -226,7 +226,7 @@ class MaximizeBubbleController::Bubble : public views::BubbleDelegateView,
   virtual void GetWidgetHitTestMask(gfx::Path* mask) const OVERRIDE;
 
   // Implementation of MouseWatcherListener.
-  virtual void MouseMovedOutOfHost();
+  virtual void MouseMovedOutOfHost() OVERRIDE;
 
   // Implementation of MouseWatcherHost.
   virtual bool Contains(const gfx::Point& screen_point,

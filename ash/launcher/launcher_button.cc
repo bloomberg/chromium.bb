@@ -60,12 +60,12 @@ class LauncherButton::BarView : public views::ImageView,
   }
 
   // View overrides.
-  bool HitTestRect(const gfx::Rect& rect) const OVERRIDE {
+  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE {
     // Allow Mouse...() messages to go to the parent view.
     return false;
   }
 
-  void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     if (animation_.is_animating()) {
       int alpha = animation_.CurrentValueBetween(0, 255);
       canvas->SaveLayerAlpha(alpha);
@@ -77,7 +77,7 @@ class LauncherButton::BarView : public views::ImageView,
   }
 
   // ui::AnimationDelegate overrides.
-  void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
     SchedulePaint();
   }
 

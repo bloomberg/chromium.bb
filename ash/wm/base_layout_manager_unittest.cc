@@ -89,7 +89,7 @@ class FocusDelegate : public aura::test::TestWindowDelegate {
   void set_window(aura::Window* window) { window_ = window; }
 
   // aura::test::TestWindowDelegate overrides:
-  virtual void OnWindowTargetVisibilityChanged(bool visible) {
+  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {
     if (window_) {
       if (visible)
         window_->Focus();

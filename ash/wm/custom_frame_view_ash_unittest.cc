@@ -40,7 +40,7 @@ class ShellViewsDelegate : public views::TestViewsDelegate {
       views::Widget* widget) OVERRIDE {
     return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(widget);
   }
-  bool UseTransparentWindows() const OVERRIDE {
+  virtual bool UseTransparentWindows() const OVERRIDE {
     // Ash uses transparent window frames.
     return true;
   }

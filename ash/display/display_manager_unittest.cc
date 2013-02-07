@@ -81,7 +81,7 @@ class DisplayManagerTest : public test::AshTestBase,
   }
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowDestroying(aura::Window* window) {
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
     ASSERT_EQ(Shell::GetPrimaryRootWindow(), window);
     root_window_destroyed_ = true;
   }
