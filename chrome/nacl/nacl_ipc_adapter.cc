@@ -16,7 +16,8 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_platform_file.h"
 #include "native_client/src/trusted/desc/nacl_desc_custom.h"
-#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
+#include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_handle.h"
 
@@ -90,6 +91,20 @@ void DeleteChannel(IPC::Channel* channel) {
   delete channel;
 }
 
+class NaClDescWrapper {
+ public:
+  explicit NaClDescWrapper(NaClDesc* desc): desc_(desc) {}
+  ~NaClDescWrapper() {
+    NaClDescUnref(desc_);
+  }
+
+  NaClDesc* desc() { return desc_; }
+
+ private:
+  NaClDesc* desc_;
+  DISALLOW_COPY_AND_ASSIGN(NaClDescWrapper);
+};
+
 }  // namespace
 
 class NaClIPCAdapter::RewrittenMessage
@@ -104,7 +119,7 @@ class NaClIPCAdapter::RewrittenMessage
 
   int Read(NaClImcTypedMsgHdr* msg);
 
-  void AddDescriptor(nacl::DescWrapper* desc) { descs_.push_back(desc); }
+  void AddDescriptor(NaClDescWrapper* desc) { descs_.push_back(desc); }
 
   size_t desc_count() const { return descs_.size(); }
 
@@ -120,7 +135,7 @@ class NaClIPCAdapter::RewrittenMessage
   size_t data_read_cursor_;
 
   // Wrapped descriptors for transfer to untrusted code.
-  ScopedVector<nacl::DescWrapper> descs_;
+  ScopedVector<NaClDescWrapper> descs_;
 };
 
 NaClIPCAdapter::RewrittenMessage::RewrittenMessage()
@@ -341,32 +356,31 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
 
     // Now add any descriptors we found to rewritten_msg. |handles| is usually
     // empty, unless we read a message containing a FD or handle.
-    nacl::DescWrapperFactory factory;
     for (Handles::const_iterator iter = handles.begin();
          iter != handles.end();
          ++iter) {
-      scoped_ptr<nacl::DescWrapper> nacl_desc;
+      scoped_ptr<NaClDescWrapper> nacl_desc;
       switch (iter->type()) {
         case ppapi::proxy::SerializedHandle::SHARED_MEMORY: {
           const base::SharedMemoryHandle& shm_handle = iter->shmem();
           uint32_t size = iter->size();
-          nacl_desc.reset(factory.ImportShmHandle(
+          nacl_desc.reset(new NaClDescWrapper(NaClDescImcShmMake(
 #if defined(OS_WIN)
               reinterpret_cast<const NaClHandle>(shm_handle),
 #else
               shm_handle.fd,
 #endif
-              static_cast<size_t>(size)));
+              static_cast<size_t>(size))));
           break;
         }
         case ppapi::proxy::SerializedHandle::SOCKET: {
-          nacl_desc.reset(factory.ImportSyncSocketHandle(
+          nacl_desc.reset(new NaClDescWrapper(NaClDescSyncSocketMake(
 #if defined(OS_WIN)
               reinterpret_cast<const NaClHandle>(iter->descriptor())
 #else
               iter->descriptor().fd
 #endif
-          ));
+          )));
           break;
         }
         case ppapi::proxy::SerializedHandle::CHANNEL_HANDLE: {
@@ -382,7 +396,7 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
           channel_handle.socket = base::FileDescriptor(
               ipc_adapter->TakeClientFileDescriptor(), true);
 #endif
-          nacl_desc.reset(factory.MakeGeneric(ipc_adapter->MakeNaClDesc()));
+          nacl_desc.reset(new NaClDescWrapper(ipc_adapter->MakeNaClDesc()));
           // Send back a message that the channel was created.
           scoped_ptr<IPC::Message> response(
               new PpapiHostMsg_ChannelCreated(channel_handle));

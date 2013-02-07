@@ -30,10 +30,6 @@ class Channel;
 struct ChannelHandle;
 }
 
-namespace nacl {
-class DescWrapper;
-}
-
 namespace ppapi {
 class HostResource;
 }
