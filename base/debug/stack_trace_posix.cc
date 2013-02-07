@@ -30,7 +30,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 
 #if defined(USE_SYMBOLIZE)
 #include "base/third_party/symbolize/symbolize.h"

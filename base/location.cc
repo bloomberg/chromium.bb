@@ -12,8 +12,8 @@ extern "C" {
 #endif
 
 #include "base/location.h"
-#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 
 namespace tracked_objects {
 

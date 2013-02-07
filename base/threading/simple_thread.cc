@@ -5,9 +5,9 @@
 #include "base/threading/simple_thread.h"
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/string_number_conversions.h"
 
 namespace base {
 
