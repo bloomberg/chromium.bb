@@ -108,10 +108,14 @@
             }],
           ],
         }],
+        ['use_x11==1', {
+          'dependencies': [
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:*',
+          ],
+        }],
         ['toolkit_uses_gtk==1', {
           'dependencies': [
             '../tools/gtk_clipboard_dump/gtk_clipboard_dump.gyp:*',
-            '../tools/xdisplaycheck/xdisplaycheck.gyp:*',
           ],
         }],
         ['OS=="win"', {

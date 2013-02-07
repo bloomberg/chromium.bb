@@ -221,7 +221,6 @@
         ['use_glib == 1', {
           'dependencies': [
             '../build/linux/system.gyp:pangocairo',
-            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
           'conditions': [
             ['linux_use_tcmalloc==1', {
@@ -234,6 +233,11 @@
                 'browser/ui/gtk/gtk_expanded_container_unittest.cc',
               ],
             }],
+          ],
+        }],
+        ['use_x11==1', {
+          'dependencies': [
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
         ['toolkit_uses_gtk == 1', {

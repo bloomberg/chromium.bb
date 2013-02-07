@@ -1915,6 +1915,11 @@
             'browser/policy/proxy_policy_provider_unittest.cc',
           ],
         }],
+        ['use_x11==1', {
+          'dependencies': [
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+          ],
+        }],
         ['toolkit_uses_gtk == 1', {
           'conditions': [
             ['selinux==0', {
@@ -1949,7 +1954,6 @@
             '../build/linux/system.gyp:dbus',
             '../build/linux/system.gyp:gtk',
             '../dbus/dbus.gyp:dbus_test_support',
-            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
           'sources!': [
             'browser/printing/print_job_unittest.cc',

@@ -143,11 +143,15 @@
                 'copy_npapi_test_plugin',
               ],
             }],
+            ['use_x11==1', {
+              'dependencies': [
+                '<(DEPTH)/tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+              ],
+            }],
             ['toolkit_uses_gtk == 1', {
               'dependencies': [
                 'test_shell_resources',
                 '<(DEPTH)/build/linux/system.gyp:gtk',
-                '<(DEPTH)/tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
               ],
               # for:  test_shell_gtk.cc
               'cflags': ['-Wno-multichar'],
