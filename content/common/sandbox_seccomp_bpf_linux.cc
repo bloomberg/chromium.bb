@@ -122,6 +122,21 @@ intptr_t ReportCloneFailure(const struct arch_seccomp_data& args, void* aux) {
     _exit(1);
 }
 
+// TODO(jln): rewrite reporting functions.
+intptr_t ReportPrctlFailure(const struct arch_seccomp_data& args,
+                            void* /* aux */) {
+  // Mark as volatile to be able to find the value on the stack in a minidump.
+#if !defined(NDEBUG)
+  RAW_LOG(ERROR, __FILE__":**CRASHING**:prctl() failure\n");
+#endif
+  volatile uint64_t option = args.args[0];
+  volatile char* addr =
+      reinterpret_cast<volatile char*>(option & 0xFFF);
+  *addr = '\0';
+  for (;;)
+    _exit(1);
+}
+
 bool IsAcceleratedVideoDecodeEnabled() {
   // Accelerated video decode is currently enabled on Chrome OS,
   // but not on Linux: crbug.com/137247.
@@ -1277,10 +1292,26 @@ ErrorCode RestrictCloneToThreads() {
                        Sandbox::Trap(ReportCloneFailure, NULL));
 }
 
+ErrorCode RestrictPrctl() {
+  // Allow PR_SET_NAME, PR_SET_DUMPABLE, PR_GET_DUMPABLE. Will need to add
+  // seccomp compositing in the future.
+  // PR_SET_PTRACER is used by breakpad but not needed anymore.
+  return Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       PR_SET_NAME, ErrorCode(ErrorCode::ERR_ALLOWED),
+         Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       PR_SET_DUMPABLE, ErrorCode(ErrorCode::ERR_ALLOWED),
+         Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       PR_GET_DUMPABLE, ErrorCode(ErrorCode::ERR_ALLOWED),
+         Sandbox::Trap(ReportPrctlFailure, NULL))));
+}
+
 ErrorCode RendererOrWorkerProcessPolicy(int sysno, void *) {
   switch (sysno) {
     case __NR_clone:
       return RestrictCloneToThreads();
+    case __NR_prctl:
+      return RestrictPrctl();
+    // Allow the system calls below.
     case __NR_ioctl:  // TODO(jln) investigate legitimate use in the renderer
                       // and see if alternatives can be used.
     case __NR_fdatasync:
