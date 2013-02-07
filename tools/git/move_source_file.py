@@ -78,8 +78,12 @@ def MultiFileFindReplace(original,
 
   Raises an exception on error.
   """
+  # Posix extended regular expressions do not reliably support the "\s"
+  # shorthand.
+  posix_ere_original = re.sub(r"\\s", "[[:space:]]", original)
   out, err = subprocess.Popen(
-      ['git', 'grep', '-E', '--name-only', original, '--'] + file_globs,
+      ['git', 'grep', '-E', '--name-only', posix_ere_original, '--'] +
+          file_globs,
       stdout=subprocess.PIPE).communicate()
   referees = out.splitlines()
 
