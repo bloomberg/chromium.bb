@@ -22,7 +22,8 @@ void SessionStateControllerDelegateChromeos::RequestLockScreen() {
     browser::AttemptUserExit();
     return;
   }
-
+  // TODO(antrim) : additional logging for crbug/173178
+  LOG(WARNING) << "Requesting screen lock from SessionStateControllerDelegate";
   DBusThreadManager::Get()->GetSessionManagerClient()->RequestLockScreen();
 }
 

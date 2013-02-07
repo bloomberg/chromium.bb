@@ -37,6 +37,8 @@ void SuspendObserver::SuspendImminent() {
   if (profile && profile->GetPrefs()->GetBoolean(prefs::kEnableScreenLock) &&
       UserManager::Get()->CanCurrentUserLock() && !screen_locked_) {
     screen_lock_callback_ = power_client_->GetSuspendReadinessCallback();
+    // TODO(antrim) : additional logging for crbug/173178
+    LOG(WARNING) << "Requesting screen lock from SuspendObserver";
     session_client_->RequestLockScreen();
   }
 

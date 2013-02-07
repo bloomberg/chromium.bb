@@ -148,6 +148,8 @@ bool ChromeShellDelegate::CanLockScreen() const {
 void ChromeShellDelegate::LockScreen() {
 #if defined(OS_CHROMEOS)
   if (CanLockScreen()) {
+    // TODO(antrim) : additional logging for crbug/173178
+    LOG(WARNING) << "Requesting screen lock from ChromeShellDelegate";
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
         RequestLockScreen();
   }

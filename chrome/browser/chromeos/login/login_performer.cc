@@ -351,6 +351,8 @@ void LoginPerformer::RequestScreenLock() {
     ResolveScreenLocked();
   } else {
     screen_lock_requested_ = true;
+    // TODO(antrim) : additional logging for crbug/173178
+    LOG(WARNING) << "Requesting screen lock from LoginPerformer";
     DBusThreadManager::Get()->GetSessionManagerClient()->RequestLockScreen();
   }
 }
