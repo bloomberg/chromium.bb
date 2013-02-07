@@ -77,4 +77,7 @@ crbug.com/174338 fast/writing-mode/japanese-rl-selection.html [ ImageOnlyFailure
 crbug.com/174338 fast/writing-mode/japanese-rl-text.html [ ImageOnlyFailure ]
 crbug.com/174338 svg/custom/shapes-supporting-markers.svg [ ImageOnlyFailure ]
 
+# Needs rebaseline due to minor pixel differences.
+webkit.org/b/104289 css3/filters/effect-reference-ordering-hw.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)

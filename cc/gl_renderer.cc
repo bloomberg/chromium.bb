@@ -422,6 +422,7 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     backendTextureDescription.fHeight = sourceTexture->size().height();
     backendTextureDescription.fConfig = kSkia8888_GrPixelConfig;
     backendTextureDescription.fTextureHandle = lock.textureId();
+    backendTextureDescription.fOrigin = kTopLeft_GrSurfaceOrigin;
     skia::RefPtr<GrTexture> texture = skia::AdoptRef(grContext->wrapBackendTexture(backendTextureDescription));
 
     // Place the platform texture inside an SkBitmap.
@@ -437,6 +438,7 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     desc.fWidth = source.width();
     desc.fHeight = source.height();
     desc.fConfig = kSkia8888_GrPixelConfig;
+    desc.fOrigin = kTopLeft_GrSurfaceOrigin;
     GrAutoScratchTexture scratchTexture(grContext, desc, GrContext::kExact_ScratchTexMatch);
     skia::RefPtr<GrTexture> backingStore = skia::AdoptRef(scratchTexture.detach());
 
