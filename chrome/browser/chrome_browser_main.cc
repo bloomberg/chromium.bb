@@ -673,8 +673,7 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   if (variations_service)
     variations_service->CreateTrialsFromSeed(browser_process_->local_state());
 
-  const int64 install_date = local_state_->GetInt64(
-      prefs::kUninstallMetricsInstallDate);
+  const int64 install_date = local_state_->GetInt64(prefs::kInstallDate);
   // This must be called after the pref is initialized.
   DCHECK(install_date);
   browser_field_trials_.SetupFieldTrials(base::Time::FromTimeT(install_date));
@@ -970,12 +969,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // Now that all preferences have been registered, set the install date
   // for the uninstall metrics if this is our first run. This only actually
   // gets used if the user has metrics reporting enabled at uninstall time.
-  int64 install_date =
-      local_state_->GetInt64(prefs::kUninstallMetricsInstallDate);
-  if (install_date == 0) {
-    local_state_->SetInt64(prefs::kUninstallMetricsInstallDate,
-                          base::Time::Now().ToTimeT());
-  }
+  int64 install_date = local_state_->GetInt64(prefs::kInstallDate);
+  if (install_date == 0)
+    local_state_->SetInt64(prefs::kInstallDate, base::Time::Now().ToTimeT());
 
 #if defined(OS_MACOSX)
   // Get the Keychain API to register for distributed notifications on the main

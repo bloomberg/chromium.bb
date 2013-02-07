@@ -43,11 +43,9 @@ const int32 kFingerprinterVersion = 1;
 // Returns the delta between the time at which Chrome was installed and the Unix
 // epoch.
 base::TimeDelta GetInstallTimestamp() {
-  // TODO(isherman): If we keep this implementation, the metric should probably
-  // be renamed; or at least the comments for it should be updated.
   PrefServiceBase* prefs = g_browser_process->local_state();
-  base::Time install_time = base::Time::FromTimeT(
-      prefs->GetInt64(prefs::kUninstallMetricsInstallDate));
+  base::Time install_time =
+      base::Time::FromTimeT(prefs->GetInt64(prefs::kInstallDate));
   // The install date should always be available and initialized.
   DCHECK(!install_time.is_null());
   return install_time - base::Time::UnixEpoch();
@@ -317,6 +315,7 @@ void FingerprintDataLoader::FillFingerprint() {
       fingerprint->mutable_machine_characteristics();
 
   machine->set_operating_system_build(GetOperatingSystemVersion());
+  machine->set_browser_install_time_hours(GetInstallTimestamp().InHours());
   machine->set_utc_offset_ms(GetTimezoneOffset().InMilliseconds());
   machine->set_browser_language(
       content::GetContentClient()->browser()->GetApplicationLocale());

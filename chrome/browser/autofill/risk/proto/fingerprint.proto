@@ -72,9 +72,8 @@ message Fingerprint {
     // TODO(isherman): This seems like TMI.
     optional string device_name = 3;
 
-    // Browser install time (ms since epoch).
-    // TODO(isherman): This might be TMI.
-    optional int64 browser_install_time_ms = 4;
+    // Browser install time (hours since epoch).
+    optional int64 browser_install_time_hours = 4;
 
     // Fonts installed on the machine.
     repeated string font = 5;

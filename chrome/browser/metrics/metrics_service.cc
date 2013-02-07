@@ -475,9 +475,9 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kMetricsInitialLogsProto);
   registry->RegisterListPref(prefs::kMetricsOngoingLogsProto);
 
+  registry->RegisterInt64Pref(prefs::kInstallDate, 0);
   registry->RegisterInt64Pref(prefs::kUninstallMetricsPageLoadCount, 0);
   registry->RegisterInt64Pref(prefs::kUninstallLaunchCount, 0);
-  registry->RegisterInt64Pref(prefs::kUninstallMetricsInstallDate, 0);
   registry->RegisterInt64Pref(prefs::kUninstallMetricsUptimeSec, 0);
   registry->RegisterInt64Pref(prefs::kUninstallLastLaunchTimeSec, 0);
   registry->RegisterInt64Pref(prefs::kUninstallLastObservedRunTimeSec, 0);

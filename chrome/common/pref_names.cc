@@ -1396,12 +1396,12 @@ const char kStabilityPluginLoadingErrors[] = "loading_errors";
 
 // The keys below are strictly increasing counters over the lifetime of
 // a chrome installation. They are (optionally) sent up to the uninstall
-// survey in the event of uninstallation.
+// survey in the event of uninstallation. The installation date is also by some
+// opt-in services (currently Wallet, and soon UMA).
+const char kInstallDate[] = "uninstall_metrics.installation_date2";
 const char kUninstallMetricsPageLoadCount[] =
     "uninstall_metrics.page_load_count";
 const char kUninstallLaunchCount[] = "uninstall_metrics.launch_count";
-const char kUninstallMetricsInstallDate[] =
-    "uninstall_metrics.installation_date2";
 const char kUninstallMetricsUptimeSec[] = "uninstall_metrics.uptime_sec";
 const char kUninstallLastLaunchTimeSec[] =
     "uninstall_metrics.last_launch_time_sec";

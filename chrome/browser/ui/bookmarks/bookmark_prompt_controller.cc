@@ -229,8 +229,8 @@ bool BookmarkPromptController::IsEnabled() {
 
   const base::Time start_date = base::Time::FromLocalExploded(
       date_range->install_date);
-  const int64 install_time = g_browser_process->local_state()->GetInt64(
-      prefs::kUninstallMetricsInstallDate);
+  const int64 install_time =
+      g_browser_process->local_state()->GetInt64(prefs::kInstallDate);
   // This must be called after the pref is initialized.
   DCHECK(install_time);
   const base::Time install_date = base::Time::FromTimeT(install_time);

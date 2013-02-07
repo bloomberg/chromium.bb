@@ -45,6 +45,7 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
     const Fingerprint_MachineCharacteristics& machine =
         fingerprint->machine_characteristics();
     ASSERT_TRUE(machine.has_operating_system_build());
+    ASSERT_TRUE(machine.has_browser_install_time_hours());
     ASSERT_GT(machine.font_size(), 0);
     ASSERT_GT(machine.plugin_size(), 0);
     ASSERT_TRUE(machine.has_utc_offset_ms());
