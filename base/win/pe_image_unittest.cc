@@ -139,7 +139,8 @@ int GetExpectedValue(Value value, DWORD os) {
   const int win7_exports = 806;
   const int win7_imports = 568;
   const int win7_delay_imports = 71;
-  const int win7_relocs = 7812;
+  int win7_relocs = 7812;
+  int win7_sections = 4;
   const int win8_delay_dlls = 9;
   const int win8_exports = 806;
   const int win8_imports = 568;
@@ -149,15 +150,21 @@ int GetExpectedValue(Value value, DWORD os) {
   int win8_import_dlls = 17;
 
   base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
+  // 32-bit process on a 32-bit system.
   if (os_info->architecture() == base::win::OSInfo::X86_ARCHITECTURE) {
     win8_sections = 5;
     win8_import_dlls = 19;
+
+  // 64-bit process on a 64-bit system.
+  } else if (os_info->wow64_status() == base::win::OSInfo::WOW64_DISABLED) {
+    win7_sections = 6;
+    win7_relocs = 2712;
   }
 
   // Contains the expected value, for each enumerated property (Value), and the
   // OS version: [Value][os_version]
   const int expected[][5] = {
-    {4, 4, 4, 4, win8_sections},
+    {4, 4, 4, win7_sections, win8_sections},
     {3, 3, 3, 13, win8_import_dlls},
     {w2k_delay_dlls, xp_delay_dlls, vista_delay_dlls, win7_delay_dlls,
      win8_delay_dlls},
