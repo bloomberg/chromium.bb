@@ -280,6 +280,12 @@ void WorkspaceLayoutManager::ShowStateChanged(
 
 void WorkspaceLayoutManager::AdjustWindowSizesForScreenChange(
     AdjustWindowReason reason) {
+  // Don't do any adjustments of the insets while we are in screen locked mode.
+  // This would happen if the launcher was auto hidden before the login screen
+  // was shown and then gets shown when the login screen gets presented.
+  if (reason == ADJUST_WINDOW_DISPLAY_INSETS_CHANGED &&
+      Shell::GetInstance()->IsScreenLocked())
+    return;
   work_area_ = ScreenAsh::GetDisplayWorkAreaBoundsInParent(
       workspace_->window()->parent());
   // If a user plugs an external display into a laptop running Aura the
