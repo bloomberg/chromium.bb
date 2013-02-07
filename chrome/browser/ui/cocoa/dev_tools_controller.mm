@@ -8,6 +8,7 @@
 
 #include <Cocoa/Cocoa.h>
 
+#import "base/mac/foundation_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,11 +37,40 @@ using content::WebContents;
   return [NSColor darkGrayColor];
 }
 
+- (void)drawDividerInRect:(NSRect)aRect {
+  NSRect dividerRect = aRect;
+  if ([self isVertical]) {
+    dividerRect.size.height -= topContentOffset_;
+    dividerRect.origin.y += topContentOffset_;
+  }
+  [super drawDividerInRect:dividerRect];
+}
+
 - (NSView*)hitTest:(NSPoint)point {
   NSPoint viewPoint = [self convertPoint:point fromView:[self superview]];
   if (viewPoint.y < topContentOffset_)
     return nil;
   return [super hitTest:point];
+}
+
+@end
+
+// Superview for the dev tools contents view. This class ensures that dev tools
+// view doesn't overlap the toolbar when split vertically.
+@interface DevToolsContainerView : NSView
+@end
+
+@implementation DevToolsContainerView
+
+- (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {
+  NSRect subviewFrame = [self bounds];
+  GraySplitView* splitView =
+      base::mac::ObjCCastStrict<GraySplitView>([self superview]);
+  if ([splitView isVertical])
+    subviewFrame.size.height -= [splitView topContentOffset];
+
+  DCHECK_EQ(1u, [[self subviews] count]);
+  [[[self subviews] lastObject] setFrame:subviewFrame];
 }
 
 @end
@@ -132,7 +162,11 @@ using content::WebContents;
   // VIEW_ID_DEV_TOOLS_DOCKED here.
   NSView* devToolsView = devToolsContents->GetNativeView();
   view_id_util::SetID(devToolsView, VIEW_ID_DEV_TOOLS_DOCKED);
-  [splitView_ addSubview:devToolsView];
+
+  scoped_nsobject<DevToolsContainerView> devToolsContainerView(
+      [[DevToolsContainerView alloc] initWithFrame:[devToolsView bounds]]);
+  [devToolsContainerView addSubview:devToolsView];
+  [splitView_ addSubview:devToolsContainerView];
 
   BOOL isVertical = devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT;
   [splitView_ setVertical:isVertical];
@@ -188,6 +222,16 @@ using content::WebContents;
   if ([[splitView_ subviews] indexOfObject:subview] == 1)
     return NO;
   return YES;
+}
+
+- (CGFloat)splitView:(NSSplitView*)splitView
+    constrainSplitPosition:(CGFloat)proposedPosition
+               ofSubviewAt:(NSInteger)dividerIndex {
+  if (![splitView_ isVertical] &&
+      proposedPosition < [splitView_ topContentOffset]) {
+    return [splitView_ topContentOffset];
+  }
+  return proposedPosition;
 }
 
 -(void)splitViewWillResizeSubviews:(NSNotification *)notification {

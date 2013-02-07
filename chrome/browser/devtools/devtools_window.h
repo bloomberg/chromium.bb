@@ -21,6 +21,7 @@
 
 class Browser;
 class BrowserWindow;
+class DevToolsControllerTest;
 class PrefServiceSyncable;
 class Profile;
 
@@ -111,6 +112,7 @@ class DevToolsWindow : private content::NotificationObserver,
   void SetHeight(int height);
 
  private:
+  friend class DevToolsControllerTest;
   static DevToolsWindow* Create(Profile* profile,
                                 content::RenderViewHost* inspected_rvh,
                                 DevToolsDockSide dock_side,

@@ -274,6 +274,8 @@ class WebContents;
 
 - (BookmarkBarController*)bookmarkBarController;
 
+- (DevToolsController*)devToolsController;
+
 - (BOOL)isDownloadShelfVisible;
 
 // Lazily creates the download shelf in visible state if it doesn't exist yet.

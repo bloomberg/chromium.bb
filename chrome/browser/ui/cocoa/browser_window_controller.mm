@@ -1478,6 +1478,10 @@ enum {
   return bookmarkBarController_;
 }
 
+- (DevToolsController*)devToolsController {
+  return devToolsController_;
+}
+
 - (BOOL)isDownloadShelfVisible {
   return downloadShelfController_ != nil &&
       [downloadShelfController_ isVisible];
