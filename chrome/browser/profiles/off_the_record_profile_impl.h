@@ -11,8 +11,7 @@
 #include "chrome/browser/profiles/off_the_record_profile_io_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/host_zoom_map.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -26,8 +25,7 @@ using base::TimeDelta;
 // Providing this header file is for unit testing.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class OffTheRecordProfileImpl : public Profile,
-                                public content::NotificationObserver {
+class OffTheRecordProfileImpl : public Profile {
  public:
   explicit OffTheRecordProfileImpl(Profile* real_profile);
   virtual ~OffTheRecordProfileImpl();
@@ -105,11 +103,6 @@ class OffTheRecordProfileImpl : public Profile,
       GetSpeechRecognitionPreferences() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(OffTheRecordProfileImplTest, GetHostZoomMap);
   void InitHostZoomMap();
@@ -118,7 +111,7 @@ class OffTheRecordProfileImpl : public Profile,
   void UseSystemProxy();
 #endif
 
-  content::NotificationRegistrar registrar_;
+  void OnZoomLevelChanged(const std::string& host);
 
   // The real underlying profile.
   Profile* profile_;
@@ -137,6 +130,8 @@ class OffTheRecordProfileImpl : public Profile,
   FilePath last_selected_directory_;
 
   scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
+
+  content::HostZoomMap::ZoomLevelChangedCallback zoom_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };

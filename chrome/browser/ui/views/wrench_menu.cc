@@ -480,8 +480,7 @@ static const int kTouchZoomPadding = 14;
 // ZoomView contains the various zoom controls: two buttons to increase/decrease
 // the zoom, a label showing the current zoom percent, and a button to go
 // full-screen.
-class WrenchMenu::ZoomView : public WrenchMenuView,
-                             public content::NotificationObserver {
+class WrenchMenu::ZoomView : public WrenchMenuView {
  public:
   ZoomView(WrenchMenu* menu,
            MenuModel* menu_model,
@@ -490,11 +489,17 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
            int fullscreen_index)
       : WrenchMenuView(menu, menu_model),
         fullscreen_index_(fullscreen_index),
+        zoom_callback_(base::Bind(&WrenchMenu::ZoomView::OnZoomLevelChanged,
+                                  base::Unretained(this))),
         increment_button_(NULL),
         zoom_label_(NULL),
         decrement_button_(NULL),
         fullscreen_button_(NULL),
         zoom_label_width_(0) {
+    HostZoomMap::GetForBrowserContext(
+        menu_->browser_->profile())->AddZoomLevelChangedCallback(
+            zoom_callback_);
+
     decrement_button_ = CreateButtonWithAccName(
         IDS_ZOOM_MINUS2, MenuButtonBackground::LEFT_BUTTON, decrement_index,
         NULL, IDS_ACCNAME_ZOOM_MINUS2);
@@ -555,11 +560,12 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     AddChildView(fullscreen_button_);
 
     UpdateZoomControls();
+  }
 
-    registrar_.Add(
-        this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-        content::Source<HostZoomMap>(
-            HostZoomMap::GetForBrowserContext(menu->browser_->profile())));
+  ~ZoomView() {
+    HostZoomMap::GetForBrowserContext(
+        menu_->browser_->profile())->RemoveZoomLevelChangedCallback(
+            zoom_callback_);
   }
 
   // Overridden from View.
@@ -613,15 +619,11 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     }
   }
 
-  // Overridden from content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    DCHECK_EQ(content::NOTIFICATION_ZOOM_LEVEL_CHANGED, type);
+ private:
+  void OnZoomLevelChanged(const std::string& host) {
     UpdateZoomControls();
   }
 
- private:
   void UpdateZoomControls() {
     bool enable_increment = false;
     bool enable_decrement = false;
@@ -669,6 +671,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
   // Index of the fullscreen menu item in the model.
   const int fullscreen_index_;
 
+  content::HostZoomMap::ZoomLevelChangedCallback zoom_callback_;
   content::NotificationRegistrar registrar_;
 
   // Button for incrementing the zoom.

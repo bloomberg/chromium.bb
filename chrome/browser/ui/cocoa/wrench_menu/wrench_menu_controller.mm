@@ -22,11 +22,6 @@
 #import "chrome/browser/ui/cocoa/wrench_menu/recent_tabs_menu_model_delegate.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
-#include "content/public/browser/host_zoom_map.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -64,35 +59,36 @@ class AcceleratorDelegate : public ui::AcceleratorProvider {
   }
 };
 
-class ZoomLevelObserver : public content::NotificationObserver {
+class ZoomLevelObserver {
  public:
-  explicit ZoomLevelObserver(WrenchMenuController* controller)
-      : controller_(controller) {
-    registrar_.Add(
-        this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-        content::NotificationService::AllBrowserContextsAndSources());
+  ZoomLevelObserver(WrenchMenuController* controller,
+                    content::HostZoomMap* map)
+      : callback_(base::Bind(&ZoomLevelObserver::OnZoomLevelChanged,
+                             base::Unretained(this))),
+        controller_(controller),
+        map_(map) {
+    map_->AddZoomLevelChangedCallback(callback_);
   }
 
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) {
-    DCHECK_EQ(type, content::NOTIFICATION_ZOOM_LEVEL_CHANGED);
-    WrenchMenuModel* wrenchMenuModel = [controller_ wrenchMenuModel];
-    if (HostZoomMap::GetForBrowserContext(
-            wrenchMenuModel->browser()->profile()) !=
-        content::Source<HostZoomMap>(source).ptr()) {
-      return;
-    }
+  ~ZoomLevelObserver() {
+    map_->RemoveZoomLevelChangedCallback(callback_);
+  }
 
+ private:
+  void OnZoomLevelChanged(const std::string& host) {
+    WrenchMenuModel* wrenchMenuModel = [controller_ wrenchMenuModel];
     wrenchMenuModel->UpdateZoomControls();
     const string16 level =
         wrenchMenuModel->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY);
     [[controller_ zoomDisplay] setTitle:SysUTF16ToNSString(level)];
   }
 
- private:
-  content::NotificationRegistrar registrar_;
+  content::HostZoomMap::ZoomLevelChangedCallback callback_;
+
   WrenchMenuController* controller_;  // Weak; owns this.
+  content::HostZoomMap* map_;  // Weak.
+
+  DISALLOW_COPY_AND_ASSIGN(ZoomLevelObserver);
 };
 
 }  // namespace WrenchMenuControllerInternal
@@ -102,7 +98,8 @@ class ZoomLevelObserver : public content::NotificationObserver {
 - (id)initWithBrowser:(Browser*)browser {
   if ((self = [super init])) {
     browser_ = browser;
-    observer_.reset(new WrenchMenuControllerInternal::ZoomLevelObserver(self));
+    observer_.reset(new WrenchMenuControllerInternal::ZoomLevelObserver(
+        self, content::HostZoomMap::GetForBrowserContext(browser->profile())));
     acceleratorDelegate_.reset(
         new WrenchMenuControllerInternal::AcceleratorDelegate());
     [self createModel];

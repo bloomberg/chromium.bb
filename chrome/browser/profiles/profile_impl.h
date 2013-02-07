@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile_impl_io_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/host_zoom_map.h"
 
 class NetPrefObserver;
 class PrefServiceSyncable;
@@ -159,6 +160,7 @@ class ProfileImpl : public Profile,
   void InitHostZoomMap();
 
   void OnDefaultZoomLevelChanged();
+  void OnZoomLevelChanged(const std::string& host);
 
   void OnInitializationCompleted(PrefServiceBase* pref_service,
                                  bool succeeded);
@@ -190,6 +192,7 @@ class ProfileImpl : public Profile,
                           int* max_size);
 
   content::NotificationRegistrar registrar_;
+  content::HostZoomMap::ZoomLevelChangedCallback zoom_callback_;
   PrefChangeRegistrar pref_change_registrar_;
 
   FilePath path_;

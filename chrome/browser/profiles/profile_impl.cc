@@ -322,7 +322,9 @@ ProfileImpl::ProfileImpl(
     Delegate* delegate,
     CreateMode create_mode,
     base::SequencedTaskRunner* sequenced_task_runner)
-    : path_(path),
+    : zoom_callback_(base::Bind(&ProfileImpl::OnZoomLevelChanged,
+                                base::Unretained(this))),
+      path_(path),
       ALLOW_THIS_IN_INITIALIZER_LIST(io_data_(this)),
       host_content_settings_map_(NULL),
       last_session_exit_type_(EXIT_NORMAL),
@@ -567,8 +569,7 @@ void ProfileImpl::InitHostZoomMap() {
     }
   }
 
-  registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-                 content::Source<HostZoomMap>(host_zoom_map));
+  host_zoom_map->AddZoomLevelChangedCallback(zoom_callback_);
 }
 
 FilePath ProfileImpl::last_selected_directory() {
@@ -581,6 +582,9 @@ void ProfileImpl::set_last_selected_directory(const FilePath& path) {
 
 ProfileImpl::~ProfileImpl() {
   MaybeSendDestroyedNotification();
+
+  HostZoomMap::GetForBrowserContext(this)->RemoveZoomLevelChangedCallback(
+      zoom_callback_);
 
   bool prefs_loaded = prefs_->GetInitializationStatus() !=
       PrefService::INITIALIZATION_STATUS_WAITING;
@@ -930,23 +934,6 @@ void ProfileImpl::Observe(int type,
       registrar_.Remove(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
                         content::Source<Profile>(this));
       break;
-    case content::NOTIFICATION_ZOOM_LEVEL_CHANGED: {
-      const std::string& host =
-          *(content::Details<const std::string>(details).ptr());
-      if (!host.empty()) {
-        HostZoomMap* host_zoom_map = HostZoomMap::GetForBrowserContext(this);
-        double level = host_zoom_map->GetZoomLevel(host);
-        DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
-        DictionaryValue* host_zoom_dictionary = update.Get();
-        if (level == host_zoom_map->GetDefaultZoomLevel()) {
-          host_zoom_dictionary->RemoveWithoutPathExpansion(host, NULL);
-        } else {
-          host_zoom_dictionary->SetWithoutPathExpansion(
-              host, Value::CreateDoubleValue(level));
-        }
-      }
-      break;
-    }
     default:
       NOTREACHED();
   }
@@ -955,6 +942,21 @@ void ProfileImpl::Observe(int type,
 void ProfileImpl::OnDefaultZoomLevelChanged() {
   HostZoomMap::GetForBrowserContext(this)->SetDefaultZoomLevel(
       pref_change_registrar_.prefs()->GetDouble(prefs::kDefaultZoomLevel));
+}
+
+void ProfileImpl::OnZoomLevelChanged(const std::string& host) {
+  if (host.empty())
+    return;
+  HostZoomMap* host_zoom_map = HostZoomMap::GetForBrowserContext(this);
+  double level = host_zoom_map->GetZoomLevel(host);
+  DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
+  DictionaryValue* host_zoom_dictionary = update.Get();
+  if (level == host_zoom_map->GetDefaultZoomLevel()) {
+    host_zoom_dictionary->RemoveWithoutPathExpansion(host, NULL);
+  } else {
+    host_zoom_dictionary->SetWithoutPathExpansion(
+        host, Value::CreateDoubleValue(level));
+  }
 }
 
 #if defined(ENABLE_SESSION_SERVICE)

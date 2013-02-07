@@ -99,7 +99,9 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
       model_(browser->toolbar_model()),
       is_wrench_menu_model_valid_(true),
       browser_(browser),
-      window_(window) {
+      window_(window),
+      zoom_callback_(base::Bind(&BrowserToolbarGtk::OnZoomLevelChanged,
+                                base::Unretained(this))) {
   wrench_menu_model_.reset(new WrenchMenuModel(this, browser_, false, false));
 
   chrome::AddCommandObserver(browser_, IDC_BACK, this);
@@ -124,6 +126,9 @@ BrowserToolbarGtk::~BrowserToolbarGtk() {
   offscreen_entry_.Destroy();
 
   wrench_menu_.reset();
+
+  HostZoomMap::GetForBrowserContext(
+      browser()->profile())->RemoveZoomLevelChangedCallback(zoom_callback_);
 }
 
 void BrowserToolbarGtk::Init(GtkWindow* top_level_window) {
@@ -241,9 +246,8 @@ void BrowserToolbarGtk::Init(GtkWindow* top_level_window) {
   // The bookmark menu model needs to be able to force the wrench menu to close.
   wrench_menu_model_->bookmark_sub_menu_model()->SetMenuGtk(wrench_menu_.get());
 
-  registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-      content::Source<HostZoomMap>(
-          HostZoomMap::GetForBrowserContext(profile)));
+  HostZoomMap::GetForBrowserContext(
+      browser()->profile())->AddZoomLevelChangedCallback(zoom_callback_);
 
   if (ShouldOnlyShowLocation()) {
     gtk_widget_show(event_box_);
@@ -416,18 +420,6 @@ void BrowserToolbarGtk::Observe(int type,
   } else if (type == chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED) {
     is_wrench_menu_model_valid_ = false;
     gtk_widget_queue_draw(wrench_menu_button_->widget());
-  } else if (type == content::NOTIFICATION_ZOOM_LEVEL_CHANGED) {
-    // Since BrowserToolbarGtk create a new |wrench_menu_model_| in
-    // RebuildWrenchMenu(), the ordering of the observers of
-    // NOTIFICATION_ZOOM_LEVEL_CHANGED can change, and result in subtle bugs
-    // like http://crbug.com/118823. Rather than depending on the ordering
-    // of the notification observers, always update the WrenchMenuModel before
-    // updating the WrenchMenu.
-    wrench_menu_model_->UpdateZoomControls();
-
-    // If our zoom level changed, we need to tell the menu to update its state,
-    // since the menu could still be open.
-    wrench_menu_->UpdateMenu();
   } else {
     NOTREACHED();
   }
@@ -448,6 +440,20 @@ bool BrowserToolbarGtk::IsWrenchMenuShowing() const {
 }
 
 // BrowserToolbarGtk, private --------------------------------------------------
+
+void BrowserToolbarGtk::OnZoomLevelChanged(const std::string& host) {
+  // Since BrowserToolbarGtk create a new |wrench_menu_model_| in
+  // RebuildWrenchMenu(), the ordering of the observers of HostZoomMap
+  // can change, and result in subtle bugs like http://crbug.com/118823.
+  // Rather than depending on the ordering of the observers, always update
+  // the WrenchMenuModel before updating the WrenchMenu.
+  wrench_menu_model_->UpdateZoomControls();
+
+  // If our zoom level changed, we need to tell the menu to update its state,
+  // since the menu could still be open.
+  wrench_menu_->UpdateMenu();
+}
+
 
 void BrowserToolbarGtk::SetUpDragForHomeButton() {
   if (!home_page_.IsManaged() && !home_page_is_new_tab_page_.IsManaged()) {

@@ -212,16 +212,17 @@ WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       provider_(provider),
       browser_(browser),
-      tab_strip_model_(browser_->tab_strip_model()) {
+      tab_strip_model_(browser_->tab_strip_model()),
+      zoom_callback_(base::Bind(&WrenchMenuModel::OnZoomLevelChanged,
+                                base::Unretained(this))) {
   Build(is_new_menu, supports_new_separators);
   UpdateZoomControls();
 
+  HostZoomMap::GetForBrowserContext(
+      browser->profile())->AddZoomLevelChangedCallback(zoom_callback_);
+
   tab_strip_model_->AddObserver(this);
 
-  registrar_.Add(
-      this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-      content::Source<HostZoomMap>(
-          HostZoomMap::GetForBrowserContext(browser_->profile())));
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  content::NotificationService::AllSources());
 }
@@ -229,6 +230,11 @@ WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
 WrenchMenuModel::~WrenchMenuModel() {
   if (tab_strip_model_)
     tab_strip_model_->RemoveObserver(this);
+
+  if (browser()) {
+    HostZoomMap::GetForBrowserContext(
+        browser()->profile())->RemoveZoomLevelChangedCallback(zoom_callback_);
+  }
 }
 
 bool WrenchMenuModel::DoesCommandIdDismissMenu(int command_id) const {
@@ -421,14 +427,8 @@ void WrenchMenuModel::TabStripModelDeleted() {
 void WrenchMenuModel::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_ZOOM_LEVEL_CHANGED:
-    case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
-      UpdateZoomControls();
-      break;
-    default:
-      NOTREACHED();
-  }
+  DCHECK(type == content::NOTIFICATION_NAV_ENTRY_COMMITTED);
+  UpdateZoomControls();
 }
 
 // For testing.
@@ -696,4 +696,8 @@ void WrenchMenuModel::UpdateZoomControls() {
   }
   zoom_label_ = l10n_util::GetStringFUTF16(
       IDS_ZOOM_PERCENT, base::IntToString16(zoom_percent));
+}
+
+void WrenchMenuModel::OnZoomLevelChanged(const std::string& host) {
+  UpdateZoomControls();
 }

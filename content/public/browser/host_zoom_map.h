@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -49,6 +50,14 @@ class HostZoomMap {
   // Get/Set the default zoom level for pages that don't override it.
   virtual double GetDefaultZoomLevel() const = 0;
   virtual void SetDefaultZoomLevel(double level) = 0;;
+
+  typedef base::Callback<void(const std::string&)> ZoomLevelChangedCallback;
+
+  // Add and remove zoom level changed callbacks.
+  virtual void AddZoomLevelChangedCallback(
+      const ZoomLevelChangedCallback& callback) = 0;
+  virtual void RemoveZoomLevelChangedCallback(
+      const ZoomLevelChangedCallback& callback) = 0;
 
  protected:
   virtual ~HostZoomMap() {}

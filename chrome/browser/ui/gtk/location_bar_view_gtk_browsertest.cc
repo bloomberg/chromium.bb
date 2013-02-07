@@ -5,6 +5,7 @@
 #include <gtk/gtk.h>
 
 #include "base/string_number_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
@@ -44,7 +46,12 @@ void ExpectAtDefaultZoom(content::WebContents* contents) {
   EXPECT_EQ(GetZoomPercent(contents), 100);
 }
 
+void OnZoomLevelChanged(const base::Closure& callback,
+                        const std::string& host) {
+  callback.Run();
 }
+
+}  // namespace
 
 class LocationBarViewGtkZoomTest : public InProcessBrowserTest {
  public:
@@ -101,11 +108,16 @@ class LocationBarViewGtkZoomTest : public InProcessBrowserTest {
   }
 
   void WaitForZoom(content::PageZoom zoom_action) {
-    content::WindowedNotificationObserver zoom_observer(
-        content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-        content::NotificationService::AllSources());
+    scoped_refptr<content::MessageLoopRunner> loop_runner(
+        new content::MessageLoopRunner);
+    content::HostZoomMap::ZoomLevelChangedCallback callback(
+        base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
+    content::HostZoomMap::GetForBrowserContext(
+        browser()->profile())->AddZoomLevelChangedCallback(callback);
     chrome::Zoom(browser(), zoom_action);
-    zoom_observer.Wait();
+    loop_runner->Run();
+    content::HostZoomMap::GetForBrowserContext(
+        browser()->profile())->RemoveZoomLevelChangedCallback(callback);
   }
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewGtkZoomTest);

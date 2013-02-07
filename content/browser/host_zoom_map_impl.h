@@ -34,6 +34,10 @@ class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
   virtual void SetZoomLevel(const std::string& host, double level) OVERRIDE;
   virtual double GetDefaultZoomLevel() const OVERRIDE;
   virtual void SetDefaultZoomLevel(double level) OVERRIDE;
+  virtual void AddZoomLevelChangedCallback(
+      const ZoomLevelChangedCallback& callback) OVERRIDE;
+  virtual void RemoveZoomLevelChangedCallback(
+      const ZoomLevelChangedCallback& callback) OVERRIDE;
 
   // Returns the temporary zoom level that's only valid for the lifetime of
   // the given WebContents (i.e. isn't saved and doesn't affect other
@@ -58,6 +62,9 @@ class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
 
  private:
   typedef std::map<std::string, double> HostZoomLevels;
+
+  // Callbacks called when zoom level changes.
+  std::vector<ZoomLevelChangedCallback> zoom_level_changed_callbacks_;
 
   // Copy of the pref data, so that we can read it on the IO thread.
   HostZoomLevels host_zoom_levels_;

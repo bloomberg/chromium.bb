@@ -49,11 +49,10 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -1322,6 +1321,15 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
 }
 
+namespace {
+
+void OnZoomLevelChanged(const base::Closure& callback,
+                        const std::string& host) {
+  callback.Run();
+}
+
+}  // namespace
+
 #if defined(OS_WIN)
 // Flakes regularly on Windows XP
 // http://crbug.com/146040
@@ -1333,32 +1341,53 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   bool enable_plus, enable_minus;
 
-  content::WindowedNotificationObserver zoom_in_observer(
-      content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-      content::NotificationService::AllSources());
-  chrome::Zoom(browser(), content::PAGE_ZOOM_IN);
-  zoom_in_observer.Wait();
-  EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 110);
-  EXPECT_TRUE(enable_plus);
-  EXPECT_TRUE(enable_minus);
+  {
+    scoped_refptr<content::MessageLoopRunner> loop_runner(
+        new content::MessageLoopRunner);
+    content::HostZoomMap::ZoomLevelChangedCallback callback(
+        base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
+    content::HostZoomMap::GetForBrowserContext(
+        browser()->profile())->AddZoomLevelChangedCallback(callback);
+    chrome::Zoom(browser(), content::PAGE_ZOOM_IN);
+    loop_runner->Run();
+    content::HostZoomMap::GetForBrowserContext(
+        browser()->profile())->RemoveZoomLevelChangedCallback(callback);
+    EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 110);
+    EXPECT_TRUE(enable_plus);
+    EXPECT_TRUE(enable_minus);
+  }
 
-  content::WindowedNotificationObserver zoom_reset_observer(
-      content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-      content::NotificationService::AllSources());
-  chrome::Zoom(browser(), content::PAGE_ZOOM_RESET);
-  zoom_reset_observer.Wait();
-  EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 100);
-  EXPECT_TRUE(enable_plus);
-  EXPECT_TRUE(enable_minus);
+  {
+    scoped_refptr<content::MessageLoopRunner> loop_runner(
+        new content::MessageLoopRunner);
+    content::HostZoomMap::ZoomLevelChangedCallback callback(
+        base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
+    content::HostZoomMap::GetForBrowserContext(
+        browser()->profile())->AddZoomLevelChangedCallback(callback);
+    chrome::Zoom(browser(), content::PAGE_ZOOM_RESET);
+    loop_runner->Run();
+    content::HostZoomMap::GetForBrowserContext(
+        browser()->profile())->RemoveZoomLevelChangedCallback(callback);
+    EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 100);
+    EXPECT_TRUE(enable_plus);
+    EXPECT_TRUE(enable_minus);
+  }
 
-  content::WindowedNotificationObserver zoom_out_observer(
-      content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-      content::NotificationService::AllSources());
-  chrome::Zoom(browser(), content::PAGE_ZOOM_OUT);
-  zoom_out_observer.Wait();
-  EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 90);
-  EXPECT_TRUE(enable_plus);
-  EXPECT_TRUE(enable_minus);
+  {
+    scoped_refptr<content::MessageLoopRunner> loop_runner(
+        new content::MessageLoopRunner);
+    content::HostZoomMap::ZoomLevelChangedCallback callback(
+        base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
+    content::HostZoomMap::GetForBrowserContext(
+        browser()->profile())->AddZoomLevelChangedCallback(callback);
+    chrome::Zoom(browser(), content::PAGE_ZOOM_OUT);
+    loop_runner->Run();
+    content::HostZoomMap::GetForBrowserContext(
+        browser()->profile())->RemoveZoomLevelChangedCallback(callback);
+    EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 90);
+    EXPECT_TRUE(enable_plus);
+    EXPECT_TRUE(enable_minus);
+  }
 
   chrome::Zoom(browser(), content::PAGE_ZOOM_RESET);
 }

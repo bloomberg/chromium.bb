@@ -44,12 +44,18 @@ class MockWrenchMenuModel : public WrenchMenuModel {
 
 class WrenchMenuControllerTest : public CocoaProfileTest {
  public:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
     controller_.reset([[WrenchMenuController alloc] initWithBrowser:browser()]);
     fake_model_.reset(new MockWrenchMenuModel);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    fake_model_.reset();
+    controller_.reset();
+    CocoaProfileTest::TearDown();
   }
 
   WrenchMenuController* controller() {

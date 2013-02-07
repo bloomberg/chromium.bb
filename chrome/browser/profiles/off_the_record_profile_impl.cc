@@ -44,8 +44,6 @@
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
@@ -87,7 +85,9 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
     : profile_(real_profile),
       prefs_(real_profile->GetOffTheRecordPrefs()),
       ALLOW_THIS_IN_INITIALIZER_LIST(io_data_(this)),
-      start_time_(Time::Now()) {
+      start_time_(Time::Now()),
+      zoom_callback_(base::Bind(&OffTheRecordProfileImpl::OnZoomLevelChanged,
+                                base::Unretained(this))) {
 }
 
 void OffTheRecordProfileImpl::Init() {
@@ -129,6 +129,9 @@ void OffTheRecordProfileImpl::Init() {
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   MaybeSendDestroyedNotification();
 
+  HostZoomMap::GetForBrowserContext(profile_)->RemoveZoomLevelChangedCallback(
+      zoom_callback_);
+
 #if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
     io_data_.GetResourceContextNoInit());
@@ -165,8 +168,7 @@ void OffTheRecordProfileImpl::InitHostZoomMap() {
   host_zoom_map->CopyFrom(parent_host_zoom_map);
   // Observe parent's HZM change for propagating change of parent's
   // change to this HZM.
-  registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-                 content::Source<HostZoomMap>(parent_host_zoom_map));
+  parent_host_zoom_map->AddZoomLevelChangedCallback(zoom_callback_);
 }
 
 #if defined(OS_ANDROID)
@@ -428,23 +430,6 @@ GURL OffTheRecordProfileImpl::GetHomePage() {
   return profile_->GetHomePage();
 }
 
-void OffTheRecordProfileImpl::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_ZOOM_LEVEL_CHANGED) {
-    const std::string& host =
-        *(content::Details<const std::string>(details).ptr());
-    if (!host.empty()) {
-      HostZoomMap* host_zoom_map = HostZoomMap::GetForBrowserContext(this);
-      HostZoomMap* parent_host_zoom_map =
-          HostZoomMap::GetForBrowserContext(profile_);
-      double level = parent_host_zoom_map->GetZoomLevel(host);
-      host_zoom_map->SetZoomLevel(host, level);
-    }
-  }
-}
-
 #if defined(OS_CHROMEOS)
 // Special case of the OffTheRecordProfileImpl which is used while Guest
 // session in CrOS.
@@ -475,4 +460,15 @@ Profile* Profile::CreateOffTheRecordProfile() {
     profile = new OffTheRecordProfileImpl(this);
   profile->Init();
   return profile;
+}
+
+void OffTheRecordProfileImpl::OnZoomLevelChanged(const std::string& host) {
+  if (host.empty())
+    return;
+
+  HostZoomMap* host_zoom_map = HostZoomMap::GetForBrowserContext(this);
+  HostZoomMap* parent_host_zoom_map =
+      HostZoomMap::GetForBrowserContext(profile_);
+  double level = parent_host_zoom_map->GetZoomLevel(host);
+  host_zoom_map->SetZoomLevel(host, level);
 }

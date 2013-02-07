@@ -24,7 +24,10 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ZoomController);
 ZoomController::ZoomController(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       zoom_percent_(100),
-      observer_(NULL) {
+      observer_(NULL),
+      browser_context_(web_contents->GetBrowserContext()),
+      zoom_callback_(base::Bind(&ZoomController::OnZoomLevelChanged,
+                                base::Unretained(this))) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   default_zoom_level_.Init(prefs::kDefaultZoomLevel, profile->GetPrefs(),
@@ -32,15 +35,18 @@ ZoomController::ZoomController(content::WebContents* web_contents)
                                       base::Unretained(this),
                                       std::string()));
 
-  content::HostZoomMap* zoom_map =
-      content::HostZoomMap::GetForBrowserContext(profile);
-  registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-                 content::Source<content::HostZoomMap>(zoom_map));
+  content::HostZoomMap::GetForBrowserContext(
+      browser_context_)->AddZoomLevelChangedCallback(
+          zoom_callback_);
 
   UpdateState(std::string());
 }
 
-ZoomController::~ZoomController() {}
+ZoomController::~ZoomController() {
+  content::HostZoomMap::GetForBrowserContext(
+      browser_context_)->RemoveZoomLevelChangedCallback(
+          zoom_callback_);
+}
 
 bool ZoomController::IsAtDefaultZoom() const {
   return content::ZoomValuesEqual(web_contents()->GetZoomLevel(),
@@ -61,11 +67,8 @@ void ZoomController::DidNavigateMainFrame(
   UpdateState(std::string());
 }
 
-void ZoomController::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_ZOOM_LEVEL_CHANGED, type);
-  UpdateState(*content::Details<std::string>(details).ptr());
+void ZoomController::OnZoomLevelChanged(const std::string& host) {
+  UpdateState(host);
 }
 
 void ZoomController::UpdateState(const std::string& host) {

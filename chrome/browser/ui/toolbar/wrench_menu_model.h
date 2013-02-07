@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -147,6 +148,8 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   // |new_menu| should be set to true.
   void CreateZoomMenu(bool new_menu);
 
+  void OnZoomLevelChanged(const std::string& host);
+
   // Models for the special menu items with buttons.
   scoped_ptr<ui::ButtonMenuItemModel> edit_menu_item_model_;
   scoped_ptr<ui::ButtonMenuItemModel> zoom_menu_item_model_;
@@ -168,6 +171,7 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   Browser* browser_;  // weak
   TabStripModel* tab_strip_model_; // weak
 
+  content::HostZoomMap::ZoomLevelChangedCallback zoom_callback_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WrenchMenuModel);

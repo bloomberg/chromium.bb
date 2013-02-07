@@ -336,11 +336,6 @@ enum NotificationType {
   // The source is a NavigationController.
   NOTIFICATION_REPOST_WARNING_SHOWN,
 
-  // Sent when the zoom level changes. The source is the HostZoomMap.  The
-  // details is a string of the hostname for which the zoom changed.  In case
-  // of a temporary zoom level change, the details is an empty string.
-  NOTIFICATION_ZOOM_LEVEL_CHANGED,
-
   // Custom notifications used by the embedder should start from here.
   NOTIFICATION_CONTENT_END,
 };

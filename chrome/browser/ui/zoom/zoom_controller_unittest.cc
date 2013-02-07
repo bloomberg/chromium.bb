@@ -14,9 +14,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_details.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -71,11 +68,5 @@ TEST_F(ZoomControllerTest, Observe) {
       content::HostZoomMap::GetForBrowserContext(
           web_contents()->GetBrowserContext());
 
-  content::WindowedNotificationObserver notification_observer(
-      content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-      content::NotificationService::AllSources());
-
   host_zoom_map->SetZoomLevel(std::string(), 110.0f);
-
-  notification_observer.Wait();
 }
