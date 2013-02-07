@@ -24,6 +24,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHitTestResult.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
@@ -31,10 +32,36 @@ namespace android_webview {
 
 namespace {
 
+GURL GetAbsoluteUrl(const WebKit::WebNode& node, const string16& url_fragment) {
+  return GURL(node.document().completeURL(url_fragment));
+}
+
+string16 GetHref(const WebKit::WebElement& element) {
+  // Get the actual 'href' attribute, which might relative if valid or can
+  // possibly contain garbage otherwise, so not using absoluteLinkURL here.
+  return element.getAttribute("href");
+}
+
+GURL GetAbsoluteSrcUrl(const WebKit::WebElement& element) {
+  if (element.isNull())
+    return GURL();
+  return GetAbsoluteUrl(element, element.getAttribute("src"));
+}
+
+WebKit::WebNode GetImgChild(const WebKit::WebNode& node) {
+  // This implementation is incomplete (for example if is an area tag) but
+  // matches the original WebViewClassic implementation.
+
+  WebKit::WebNodeList list = node.getElementsByTagName("img");
+  if (list.length() > 0)
+    return list.item(0);
+  return WebKit::WebNode();
+}
+
 bool RemovePrefixAndAssignIfMatches(const base::StringPiece& prefix,
                                     const GURL& url,
                                     std::string* dest) {
-  const base::StringPiece spec(url.spec());
+  const base::StringPiece spec(url.possibly_invalid_spec());
 
   if (spec.starts_with(prefix)) {
     dest->assign(spec.begin() + prefix.length(), spec.end());
@@ -43,7 +70,59 @@ bool RemovePrefixAndAssignIfMatches(const base::StringPiece& prefix,
   return false;
 }
 
+void DistinguishAndAssignSrcLinkType(const GURL& url, AwHitTestData* data) {
+  if (RemovePrefixAndAssignIfMatches(
+      content::kAddressPrefix,
+      url,
+      &data->extra_data_for_type)) {
+    data->type = AwHitTestData::GEO_TYPE;
+  } else if (RemovePrefixAndAssignIfMatches(
+      content::kPhoneNumberPrefix,
+      url,
+      &data->extra_data_for_type)) {
+    data->type = AwHitTestData::PHONE_TYPE;
+  } else if (RemovePrefixAndAssignIfMatches(
+      content::kEmailPrefix,
+      url,
+      &data->extra_data_for_type)) {
+    data->type = AwHitTestData::EMAIL_TYPE;
+  } else {
+    data->type = AwHitTestData::SRC_LINK_TYPE;
+    data->extra_data_for_type = url.possibly_invalid_spec();
+  }
 }
+
+void PopulateHitTestData(const GURL& absolute_link_url,
+                         const GURL& absolute_image_url,
+                         bool is_editable,
+                         AwHitTestData* data) {
+  // Note: Using GURL::is_empty instead of GURL:is_valid due to the
+  // WebViewClassic allowing any kind of protocol which GURL::is_valid
+  // disallows. Similar reasons for using GURL::possibly_invalid_spec instead of
+  // GURL::spec.
+  if (!absolute_image_url.is_empty())
+    data->img_src = absolute_image_url;
+
+  const bool is_javascript_scheme =
+      absolute_link_url.SchemeIs(chrome::kJavaScriptScheme);
+  const bool has_link_url = !absolute_link_url.is_empty();
+  const bool has_image_url = !absolute_image_url.is_empty();
+
+  if (has_link_url && !has_image_url && !is_javascript_scheme) {
+    DistinguishAndAssignSrcLinkType(absolute_link_url, data);
+  } else if (has_link_url && has_image_url && !is_javascript_scheme) {
+    data->type = AwHitTestData::SRC_IMAGE_LINK_TYPE;
+    data->extra_data_for_type = data->img_src.possibly_invalid_spec();
+  } else if (!has_link_url && has_image_url) {
+    data->type = AwHitTestData::IMAGE_TYPE;
+    data->extra_data_for_type = data->img_src.possibly_invalid_spec();
+  } else if (is_editable) {
+    data->type = AwHitTestData::EDIT_TEXT_TYPE;
+    DCHECK(data->extra_data_for_type.length() == 0);
+  }
+}
+
+}  // namespace
 
 AwRenderViewExt::AwRenderViewExt(content::RenderView* render_view)
     : content::RenderViewObserver(render_view) {
@@ -122,17 +201,32 @@ void AwRenderViewExt::DidCommitProvisionalLoad(WebKit::WebFrame* frame,
 }
 
 void AwRenderViewExt::FocusedNodeChanged(const WebKit::WebNode& node) {
-  if (!node.isNull()) {
-    if (node.isTextNode() && node.isContentEditable()) {
-      AwHitTestData data;
-      data.type = AwHitTestData::EDIT_TEXT_TYPE;
-      Send(new AwViewHostMsg_UpdateHitTestData(
-          routing_id(), data));
-    } else {
-      // TODO(boliu): Implement this path.
-      NOTIMPLEMENTED() << "Tab focused links not implemented";
-    }
+  if (node.isNull() || !node.isElementNode() || !render_view())
+    return;
+
+  // Note: element is not const due to innerText() is not const.
+  WebKit::WebElement element = node.toConst<WebKit::WebElement>();
+  AwHitTestData data;
+
+  data.href = GetHref(element);
+  data.anchor_text = element.innerText();
+
+  GURL absolute_link_url;
+  if (node.isLink())
+    absolute_link_url = GetAbsoluteUrl(node, data.href);
+
+  GURL absolute_image_url;
+  const WebKit::WebNode child_img = GetImgChild(node);
+  if (!child_img.isNull() && child_img.isElementNode()) {
+    absolute_image_url =
+        GetAbsoluteSrcUrl(child_img.toConst<WebKit::WebElement>());
   }
+
+  PopulateHitTestData(absolute_link_url,
+                      absolute_image_url,
+                      render_view()->IsEditableNode(node),
+                      &data);
+  Send(new AwViewHostMsg_UpdateHitTestData(routing_id(), data));
 }
 
 void AwRenderViewExt::OnDoHitTest(int view_x, int view_y) {
@@ -144,57 +238,15 @@ void AwRenderViewExt::OnDoHitTest(int view_x, int view_y) {
           WebKit::WebPoint(view_x, view_y));
   AwHitTestData data;
 
-  // Populate fixed AwHitTestData fields.
-  if (result.absoluteImageURL().isValid())
-    data.img_src = result.absoluteImageURL();
   if (!result.urlElement().isNull()) {
     data.anchor_text = result.urlElement().innerText();
-
-    // href is the actual 'href' attribute, which might relative if valid or can
-    // possibly contain garbage otherwise, so not using absoluteLinkURL here.
-    data.href = result.urlElement().getAttribute("href");
+    data.href = GetHref(result.urlElement());
   }
 
-  GURL url(result.absoluteLinkURL());
-  bool is_javascript_scheme = url.SchemeIs(chrome::kJavaScriptScheme);
-
-  // Set AwHitTestData type and extra_data_for_type.
-  if (result.absoluteLinkURL().isValid() &&
-      !result.absoluteImageURL().isValid() &&
-      !is_javascript_scheme) {
-    if (RemovePrefixAndAssignIfMatches(
-        content::kAddressPrefix,
-        url,
-        &data.extra_data_for_type)) {
-      data.type = AwHitTestData::GEO_TYPE;
-    } else if (RemovePrefixAndAssignIfMatches(
-        content::kPhoneNumberPrefix,
-        url,
-        &data.extra_data_for_type)) {
-      data.type = AwHitTestData::PHONE_TYPE;
-    } else if (RemovePrefixAndAssignIfMatches(
-        content::kEmailPrefix,
-        url,
-        &data.extra_data_for_type)) {
-      data.type = AwHitTestData::EMAIL_TYPE;
-    } else {
-      data.type = AwHitTestData::SRC_LINK_TYPE;
-      data.extra_data_for_type = url.spec();
-    }
-  } else if (result.absoluteLinkURL().isValid() &&
-             result.absoluteImageURL().isValid() &&
-             !is_javascript_scheme) {
-    data.type = AwHitTestData::SRC_IMAGE_LINK_TYPE;
-    data.extra_data_for_type = data.img_src.spec();
-  } else if (!result.absoluteLinkURL().isValid() &&
-             result.absoluteImageURL().isValid()) {
-    data.type = AwHitTestData::IMAGE_TYPE;
-    data.extra_data_for_type = data.img_src.spec();
-  } else if (result.isContentEditable()) {
-    data.type = AwHitTestData::EDIT_TEXT_TYPE;
-    DCHECK(data.extra_data_for_type.length() == 0);
-  }
-
+  PopulateHitTestData(result.absoluteLinkURL(),
+                      result.absoluteImageURL(),
+                      result.isContentEditable(),
+                      &data);
   Send(new AwViewHostMsg_UpdateHitTestData(routing_id(), data));
 }
 
