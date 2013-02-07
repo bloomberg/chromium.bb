@@ -183,7 +183,7 @@ UI_EXPORT bool SetIntArrayProperty(XID window,
 Atom GetAtom(const char* atom_name);
 
 // Get |window|'s parent window, or None if |window| is the root window.
-XID GetParentWindow(XID window);
+UI_EXPORT XID GetParentWindow(XID window);
 
 // Walk up |window|'s hierarchy until we find a direct child of |root|.
 XID GetHighestAncestorWindow(XID window, XID root);

@@ -1024,14 +1024,23 @@ void RenderWidgetHostViewGtk::CopyFromCompositingSurface(
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, false, SkBitmap()));
 
-  gfx::Rect src_subrect_in_view = src_subrect;
-  src_subrect_in_view.Offset(GetViewBounds().OffsetFromOrigin());
+  XID parent_window = ui::GetParentWindow(compositing_surface_);
+  if (parent_window == None)
+    return;
 
-  ui::XScopedImage image(XGetImage(ui::GetXDisplay(), ui::GetX11RootWindow(),
-                                   src_subrect_in_view.x(),
-                                   src_subrect_in_view.y(),
-                                   src_subrect_in_view.width(),
-                                   src_subrect_in_view.height(),
+  // Get the window offset with respect to its parent.
+  XWindowAttributes attr;
+  if (!XGetWindowAttributes(ui::GetXDisplay(), compositing_surface_, &attr))
+    return;
+
+  gfx::Rect src_subrect_in_parent(src_subrect);
+  src_subrect_in_parent.Offset(attr.x, attr.y);
+
+  ui::XScopedImage image(XGetImage(ui::GetXDisplay(), parent_window,
+                                   src_subrect_in_parent.x(),
+                                   src_subrect_in_parent.y(),
+                                   src_subrect_in_parent.width(),
+                                   src_subrect_in_parent.height(),
                                    AllPlanes, ZPixmap));
   if (!image.get())
     return;
