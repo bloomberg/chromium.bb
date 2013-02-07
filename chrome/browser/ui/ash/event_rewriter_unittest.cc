@@ -889,6 +889,7 @@ TEST_F(EventRewriterTest, TestRewriteNumPadKeysWithDiamondKeyFlag) {
       switches::kHasChromeOSDiamondKey, "");
 
   TestRewriteNumPadKeys();
+  *CommandLine::ForCurrentProcess() = original_cl;
 }
 
 // Tests if the rewriter can handle a Command + Num Pad event.
@@ -942,6 +943,7 @@ TEST_F(EventRewriterTest,
       switches::kHasChromeOSDiamondKey, "");
 
   TestRewriteNumPadKeysOnAppleKeyboard();
+  *CommandLine::ForCurrentProcess() = original_cl;
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersNoRemap) {
@@ -1685,6 +1687,21 @@ TEST_F(EventRewriterTest, DISABLED_TestRewriteDiamondKey) {
                                       ui::ET_KEY_PRESSED,
                                       keycode_launch6_,
                                       0U));
+
+  // However, Mod2Mask should not be rewritten to CtrlMask when
+  // --has-chromeos-diamond-key is not specified.
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_a_,
+                                      Mod2Mask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_A,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_a_,
+                                      Mod2Mask));
 }
 
 TEST_F(EventRewriterTest, DISABLED_TestRewriteDiamondKeyWithFlag) {
@@ -1777,6 +1794,8 @@ TEST_F(EventRewriterTest, DISABLED_TestRewriteDiamondKeyWithFlag) {
                                       ui::ET_KEY_PRESSED,
                                       keycode_launch6_,
                                       0U));
+
+  *CommandLine::ForCurrentProcess() = original_cl;
 }
 
 TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
@@ -2053,7 +2072,6 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
-  const CommandLine original_cl(*CommandLine::ForCurrentProcess());
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   EventRewriter rewriter;
