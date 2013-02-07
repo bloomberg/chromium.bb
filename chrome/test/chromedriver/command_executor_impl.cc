@@ -17,6 +17,10 @@
 #include "chrome/test/chromedriver/session_map.h"
 #include "chrome/test/chromedriver/status.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
+#endif
+
 namespace {
 
 Status ExecuteElementCommand(
@@ -42,6 +46,9 @@ CommandExecutorImpl::CommandExecutorImpl()
 CommandExecutorImpl::~CommandExecutorImpl() {}
 
 void CommandExecutorImpl::Init() {
+#if defined(OS_MACOSX)
+  base::mac::ScopedNSAutoreleasePool autorelease_pool;
+#endif
   base::Thread::Options options(MessageLoop::TYPE_IO, 0);
   CHECK(io_thread_.StartWithOptions(options));
   context_getter_ = new URLRequestContextGetter(
@@ -162,6 +169,9 @@ void CommandExecutorImpl::ExecuteCommand(
     StatusCode* status_code,
     scoped_ptr<base::Value>* value,
     std::string* out_session_id) {
+#if defined(OS_MACOSX)
+  base::mac::ScopedNSAutoreleasePool autorelease_pool;
+#endif
   Command cmd;
   Status status(kOk);
   if (command_map_.Get(name, &cmd)) {
