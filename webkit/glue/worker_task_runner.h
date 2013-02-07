@@ -11,7 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebWorkerRunLoop.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebWorkerRunLoop.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
