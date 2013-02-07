@@ -1,0 +1,127 @@
+<table class="intro">
+  <tr>
+    <th scope="col"></th>
+    <th scope="col"></th>
+  </tr>
+  <tr>
+    <td><strong>Description:</strong></td>
+    <td>Use the <code>chrome.declarativeContent</code> module to take
+    actions depending on the content of a page, without requiring
+    permission to read the page's content (see <a
+    href="#usage">Usage</a>).</td>
+  </tr>
+  <tr>
+    <td><strong>Availability:</strong></td>
+    <td>Trunk</td>
+  </tr>
+  <tr>
+    <td><strong>Permissions:</strong></td>
+    <td><code>"declarativeContent"</code>
+      <!--TODO: Mention host permissions if/when some actions require them.-->
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Learn more:</strong></td>
+    <td><a href="events.html">Declarative Events</a><br/>
+    The <a href="activeTab.html">activeTab</a> permission</td>
+  </tr>
+</table>
+
+<h2 id="usage">Usage</h2>
+
+<p>
+The Declarative Content API allows you to show your extension's
+$ref:[pageAction page action] depending on the URL of a web page and
+the CSS selectors its content matches, without needing to take a <a
+href="declare_permissions.html#host-permission">host permission</a> or
+inject a <a href="content_scripts.html">content script</a>.  Use the
+<a href="activeTab.html">activeTab</a> permission in order to be able
+to interact with a page after the user clicks on your page action.
+</p>
+
+<p>
+If you need more precise control over when your page action appears or
+you need to change its appearance to match the current tab before the
+user clicks on it, you'll have to keep using the $ref:pageAction API.
+</p>
+
+<h2 id="rules">Rules</h2>
+
+<p>As a <a href="events.html#declarative">declarative API</a>, this
+API lets you register rules on the
+<code>$ref:declarativeContent.onPageChanged</code> event object which
+take an action (currently just <code>$ref:ShowPageAction</code>) when
+a set of conditions, represented as a
+<code>$ref:[PageStateMatcher]</code>, are met.
+</p>
+
+<p>
+The <code>$ref:PageStateMatcher</code> matches web pages if and only
+if all listed criteria are met. The following rule would show a page
+action for pages on <code>https://www.google.com/</code> when a
+password field is present on it:
+</p>
+
+<pre>
+var rule1 = {
+  conditions: [
+    new $ref:[declarativeContent.PageStateMatcher chrome.declarativeContent.PageStateMatcher]({
+      $ref:[PageStateMatcher.pageUrl pageUrl]: { $ref:[events.UrlFilter.hostEquals hostEquals]: 'www.google.com', $ref:[events.UrlFilter.schemes schemes]: ['https'] },
+      $ref:[PageStateMatcher.css css]: ["input[type='password']"]
+    })
+  ],
+  actions: [ new $ref:[declarativeContent.ShowPageAction chrome.declarativeContent.ShowPageAction]() ]
+};
+</pre>
+
+<p class="note">
+<strong>Note:</strong> All conditions and actions are created via a constructor
+as shown in the example above.
+<p>
+
+<p>
+In order to also show a page action for sites with a video, you can
+add a second condition, as each condition is sufficient to trigger all
+specified actions:
+</p>
+<pre>
+var rule2 = {
+  conditions: [
+    new $ref:[declarativeContent.PageStateMatcher chrome.declarativeContent.PageStateMatcher]({
+      $ref:[PageStateMatcher.pageUrl pageUrl]: { $ref:[events.UrlFilter.hostEquals hostEquals]: 'www.google.com', $ref:[events.UrlFilter.schemes schemes]: ['https'] },
+      $ref:[PageStateMatcher.css css]: ["input[type='password']"]
+    })<strong>,
+    new chrome.declarativeContent.PageStateMatcher({
+      $ref:[PageStateMatcher.css css]: ["video"]
+    })</strong>
+  ],
+  actions: [ new $ref:[declarativeContent.ShowPageAction chrome.declarativeContent.ShowPageAction]() ]
+};
+</pre>
+
+<p>
+<a href="events.html#addingrules">Added rules</a> are saved across
+browser restarts, so register them as follows:
+</p>
+<pre>
+$ref:[runtime.onInstalled chrome.runtime.onInstalled].addListener(function(details) {
+  $ref:[declarativeContent.onPageChanged chrome.declarativeContent.onPageChanged].<a href="events.html#removingrules">removeRules</a>(undefined, function() {
+    $ref:[declarativeContent.onPageChanged chrome.declarativeContent.onPageChanged].<a href="events.html#addingrules">addRules</a>([rule2]);
+  });
+});
+</pre>
+
+<p class="note">
+<strong>Note:</strong> You should always register or unregister rules in bulk
+rather than individually because each of these operations recreates internal
+data structures.  This re-creation is computationally expensive but facilitates
+a faster matching algorithm.
+</p>
+
+<p>
+Combine the above rule with the <a href="activeTab.html">activeTab</a>
+permission to create an extension that doesn't need any install-time
+permissions but can invite the user to click its page action on
+relevant pages and can run on those pages when the user clicks the
+page action.
+</p>
