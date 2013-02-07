@@ -141,7 +141,7 @@ class VaapiH264Decoder {
 
   // Return the number of output pictures required for decoding.
   // Valid after a successful DecodeInitial().
-  static size_t GetRequiredNumOfPictures();
+  size_t GetRequiredNumOfPictures();
 
   // Do any necessary initialization before the sandbox is enabled.
   static void PreSandboxInitialization();
@@ -151,14 +151,16 @@ class VaapiH264Decoder {
   static bool PostSandboxInitialization();
 
  private:
-  // We need to keep at least kDPBMaxSize pictures in DPB for
+  // We need to keep at most kDPBMaxSize pictures in DPB for
   // reference/to display later and an additional one for the one currently
   // being decoded. We also ask for some additional ones since VDA needs
   // to accumulate a few ready-to-output pictures before it actually starts
   // displaying and giving them back. +2 instead of +1 because of subjective
   // smoothness improvement during testing.
-  enum { kNumReqPictures = H264DPB::kDPBMaxSize +
-      media::limits::kMaxVideoFrames + 2 };
+  enum {
+    kPicsInPipeline = media::limits::kMaxVideoFrames + 2,
+    kMaxNumReqPictures = H264DPB::kDPBMaxSize + kPicsInPipeline,
+  };
 
   // Internal state of the decoder.
   enum State {
@@ -349,7 +351,7 @@ class VaapiH264Decoder {
   bool va_context_created_;
 
   // Allocated VASurfaces.
-  VASurfaceID va_surface_ids_[kNumReqPictures];
+  VASurfaceID va_surface_ids_[kMaxNumReqPictures];
 
   // Called by decoder when a picture should be outputted.
   OutputPicCB output_pic_cb_;
@@ -359,6 +361,9 @@ class VaapiH264Decoder {
 
   // PicOrderCount of the previously outputted frame.
   int last_output_poc_;
+
+  // Maximum size of DPB required by codec level.
+  int max_dpb_size_;
 
   // Has static initialization of pre-sandbox components completed successfully?
   static bool pre_sandbox_init_done_;

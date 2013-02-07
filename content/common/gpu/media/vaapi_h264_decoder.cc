@@ -1571,7 +1571,7 @@ bool VaapiH264Decoder::ModifyReferencePicList(H264SliceHeader *slice_hdr,
     ref_pic_listx = &ref_pic_list1_;
   }
 
-  DCHECK_GT(num_ref_idx_lX_active_minus1, 0);
+  DCHECK_GE(num_ref_idx_lX_active_minus1, 0);
 
   // Spec 8.2.4.3:
   // Reorder pictures on the list in a way specified in the stream.
@@ -2035,15 +2035,34 @@ bool VaapiH264Decoder::FinishPicture() {
   return true;
 }
 
+static int LevelToMaxDpbMbs(int level) {
+  // See table A-1 in spec.
+  switch (level) {
+    case 10: return 396;
+    case 11: return 900;
+    case 12: //  fallthrough
+    case 13: //  fallthrough
+    case 20: return 2376;
+    case 21: return 4752;
+    case 22: //  fallthrough
+    case 30: return 8100;
+    case 31: return 18000;
+    case 32: return 20480;
+    case 40: //  fallthrough
+    case 41: return 32768;
+    case 42: return 34816;
+    case 50: return 110400;
+    case 51: //  fallthrough
+    case 52: return 184320;
+    default:
+      DVLOG(1) << "Invalid codec level (" << level << ")";
+      return 0;
+  }
+}
+
 bool VaapiH264Decoder::ProcessSPS(int sps_id) {
   const H264SPS* sps = parser_.GetSPS(sps_id);
   DCHECK(sps);
-
-  if (sps->frame_mbs_only_flag == 0) {
-    // Fields/interlaced video not supported.
-    DVLOG(1) << "frame_mbs_only_flag != 1 not supported";
-    return false;
-  }
 
   if (sps->gaps_in_frame_num_value_allowed_flag) {
     DVLOG(1) << "Gaps in frame numbers not supported";
@@ -2052,10 +2071,20 @@ bool VaapiH264Decoder::ProcessSPS(int sps_id) {
 
   curr_sps_id_ = sps->seq_parameter_set_id;
 
-  // Calculate picture height/width (spec 7.4.2.1.1, 7.4.3).
-  int width = 16 * (sps->pic_width_in_mbs_minus1 + 1);
-  int height = 16 * (2 - sps->frame_mbs_only_flag) *
+  // Calculate picture height/width in macroblocks and pixels
+  // (spec 7.4.2.1.1, 7.4.3).
+  int width_mb = sps->pic_width_in_mbs_minus1 + 1;
+  int height_mb = (2 - sps->frame_mbs_only_flag) *
       (sps->pic_height_in_map_units_minus1 + 1);
+
+  int width = 16 * width_mb;
+  int height = 16 * height_mb;
+
+  DVLOG(1) << "New picture size: " << width << "x" << height;
+  if (width == 0 || height == 0) {
+    DVLOG(1) << "Invalid picture size!";
+    return false;
+  }
 
   if ((pic_width_ != -1 || pic_height_ != -1) &&
       (width != pic_width_ || height != pic_height_)) {
@@ -2065,10 +2094,20 @@ bool VaapiH264Decoder::ProcessSPS(int sps_id) {
 
   pic_width_ = width;
   pic_height_ = height;
-  DVLOG(1) << "New picture size: " << pic_width_ << "x" << pic_height_;
 
   max_pic_order_cnt_lsb_ = 1 << (sps->log2_max_pic_order_cnt_lsb_minus4 + 4);
   max_frame_num_ = 1 << (sps->log2_max_frame_num_minus4 + 4);
+
+  int level = sps->level_idc;
+  int max_dpb_mbs = LevelToMaxDpbMbs(level);
+  if (max_dpb_mbs == 0)
+    return false;
+
+  size_t max_dpb_size = std::min(max_dpb_mbs / (width_mb * height_mb),
+                                 static_cast<int>(H264DPB::kDPBMaxSize));
+  DVLOG(1) << "Codec level: " << level << ", DPB size: " << max_dpb_size;
+
+  dpb_.set_max_num_pics(max_dpb_size);
 
   return true;
 }
@@ -2300,9 +2339,8 @@ VaapiH264Decoder::DecResult VaapiH264Decoder::DecodeOneFrame(int32 input_id) {
   }
 }
 
-// static
 size_t VaapiH264Decoder::GetRequiredNumOfPictures() {
-  return kNumReqPictures;
+  return dpb_.max_num_pics() + kPicsInPipeline;
 }
 
 // static

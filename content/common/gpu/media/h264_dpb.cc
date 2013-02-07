@@ -10,11 +10,18 @@
 
 namespace content {
 
-H264DPB::H264DPB() {}
+H264DPB::H264DPB() : max_num_pics_(0) {}
 H264DPB::~H264DPB() {}
 
 void H264DPB::Clear() {
   pics_.clear();
+}
+
+void H264DPB::set_max_num_pics(size_t max_num_pics) {
+  DCHECK_LE(max_num_pics, kDPBMaxSize);
+  max_num_pics_ = max_num_pics;
+  if (pics_.size() > max_num_pics_)
+    pics_.resize(max_num_pics_);
 }
 
 void H264DPB::RemoveByPOC(int poc) {
@@ -37,7 +44,7 @@ void H264DPB::RemoveUnused() {
 }
 
 void H264DPB::StorePic(H264Picture* pic) {
-  DCHECK_LT(pics_.size(), kDPBMaxSize);
+  DCHECK_LT(pics_.size(), max_num_pics_);
   DVLOG(3) << "Adding PicNum: " << pic->pic_num << " ref: " << (int)pic->ref
            << " longterm: " << (int)pic->long_term << " to DPB";
   pics_.push_back(pic);

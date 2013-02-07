@@ -68,6 +68,9 @@ class H264DPB {
   H264DPB();
   ~H264DPB();
 
+  void set_max_num_pics(size_t max_num_pics);
+  size_t max_num_pics() { return max_num_pics_; }
+
   // Remove unused (not reference and already outputted) pictures from DPB.
   void RemoveUnused();
 
@@ -115,13 +118,14 @@ class H264DPB {
   Pictures::reverse_iterator rend() { return pics_.rend(); }
 
   size_t size() const { return pics_.size(); }
-  bool IsFull() const { return pics_.size() == kDPBMaxSize; }
+  bool IsFull() const { return pics_.size() == max_num_pics_; }
 
   // Per H264 spec, increase to 32 if interlaced video is supported.
-  enum { kDPBMaxSize = 16 };
+  enum { kDPBMaxSize = 16, };
 
  private:
   Pictures pics_;
+  size_t max_num_pics_;
 
   DISALLOW_COPY_AND_ASSIGN(H264DPB);
 };
