@@ -652,7 +652,6 @@ void SSLClientSocketOpenSSL::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
   cert_request_info->host_and_port = host_and_port_.ToString();
   cert_request_info->cert_authorities = cert_authorities_;
-  cert_request_info->client_certs = client_certs_;
 }
 
 int SSLClientSocketOpenSSL::ExportKeyingMaterial(
@@ -771,7 +770,6 @@ void SSLClientSocketOpenSSL::Disconnect() {
   completed_handshake_ = false;
 
   cert_authorities_.clear();
-  client_certs_.clear();
   client_auth_cert_needed_ = false;
 }
 

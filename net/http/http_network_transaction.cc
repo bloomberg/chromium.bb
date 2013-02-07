@@ -1174,16 +1174,11 @@ int HttpNetworkTransaction::HandleCertificateRequest(int error) {
   // is likely to accept, based on the criteria supplied in the
   // CertificateRequest message.
   if (client_cert) {
-    const std::vector<scoped_refptr<X509Certificate> >& client_certs =
-        response_.cert_request_info->client_certs;
-    bool cert_still_valid = false;
-    for (size_t i = 0; i < client_certs.size(); ++i) {
-      if (client_cert->Equals(client_certs[i])) {
-        cert_still_valid = true;
-        break;
-      }
-    }
+    const std::vector<std::string>& cert_authorities =
+        response_.cert_request_info->cert_authorities;
 
+    bool cert_still_valid = cert_authorities.empty() ||
+        client_cert->IsIssuedByEncoded(cert_authorities);
     if (!cert_still_valid)
       return error;
   }

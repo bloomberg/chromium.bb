@@ -68,4 +68,12 @@ do
     -keyfile out/root_$id.key \
     -out out/client_$id.pem \
     -config client_authentication.cnf
+
+  # Package the client cert and private key into a pkcs12 file.
+  try openssl pkcs12 \
+    -inkey out/client_$id.key \
+    -in out/client_$id.pem \
+    -out out/client_$id.p12 \
+    -export \
+    -passout pass:
 done

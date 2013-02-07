@@ -47,7 +47,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // SSLManager::OnSSLCertificateError() and represents the request.
   // Finally, CancelSSLRequest() or ContinueSSLRequest() will be called after
   // SSLErrorHandler makes a decision on the SSL error.
-  class Delegate {
+  class CONTENT_EXPORT Delegate {
    public:
     // Called when SSLErrorHandler decides to cancel the request because of
     // the SSL error.

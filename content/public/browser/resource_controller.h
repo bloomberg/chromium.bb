@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RESOURCE_CONTROLLER_H_
 #define CONTENT_PUBLIC_BROWSER_RESOURCE_CONTROLLER_H_
 
+#include "content/common/content_export.h"
+
 namespace content {
 
 // Used to either resume a deferred resource load or cancel a resource load at
@@ -12,7 +14,7 @@ namespace content {
 // requester of the resource to act like the request was never made.  By
 // default, load is cancelled with ERR_ABORTED code. CancelWithError can be used
 // to cancel load with any other error code.
-class ResourceController {
+class CONTENT_EXPORT ResourceController {
  public:
   virtual void Cancel() = 0;
   virtual void CancelAndIgnore() = 0;

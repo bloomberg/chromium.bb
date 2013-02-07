@@ -151,9 +151,6 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // List of DER-encoded X.509 DistinguishedName of certificate authorities
   // allowed by the server.
   std::vector<std::string> cert_authorities_;
-  // Set of certificates that matches the server criteria. This should be
-  // removed soon as being tracked in http://crbug.com/166642.
-  std::vector<scoped_refptr<X509Certificate> > client_certs_;
 
   CertVerifier* const cert_verifier_;
   scoped_ptr<SingleRequestCertVerifier> verifier_;

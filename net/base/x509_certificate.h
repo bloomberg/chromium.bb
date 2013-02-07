@@ -279,20 +279,6 @@ class NET_EXPORT X509Certificate
   // Does this certificate's usage allow SSL client authentication?
   bool SupportsSSLClientAuth() const;
 
-  // Do any of the given issuer names appear in this cert's chain of trust?
-  bool IsIssuedBy(const std::vector<CertPrincipal>& valid_issuers);
-
-  // Adds all available SSL client identity certs to the given vector.
-  // |server_domain| is a hint for which domain the cert is to be sent to
-  // (a cert previously specified as the default for that domain will be given
-  // precedence and returned first in the output vector.)
-  // If valid_issuers is non-empty, only certs that were transitively issued
-  // by one of the given names will be included in the list.
-  static bool GetSSLClientCertificates(
-      const std::string& server_domain,
-      const std::vector<CertPrincipal>& valid_issuers,
-      CertificateList* certs);
-
   // Creates the chain of certs to use for this client identity cert.
   CFArrayRef CreateClientCertificateChain() const;
 

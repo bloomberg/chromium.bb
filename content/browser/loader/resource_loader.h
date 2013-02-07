@@ -5,12 +5,18 @@
 #ifndef CONTENT_BROWSER_LOADER_RESOURCE_LOADER_H_
 #define CONTENT_BROWSER_LOADER_RESOURCE_LOADER_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/resource_controller.h"
 #include "net/url_request/url_request.h"
+
+namespace net {
+class ClientCertStore;
+}
 
 namespace content {
 class ResourceDispatcherHostLoginDelegate;
@@ -21,9 +27,9 @@ class SSLClientAuthHandler;
 // This class is responsible for driving the URLRequest (i.e., calling Start,
 // Read, and servicing events).  It has a ResourceHandler, which is typically a
 // chain of ResourceHandlers, and is the ResourceController for its handler.
-class ResourceLoader : public net::URLRequest::Delegate,
-                       public SSLErrorHandler::Delegate,
-                       public ResourceController {
+class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
+                                      public SSLErrorHandler::Delegate,
+                                      public ResourceController {
  public:
   ResourceLoader(scoped_ptr<net::URLRequest> request,
                  scoped_ptr<ResourceHandler> handler,
@@ -50,6 +56,19 @@ class ResourceLoader : public net::URLRequest::Delegate,
   void OnUploadProgressACK();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ResourceLoaderTest, ClientCertStoreLookup);
+
+  ResourceLoader(scoped_ptr<net::URLRequest> request,
+                 scoped_ptr<ResourceHandler> handler,
+                 ResourceLoaderDelegate* delegate,
+                 scoped_ptr<net::ClientCertStore> client_cert_store);
+
+  // Initialization logic shared between the public and private constructor.
+  void Init(scoped_ptr<net::URLRequest> request,
+            scoped_ptr<ResourceHandler> handler,
+            ResourceLoaderDelegate* delegate,
+            scoped_ptr<net::ClientCertStore> client_cert_store);
+
   // net::URLRequest::Delegate implementation:
   virtual void OnReceivedRedirect(net::URLRequest* request,
                                   const GURL& new_url,
@@ -113,6 +132,8 @@ class ResourceLoader : public net::URLRequest::Delegate,
   // consumer.  We are waiting for a notification to complete the transfer, at
   // which point we'll receive a new ResourceHandler.
   bool is_transferring_;
+
+  scoped_ptr<net::ClientCertStore> client_cert_store_;
 
   base::WeakPtrFactory<ResourceLoader> weak_ptr_factory_;
 

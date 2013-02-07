@@ -411,7 +411,6 @@ struct HandshakeState {
     next_proto.clear();
     server_protos.clear();
     channel_id_sent = false;
-    client_certs.clear();
     server_cert_chain.Reset(NULL);
     server_cert = NULL;
     resumed_handshake = false;
@@ -427,11 +426,6 @@ struct HandshakeState {
 
   // True if a channel ID was sent.
   bool channel_id_sent;
-
-  // If the peer requests client certificate authentication, the set of
-  // certificates that matched the peer's criteria. This should be soon removed
-  // as being tracked in http://crbug.com/166642.
-  CertificateList client_certs;
 
   // List of DER-encoded X.509 DistinguishedName of certificate authorities
   // allowed by the server.
@@ -1358,7 +1352,6 @@ SECStatus SSLClientSocketNSS::Core::PlatformClientAuthHandler(
     return SECFailure;
   }
 
-  core->nss_handshake_state_.client_certs.clear();
   core->nss_handshake_state_.cert_authorities.clear();
 
   std::vector<CERT_NAME_BLOB> issuer_list(ca_names->nnames);
@@ -1370,98 +1363,8 @@ SECStatus SSLClientSocketNSS::Core::PlatformClientAuthHandler(
         static_cast<size_t>(ca_names->names[i].len)));
   }
 
-  // Retrieve the list of matching client certificates. This is to be moved out
-  // of here as a part of refactoring effort being tracked in
-  // http://crbug.com/166642.
-
-  // Client certificates of the user are in the "MY" system certificate store.
-  HCERTSTORE my_cert_store = CertOpenSystemStore(NULL, L"MY");
-  if (!my_cert_store) {
-    PLOG(ERROR) << "Could not open the \"MY\" system certificate store";
-
-    core->AddCertProvidedEvent(0);
-    return SECFailure;
-  }
-
-  // Enumerate the client certificates.
-  CERT_CHAIN_FIND_BY_ISSUER_PARA find_by_issuer_para;
-  memset(&find_by_issuer_para, 0, sizeof(find_by_issuer_para));
-  find_by_issuer_para.cbSize = sizeof(find_by_issuer_para);
-  find_by_issuer_para.pszUsageIdentifier = szOID_PKIX_KP_CLIENT_AUTH;
-  find_by_issuer_para.cIssuer = ca_names->nnames;
-  find_by_issuer_para.rgIssuer = ca_names->nnames ? &issuer_list[0] : NULL;
-  find_by_issuer_para.pfnFindCallback = ClientCertFindCallback;
-
-  PCCERT_CHAIN_CONTEXT chain_context = NULL;
-  DWORD find_flags = CERT_CHAIN_FIND_BY_ISSUER_CACHE_ONLY_FLAG |
-                     CERT_CHAIN_FIND_BY_ISSUER_CACHE_ONLY_URL_FLAG;
-
-  for (;;) {
-    // Find a certificate chain.
-    chain_context = CertFindChainInStore(my_cert_store,
-                                         X509_ASN_ENCODING,
-                                         find_flags,
-                                         CERT_CHAIN_FIND_BY_ISSUER,
-                                         &find_by_issuer_para,
-                                         chain_context);
-    if (!chain_context) {
-      DWORD err = GetLastError();
-      if (err != CRYPT_E_NOT_FOUND)
-        DLOG(ERROR) << "CertFindChainInStore failed: " << err;
-      break;
-    }
-
-    // Get the leaf certificate.
-    PCCERT_CONTEXT cert_context =
-        chain_context->rgpChain[0]->rgpElement[0]->pCertContext;
-    // Create a copy the handle, so that we can close the "MY" certificate store
-    // before returning from this function.
-    PCCERT_CONTEXT cert_context2;
-    BOOL ok = CertAddCertificateContextToStore(NULL, cert_context,
-                                               CERT_STORE_ADD_USE_EXISTING,
-                                               &cert_context2);
-    if (!ok) {
-      NOTREACHED();
-      continue;
-    }
-
-    // Copy the rest of the chain. Copying the chain stops gracefully if an
-    // error is encountered, with the partial chain being used as the
-    // intermediates, as opposed to failing to consider the client certificate
-    // at all.
-    net::X509Certificate::OSCertHandles intermediates;
-    for (DWORD i = 1; i < chain_context->rgpChain[0]->cElement; i++) {
-      PCCERT_CONTEXT intermediate_copy;
-      ok = CertAddCertificateContextToStore(
-          NULL, chain_context->rgpChain[0]->rgpElement[i]->pCertContext,
-          CERT_STORE_ADD_USE_EXISTING, &intermediate_copy);
-      if (!ok) {
-        NOTREACHED();
-        break;
-      }
-      intermediates.push_back(intermediate_copy);
-    }
-
-    scoped_refptr<X509Certificate> cert = X509Certificate::CreateFromHandle(
-        cert_context2, intermediates);
-    core->nss_handshake_state_.client_certs.push_back(cert);
-
-    X509Certificate::FreeOSCertHandle(cert_context2);
-    for (net::X509Certificate::OSCertHandles::iterator it =
-        intermediates.begin(); it != intermediates.end(); ++it) {
-      net::X509Certificate::FreeOSCertHandle(*it);
-    }
-  }
-
-  std::sort(core->nss_handshake_state_.client_certs.begin(),
-            core->nss_handshake_state_.client_certs.end(),
-            x509_util::ClientCertSorter());
-
-  BOOL ok = CertCloseStore(my_cert_store, CERT_CLOSE_STORE_CHECK_FLAG);
-  DCHECK(ok);
-
   // Update the network task runner's view of the handshake state now that
-  // client certs have been detected.
+  // server certificate request has been recorded.
   core->PostOrRunCallback(
       FROM_HERE, base::Bind(&Core::OnHandshakeStateUpdated, core,
                             core->nss_handshake_state_));
@@ -1545,40 +1448,19 @@ SECStatus SSLClientSocketNSS::Core::PlatformClientAuthHandler(
     return SECFailure;
   }
 
-  core->nss_handshake_state_.client_certs.clear();
   core->nss_handshake_state_.cert_authorities.clear();
 
-  // Retrieve the cert issuers accepted by the server. This information is
-  // currently (temporarily) being saved both in |valid_issuers| and
-  // |cert_authorities|, the latter being the target solution. The refactoring
-  // effort is being tracked in http://crbug.com/166642.
+  // Retrieve the cert issuers accepted by the server.
   std::vector<CertPrincipal> valid_issuers;
   int n = ca_names->nnames;
   for (int i = 0; i < n; i++) {
-    // Add the DER-encoded issuer DistinguishedName to |cert_authorities|.
     core->nss_handshake_state_.cert_authorities.push_back(std::string(
         reinterpret_cast<const char*>(ca_names->names[i].data),
         static_cast<size_t>(ca_names->names[i].len)));
-    // Add the CertPrincipal object representing the issuer to
-    // |valid_issuers|.
-    CertPrincipal p;
-    if (p.ParseDistinguishedName(ca_names->names[i].data,
-                                 ca_names->names[i].len)) {
-      valid_issuers.push_back(p);
-    }
   }
 
-  // Now get the available client certs whose issuers are allowed by the server.
-  X509Certificate::GetSSLClientCertificates(
-      core->host_and_port_.host(), valid_issuers,
-      &core->nss_handshake_state_.client_certs);
-
-  std::sort(core->nss_handshake_state_.client_certs.begin(),
-            core->nss_handshake_state_.client_certs.end(),
-            x509_util::ClientCertSorter());
-
   // Update the network task runner's view of the handshake state now that
-  // client certs have been detected.
+  // server certificate request has been recorded.
   core->PostOrRunCallback(
       FROM_HERE, base::Bind(&Core::OnHandshakeStateUpdated, core,
                             core->nss_handshake_state_));
@@ -1663,7 +1545,6 @@ SECStatus SSLClientSocketNSS::Core::ClientAuthHandler(
   }
 
   // First pass: client certificate is needed.
-  core->nss_handshake_state_.client_certs.clear();
   core->nss_handshake_state_.cert_authorities.clear();
 
   // Retrieve the DER-encoded DistinguishedName of the cert issuers accepted by
@@ -1674,45 +1555,8 @@ SECStatus SSLClientSocketNSS::Core::ClientAuthHandler(
         static_cast<size_t>(ca_names->names[i].len)));
   }
 
-  // Iterate over all client certificates and put the ones matching the server
-  // criteria in |nss_handshake_state_.client_certs|. This is to be moved out of
-  // here as a part of refactoring effort being tracked in
-  // http://crbug.com/166642.
-  CERTCertList* client_certs = CERT_FindUserCertsByUsage(
-      CERT_GetDefaultCertDB(), certUsageSSLClient,
-      PR_FALSE, PR_FALSE, wincx);
-  if (client_certs) {
-    for (CERTCertListNode* node = CERT_LIST_HEAD(client_certs);
-         !CERT_LIST_END(node, client_certs);
-         node = CERT_LIST_NEXT(node)) {
-      // Only offer unexpired certificates.
-      if (CERT_CheckCertValidTimes(node->cert, PR_Now(), PR_TRUE) !=
-          secCertTimeValid) {
-        continue;
-      }
-      // Filter by issuer.
-      //
-      // TODO(davidben): This does a binary comparison of the DER-encoded
-      // issuers. We should match according to RFC 5280 sec. 7.1. We should find
-      // an appropriate NSS function or add one if needbe.
-      if (ca_names->nnames &&
-          NSS_CmpCertChainWCANames(node->cert, ca_names) != SECSuccess) {
-        continue;
-      }
-
-      X509Certificate* x509_cert = X509Certificate::CreateFromHandle(
-          node->cert, net::X509Certificate::OSCertHandles());
-      core->nss_handshake_state_.client_certs.push_back(x509_cert);
-    }
-    CERT_DestroyCertList(client_certs);
-  }
-
-  std::sort(core->nss_handshake_state_.client_certs.begin(),
-            core->nss_handshake_state_.client_certs.end(),
-            x509_util::ClientCertSorter());
-
   // Update the network task runner's view of the handshake state now that
-  // client certs have been detected.
+  // server certificate request has been recorded.
   core->PostOrRunCallback(
       FROM_HERE, base::Bind(&Core::OnHandshakeStateUpdated, core,
                             core->nss_handshake_state_));
@@ -2924,9 +2768,7 @@ void SSLClientSocketNSS::GetSSLCertRequestInfo(
   // TODO(rch): switch SSLCertRequestInfo.host_and_port to a HostPortPair
   cert_request_info->host_and_port = host_and_port_.ToString();
   cert_request_info->cert_authorities = core_->state().cert_authorities;
-  // This should be removed as being tracked in http://crbug.com/166642.
-  cert_request_info->client_certs = core_->state().client_certs;
-  LeaveFunction(cert_request_info->client_certs.size());
+  LeaveFunction("");
 }
 
 int SSLClientSocketNSS::ExportKeyingMaterial(const base::StringPiece& label,
