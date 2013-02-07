@@ -234,6 +234,11 @@ cr.define('cr.ui', function() {
      */
     handleFocus_: function(e) {
       var target = e.target;
+
+      // Ignore focus on a menu button or command item
+      if (target.menu || target.command)
+        return;
+
       var commands = Array.prototype.slice.call(
           target.ownerDocument.querySelectorAll('command'));
 

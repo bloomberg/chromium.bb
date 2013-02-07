@@ -35,6 +35,7 @@ menu > :not(hr) {
   border: 0;
   font: inherit;
   line-height: 18px;
+  outline: none;
   overflow: hidden;
   padding: 0 19px;
   text-overflow: ellipsis;
