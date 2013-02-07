@@ -483,11 +483,10 @@ bool DriveCacheMetadataDB::Initialize(
       return false;
     }
 
-    UMA_HISTOGRAM_ENUMERATION(
-        "Drive.CacheDBOpenStatus", uma_status, DB_OPEN_MAX_VALUE);
-
     scan_cache = true;
   }
+  UMA_HISTOGRAM_ENUMERATION("Drive.CacheDBOpenStatus", uma_status,
+                            DB_OPEN_MAX_VALUE);
   DCHECK(level_db);
   level_db_.reset(level_db);
 
