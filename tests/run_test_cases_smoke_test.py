@@ -65,23 +65,35 @@ def load_xml_as_string_and_filter(filepath):
   """Serializes XML to a list of strings that is consistently formatted
   (ignoring whitespace between elements) so that it may be compared.
   """
-  with open(filepath, 'r') as f:
+  with open(filepath, 'rb') as f:
     xml = minidom.parse(f)
 
   trim_xml_whitespace(xml)
+
+  # Very hardcoded for expected.xml.
+  xml.childNodes[0].attributes['time'] = "0.1"
+  xml.childNodes[0].attributes['timestamp'] = "1996"
+  xml.childNodes[0].childNodes[0].childNodes[0].attributes['time'] = "0.2"
+  xml.childNodes[0].childNodes[0].childNodes[1].attributes['time'] = "0.2"
+  xml.childNodes[0].childNodes[0].childNodes[2].attributes['time'] = "0.2"
   return xml.toprettyxml(indent='  ').splitlines()
 
 
 class RunTestCases(unittest.TestCase):
   def setUp(self):
+    super(RunTestCases, self).setUp()
     # Make sure there's no environment variable that could do side effects.
     os.environ.pop('GTEST_SHARD_INDEX', '')
     os.environ.pop('GTEST_TOTAL_SHARDS', '')
     self._tempdirpath = None
+    self._tempfilename = None
 
   def tearDown(self):
     if self._tempdirpath and os.path.exists(self._tempdirpath):
       shutil.rmtree(self._tempdirpath)
+    if self._tempfilename and os.path.exists(self._tempfilename):
+      os.remove(self._tempfilename)
+    super(RunTestCases, self).tearDown()
 
   @property
   def tempdirpath(self):
@@ -91,7 +103,11 @@ class RunTestCases(unittest.TestCase):
 
   @property
   def filename(self):
-    return os.path.join(self.tempdirpath, 'foo', 'bar.run_test_cases')
+    if not self._tempfilename:
+      handle, self._tempfilename = tempfile.mkstemp(
+          prefix='run_test_cases', suffix='.run_test_cases')
+      os.close(handle)
+    return self._tempfilename
 
   def _check_results(self, expected_out_re, out, err):
     lines = out.splitlines()
@@ -390,48 +406,61 @@ class RunTestCases(unittest.TestCase):
   def test_flaky_stop_early(self):
     # gtest_fake_flaky.py has Foo.Bar[1-9]. Each of the test fails once and
     # succeeds on the second pass.
-    tempdir = tempfile.mkdtemp(prefix='run_test_cases')
-    try:
-      out, err, return_code = RunTest(
-          [
-            '--result', self.filename,
-            # Make it determinist.
-            '--jobs', '1',
-            '--retries', '1',
-            '--max-failures', '2',
-            os.path.join(
-              ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_flaky.py'),
-            tempdir,
-          ])
-      self.assertEqual(1, return_code)
-      # Give up on checking the stdout.
-      self.assertTrue('STOPPED EARLY' in out, out)
-      self.assertEqual('', err)
-      # The order is determined by the test shuffling.
-      test_cases = [
-          ('Foo.Bar1', 1),
-          ('Foo.Bar4', 1),
-          ('Foo.Bar5', 1),
-      ]
-      self._check_results_file(
-          fail=[u'Foo.Bar1', u'Foo.Bar4', u'Foo.Bar5'],
-          flaky=[],
-          success=[],
-          test_cases=test_cases)
-    finally:
-      shutil.rmtree(tempdir)
-
-  def test_xml(self):
     out, err, return_code = RunTest(
+        [
+          '--result', self.filename,
+          # Make it determinist.
+          '--jobs', '1',
+          '--retries', '1',
+          '--max-failures', '2',
+          os.path.join(
+            ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_flaky.py'),
+          self.tempdirpath,
+        ])
+    self.assertEqual(1, return_code)
+    # Give up on checking the stdout.
+    self.assertTrue('STOPPED EARLY' in out, out)
+    self.assertEqual('', err)
+    # The order is determined by the test shuffling.
+    test_cases = [
+        ('Foo.Bar1', 1),
+        ('Foo.Bar4', 1),
+        ('Foo.Bar5', 1),
+    ]
+    self._check_results_file(
+        fail=[u'Foo.Bar1', u'Foo.Bar4', u'Foo.Bar5'],
+        flaky=[],
+        success=[],
+        test_cases=test_cases)
+
+  def test_flaky_stop_early_xml(self):
+    # Create an unique filename and delete the file.
+    os.remove(self.filename)
+    _, err, return_code = RunTest(
         [
           # In that case, it's an XML file even if it has the wrong extension.
           '--gtest_output=xml:' + self.filename,
           '--no-dump',
-          os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_xml.py'),
+          # Make it determinist.
+          '--jobs', '1',
+          '--retries', '1',
+          '--max-failures', '2',
+          os.path.join(
+            ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_flaky.py'),
+          self.tempdirpath,
         ])
-    self.assertEqual(0, return_code, out)
+    self.assertEqual(1, return_code)
+    # Give up on checking the stdout.
+    #self.assertTrue('STOPPED EARLY' in out, out)
     self.assertEqual('', err)
-    actual_xml = load_xml_as_string_and_filter(self.filename)
+    try:
+      actual_xml = load_xml_as_string_and_filter(self.filename)
+    except Exception as e:
+      print >> sys.stderr, e
+      print >> sys.stderr, self.filename
+      with open(self.filename, 'rb') as f:
+        print >> sys.stderr, f.read()
+      self.fail()
     expected_xml = load_xml_as_string_and_filter(
         os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'expected.xml'))
     self.assertEqual(expected_xml, actual_xml)

@@ -5,7 +5,9 @@
 
 import logging
 import os
+import shutil
 import sys
+import tempfile
 import unittest
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -170,6 +172,88 @@ class RunTestCases(unittest.TestCase):
     for _ in xrange(200):
       self.assertFalse(decider.should_stop())
       decider.got_result(False)
+
+
+class RunTestCasesTmp(unittest.TestCase):
+  def setUp(self):
+    super(RunTestCasesTmp, self).setUp()
+    self.tmpdir = tempfile.mkdtemp(prefix='run_test_cases')
+
+  def tearDown(self):
+    shutil.rmtree(self.tmpdir)
+    super(RunTestCasesTmp, self).tearDown()
+
+  def test_xml(self):
+    # Test when a file is already present that the index is increasing
+    # accordingly.
+    open(os.path.join(self.tmpdir, 'a.xml'), 'w').close()
+    open(os.path.join(self.tmpdir, 'a_0.xml'), 'w').close()
+    open(os.path.join(self.tmpdir, 'a_1.xml'), 'w').close()
+    self.assertEqual(
+        os.path.join(self.tmpdir, 'a_2.xml'),
+        run_test_cases.gen_gtest_output_dir(self.tmpdir, 'xml:a.xml'))
+
+  def test_xml_default(self):
+    self.assertEqual(
+        os.path.join(self.tmpdir, 'test_detail.xml'),
+        run_test_cases.gen_gtest_output_dir(self.tmpdir, 'xml'))
+
+  def test_gen_xml(self):
+    data = {
+      "duration": 7.895771026611328,
+      "expected": 500,
+      "fail": [
+        "SecurityTest.MemoryAllocationRestrictionsCalloc",
+        "SecurityTest.MemoryAllocationRestrictionsNewArray"
+      ],
+      "flaky": [
+        "AlignedMemoryTest.DynamicAllocation",
+        "AlignedMemoryTest.ScopedDynamicAllocation",
+      ],
+      "missing": [
+        "AlignedMemoryTest.DynamicAllocation",
+        "AlignedMemoryTest.ScopedDynamicAllocation",
+      ],
+      "success": [
+        "AtExitTest.Param",
+        "AtExitTest.Task",
+      ],
+      "test_cases": {
+        "AlignedMemoryTest.DynamicAllocation": [
+          {
+            "duration": 0.044817209243774414,
+            "output": "blah blah",
+            "returncode": 1,
+            "test_case": "AlignedMemoryTest.DynamicAllocation"
+          }
+        ],
+        "AlignedMemoryTest.ScopedDynamicAllocation": [
+          {
+            "duration": 0.03273797035217285,
+            "output": "blah blah",
+            "returncode": 0,
+            "test_case": "AlignedMemoryTest.ScopedDynamicAllocation"
+          }
+        ],
+      },
+    }
+    expected = (
+        '<?xml version="1.0" ?>\n'
+        '<testsuites name="AllTests" tests="500" time="7.895771" '
+          'timestamp="1996">\n'
+        '<testsuite name="AlignedMemoryTest" tests="2">\n'
+        '  <testcase classname="AlignedMemoryTest" name="DynamicAllocation" '
+          'status="run" time="0.044817">\n'
+          '<failure><![CDATA[blah blah]]></failure></testcase>\n'
+        '  <testcase classname="AlignedMemoryTest" '
+          'name="ScopedDynamicAllocation" status="run" time="0.032738"/>\n'
+        '</testsuite>\n'
+        '</testsuites>')
+    filepath = os.path.join(self.tmpdir, 'foo.xml')
+    run_test_cases.dump_results_as_xml(filepath, data, '1996')
+    with open(filepath, 'rb') as f:
+      actual = f.read()
+    self.assertEqual(expected, actual)
 
 
 class FakeProgress(object):

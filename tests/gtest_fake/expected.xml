@@ -1,35 +1,65 @@
 <?xml version="1.0" ?>
-<testsuites disabled="" errors="" failures="" name="AllTests" tests="" time="">
-  <testsuite disabled="" errors="" failures="" name="PolicyTest" tests="24" time="">
-    <testcase classname="PolicyTest" name="BookmarkBarEnabled" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="ClearSiteDataOnExit" status="run" time="1.1"/>
-    <testcase classname="PolicyTest" name="DefaultSearchProvider" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="ForceSafeSearch" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="ReplaceSearchTerms" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="DisableSpdy" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="DisabledPlugins" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="DisabledPluginsExceptions" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="EnabledPlugins" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="AlwaysAuthorizePlugins" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="DeveloperToolsDisabled" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="DownloadDirectory" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="ExtensionInstallBlacklist" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="ExtensionInstallWhitelist" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="ExtensionInstallForcelist" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="HomepageLocation" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="IncognitoEnabled" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="SavingBrowserHistoryDisabled" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="TranslateEnabled" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="URLBlacklist" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="DISABLED_DisableScreenshotsFeedback" status="notrun" time="0.000"/>
-    <testcase classname="PolicyTest" name="Javascript" status="run" time="1.1"/>
-    <testcase classname="PolicyTest" name="Javascript" status="run" time="1.1">
-      <failure message="../../base/rand_util_unittest.cc:29
-Expected: (1.0) &lt;= (number), actual: 1 vs 0.276978" type=""><![CDATA[../../base/rand_util_unittest.cc:29                                                                                                            
-Expected: (1.0) <= (number), actual: 1 vs 0.276978]]></failure>
-    </testcase>
-  </testsuite>
-  <testsuite disabled="" errors="" failures="" name="PredictorBrowserTest" tests="2" time="">
-    <testcase classname="PredictorBrowserTest" name="ShutdownStartupCycle" status="run" time="1.1"/>
-  </testsuite>
+<testsuites name="AllTests" tests="9" time="0.090379" timestamp="2013-02-06 21:40:20.043987">
+<testsuite name="Foo" tests="3">
+  <testcase classname="Foo" name="Bar1" status="run" time="0.029682">
+<failure><![CDATA[Note: Google Test filter = Foo.Bar1
+
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from Foo
+[ RUN      ] Foo.Bar1
+[       OK ] Foo.Bar1 (0 ms)
+[----------] 1 test from Foo (0 ms total)
+
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (0 ms total)
+[  PASSED  ] 1 test.
+
+  YOU HAVE 5 DISABLED TESTS
+
+  YOU HAVE 2 tests with ignored failures (FAILS prefix)
+
+]]></failure></testcase>
+  <testcase classname="Foo" name="Bar5" status="run" time="0.028001">
+<failure><![CDATA[Note: Google Test filter = Foo.Bar5
+
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from Foo
+[ RUN      ] Foo.Bar5
+[       OK ] Foo.Bar5 (0 ms)
+[----------] 1 test from Foo (0 ms total)
+
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (0 ms total)
+[  PASSED  ] 1 test.
+
+  YOU HAVE 5 DISABLED TESTS
+
+  YOU HAVE 2 tests with ignored failures (FAILS prefix)
+
+]]></failure></testcase>
+  <testcase classname="Foo" name="Bar4" status="run" time="0.029407">
+<failure><![CDATA[Note: Google Test filter = Foo.Bar4
+
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from Foo
+[ RUN      ] Foo.Bar4
+[       OK ] Foo.Bar4 (0 ms)
+[----------] 1 test from Foo (0 ms total)
+
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (0 ms total)
+[  PASSED  ] 1 test.
+
+  YOU HAVE 5 DISABLED TESTS
+
+  YOU HAVE 2 tests with ignored failures (FAILS prefix)
+
+]]></failure></testcase>
+</testsuite>
 </testsuites>

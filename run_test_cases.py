@@ -9,6 +9,7 @@ Similar to sharding_supervisor.py but finer grained. It runs each test case
 individually instead of running per shard. Runs multiple instances in parallel.
 """
 
+import datetime
 import fnmatch
 import json
 import logging
@@ -17,10 +18,8 @@ import os
 import Queue
 import random
 import re
-import shutil
 import subprocess
 import sys
-import tempfile
 import threading
 import time
 from xml.dom import minidom
@@ -690,6 +689,44 @@ def dump_results_as_json(result_file, results):
     json.dump(results, f, sort_keys=True, indent=2)
 
 
+def dump_results_as_xml(gtest_output, results, now):
+  """Write the results out to a xml file in google-test compatible format."""
+  # TODO(maruel): Print all the test cases, including the ones that weren't run
+  # and the retries. For now, ditch the failures from the retries, which is a
+  # bit sad.
+  test_suites = {}
+  for test_case, result in results['test_cases'].iteritems():
+    suite, case = test_case.split('.', 1)
+    test_suites.setdefault(suite, {})[case] = result[-1]
+
+  with open(gtest_output, 'wb') as f:
+    # Sanity warning: hand-rolling XML. What could possibly go wrong?
+    f.write('<?xml version="1.0" ?>\n')
+    # TODO(maruel): File the fields nobody reads anyway.
+    # disabled="%d" errors="%d" failures="%d"
+    f.write(
+        ('<testsuites name="AllTests" tests="%d" time="%f" timestamp="%s">\n')
+        % (results['expected'], results['duration'], now))
+    for suite_name, suite in test_suites.iteritems():
+      # TODO(maruel): disabled="0" errors="0" failures="0" time="0"
+      f.write('<testsuite name="%s" tests="%d">\n' % (suite_name, len(suite)))
+      for case_name, case in suite.iteritems():
+        if case['returncode'] == 0:
+          f.write(
+            '  <testcase classname="%s" name="%s" status="run" time="%f"/>\n' %
+            (suite_name, case_name, case['duration']))
+        else:
+          f.write(
+            '  <testcase classname="%s" name="%s" status="run" time="%f">\n' %
+            (suite_name, case_name, case['duration']))
+          # While at it, hand-roll CDATA escaping too.
+          output = ']]><![CDATA['.join(case['output'].split(']]>'))
+          # TODO(maruel): message="" type=""
+          f.write('<failure><![CDATA[%s]]></failure></testcase>\n' % output)
+      f.write('</testsuite>\n')
+    f.write('</testsuites>')
+
+
 def append_gtest_output_to_xml(final_xml, filepath):
   """Combines the shard xml file with the final xml file."""
   try:
@@ -752,6 +789,51 @@ def running_serial_warning():
           '*****************************************************']
 
 
+def gen_gtest_output_dir(cwd, gtest_output):
+  """Converts gtest_output to an actual path that can be used in parallel.
+
+  Returns a 'corrected' gtest_output value.
+  """
+  if not gtest_output.startswith('xml'):
+    raise Failure('Can\'t parse --gtest_output=%s' % gtest_output)
+  # Figure out the result filepath in case we can't parse it, it'd be
+  # annoying to error out *after* running the tests.
+  if gtest_output == 'xml':
+    gtest_output = os.path.join(cwd, 'test_detail.xml')
+  else:
+    match = re.match(r'xml\:(.+)', gtest_output)
+    if not match:
+      raise Failure('Can\'t parse --gtest_output=%s' % gtest_output)
+    # If match.group(1) is an absolute path, os.path.join() will do the right
+    # thing.
+    if match.group(1).endswith((os.path.sep, '/')):
+      gtest_output = os.path.join(cwd, match.group(1), 'test_detail.xml')
+    else:
+      gtest_output = os.path.join(cwd, match.group(1))
+
+  base_path = os.path.dirname(gtest_output)
+  if base_path and not os.path.isdir(base_path):
+    os.makedirs(base_path)
+
+  # Emulate google-test' automatic increasing index number.
+  while True:
+    try:
+      # Creates a file exclusively.
+      os.close(os.open(gtest_output, os.O_CREAT|os.O_EXCL|os.O_RDWR, 0666))
+      # It worked, we are done.
+      return gtest_output
+    except OSError:
+      pass
+    logging.debug('%s existed', gtest_output)
+    base, ext = os.path.splitext(gtest_output)
+    match = re.match(r'^(.+?_)(\d+)$', base)
+    if match:
+      base = match.group(1) + str(int(match.group(2)) + 1)
+    else:
+      base = base + '_0'
+    gtest_output = base + ext
+
+
 def run_test_cases(
     cmd, cwd, test_cases, jobs, timeout, retries, run_all, max_failures,
     no_cr, gtest_output, result_file, verbose):
@@ -763,92 +845,44 @@ def run_test_cases(
     # If 10% of test cases fail, just too bad.
     decider = RunSome(len(test_cases), retries, 2, 0.1, max_failures)
 
-  tempdir = None
-  try:
-    if gtest_output:
-      if gtest_output.startswith('xml'):
-        # Have each shard write an XML file and them merge them all.
-        tempdir = tempfile.mkdtemp(prefix='run_test_cases')
-        # The real google-test requires a trailing os.path.sep when a directory
-        # is used.
-        cmd.append('--gtest_output=xml:' + tempdir + os.path.sep)
-        # Figure out the result filepath in case we can't parse it, it'd be
-        # annoying to error out after running the tests.
-        if gtest_output == 'xml':
-          gtest_output = os.path.join(cwd, 'test_detail.xml')
-        else:
-          match = re.match(r'xml\:(.+)', gtest_output)
-          if not match:
-            print >> sys.stderr, 'Can\'t parse --gtest_output=%s' % gtest_output
-            return 1
-          gtest_output = os.path.join(cwd, match.group(1))
-      else:
-        print >> sys.stderr, 'Can\'t parse --gtest_output=%s' % gtest_output
-        return 1
+  if gtest_output:
+    gtest_output = gen_gtest_output_dir(cwd, gtest_output)
+  progress = Progress(len(test_cases))
+  serial_tasks = QueueWithProgress(0)
+  serial_tasks.set_progress(progress)
 
-    progress = Progress(len(test_cases))
-    serial_tasks = QueueWithProgress(0)
-    serial_tasks.set_progress(progress)
+  def add_serial_task(priority, func, *args, **kwargs):
+    """Adds a serial task, to be executed later."""
+    assert isinstance(priority, int)
+    assert callable(func)
+    serial_tasks.put((priority, func, args, kwargs))
 
-    def add_serial_task(priority, func, *args, **kwargs):
-      """Adds a serial task, to be executed later."""
-      assert isinstance(priority, int)
-      assert callable(func)
-      serial_tasks.put((priority, func, args, kwargs))
+  with ThreadPool(progress, jobs, jobs, len(test_cases)) as pool:
+    runner = Runner(
+        cmd, cwd, timeout, progress, retries, decider, verbose,
+        pool.add_task, add_serial_task)
+    function = runner.map
+    logging.debug('Adding tests to ThreadPool')
+    progress.use_cr_only = not no_cr
+    for i, test_case in enumerate(test_cases):
+      pool.add_task(i, function, i, test_case, 0)
+    logging.debug('All tests added to the ThreadPool')
+    results = pool.join()
 
-    with ThreadPool(progress, jobs, jobs, len(test_cases)) as pool:
-      runner = Runner(
-          cmd, cwd, timeout, progress, retries, decider, verbose,
-          pool.add_task, add_serial_task)
-      function = runner.map
-      logging.debug('Adding tests to ThreadPool')
-      progress.use_cr_only = not no_cr
-      for i, test_case in enumerate(test_cases):
-        pool.add_task(i, function, i, test_case, 0)
-      logging.debug('All tests added to the ThreadPool')
-      results = pool.join()
+    # Retry any failed tests serially.
+    if not serial_tasks.empty():
+      progress.update_item('\n'.join(running_serial_warning()), index=False,
+                                      size=False)
 
-      # Retry any failed tests serially.
-      if not serial_tasks.empty():
-        progress.update_item('\n'.join(running_serial_warning()), index=False,
-                                       size=False)
+      while not serial_tasks.empty():
+        _priority, func, args, kwargs = serial_tasks.get()
+        results.append(func(*args, **kwargs))
+        serial_tasks.task_done()
 
-        while not serial_tasks.empty():
-          _priority, func, args, kwargs = serial_tasks.get()
-          results.append(func(*args, **kwargs))
-          serial_tasks.task_done()
+      # Call join since that is a standard call once a queue has been emptied.
+      serial_tasks.join()
 
-        # Call join since that is a standard call once a queue has been emptied.
-        serial_tasks.join()
-
-      duration = time.time() - pool.tasks.progress.start
-
-    # Merges the XMLs into one before having the directory deleted.
-    # TODO(maruel): Use two threads?
-    if gtest_output:
-      result = None
-      for i in sorted(os.listdir(tempdir)):
-        result = append_gtest_output_to_xml(result, os.path.join(tempdir, i))
-
-      if result:
-        base_path = os.path.dirname(gtest_output)
-        if base_path and not os.path.isdir(base_path):
-          os.makedirs(base_path)
-        if os.path.isdir(gtest_output):
-          # Includes compatibility with with google-test when a directory is
-          # specified.
-          # TODO(maruel): It would automatically add 0, 1, 2 when a previous
-          # one exists.
-          gtest_output = os.path.join(gtest_output, 'test_detail.xml')
-        sys.stdout.write(
-          '\nSaving gtest compatible XML file to: %s\n' % gtest_output)
-        with open(gtest_output, 'w') as f:
-          result.writexml(f)
-      else:
-        logging.error('Didn\'t find any XML file to write to %s' % gtest_output)
-  finally:
-    if tempdir:
-      shutil.rmtree(tempdir)
+    duration = time.time() - pool.tasks.progress.start
 
   cleaned = {}
   for item in results:
@@ -890,6 +924,8 @@ def run_test_cases(
   }
   if result_file:
     dump_results_as_json(result_file, saved)
+  if gtest_output:
+    dump_results_as_xml(gtest_output, saved, datetime.datetime.now())
   sys.stdout.write('\n')
   if not results:
     return 1
@@ -1170,19 +1206,23 @@ def main(argv):
       else:
         result_file = '%s.run_test_cases' % cmd[0]
 
-  return run_test_cases(
-      cmd,
-      cwd,
-      test_cases,
-      options.jobs,
-      options.timeout,
-      options.retries,
-      options.run_all,
-      options.max_failures,
-      options.no_cr,
-      options.gtest_output,
-      result_file,
-      options.verbose)
+  try:
+    return run_test_cases(
+        cmd,
+        cwd,
+        test_cases,
+        options.jobs,
+        options.timeout,
+        options.retries,
+        options.run_all,
+        options.max_failures,
+        options.no_cr,
+        options.gtest_output,
+        result_file,
+        options.verbose)
+  except Failure as e:
+    print >> sys.stderr, e.args[0]
+    return 1
 
 
 if __name__ == '__main__':
