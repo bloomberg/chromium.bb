@@ -42,7 +42,16 @@ bool ConvertCharToKeyCode(
                     HIBYTE(vkey_and_modifiers) != -1;
   if (translated) {
     *key_code = static_cast<ui::KeyboardCode>(LOBYTE(vkey_and_modifiers));
-    *necessary_modifiers = HIBYTE(vkey_and_modifiers);
+    int win_modifiers = HIBYTE(vkey_and_modifiers);
+    int modifiers = 0;
+    if (win_modifiers & 0x01)
+      modifiers |= kShiftKeyModifierMask;
+    if (win_modifiers & 0x02)
+      modifiers |= kControlKeyModifierMask;
+    if (win_modifiers & 0x04)
+      modifiers |= kAltKeyModifierMask;
+    // Ignore bit 0x08: It is for Hankaku key.
+    *necessary_modifiers = modifiers;
   }
   return translated;
 }
