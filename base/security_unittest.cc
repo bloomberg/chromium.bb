@@ -154,6 +154,9 @@ void OverflowTestsSoftExpectTrue(bool overflow_detected) {
   }
 }
 
+// TODO(jln): crbug.com/174947 This can't even compile on Win64.
+#if !(defined(OS_WIN) && defined(ARCH_CPU_X86_64))
+
 // Test array[TooBig][X] and array[X][TooBig] allocations for int overflows.
 // IOS doesn't honor nothrow, so disable the test there.
 // Disable on Windows, we suspect some are failing because of it.
@@ -179,6 +182,7 @@ TEST(SecurityTest, DISABLE_ON_IOS_AND_WIN(NewOverflow)) {
     OverflowTestsSoftExpectTrue(!array_pointer);
   }
 }
+#endif
 
 // Test if calloc() can overflow. Disable on ASAN for now since the
 // overflow seems present there.
