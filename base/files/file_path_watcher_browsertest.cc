@@ -111,7 +111,7 @@ class TestDelegate : public TestDelegateBase {
       : collector_(collector) {
     collector_->Register(this);
   }
-  ~TestDelegate() {}
+  virtual ~TestDelegate() {}
 
   virtual void OnFileChanged(const FilePath& path, bool error) OVERRIDE {
     if (error)
@@ -287,7 +287,7 @@ class Deleter : public TestDelegateBase {
       : watcher_(watcher),
         loop_(loop) {
   }
-  ~Deleter() {}
+  virtual ~Deleter() {}
 
   virtual void OnFileChanged(const FilePath&, bool) OVERRIDE {
     watcher_.reset();
