@@ -128,8 +128,9 @@ void UrlFetchOperationBase::Start(const std::string& access_token,
   }
   DVLOG(1) << "URL: " << url.spec();
 
+  URLFetcher::RequestType request_type = GetRequestType();
   url_fetcher_.reset(
-      URLFetcher::Create(url, GetRequestType(), this));
+      URLFetcher::Create(url, request_type, this));
   url_fetcher_->SetRequestContext(url_request_context_getter_);
   // Always set flags to neither send nor save cookies.
   url_fetcher_->SetLoadFlags(
@@ -163,6 +164,18 @@ void UrlFetchOperationBase::Start(const std::string& access_token,
   std::string upload_content;
   if (GetContentData(&upload_content_type, &upload_content)) {
     url_fetcher_->SetUploadData(upload_content_type, upload_content);
+  } else {
+    // Even if there is no content data, UrlFetcher requires to set empty
+    // upload data string for POST, PUT and PATCH methods, explicitly.
+    // It is because that most requests of those methods have non-empty
+    // body, and UrlFetcher checks whether it is actually not forgotten.
+    if (request_type == URLFetcher::POST ||
+        request_type == URLFetcher::PUT ||
+        request_type == URLFetcher::PATCH) {
+      // Set empty upload content-type and upload content, so that
+      // the request will have no "Content-type: " header and no content.
+      url_fetcher_->SetUploadData("", "");
+    }
   }
 
   // Register to operation registry.

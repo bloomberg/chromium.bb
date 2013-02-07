@@ -237,7 +237,7 @@ GURL TrashResourceOperation::GetURL() const {
 }
 
 net::URLFetcher::RequestType TrashResourceOperation::GetRequestType() const {
-  return net::URLFetcher::POST_WITHOUT_BODY;
+  return net::URLFetcher::POST;
 }
 
 //========================== InsertResourceOperation ===========================
