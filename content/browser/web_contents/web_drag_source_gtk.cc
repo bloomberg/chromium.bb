@@ -239,7 +239,7 @@ void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
         GURL file_url(std::string(reinterpret_cast<char*>(file_url_value),
                                   file_url_len));
         g_free(file_url_value);
-        FilePath file_path;
+        base::FilePath file_path;
         if (net::FileURLToFilePath(file_url, &file_path)) {
           // Open the file as a stream.
           scoped_ptr<net::FileStream> file_stream(
@@ -316,7 +316,7 @@ void WebDragSourceGtk::OnDragBegin(GtkWidget* sender,
     // Generate the file name based on both mime type and proposed file name.
     std::string default_name =
         GetContentClient()->browser()->GetDefaultDownloadName();
-    FilePath generated_download_file_name =
+    base::FilePath generated_download_file_name =
         net::GenerateFileName(download_url_,
                               std::string(),
                               std::string(),

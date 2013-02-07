@@ -192,7 +192,7 @@ bool GpuDataManagerImpl::ShouldUseSoftwareRendering() const {
   return software_rendering_;
 }
 
-void GpuDataManagerImpl::RegisterSwiftShaderPath(const FilePath& path) {
+void GpuDataManagerImpl::RegisterSwiftShaderPath(const base::FilePath& path) {
   swiftshader_path_ = path;
   EnableSoftwareRenderingIfNecessary();
 }
@@ -389,7 +389,7 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
 
   std::string use_gl =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
-  FilePath swiftshader_path =
+  base::FilePath swiftshader_path =
       CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kSwiftShaderPath);
   uint32 flags = GetBlacklistedFeatures();

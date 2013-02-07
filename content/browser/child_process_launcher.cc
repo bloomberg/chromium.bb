@@ -67,7 +67,7 @@ class ChildProcessLauncher::Context
 
   void Launch(
 #if defined(OS_WIN)
-      const FilePath& exposed_dir,
+      const base::FilePath& exposed_dir,
 #elif defined(OS_ANDROID)
       int ipcfd,
 #elif defined(OS_POSIX)
@@ -153,7 +153,7 @@ class ChildProcessLauncher::Context
       BrowserThread::ID client_thread_id,
       int child_process_id,
 #if defined(OS_WIN)
-      const FilePath& exposed_dir,
+      const base::FilePath& exposed_dir,
 #elif defined(OS_ANDROID)
       int ipcfd,
 #elif defined(OS_POSIX)
@@ -379,7 +379,7 @@ class ChildProcessLauncher::Context
 
 ChildProcessLauncher::ChildProcessLauncher(
 #if defined(OS_WIN)
-    const FilePath& exposed_dir,
+    const base::FilePath& exposed_dir,
 #elif defined(OS_POSIX)
     bool use_zygote,
     const base::EnvironmentVector& environ,

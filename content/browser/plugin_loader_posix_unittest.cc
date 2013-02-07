@@ -25,7 +25,7 @@ class MockPluginLoaderPosix : public PluginLoaderPosix {
     return callbacks_.size();
   }
 
-  std::vector<FilePath>* canonical_list() {
+  std::vector<base::FilePath>* canonical_list() {
     return &canonical_list_;
   }
 
@@ -49,7 +49,7 @@ class MockPluginLoaderPosix : public PluginLoaderPosix {
     OnPluginLoaded(index, plugin);
   }
 
-  void TestOnPluginLoadFailed(uint32 index, const FilePath& path) {
+  void TestOnPluginLoadFailed(uint32 index, const base::FilePath& path) {
     OnPluginLoadFailed(index, path);
   }
 
@@ -64,11 +64,11 @@ void VerifyCallback(int* run_count, const std::vector<webkit::WebPluginInfo>&) {
 class PluginLoaderPosixTest : public testing::Test {
  public:
   PluginLoaderPosixTest()
-      : plugin1_(ASCIIToUTF16("plugin1"), FilePath("/tmp/one.plugin"),
+      : plugin1_(ASCIIToUTF16("plugin1"), base::FilePath("/tmp/one.plugin"),
                  ASCIIToUTF16("1.0"), string16()),
-        plugin2_(ASCIIToUTF16("plugin2"), FilePath("/tmp/two.plugin"),
+        plugin2_(ASCIIToUTF16("plugin2"), base::FilePath("/tmp/two.plugin"),
                  ASCIIToUTF16("2.0"), string16()),
-        plugin3_(ASCIIToUTF16("plugin3"), FilePath("/tmp/three.plugin"),
+        plugin3_(ASCIIToUTF16("plugin3"), base::FilePath("/tmp/three.plugin"),
                  ASCIIToUTF16("3.0"), string16()),
         file_thread_(BrowserThread::FILE, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_),
@@ -304,7 +304,7 @@ TEST_F(PluginLoaderPosixTest, InternalPlugin) {
   EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
   message_loop()->RunUntilIdle();
 
-  plugin2_.path = FilePath("/internal/plugin.plugin");
+  plugin2_.path = base::FilePath("/internal/plugin.plugin");
 
   AddThreePlugins();
 

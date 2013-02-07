@@ -79,16 +79,16 @@ const uint32 kMaxFileOrdinalNumberPartLength = 6;
 // Strip current ordinal number, if any. Should only be used on pure
 // file names, i.e. those stripped of their extensions.
 // TODO(estade): improve this to not choke on alternate encodings.
-FilePath::StringType StripOrdinalNumber(
-    const FilePath::StringType& pure_file_name) {
-  FilePath::StringType::size_type r_paren_index =
+base::FilePath::StringType StripOrdinalNumber(
+    const base::FilePath::StringType& pure_file_name) {
+  base::FilePath::StringType::size_type r_paren_index =
       pure_file_name.rfind(FILE_PATH_LITERAL(')'));
-  FilePath::StringType::size_type l_paren_index =
+  base::FilePath::StringType::size_type l_paren_index =
       pure_file_name.rfind(FILE_PATH_LITERAL('('));
   if (l_paren_index >= r_paren_index)
     return pure_file_name;
 
-  for (FilePath::StringType::size_type i = l_paren_index + 1;
+  for (base::FilePath::StringType::size_type i = l_paren_index + 1;
        i != r_paren_index; ++i) {
     if (!IsAsciiDigit(pure_file_name[i]))
       return pure_file_name;
@@ -107,7 +107,7 @@ bool CanSaveAsComplete(const std::string& contents_mime_type) {
 
 }  // namespace
 
-const FilePath::CharType SavePackage::kDefaultHtmlExtension[] =
+const base::FilePath::CharType SavePackage::kDefaultHtmlExtension[] =
 #if defined(OS_WIN)
     FILE_PATH_LITERAL("htm");
 #else
@@ -116,8 +116,8 @@ const FilePath::CharType SavePackage::kDefaultHtmlExtension[] =
 
 SavePackage::SavePackage(WebContents* web_contents,
                          SavePageType save_type,
-                         const FilePath& file_full_path,
-                         const FilePath& directory_full_path)
+                         const base::FilePath& file_full_path,
+                         const base::FilePath& directory_full_path)
     : WebContentsObserver(web_contents),
       file_manager_(NULL),
       download_manager_(NULL),
@@ -133,7 +133,7 @@ SavePackage::SavePackage(WebContents* web_contents,
       disk_error_occurred_(false),
       save_type_(save_type),
       all_save_items_count_(0),
-      file_name_set_(&FilePath::CompareLessIgnoreCase),
+      file_name_set_(&base::FilePath::CompareLessIgnoreCase),
       wait_state_(INITIALIZE),
       contents_id_(web_contents->GetRenderProcessHost()->GetID()),
       unique_id_(g_save_package_id++),
@@ -164,7 +164,7 @@ SavePackage::SavePackage(WebContents* web_contents)
       disk_error_occurred_(false),
       save_type_(SAVE_PAGE_TYPE_UNKNOWN),
       all_save_items_count_(0),
-      file_name_set_(&FilePath::CompareLessIgnoreCase),
+      file_name_set_(&base::FilePath::CompareLessIgnoreCase),
       wait_state_(INITIALIZE),
       contents_id_(web_contents->GetRenderProcessHost()->GetID()),
       unique_id_(g_save_package_id++),
@@ -178,8 +178,8 @@ SavePackage::SavePackage(WebContents* web_contents)
 // method Cancel to be be called in destructor in test mode.
 // We also don't call InternalInit().
 SavePackage::SavePackage(WebContents* web_contents,
-                         const FilePath& file_full_path,
-                         const FilePath& directory_full_path)
+                         const base::FilePath& file_full_path,
+                         const base::FilePath& directory_full_path)
     : WebContentsObserver(web_contents),
       file_manager_(NULL),
       download_manager_(NULL),
@@ -193,7 +193,7 @@ SavePackage::SavePackage(WebContents* web_contents,
       disk_error_occurred_(false),
       save_type_(SAVE_PAGE_TYPE_UNKNOWN),
       all_save_items_count_(0),
-      file_name_set_(&FilePath::CompareLessIgnoreCase),
+      file_name_set_(&base::FilePath::CompareLessIgnoreCase),
       wait_state_(INITIALIZE),
       contents_id_(0),
       unique_id_(g_save_package_id++),
@@ -324,7 +324,7 @@ bool SavePackage::Init(
   return true;
 }
 
-void SavePackage::OnMHTMLGenerated(const FilePath& path, int64 size) {
+void SavePackage::OnMHTMLGenerated(const base::FilePath& path, int64 size) {
   if (size <= 0) {
     Cancel(false);
     return;
@@ -357,7 +357,8 @@ void SavePackage::OnMHTMLGenerated(const FilePath& path, int64 size) {
 // On POSIX, the length of |pure_file_name| + |file_name_ext| is further
 // restricted by NAME_MAX. The maximum allowed path looks like:
 // '/path/to/save_dir' + '/' + NAME_MAX.
-uint32 SavePackage::GetMaxPathLengthForDirectory(const FilePath& base_dir) {
+uint32 SavePackage::GetMaxPathLengthForDirectory(
+    const base::FilePath& base_dir) {
 #if defined(OS_POSIX)
   return std::min(kMaxFilePathLength,
                   static_cast<uint32>(base_dir.value().length()) +

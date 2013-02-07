@@ -24,7 +24,7 @@ using appcache::AppCacheTestHelper;
 
 namespace content {
 namespace {
-const FilePath::CharType kTestingAppCacheDirname[] =
+const base::FilePath::CharType kTestingAppCacheDirname[] =
     FILE_PATH_LITERAL("Application Cache");
 
 // Examples of a protected and an unprotected origin, to be used througout the
@@ -76,7 +76,7 @@ class ChromeAppCacheServiceTest : public testing::Test {
 
  protected:
   scoped_refptr<ChromeAppCacheService> CreateAppCacheService(
-      const FilePath& appcache_path,
+      const base::FilePath& appcache_path,
       bool init_storage);
   void InsertDataIntoAppCache(ChromeAppCacheService* appcache_service);
 
@@ -96,7 +96,7 @@ class ChromeAppCacheServiceTest : public testing::Test {
 
 scoped_refptr<ChromeAppCacheService>
 ChromeAppCacheServiceTest::CreateAppCacheService(
-    const FilePath& appcache_path,
+    const base::FilePath& appcache_path,
     bool init_storage) {
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService(NULL);
@@ -147,7 +147,8 @@ void ChromeAppCacheServiceTest::InsertDataIntoAppCache(
 
 TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  FilePath appcache_path = temp_dir_.path().Append(kTestingAppCacheDirname);
+  base::FilePath appcache_path =
+      temp_dir_.path().Append(kTestingAppCacheDirname);
 
   // Create a ChromeAppCacheService and insert data into it
   scoped_refptr<ChromeAppCacheService> appcache_service =
@@ -183,7 +184,8 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
 
 TEST_F(ChromeAppCacheServiceTest, SaveSessionState) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  FilePath appcache_path = temp_dir_.path().Append(kTestingAppCacheDirname);
+  base::FilePath appcache_path =
+      temp_dir_.path().Append(kTestingAppCacheDirname);
 
   // Create a ChromeAppCacheService and insert data into it
   scoped_refptr<ChromeAppCacheService> appcache_service =

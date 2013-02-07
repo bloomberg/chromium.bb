@@ -35,7 +35,7 @@ namespace content {
 // There is no documented API to set metadata on a file directly as of the
 // 10.5 SDK.  The MDSetItemAttribute function does exist to perform this task,
 // but it's undocumented.
-void AddOriginMetadataToFile(const FilePath& file, const GURL& source,
+void AddOriginMetadataToFile(const base::FilePath& file, const GURL& source,
                              const GURL& referrer) {
   // There's no declaration for MDItemSetAttribute in any known public SDK.
   // It exists in the 10.4 and 10.5 runtimes.  To play it safe, do the lookup

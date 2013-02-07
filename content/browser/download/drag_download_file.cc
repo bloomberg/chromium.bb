@@ -55,7 +55,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
   }
 
   void InitiateDownload(scoped_ptr<net::FileStream> file_stream,
-                        const FilePath& file_path) {
+                        const base::FilePath& file_path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(web_contents_->GetBrowserContext());
@@ -146,7 +146,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
   DISALLOW_COPY_AND_ASSIGN(DragDownloadFileUI);
 };
 
-DragDownloadFile::DragDownloadFile(const FilePath& file_path,
+DragDownloadFile::DragDownloadFile(const base::FilePath& file_path,
                                    scoped_ptr<net::FileStream> file_stream,
                                    const GURL& url,
                                    const Referrer& referrer,

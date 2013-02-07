@@ -57,7 +57,7 @@ void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
   for (size_t i = 0; i < module_count; i++) {
     TCHAR filename[MAX_PATH];
     GetModuleFileName(modules[i], filename, sizeof(filename));
-    string16 module_name(FilePath(filename).BaseName().value());
+    string16 module_name(base::FilePath(filename).BaseName().value());
     if (LowerCaseEqualsASCII(module_name, "fsdomsrv.dll"))
       jaws = true;
     if (LowerCaseEqualsASCII(module_name, "vbufbackend_gecko_ia2.dll"))

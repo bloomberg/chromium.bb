@@ -36,10 +36,10 @@ class FileUtilitiesMessageFilter : public BrowserMessageFilter {
   typedef void (*FileInfoWriteFunc)(IPC::Message* reply_msg,
                                     const base::PlatformFileInfo& file_info);
 
-  void OnGetFileInfo(const FilePath& path,
+  void OnGetFileInfo(const base::FilePath& path,
                      base::PlatformFileInfo* result,
                      base::PlatformFileError* status);
-  void OnOpenFile(const FilePath& path,
+  void OnOpenFile(const base::FilePath& path,
                   int mode,
                   IPC::PlatformFileForTransit* result);
 

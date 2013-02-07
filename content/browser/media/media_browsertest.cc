@@ -36,7 +36,7 @@ class MediaTest : public testing::WithParamInterface<bool>,
 
   // Run specified color format test with the expected result.
   void RunColorFormatTest(const char* media_file, const char* expected) {
-    FilePath test_file_path = GetTestFilePath("media", "blackwhite.html");
+    base::FilePath test_file_path = GetTestFilePath("media", "blackwhite.html");
     RunTest(GetFileUrlWithQuery(test_file_path, media_file), expected);
   }
 
@@ -53,7 +53,7 @@ class MediaTest : public testing::WithParamInterface<bool>,
       gurl = test_server()->GetURL(
           base::StringPrintf("files/media/player.html?%s=%s", tag, media_file));
     } else {
-      FilePath test_file_path = GetTestFilePath("media", "player.html");
+      base::FilePath test_file_path = GetTestFilePath("media", "player.html");
       gurl = GetFileUrlWithQuery(
           test_file_path, base::StringPrintf("%s=%s", tag, media_file));
     }
@@ -171,7 +171,7 @@ INSTANTIATE_TEST_CASE_P(Http, MediaTest, ::testing::Values(true));
 class MediaLayoutTest : public InProcessBrowserLayoutTest {
  protected:
   MediaLayoutTest() : InProcessBrowserLayoutTest(
-      FilePath(), FilePath().AppendASCII("media")) {
+      base::FilePath(), base::FilePath().AppendASCII("media")) {
   }
   virtual ~MediaLayoutTest() {}
 };

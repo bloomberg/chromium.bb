@@ -92,11 +92,11 @@ class EncryptedMediaTest : public testing::WithParamInterface<const char*>,
     command_line->AppendSwitch(switches::kPpapiOutOfProcess);
 
     // Append the switch to register the Clear Key CDM plugin.
-    FilePath plugin_dir;
+    base::FilePath plugin_dir;
     EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
-    FilePath plugin_lib = plugin_dir.Append(kLibraryName);
+    base::FilePath plugin_lib = plugin_dir.Append(kLibraryName);
     EXPECT_TRUE(file_util::PathExists(plugin_lib));
-    FilePath::StringType pepper_plugin = plugin_lib.value();
+    base::FilePath::StringType pepper_plugin = plugin_lib.value();
     pepper_plugin.append(FILE_PATH_LITERAL(
         "#Clear Key CDM#Clear Key CDM 0.1.0.0#0.1.0.0;"));
 #if defined(OS_WIN)

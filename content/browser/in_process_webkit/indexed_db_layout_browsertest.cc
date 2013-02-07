@@ -9,7 +9,8 @@ namespace content {
 class IndexedDBLayoutTest : public InProcessBrowserLayoutTest {
  public:
   IndexedDBLayoutTest() : InProcessBrowserLayoutTest(
-      FilePath(), FilePath().AppendASCII("storage").AppendASCII("indexeddb")) {
+      base::FilePath(),
+      base::FilePath().AppendASCII("storage").AppendASCII("indexeddb")) {
   }
 
   void RunLayoutTests(const char* file_names[]) {

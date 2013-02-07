@@ -27,7 +27,7 @@ static void SetExtendedFileAttribute(const char* path, const char* name,
   }
 }
 
-void AddOriginMetadataToFile(const FilePath& file, const GURL& source,
+void AddOriginMetadataToFile(const base::FilePath& file, const GURL& source,
                              const GURL& referrer) {
   DCHECK(file_util::PathIsWritable(file));
   if (source.is_valid()) {

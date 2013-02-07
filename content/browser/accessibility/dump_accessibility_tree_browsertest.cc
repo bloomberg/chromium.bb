@@ -108,12 +108,13 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
     }
   }
 
-  void RunTest(const FilePath::CharType* file_path);
+  void RunTest(const base::FilePath::CharType* file_path);
 
   DumpAccessibilityTreeHelper helper_;
 };
 
-void DumpAccessibilityTreeTest::RunTest(const FilePath::CharType* file_path) {
+void DumpAccessibilityTreeTest::RunTest(
+    const base::FilePath::CharType* file_path) {
   NavigateToURL(shell(), GURL("about:blank"));
   RenderWidgetHostViewPort* host_view = static_cast<RenderWidgetHostViewPort*>(
       shell()->web_contents()->GetRenderWidgetHostView());
@@ -124,13 +125,14 @@ void DumpAccessibilityTreeTest::RunTest(const FilePath::CharType* file_path) {
   view_host->SetAccessibilityMode(AccessibilityModeComplete);
 
   // Setup test paths.
-  FilePath dir_test_data;
+  base::FilePath dir_test_data;
   ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
-  FilePath test_path(dir_test_data.Append(FILE_PATH_LITERAL("accessibility")));
+  base::FilePath test_path(
+      dir_test_data.Append(FILE_PATH_LITERAL("accessibility")));
   ASSERT_TRUE(file_util::PathExists(test_path))
       << test_path.LossyDisplayName();
 
-  FilePath html_file = test_path.Append(FilePath(file_path));
+  base::FilePath html_file = test_path.Append(base::FilePath(file_path));
   // Output the test path to help anyone who encounters a failure and needs
   // to know where to look.
   printf("Testing: %s\n", html_file.MaybeAsASCII().c_str());
@@ -146,8 +148,8 @@ void DumpAccessibilityTreeTest::RunTest(const FilePath::CharType* file_path) {
 
   // Read the expected file.
   std::string expected_contents_raw;
-  FilePath expected_file =
-    FilePath(html_file.RemoveExtension().value() +
+  base::FilePath expected_file =
+    base::FilePath(html_file.RemoveExtension().value() +
              helper_.GetExpectedFileSuffix());
   file_util::ReadFileToString(
       expected_file,
@@ -215,9 +217,9 @@ void DumpAccessibilityTreeTest::RunTest(const FilePath::CharType* file_path) {
   }
 
   if (!file_util::PathExists(expected_file)) {
-    FilePath actual_file =
-      FilePath(html_file.RemoveExtension().value() +
-               helper_.GetActualFileSuffix());
+    base::FilePath actual_file =
+        base::FilePath(html_file.RemoveExtension().value() +
+                       helper_.GetActualFileSuffix());
 
     EXPECT_TRUE(file_util::WriteFile(
         actual_file, actual_contents.c_str(), actual_contents.size()));

@@ -30,7 +30,7 @@ class CONTENT_EXPORT DownloadFileFactory {
 
   virtual DownloadFile* CreateFile(
       scoped_ptr<DownloadSaveInfo> save_info,
-      const FilePath& default_downloads_directory,
+      const base::FilePath& default_downloads_directory,
       const GURL& url,
       const GURL& referrer_url,
       bool calculate_hash,

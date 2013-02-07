@@ -36,7 +36,7 @@ bool FileUtilitiesMessageFilter::OnMessageReceived(const IPC::Message& message,
 }
 
 void FileUtilitiesMessageFilter::OnGetFileInfo(
-    const FilePath& path,
+    const base::FilePath& path,
     base::PlatformFileInfo* result,
     base::PlatformFileError* status) {
   *result = base::PlatformFileInfo();
@@ -54,7 +54,7 @@ void FileUtilitiesMessageFilter::OnGetFileInfo(
 }
 
 void FileUtilitiesMessageFilter::OnOpenFile(
-    const FilePath& path,
+    const base::FilePath& path,
     int mode,
     IPC::PlatformFileForTransit* result) {
   // Open the file only when the child process has been granted permission to

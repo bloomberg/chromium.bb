@@ -118,7 +118,7 @@ void SaveFileManager::SaveURL(
     int render_process_host_id,
     int render_view_id,
     SaveFileCreateInfo::SaveFileSource save_source,
-    const FilePath& file_full_path,
+    const base::FilePath& file_full_path,
     ResourceContext* context,
     SavePackage* save_package) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -189,7 +189,7 @@ SavePackage* SaveFileManager::GetSavePackageFromRenderIds(
   return contents->save_package();
 }
 
-void SaveFileManager::DeleteDirectoryOrFile(const FilePath& full_path,
+void SaveFileManager::DeleteDirectoryOrFile(const base::FilePath& full_path,
                                             bool is_dir) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
@@ -450,7 +450,7 @@ void SaveFileManager::SaveLocalFile(const GURL& original_file_url,
   save_file->Detach();
 
   DCHECK(original_file_url.SchemeIsFile());
-  FilePath file_path;
+  base::FilePath file_path;
   net::FileURLToFilePath(original_file_url, &file_path);
   // If we can not get valid file path from original URL, treat it as
   // disk error.
@@ -465,7 +465,7 @@ void SaveFileManager::SaveLocalFile(const GURL& original_file_url,
   SaveFinished(save_id, original_file_url, render_process_id, success);
 }
 
-void SaveFileManager::OnDeleteDirectoryOrFile(const FilePath& full_path,
+void SaveFileManager::OnDeleteDirectoryOrFile(const base::FilePath& full_path,
                                               bool is_dir) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!full_path.empty());
@@ -475,7 +475,7 @@ void SaveFileManager::OnDeleteDirectoryOrFile(const FilePath& full_path,
 
 void SaveFileManager::RenameAllFiles(
     const FinalNameList& final_names,
-    const FilePath& resource_dir,
+    const base::FilePath& resource_dir,
     int render_process_id,
     int render_view_id,
     int save_package_id) {

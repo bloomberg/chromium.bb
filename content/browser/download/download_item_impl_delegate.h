@@ -23,10 +23,10 @@ class BrowserContext;
 class CONTENT_EXPORT DownloadItemImplDelegate {
  public:
   typedef base::Callback<void(
-      const FilePath&,                  // Target path
+      const base::FilePath&,            // Target path
       DownloadItem::TargetDisposition,  // overwrite/uniquify target
       DownloadDangerType,
-      const FilePath&                   // Intermediate file path
+      const base::FilePath&             // Intermediate file path
                               )> DownloadTargetCallback;
 
   // The boolean argument indicates whether or not the download was
@@ -58,7 +58,7 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
       DownloadItemImpl* download, const ShouldOpenDownloadCallback& callback);
 
   // Tests if a file type should be opened automatically.
-  virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path);
+  virtual bool ShouldOpenFileBasedOnExtension(const base::FilePath& path);
 
   // Checks whether a downloaded file still exists and updates the
   // file's state if the file is already removed.

@@ -16,7 +16,7 @@ class TraceSubscriberStdioTest : public ::testing::Test {};
 TEST_F(TraceSubscriberStdioTest, CanWriteDataToFile) {
   base::ScopedTempDir trace_dir;
   ASSERT_TRUE(trace_dir.CreateUniqueTempDir());
-  FilePath trace_file(trace_dir.path().AppendASCII("trace.txt"));
+  base::FilePath trace_file(trace_dir.path().AppendASCII("trace.txt"));
   {
     TraceSubscriberStdio subscriber(trace_file);
 

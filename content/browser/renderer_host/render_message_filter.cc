@@ -717,7 +717,7 @@ void RenderMessageFilter::OnOpenChannelToPlugin(int routing_id,
 }
 
 void RenderMessageFilter::OnOpenChannelToPepperPlugin(
-    const FilePath& path,
+    const base::FilePath& path,
     IPC::Message* reply_msg) {
   plugin_service_->OpenChannelToPpapiPlugin(
       render_process_id_,
@@ -769,9 +769,10 @@ void RenderMessageFilter::OnDidDeleteOutOfProcessPepperInstance(
   }
 }
 
-void RenderMessageFilter::OnOpenChannelToPpapiBroker(int routing_id,
-                                                     int request_id,
-                                                     const FilePath& path) {
+void RenderMessageFilter::OnOpenChannelToPpapiBroker(
+    int routing_id,
+    int request_id,
+    const base::FilePath& path) {
   plugin_service_->OpenChannelToPpapiBroker(
       render_process_id_,
       path,
@@ -968,7 +969,7 @@ void RenderMessageFilter::OnKeygenOnWorkerThread(
 }
 
 void RenderMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,
-                                          const FilePath& path,
+                                          const base::FilePath& path,
                                           int flags,
                                           int message_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -987,7 +988,7 @@ void RenderMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,
           path, flags, message_id, msg.routing_id()));
 }
 
-void RenderMessageFilter::AsyncOpenFileOnFileThread(const FilePath& path,
+void RenderMessageFilter::AsyncOpenFileOnFileThread(const base::FilePath& path,
                                                     int flags,
                                                     int message_id,
                                                     int routing_id) {

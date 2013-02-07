@@ -49,7 +49,7 @@ namespace content {
 
 namespace {
 
-void RevokeFilePermission(int child_id, const FilePath& path) {
+void RevokeFilePermission(int child_id, const base::FilePath& path) {
   ChildProcessSecurityPolicyImpl::GetInstance()->RevokeAllPermissionsForFile(
     child_id, path);
 }
@@ -499,10 +499,10 @@ void FileAPIMessageFilter::OnDidUpdate(const GURL& path, int64 delta) {
 }
 
 void FileAPIMessageFilter::OnSyncGetPlatformPath(
-    const GURL& path, FilePath* platform_path) {
+    const GURL& path, base::FilePath* platform_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(platform_path);
-  *platform_path = FilePath();
+  *platform_path = base::FilePath();
   FileSystemURL url(context_->CrackURL(path));
   if (!url.is_valid())
     return;
@@ -542,7 +542,7 @@ void FileAPIMessageFilter::OnCreateSnapshotFile(
     int request_id, const GURL& blob_url, const GURL& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   FileSystemURL url(context_->CrackURL(path));
-  base::Callback<void(const FilePath&)> register_file_callback =
+  base::Callback<void(const base::FilePath&)> register_file_callback =
       base::Bind(&FileAPIMessageFilter::RegisterFileAsBlob,
                  this, blob_url, url);
 
@@ -657,7 +657,7 @@ void FileAPIMessageFilter::DidGetMetadata(
     int request_id,
     base::PlatformFileError result,
     const base::PlatformFileInfo& info,
-    const FilePath& platform_path) {
+    const base::FilePath& platform_path) {
   if (result == base::PLATFORM_FILE_OK)
     Send(new FileSystemMsg_DidReadMetadata(request_id, info, platform_path));
   else
@@ -736,10 +736,10 @@ void FileAPIMessageFilter::DidDeleteFileSystem(
 
 void FileAPIMessageFilter::DidCreateSnapshot(
     int request_id,
-    const base::Callback<void(const FilePath&)>& register_file_callback,
+    const base::Callback<void(const base::FilePath&)>& register_file_callback,
     base::PlatformFileError result,
     const base::PlatformFileInfo& info,
-    const FilePath& platform_path,
+    const base::FilePath& platform_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& unused) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (result != base::PLATFORM_FILE_OK) {
@@ -757,11 +757,12 @@ void FileAPIMessageFilter::DidCreateSnapshot(
   Send(new FileSystemMsg_DidReadMetadata(request_id, info, platform_path));
 }
 
-void FileAPIMessageFilter::RegisterFileAsBlob(const GURL& blob_url,
-                                              const FileSystemURL& url,
-                                              const FilePath& platform_path) {
+void FileAPIMessageFilter::RegisterFileAsBlob(
+    const GURL& blob_url,
+    const FileSystemURL& url,
+    const base::FilePath& platform_path) {
   // Use the virtual path's extension to determine MIME type.
-  FilePath::StringType extension = url.path().Extension();
+  base::FilePath::StringType extension = url.path().Extension();
   if (!extension.empty())
     extension = extension.substr(1);  // Strip leading ".".
 
@@ -824,7 +825,7 @@ bool FileAPIMessageFilter::HasPermissionsForFile(
     return false;
   }
 
-  FilePath file_path;
+  base::FilePath file_path;
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 

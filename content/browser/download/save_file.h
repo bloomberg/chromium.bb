@@ -27,12 +27,12 @@ class SaveFile {
   // BaseFile delegated functions.
   DownloadInterruptReason Initialize();
   DownloadInterruptReason AppendDataToFile(const char* data, size_t data_len);
-  DownloadInterruptReason Rename(const FilePath& full_path);
+  DownloadInterruptReason Rename(const base::FilePath& full_path);
   void Detach();
   void Cancel();
   void Finish();
   void AnnotateWithSourceInformation();
-  FilePath FullPath() const;
+  base::FilePath FullPath() const;
   bool InProgress() const;
   int64 BytesSoFar() const;
   bool GetHash(std::string* hash);

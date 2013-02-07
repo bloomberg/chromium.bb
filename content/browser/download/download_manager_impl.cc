@@ -168,8 +168,8 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
     virtual DownloadItemImpl* CreatePersistedItem(
         DownloadItemImplDelegate* delegate,
         DownloadId download_id,
-        const FilePath& current_path,
-        const FilePath& target_path,
+        const base::FilePath& current_path,
+        const base::FilePath& target_path,
         const std::vector<GURL>& url_chain,
         const GURL& referrer_url,
         const base::Time& start_time,
@@ -208,7 +208,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
 
     virtual DownloadItemImpl* CreateSavePageItem(
         DownloadItemImplDelegate* delegate,
-        const FilePath& path,
+        const base::FilePath& path,
         const GURL& url,
         DownloadId download_id,
         const std::string& mime_type,
@@ -255,7 +255,7 @@ void DownloadManagerImpl::DetermineDownloadTarget(
   // type.  If the types ever diverge, gasket code will need to
   // be written here.
   if (!delegate_ || !delegate_->DetermineDownloadTarget(item, callback)) {
-    FilePath target_path = item->GetForcedFilePath();
+    base::FilePath target_path = item->GetForcedFilePath();
     // TODO(asanka): Determine a useful path if |target_path| is empty.
     callback.Run(target_path,
                  DownloadItem::TARGET_DISPOSITION_OVERWRITE,
@@ -275,7 +275,8 @@ bool DownloadManagerImpl::ShouldCompleteDownload(
   return false;
 }
 
-bool DownloadManagerImpl::ShouldOpenFileBasedOnExtension(const FilePath& path) {
+bool DownloadManagerImpl::ShouldOpenFileBasedOnExtension(
+    const base::FilePath& path) {
   if (!delegate_)
     return false;
 
@@ -366,10 +367,10 @@ DownloadItem* DownloadManagerImpl::StartDownload(
     scoped_ptr<ByteStreamReader> stream) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FilePath default_download_directory;
+  base::FilePath default_download_directory;
   if (delegate_) {
-    FilePath website_save_directory;      // Unused
-    bool skip_dir_check = false;          // Unused
+    base::FilePath website_save_directory;  // Unused
+    bool skip_dir_check = false;            // Unused
     delegate_->GetSaveDir(GetBrowserContext(), &website_save_directory,
                           &default_download_directory, &skip_dir_check);
   }
@@ -454,7 +455,7 @@ DownloadItemImpl* DownloadManagerImpl::GetOrCreateDownloadItem(
 }
 
 DownloadItemImpl* DownloadManagerImpl::CreateSavePackageDownloadItem(
-    const FilePath& main_file_path,
+    const base::FilePath& main_file_path,
     const GURL& page_url,
     const std::string& mime_type,
     DownloadItem::Observer* observer) {
@@ -596,8 +597,8 @@ void DownloadManagerImpl::RemoveObserver(Observer* observer) {
 }
 
 DownloadItem* DownloadManagerImpl::CreateDownloadItem(
-    const FilePath& current_path,
-    const FilePath& target_path,
+    const base::FilePath& current_path,
+    const base::FilePath& target_path,
     const std::vector<GURL>& url_chain,
     const GURL& referrer_url,
     const base::Time& start_time,

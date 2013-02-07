@@ -223,7 +223,7 @@ IndexedDBDatabaseMetadata IndexedDBDispatcherHost::ConvertMetadata(
 void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
     const IndexedDBHostMsg_FactoryGetDatabaseNames_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  FilePath indexed_db_path = indexed_db_context_->data_path();
+  base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
   WebSecurityOrigin origin(
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin));
@@ -237,7 +237,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
     const IndexedDBHostMsg_FactoryOpen_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  FilePath indexed_db_path = indexed_db_context_->data_path();
+  base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
   GURL origin_url = DatabaseUtil::GetOriginFromIdentifier(params.origin);
   WebSecurityOrigin origin(
@@ -264,7 +264,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
 
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
     const IndexedDBHostMsg_FactoryDeleteDatabase_Params& params) {
-  FilePath indexed_db_path = indexed_db_context_->data_path();
+  base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   Context()->GetIDBFactory()->deleteDatabase(

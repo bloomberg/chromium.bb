@@ -23,7 +23,7 @@ PepperFlashSettingsHelperImpl::~PepperFlashSettingsHelperImpl() {
 }
 
 void PepperFlashSettingsHelperImpl::OpenChannelToBroker(
-    const FilePath& path,
+    const base::FilePath& path,
     const OpenChannelCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 

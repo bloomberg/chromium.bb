@@ -28,7 +28,7 @@ WebIntentsDispatcherImpl::WebIntentsDispatcherImpl(
       intent_injector_(NULL) {
   // Ensure that WebIntentData sent from a renderer process
   // carries the right payload type and no extraneous data.
-  intent_.blob_file = FilePath();
+  intent_.blob_file = base::FilePath();
   intent_.blob_length = 0;
   intent_.root_name = "";
   intent_.filesystem_id = "";

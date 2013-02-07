@@ -79,7 +79,7 @@ class DownloadFileWithDelay : public DownloadFileImpl {
  public:
   DownloadFileWithDelay(
       scoped_ptr<DownloadSaveInfo> save_info,
-      const FilePath& default_download_directory,
+      const base::FilePath& default_download_directory,
       const GURL& url,
       const GURL& referrer_url,
       bool calculate_hash,
@@ -95,10 +95,10 @@ class DownloadFileWithDelay : public DownloadFileImpl {
   // storing it in the factory that produced this object for later
   // retrieval.
   virtual void RenameAndUniquify(
-      const FilePath& full_path,
+      const base::FilePath& full_path,
       const RenameCompletionCallback& callback) OVERRIDE;
   virtual void RenameAndAnnotate(
-      const FilePath& full_path,
+      const base::FilePath& full_path,
       const RenameCompletionCallback& callback) OVERRIDE;
 
  private:
@@ -106,7 +106,7 @@ class DownloadFileWithDelay : public DownloadFileImpl {
       DownloadFileWithDelayFactory* factory,
       const RenameCompletionCallback& original_callback,
       DownloadInterruptReason reason,
-      const FilePath& path);
+      const base::FilePath& path);
 
   // This variable may only be read on the FILE thread, and may only be
   // indirected through (e.g. methods on DownloadFileWithDelayFactory called)
@@ -127,7 +127,7 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
   // DownloadFileFactory interface.
   virtual DownloadFile* CreateFile(
       scoped_ptr<DownloadSaveInfo> save_info,
-      const FilePath& default_download_directory,
+      const base::FilePath& default_download_directory,
       const GURL& url,
       const GURL& referrer_url,
       bool calculate_hash,
@@ -151,7 +151,7 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
 
 DownloadFileWithDelay::DownloadFileWithDelay(
     scoped_ptr<DownloadSaveInfo> save_info,
-    const FilePath& default_download_directory,
+    const base::FilePath& default_download_directory,
     const GURL& url,
     const GURL& referrer_url,
     bool calculate_hash,
@@ -169,7 +169,8 @@ DownloadFileWithDelay::DownloadFileWithDelay(
 DownloadFileWithDelay::~DownloadFileWithDelay() {}
 
 void DownloadFileWithDelay::RenameAndUniquify(
-    const FilePath& full_path, const RenameCompletionCallback& callback) {
+    const base::FilePath& full_path,
+    const RenameCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DownloadFileImpl::RenameAndUniquify(
       full_path, base::Bind(DownloadFileWithDelay::RenameCallbackWrapper,
@@ -177,7 +178,7 @@ void DownloadFileWithDelay::RenameAndUniquify(
 }
 
 void DownloadFileWithDelay::RenameAndAnnotate(
-    const FilePath& full_path, const RenameCompletionCallback& callback) {
+    const base::FilePath& full_path, const RenameCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DownloadFileImpl::RenameAndAnnotate(
       full_path, base::Bind(DownloadFileWithDelay::RenameCallbackWrapper,
@@ -189,7 +190,7 @@ void DownloadFileWithDelay::RenameCallbackWrapper(
     DownloadFileWithDelayFactory* factory,
     const RenameCompletionCallback& original_callback,
     DownloadInterruptReason reason,
-    const FilePath& path) {
+    const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   factory->AddRenameCallback(base::Bind(original_callback, reason, path));
 }
@@ -201,7 +202,7 @@ DownloadFileWithDelayFactory::~DownloadFileWithDelayFactory() {}
 
 DownloadFile* DownloadFileWithDelayFactory::CreateFile(
     scoped_ptr<DownloadSaveInfo> save_info,
-    const FilePath& default_download_directory,
+    const base::FilePath& default_download_directory,
     const GURL& url,
     const GURL& referrer_url,
     bool calculate_hash,
@@ -245,7 +246,7 @@ class CountingDownloadFile : public DownloadFileImpl {
  public:
   CountingDownloadFile(
     scoped_ptr<DownloadSaveInfo> save_info,
-    const FilePath& default_downloads_directory,
+    const base::FilePath& default_downloads_directory,
     const GURL& url,
     const GURL& referrer_url,
     bool calculate_hash,
@@ -300,7 +301,7 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
   // DownloadFileFactory interface.
   virtual DownloadFile* CreateFile(
     scoped_ptr<DownloadSaveInfo> save_info,
-    const FilePath& default_downloads_directory,
+    const base::FilePath& default_downloads_directory,
     const GURL& url,
     const GURL& referrer_url,
     bool calculate_hash,
@@ -393,7 +394,7 @@ class DownloadContentTest : public ContentBrowserTest {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&URLRequestSlowDownloadJob::AddUrlHandler));
-    FilePath mock_base(GetTestFilePath("download", ""));
+    base::FilePath mock_base(GetTestFilePath("download", ""));
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&URLRequestMockHTTPJob::AddUrlHandler, mock_base));
@@ -449,7 +450,7 @@ class DownloadContentTest : public ContentBrowserTest {
 
   // Checks that |path| is has |file_size| bytes, and matches the |value|
   // string.
-  bool VerifyFile(const FilePath& path,
+  bool VerifyFile(const base::FilePath& path,
                   const std::string& value,
                   const int64 file_size) {
     std::string file_contents;
@@ -531,7 +532,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
   DownloadItem* download1 = downloads[0];  // The only download.
 
   // Start the second download and wait until it's done.
-  FilePath file(FILE_PATH_LITERAL("download-test.lib"));
+  base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
   // Download the file and wait.
   DownloadAndWait(shell(), url, DownloadItem::COMPLETE);
@@ -559,13 +560,13 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
   // Verify that the files have the expected data and size.
   // |file1| should be full of '*'s, and |file2| should be the same as the
   // source file.
-  FilePath file1(download1->GetFullPath());
+  base::FilePath file1(download1->GetFullPath());
   size_t file_size1 = URLRequestSlowDownloadJob::kFirstDownloadSize +
                       URLRequestSlowDownloadJob::kSecondDownloadSize;
   std::string expected_contents(file_size1, '*');
   ASSERT_TRUE(VerifyFile(file1, expected_contents, file_size1));
 
-  FilePath file2(download2->GetFullPath());
+  base::FilePath file2(download2->GetFullPath());
   ASSERT_TRUE(file_util::ContentsEqual(
       file2, GetTestFilePath("download", "download-test.lib")));
 }
@@ -581,7 +582,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtFinalRename) {
       scoped_ptr<DownloadFileFactory>(file_factory).Pass());
 
   // Create a download
-  FilePath file(FILE_PATH_LITERAL("download-test.lib"));
+  base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
   NavigateToURL(shell(), URLRequestMockHTTPJob::GetMockUrl(file));
 
   // Wait until the first (intermediate file) rename and execute the callback.
@@ -630,7 +631,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
       scoped_ptr<DownloadFileFactory>(file_factory).Pass());
 
   // Create a download
-  FilePath file(FILE_PATH_LITERAL("download-test.lib"));
+  base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
   NavigateToURL(shell(), URLRequestMockHTTPJob::GetMockUrl(file));
 
   // Wait until the first (intermediate file) rename and execute the callback.
@@ -726,7 +727,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
       scoped_ptr<DownloadFileFactory>(file_factory).Pass());
 
   // Create a download
-  FilePath file(FILE_PATH_LITERAL("download-test.lib"));
+  base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
   NavigateToURL(shell(), URLRequestMockHTTPJob::GetMockUrl(file));
 
   // Wait until the first (intermediate file) rename and execute the callback.

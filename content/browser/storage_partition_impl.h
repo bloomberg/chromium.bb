@@ -20,7 +20,7 @@ class StoragePartitionImpl : public StoragePartition {
   virtual ~StoragePartitionImpl();
 
   // StoragePartition interface.
-  virtual FilePath GetPath() OVERRIDE;
+  virtual base::FilePath GetPath() OVERRIDE;
   virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetMediaURLRequestContext() OVERRIDE;
   virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
@@ -45,10 +45,10 @@ class StoragePartitionImpl : public StoragePartition {
   // on to disk.
   static StoragePartitionImpl* Create(BrowserContext* context,
                                       bool in_memory,
-                                      const FilePath& profile_path);
+                                      const base::FilePath& profile_path);
 
   StoragePartitionImpl(
-      const FilePath& partition_path,
+      const base::FilePath& partition_path,
       quota::QuotaManager* quota_manager,
       ChromeAppCacheService* appcache_service,
       fileapi::FileSystemContext* filesystem_context,
@@ -72,7 +72,7 @@ class StoragePartitionImpl : public StoragePartition {
   void SetMediaURLRequestContext(
       net::URLRequestContextGetter* media_url_request_context);
 
-  FilePath partition_path_;
+  base::FilePath partition_path_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   scoped_refptr<net::URLRequestContextGetter> media_url_request_context_;
   scoped_refptr<quota::QuotaManager> quota_manager_;

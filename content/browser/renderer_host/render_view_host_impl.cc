@@ -616,7 +616,8 @@ void RenderViewHostImpl::DragTargetDragEnter(
     // which will happen at this point, so generously grant both access
     // and request permissions to the specific file to cover both cases.
     // We do not give it the permission to request all file:// URLs.
-    FilePath path = FilePath::FromUTF8Unsafe(UTF16ToUTF8(iter->path));
+    base::FilePath path =
+        base::FilePath::FromUTF8Unsafe(UTF16ToUTF8(iter->path));
 
     // Make sure we have the same display_name as the one we register.
     if (iter->display_name.empty()) {
@@ -865,9 +866,9 @@ void RenderViewHostImpl::FilesSelectedInChooser(
 
 void RenderViewHostImpl::DirectoryEnumerationFinished(
     int request_id,
-    const std::vector<FilePath>& files) {
+    const std::vector<base::FilePath>& files) {
   // Grant the security access requested to the given files.
-  for (std::vector<FilePath>::const_iterator file = files.begin();
+  for (std::vector<base::FilePath>::const_iterator file = files.begin();
        file != files.end(); ++file) {
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
         GetProcess()->GetID(), *file);
@@ -1483,7 +1484,7 @@ void RenderViewHostImpl::OnStartDragging(
   for (std::vector<WebDropData::FileInfo>::const_iterator it =
            drop_data.filenames.begin();
        it != drop_data.filenames.end(); ++it) {
-    FilePath path(FilePath::FromUTF8Unsafe(UTF16ToUTF8(it->path)));
+    base::FilePath path(base::FilePath::FromUTF8Unsafe(UTF16ToUTF8(it->path)));
     if (policy->CanReadFile(GetProcess()->GetID(), path))
       filtered_data.filenames.push_back(*it);
   }

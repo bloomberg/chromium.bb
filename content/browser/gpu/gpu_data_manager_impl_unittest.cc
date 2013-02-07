@@ -219,7 +219,7 @@ TEST_F(GpuDataManagerImplTest, SoftwareRendering) {
 
   // If software rendering is enabled, even if we blacklist GPU,
   // GPU process is still allowed.
-  const FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
+  const base::FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
   manager->RegisterSwiftShaderPath(test_path);
   EXPECT_TRUE(manager->ShouldUseSoftwareRendering());
   EXPECT_TRUE(manager->GpuAccessAllowed());
@@ -235,7 +235,7 @@ TEST_F(GpuDataManagerImplTest, SoftwareRendering2) {
   EXPECT_TRUE(manager->GpuAccessAllowed());
   EXPECT_FALSE(manager->ShouldUseSoftwareRendering());
 
-  const FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
+  const base::FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
   manager->RegisterSwiftShaderPath(test_path);
   EXPECT_EQ(0, manager->GetBlacklistedFeatures());
   EXPECT_TRUE(manager->GpuAccessAllowed());
@@ -275,7 +275,7 @@ TEST_F(GpuDataManagerImplTest, NoGpuInfoUpdateWithSoftwareRendering) {
   ASSERT_TRUE(manager.get());
 
   manager->BlacklistCard();
-  const FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
+  const base::FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
   manager->RegisterSwiftShaderPath(test_path);
   EXPECT_TRUE(manager->ShouldUseSoftwareRendering());
   EXPECT_TRUE(manager->GpuAccessAllowed());

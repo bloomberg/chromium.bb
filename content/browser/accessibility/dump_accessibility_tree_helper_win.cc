@@ -160,13 +160,13 @@ string16 DumpAccessibilityTreeHelper::ToString(
   return UTF8ToUTF16(prefix) + FinishLine() + ASCIIToUTF16("\n");
 }
 
-const FilePath::StringType DumpAccessibilityTreeHelper::GetActualFileSuffix()
-    const {
+const base::FilePath::StringType
+DumpAccessibilityTreeHelper::GetActualFileSuffix() const {
   return FILE_PATH_LITERAL("-actual-win.txt");
 }
 
-const FilePath::StringType DumpAccessibilityTreeHelper::GetExpectedFileSuffix()
-    const {
+const base::FilePath::StringType
+DumpAccessibilityTreeHelper::GetExpectedFileSuffix() const {
   return FILE_PATH_LITERAL("-expected-win.txt");
 }
 

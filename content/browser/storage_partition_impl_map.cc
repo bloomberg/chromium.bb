@@ -222,13 +222,13 @@ void InitializeURLRequestContext(
 // The code in GetStoragePartitionPath() constructs these path names.
 //
 // TODO(nasko): Move extension related path code out of content.
-const FilePath::CharType kStoragePartitionDirname[] =
+const base::FilePath::CharType kStoragePartitionDirname[] =
     FILE_PATH_LITERAL("Storage");
-const FilePath::CharType kExtensionsDirname[] =
+const base::FilePath::CharType kExtensionsDirname[] =
     FILE_PATH_LITERAL("ext");
-const FilePath::CharType kDefaultPartitionDirname[] =
+const base::FilePath::CharType kDefaultPartitionDirname[] =
     FILE_PATH_LITERAL("def");
-const FilePath::CharType kTrashDirname[] =
+const base::FilePath::CharType kTrashDirname[] =
     FILE_PATH_LITERAL("trash");
 
 // Because partition names are user specified, they can be arbitrarily long
@@ -271,12 +271,12 @@ const int kAllFileTypes = file_util::FileEnumerator::FILES |
                           file_util::FileEnumerator::DIRECTORIES;
 #endif
 
-FilePath GetStoragePartitionDomainPath(
+base::FilePath GetStoragePartitionDomainPath(
     const std::string& partition_domain) {
   CHECK(IsStringUTF8(partition_domain));
 
-  return FilePath(kStoragePartitionDirname).Append(kExtensionsDirname)
-      .Append(FilePath::FromUTF8Unsafe(partition_domain));
+  return base::FilePath(kStoragePartitionDirname).Append(kExtensionsDirname)
+      .Append(base::FilePath::FromUTF8Unsafe(partition_domain));
 }
 
 // Helper function for doing a depth-first deletion of the data on disk.
@@ -284,18 +284,19 @@ FilePath GetStoragePartitionDomainPath(
 // delete from disk anything that is in, or isn't a parent of something in
 // |paths_to_keep|. Paths that need further expansion are added to
 // |paths_to_consider|.
-void ObliterateOneDirectory(const FilePath& current_dir,
-                            const std::vector<FilePath>& paths_to_keep,
-                            std::vector<FilePath>* paths_to_consider) {
+void ObliterateOneDirectory(const base::FilePath& current_dir,
+                            const std::vector<base::FilePath>& paths_to_keep,
+                            std::vector<base::FilePath>* paths_to_consider) {
   CHECK(current_dir.IsAbsolute());
 
   file_util::FileEnumerator enumerator(current_dir, false, kAllFileTypes);
-  for (FilePath to_delete = enumerator.Next(); !to_delete.empty();
+  for (base::FilePath to_delete = enumerator.Next(); !to_delete.empty();
        to_delete = enumerator.Next()) {
     // Enum tracking which of the 3 possible actions to take for |to_delete|.
     enum { kSkip, kEnqueue, kDelete } action = kDelete;
 
-    for (std::vector<FilePath>::const_iterator to_keep = paths_to_keep.begin();
+    for (std::vector<base::FilePath>::const_iterator to_keep =
+             paths_to_keep.begin();
          to_keep != paths_to_keep.end();
          ++to_keep) {
       if (to_delete == *to_keep) {
@@ -329,9 +330,9 @@ void ObliterateOneDirectory(const FilePath& current_dir,
 // disk, then it completely removes |unnormalized_root|. All paths must be
 // absolute paths.
 void BlockingObliteratePath(
-    const FilePath& unnormalized_browser_context_root,
-    const FilePath& unnormalized_root,
-    const std::vector<FilePath>& paths_to_keep,
+    const base::FilePath& unnormalized_browser_context_root,
+    const base::FilePath& unnormalized_root,
+    const std::vector<base::FilePath>& paths_to_keep,
     const scoped_refptr<base::TaskRunner>& closure_runner,
     const base::Closure& on_gc_required) {
   // Early exit required because file_util::AbsolutePath() will fail on POSIX
@@ -343,16 +344,16 @@ void BlockingObliteratePath(
 
   // Never try to obliterate things outside of the browser context root or the
   // browser context root itself. Die hard.
-  FilePath root = unnormalized_root;
-  FilePath browser_context_root = unnormalized_browser_context_root;
+  base::FilePath root = unnormalized_root;
+  base::FilePath browser_context_root = unnormalized_browser_context_root;
   CHECK(file_util::AbsolutePath(&root));
   CHECK(file_util::AbsolutePath(&browser_context_root));
   CHECK(file_util::ContainsPath(browser_context_root, root) &&
         browser_context_root != root);
 
   // Reduce |paths_to_keep| set to those under the root and actually on disk.
-  std::vector<FilePath> valid_paths_to_keep;
-  for (std::vector<FilePath>::const_iterator it = paths_to_keep.begin();
+  std::vector<base::FilePath> valid_paths_to_keep;
+  for (std::vector<base::FilePath>::const_iterator it = paths_to_keep.begin();
        it != paths_to_keep.end();
        ++it) {
     if (root.IsParent(*it) && file_util::PathExists(*it))
@@ -370,10 +371,10 @@ void BlockingObliteratePath(
 
   // Otherwise, start at the root and delete everything that is not in
   // |valid_paths_to_keep|.
-  std::vector<FilePath> paths_to_consider;
+  std::vector<base::FilePath> paths_to_consider;
   paths_to_consider.push_back(root);
   while(!paths_to_consider.empty()) {
-    FilePath path = paths_to_consider.back();
+    base::FilePath path = paths_to_consider.back();
     paths_to_consider.pop_back();
     ObliterateOneDirectory(path, valid_paths_to_keep, &paths_to_consider);
   }
@@ -397,19 +398,19 @@ void BlockingObliteratePath(
 // This function is still named BlockingGarbageCollect() because it does
 // execute a few filesystem operations synchronously.
 void BlockingGarbageCollect(
-    const FilePath& storage_root,
+    const base::FilePath& storage_root,
     const scoped_refptr<base::TaskRunner>& file_access_runner,
-    scoped_ptr<base::hash_set<FilePath> > active_paths) {
+    scoped_ptr<base::hash_set<base::FilePath> > active_paths) {
   CHECK(storage_root.IsAbsolute());
 
   file_util::FileEnumerator enumerator(storage_root, false, kAllFileTypes);
-  FilePath trash_directory;
+  base::FilePath trash_directory;
   if (!file_util::CreateTemporaryDirInDir(storage_root, kTrashDirname,
                                           &trash_directory)) {
     // Unable to continue without creating the trash directory so give up.
     return;
   }
-  for (FilePath path = enumerator.Next(); !path.empty();
+  for (base::FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
     if (active_paths->find(path) == active_paths->end() &&
         path != trash_directory) {
@@ -428,13 +429,13 @@ void BlockingGarbageCollect(
 }  // namespace
 
 // static
-FilePath StoragePartitionImplMap::GetStoragePartitionPath(
+base::FilePath StoragePartitionImplMap::GetStoragePartitionPath(
     const std::string& partition_domain,
     const std::string& partition_name) {
   if (partition_domain.empty())
-    return FilePath();
+    return base::FilePath();
 
-  FilePath path = GetStoragePartitionDomainPath(partition_domain);
+  base::FilePath path = GetStoragePartitionDomainPath(partition_domain);
 
   // TODO(ajwong): Mangle in-memory into this somehow, either by putting
   // it into the partition_name, or by manually adding another path component
@@ -479,7 +480,7 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   if (it != partitions_.end())
     return it->second;
 
-  FilePath partition_path =
+  base::FilePath partition_path =
       browser_context_->GetPath().Append(
           GetStoragePartitionPath(partition_domain, partition_name));
   StoragePartitionImpl* partition =
@@ -524,7 +525,7 @@ void StoragePartitionImplMap::AsyncObliterate(
   // remove any data they have saved. This will leave the directory structure
   // intact but it will only contain empty databases.
   std::vector<StoragePartitionImpl*> active_partitions;
-  std::vector<FilePath> paths_to_keep;
+  std::vector<base::FilePath> paths_to_keep;
   for (PartitionMap::const_iterator it = partitions_.begin();
        it != partitions_.end();
        ++it) {
@@ -541,7 +542,7 @@ void StoragePartitionImplMap::AsyncObliterate(
   // known to still be in use. This is to delete any previously created
   // StoragePartition state that just happens to not have been used during this
   // run of the browser.
-  FilePath domain_root = browser_context_->GetPath().Append(
+  base::FilePath domain_root = browser_context_->GetPath().Append(
       GetStoragePartitionDomainPath(partition_domain));
 
   BrowserThread::PostBlockingPoolTask(
@@ -552,7 +553,7 @@ void StoragePartitionImplMap::AsyncObliterate(
 }
 
 void StoragePartitionImplMap::GarbageCollect(
-    scoped_ptr<base::hash_set<FilePath> > active_paths,
+    scoped_ptr<base::hash_set<base::FilePath> > active_paths,
     const base::Closure& done) {
   // Include all paths for current StoragePartitions in the active_paths since
   // they cannot be deleted safely.
@@ -566,7 +567,7 @@ void StoragePartitionImplMap::GarbageCollect(
 
   // Find the directory holding the StoragePartitions and delete everything in
   // there that isn't considered active.
-  FilePath storage_root = browser_context_->GetPath().Append(
+  base::FilePath storage_root = browser_context_->GetPath().Append(
       GetStoragePartitionDomainPath(std::string()));
   file_access_runner_->PostTaskAndReply(
       FROM_HERE,
@@ -604,7 +605,7 @@ void StoragePartitionImplMap::PostCreateInitialization(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
                    partition->GetAppCacheService(),
-                   in_memory ? FilePath() :
+                   in_memory ? base::FilePath() :
                        partition->GetPath().Append(kAppCacheDirname),
                    browser_context_->GetResourceContext(),
                    make_scoped_refptr(partition->GetURLRequestContext()),

@@ -18,7 +18,7 @@ bool RegisterTracingIntentHandler(JNIEnv* env);
 
 class TracingIntentHandler : public TraceSubscriberStdio {
  public:
-  explicit TracingIntentHandler(const FilePath& path);
+  explicit TracingIntentHandler(const base::FilePath& path);
   virtual ~TracingIntentHandler();
 
   // TraceSubscriber implementation

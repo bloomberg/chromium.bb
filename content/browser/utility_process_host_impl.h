@@ -35,7 +35,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   virtual bool Send(IPC::Message* message) OVERRIDE;
   virtual bool StartBatchMode() OVERRIDE;
   virtual void EndBatchMode() OVERRIDE;
-  virtual void SetExposedDir(const FilePath& dir) OVERRIDE;
+  virtual void SetExposedDir(const base::FilePath& dir) OVERRIDE;
   virtual void DisableSandbox() OVERRIDE;
   virtual void EnableZygote() OVERRIDE;
   virtual const ChildProcessData& GetData() OVERRIDE;
@@ -61,7 +61,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   // and the utility process will run until EndBatchMode().
   bool is_batch_mode_;
 
-  FilePath exposed_dir_;
+  base::FilePath exposed_dir_;
 
   // Whether to pass switches::kNoSandbox to the child.
   bool no_sandbox_;

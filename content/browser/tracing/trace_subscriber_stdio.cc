@@ -16,7 +16,7 @@ namespace content {
 class TraceSubscriberStdioImpl
     : public base::RefCountedThreadSafe<TraceSubscriberStdioImpl> {
  public:
-  explicit TraceSubscriberStdioImpl(const FilePath& path)
+  explicit TraceSubscriberStdioImpl(const base::FilePath& path)
       : path_(path),
         file_(0) {}
 
@@ -73,12 +73,12 @@ class TraceSubscriberStdioImpl
     }
   }
 
-  FilePath path_;
+  base::FilePath path_;
   FILE* file_;
   base::debug::TraceResultBuffer trace_buffer_;
 };
 
-TraceSubscriberStdio::TraceSubscriberStdio(const FilePath& path)
+TraceSubscriberStdio::TraceSubscriberStdio(const base::FilePath& path)
     : impl_(new TraceSubscriberStdioImpl(path)) {
   BrowserThread::PostBlockingPoolSequencedTask(
       __FILE__, FROM_HERE,

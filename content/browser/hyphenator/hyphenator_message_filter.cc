@@ -45,7 +45,7 @@ HyphenatorMessageFilter::~HyphenatorMessageFilter() {
   }
 }
 
-void HyphenatorMessageFilter::SetDictionaryBase(const FilePath& base) {
+void HyphenatorMessageFilter::SetDictionaryBase(const base::FilePath& base) {
   dictionary_base_ = base;
 }
 
@@ -99,7 +99,7 @@ void HyphenatorMessageFilter::OpenDictionary(const string16& locale) {
   if (rule_file != "en-US")
     return;
   rule_file.append("-1-0.dic");
-  FilePath rule_path = dictionary_base_.AppendASCII(rule_file);
+  base::FilePath rule_path = dictionary_base_.AppendASCII(rule_file);
   dictionary_file_ = base::CreatePlatformFile(
       rule_path,
       base::PLATFORM_FILE_READ | base::PLATFORM_FILE_OPEN,

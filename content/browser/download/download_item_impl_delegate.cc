@@ -30,7 +30,7 @@ void DownloadItemImplDelegate::Detach() {
 void DownloadItemImplDelegate::DetermineDownloadTarget(
     DownloadItemImpl* download, const DownloadTargetCallback& callback) {
   // TODO(rdsmith/asanka): Do something useful if forced file path is null.
-  FilePath target_path(download->GetForcedFilePath());
+  base::FilePath target_path(download->GetForcedFilePath());
   callback.Run(target_path,
                DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
@@ -49,7 +49,7 @@ bool DownloadItemImplDelegate::ShouldOpenDownload(
 }
 
 bool DownloadItemImplDelegate::ShouldOpenFileBasedOnExtension(
-    const FilePath& path) {
+    const base::FilePath& path) {
   return false;
 }
 

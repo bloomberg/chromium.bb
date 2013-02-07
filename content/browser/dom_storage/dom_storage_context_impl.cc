@@ -66,7 +66,7 @@ void GetSessionStorageUsageHelper(
 }  // namespace
 
 DOMStorageContextImpl::DOMStorageContextImpl(
-    const FilePath& data_path,
+    const base::FilePath& data_path,
     quota::SpecialStoragePolicy* special_storage_policy) {
   base::SequencedWorkerPool* worker_pool = BrowserThread::GetBlockingPool();
   context_ = new dom_storage::DomStorageContext(

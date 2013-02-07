@@ -121,7 +121,7 @@ TEST_F(HyphenatorMessageFilterTest, OpenDictionary) {
 
   // Open a sample dictionary file and attach it to the
   // HyphenatorMessageFilter class so it can return a valid file.
-  FilePath path;
+  base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.Append(FILE_PATH_LITERAL("third_party"));
   path = path.Append(FILE_PATH_LITERAL("hyphen"));

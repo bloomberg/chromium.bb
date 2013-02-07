@@ -112,12 +112,14 @@ string16 DumpAccessibilityTreeHelper::ToString(BrowserAccessibility* node,
   return ASCIIToUTF16(prefix) + FinishLine() + ASCIIToUTF16("\n");
 }
 
-const FilePath::StringType DumpAccessibilityTreeHelper::GetActualFileSuffix()
+const base::FilePath::StringType
+DumpAccessibilityTreeHelper::GetActualFileSuffix()
     const {
   return FILE_PATH_LITERAL("-actual-mac.txt");
 }
 
-const FilePath::StringType DumpAccessibilityTreeHelper::GetExpectedFileSuffix()
+const base::FilePath::StringType
+DumpAccessibilityTreeHelper::GetExpectedFileSuffix()
     const {
   return FILE_PATH_LITERAL("-expected-mac.txt");
 }

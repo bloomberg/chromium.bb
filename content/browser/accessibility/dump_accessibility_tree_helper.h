@@ -50,8 +50,8 @@ class DumpAccessibilityTreeHelper {
   // HTML test:      test-file.html
   // Expected:       test-file-expected-mac.txt.
   // Auto-generated: test-file-actual-mac.txt
-  const FilePath::StringType GetActualFileSuffix() const;
-  const FilePath::StringType GetExpectedFileSuffix() const;
+  const base::FilePath::StringType GetActualFileSuffix() const;
+  const base::FilePath::StringType GetExpectedFileSuffix() const;
 
   // A platform-specific string that indicates a given line in a file
   // is an allow-empty, allow or deny filter. Example:

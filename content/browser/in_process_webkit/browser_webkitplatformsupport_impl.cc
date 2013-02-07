@@ -117,7 +117,7 @@ WebKit::WebData BrowserWebKitPlatformSupportImpl::loadResource(
 
 int BrowserWebKitPlatformSupportImpl::databaseDeleteFile(
     const WebKit::WebString& vfs_file_name, bool sync_dir) {
-  const FilePath path = webkit_base::WebStringToFilePath(vfs_file_name);
+  const base::FilePath path = webkit_base::WebStringToFilePath(vfs_file_name);
   return file_util::Delete(path, false) ? 0 : 1;
 }
 

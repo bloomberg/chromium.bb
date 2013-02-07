@@ -21,7 +21,7 @@ class CONTENT_EXPORT TraceSubscriberStdio
     : NON_EXPORTED_BASE(public TraceSubscriber) {
  public:
   // Creates or overwrites the specified file. Check IsValid() for success.
-  explicit TraceSubscriberStdio(const FilePath& path);
+  explicit TraceSubscriberStdio(const base::FilePath& path);
   virtual ~TraceSubscriberStdio();
 
   // Implementation of TraceSubscriber

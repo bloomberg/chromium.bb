@@ -76,7 +76,7 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
 
   static PpapiPluginProcessHost* CreatePluginHost(
       const PepperPluginInfo& info,
-      const FilePath& profile_data_directory,
+      const base::FilePath& profile_data_directory,
       net::HostResolver* host_resolver);
   static PpapiPluginProcessHost* CreateBrokerHost(
       const PepperPluginInfo& info);
@@ -107,8 +107,8 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
   // channel is ready or if there's an error.
   void OpenChannelToPlugin(Client* client);
 
-  const FilePath& plugin_path() const { return plugin_path_; }
-  const FilePath& profile_data_directory() const {
+  const base::FilePath& plugin_path() const { return plugin_path_; }
+  const base::FilePath& profile_data_directory() const {
     return profile_data_directory_;
   }
 
@@ -120,7 +120,7 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
   // Constructors for plugin and broker process hosts, respectively.
   // You must call Init before doing anything else.
   PpapiPluginProcessHost(const PepperPluginInfo& info,
-                         const FilePath& profile_data_directory,
+                         const base::FilePath& profile_data_directory,
                          net::HostResolver* host_resolver);
   PpapiPluginProcessHost();
 
@@ -160,10 +160,10 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
   std::queue<Client*> sent_requests_;
 
   // Path to the plugin library.
-  FilePath plugin_path_;
+  base::FilePath plugin_path_;
 
   // Path to the top-level plugin data directory (differs based upon profile).
-  FilePath profile_data_directory_;
+  base::FilePath profile_data_directory_;
 
   const bool is_broker_;
 

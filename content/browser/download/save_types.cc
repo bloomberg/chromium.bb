@@ -6,7 +6,7 @@
 
 namespace content {
 
-SaveFileCreateInfo::SaveFileCreateInfo(const FilePath& path,
+SaveFileCreateInfo::SaveFileCreateInfo(const base::FilePath& path,
                                        const GURL& url,
                                        SaveFileSource save_source,
                                        int32 save_id)

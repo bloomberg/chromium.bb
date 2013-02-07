@@ -249,7 +249,7 @@ class PepperMessageFilter
 
   NetworkMonitorIdSet network_monitor_ids_;
 
-  FilePath browser_path_;
+  base::FilePath browser_path_;
   bool incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperMessageFilter);

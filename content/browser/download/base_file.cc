@@ -25,7 +25,7 @@ namespace content {
 // This will initialize the entire array to zero.
 const unsigned char BaseFile::kEmptySha256Hash[] = { 0 };
 
-BaseFile::BaseFile(const FilePath& full_path,
+BaseFile::BaseFile(const base::FilePath& full_path,
                    const GURL& source_url,
                    const GURL& referrer_url,
                    int64 received_bytes,
@@ -63,7 +63,7 @@ BaseFile::~BaseFile() {
 }
 
 DownloadInterruptReason BaseFile::Initialize(
-    const FilePath& default_directory) {
+    const base::FilePath& default_directory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
 
@@ -73,8 +73,8 @@ DownloadInterruptReason BaseFile::Initialize(
   }
 
   if (full_path_.empty()) {
-    FilePath initial_directory(default_directory);
-    FilePath temp_file;
+    base::FilePath initial_directory(default_directory);
+    base::FilePath temp_file;
     if (initial_directory.empty()) {
       initial_directory =
           GetContentClient()->browser()->GetDefaultDownloadDirectory();
@@ -148,7 +148,7 @@ DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
   return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
-DownloadInterruptReason BaseFile::Rename(const FilePath& new_path) {
+DownloadInterruptReason BaseFile::Rename(const base::FilePath& new_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DownloadInterruptReason rename_result = DOWNLOAD_INTERRUPT_REASON_NONE;
 

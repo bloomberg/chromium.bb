@@ -15,7 +15,7 @@ namespace content {
 //               Unfortunately, as it is, constructors of SaveFile don't always
 //               have access to the SavePackage at this point.
 SaveFile::SaveFile(const SaveFileCreateInfo* info, bool calculate_hash)
-    : file_(FilePath(),
+    : file_(base::FilePath(),
             info->url,
             GURL(),
             0,
@@ -35,7 +35,7 @@ SaveFile::~SaveFile() {
 }
 
 DownloadInterruptReason SaveFile::Initialize() {
-  return file_.Initialize(FilePath());
+  return file_.Initialize(base::FilePath());
 }
 
 DownloadInterruptReason SaveFile::AppendDataToFile(const char* data,
@@ -43,7 +43,7 @@ DownloadInterruptReason SaveFile::AppendDataToFile(const char* data,
   return file_.AppendDataToFile(data, data_len);
 }
 
-DownloadInterruptReason SaveFile::Rename(const FilePath& full_path) {
+DownloadInterruptReason SaveFile::Rename(const base::FilePath& full_path) {
   return file_.Rename(full_path);
 }
 
@@ -63,7 +63,7 @@ void SaveFile::AnnotateWithSourceInformation() {
   file_.AnnotateWithSourceInformation();
 }
 
-FilePath SaveFile::FullPath() const {
+base::FilePath SaveFile::FullPath() const {
   return file_.full_path();
 }
 

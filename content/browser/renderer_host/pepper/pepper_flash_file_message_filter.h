@@ -37,7 +37,7 @@ class PepperFlashFileMessageFilter : public ppapi::host::ResourceMessageFilter {
   PepperFlashFileMessageFilter(PP_Instance instance,
                                BrowserPpapiHost* host);
 
-  static FilePath GetDataDirName(const FilePath& profile_path);
+  static base::FilePath GetDataDirName(const base::FilePath& profile_path);
 
  private:
   virtual ~PepperFlashFileMessageFilter();
@@ -66,7 +66,7 @@ class PepperFlashFileMessageFilter : public ppapi::host::ResourceMessageFilter {
                            const ppapi::PepperFilePath& path);
   int32_t OnCreateTemporaryFile(ppapi::host::HostMessageContext* context);
 
-  FilePath ValidateAndConvertPepperFilePath(
+  base::FilePath ValidateAndConvertPepperFilePath(
       const ppapi::PepperFilePath& pepper_path,
       int flags);
 

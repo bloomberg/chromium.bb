@@ -188,7 +188,7 @@ bool ShouldServiceRequest(ProcessType process_type,
 }
 
 void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
-                                               const FilePath& path) {
+                                               const base::FilePath& path) {
   ChildProcessSecurityPolicyImpl::GetInstance()->RevokeAllPermissionsForFile(
       child_id, path);
 }

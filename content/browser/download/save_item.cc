@@ -114,7 +114,7 @@ int SaveItem::PercentComplete() const {
 }
 
 // Rename the save item with new path.
-void SaveItem::Rename(const FilePath& full_path) {
+void SaveItem::Rename(const base::FilePath& full_path) {
   DCHECK(!full_path.empty() && !has_final_name());
   full_path_ = full_path;
   file_name_ = full_path_.BaseName();

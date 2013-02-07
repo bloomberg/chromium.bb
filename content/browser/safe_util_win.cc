@@ -31,7 +31,7 @@ static const GUID kClientID = { 0x2676a9a2, 0xd919, 0x4fee,
 // This function does not invoke Windows Attachment Execution Services.
 //
 // |full_path| is the path to the downloaded file.
-bool SetInternetZoneIdentifierDirectly(const FilePath& full_path) {
+bool SetInternetZoneIdentifierDirectly(const base::FilePath& full_path) {
   const DWORD kShare = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
   std::wstring path = full_path.value() + L":Zone.Identifier";
   HANDLE file = CreateFile(path.c_str(), GENERIC_WRITE, kShare, NULL,
@@ -63,7 +63,7 @@ bool SetInternetZoneIdentifierDirectly(const FilePath& full_path) {
 // more information at:
 // http://msdn2.microsoft.com/en-us/library/ms647048.aspx
 bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
-                           const FilePath& full_path,
+                           const base::FilePath& full_path,
                            const std::wstring& source_url) {
   base::win::ScopedComPtr<IAttachmentExecute> attachment_services;
   HRESULT hr = attachment_services.CreateInstance(CLSID_AttachmentServices);
@@ -119,7 +119,7 @@ bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
   return ui::win::OpenItemViaShellNoZoneCheck(full_path);
 }
 
-HRESULT ScanAndSaveDownloadedFile(const FilePath& full_path,
+HRESULT ScanAndSaveDownloadedFile(const base::FilePath& full_path,
                                   const GURL& source_url) {
   base::win::ScopedComPtr<IAttachmentExecute> attachment_services;
   HRESULT hr = attachment_services.CreateInstance(CLSID_AttachmentServices);

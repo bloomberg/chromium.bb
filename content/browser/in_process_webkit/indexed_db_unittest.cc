@@ -42,8 +42,8 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  FilePath normal_path;
-  FilePath session_only_path;
+  base::FilePath normal_path;
+  base::FilePath session_only_path;
 
   // Create the scope which will ensure we run the destructor of the webkit
   // context which should trigger the clean up.
@@ -86,8 +86,8 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  FilePath normal_path;
-  FilePath session_only_path;
+  base::FilePath normal_path;
+  base::FilePath session_only_path;
 
   // Create the scope which will ensure we run the destructor of the webkit
   // context.
@@ -159,7 +159,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  FilePath test_path;
+  base::FilePath test_path;
 
   // Create the scope which will ensure we run the destructor of the webkit
   // context.

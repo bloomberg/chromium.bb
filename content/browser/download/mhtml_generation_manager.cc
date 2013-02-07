@@ -38,7 +38,7 @@ MHTMLGenerationManager::~MHTMLGenerationManager() {
 
 void MHTMLGenerationManager::GenerateMHTML(
     WebContents* web_contents,
-    const FilePath& file,
+    const base::FilePath& file,
     const GenerateMHTMLCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   static int id_counter = 0;
@@ -63,7 +63,7 @@ void MHTMLGenerationManager::MHTMLGenerated(int job_id, int64 mhtml_data_size) {
 }
 
 void MHTMLGenerationManager::CreateFile(
-    int job_id, const FilePath& file_path,
+    int job_id, const base::FilePath& file_path,
     base::ProcessHandle renderer_process) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::PlatformFile browser_file = base::CreatePlatformFile(file_path,

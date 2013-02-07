@@ -55,7 +55,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   }
   void setup_temp_dir() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    FilePath indexeddb_dir = temp_dir_.path().Append(
+    base::FilePath indexeddb_dir = temp_dir_.path().Append(
         IndexedDBContextImpl::kIndexedDBDirectory);
     ASSERT_TRUE(file_util::CreateDirectory(indexeddb_dir));
     idb_context()->set_data_path_for_testing(indexeddb_dir);
@@ -125,13 +125,13 @@ class IndexedDBQuotaClientTest : public testing::Test {
 
   IndexedDBContextImpl* idb_context() { return idb_context_.get(); }
 
-  void SetFileSizeTo(const FilePath& path, int size) {
+  void SetFileSizeTo(const base::FilePath& path, int size) {
     std::string junk(size, 'a');
     ASSERT_EQ(size, file_util::WriteFile(path, junk.c_str(), size));
   }
 
   void AddFakeIndexedDB(const GURL& origin, int size) {
-    FilePath file_path_origin = idb_context()->GetFilePathForTesting(
+    base::FilePath file_path_origin = idb_context()->GetFilePathForTesting(
         DatabaseUtil::GetOriginIdentifier(origin));
     if (!file_util::CreateDirectory(file_path_origin)) {
       LOG(ERROR) << "failed to file_util::CreateDirectory "

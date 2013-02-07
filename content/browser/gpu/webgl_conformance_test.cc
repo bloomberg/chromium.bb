@@ -29,7 +29,7 @@ class WebGLConformanceTest : public ContentBrowserTest {
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {
-    FilePath webgl_conformance_path;
+    base::FilePath webgl_conformance_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &webgl_conformance_path);
     webgl_conformance_path = webgl_conformance_path.Append(
         FILE_PATH_LITERAL("third_party"));
@@ -74,7 +74,7 @@ class WebGLConformanceTest : public ContentBrowserTest {
   }
 
  private:
-  FilePath test_path_;
+  base::FilePath test_path_;
   GPUTestBotConfig bot_config_;
   GPUTestExpectationsParser test_expectations_;
 };

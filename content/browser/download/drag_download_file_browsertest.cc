@@ -37,7 +37,7 @@ class MockDownloadFileObserver : public ui::DownloadFileObserver {
  public:
   MockDownloadFileObserver() {}
 
-  MOCK_METHOD1(OnDownloadCompleted, void(const FilePath& file_path));
+  MOCK_METHOD1(OnDownloadCompleted, void(const base::FilePath& file_path));
   MOCK_METHOD0(OnDownloadAborted, void());
 
  private:
@@ -72,13 +72,13 @@ class DragDownloadFileTest : public ContentBrowserTest {
   }
 
   void SetUpServer() {
-    FilePath mock_base(GetTestFilePath("download", ""));
+    base::FilePath mock_base(GetTestFilePath("download", ""));
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&URLRequestMockHTTPJob::AddUrlHandler, mock_base));
   }
 
-  const FilePath& downloads_directory() const {
+  const base::FilePath& downloads_directory() const {
     return downloads_directory_.path();
   }
 
@@ -89,9 +89,9 @@ class DragDownloadFileTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(DragDownloadFileTest, DragDownloadFileTest_NetError) {
-  FilePath name(downloads_directory().AppendASCII(
+  base::FilePath name(downloads_directory().AppendASCII(
       "DragDownloadFileTest_NetError.txt"));
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(FilePath(FILE_PATH_LITERAL(
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(base::FilePath(FILE_PATH_LITERAL(
       "download-test.lib"))));
   Referrer referrer;
   std::string referrer_encoding;
@@ -109,9 +109,9 @@ IN_PROC_BROWSER_TEST_F(DragDownloadFileTest, DragDownloadFileTest_NetError) {
 }
 
 IN_PROC_BROWSER_TEST_F(DragDownloadFileTest, DragDownloadFileTest_Complete) {
-  FilePath name(downloads_directory().AppendASCII(
+  base::FilePath name(downloads_directory().AppendASCII(
         "DragDownloadFileTest_Complete.txt"));
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(FilePath(FILE_PATH_LITERAL(
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(base::FilePath(FILE_PATH_LITERAL(
       "download-test.lib"))));
   Referrer referrer;
   std::string referrer_encoding;

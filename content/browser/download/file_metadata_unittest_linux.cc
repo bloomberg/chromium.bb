@@ -32,7 +32,7 @@ class FileMetadataLinuxTest : public testing::Test {
       : source_url_("http://www.source.com"),
         referrer_url_("http://www.referrer.com") {}
 
-  const FilePath& test_file() const {
+  const base::FilePath& test_file() const {
     return test_file_;
   }
 
@@ -105,7 +105,7 @@ class FileMetadataLinuxTest : public testing::Test {
 
  private:
   base::ScopedTempDir temp_dir_;
-  FilePath test_file_;
+  base::FilePath test_file_;
   GURL source_url_;
   GURL referrer_url_;
   bool is_xattr_supported_;

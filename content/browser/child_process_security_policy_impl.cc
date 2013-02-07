@@ -80,21 +80,21 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   }
 
   // Grant certain permissions to a file.
-  void GrantPermissionsForFile(const FilePath& file, int permissions) {
-    FilePath stripped = file.StripTrailingSeparators();
+  void GrantPermissionsForFile(const base::FilePath& file, int permissions) {
+    base::FilePath stripped = file.StripTrailingSeparators();
     file_permissions_[stripped] |= permissions;
     UMA_HISTOGRAM_COUNTS("ChildProcessSecurityPolicy.FilePermissionPathLength",
                          stripped.value().size());
   }
 
   // Grant navigation to a file but not the file:// scheme in general.
-  void GrantRequestOfSpecificFile(const FilePath &file) {
+  void GrantRequestOfSpecificFile(const base::FilePath &file) {
     request_file_set_.insert(file.StripTrailingSeparators());
   }
 
   // Revokes all permissions granted to a file.
-  void RevokeAllPermissionsForFile(const FilePath& file) {
-    FilePath stripped = file.StripTrailingSeparators();
+  void RevokeAllPermissionsForFile(const base::FilePath& file) {
+    base::FilePath stripped = file.StripTrailingSeparators();
     file_permissions_.erase(stripped);
     request_file_set_.erase(stripped);
   }
@@ -139,7 +139,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     // file:// URLs are more granular.  The child may have been given
     // permission to a specific file but not the file:// scheme in general.
     if (url.SchemeIs(chrome::kFileScheme)) {
-      FilePath path;
+      base::FilePath path;
       if (net::FileURLToFilePath(url, &path))
         return request_file_set_.find(path) != request_file_set_.end();
     }
@@ -148,18 +148,18 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   }
 
   // Determine if the certain permissions have been granted to a file.
-  bool HasPermissionsForFile(const FilePath& file, int permissions) {
+  bool HasPermissionsForFile(const base::FilePath& file, int permissions) {
     if (!permissions || file.empty() || !file.IsAbsolute())
       return false;
-    FilePath current_path = file.StripTrailingSeparators();
-    FilePath last_path;
+    base::FilePath current_path = file.StripTrailingSeparators();
+    base::FilePath last_path;
     int skip = 0;
     while (current_path != last_path) {
-      FilePath base_name =  current_path.BaseName();
-      if (base_name.value() == FilePath::kParentDirectory) {
+      base::FilePath base_name =  current_path.BaseName();
+      if (base_name.value() == base::FilePath::kParentDirectory) {
         ++skip;
       } else if (skip > 0) {
-        if (base_name.value() != FilePath::kCurrentDirectory)
+        if (base_name.value() != base::FilePath::kCurrentDirectory)
           --skip;
       } else {
         if (file_permissions_.find(current_path) != file_permissions_.end())
@@ -228,9 +228,9 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   typedef std::map<std::string, bool> SchemeMap;
 
   typedef int FilePermissionFlags;  // bit-set of PlatformFileFlags
-  typedef std::map<FilePath, FilePermissionFlags> FileMap;
+  typedef std::map<base::FilePath, FilePermissionFlags> FileMap;
   typedef std::map<std::string, FilePermissionFlags> FileSystemMap;
-  typedef std::set<FilePath> FileSet;
+  typedef std::set<base::FilePath> FileSet;
 
   // Maps URL schemes to whether permission has been granted or revoked:
   //   |true| means the scheme has been granted.
@@ -406,24 +406,24 @@ void ChildProcessSecurityPolicyImpl::GrantRequestSpecificFileURL(
 
     // When the child process has been commanded to request a file:// URL,
     // then we grant it the capability for that URL only.
-    FilePath path;
+    base::FilePath path;
     if (net::FileURLToFilePath(url, &path))
-        state->second->GrantRequestOfSpecificFile(path);
+      state->second->GrantRequestOfSpecificFile(path);
   }
 }
 
 void ChildProcessSecurityPolicyImpl::GrantReadFile(int child_id,
-                                                   const FilePath& file) {
+                                                   const base::FilePath& file) {
   GrantPermissionsForFile(child_id, file, kReadFilePermissions);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantReadDirectory(
-    int child_id, const FilePath& directory) {
+    int child_id, const base::FilePath& directory) {
   GrantPermissionsForFile(child_id, directory, kEnumerateDirectoryPermissions);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantPermissionsForFile(
-    int child_id, const FilePath& file, int permissions) {
+    int child_id, const base::FilePath& file, int permissions) {
   base::AutoLock lock(lock_);
 
   SecurityStateMap::iterator state = security_state_.find(child_id);
@@ -434,7 +434,7 @@ void ChildProcessSecurityPolicyImpl::GrantPermissionsForFile(
 }
 
 void ChildProcessSecurityPolicyImpl::RevokeAllPermissionsForFile(
-    int child_id, const FilePath& file) {
+    int child_id, const base::FilePath& file) {
   base::AutoLock lock(lock_);
 
   SecurityStateMap::iterator state = security_state_.find(child_id);
@@ -575,12 +575,12 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
 }
 
 bool ChildProcessSecurityPolicyImpl::CanReadFile(int child_id,
-                                                 const FilePath& file) {
+                                                 const base::FilePath& file) {
   return HasPermissionsForFile(child_id, file, kReadFilePermissions);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanReadDirectory(
-    int child_id, const FilePath& directory) {
+    int child_id, const base::FilePath& directory) {
   return HasPermissionsForFile(child_id,
                                directory,
                                kEnumerateDirectoryPermissions);
@@ -602,7 +602,7 @@ bool ChildProcessSecurityPolicyImpl::CanReadWriteFileSystem(
 }
 
 bool ChildProcessSecurityPolicyImpl::HasPermissionsForFile(
-    int child_id, const FilePath& file, int permissions) {
+    int child_id, const base::FilePath& file, int permissions) {
   base::AutoLock lock(lock_);
   bool result = ChildProcessHasPermissionsForFile(child_id, file, permissions);
   if (!result) {
@@ -648,7 +648,7 @@ void ChildProcessSecurityPolicyImpl::AddChild(int child_id) {
 }
 
 bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(
-    int child_id, const FilePath& file, int permissions) {
+    int child_id, const base::FilePath& file, int permissions) {
   SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end())
     return false;

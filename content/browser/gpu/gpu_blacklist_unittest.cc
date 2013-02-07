@@ -59,7 +59,7 @@ class GpuBlacklistTest : public testing::Test {
 };
 
 TEST_F(GpuBlacklistTest, CurrentBlacklistValidation) {
-  FilePath data_file;
+  base::FilePath data_file;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &data_file));
   data_file =
       data_file.Append(FILE_PATH_LITERAL("content"))

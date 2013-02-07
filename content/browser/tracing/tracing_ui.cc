@@ -65,7 +65,9 @@ class TracingMessageHandler
   virtual void RegisterMessages();
 
   // SelectFileDialog::Listener implementation
-  virtual void FileSelected(const FilePath& path, int index, void* params);
+  virtual void FileSelected(const base::FilePath& path,
+                            int index,
+                            void* params);
   virtual void FileSelectionCanceled(void* params);
 
   // TraceSubscriber implementation.
@@ -212,7 +214,7 @@ void TracingMessageHandler::OnBeginRequestBufferPercentFull(
 
 // A callback used for asynchronously reading a file to a string. Calls the
 // TaskProxy callback when reading is complete.
-void ReadTraceFileCallback(TaskProxy* proxy, const FilePath& path) {
+void ReadTraceFileCallback(TaskProxy* proxy, const base::FilePath& path) {
   std::string file_contents;
   if (!file_util::ReadFileToString(path, &file_contents))
     return;
@@ -255,7 +257,7 @@ void ReadTraceFileCallback(TaskProxy* proxy, const FilePath& path) {
 // A callback used for asynchronously writing a file from a string. Calls the
 // TaskProxy callback when writing is complete.
 void WriteTraceFileCallback(TaskProxy* proxy,
-                            const FilePath& path,
+                            const base::FilePath& path,
                             std::string* contents) {
   if (!file_util::WriteFile(path, contents->c_str(), contents->size()))
     return;
@@ -266,7 +268,7 @@ void WriteTraceFileCallback(TaskProxy* proxy,
 }
 
 void TracingMessageHandler::FileSelected(
-    const FilePath& path, int index, void* params) {
+    const base::FilePath& path, int index, void* params) {
   if (select_trace_file_dialog_type_ ==
       ui::SelectFileDialog::SELECT_OPEN_FILE) {
     BrowserThread::PostTask(
@@ -308,7 +310,7 @@ void TracingMessageHandler::OnLoadTraceFile(const ListValue* list) {
   select_trace_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_OPEN_FILE,
       string16(),
-      FilePath(),
+      base::FilePath(),
       NULL, 0, FILE_PATH_LITERAL(""),
       web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
@@ -358,7 +360,7 @@ void TracingMessageHandler::OnSaveTraceFile(const ListValue* list) {
   select_trace_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE,
       string16(),
-      FilePath(),
+      base::FilePath(),
       NULL, 0, FILE_PATH_LITERAL(""),
       web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }

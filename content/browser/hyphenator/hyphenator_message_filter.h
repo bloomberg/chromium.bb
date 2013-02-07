@@ -27,7 +27,7 @@ class CONTENT_EXPORT HyphenatorMessageFilter : public BrowserMessageFilter {
   // containing hyphenation dictionaries. When a renderer requests a hyphnation
   // dictionary, this class appends a file name (which consists of a locale, a
   // version number, and an extension) and use it as a dictionary file.
-  void SetDictionaryBase(const FilePath& directory);
+  void SetDictionaryBase(const base::FilePath& directory);
 
   // BrowserMessageFilter implementation.
   virtual void OverrideThreadForMessage(
@@ -60,7 +60,7 @@ class CONTENT_EXPORT HyphenatorMessageFilter : public BrowserMessageFilter {
 
   // The directory that includes dictionary files. The default value is the
   // directory containing the executable file.
-  FilePath dictionary_base_;
+  base::FilePath dictionary_base_;
 
   // A cached dictionary file.
   base::PlatformFile dictionary_file_;

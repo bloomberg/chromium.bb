@@ -400,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   net::TestServer https_server(
       net::TestServer::TYPE_HTTPS,
       net::TestServer::kLocalhost,
-      FilePath(FILE_PATH_LITERAL("content/test/data")));
+      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
   WebContentsImpl* web_contents =

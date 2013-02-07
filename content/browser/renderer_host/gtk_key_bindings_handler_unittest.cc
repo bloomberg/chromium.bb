@@ -31,7 +31,7 @@ class GtkKeyBindingsHandlerTest : public testing::Test {
   GtkKeyBindingsHandlerTest()
       : window_(gtk_window_new(GTK_WINDOW_TOPLEVEL)),
         handler_(NULL) {
-    FilePath gtkrc;
+    base::FilePath gtkrc;
     PathService::Get(DIR_TEST_DATA, &gtkrc);
     gtkrc = gtkrc.AppendASCII("gtk_key_bindings_test_gtkrc");
     EXPECT_TRUE(file_util::PathExists(gtkrc));

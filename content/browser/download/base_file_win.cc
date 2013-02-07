@@ -290,12 +290,12 @@ DownloadInterruptReason MapScanAndSaveErrorCodeToInterruptReason(
 // gets the correct default security descriptor in the new path.
 // Returns a network error, or net::OK for success.
 DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
-    const FilePath& new_path) {
+    const base::FilePath& new_path) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   // The parameters to SHFileOperation must be terminated with 2 NULL chars.
-  FilePath::StringType source = full_path_.value();
-  FilePath::StringType target = new_path.value();
+  base::FilePath::StringType source = full_path_.value();
+  base::FilePath::StringType target = new_path.value();
 
   source.append(1, L'\0');
   target.append(1, L'\0');

@@ -65,7 +65,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   virtual bool IsCompleteGpuInfoAvailable() const OVERRIDE;
   virtual void RequestVideoMemoryUsageStatsUpdate() const OVERRIDE;
   virtual bool ShouldUseSoftwareRendering() const OVERRIDE;
-  virtual void RegisterSwiftShaderPath(const FilePath& path) OVERRIDE;
+  virtual void RegisterSwiftShaderPath(const base::FilePath& path) OVERRIDE;
   virtual void AddObserver(GpuDataManagerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(GpuDataManagerObserver* observer) OVERRIDE;
   virtual void SetWindowCount(uint32 count) OVERRIDE;
@@ -237,7 +237,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   bool software_rendering_;
 
-  FilePath swiftshader_path_;
+  base::FilePath swiftshader_path_;
 
   // Current card force-blacklisted due to GPU crashes, or disabled through
   // the --disable-gpu commandline switch.

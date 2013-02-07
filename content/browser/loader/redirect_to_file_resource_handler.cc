@@ -164,7 +164,7 @@ bool RedirectToFileResourceHandler::OnResponseCompleted(
 void RedirectToFileResourceHandler::DidCreateTemporaryFile(
     base::PlatformFileError /*error_code*/,
     base::PassPlatformFile file_handle,
-    const FilePath& file_path) {
+    const base::FilePath& file_path) {
   deletable_file_ = ShareableFileReference::GetOrCreate(
       file_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));

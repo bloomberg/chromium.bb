@@ -23,7 +23,7 @@ ChromeAppCacheService::ChromeAppCacheService(
 }
 
 void ChromeAppCacheService::InitializeOnIOThread(
-    const FilePath& cache_path,
+    const base::FilePath& cache_path,
     ResourceContext* resource_context,
     net::URLRequestContextGetter* request_context_getter,
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy) {

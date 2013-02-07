@@ -203,12 +203,12 @@ static void CopyLevelDBToProfile(Shell* shell,
                                  scoped_refptr<IndexedDBContext> context,
                                  const std::string& test_directory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  FilePath leveldb_dir(FILE_PATH_LITERAL("file__0.indexeddb.leveldb"));
-  FilePath test_data_dir =
+  base::FilePath leveldb_dir(FILE_PATH_LITERAL("file__0.indexeddb.leveldb"));
+  base::FilePath test_data_dir =
       GetTestFilePath("indexeddb", test_directory.c_str()).Append(leveldb_dir);
   IndexedDBContextImpl* context_impl =
       static_cast<IndexedDBContextImpl*>(context.get());
-  FilePath dest = context_impl->data_path().Append(leveldb_dir);
+  base::FilePath dest = context_impl->data_path().Append(leveldb_dir);
   // If we don't create the destination directory first, the contents of the
   // leveldb directory are copied directly into profile/IndexedDB instead of
   // profile/IndexedDB/file__0.xxx/
@@ -330,9 +330,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, LevelDBLogFileTest) {
               GetIndexedDBContext();
   IndexedDBContextImpl* context_impl =
       static_cast<IndexedDBContextImpl*>(context.get());
-  FilePath leveldb_dir(FILE_PATH_LITERAL("file__0.indexeddb.leveldb"));
-  FilePath log_file(FILE_PATH_LITERAL("LOG"));
-  FilePath log_file_path =
+  base::FilePath leveldb_dir(FILE_PATH_LITERAL("file__0.indexeddb.leveldb"));
+  base::FilePath log_file(FILE_PATH_LITERAL("LOG"));
+  base::FilePath log_file_path =
       context_impl->data_path().Append(leveldb_dir).Append(log_file);
   int64 size;
   EXPECT_TRUE(file_util::GetFileSize(log_file_path, &size));

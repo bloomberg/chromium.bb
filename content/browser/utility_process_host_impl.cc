@@ -70,7 +70,7 @@ void UtilityProcessHostImpl::EndBatchMode()  {
   Send(new UtilityMsg_BatchMode_Finished());
 }
 
-void UtilityProcessHostImpl::SetExposedDir(const FilePath& dir) {
+void UtilityProcessHostImpl::SetExposedDir(const base::FilePath& dir) {
   exposed_dir_ = dir;
 }
 
@@ -125,7 +125,7 @@ bool UtilityProcessHostImpl::StartProcess() {
     child_flags = ChildProcessHost::CHILD_NORMAL;
 #endif
 
-  FilePath exe_path = ChildProcessHost::GetChildPath(child_flags);
+  base::FilePath exe_path = ChildProcessHost::GetChildPath(child_flags);
   if (exe_path.empty()) {
     NOTREACHED() << "Unable to get utility process binary name.";
     return false;

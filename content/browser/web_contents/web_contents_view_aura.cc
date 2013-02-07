@@ -274,8 +274,8 @@ void PrepareDragData(const WebDropData& drop_data,
          it != drop_data.filenames.end(); ++it) {
       filenames.push_back(
           ui::OSExchangeData::FileInfo(
-              FilePath::FromUTF8Unsafe(UTF16ToUTF8(it->path)),
-              FilePath::FromUTF8Unsafe(UTF16ToUTF8(it->display_name))));
+              base::FilePath::FromUTF8Unsafe(UTF16ToUTF8(it->path)),
+              base::FilePath::FromUTF8Unsafe(UTF16ToUTF8(it->display_name))));
     }
     provider->SetFilenames(filenames);
   }

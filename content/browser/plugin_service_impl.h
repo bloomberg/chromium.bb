@@ -88,21 +88,22 @@ class CONTENT_EXPORT PluginServiceImpl
                              bool* is_stale,
                              webkit::WebPluginInfo* info,
                              std::string* actual_mime_type) OVERRIDE;
-  virtual bool GetPluginInfoByPath(const FilePath& plugin_path,
+  virtual bool GetPluginInfoByPath(const base::FilePath& plugin_path,
                                    webkit::WebPluginInfo* info) OVERRIDE;
-  virtual string16 GetPluginDisplayNameByPath(const FilePath& path) OVERRIDE;
+  virtual string16 GetPluginDisplayNameByPath(
+      const base::FilePath& path) OVERRIDE;
   virtual void GetPlugins(const GetPluginsCallback& callback) OVERRIDE;
   virtual PepperPluginInfo* GetRegisteredPpapiPluginInfo(
-      const FilePath& plugin_path) OVERRIDE;
+      const base::FilePath& plugin_path) OVERRIDE;
   virtual void SetFilter(PluginServiceFilter* filter) OVERRIDE;
   virtual PluginServiceFilter* GetFilter() OVERRIDE;
-  virtual void ForcePluginShutdown(const FilePath& plugin_path) OVERRIDE;
-  virtual bool IsPluginUnstable(const FilePath& plugin_path) OVERRIDE;
+  virtual void ForcePluginShutdown(const base::FilePath& plugin_path) OVERRIDE;
+  virtual bool IsPluginUnstable(const base::FilePath& plugin_path) OVERRIDE;
   virtual void RefreshPlugins() OVERRIDE;
-  virtual void AddExtraPluginPath(const FilePath& path) OVERRIDE;
-  virtual void AddExtraPluginDir(const FilePath& path) OVERRIDE;
-  virtual void RemoveExtraPluginPath(const FilePath& path) OVERRIDE;
-  virtual void UnregisterInternalPlugin(const FilePath& path) OVERRIDE;
+  virtual void AddExtraPluginPath(const base::FilePath& path) OVERRIDE;
+  virtual void AddExtraPluginDir(const base::FilePath& path) OVERRIDE;
+  virtual void RemoveExtraPluginPath(const base::FilePath& path) OVERRIDE;
+  virtual void UnregisterInternalPlugin(const base::FilePath& path) OVERRIDE;
   virtual void RegisterInternalPlugin(
       const webkit::WebPluginInfo& info, bool add_at_beginning) OVERRIDE;
   virtual void GetInternalPlugins(
@@ -119,14 +120,14 @@ class CONTENT_EXPORT PluginServiceImpl
   // 'plugin_path' if needed. If the process fails to start, the return value
   // is NULL. Must be called on the IO thread.
   PluginProcessHost* FindOrStartNpapiPluginProcess(
-      int render_process_id, const FilePath& plugin_path);
+      int render_process_id, const base::FilePath& plugin_path);
   PpapiPluginProcessHost* FindOrStartPpapiPluginProcess(
       int render_process_id,
-      const FilePath& plugin_path,
-      const FilePath& profile_data_directory,
+      const base::FilePath& plugin_path,
+      const base::FilePath& profile_data_directory,
       PpapiPluginProcessHost::PluginClient* client);
   PpapiPluginProcessHost* FindOrStartPpapiBrokerProcess(
-      int render_process_id, const FilePath& plugin_path);
+      int render_process_id, const base::FilePath& plugin_path);
 
   // Opens a channel to a plugin process for the given mime type, starting
   // a new plugin process if necessary.  This must be called on the IO thread
@@ -138,18 +139,18 @@ class CONTENT_EXPORT PluginServiceImpl
                                 const std::string& mime_type,
                                 PluginProcessHost::Client* client);
   void OpenChannelToPpapiPlugin(int render_process_id,
-                                const FilePath& plugin_path,
-                                const FilePath& profile_data_directory,
+                                const base::FilePath& plugin_path,
+                                const base::FilePath& profile_data_directory,
                                 PpapiPluginProcessHost::PluginClient* client);
   void OpenChannelToPpapiBroker(int render_process_id,
-                                const FilePath& path,
+                                const base::FilePath& path,
                                 PpapiPluginProcessHost::BrokerClient* client);
 
   // Cancels opening a channel to a NPAPI plugin.
   void CancelOpenChannelToNpapiPlugin(PluginProcessHost::Client* client);
 
   // Used to monitor plug-in stability.
-  void RegisterPluginCrash(const FilePath& plugin_path);
+  void RegisterPluginCrash(const base::FilePath& plugin_path);
 
  private:
   friend struct DefaultSingletonTraits<PluginServiceImpl>;
@@ -164,11 +165,12 @@ class CONTENT_EXPORT PluginServiceImpl
   // Returns the plugin process host corresponding to the plugin process that
   // has been started by this service. Returns NULL if no process has been
   // started.
-  PluginProcessHost* FindNpapiPluginProcess(const FilePath& plugin_path);
+  PluginProcessHost* FindNpapiPluginProcess(const base::FilePath& plugin_path);
   PpapiPluginProcessHost* FindPpapiPluginProcess(
-      const FilePath& plugin_path,
-      const FilePath& profile_data_directory);
-  PpapiPluginProcessHost* FindPpapiBrokerProcess(const FilePath& broker_path);
+      const base::FilePath& plugin_path,
+      const base::FilePath& profile_data_directory);
+  PpapiPluginProcessHost* FindPpapiBrokerProcess(
+      const base::FilePath& broker_path);
 
   void RegisterPepperPlugins();
 
@@ -197,13 +199,13 @@ class CONTENT_EXPORT PluginServiceImpl
   // Helper so we can finish opening the channel after looking up the
   // plugin.
   void FinishOpenChannelToPlugin(int render_process_id,
-                                 const FilePath& plugin_path,
+                                 const base::FilePath& plugin_path,
                                  PluginProcessHost::Client* client);
 
 #if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
   // Registers a new FilePathWatcher for a given path.
   static void RegisterFilePathWatcher(base::FilePathWatcher* watcher,
-                                      const FilePath& path);
+                                      const base::FilePath& path);
 #endif
 
   // The plugin list instance.
@@ -238,7 +240,7 @@ class CONTENT_EXPORT PluginServiceImpl
 #endif
 
   // Used to detect if a given plug-in is crashing over and over.
-  std::map<FilePath, std::vector<base::Time> > crash_times_;
+  std::map<base::FilePath, std::vector<base::Time> > crash_times_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginServiceImpl);
 };

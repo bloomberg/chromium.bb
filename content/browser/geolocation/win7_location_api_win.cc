@@ -23,7 +23,7 @@ void ConvertKnotsToMetresPerSecond(double* knots) {
 }
 
 HINSTANCE LoadWin7Library(const string16& lib_name) {
-  FilePath sys_dir;
+  base::FilePath sys_dir;
   PathService::Get(base::DIR_SYSTEM, &sys_dir);
   return LoadLibrary(sys_dir.Append(lib_name).value().c_str());
 }

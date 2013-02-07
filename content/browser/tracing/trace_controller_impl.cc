@@ -25,7 +25,7 @@ base::LazyInstance<TraceControllerImpl>::Leaky g_controller =
 
 class AutoStopTraceSubscriberStdio : public TraceSubscriberStdio {
  public:
-  AutoStopTraceSubscriberStdio(const FilePath& file_path)
+  AutoStopTraceSubscriberStdio(const base::FilePath& file_path)
       : TraceSubscriberStdio(file_path) {}
 
   static void EndStartupTrace(TraceSubscriberStdio* subscriber) {
@@ -72,17 +72,17 @@ TraceControllerImpl* TraceControllerImpl::GetInstance() {
 
 void TraceControllerImpl::InitStartupTracing(const CommandLine& command_line) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  FilePath trace_file = command_line.GetSwitchValuePath(
+  base::FilePath trace_file = command_line.GetSwitchValuePath(
       switches::kTraceStartupFile);
   // trace_file = "none" means that startup events will show up for the next
   // begin/end tracing (via about:tracing or AutomationProxy::BeginTracing/
   // EndTracing, for example).
-  if (trace_file == FilePath().AppendASCII("none"))
+  if (trace_file == base::FilePath().AppendASCII("none"))
     return;
 
   if (trace_file.empty()) {
     // Default to saving the startup trace into the current dir.
-    trace_file = FilePath().AppendASCII("chrometrace.log");
+    trace_file = base::FilePath().AppendASCII("chrometrace.log");
   }
   scoped_ptr<AutoStopTraceSubscriberStdio> subscriber(
       new AutoStopTraceSubscriberStdio(trace_file));

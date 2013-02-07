@@ -73,7 +73,7 @@ class CONTENT_EXPORT SavePackage
     FAILED
   };
 
-  static const FilePath::CharType kDefaultHtmlExtension[];
+  static const base::FilePath::CharType kDefaultHtmlExtension[];
 
   // Constructor for user initiated page saving. This constructor results in a
   // SavePackage that will generate and sanitize a suggested name for the user
@@ -85,8 +85,8 @@ class CONTENT_EXPORT SavePackage
   // better suited for tests.
   SavePackage(WebContents* web_contents,
               SavePageType save_type,
-              const FilePath& file_full_path,
-              const FilePath& directory_full_path);
+              const base::FilePath& file_full_path,
+              const base::FilePath& directory_full_path);
 
   // Initialize the SavePackage. Returns true if it initializes properly.  Need
   // to make sure that this method must be called in the UI thread because using
@@ -124,12 +124,12 @@ class CONTENT_EXPORT SavePackage
   friend class base::RefCountedThreadSafe<SavePackage>;
 
   // Callback for WebContents::GenerateMHTML().
-  void OnMHTMLGenerated(const FilePath& path, int64 size);
+  void OnMHTMLGenerated(const base::FilePath& path, int64 size);
 
   // For testing only.
   SavePackage(WebContents* web_contents,
-              const FilePath& file_full_path,
-              const FilePath& directory_full_path);
+              const base::FilePath& file_full_path,
+              const base::FilePath& directory_full_path);
 
   virtual ~SavePackage();
 
@@ -157,18 +157,19 @@ class CONTENT_EXPORT SavePackage
   // This is needed on POSIX, which restrict the length of file names in
   // addition to the restriction on the length of path names.
   // |base_dir| is assumed to be a directory name with no trailing slash.
-  static uint32 GetMaxPathLengthForDirectory(const FilePath& base_dir);
+  static uint32 GetMaxPathLengthForDirectory(const base::FilePath& base_dir);
 
-  static bool GetSafePureFileName(const FilePath& dir_path,
-                                  const FilePath::StringType& file_name_ext,
-                                  uint32 max_file_path_len,
-                                  FilePath::StringType* pure_file_name);
+  static bool GetSafePureFileName(
+      const base::FilePath& dir_path,
+      const base::FilePath::StringType& file_name_ext,
+      uint32 max_file_path_len,
+      base::FilePath::StringType* pure_file_name);
 
   // Create a file name based on the response from the server.
   bool GenerateFileName(const std::string& disposition,
                         const GURL& url,
                         bool need_html_ext,
-                        FilePath::StringType* generated_name);
+                        base::FilePath::StringType* generated_name);
 
   // Get all savable resource links from current web page, include main
   // frame and sub-frame.
@@ -186,15 +187,15 @@ class CONTENT_EXPORT SavePackage
   // Retrieves the URL to be saved from the WebContents.
   GURL GetUrlToBeSaved();
 
-  void CreateDirectoryOnFileThread(const FilePath& website_save_dir,
-                                   const FilePath& download_save_dir,
+  void CreateDirectoryOnFileThread(const base::FilePath& website_save_dir,
+                                   const base::FilePath& download_save_dir,
                                    bool skip_dir_check,
                                    const std::string& mime_type,
                                    const std::string& accept_langs);
-  void ContinueGetSaveInfo(const FilePath& suggested_path,
+  void ContinueGetSaveInfo(const base::FilePath& suggested_path,
                            bool can_save_as_complete);
   void OnPathPicked(
-      const FilePath& final_name,
+      const base::FilePath& final_name,
       SavePageType type,
       const SavePackageDownloadCreatedCallback& cb);
   void OnReceivedSavableResourceLinksForCurrentPage(
@@ -233,23 +234,23 @@ class CONTENT_EXPORT SavePackage
 
   // Helper function for preparing suggested name for the SaveAs Dialog. The
   // suggested name is determined by the web document's title.
-  FilePath GetSuggestedNameForSaveAs(
+  base::FilePath GetSuggestedNameForSaveAs(
       bool can_save_as_complete,
       const std::string& contents_mime_type,
       const std::string& accept_langs);
 
   // Ensures that the file name has a proper extension for HTML by adding ".htm"
   // if necessary.
-  static FilePath EnsureHtmlExtension(const FilePath& name);
+  static base::FilePath EnsureHtmlExtension(const base::FilePath& name);
 
   // Ensures that the file name has a proper extension for supported formats
   // if necessary.
-  static FilePath EnsureMimeExtension(const FilePath& name,
+  static base::FilePath EnsureMimeExtension(const base::FilePath& name,
       const std::string& contents_mime_type);
 
   // Returns extension for supported MIME types (for example, for "text/plain"
   // it returns "txt").
-  static const FilePath::CharType* ExtensionForMimeType(
+  static const base::FilePath::CharType* ExtensionForMimeType(
       const std::string& contents_mime_type);
 
   typedef std::queue<SaveItem*> SaveItemQueue;
@@ -269,8 +270,8 @@ class CONTENT_EXPORT SavePackage
 
   // The URL of the page the user wants to save.
   GURL page_url_;
-  FilePath saved_main_file_path_;
-  FilePath saved_main_directory_path_;
+  base::FilePath saved_main_file_path_;
+  base::FilePath saved_main_directory_path_;
 
   // The title of the page the user wants to save.
   string16 title_;
@@ -296,13 +297,13 @@ class CONTENT_EXPORT SavePackage
   // Number of all need to be saved resources.
   size_t all_save_items_count_;
 
-  typedef std::set<FilePath::StringType,
-                   bool (*)(const FilePath::StringType&,
-                            const FilePath::StringType&)> FileNameSet;
+  typedef std::set<base::FilePath::StringType,
+                   bool (*)(const base::FilePath::StringType&,
+                            const base::FilePath::StringType&)> FileNameSet;
   // This set is used to eliminate duplicated file names in saving directory.
   FileNameSet file_name_set_;
 
-  typedef base::hash_map<FilePath::StringType, uint32> FileNameCountMap;
+  typedef base::hash_map<base::FilePath::StringType, uint32> FileNameCountMap;
   // This map is used to track serial number for specified filename.
   FileNameCountMap file_name_count_map_;
 

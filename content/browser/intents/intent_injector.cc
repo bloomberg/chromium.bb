@@ -92,7 +92,7 @@ void IntentInjector::RenderViewCreated(RenderViewHost* render_view_host) {
   } else if (source_intent_->data_type ==
              webkit_glue::WebIntentData::FILESYSTEM) {
     const int child_id = render_view_host->GetProcess()->GetID();
-    FilePath path;
+    base::FilePath path;
     const bool valid =
         fileapi::IsolatedContext::GetInstance()->GetRegisteredPath(
             source_intent_->filesystem_id, &path);

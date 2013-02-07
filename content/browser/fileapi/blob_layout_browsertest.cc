@@ -10,8 +10,9 @@ class BlobLayoutTest : public InProcessBrowserLayoutTest {
  public:
   BlobLayoutTest() :
       InProcessBrowserLayoutTest(
-          FilePath(),
-          FilePath(FILE_PATH_LITERAL("fast/files")).NormalizePathSeparators()) {
+          base::FilePath(),
+          base::FilePath(FILE_PATH_LITERAL("fast/files")).
+              NormalizePathSeparators()) {
   }
 };
 

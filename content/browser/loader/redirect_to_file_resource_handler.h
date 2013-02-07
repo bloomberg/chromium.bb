@@ -56,7 +56,7 @@ class RedirectToFileResourceHandler : public LayeredResourceHandler {
  private:
   void DidCreateTemporaryFile(base::PlatformFileError error_code,
                               base::PassPlatformFile file_handle,
-                              const FilePath& file_path);
+                              const base::FilePath& file_path);
   void DidWriteToFile(int result);
   bool WriteMore();
   bool BufIsFull() const;

@@ -102,7 +102,7 @@ void BrowserChildProcessHostImpl::TerminateAll() {
 
 void BrowserChildProcessHostImpl::Launch(
 #if defined(OS_WIN)
-    const FilePath& exposed_dir,
+    const base::FilePath& exposed_dir,
 #elif defined(OS_POSIX)
     bool use_zygote,
     const base::EnvironmentVector& environ,

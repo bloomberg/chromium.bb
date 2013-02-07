@@ -34,7 +34,7 @@ class CONTENT_EXPORT BaseFile {
  public:
   // May be constructed on any thread.  All other routines (including
   // destruction) must occur on the FILE thread.
-  BaseFile(const FilePath& full_path,
+  BaseFile(const base::FilePath& full_path,
            const GURL& source_url,
            const GURL& referrer_url,
            int64 received_bytes,
@@ -50,7 +50,7 @@ class CONTENT_EXPORT BaseFile {
   // |default_directory| and |full_path()| are empty, then a temporary file will
   // be created in the default download location as determined by
   // ContentBrowserClient.
-  DownloadInterruptReason Initialize(const FilePath& default_directory);
+  DownloadInterruptReason Initialize(const base::FilePath& default_directory);
 
   // Write a new chunk of data to the file. Returns a DownloadInterruptReason
   // indicating the result of the operation.
@@ -58,7 +58,7 @@ class CONTENT_EXPORT BaseFile {
 
   // Rename the download file. Returns a DownloadInterruptReason indicating the
   // result of the operation.
-  virtual DownloadInterruptReason Rename(const FilePath& full_path);
+  virtual DownloadInterruptReason Rename(const base::FilePath& full_path);
 
   // Detach the file so it is not deleted on destruction.
   virtual void Detach();
@@ -76,7 +76,7 @@ class CONTENT_EXPORT BaseFile {
   // Calculate and return the current speed in bytes per second.
   int64 CurrentSpeed() const;
 
-  FilePath full_path() const { return full_path_; }
+  base::FilePath full_path() const { return full_path_; }
   bool in_progress() const { return file_stream_.get() != NULL; }
   int64 bytes_so_far() const { return bytes_so_far_; }
 
@@ -114,7 +114,7 @@ class CONTENT_EXPORT BaseFile {
   // security descriptor / permissions on the file to match the defaults for the
   // new directory.
   DownloadInterruptReason MoveFileAndAdjustPermissions(
-      const FilePath& new_path);
+      const base::FilePath& new_path);
 
   // Split out from CurrentSpeed to enable testing.
   int64 CurrentSpeedAtTime(base::TimeTicks current_time) const;
@@ -137,7 +137,7 @@ class CONTENT_EXPORT BaseFile {
   static const unsigned char kEmptySha256Hash[kSha256HashLen];
 
   // Full path to the file including the file name.
-  FilePath full_path_;
+  base::FilePath full_path_;
 
   // Source URL for the file being downloaded.
   GURL source_url_;

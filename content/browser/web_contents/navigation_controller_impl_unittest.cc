@@ -3208,7 +3208,7 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
 
  private:
   ProfileManager* profile_manager_;
-  FilePath test_dir_;
+  base::FilePath test_dir_;
 };
 
 // A basic test case. Navigates to a single url, and make sure the history

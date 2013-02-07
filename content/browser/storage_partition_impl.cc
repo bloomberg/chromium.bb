@@ -111,7 +111,7 @@ void OnSessionStorageUsageInfo(
 }  // namespace
 
 StoragePartitionImpl::StoragePartitionImpl(
-    const FilePath& partition_path,
+    const base::FilePath& partition_path,
     quota::QuotaManager* quota_manager,
     ChromeAppCacheService* appcache_service,
     fileapi::FileSystemContext* filesystem_context,
@@ -146,7 +146,7 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 StoragePartitionImpl* StoragePartitionImpl::Create(
     BrowserContext* context,
     bool in_memory,
-    const FilePath& partition_path) {
+    const base::FilePath& partition_path) {
   // Ensure that these methods are called on the UI thread, except for
   // unittests where a UI thread might not have been created.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
@@ -177,7 +177,7 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
           context->GetSpecialStoragePolicy(), quota_manager->proxy(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 
-  FilePath path = in_memory ? FilePath() : partition_path;
+  base::FilePath path = in_memory ? base::FilePath() : partition_path;
   scoped_refptr<DOMStorageContextImpl> dom_storage_context =
       new DOMStorageContextImpl(path, context->GetSpecialStoragePolicy());
 
@@ -199,7 +199,7 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
                                   indexed_db_context);
 }
 
-FilePath StoragePartitionImpl::GetPath() {
+base::FilePath StoragePartitionImpl::GetPath() {
   return partition_path_;
 }
 

@@ -83,11 +83,11 @@ class CONTENT_EXPORT PluginLoaderPosix
 
   // Message handlers.
   void OnPluginLoaded(uint32 index, const webkit::WebPluginInfo& plugin);
-  void OnPluginLoadFailed(uint32 index, const FilePath& plugin_path);
+  void OnPluginLoadFailed(uint32 index, const base::FilePath& plugin_path);
 
   // Checks if the plugin path is an internal plugin, and, if it is, adds it to
   // |loaded_plugins_|.
-  bool MaybeAddInternalPlugin(const FilePath& plugin_path);
+  bool MaybeAddInternalPlugin(const base::FilePath& plugin_path);
 
   // Runs all the registered callbacks on each's target loop if the condition
   // for ending the load process is done (i.e. the |next_load_index_| is outside
@@ -99,7 +99,7 @@ class CONTENT_EXPORT PluginLoaderPosix
 
   // A list of paths to plugins which will be loaded by the utility process, in
   // the order specified by this vector.
-  std::vector<FilePath> canonical_list_;
+  std::vector<base::FilePath> canonical_list_;
 
   // The index in |canonical_list_| of the plugin that the child process will
   // attempt to load next.

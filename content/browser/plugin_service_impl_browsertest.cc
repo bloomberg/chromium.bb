@@ -131,7 +131,7 @@ class MockPluginServiceFilter : public content::PluginServiceFilter {
 
   virtual bool CanLoadPlugin(
       int render_process_id,
-      const FilePath& path) OVERRIDE { return false; }
+      const base::FilePath& path) OVERRIDE { return false; }
 };
 
 class PluginServiceTest : public ContentBrowserTest {
@@ -144,7 +144,7 @@ class PluginServiceTest : public ContentBrowserTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
 #ifdef OS_MACOSX
-    FilePath browser_directory;
+    base::FilePath browser_directory;
     PathService::Get(base::DIR_MODULE, &browser_directory);
     command_line->AppendSwitchPath(switches::kExtraPluginDir,
                                    browser_directory.AppendASCII("plugins"));

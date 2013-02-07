@@ -74,7 +74,7 @@ PpapiPluginProcessHost::~PpapiPluginProcessHost() {
 // static
 PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
     const PepperPluginInfo& info,
-    const FilePath& profile_data_directory,
+    const base::FilePath& profile_data_directory,
     net::HostResolver* host_resolver) {
   PpapiPluginProcessHost* plugin_host = new PpapiPluginProcessHost(
       info, profile_data_directory, host_resolver);
@@ -166,7 +166,7 @@ void PpapiPluginProcessHost::OpenChannelToPlugin(Client* client) {
 
 PpapiPluginProcessHost::PpapiPluginProcessHost(
     const PepperPluginInfo& info,
-    const FilePath& profile_data_directory,
+    const base::FilePath& profile_data_directory,
     net::HostResolver* host_resolver)
     : permissions_(
           ppapi::PpapiPermissions::GetForCommandLine(info.permissions)),
@@ -202,7 +202,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost()
   // The plugin name and profile data directory shouldn't be needed for the
   // broker.
   std::string plugin_name;
-  FilePath profile_data_directory;
+  base::FilePath profile_data_directory;
   host_impl_.reset(new BrowserPpapiHostImpl(this, permissions, plugin_name,
                                             profile_data_directory,
                                             process_->GetData().type));
@@ -230,7 +230,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
 #else
   int flags = ChildProcessHost::CHILD_NORMAL;
 #endif
-  FilePath exe_path = ChildProcessHost::GetChildPath(flags);
+  base::FilePath exe_path = ChildProcessHost::GetChildPath(flags);
   if (exe_path.empty())
     return false;
 
@@ -284,7 +284,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
 #endif  // OS_POSIX
   process_->Launch(
 #if defined(OS_WIN)
-      FilePath(),
+      base::FilePath(),
 #elif defined(OS_POSIX)
       use_zygote,
       base::EnvironmentVector(),

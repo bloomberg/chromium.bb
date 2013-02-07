@@ -338,9 +338,9 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
   std::string filename = PathWithoutParams(info.path.substr(10));
   std::string mime_type = GetMimeType(filename);
 
-  FilePath frontend_dir = delegate_->GetDebugFrontendDir();
+  base::FilePath frontend_dir = delegate_->GetDebugFrontendDir();
   if (!frontend_dir.empty()) {
-    FilePath path = frontend_dir.AppendASCII(filename);
+    base::FilePath path = frontend_dir.AppendASCII(filename);
     std::string data;
     file_util::ReadFileToString(path, &data);
     server_->Send200(connection_id, data, mime_type);

@@ -133,7 +133,7 @@ class DownloadFileTest : public testing::Test {
     download_file_.reset(
         new DownloadFileImpl(
             save_info.Pass(),
-            FilePath(),
+            base::FilePath(),
             GURL(),                     // Source
             GURL(),                     // Referrer
             calculate_hash,
@@ -246,12 +246,12 @@ class DownloadFileTest : public testing::Test {
   }
 
   DownloadInterruptReason RenameAndUniquify(
-      const FilePath& full_path,
-      FilePath* result_path_p) {
+      const base::FilePath& full_path,
+      base::FilePath* result_path_p) {
     base::WeakPtrFactory<DownloadFileTest> weak_ptr_factory(this);
     DownloadInterruptReason result_reason(DOWNLOAD_INTERRUPT_REASON_NONE);
     bool callback_was_called(false);
-    FilePath result_path;
+    base::FilePath result_path;
 
     download_file_->RenameAndUniquify(
         full_path, base::Bind(&DownloadFileTest::SetRenameResult,
@@ -265,12 +265,12 @@ class DownloadFileTest : public testing::Test {
   }
 
   DownloadInterruptReason RenameAndAnnotate(
-      const FilePath& full_path,
-      FilePath* result_path_p) {
+      const base::FilePath& full_path,
+      base::FilePath* result_path_p) {
     base::WeakPtrFactory<DownloadFileTest> weak_ptr_factory(this);
     DownloadInterruptReason result_reason(DOWNLOAD_INTERRUPT_REASON_NONE);
     bool callback_was_called(false);
-    FilePath result_path;
+    base::FilePath result_path;
 
     download_file_->RenameAndAnnotate(
         full_path, base::Bind(&DownloadFileTest::SetRenameResult,
@@ -307,9 +307,9 @@ class DownloadFileTest : public testing::Test {
  private:
   void SetRenameResult(bool* called_p,
                        DownloadInterruptReason* reason_p,
-                       FilePath* result_path_p,
+                       base::FilePath* result_path_p,
                        DownloadInterruptReason reason,
-                       const FilePath& result_path) {
+                       const base::FilePath& result_path) {
     if (called_p)
       *called_p = true;
     if (reason_p)
@@ -342,19 +342,19 @@ const int DownloadFileTest::kDummyRequestId = 67;
 // has, and after it's closed.
 TEST_F(DownloadFileTest, RenameFileFinal) {
   ASSERT_TRUE(CreateDownloadFile(0, true));
-  FilePath initial_path(download_file_->FullPath());
+  base::FilePath initial_path(download_file_->FullPath());
   EXPECT_TRUE(file_util::PathExists(initial_path));
-  FilePath path_1(initial_path.InsertBeforeExtensionASCII("_1"));
-  FilePath path_2(initial_path.InsertBeforeExtensionASCII("_2"));
-  FilePath path_3(initial_path.InsertBeforeExtensionASCII("_3"));
-  FilePath path_4(initial_path.InsertBeforeExtensionASCII("_4"));
-  FilePath path_5(initial_path.InsertBeforeExtensionASCII("_5"));
-  FilePath output_path;
+  base::FilePath path_1(initial_path.InsertBeforeExtensionASCII("_1"));
+  base::FilePath path_2(initial_path.InsertBeforeExtensionASCII("_2"));
+  base::FilePath path_3(initial_path.InsertBeforeExtensionASCII("_3"));
+  base::FilePath path_4(initial_path.InsertBeforeExtensionASCII("_4"));
+  base::FilePath path_5(initial_path.InsertBeforeExtensionASCII("_5"));
+  base::FilePath output_path;
 
   // Rename the file before downloading any data.
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
             RenameAndUniquify(path_1, &output_path));
-  FilePath renamed_path = download_file_->FullPath();
+  base::FilePath renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_1, renamed_path);
   EXPECT_EQ(path_1, output_path);
 
@@ -437,10 +437,10 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 // and there's a file where we're aiming.
 TEST_F(DownloadFileTest, RenameUniquifies) {
   ASSERT_TRUE(CreateDownloadFile(0, true));
-  FilePath initial_path(download_file_->FullPath());
+  base::FilePath initial_path(download_file_->FullPath());
   EXPECT_TRUE(file_util::PathExists(initial_path));
-  FilePath path_1(initial_path.InsertBeforeExtensionASCII("_1"));
-  FilePath path_1_suffixed(path_1.InsertBeforeExtensionASCII(" (1)"));
+  base::FilePath path_1(initial_path.InsertBeforeExtensionASCII("_1"));
+  base::FilePath path_1_suffixed(path_1.InsertBeforeExtensionASCII(" (1)"));
 
   ASSERT_FALSE(file_util::PathExists(path_1));
   static const char file_data[] = "xyzzy";
@@ -459,15 +459,17 @@ TEST_F(DownloadFileTest, RenameUniquifies) {
 // Test to make sure we get the proper error on failure.
 TEST_F(DownloadFileTest, RenameError) {
   ASSERT_TRUE(CreateDownloadFile(0, true));
-  FilePath initial_path(download_file_->FullPath());
+  base::FilePath initial_path(download_file_->FullPath());
 
   // Create a subdirectory.
-  FilePath tempdir(initial_path.DirName().Append(FILE_PATH_LITERAL("tempdir")));
+  base::FilePath tempdir(
+      initial_path.DirName().Append(FILE_PATH_LITERAL("tempdir")));
   ASSERT_TRUE(file_util::CreateDirectory(tempdir));
-  FilePath target_path(tempdir.Append(initial_path.BaseName()));
+  base::FilePath target_path(tempdir.Append(initial_path.BaseName()));
 
   // Targets
-  FilePath target_path_suffixed(target_path.InsertBeforeExtensionASCII(" (1)"));
+  base::FilePath target_path_suffixed(
+      target_path.InsertBeforeExtensionASCII(" (1)"));
   ASSERT_FALSE(file_util::PathExists(target_path));
   ASSERT_FALSE(file_util::PathExists(target_path_suffixed));
 
@@ -491,7 +493,7 @@ TEST_F(DownloadFileTest, RenameError) {
 // Various tests of the StreamActive method.
 TEST_F(DownloadFileTest, StreamEmptySuccess) {
   ASSERT_TRUE(CreateDownloadFile(0, true));
-  FilePath initial_path(download_file_->FullPath());
+  base::FilePath initial_path(download_file_->FullPath());
   EXPECT_TRUE(file_util::PathExists(initial_path));
 
   // Test that calling the sink_callback_ on an empty stream shouldn't
@@ -509,7 +511,7 @@ TEST_F(DownloadFileTest, StreamEmptySuccess) {
 
 TEST_F(DownloadFileTest, StreamEmptyError) {
   ASSERT_TRUE(CreateDownloadFile(0, true));
-  FilePath initial_path(download_file_->FullPath());
+  base::FilePath initial_path(download_file_->FullPath());
   EXPECT_TRUE(file_util::PathExists(initial_path));
 
   // Finish the download in error and make sure we see it on the
@@ -536,7 +538,7 @@ TEST_F(DownloadFileTest, StreamEmptyError) {
 
 TEST_F(DownloadFileTest, StreamNonEmptySuccess) {
   ASSERT_TRUE(CreateDownloadFile(0, true));
-  FilePath initial_path(download_file_->FullPath());
+  base::FilePath initial_path(download_file_->FullPath());
   EXPECT_TRUE(file_util::PathExists(initial_path));
 
   const char* chunks1[] = { kTestData1, kTestData2 };
@@ -552,7 +554,7 @@ TEST_F(DownloadFileTest, StreamNonEmptySuccess) {
 
 TEST_F(DownloadFileTest, StreamNonEmptyError) {
   ASSERT_TRUE(CreateDownloadFile(0, true));
-  FilePath initial_path(download_file_->FullPath());
+  base::FilePath initial_path(download_file_->FullPath());
   EXPECT_TRUE(file_util::PathExists(initial_path));
 
   const char* chunks1[] = { kTestData1, kTestData2 };

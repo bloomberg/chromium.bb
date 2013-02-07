@@ -53,7 +53,7 @@ class DumpVideo {
  public:
   DumpVideo() : expected_size_(0) {}
   void StartDump(int width, int height) {
-    FilePath file_name = FilePath(
+    base::FilePath file_name = base::FilePath(
         StringPrintf(FILE_PATH_LITERAL("dump_w%d_h%d.yuv"), width, height));
     file_.reset(file_util::OpenFile(file_name, "wb"));
     expected_size_ = width * height * 3 / 2;

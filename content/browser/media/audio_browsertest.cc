@@ -9,7 +9,7 @@ namespace content {
 class AudioLayoutTest : public InProcessBrowserLayoutTest {
  protected:
   AudioLayoutTest() : InProcessBrowserLayoutTest(
-      FilePath(), FilePath().AppendASCII("media")) {
+      base::FilePath(), base::FilePath().AppendASCII("media")) {
   }
 };
 

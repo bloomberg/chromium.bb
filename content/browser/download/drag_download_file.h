@@ -40,7 +40,7 @@ class CONTENT_EXPORT DragDownloadFile : public ui::DownloadFileProvider {
   // download into a file stream that has already been created, so only the UI
   // thread is involved. |file_stream| must be null on windows but non-null on
   // posix systems. |file_path| is an absolute path on all systems.
-  DragDownloadFile(const FilePath& file_path,
+  DragDownloadFile(const base::FilePath& file_path,
                    scoped_ptr<net::FileStream> file_stream,
                    const GURL& url,
                    const Referrer& referrer,
@@ -61,7 +61,7 @@ class CONTENT_EXPORT DragDownloadFile : public ui::DownloadFileProvider {
   void DownloadCompleted(bool is_successful);
   void CheckThread();
 
-  FilePath file_path_;
+  base::FilePath file_path_;
   scoped_ptr<net::FileStream> file_stream_;
   MessageLoop* drag_message_loop_;
   State state_;

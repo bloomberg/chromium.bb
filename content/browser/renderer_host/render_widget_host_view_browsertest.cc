@@ -70,7 +70,7 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
   }
 
  protected:
-  FilePath test_dir_;
+  base::FilePath test_dir_;
   bool finish_called_;
   gfx::Size size_;
 };

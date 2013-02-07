@@ -10,7 +10,7 @@
 namespace content {
 
 DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
-    const FilePath& new_path) {
+    const base::FilePath& new_path) {
   // Similarly, on Unix, we're moving a temp file created with permissions 600
   // to |new_path|. Here, we try to fix up the destination file with appropriate
   // permissions.

@@ -21,7 +21,7 @@ class MHTMLGenerationTest : public ContentBrowserTest {
  public:
   MHTMLGenerationTest() : mhtml_generated_(false), file_size_(0) {}
 
-  void MHTMLGenerated(const FilePath& path, int64 size) {
+  void MHTMLGenerated(const base::FilePath& path, int64 size) {
     mhtml_generated_ = true;
     file_size_ = size;
     MessageLoopForUI::current()->Quit();
@@ -50,7 +50,7 @@ class MHTMLGenerationTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
   ASSERT_TRUE(test_server()->Start());
 
-  FilePath path(temp_dir_.path());
+  base::FilePath path(temp_dir_.path());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
 
   NavigateToURL(shell(), test_server()->GetURL("files/simple_page.html"));

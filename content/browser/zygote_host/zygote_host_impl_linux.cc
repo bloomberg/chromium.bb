@@ -68,7 +68,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   DCHECK(!init_);
   init_ = true;
 
-  FilePath chrome_path;
+  base::FilePath chrome_path;
   CHECK(PathService::Get(base::FILE_EXE, &chrome_path));
   CommandLine cmd_line(chrome_path);
 
@@ -372,7 +372,7 @@ void ZygoteHostImpl::AdjustRendererOOMScore(base::ProcessHandle pid,
   static bool selinux_valid = false;
 
   if (!selinux_valid) {
-    const FilePath kSelinuxPath("/selinux");
+    const base::FilePath kSelinuxPath("/selinux");
     selinux = access(kSelinuxPath.value().c_str(), X_OK) == 0 &&
         file_util::CountFilesCreatedAfter(kSelinuxPath,
                                           base::Time::UnixEpoch()) > 0;

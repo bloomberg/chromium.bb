@@ -167,7 +167,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
                              const GURL& policy_url,
                              const std::string& mime_type,
                              IPC::Message* reply_msg);
-  void OnOpenChannelToPepperPlugin(const FilePath& path,
+  void OnOpenChannelToPepperPlugin(const base::FilePath& path,
                                    IPC::Message* reply_msg);
   void OnDidCreateOutOfProcessPepperInstance(
       int plugin_child_id,
@@ -179,7 +179,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
                                              bool is_external);
   void OnOpenChannelToPpapiBroker(int routing_id,
                                   int request_id,
-                                  const FilePath& path);
+                                  const base::FilePath& path);
   void OnGenerateRoutingID(int* route_id);
   void OnDownloadUrl(const IPC::Message& message,
                      const GURL& url,
@@ -220,10 +220,10 @@ class RenderMessageFilter : public BrowserMessageFilter {
       const GURL& url,
       IPC::Message* reply_msg);
   void OnAsyncOpenFile(const IPC::Message& msg,
-                       const FilePath& path,
+                       const base::FilePath& path,
                        int flags,
                        int message_id);
-  void AsyncOpenFileOnFileThread(const FilePath& path,
+  void AsyncOpenFileOnFileThread(const base::FilePath& path,
                                  int flags,
                                  int message_id,
                                  int routing_id);
@@ -261,7 +261,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // by the BrowserProcess, which has a wider scope than we do.
   ResourceDispatcherHostImpl* resource_dispatcher_host_;
   PluginServiceImpl* plugin_service_;
-  FilePath profile_data_directory_;
+  base::FilePath profile_data_directory_;
 
   // Contextual information to be used for requests created here.
   scoped_refptr<net::URLRequestContextGetter> request_context_;

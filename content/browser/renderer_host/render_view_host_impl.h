@@ -137,7 +137,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void DesktopNotificationPostClick(int notification_id) OVERRIDE;
   virtual void DirectoryEnumerationFinished(
       int request_id,
-      const std::vector<FilePath>& files) OVERRIDE;
+      const std::vector<base::FilePath>& files) OVERRIDE;
   virtual void DisableScrollbarsForThreshold(const gfx::Size& size) OVERRIDE;
   virtual void DragSourceEndedAt(
       int client_x, int client_y, int screen_x, int screen_y,
@@ -335,8 +335,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   // contain all saved auxiliary files included all sub frames and resouces.
   void GetSerializedHtmlDataForCurrentPageWithLocalLinks(
       const std::vector<GURL>& links,
-      const std::vector<FilePath>& local_paths,
-      const FilePath& local_directory_name);
+      const std::vector<base::FilePath>& local_paths,
+      const base::FilePath& local_directory_name);
 
   // Notifies the RenderViewHost that its load state changed.
   void LoadStateChanged(const GURL& url,

@@ -31,7 +31,8 @@ namespace content {
 class WorkerLayoutTest : public InProcessBrowserLayoutTest {
  public:
   WorkerLayoutTest() : InProcessBrowserLayoutTest(
-      FilePath(), FilePath().AppendASCII("fast").AppendASCII("workers")) {
+      base::FilePath(),
+      base::FilePath().AppendASCII("fast").AppendASCII("workers")) {
   }
 };
 
@@ -126,7 +127,8 @@ IN_PROC_BROWSER_TEST_F(WorkerLayoutTest, SharedWorkerFastSimple) {
 class MessagePortTest : public InProcessBrowserLayoutTest {
  public:
   MessagePortTest() : InProcessBrowserLayoutTest(
-      FilePath(), FilePath().AppendASCII("fast").AppendASCII("events")) {
+      base::FilePath(),
+      base::FilePath().AppendASCII("fast").AppendASCII("events")) {
   }
 };
 
@@ -160,8 +162,8 @@ class WorkerHttpLayoutTest : public InProcessBrowserLayoutTest {
   // multiple tests which use it run in parallel, then the test will fail but
   // it'll run again at the end in serial and pass.
   WorkerHttpLayoutTest() : InProcessBrowserLayoutTest(
-      FilePath().AppendASCII("http").AppendASCII("tests"),
-      FilePath().AppendASCII("workers"),
+      base::FilePath().AppendASCII("http").AppendASCII("tests"),
+      base::FilePath().AppendASCII("workers"),
       8000) {
   }
 };
@@ -187,8 +189,8 @@ IN_PROC_BROWSER_TEST_F(WorkerHttpLayoutTest, DISABLED_Tests) {
 class WorkerXHRHttpLayoutTest : public InProcessBrowserLayoutTest {
  public:
   WorkerXHRHttpLayoutTest() : InProcessBrowserLayoutTest(
-      FilePath().AppendASCII("http").AppendASCII("tests"),
-      FilePath().AppendASCII("xmlhttprequest").AppendASCII("workers"),
+      base::FilePath().AppendASCII("http").AppendASCII("tests"),
+      base::FilePath().AppendASCII("xmlhttprequest").AppendASCII("workers"),
       -1) {
   }
 };
@@ -227,7 +229,7 @@ class WorkerTest : public ContentBrowserTest {
   WorkerTest() {}
 
   GURL GetTestURL(const std::string& test_case, const std::string& query) {
-    FilePath test_file_path = GetTestFilePath(
+    base::FilePath test_file_path = GetTestFilePath(
         "workers", test_case.c_str());
     return GetFileUrlWithQuery(test_file_path, query);
   }

@@ -42,7 +42,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // Must be called on the UI thread.  Note that the DownloadManager
   // retains ownership.
   virtual DownloadItemImpl* CreateSavePackageDownloadItem(
-      const FilePath& main_file_path,
+      const base::FilePath& main_file_path,
       const GURL& page_url,
       const std::string& mime_type,
       DownloadItem::Observer* observer);
@@ -68,8 +68,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual content::DownloadItem* CreateDownloadItem(
-      const FilePath& current_path,
-      const FilePath& target_path,
+      const base::FilePath& current_path,
+      const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
       const GURL& referrer_url,
       const base::Time& start_time,
@@ -128,7 +128,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       DownloadItemImpl* item, const DownloadTargetCallback& callback) OVERRIDE;
   virtual bool ShouldCompleteDownload(
       DownloadItemImpl* item, const base::Closure& complete_callback) OVERRIDE;
-  virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
+  virtual bool ShouldOpenFileBasedOnExtension(
+      const base::FilePath& path) OVERRIDE;
   virtual bool ShouldOpenDownload(
       DownloadItemImpl* item,
       const ShouldOpenDownloadCallback& callback) OVERRIDE;

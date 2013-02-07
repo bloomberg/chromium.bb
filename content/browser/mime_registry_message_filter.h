@@ -23,12 +23,13 @@ class MimeRegistryMessageFilter : public BrowserMessageFilter {
  private:
   virtual ~MimeRegistryMessageFilter();
 
-  void OnGetMimeTypeFromExtension(const FilePath::StringType& ext,
+  void OnGetMimeTypeFromExtension(const base::FilePath::StringType& ext,
                                   std::string* mime_type);
-  void OnGetMimeTypeFromFile(const FilePath& file_path,
+  void OnGetMimeTypeFromFile(const base::FilePath& file_path,
                              std::string* mime_type);
-  void OnGetPreferredExtensionForMimeType(const std::string& mime_type,
-                                          FilePath::StringType* extension);
+  void OnGetPreferredExtensionForMimeType(
+      const std::string& mime_type,
+      base::FilePath::StringType* extension);
 };
 
 }  // namespace content

@@ -1790,8 +1790,8 @@ void WebContentsImpl::OnSavePage() {
 // Used in automated testing to bypass prompting the user for file names.
 // Instead, the names and paths are hard coded rather than running them through
 // file name sanitation and extension / mime checking.
-bool WebContentsImpl::SavePage(const FilePath& main_file,
-                               const FilePath& dir_path,
+bool WebContentsImpl::SavePage(const base::FilePath& main_file,
+                               const base::FilePath& dir_path,
                                SavePageType save_type) {
   // Stop the page from navigating.
   Stop();
@@ -1801,8 +1801,8 @@ bool WebContentsImpl::SavePage(const FilePath& main_file,
 }
 
 void WebContentsImpl::GenerateMHTML(
-    const FilePath& file,
-    const base::Callback<void(const FilePath&, int64)>& callback) {
+    const base::FilePath& file,
+    const base::Callback<void(const base::FilePath&, int64)>& callback) {
   MHTMLGenerationManager::GetInstance()->GenerateMHTML(this, file, callback);
 }
 
@@ -2306,7 +2306,7 @@ void WebContentsImpl::OnSaveURL(const GURL& url,
 }
 
 void WebContentsImpl::OnEnumerateDirectory(int request_id,
-                                           const FilePath& path) {
+                                           const base::FilePath& path) {
   if (!delegate_)
     return;
 
@@ -2362,7 +2362,7 @@ void WebContentsImpl::OnOpenDateTimeDialog(int type, const std::string& value) {
 
 #endif
 
-void WebContentsImpl::OnCrashedPlugin(const FilePath& plugin_path,
+void WebContentsImpl::OnCrashedPlugin(const base::FilePath& plugin_path,
                                       base::ProcessId plugin_pid) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     PluginCrashed(plugin_path, plugin_pid));
@@ -2395,7 +2395,7 @@ void WebContentsImpl::OnSetSelectedColorInColorChooser(int color_chooser_id,
 }
 
 void WebContentsImpl::OnPepperPluginHung(int plugin_child_id,
-                                         const FilePath& path,
+                                         const base::FilePath& path,
                                          bool is_hung) {
   UMA_HISTOGRAM_COUNTS("Pepper.PluginHung", 1);
 
@@ -2415,7 +2415,7 @@ void WebContentsImpl::OnWebUISend(const GURL& source_url,
 void WebContentsImpl::OnRequestPpapiBrokerPermission(
     int request_id,
     const GURL& url,
-    const FilePath& plugin_path) {
+    const base::FilePath& plugin_path) {
   if (!delegate_) {
     OnPpapiBrokerPermissionResult(request_id, false);
     return;

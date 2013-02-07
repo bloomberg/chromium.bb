@@ -20,7 +20,7 @@ class CONTENT_EXPORT PepperFlashSettingsHelperImpl
 
   // PepperFlashSettingsHelper implementation.
   virtual void OpenChannelToBroker(
-      const FilePath& path,
+      const base::FilePath& path,
       const OpenChannelCallback& callback) OVERRIDE;
 
   // PpapiPluginProcessHost::BrokerClient implementation.

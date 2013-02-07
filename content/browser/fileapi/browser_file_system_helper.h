@@ -23,7 +23,7 @@ namespace content {
 // the browser process.
 CONTENT_EXPORT scoped_refptr<fileapi::FileSystemContext>
 CreateFileSystemContext(
-    const FilePath& profile_path,
+    const base::FilePath& profile_path,
     bool is_incognito,
     fileapi::ExternalMountPoints* external_mount_points,
     quota::SpecialStoragePolicy* special_storage_policy,

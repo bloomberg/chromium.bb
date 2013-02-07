@@ -241,12 +241,13 @@ class CONTENT_EXPORT WebContentsImpl
   virtual InterstitialPage* GetInterstitialPage() const OVERRIDE;
   virtual bool IsSavable() OVERRIDE;
   virtual void OnSavePage() OVERRIDE;
-  virtual bool SavePage(const FilePath& main_file,
-                        const FilePath& dir_path,
+  virtual bool SavePage(const base::FilePath& main_file,
+                        const base::FilePath& dir_path,
                         SavePageType save_type) OVERRIDE;
   virtual void GenerateMHTML(
-      const FilePath& file,
-      const base::Callback<void(const FilePath&, int64)>& callback) OVERRIDE;
+      const base::FilePath& file,
+      const base::Callback<void(const base::FilePath&, int64)>& callback)
+          OVERRIDE;
   virtual bool IsActiveEntry(int32 page_id) OVERRIDE;
 
   virtual const std::string& GetContentsMimeType() const OVERRIDE;
@@ -544,7 +545,7 @@ class CONTENT_EXPORT WebContentsImpl
                           int maximum_percent,
                           bool remember);
   void OnSaveURL(const GURL& url, const Referrer& referrer);
-  void OnEnumerateDirectory(int request_id, const FilePath& path);
+  void OnEnumerateDirectory(int request_id, const base::FilePath& path);
   void OnJSOutOfMemory();
 
   void OnRegisterProtocolHandler(const std::string& protocol,
@@ -563,20 +564,21 @@ class CONTENT_EXPORT WebContentsImpl
 
   void OnOpenDateTimeDialog(int type, const std::string& value);
 #endif
-  void OnCrashedPlugin(const FilePath& plugin_path, base::ProcessId plugin_pid);
+  void OnCrashedPlugin(const base::FilePath& plugin_path,
+                       base::ProcessId plugin_pid);
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
   void OnOpenColorChooser(int color_chooser_id, SkColor color);
   void OnEndColorChooser(int color_chooser_id);
   void OnSetSelectedColorInColorChooser(int color_chooser_id, SkColor color);
   void OnPepperPluginHung(int plugin_child_id,
-                          const FilePath& path,
+                          const base::FilePath& path,
                           bool is_hung);
   void OnWebUISend(const GURL& source_url,
                    const std::string& name,
                    const base::ListValue& args);
   void OnRequestPpapiBrokerPermission(int request_id,
                                       const GURL& url,
-                                      const FilePath& plugin_path);
+                                      const base::FilePath& plugin_path);
   void OnBrowserPluginAllocateInstanceID(const IPC::Message& message,
                                          int request_id);
   void OnDidDownloadFavicon(int id,

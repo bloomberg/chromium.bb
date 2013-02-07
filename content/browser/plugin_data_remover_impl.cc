@@ -93,7 +93,7 @@ class PluginDataRemoverImpl::Context
     std::vector<webkit::WebPluginInfo> plugins;
     plugin_service->GetPluginInfoArray(
         GURL(), mime_type, false, &plugins, NULL);
-    FilePath plugin_path;
+    base::FilePath plugin_path;
     if (!plugins.empty())  // May be empty for some tests.
       plugin_path = plugins[0].path;
 
@@ -202,17 +202,18 @@ class PluginDataRemoverImpl::Context
   virtual ~Context() {}
 
   IPC::Message* CreatePpapiClearSiteDataMsg(uint64 max_age) {
-    FilePath profile_path =
+    base::FilePath profile_path =
         PepperFlashFileMessageFilter::GetDataDirName(browser_context_path_);
     // TODO(vtl): This "duplicates" logic in webkit/plugins/ppapi/file_path.cc
     // (which prepends the plugin name to the relative part of the path
     // instead, with the absolute, profile-dependent part being enforced by
     // the browser).
 #if defined(OS_WIN)
-    FilePath plugin_data_path =
-        profile_path.Append(FilePath(UTF8ToUTF16(plugin_name_)));
+    base::FilePath plugin_data_path =
+        profile_path.Append(base::FilePath(UTF8ToUTF16(plugin_name_)));
 #else
-    FilePath plugin_data_path = profile_path.Append(FilePath(plugin_name_));
+    base::FilePath plugin_data_path =
+        profile_path.Append(base::FilePath(plugin_name_));
 #endif  // defined(OS_WIN)
     return new PpapiMsg_ClearSiteData(0u, plugin_data_path, std::string(),
                                       kClearAllData, max_age);
@@ -285,7 +286,7 @@ class PluginDataRemoverImpl::Context
 
   // Path for the current profile. Must be retrieved on the UI thread from the
   // browser context when we start so we can use it later on the I/O thread.
-  FilePath browser_context_path_;
+  base::FilePath browser_context_path_;
 
   // The resource context for the profile. Use only on the I/O thread.
   ResourceContext* resource_context_;

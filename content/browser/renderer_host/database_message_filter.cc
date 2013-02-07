@@ -136,7 +136,7 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(const string16& vfs_file_name,
                                             &database_name, NULL) &&
              !db_tracker_->IsDatabaseScheduledForDeletion(origin_identifier,
                                                           database_name)) {
-      FilePath db_file =
+      base::FilePath db_file =
           DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
       if (!db_file.empty()) {
         if (db_tracker_->IsIncognitoProfile()) {
@@ -180,7 +180,7 @@ void DatabaseMessageFilter::DatabaseDeleteFile(const string16& vfs_file_name,
   // Return an error if the file name is invalid or if the file could not
   // be deleted after kNumDeleteRetries attempts.
   int error_code = SQLITE_IOERR_DELETE;
-  FilePath db_file =
+  base::FilePath db_file =
       DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
   if (!db_file.empty()) {
     // In order to delete a journal file in incognito mode, we only need to
@@ -222,7 +222,7 @@ void DatabaseMessageFilter::OnDatabaseGetFileAttributes(
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int32 attributes = -1;
-  FilePath db_file =
+  base::FilePath db_file =
       DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
   if (!db_file.empty())
     attributes = VfsBackend::GetFileAttributes(db_file);
@@ -236,7 +236,7 @@ void DatabaseMessageFilter::OnDatabaseGetFileSize(
     const string16& vfs_file_name, IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int64 size = 0;
-  FilePath db_file =
+  base::FilePath db_file =
       DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
   if (!db_file.empty())
     size = VfsBackend::GetFileSize(db_file);

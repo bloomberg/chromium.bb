@@ -72,8 +72,8 @@ base::Value* ItemCheckedNetLogCallback(
   return dict;
 }
 
-base::Value* ItemRenamedNetLogCallback(const FilePath* old_filename,
-                                       const FilePath* new_filename,
+base::Value* ItemRenamedNetLogCallback(const base::FilePath* old_filename,
+                                       const base::FilePath* new_filename,
                                        net::NetLog::LogLevel log_level) {
   DictionaryValue* dict = new DictionaryValue();
 
@@ -146,7 +146,7 @@ base::Value* ItemCanceledNetLogCallback(int64 bytes_so_far,
   return dict;
 }
 
-base::Value* FileOpenedNetLogCallback(const FilePath* file_name,
+base::Value* FileOpenedNetLogCallback(const base::FilePath* file_name,
                                       int64 start_offset,
                                       net::NetLog::LogLevel log_level) {
   DictionaryValue* dict = new DictionaryValue();
@@ -168,8 +168,8 @@ base::Value* FileStreamDrainedNetLogCallback(size_t stream_size,
   return dict;
 }
 
-base::Value* FileRenamedNetLogCallback(const FilePath* old_filename,
-                                       const FilePath* new_filename,
+base::Value* FileRenamedNetLogCallback(const base::FilePath* old_filename,
+                                       const base::FilePath* new_filename,
                                        net::NetLog::LogLevel log_level) {
   DictionaryValue* dict = new DictionaryValue();
 

@@ -9,8 +9,8 @@ namespace content {
 class AppCacheLayoutTest : public InProcessBrowserLayoutTest {
  public:
   AppCacheLayoutTest() : InProcessBrowserLayoutTest(
-      FilePath().AppendASCII("http").AppendASCII("tests"),
-      FilePath().AppendASCII("appcache"),
+      base::FilePath().AppendASCII("http").AppendASCII("tests"),
+      base::FilePath().AppendASCII("appcache"),
       -1) {
   }
 

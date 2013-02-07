@@ -106,7 +106,7 @@ void BrowserContext::AsyncObliterateStoragePartition(
 // static
 void BrowserContext::GarbageCollectStoragePartitions(
       BrowserContext* browser_context,
-      scoped_ptr<base::hash_set<FilePath> > active_paths,
+      scoped_ptr<base::hash_set<base::FilePath> > active_paths,
       const base::Closure& done) {
   GetStoragePartitionMap(browser_context)->GarbageCollect(
       active_paths.Pass(), done);
@@ -151,7 +151,7 @@ fileapi::ExternalMountPoints* BrowserContext::GetMountPoints(
             mount_points));
 
     // Add Downloads mount point.
-    FilePath home_path;
+    base::FilePath home_path;
     if (PathService::Get(base::DIR_HOME, &home_path)) {
       mount_points->RegisterFileSystem(
           "Downloads",

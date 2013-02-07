@@ -29,7 +29,7 @@ int DownloadFile::number_active_objects_ = 0;
 
 DownloadFileImpl::DownloadFileImpl(
     scoped_ptr<DownloadSaveInfo> save_info,
-    const FilePath& default_download_directory,
+    const base::FilePath& default_download_directory,
     const GURL& url,
     const GURL& referrer_url,
     bool calculate_hash,
@@ -99,10 +99,11 @@ DownloadInterruptReason DownloadFileImpl::AppendDataToFile(
 }
 
 void DownloadFileImpl::RenameAndUniquify(
-    const FilePath& full_path, const RenameCompletionCallback& callback) {
+    const base::FilePath& full_path,
+    const RenameCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath new_path(full_path);
+  base::FilePath new_path(full_path);
 
   int uniquifier =
       file_util::GetUniquePathNumber(new_path, FILE_PATH_LITERAL(""));
@@ -129,10 +130,11 @@ void DownloadFileImpl::RenameAndUniquify(
 }
 
 void DownloadFileImpl::RenameAndAnnotate(
-    const FilePath& full_path, const RenameCompletionCallback& callback) {
+    const base::FilePath& full_path,
+    const RenameCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath new_path(full_path);
+  base::FilePath new_path(full_path);
 
   DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_NONE;
   // Short circuit null rename.
@@ -173,7 +175,7 @@ void DownloadFileImpl::Cancel() {
   file_.Cancel();
 }
 
-FilePath DownloadFileImpl::FullPath() const {
+base::FilePath DownloadFileImpl::FullPath() const {
   return file_.full_path();
 }
 

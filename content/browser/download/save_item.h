@@ -48,7 +48,7 @@ class SaveItem {
   int PercentComplete() const;
 
   // Update path for SaveItem, the actual file is renamed on the file thread.
-  void Rename(const FilePath& full_path);
+  void Rename(const base::FilePath& full_path);
 
   void SetSaveId(int32 save_id);
 
@@ -56,8 +56,8 @@ class SaveItem {
 
   // Accessors.
   SaveState state() const { return state_; }
-  const FilePath& full_path() const { return full_path_; }
-  const FilePath& file_name() const { return file_name_; }
+  const base::FilePath& full_path() const { return full_path_; }
+  const base::FilePath& file_name() const { return file_name_; }
   const GURL& url() const { return url_; }
   const Referrer& referrer() const { return referrer_; }
   int64 total_bytes() const { return total_bytes_; }
@@ -78,10 +78,10 @@ class SaveItem {
   int32 save_id_;
 
   // Full path to the save item file.
-  FilePath full_path_;
+  base::FilePath full_path_;
 
   // Short display version of the file.
-  FilePath file_name_;
+  base::FilePath file_name_;
 
   // The URL for this save item.
   GURL url_;

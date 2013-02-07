@@ -51,7 +51,7 @@ const WebUChar* const GamepadSubTypeName(BYTE sub_type) {
 }  // namespace
 
 GamepadPlatformDataFetcherWin::GamepadPlatformDataFetcherWin()
-    : xinput_dll_(FilePath(FILE_PATH_LITERAL("xinput1_3.dll"))),
+    : xinput_dll_(base::FilePath(FILE_PATH_LITERAL("xinput1_3.dll"))),
       xinput_available_(GetXinputDllFunctions()) {
 }
 

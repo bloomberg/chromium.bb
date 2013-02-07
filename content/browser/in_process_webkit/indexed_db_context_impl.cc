@@ -30,24 +30,24 @@ using WebKit::WebIDBFactory;
 using WebKit::WebSecurityOrigin;
 
 namespace content {
-const FilePath::CharType IndexedDBContextImpl::kIndexedDBDirectory[] =
+const base::FilePath::CharType IndexedDBContextImpl::kIndexedDBDirectory[] =
     FILE_PATH_LITERAL("IndexedDB");
 
-const FilePath::CharType IndexedDBContextImpl::kIndexedDBExtension[] =
+const base::FilePath::CharType IndexedDBContextImpl::kIndexedDBExtension[] =
     FILE_PATH_LITERAL(".leveldb");
 
 namespace {
 
 void GetAllOriginsAndPaths(
-    const FilePath& indexeddb_path,
+    const base::FilePath& indexeddb_path,
     std::vector<GURL>* origins,
-    std::vector<FilePath>* file_paths) {
+    std::vector<base::FilePath>* file_paths) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   if (indexeddb_path.empty())
     return;
   file_util::FileEnumerator file_enumerator(indexeddb_path,
       false, file_util::FileEnumerator::DIRECTORIES);
-  for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
+  for (base::FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
     if (file_path.Extension() == IndexedDBContextImpl::kIndexedDBExtension) {
       WebKit::WebString origin_id_webstring =
@@ -62,14 +62,15 @@ void GetAllOriginsAndPaths(
 
 // Deletes session-only databases.
 void ClearSessionOnlyOrigins(
-    const FilePath& indexeddb_path,
+    const base::FilePath& indexeddb_path,
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   std::vector<GURL> origins;
-  std::vector<FilePath> file_paths;
+  std::vector<base::FilePath> file_paths;
   GetAllOriginsAndPaths(indexeddb_path, &origins, &file_paths);
   DCHECK_EQ(origins.size(), file_paths.size());
-  std::vector<FilePath>::const_iterator file_path_iter = file_paths.begin();
+  std::vector<base::FilePath>::const_iterator file_path_iter =
+      file_paths.begin();
   for (std::vector<GURL>::const_iterator iter = origins.begin();
        iter != origins.end(); ++iter, ++file_path_iter) {
     if (!special_storage_policy->IsStorageSessionOnly(*iter))
@@ -83,7 +84,7 @@ void ClearSessionOnlyOrigins(
 }  // namespace
 
 IndexedDBContextImpl::IndexedDBContextImpl(
-    const FilePath& data_path,
+    const base::FilePath& data_path,
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy,
     base::MessageLoopProxy* webkit_thread_loop)
@@ -132,7 +133,7 @@ base::Time IndexedDBContextImpl::GetOriginLastModified(const GURL& origin_url) {
   if (data_path_.empty() || !IsInOriginSet(origin_url))
     return base::Time();
   string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url);
-  FilePath idb_directory = GetIndexedDBFilePath(origin_id);
+  base::FilePath idb_directory = GetIndexedDBFilePath(origin_id);
   base::PlatformFileInfo file_info;
   if (!file_util::GetFileInfo(idb_directory, &file_info))
     return base::Time();
@@ -158,7 +159,7 @@ void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
   }
 
   string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url);
-  FilePath idb_directory = GetIndexedDBFilePath(origin_id);
+  base::FilePath idb_directory = GetIndexedDBFilePath(origin_id);
   EnsureDiskUsageCacheInitialized(origin_url);
   const bool recursive = true;
   bool deleted = file_util::Delete(idb_directory, recursive);
@@ -171,7 +172,7 @@ void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
   }
 }
 
-FilePath IndexedDBContextImpl::GetFilePathForTesting(
+base::FilePath IndexedDBContextImpl::GetFilePathForTesting(
   const string16& origin_id) const {
   return GetIndexedDBFilePath(origin_id);
 }
@@ -269,10 +270,10 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
                  special_storage_policy_));
 }
 
-FilePath IndexedDBContextImpl::GetIndexedDBFilePath(
+base::FilePath IndexedDBContextImpl::GetIndexedDBFilePath(
     const string16& origin_id) const {
   DCHECK(!data_path_.empty());
-  FilePath::StringType id =
+  base::FilePath::StringType id =
       webkit_base::WebStringToFilePathString(origin_id).append(
           FILE_PATH_LITERAL(".indexeddb"));
   return data_path_.Append(id.append(kIndexedDBExtension));
@@ -282,7 +283,7 @@ int64 IndexedDBContextImpl::ReadUsageFromDisk(const GURL& origin_url) const {
   if (data_path_.empty())
     return 0;
   string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url);
-  FilePath file_path = GetIndexedDBFilePath(origin_id);
+  base::FilePath file_path = GetIndexedDBFilePath(origin_id);
   return file_util::ComputeDirectorySize(file_path);
 }
 

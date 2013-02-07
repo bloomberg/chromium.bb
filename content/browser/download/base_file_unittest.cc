@@ -49,7 +49,7 @@ class BaseFileTest : public testing::Test {
   virtual void SetUp() {
     ResetHash();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base_file_.reset(new BaseFile(FilePath(),
+    base_file_.reset(new BaseFile(base::FilePath(),
                                   GURL(),
                                   GURL(),
                                   0,
@@ -66,7 +66,7 @@ class BaseFileTest : public testing::Test {
                 base_file_->bytes_so_far());
     }
 
-    FilePath full_path = base_file_->full_path();
+    base::FilePath full_path = base_file_->full_path();
 
     if (!expected_data_.empty() && !expected_error_) {
       // Make sure the data has been properly written to disk.
@@ -100,7 +100,7 @@ class BaseFileTest : public testing::Test {
   }
 
   void MakeFileWithHash() {
-    base_file_.reset(new BaseFile(FilePath(),
+    base_file_.reset(new BaseFile(base::FilePath(),
                                   GURL(),
                                   GURL(),
                                   0,
@@ -138,9 +138,9 @@ class BaseFileTest : public testing::Test {
 
   // Helper functions.
   // Create a file.  Returns the complete file path.
-  FilePath CreateTestFile() {
-    FilePath file_name;
-    BaseFile file(FilePath(),
+  base::FilePath CreateTestFile() {
+    base::FilePath file_name;
+    BaseFile file(base::FilePath(),
                   GURL(),
                   GURL(),
                   0,
@@ -152,7 +152,7 @@ class BaseFileTest : public testing::Test {
     EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
               file.Initialize(temp_dir_.path()));
     file_name = file.full_path();
-    EXPECT_NE(FilePath::StringType(), file_name.value());
+    EXPECT_NE(base::FilePath::StringType(), file_name.value());
 
     EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
               file.AppendDataToFile(kTestData4, kTestDataLength4));
@@ -164,8 +164,8 @@ class BaseFileTest : public testing::Test {
   }
 
   // Create a file with the specified file name.
-  void CreateFileWithName(const FilePath& file_name) {
-    EXPECT_NE(FilePath::StringType(), file_name.value());
+  void CreateFileWithName(const base::FilePath& file_name) {
+    EXPECT_NE(base::FilePath::StringType(), file_name.value());
     BaseFile duplicate_file(file_name,
                             GURL(),
                             GURL(),
@@ -233,7 +233,7 @@ const unsigned char BaseFileTest::kEmptySha256Hash[] = { 0 };
 // on all its accessors. This is actually a case that rarely happens
 // in production, where we would at least Initialize it.
 TEST_F(BaseFileTest, CreateDestroy) {
-  EXPECT_EQ(FilePath().value(), base_file_->full_path().value());
+  EXPECT_EQ(base::FilePath().value(), base_file_->full_path().value());
 }
 
 // Cancel the download explicitly.
@@ -242,7 +242,7 @@ TEST_F(BaseFileTest, Cancel) {
   EXPECT_TRUE(file_util::PathExists(base_file_->full_path()));
   base_file_->Cancel();
   EXPECT_FALSE(file_util::PathExists(base_file_->full_path()));
-  EXPECT_NE(FilePath().value(), base_file_->full_path().value());
+  EXPECT_NE(base::FilePath().value(), base_file_->full_path().value());
 }
 
 // Write data to the file and detach it, so it doesn't get deleted
@@ -283,9 +283,9 @@ TEST_F(BaseFileTest, WriteWithHashAndDetach) {
 TEST_F(BaseFileTest, WriteThenRenameAndDetach) {
   ASSERT_TRUE(InitializeFile());
 
-  FilePath initial_path(base_file_->full_path());
+  base::FilePath initial_path(base_file_->full_path());
   EXPECT_TRUE(file_util::PathExists(initial_path));
-  FilePath new_path(temp_dir_.path().AppendASCII("NewFile"));
+  base::FilePath new_path(temp_dir_.path().AppendASCII("NewFile"));
   EXPECT_FALSE(file_util::PathExists(new_path));
 
   ASSERT_TRUE(AppendDataToFile(kTestData1));
@@ -389,8 +389,8 @@ TEST_F(BaseFileTest, MultipleWritesInterruptedWithHash) {
   // Finish the file.
   base_file_->Finish();
 
-  FilePath new_file_path(temp_dir_.path().Append(
-      FilePath(FILE_PATH_LITERAL("second_file"))));
+  base::FilePath new_file_path(temp_dir_.path().Append(
+      base::FilePath(FILE_PATH_LITERAL("second_file"))));
 
   ASSERT_TRUE(file_util::CopyFile(base_file_->full_path(), new_file_path));
 
@@ -404,7 +404,7 @@ TEST_F(BaseFileTest, MultipleWritesInterruptedWithHash) {
                        scoped_ptr<net::FileStream>(),
                        net::BoundNetLog());
   ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            second_file.Initialize(FilePath()));
+            second_file.Initialize(base::FilePath()));
   std::string data(kTestData3);
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
             second_file.AppendDataToFile(data.data(), data.size()));
@@ -421,9 +421,9 @@ TEST_F(BaseFileTest, MultipleWritesInterruptedWithHash) {
 TEST_F(BaseFileTest, WriteThenRename) {
   ASSERT_TRUE(InitializeFile());
 
-  FilePath initial_path(base_file_->full_path());
+  base::FilePath initial_path(base_file_->full_path());
   EXPECT_TRUE(file_util::PathExists(initial_path));
-  FilePath new_path(temp_dir_.path().AppendASCII("NewFile"));
+  base::FilePath new_path(temp_dir_.path().AppendASCII("NewFile"));
   EXPECT_FALSE(file_util::PathExists(new_path));
 
   ASSERT_TRUE(AppendDataToFile(kTestData1));
@@ -440,9 +440,9 @@ TEST_F(BaseFileTest, WriteThenRename) {
 TEST_F(BaseFileTest, RenameWhileInProgress) {
   ASSERT_TRUE(InitializeFile());
 
-  FilePath initial_path(base_file_->full_path());
+  base::FilePath initial_path(base_file_->full_path());
   EXPECT_TRUE(file_util::PathExists(initial_path));
-  FilePath new_path(temp_dir_.path().AppendASCII("NewFile"));
+  base::FilePath new_path(temp_dir_.path().AppendASCII("NewFile"));
   EXPECT_FALSE(file_util::PathExists(new_path));
 
   ASSERT_TRUE(AppendDataToFile(kTestData1));
@@ -463,10 +463,10 @@ TEST_F(BaseFileTest, RenameWithError) {
 
   // TestDir is a subdirectory in |temp_dir_| that we will make read-only so
   // that the rename will fail.
-  FilePath test_dir(temp_dir_.path().AppendASCII("TestDir"));
+  base::FilePath test_dir(temp_dir_.path().AppendASCII("TestDir"));
   ASSERT_TRUE(file_util::CreateDirectory(test_dir));
 
-  FilePath new_path(test_dir.AppendASCII("TestFile"));
+  base::FilePath new_path(test_dir.AppendASCII("TestFile"));
   EXPECT_FALSE(file_util::PathExists(new_path));
 
   {
@@ -481,7 +481,7 @@ TEST_F(BaseFileTest, RenameWithError) {
 
 // Write data to the file multiple times.
 TEST_F(BaseFileTest, MultipleWritesWithError) {
-  FilePath path;
+  base::FilePath path;
   ASSERT_TRUE(file_util::CreateTemporaryFile(&path));
   // Create a new file stream.  scoped_ptr takes ownership and passes it to
   // BaseFile; we use the pointer anyway and rely on the BaseFile not
@@ -540,7 +540,7 @@ TEST_F(BaseFileTest, DuplicateBaseFile) {
 // Create a file and append to it.
 TEST_F(BaseFileTest, AppendToBaseFile) {
   // Create a new file.
-  FilePath existing_file_name = CreateTestFile();
+  base::FilePath existing_file_name = CreateTestFile();
 
   set_expected_data(kTestData4);
 
@@ -556,8 +556,8 @@ TEST_F(BaseFileTest, AppendToBaseFile) {
 
   ASSERT_TRUE(InitializeFile());
 
-  const FilePath file_name = base_file_->full_path();
-  EXPECT_NE(FilePath::StringType(), file_name.value());
+  const base::FilePath file_name = base_file_->full_path();
+  EXPECT_NE(base::FilePath::StringType(), file_name.value());
 
   // Write into the file.
   EXPECT_TRUE(AppendDataToFile(kTestData1));
@@ -570,7 +570,7 @@ TEST_F(BaseFileTest, AppendToBaseFile) {
 // Create a read-only file and attempt to write to it.
 TEST_F(BaseFileTest, ReadonlyBaseFile) {
   // Create a new file.
-  FilePath readonly_file_name = CreateTestFile();
+  base::FilePath readonly_file_name = CreateTestFile();
 
   // Restore permissions to the file when we are done with this test.
   file_util::PermissionRestorer restore_permissions(readonly_file_name);
@@ -592,8 +592,8 @@ TEST_F(BaseFileTest, ReadonlyBaseFile) {
   set_expected_error(DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);
   EXPECT_FALSE(InitializeFile());
 
-  const FilePath file_name = base_file_->full_path();
-  EXPECT_NE(FilePath::StringType(), file_name.value());
+  const base::FilePath file_name = base_file_->full_path();
+  EXPECT_NE(base::FilePath::StringType(), file_name.value());
 
   // Write into the file.
   set_expected_error(DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
@@ -662,7 +662,7 @@ TEST_F(BaseFileTest, CreatedInDefaultDirectory) {
   // to be expanded into a path with long names. Thus temp_dir.path() might not
   // be a string-wise match to base_file_->full_path().DirName() even though
   // they are in the same directory.
-  FilePath temp_file;
+  base::FilePath temp_file;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
                                                   &temp_file));
   ASSERT_FALSE(temp_file.empty());

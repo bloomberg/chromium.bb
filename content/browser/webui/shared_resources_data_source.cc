@@ -57,6 +57,6 @@ std::string SharedResourcesDataSource::GetMimeType(
 
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   std::string mime_type;
-  net::GetMimeTypeFromFile(FilePath().AppendASCII(path), &mime_type);
+  net::GetMimeTypeFromFile(base::FilePath().AppendASCII(path), &mime_type);
   return mime_type;
 }
