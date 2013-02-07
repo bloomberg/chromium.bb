@@ -7,7 +7,6 @@ Import(['nacl_env'])
 
 # Select the set of tests to run through inbrowser_test_runner.
 exe_list = [
-    'exception_test',
     'imc_shm_mmap_test',
     'random_test',
 ]
@@ -21,5 +20,8 @@ if (nacl_env.Bit('nacl_static_link') and
   # Dynamic code modification is not implemented for ARM yet.
   if not nacl_env.Bit('target_arm'):
     exe_list.append('dynamic_modify_test')
+
+if nacl_env.Clone().AllowInlineAssembly():
+  exe_list.append('exception_test')
 
 nacl_env['TESTS_TO_RUN_INBROWSER'] = exe_list

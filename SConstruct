@@ -2636,6 +2636,34 @@ than via the compiler driver."""
 
 nacl_env.AddMethod(RodataSwitch)
 
+
+def AllowInlineAssembly(env):
+  """ This modifies the environment to allow inline assembly in
+      untrusted code.  If the environment cannot be modified to allow
+      inline assembly, it returns False.  Otherwise, on success, it
+      returns True.
+  """
+  if env.Bit('bitcode'):
+    # For each architecture, we only attempt to make our inline
+    # assembly code work with one untrusted-code toolchain.  For x86,
+    # we target GCC, but not PNaCl/Clang, because the latter's
+    # assembly support has various quirks that we don't want to have
+    # to debug.  For ARM, we target PNaCl/Clang, because that is the
+    # only current ARM toolchain.  One day, we will have an ARM GCC
+    # toolchain, and we will no longer need to use inline assembly
+    # with PNaCl/Clang at all.
+    if not env.Bit('target_arm'):
+      return False
+    # Inline assembly does not work in pexes.
+    if env.Bit('pnacl_generate_pexe'):
+      return False
+    env.AddBiasForPNaCl()
+    env.PNaClForceNative()
+  return True
+
+nacl_env.AddMethod(AllowInlineAssembly)
+
+
 # TODO(mseaborn): Enable this unconditionally once the C code on the
 # Chromium side compiles successfully with this warning.
 if not enable_chrome:
@@ -3047,33 +3075,6 @@ def NaClSdkLibrary(env, lib_name, *args, **kwargs):
   return n
 
 nacl_env.AddMethod(NaClSdkLibrary)
-
-
-def AllowInlineAssembly(env):
-  """ This modifies the environment to allow inline assembly in
-      untrusted code.  If the environment cannot be modified to allow
-      inline assembly, it returns False.  Otherwise, on success, it
-      returns True.
-  """
-  if env.Bit('bitcode'):
-    # For each architecture, we only attempt to make our inline
-    # assembly code work with one untrusted-code toolchain.  For x86,
-    # we target GCC, but not PNaCl/Clang, because the latter's
-    # assembly support has various quirks that we don't want to have
-    # to debug.  For ARM, we target PNaCl/Clang, because that is the
-    # only current ARM toolchain.  One day, we will have an ARM GCC
-    # toolchain, and we will no longer need to use inline assembly
-    # with PNaCl/Clang at all.
-    if not env.Bit('target_arm'):
-      return False
-    # Inline assembly does not work in pexes.
-    if env.Bit('pnacl_generate_pexe'):
-      return False
-    env.AddBiasForPNaCl()
-    env.PNaClForceNative()
-  return True
-
-nacl_env.AddMethod(AllowInlineAssembly)
 
 
 # Special environment for untrusted test binaries that use raw syscalls

@@ -5,35 +5,26 @@
 
 Import('env')
 
+if not env.AllowInlineAssembly():
+  Return()
+
 test_args = {'sel_ldr_flags': ['-e', '-E', 'OUTSIDE_BROWSER=1'],
              'declares_exit_status': True}
 if env.Bit('target_arm') and env.UsingEmulator():
   test_args['sel_ldr_flags'].extend(['-E', 'UNDER_QEMU_ARM=1'])
 
-# To keep PNaCl enthusiasts happy, we support a pure-bitcode version
-# of the test, but it is less strict.  The non-PNaCl version uses
-# assembly code and can check for exact values of the reported
-# instruction pointer and stack pointer.
-
-if env.Bit('target_arm') and (not env.Bit('bitcode') or
-                              not env.Bit('pnacl_generate_pexe')):
- helper_files = ['crash_at_known_address_arm.S',
-                 'handler_wrapper_arm.S']
- if env.Bit('bitcode'):
-   env.AddBiasForPNaCl()
-   env.PNaClForceNative()
-elif env.Bit('bitcode'):
- helper_files = []
+if env.Bit('target_arm'):
+  helper_files = ['crash_at_known_address_arm.S']
 elif env.Bit('target_x86'):
   helper_files = ['crash_at_known_address_x86.S',
-                  'direction_flag_x86.S',
-                  'handler_wrapper_x86.S']
+                  'direction_flag_x86.S']
 else:
   raise Exception('Unexpected platform')
 exception_test = env.ComponentProgram(
     env.ProgramNameForNmf('exception_test'),
     ['exception_test.c'] + helper_files,
-    EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}', '${TESTRUNNER_LIBS}'])
+    EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}', '${TESTRUNNER_LIBS}',
+                'test_common'])
 
 node = env.CommandSelLdrTestNacl(
     'exception_test.out', exception_test, **test_args)

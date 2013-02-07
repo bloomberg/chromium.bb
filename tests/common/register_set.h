@@ -297,4 +297,11 @@ void RegsAssertEqual(const struct NaClSignalContext *actual,
 /* Zero out registers that are clobbered by function calls. */
 void RegsUnsetNonCalleeSavedRegisters(struct NaClSignalContext *regs);
 
+/*
+ * For a function called with register state |regs|, extract the first
+ * argument.  This is useful for a function entry point defined by
+ * REGS_SAVER_FUNC.
+ */
+uintptr_t RegsGetArg1(const struct NaClSignalContext *regs);
+
 #endif
