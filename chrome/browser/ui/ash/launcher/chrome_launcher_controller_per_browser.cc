@@ -194,11 +194,12 @@ std::string GetPrefForRootWindow(PrefService* pref_service,
 
     // If the pref for the specified display is not found, scan the whole prefs
     // and check if the prefs for other display is already specified.
+    std::string unused_value;
     for (base::DictionaryValue::Iterator iter(*shelf_prefs);
          !iter.IsAtEnd(); iter.Advance()) {
       const base::DictionaryValue* display_pref = NULL;
       if (iter.value().GetAsDictionary(&display_pref) &&
-          display_pref->GetString(path, static_cast<std::string*>(NULL))) {
+          display_pref->GetString(path, &unused_value)) {
         has_per_display_prefs = true;
         break;
       }
