@@ -145,6 +145,22 @@ intptr_t ReportPrctlFailure(const struct arch_seccomp_data& args,
     _exit(1);
 }
 
+intptr_t ReportIoctlFailure(const struct arch_seccomp_data& args,
+                            void* /* aux */) {
+  // Make "request" volatile so that we can see it on the stack in a minidump.
+#if !defined(NDEBUG)
+  RAW_LOG(ERROR, __FILE__":**CRASHING**:ioctl() failure\n");
+#endif
+  volatile uint64_t request = args.args[1];
+  volatile char* addr = reinterpret_cast<volatile char*>(request & 0xFFFF);
+  *addr = '\0';
+  // Hit the NULL page if this fails.
+  addr = reinterpret_cast<volatile char*>(request & 0xFFF);
+  *addr = '\0';
+  for (;;)
+    _exit(1);
+}
+
 bool IsAcceleratedVideoDecodeEnabled() {
   // Accelerated video decode is currently enabled on Chrome OS,
   // but not on Linux: crbug.com/137247.
@@ -1318,15 +1334,29 @@ ErrorCode RestrictPrctl() {
          Sandbox::Trap(ReportPrctlFailure, NULL))));
 }
 
+ErrorCode RestrictIoctl() {
+  // Allow TCGETS and FIONREAD, trap to ReportIoctlFailure otherwise.
+  return Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_EQUAL, TCGETS,
+                       ErrorCode(ErrorCode::ERR_ALLOWED),
+         Sandbox::Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_EQUAL, FIONREAD,
+                       ErrorCode(ErrorCode::ERR_ALLOWED),
+                       Sandbox::Trap(ReportIoctlFailure, NULL)));
+}
+
 ErrorCode RendererOrWorkerProcessPolicy(int sysno, void *) {
   switch (sysno) {
     case __NR_clone:
       return RestrictCloneToThreads();
+    case __NR_ioctl:
+      // Restrict IOCTL on x86_64 on Linux but not Chrome OS.
+      if (IsArchitectureX86_64() && !IsChromeOS()) {
+        return RestrictIoctl();
+      } else {
+        return ErrorCode(ErrorCode::ERR_ALLOWED);
+      }
     case __NR_prctl:
       return RestrictPrctl();
     // Allow the system calls below.
-    case __NR_ioctl:  // TODO(jln) investigate legitimate use in the renderer
-                      // and see if alternatives can be used.
     case __NR_fdatasync:
     case __NR_fsync:
 #if defined(__i386__) || defined(__x86_64__)
