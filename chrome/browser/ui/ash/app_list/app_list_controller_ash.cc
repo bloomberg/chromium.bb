@@ -81,6 +81,11 @@ void DismissAppList() {
   if (IsAppListVisible())
     ash::Shell::GetInstance()->ToggleAppList(NULL);
 }
+
+void NotifyAppListOfBeginExtensionInstall(Profile* profile,
+                                          const std::string& extension_id,
+                                          const std::string& extension_name) {
+}
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace chrome

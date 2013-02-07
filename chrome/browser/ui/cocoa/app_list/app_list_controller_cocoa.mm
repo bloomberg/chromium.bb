@@ -76,4 +76,9 @@ void ShowAppList(Profile* profile) {
   g_app_list_controller.Get().ShowAppList();
 }
 
+void NotifyAppListOfBeginExtensionInstall(Profile* profile,
+                                          const std::string& extension_id,
+                                          const std::string& extension_name) {
+}
+
 }  // namespace chrome

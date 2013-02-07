@@ -31,6 +31,10 @@ class AppsModelBuilder : public content::NotificationObserver,
   // Populates the model.
   void Build();
 
+  // Called when an extension starts installing.
+  void OnBeginExtensionInstall(const std::string& extension_id,
+                               const std::string& extension_name);
+
  private:
   typedef std::vector<ExtensionAppItem*> Apps;
 
