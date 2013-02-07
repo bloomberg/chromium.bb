@@ -775,6 +775,7 @@ TEST(YUVConvertTest, FilterYUVRows_C_OutOfBounds) {
   }
 }
 
+#if defined(MEDIA_MMX_INTRINSICS_AVAILABLE)
 TEST(YUVConvertTest, FilterYUVRows_MMX_OutOfBounds) {
   base::CPU cpu;
   if (!cpu.has_mmx()) {
@@ -796,6 +797,7 @@ TEST(YUVConvertTest, FilterYUVRows_MMX_OutOfBounds) {
     EXPECT_EQ(0u, dst[i]);
   }
 }
+#endif  // defined(MEDIA_MMX_INTRINSICS_AVAILABLE)
 
 TEST(YUVConvertTest, FilterYUVRows_SSE2_OutOfBounds) {
   base::CPU cpu;
@@ -818,6 +820,7 @@ TEST(YUVConvertTest, FilterYUVRows_SSE2_OutOfBounds) {
   }
 }
 
+#if defined(MEDIA_MMX_INTRINSICS_AVAILABLE)
 TEST(YUVConvertTest, FilterYUVRows_MMX_UnalignedDestination) {
   base::CPU cpu;
   if (!cpu.has_mmx()) {
@@ -847,6 +850,7 @@ TEST(YUVConvertTest, FilterYUVRows_MMX_UnalignedDestination) {
 
   EXPECT_EQ(0, memcmp(dst_sample.get(), dst_ptr, 17));
 }
+#endif  // defined(MEDIA_MMX_INTRINSICS_AVAILABLE)
 
 TEST(YUVConvertTest, FilterYUVRows_SSE2_UnalignedDestination) {
   base::CPU cpu;

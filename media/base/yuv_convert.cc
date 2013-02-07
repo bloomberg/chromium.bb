@@ -33,16 +33,6 @@
 #endif
 #endif
 
-// Visual Studio 2010 does not support MMX intrinsics on x64.
-// Some win64 yuv_convert code paths use SSE+MMX yasm, so without rewriting
-// them, we use yasm EmptyRegisterState_MMX in place of _mm_empty() or
-// hide the versions implemented with heavy use of MMX intrinsics.
-// TODO(wolenetz): Use MMX intrinsics when compiling win64 with Visual
-// Studio 2012? http://crbug.com/173450
-#if !(defined(ARCH_CPU_X86_64) && defined(COMPILER_MSVC))
-#define MEDIA_MMX_INTRINSICS_AVAILABLE
-#endif
-
 // Assembly functions are declared without namespace.
 extern "C" {
 void EmptyRegisterState_MMX();
