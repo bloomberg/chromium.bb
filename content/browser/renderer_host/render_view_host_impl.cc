@@ -816,13 +816,17 @@ int RenderViewHostImpl::GetEnabledBindings() const {
 
 void RenderViewHostImpl::SetWebUIProperty(const std::string& name,
                                           const std::string& value) {
-  // This is just a sanity check before telling the renderer to enable the
-  // property.  It could lie and send the corresponding IPC messages anyway,
-  // but we will not act on them if enabled_bindings_ doesn't agree.
-  if (enabled_bindings_ & BINDINGS_POLICY_WEB_UI)
+  // This is a sanity check before telling the renderer to enable the property.
+  // It could lie and send the corresponding IPC messages anyway, but we will
+  // not act on them if enabled_bindings_ doesn't agree. If we get here without
+  // WebUI bindings, kill the renderer process.
+  if (enabled_bindings_ & BINDINGS_POLICY_WEB_UI) {
     Send(new ViewMsg_SetWebUIProperty(GetRoutingID(), name, value));
-  else
-    NOTREACHED() << "WebUI bindings not enabled.";
+  } else {
+    RecordAction(UserMetricsAction("BindingsMismatchTerminate_RVH_WebUI"));
+    base::KillProcess(
+        GetProcess()->GetHandle(), content::RESULT_CODE_KILLED, false);
+  }
 }
 
 void RenderViewHostImpl::GotFocus() {
