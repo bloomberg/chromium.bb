@@ -94,6 +94,9 @@ const char kOnNotificationClicked[] = "experimental.notification.onClicked";
 const char kOnNotificationButtonClicked[] =
     "experimental.notification.onButtonClicked";
 
+const char kOnNetworkChanged[] =
+    "networkingPrivate.onNetworkChanged";
+
 }  // namespace event_names
 
 }  // namespace extensions
