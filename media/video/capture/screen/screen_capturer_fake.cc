@@ -39,6 +39,18 @@ ScreenCapturerFake::~ScreenCapturerFake() {
 
 void ScreenCapturerFake::Start(Delegate* delegate) {
   delegate_ = delegate;
+
+  // Create memory for the buffers.
+  int buffer_size = size_.height() * bytes_per_row_;
+  for (int i = 0; i < kNumBuffers; i++) {
+    shared_buffers_[i] = delegate_->CreateSharedBuffer(buffer_size);
+    if (shared_buffers_[i]) {
+      buffers_[i] = reinterpret_cast<uint8*>(shared_buffers_[i]->ptr());
+    } else {
+      private_buffers_[i].reset(new uint8[buffer_size]);
+      buffers_[i] = private_buffers_[i].get();
+    }
+  }
 }
 
 void ScreenCapturerFake::Stop() {
@@ -60,10 +72,12 @@ void ScreenCapturerFake::CaptureFrame() {
   current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
 
   scoped_refptr<ScreenCaptureData> capture_data(new ScreenCaptureData(
-      buffers_[current_buffer_].get(), bytes_per_row_, size_));
+      buffers_[current_buffer_], bytes_per_row_, size_));
   capture_data->mutable_dirty_region() = invalid_region;
 
-  helper_.set_size_most_recent(capture_data->size());
+  helper_.set_size_most_recent(size_);
+
+  capture_data->set_shared_buffer(shared_buffers_[current_buffer_]);
 
   capture_data->set_capture_time_ms(
       (base::Time::Now() - capture_start_time).InMillisecondsRoundedUp());
@@ -71,10 +85,10 @@ void ScreenCapturerFake::CaptureFrame() {
 }
 
 void ScreenCapturerFake::GenerateImage() {
-  memset(buffers_[current_buffer_].get(), 0xff,
+  memset(buffers_[current_buffer_], 0xff,
          size_.width() * size_.height() * ScreenCaptureData::kBytesPerPixel);
 
-  uint8* row = buffers_[current_buffer_].get() +
+  uint8* row = buffers_[current_buffer_] +
       (box_pos_y_ * size_.width() + box_pos_x_) *
       ScreenCaptureData::kBytesPerPixel;
 
@@ -107,12 +121,6 @@ void ScreenCapturerFake::GenerateImage() {
 void ScreenCapturerFake::ScreenConfigurationChanged() {
   size_ = SkISize::Make(kWidth, kHeight);
   bytes_per_row_ = size_.width() * ScreenCaptureData::kBytesPerPixel;
-
-  // Create memory for the buffers.
-  int buffer_size = size_.height() * bytes_per_row_;
-  for (int i = 0; i < kNumBuffers; i++) {
-    buffers_[i].reset(new uint8[buffer_size]);
-  }
 }
 
 }  // namespace media

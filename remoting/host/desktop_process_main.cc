@@ -123,13 +123,9 @@ int DesktopProcessMain(int argc, char** argv) {
 
   MessageLoop message_loop(MessageLoop::TYPE_UI);
   base::RunLoop run_loop;
-  base::Closure quit_ui_task_runner = base::Bind(
-      base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
-      message_loop.message_loop_proxy(),
-      FROM_HERE, run_loop.QuitClosure());
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner =
       new AutoThreadTaskRunner(message_loop.message_loop_proxy(),
-                               quit_ui_task_runner);
+                               run_loop.QuitClosure());
 
   DesktopProcess desktop_process(ui_task_runner, channel_name);
 

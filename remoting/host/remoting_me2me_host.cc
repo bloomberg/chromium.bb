@@ -593,6 +593,7 @@ void HostProcess::StartOnUiThread() {
   IpcDesktopEnvironmentFactory* desktop_environment_factory =
       new IpcDesktopEnvironmentFactory(
           context_->network_task_runner(),
+          context_->network_task_runner(),
           daemon_channel_.get());
   desktop_session_connector_ = desktop_environment_factory;
 #else // !defined(REMOTING_MULTI_PROCESS)

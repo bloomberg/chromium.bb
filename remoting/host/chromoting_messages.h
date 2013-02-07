@@ -40,7 +40,7 @@ IPC_MESSAGE_CONTROL1(ChromotingDaemonNetworkMsg_TerminalDisconnected,
 
 // Notifies the network process that |terminal_id| is now attached to
 // a desktop integration process. |desktop_process| is the handle of the desktop
-// process |desktop_pipe| is the client end of the desktop-to-network pipe
+// process. |desktop_pipe| is the client end of the desktop-to-network pipe
 // opened.
 //
 // Windows only: |desktop_pipe| has to be duplicated from the desktop process
@@ -48,7 +48,7 @@ IPC_MESSAGE_CONTROL1(ChromotingDaemonNetworkMsg_TerminalDisconnected,
 // the sender.
 IPC_MESSAGE_CONTROL3(ChromotingDaemonNetworkMsg_DesktopAttached,
                      int /* terminal_id */,
-                     IPC::PlatformFileForTransit /* desktop_process */,
+                     base::ProcessHandle /* desktop_process */,
                      IPC::PlatformFileForTransit /* desktop_pipe */)
 
 //-----------------------------------------------------------------------------

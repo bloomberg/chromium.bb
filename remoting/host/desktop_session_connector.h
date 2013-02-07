@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/process.h"
 #include "ipc/ipc_platform_file.h"
 
 namespace remoting {
@@ -36,7 +37,7 @@ class DesktopSessionConnector {
   // process.
   virtual void OnDesktopSessionAgentAttached(
       int terminal_id,
-      IPC::PlatformFileForTransit desktop_process,
+      base::ProcessHandle desktop_process,
       IPC::PlatformFileForTransit desktop_pipe) = 0;
 
   // Notifies the network process that the daemon has disconnected the desktop

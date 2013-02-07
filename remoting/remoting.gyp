@@ -2284,6 +2284,7 @@
         'host/host_key_pair_unittest.cc',
         'host/host_mock_objects.cc',
         'host/host_mock_objects.h',
+        'host/ipc_desktop_environment_unittest.cc',
         'host/json_host_config_unittest.cc',
         'host/linux/x_server_clipboard_unittest.cc',
         'host/local_input_monitor_unittest.cc',

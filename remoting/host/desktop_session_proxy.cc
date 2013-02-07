@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
+#include "base/process_util.h"
 #include "base/single_thread_task_runner.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message_macros.h"
@@ -29,12 +30,15 @@ namespace remoting {
 
 DesktopSessionProxy::DesktopSessionProxy(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const std::string& client_jid,
     const base::Closure& disconnect_callback)
     : caller_task_runner_(caller_task_runner),
+      io_task_runner_(io_task_runner),
       audio_capturer_(NULL),
       client_jid_(client_jid),
       disconnect_callback_(disconnect_callback),
+      desktop_process_(base::kNullProcessHandle),
       pending_capture_frame_requests_(0),
       video_capturer_(NULL) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
@@ -106,18 +110,19 @@ void DesktopSessionProxy::OnChannelError() {
 }
 
 bool DesktopSessionProxy::AttachToDesktop(
-    IPC::PlatformFileForTransit desktop_process,
+    base::ProcessHandle desktop_process,
     IPC::PlatformFileForTransit desktop_pipe) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!client_jid_.empty());
   DCHECK(!desktop_channel_);
+  DCHECK_EQ(desktop_process_, base::kNullProcessHandle);
   DCHECK(!disconnect_callback_.is_null());
+
+  desktop_process_ = desktop_process;
 
 #if defined(OS_WIN)
   // On Windows: |desktop_process| is a valid handle, but |desktop_pipe| needs
   // to be duplicated from the desktop process.
-  desktop_process_.Set(desktop_process);
-
   base::win::ScopedHandle pipe;
   if (!DuplicateHandle(desktop_process_, desktop_pipe, GetCurrentProcess(),
                        pipe.Receive(), 0, FALSE, DUPLICATE_SAME_ACCESS)) {
@@ -126,28 +131,23 @@ bool DesktopSessionProxy::AttachToDesktop(
     return false;
   }
 
-  // Connect to the desktop process.
-  desktop_channel_.reset(new IPC::ChannelProxy(IPC::ChannelHandle(pipe),
-                                               IPC::Channel::MODE_CLIENT,
-                                               this,
-                                               caller_task_runner_));
+  IPC::ChannelHandle desktop_channel_handle(pipe);
+
 #elif defined(OS_POSIX)
-  // On posix: both |desktop_process| and |desktop_pipe| are valid file
-  // descriptors.
-  DCHECK(desktop_process.auto_close);
+  // On posix: |desktop_pipe| is a valid file descriptor.
   DCHECK(desktop_pipe.auto_close);
 
-  base::ClosePlatformFile(desktop_process.fd);
+  IPC::ChannelHandle desktop_channel_handle("", desktop_pipe);
 
-  // Connect to the desktop process.
-  desktop_channel_.reset(new IPC::ChannelProxy(
-      IPC::ChannelHandle("", desktop_pipe),
-      IPC::Channel::MODE_CLIENT,
-      this,
-      caller_task_runner_));
 #else
 #error Unsupported platform.
 #endif
+
+  // Connect to the desktop process.
+  desktop_channel_.reset(new IPC::ChannelProxy(desktop_channel_handle,
+                                               IPC::Channel::MODE_CLIENT,
+                                               this,
+                                               io_task_runner_));
 
   // Pass ID of the client (which is authenticated at this point) to the desktop
   // session agent and start the agent.
@@ -160,9 +160,10 @@ void DesktopSessionProxy::DetachFromDesktop() {
 
   desktop_channel_.reset();
 
-#if defined(OS_WIN)
-  desktop_process_.Close();
-#endif  // defined(OS_WIN)
+  if (desktop_process_ != base::kNullProcessHandle) {
+    base::CloseProcessHandle(desktop_process_);
+    desktop_process_ = base::kNullProcessHandle;
+  }
 
   shared_buffers_.clear();
 
@@ -194,12 +195,14 @@ void DesktopSessionProxy::InvalidateRegion(const SkRegion& invalid_region) {
     return;
   }
 
-  std::vector<SkIRect> invalid_rects;
-  for (SkRegion::Iterator i(invalid_region); !i.done(); i.next())
-    invalid_rects.push_back(i.rect());
+  if (desktop_channel_) {
+    std::vector<SkIRect> invalid_rects;
+    for (SkRegion::Iterator i(invalid_region); !i.done(); i.next())
+      invalid_rects.push_back(i.rect());
 
-  SendToDesktop(
-      new ChromotingNetworkDesktopMsg_InvalidateRegion(invalid_rects));
+    SendToDesktop(
+        new ChromotingNetworkDesktopMsg_InvalidateRegion(invalid_rects));
+  }
 }
 
 void DesktopSessionProxy::CaptureFrame() {
@@ -209,8 +212,12 @@ void DesktopSessionProxy::CaptureFrame() {
     return;
   }
 
-  ++pending_capture_frame_requests_;
-  SendToDesktop(new ChromotingNetworkDesktopMsg_CaptureFrame());
+  if (desktop_channel_) {
+    ++pending_capture_frame_requests_;
+    SendToDesktop(new ChromotingNetworkDesktopMsg_CaptureFrame());
+  } else {
+    PostCaptureCompleted(scoped_refptr<media::ScreenCaptureData>());
+  }
 }
 
 void DesktopSessionProxy::StartVideoCapturer(
@@ -282,6 +289,10 @@ void DesktopSessionProxy::StartEventExecutor(
 }
 
 DesktopSessionProxy::~DesktopSessionProxy() {
+  if (desktop_process_ != base::kNullProcessHandle) {
+    base::CloseProcessHandle(desktop_process_);
+    desktop_process_ = base::kNullProcessHandle;
+  }
 }
 
 scoped_refptr<media::SharedBuffer> DesktopSessionProxy::GetSharedBuffer(

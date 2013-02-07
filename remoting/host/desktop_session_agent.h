@@ -183,6 +183,9 @@ class DesktopSessionAgent
   }
 
  private:
+  // Closes |desktop_pipe_| if it is open.
+  void CloseDesktopPipeHandle();
+
   // Task runner dedicated to running methods of |audio_capturer_|.
   scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner_;
 
@@ -221,6 +224,10 @@ class DesktopSessionAgent
 
   // IPC channel connecting the desktop process with the network process.
   scoped_ptr<IPC::ChannelProxy> network_channel_;
+
+  // The client end of the network-to-desktop pipe. It is kept alive until
+  // the network process connects to the pipe.
+  IPC::PlatformFileForTransit desktop_pipe_;
 
   // Size of the most recent captured video frame.
   SkISize current_size_;

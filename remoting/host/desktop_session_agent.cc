@@ -4,6 +4,7 @@
 
 #include "remoting/host/desktop_session_agent.h"
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
@@ -76,6 +77,8 @@ DesktopSessionAgent::~DesktopSessionAgent() {
   DCHECK(!local_input_monitor_);
   DCHECK(!network_channel_);
   DCHECK(!video_capturer_);
+
+  CloseDesktopPipeHandle();
 }
 
 bool DesktopSessionAgent::OnMessageReceived(const IPC::Message& message) {
@@ -119,6 +122,8 @@ void DesktopSessionAgent::OnChannelConnected(int32 peer_pid) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   VLOG(1) << "IPC: desktop <- network (" << peer_pid << ")";
+
+  CloseDesktopPipeHandle();
 }
 
 void DesktopSessionAgent::OnChannelError() {
@@ -126,6 +131,7 @@ void DesktopSessionAgent::OnChannelError() {
 
   // Make sure the channel is closed.
   network_channel_.reset();
+  CloseDesktopPipeHandle();
 
   // Notify the caller that the channel has been disconnected.
   if (delegate_.get())
@@ -293,7 +299,10 @@ bool DesktopSessionAgent::Start(const base::WeakPtr<Delegate>& delegate,
   delegate_ = delegate;
 
   // Create an IPC channel to communicate with the network process.
-  return CreateChannelForNetworkProcess(desktop_pipe_out, &network_channel_);
+  bool result = CreateChannelForNetworkProcess(&desktop_pipe_,
+                                               &network_channel_);
+  *desktop_pipe_out = desktop_pipe_;
+  return result;
 }
 
 void DesktopSessionAgent::Stop() {
@@ -528,10 +537,25 @@ DesktopSessionAgent::DesktopSessionAgent(
       input_task_runner_(input_task_runner),
       io_task_runner_(io_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
+      desktop_pipe_(IPC::InvalidPlatformFileForTransit()),
       current_size_(SkISize::Make(0, 0)),
       next_shared_buffer_id_(1),
       started_(false) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
+}
+
+void DesktopSessionAgent::CloseDesktopPipeHandle() {
+  if (!(desktop_pipe_ == IPC::InvalidPlatformFileForTransit())) {
+#if defined(OS_WIN)
+    base::ClosePlatformFile(desktop_pipe_);
+#elif defined(OS_POSIX)
+    base::ClosePlatformFile(desktop_pipe_.fd);
+#else  // !defined(OS_POSIX)
+#error Unsupported platform.
+#endif  // !defined(OS_POSIX)
+
+    desktop_pipe_ = IPC::InvalidPlatformFileForTransit();
+  }
 }
 
 }  // namespace remoting

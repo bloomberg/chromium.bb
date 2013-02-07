@@ -50,10 +50,16 @@ class MEDIA_EXPORT ScreenCapturerFake : public ScreenCapturer {
 
   // We have two buffers for the screen images as required by Capturer.
   static const int kNumBuffers = 2;
-  scoped_array<uint8> buffers_[kNumBuffers];
+  uint8* buffers_[kNumBuffers];
 
   // The current buffer with valid data for reading.
   int current_buffer_;
+
+  // Used when |delegate_| implements CreateSharedBuffer().
+  scoped_refptr<SharedBuffer> shared_buffers_[kNumBuffers];
+
+  // Used when |delegate_| does not implement CreateSharedBuffer().
+  scoped_array<uint8> private_buffers_[kNumBuffers];
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCapturerFake);
 };

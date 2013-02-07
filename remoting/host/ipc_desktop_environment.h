@@ -37,6 +37,7 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
   // restarted.
   IpcDesktopEnvironment(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       const std::string& client_jid,
       const base::Closure& disconnect_callback,
       base::WeakPtr<DesktopSessionConnector> desktop_session_connector);
@@ -81,6 +82,7 @@ class IpcDesktopEnvironmentFactory
   // relevant task runners. |daemon_channel| must outlive this object.
   IpcDesktopEnvironmentFactory(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       IPC::ChannelProxy* daemon_channel);
   virtual ~IpcDesktopEnvironmentFactory();
 
@@ -97,13 +99,16 @@ class IpcDesktopEnvironmentFactory
       scoped_refptr<DesktopSessionProxy> desktop_session_proxy) OVERRIDE;
   virtual void OnDesktopSessionAgentAttached(
       int terminal_id,
-      IPC::PlatformFileForTransit desktop_process,
+      base::ProcessHandle desktop_process,
       IPC::PlatformFileForTransit desktop_pipe) OVERRIDE;
   virtual void OnTerminalDisconnected(int terminal_id) OVERRIDE;
 
  private:
   // Task runner on which public methods of this class should be called.
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
+
+  // Task runner used for running background I/O.
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // IPC channel connected to the daemon process.
   IPC::ChannelProxy* daemon_channel_;

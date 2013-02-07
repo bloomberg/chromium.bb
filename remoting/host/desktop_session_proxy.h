@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/process.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/video/capture/screen/screen_capturer.h"
@@ -19,10 +20,6 @@
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "third_party/skia/include/core/SkRegion.h"
-
-#if defined(OS_WIN)
-#include "base/win/scoped_handle.h"
-#endif
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -51,6 +48,7 @@ class DesktopSessionProxy
  public:
   DesktopSessionProxy(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       const std::string& client_jid,
       const base::Closure& disconnect_callback);
 
@@ -70,7 +68,7 @@ class DesktopSessionProxy
   virtual void OnChannelError() OVERRIDE;
 
   // Connects to the desktop session agent.
-  bool AttachToDesktop(IPC::PlatformFileForTransit desktop_process,
+  bool AttachToDesktop(base::ProcessHandle desktop_process,
                        IPC::PlatformFileForTransit desktop_pipe);
 
   // Closes the connection to the desktop session agent and cleans up
@@ -158,6 +156,9 @@ class DesktopSessionProxy
   // it is documented otherwise).
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
 
+  // Task runner used for running background I/O.
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
   // Task runner on which methods of |video_capturer_| will be invoked.
   scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner_;
 
@@ -176,10 +177,8 @@ class DesktopSessionProxy
   // Disconnects the client session when invoked.
   base::Closure disconnect_callback_;
 
-#if defined(OS_WIN)
   // Handle of the desktop process.
-  base::win::ScopedHandle desktop_process_;
-#endif  // defined(OS_WIN)
+  base::ProcessHandle desktop_process_;
 
   int pending_capture_frame_requests_;
 
