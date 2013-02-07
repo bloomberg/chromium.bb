@@ -437,3 +437,20 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffsetInstantNPT) {
   EXPECT_EQ(GetViewHeight(VIEW_ID_INFO_BAR), [preview previewOffset]);
   EXPECT_EQ(GetViewHeight(VIEW_ID_INFO_BAR), [preview activeContainerOffset]);
 }
+
+// Verify that if bookmark bar is underneath instant search results then
+// clicking on instant search results still works.
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
+                       InstantSearchResultsHitTest) {
+  browser()->window()->ToggleBookmarkBar();
+  ShowInstantResults();
+
+  NSView* bookmarkView = [[controller() bookmarkBarController] view];
+  NSView* contentView = [[controller() window] contentView];
+  NSPoint point = [bookmarkView convertPoint:NSMakePoint(1, 1)
+                                      toView:[contentView superview]];
+
+  EXPECT_FALSE([[contentView hitTest:point] isDescendantOf:bookmarkView]);
+  EXPECT_TRUE([[contentView hitTest:point]
+      isDescendantOf:[controller() tabContentArea]]);
+}

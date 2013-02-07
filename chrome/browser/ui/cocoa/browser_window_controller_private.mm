@@ -917,7 +917,10 @@ willPositionSheet:(NSWindow*)sheet
   [[self tabContentArea] setContentOffset:toolbarToWebContentsOffset_];
 
   // Prevent the dev tools splitter from overlapping the bookmark bar.
-  [devToolsController_ setTopContentOffset:toolbarToWebContentsOffset_];
+  if ([self isShowingInstantResults])
+    [devToolsController_ setTopContentOffset:previewOffset];
+  else
+    [devToolsController_ setTopContentOffset:toolbarToWebContentsOffset_];
 }
 
 - (void)updateSubviewZOrder:(BOOL)inPresentationMode {
