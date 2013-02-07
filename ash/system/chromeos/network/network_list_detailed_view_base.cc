@@ -128,8 +128,7 @@ void NetworkListDetailedViewBase::ManagerChanged() {
   Update();
 }
 
-void NetworkListDetailedViewBase::NetworkListChanged(
-    const NetworkStateList& networks) {
+void NetworkListDetailedViewBase::NetworkListChanged() {
   Update();
 }
 

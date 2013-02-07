@@ -14,7 +14,8 @@ namespace chromeos {
 DeviceState::DeviceState(const std::string& path)
     : ManagedState(MANAGED_TYPE_DEVICE, path),
       provider_requires_roaming_(false),
-      support_network_scan_(false) {
+      support_network_scan_(false),
+      scanning_(false) {
 }
 
 DeviceState::~DeviceState() {
@@ -26,6 +27,8 @@ bool DeviceState::PropertyChanged(const std::string& key,
     return true;
   if (key == flimflam::kAddressProperty) {
     return GetStringValue(key, value, &mac_address_);
+  } else if (key == flimflam::kScanningProperty) {
+    return GetBooleanValue(key, value, &scanning_);
   } else if (key == flimflam::kSupportNetworkScanProperty) {
     return GetBooleanValue(key, value, &support_network_scan_);
   } else if (key == shill::kProviderRequiresRoamingProperty) {

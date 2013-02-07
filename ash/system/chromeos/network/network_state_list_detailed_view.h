@@ -43,7 +43,7 @@ class NetworkStateListDetailedView : public NetworkDetailedView,
   virtual void Init() OVERRIDE;
   virtual DetailedViewType GetViewType() const OVERRIDE;
   virtual void ManagerChanged() OVERRIDE;
-  virtual void NetworkListChanged(const NetworkStateList& networks) OVERRIDE;
+  virtual void NetworkListChanged() OVERRIDE;
   virtual void NetworkServiceChanged(
       const chromeos::NetworkState* network) OVERRIDE;
 
@@ -84,12 +84,6 @@ class NetworkStateListDetailedView : public NetworkDetailedView,
 
   // Track login state.
   user::LoginStatus login_;
-
-  // Set to true when wifi is enabled. Used to trigger scanning state.
-  bool wifi_enabled_;
-
-  // Set to true while scanning for wifi networks.
-  bool wifi_scanning_;
 
   // A map of child views to their network service path.
   std::map<views::View*, std::string> network_map_;

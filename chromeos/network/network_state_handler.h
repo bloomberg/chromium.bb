@@ -41,6 +41,15 @@ class NetworkStateHandlerTest;
 // keep properties up to date by managing the appropriate Shill observers.
 // It will invoke its own more specific observer methods when the specified
 // changes occur.
+//
+// Most *ByType or *ForType methods will accept any of the following  for
+// |type|. See individual methods for specific notes.
+// * Any type defined in service_constants.h (e.g. flimflam::kTypeWifi)
+// * kMatchTypeDefault returns the default (active) network
+// * kMatchTypeNonVirtual returns the primary non virtual network
+// * kMatchTypeWireless returns the primary wireless network
+// * kMatchTypeMobile returns the primary cellular or wimax network
+
 class CHROMEOS_EXPORT NetworkStateHandler
     : public internal::ShillPropertyHandler::Listener {
  public:
@@ -62,14 +71,17 @@ class CHROMEOS_EXPORT NetworkStateHandler
   void AddObserver(NetworkStateHandlerObserver* observer);
   void RemoveObserver(NetworkStateHandlerObserver* observer);
 
-  // Returns true if |technology| is enabled / available.
-  bool TechnologyAvailable(const std::string& technology) const;
-  bool TechnologyEnabled(const std::string& technology) const;
+  // Returns true if technology for |type| is available/ enabled/uninitialized.
+  // kMatchTypeMobile (only) is also supported.
+  bool TechnologyAvailable(const std::string& type) const;
+  bool TechnologyEnabled(const std::string& type) const;
+  bool TechnologyUninitialized(const std::string& type) const;
 
-  // Asynchronously sets the enabled property for |technology|.
+  // Asynchronously sets the technology enabled property for |type|.
+  // kMatchTypeMobile (only) is also supported.
   // Note: Modifies Manager state. Calls |error_callback| on failure.
   void SetTechnologyEnabled(
-      const std::string& technology,
+      const std::string& type,
       bool enabled,
       const network_handler::ErrorCallback& error_callback);
 
@@ -77,7 +89,12 @@ class CHROMEOS_EXPORT NetworkStateHandler
   const DeviceState* GetDeviceState(const std::string& device_path) const;
 
   // Finds and returns a device state by |type|. Returns NULL if not found.
+  // See note above for valid types.
   const DeviceState* GetDeviceStateByType(const std::string& type) const;
+
+  // Returns true if any device of |type| is scanning.
+  // See note above for valid types.
+  bool GetScanningByType(const std::string& type) const;
 
   // Finds and returns a network state by |service_path| or NULL if not found.
   // Note: NetworkState is frequently updated asynchronously, i.e. properties
@@ -91,18 +108,20 @@ class CHROMEOS_EXPORT NetworkStateHandler
   const NetworkState* DefaultNetwork() const;
 
   // Returns the primary connected network of matching |type|, otherwise NULL.
-  // |type| can be a type defined in service_constants.h, or one of the
-  // following special constants:
-  // * kMatchTypeDefault returns the default (active) network
-  // * kMatchTypeNonVirtual returns the primary connected non virtual network
-  // * kMatchTypeWireless returns the primary connected wireless network
+  // See note above for valid types.
   const NetworkState* ConnectedNetworkByType(const std::string& type) const;
 
   // Like ConnectedNetworkByType() but returns a connecting network or NULL.
   const NetworkState* ConnectingNetworkByType(const std::string& type) const;
 
+  // Like ConnectedNetworkByType() but returns any matching network or NULL.
+  // Mostly useful for mobile networks where there is generally only one
+  // netowrk. Note: O(N).
+  const NetworkState* FirstNetworkByType(const std::string& type) const;
+
   // Returns the hardware (MAC) address for the first connected network
   // matching |type|, or an empty string if none.
+  // See note above for valid types.
   std::string HardwareAddressForType(const std::string& type) const;
   // Same as above but in aa:bb format.
   std::string FormattedHardwareAddressForType(const std::string& type) const;
@@ -113,13 +132,13 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // only on the UI thread).
   void GetNetworkList(NetworkStateList* list) const;
 
-  // Requests a scan of wifi networks. This may trigger updates to the network
+  // Requests a network scan. This may trigger updates to the network
   // list, which will trigger the appropriate observer calls.
-  // Returns true if a scan was requested.
-  bool RequestWifiScan() const;
+  void RequestScan() const;
 
   static const char kMatchTypeDefault[];
   static const char kMatchTypeWireless[];
+  static const char kMatchTypeMobile[];
   static const char kMatchTypeNonVirtual[];
 
  protected:
@@ -132,14 +151,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
   virtual void UpdateManagedList(ManagedState::ManagedType type,
                                  const base::ListValue& entries) OVERRIDE;
 
-  // Sets |available_technologies_| to contain only entries in |technologies|.
-  virtual void UpdateAvailableTechnologies(
-      const base::ListValue& technologies) OVERRIDE;
-
-  // Sets |enabled_technologies_| to contain only entries in |technologies|.
-  virtual void UpdateEnabledTechnologies(
-      const base::ListValue& technologies) OVERRIDE;
-
   // Parses the properties for the network service or device. Mostly calls
   // managed->PropertyChanged(key, value) for each dictionary entry.
   virtual void UpdateManagedStateProperties(
@@ -148,7 +159,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
       const base::DictionaryValue& properties) OVERRIDE;
 
   // Called by ShillPropertyHandler when a watched service property changes.
-  // Calls ParseNetworkServiceProperty() and signals observers.
   virtual void UpdateNetworkServiceProperty(
       const std::string& service_path,
       const std::string& key,
@@ -158,6 +168,12 @@ class CHROMEOS_EXPORT NetworkStateHandler
   virtual void UpdateNetworkServiceIPAddress(
       const std::string& service_path,
       const std::string& ip_address) OVERRIDE;
+
+  // Called by ShillPropertyHandler when a watched device property changes.
+  virtual void UpdateDeviceProperty(
+      const std::string& device_path,
+      const std::string& key,
+      const base::Value& value) OVERRIDE;
 
   // Sends NetworkManagerChanged() to observers.
   virtual void ManagerPropertyChanged() OVERRIDE;
@@ -189,12 +205,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Gets the list specified by |type|.
   ManagedStateList* GetManagedList(ManagedState::ManagedType type);
 
-  // Helper function called to parse |network| properties. Also calls
-  // OnNetworkConnectionStateChanged() if the connection_state property changes.
-  bool ParseNetworkServiceProperty(NetworkState* network,
-                                   const std::string& key,
-                                   const base::Value& value);
-
   // Helper function to notify observers. Calls CheckDefaultNetworkChanged().
   void OnNetworkConnectionStateChanged(NetworkState* network);
 
@@ -214,10 +224,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Lists of managed states
   ManagedStateList network_list_;
   ManagedStateList device_list_;
-
-  // Lists of available / enabled technologies
-  std::set<std::string> available_technologies_;
-  std::set<std::string> enabled_technologies_;
 
   // Keeps track of the default network for notifying observers when it changes.
   std::string default_network_path_;

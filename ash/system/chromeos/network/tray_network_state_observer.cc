@@ -39,11 +39,10 @@ void TrayNetworkStateObserver::NetworkManagerChanged() {
     detailed->ManagerChanged();
 }
 
-void TrayNetworkStateObserver::NetworkListChanged(
-    const NetworkStateList& networks) {
+void TrayNetworkStateObserver::NetworkListChanged() {
   tray::NetworkDetailedView* detailed = tray_->detailed();
   if (detailed)
-    detailed->NetworkListChanged(networks);
+    detailed->NetworkListChanged();
 }
 
 void TrayNetworkStateObserver::NetworkPropertiesUpdated(

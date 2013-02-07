@@ -30,6 +30,8 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
+using chromeos::NetworkStateHandler;
+
 namespace ash {
 namespace internal {
 namespace tray {
@@ -106,8 +108,6 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
     SystemTrayItem* owner, user::LoginStatus login)
     : NetworkDetailedView(owner),
       login_(login),
-      wifi_enabled_(false),
-      wifi_scanning_(false),
       info_icon_(NULL),
       button_wifi_(NULL),
       button_mobile_(NULL),
@@ -128,27 +128,15 @@ NetworkStateListDetailedView::~NetworkStateListDetailedView() {
 }
 
 void NetworkStateListDetailedView::ManagerChanged() {
-  chromeos::NetworkStateHandler* handler = chromeos::NetworkStateHandler::Get();
-  bool wifi_was_enabled = wifi_enabled_;
-  wifi_enabled_ = handler->TechnologyEnabled(flimflam::kTypeWifi);
-  if (wifi_enabled_ != wifi_was_enabled) {
-    bool wifi_was_scanning = wifi_scanning_;
-    if (wifi_enabled_ && !wifi_scanning_)
-      wifi_scanning_ = handler->RequestWifiScan();
-    else if (!wifi_enabled_ && wifi_scanning_)
-      wifi_scanning_ = false;
-    if (wifi_scanning_ != wifi_was_scanning)
-      RefreshNetworkList();
-  }
   UpdateHeaderButtons();
   UpdateNetworkEntries();
   UpdateNetworkExtra();
   Layout();
 }
 
-void NetworkStateListDetailedView::NetworkListChanged(
-    const NetworkStateList& network_list) {
-  wifi_scanning_ = false;
+void NetworkStateListDetailedView::NetworkListChanged() {
+  NetworkStateList network_list;
+  NetworkStateHandler::Get()->GetNetworkList(&network_list);
   UpdateNetworks(network_list);
   Layout();
 }
@@ -172,11 +160,9 @@ void NetworkStateListDetailedView::Init() {
   CreateNetworkExtra();
   CreateHeaderEntry();
   CreateHeaderButtons();
-  chromeos::NetworkStateHandler* handler = chromeos::NetworkStateHandler::Get();
+  NetworkStateHandler* handler = NetworkStateHandler::Get();
   NetworkStateList network_list;
-  wifi_enabled_ = handler->TechnologyEnabled(flimflam::kTypeWifi);
-  if (wifi_enabled_)
-    wifi_scanning_ = handler->RequestWifiScan();
+  handler->RequestScan();
   handler->GetNetworkList(&network_list);
   UpdateNetworks(network_list);
 }
@@ -198,7 +184,7 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
   // If the info bubble was visible, close it when some other item is clicked.
   ResetInfoBubble();
 
-  chromeos::NetworkStateHandler* handler = chromeos::NetworkStateHandler::Get();
+  NetworkStateHandler* handler = NetworkStateHandler::Get();
   ash::SystemTrayDelegate* delegate =
       ash::Shell::GetInstance()->system_tray_delegate();
   if (sender == button_wifi_) {
@@ -211,9 +197,10 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
         flimflam::kTypeWifi, true,
         chromeos::network_handler::ErrorCallback());
   } else if (sender == button_mobile_) {
-    bool enabled = handler->TechnologyEnabled(flimflam::kTypeCellular);
+    bool enabled = handler->TechnologyEnabled(
+        NetworkStateHandler::kMatchTypeMobile);
     handler->SetTechnologyEnabled(
-        flimflam::kTypeCellular, !enabled,
+        NetworkStateHandler::kMatchTypeMobile, !enabled,
         chromeos::network_handler::ErrorCallback());
   } else if (sender == settings_) {
     delegate->ShowNetworkSettings();
@@ -259,7 +246,7 @@ void NetworkStateListDetailedView::ClickedOn(views::View* sender) {
       if (!network->IsConnectedState()) {
         chromeos::NetworkConfigurationHandler::Get()->Connect(
             service_path,
-            base::Closure(),
+            base::Bind(&base::DoNothing),
             chromeos::network_handler::ErrorCallback());
       } else {
         // This will show the settings UI for a connected network.
@@ -364,13 +351,13 @@ void NetworkStateListDetailedView::CreateNetworkExtra() {
 // Update UI components.
 
 void NetworkStateListDetailedView::UpdateHeaderButtons() {
-  chromeos::NetworkStateHandler* handler = chromeos::NetworkStateHandler::Get();
+  NetworkStateHandler* handler = NetworkStateHandler::Get();
   button_wifi_->SetToggled(
       !handler->TechnologyEnabled(flimflam::kTypeWifi));
-  button_mobile_->SetToggled(
-      !handler->TechnologyEnabled(flimflam::kTypeCellular));
-  button_mobile_->SetVisible(
-      handler->TechnologyAvailable(flimflam::kTypeCellular));
+  button_mobile_->SetToggled(!handler->TechnologyEnabled(
+      NetworkStateHandler::kMatchTypeMobile));
+  button_mobile_->SetVisible(handler->TechnologyAvailable(
+      NetworkStateHandler::kMatchTypeMobile));
   if (proxy_settings_)
     proxy_settings_->SetEnabled(handler->DefaultNetwork() != NULL);
 
@@ -427,7 +414,9 @@ void NetworkStateListDetailedView::RefreshNetworkList() {
   // * "Scanning..."
   // * Un-highlit networks (not connected). Usually empty while scanning.
 
-  if (wifi_scanning_ && scanning_view_ == NULL) {
+  bool wifi_scanning =
+      NetworkStateHandler::Get()->GetScanningByType(flimflam::kTypeWifi);
+  if (wifi_scanning && scanning_view_ == NULL) {
     scanning_view_ = new views::Label(
         ui::ResourceBundle::GetSharedInstance().
         GetLocalizedString(IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE));
@@ -437,7 +426,7 @@ void NetworkStateListDetailedView::RefreshNetworkList() {
     // Initially insert "scanning" first.
     scroll_content()->AddChildViewAt(scanning_view_, 0);
     needs_relayout = true;
-  } else if (!wifi_scanning_ && scanning_view_ != NULL) {
+  } else if (!wifi_scanning && scanning_view_ != NULL) {
     scroll_content()->RemoveChildView(scanning_view_);
     scanning_view_ = NULL;
     needs_relayout = true;
@@ -549,7 +538,7 @@ void NetworkStateListDetailedView::UpdateNetworkExtra() {
   if (login_ == user::LOGGED_IN_LOCKED)
     return;
 
-  chromeos::NetworkStateHandler* handler = chromeos::NetworkStateHandler::Get();
+  NetworkStateHandler* handler = NetworkStateHandler::Get();
   if (!handler->TechnologyAvailable(flimflam::kTypeWifi)) {
     turn_on_wifi_->SetVisible(false);
     other_wifi_->SetVisible(false);
@@ -562,15 +551,15 @@ void NetworkStateListDetailedView::UpdateNetworkExtra() {
   }
 
   bool show_other_mobile = false;
-  if (handler->TechnologyAvailable(flimflam::kTypeCellular)) {
+  if (handler->TechnologyAvailable(NetworkStateHandler::kMatchTypeMobile)) {
     const chromeos::DeviceState* device =
-        handler->GetDeviceStateByType(flimflam::kTypeCellular);
+        handler->GetDeviceStateByType(NetworkStateHandler::kMatchTypeMobile);
     show_other_mobile = (device && device->support_network_scan());
   }
   if (show_other_mobile) {
     other_mobile_->SetVisible(true);
     other_mobile_->SetEnabled(
-        handler->TechnologyEnabled(flimflam::kTypeCellular));
+        handler->TechnologyEnabled(NetworkStateHandler::kMatchTypeMobile));
   } else {
     other_mobile_->SetVisible(false);
   }
@@ -628,7 +617,7 @@ bool NetworkStateListDetailedView::ResetInfoBubble() {
 
 views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  chromeos::NetworkStateHandler* handler = chromeos::NetworkStateHandler::Get();
+  NetworkStateHandler* handler = NetworkStateHandler::Get();
 
   std::string ip_address("0.0.0.0");
   const chromeos::NetworkState* network = handler->DefaultNetwork();

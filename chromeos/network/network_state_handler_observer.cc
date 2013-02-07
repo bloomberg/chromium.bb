@@ -15,8 +15,7 @@ NetworkStateHandlerObserver::~NetworkStateHandlerObserver() {
 void NetworkStateHandlerObserver::NetworkManagerChanged() {
 }
 
-void NetworkStateHandlerObserver::NetworkListChanged(
-    const NetworkStateList& networks) {
+void NetworkStateHandlerObserver::NetworkListChanged() {
 }
 
 void NetworkStateHandlerObserver::DeviceListChanged() {

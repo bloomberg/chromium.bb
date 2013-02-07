@@ -39,7 +39,7 @@ class NetworkDetailedView : public TrayDetailsView {
 
   // Called when the contents of the network list have changed.
   // (Called only from TrayNetworkStateObserver).
-  virtual void NetworkListChanged(const NetworkStateList& networks) = 0;
+  virtual void NetworkListChanged() = 0;
 
   // Called when a network service property has changed.
   // (Called only from TrayNetworkStateObserver).

@@ -24,6 +24,7 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   const std::string& mac_address() const { return mac_address_; }
   bool provider_requires_roaming() const { return provider_requires_roaming_; }
   bool support_network_scan() const { return support_network_scan_; }
+  bool scanning() const { return scanning_; }
 
  private:
   // Common Device Properties
@@ -32,6 +33,7 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   std::string home_provider_id_;
   bool provider_requires_roaming_;
   bool support_network_scan_;
+  bool scanning_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceState);
 };

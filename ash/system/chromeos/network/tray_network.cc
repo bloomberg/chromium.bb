@@ -217,7 +217,7 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
   virtual void ManagerChanged() OVERRIDE {
   }
 
-  virtual void NetworkListChanged(const NetworkStateList& networks) OVERRIDE {
+  virtual void NetworkListChanged() OVERRIDE {
   }
 
   virtual void NetworkServiceChanged(

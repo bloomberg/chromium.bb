@@ -35,7 +35,7 @@ class NetworkListDetailedViewBase : public NetworkDetailedView,
   virtual void Init() OVERRIDE;
   virtual NetworkDetailedView::DetailedViewType GetViewType() const OVERRIDE;
   virtual void ManagerChanged() OVERRIDE;
-  virtual void NetworkListChanged(const NetworkStateList& networks) OVERRIDE;
+  virtual void NetworkListChanged() OVERRIDE;
   virtual void NetworkServiceChanged(
       const chromeos::NetworkState* network) OVERRIDE;
 

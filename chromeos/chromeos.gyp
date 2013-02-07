@@ -182,8 +182,6 @@
         'network/onc/onc_validator.h',
         'network/shill_property_handler.cc',
         'network/shill_property_handler.h',
-        'network/shill_service_observer.cc',
-        'network/shill_service_observer.h',
         'network/sms_watcher.cc',
         'network/sms_watcher.h',
         'power/power_state_override.cc',

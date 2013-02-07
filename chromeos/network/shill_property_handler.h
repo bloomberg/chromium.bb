@@ -28,7 +28,7 @@ class ShillManagerClient;
 
 namespace internal {
 
-class ShillServiceObserver;
+class ShillPropertyObserver;
 
 // This class handles Shill calls and observers to reflect the state of the
 // Shill Manager and its services and devices. It observes Shill.Manager and
@@ -40,21 +40,14 @@ class ShillServiceObserver;
 class CHROMEOS_EXPORT ShillPropertyHandler
     : public ShillPropertyChangedObserver {
  public:
-  typedef std::map<std::string, ShillServiceObserver*> ShillServiceObserverMap;
+  typedef std::map<std::string, ShillPropertyObserver*>
+      ShillPropertyObserverMap;
 
   class CHROMEOS_EXPORT Listener {
    public:
     // Called when the entries in a managed list have changed.
     virtual void UpdateManagedList(ManagedState::ManagedType type,
                                    const base::ListValue& entries) = 0;
-
-    // Called when the available technologies are set or have changed.
-    virtual void UpdateAvailableTechnologies(
-        const base::ListValue& technologies) = 0;
-
-    // Called when the enabled technologies are set or have changed.
-    virtual void UpdateEnabledTechnologies(
-        const base::ListValue& technologies) = 0;
 
     // Called when the properties for a managed state have changed.
     virtual void UpdateManagedStateProperties(
@@ -65,6 +58,12 @@ class CHROMEOS_EXPORT ShillPropertyHandler
     // Called when a property for a watched network service has changed.
     virtual void UpdateNetworkServiceProperty(
         const std::string& service_path,
+        const std::string& key,
+        const base::Value& value) = 0;
+
+    // Called when a property for a watched device has changed.
+    virtual void UpdateDeviceProperty(
+        const std::string& device_path,
         const std::string& key,
         const base::Value& value) = 0;
 
@@ -92,6 +91,11 @@ class CHROMEOS_EXPORT ShillPropertyHandler
 
   // Sends an initial property request and sets up the observer.
   void Init();
+
+  // Returns true if |technology| is available / enabled / uninitialized.
+  bool TechnologyAvailable(const std::string& technology) const;
+  bool TechnologyEnabled(const std::string& technology) const;
+  bool TechnologyUninitialized(const std::string& technology) const;
 
   // Asynchronously sets the enabled state for |technology|.
   // Note: Modifes Manager state. Calls |error_callback| on failure.
@@ -124,14 +128,15 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   // Returns true if observers should be notified.
   bool ManagerPropertyChanged(const std::string& key, const base::Value& value);
 
-  // Calls listener_->UpdateManagedList and triggers ManagedStateListChanged if
-  // no new property requests have been made.
-  void UpdateManagedList(ManagedState::ManagedType type,
-                         const base::ListValue& entries);
+  // Updates the Shill property observers to observe any entries for |type|.
+  void UpdateObserved(ManagedState::ManagedType type,
+                      const base::ListValue& entries);
 
-  // Updates the Shill service property observers to observe any entries
-  // in the service watch list.
-  void UpdateObservedNetworkServices(const base::ListValue& entries);
+
+  // Sets |*_technologies_| to contain only entries in |technologies|.
+  void UpdateAvailableTechnologies(const base::ListValue& technologies);
+  void UpdateEnabledTechnologies(const base::ListValue& technologies);
+  void UpdateUninitializedTechnologies(const base::ListValue& technologies);
 
   // Called when Shill returns the properties for a service or device.
   void GetPropertiesCallback(ManagedState::ManagedType type,
@@ -139,11 +144,18 @@ class CHROMEOS_EXPORT ShillPropertyHandler
                              DBusMethodCallStatus call_status,
                              const base::DictionaryValue& properties);
 
-  // Callback invoked when a watched service property changes. Calls
-  // network->PropertyChanged(key, value) and signals observers.
+  // Callback invoked when a watched property changes. Calls appropriate
+  // handlers and signals observers.
+  void PropertyChangedCallback(ManagedState::ManagedType type,
+                               const std::string& path,
+                               const std::string& key,
+                               const base::Value& value);
   void NetworkServicePropertyChangedCallback(const std::string& path,
                                              const std::string& key,
                                              const base::Value& value);
+  void NetworkDevicePropertyChangedCallback(const std::string& path,
+                                            const std::string& key,
+                                            const base::Value& value);
 
   // Callback for getting the IPConfig property of a Network. Handled here
   // instead of in NetworkState so that all asynchronous requests are done
@@ -162,7 +174,15 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   std::map<ManagedState::ManagedType, std::set<std::string> > pending_updates_;
 
   // List of network services with Shill property changed observers
-  ShillServiceObserverMap observed_networks_;
+  ShillPropertyObserverMap observed_networks_;
+
+  // List of network devices with Shill property changed observers
+  ShillPropertyObserverMap observed_devices_;
+
+  // Lists of available / enabled / uninitialized technologies
+  std::set<std::string> available_technologies_;
+  std::set<std::string> enabled_technologies_;
+  std::set<std::string> uninitialized_technologies_;
 
   // For Shill client callbacks
   base::WeakPtrFactory<ShillPropertyHandler> weak_ptr_factory_;

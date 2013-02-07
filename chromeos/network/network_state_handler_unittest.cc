@@ -46,8 +46,9 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
     ++manager_changed_count_;
   }
 
-  virtual void NetworkListChanged(
-      const NetworkStateHandler::NetworkStateList& networks) OVERRIDE {
+  virtual void NetworkListChanged() OVERRIDE {
+    NetworkStateHandler::NetworkStateList networks;
+    handler_->GetNetworkList(&networks);
     network_count_ = networks.size();
     if (network_count_ == 0) {
       default_network_ = "";
