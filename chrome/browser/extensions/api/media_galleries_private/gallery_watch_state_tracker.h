@@ -57,6 +57,15 @@ class GalleryWatchStateTracker
                                   chrome::MediaGalleryPrefId gallery_id,
                                   bool has_permission);
 
+  // Returns a set of watched gallery identifiers for the extension specified
+  // by the |extension_id|.
+  chrome::MediaGalleryPrefIdSet GetAllWatchedGalleryIDsForExtension(
+      const std::string& extension_id) const;
+
+  // Removes all the gallery watchers associated with the extension specified
+  // by the |extension_id|.
+  void RemoveAllGalleryWatchersForExtension(const std::string& extension_id);
+
  private:
   // Key: Gallery identifier.
   // Value: True if the watcher is active. Watcher will be active only if

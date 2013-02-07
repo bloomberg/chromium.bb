@@ -32,34 +32,34 @@ namespace extensions {
 
 namespace {
 
-typedef std::set<chrome::MediaGalleryPrefId> WatchedGalleryIds;
-
 // State store key to track the registered gallery watchers for the extensions.
 const char kRegisteredGalleryWatchers[] = "media_gallery_watchers";
 
 // Converts the storage |list| value to WatchedGalleryIds.
-WatchedGalleryIds WatchedGalleryIdsFromValue(const base::ListValue* list) {
+chrome::MediaGalleryPrefIdSet WatchedGalleryIdsFromValue(
+    const base::ListValue* list) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  WatchedGalleryIds watched_gallery_ids;
+  chrome::MediaGalleryPrefIdSet gallery_ids;
   std::string gallery_id_str;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     if (!list->GetString(i, &gallery_id_str) || gallery_id_str.empty())
       continue;
     chrome::MediaGalleryPrefId gallery_id;
     if (base::StringToUint64(gallery_id_str, &gallery_id))
-      watched_gallery_ids.insert(gallery_id);
+      gallery_ids.insert(gallery_id);
   }
-  return watched_gallery_ids;
+  return gallery_ids;
 }
 
 // Converts WatchedGalleryIds to a storage list value.
 scoped_ptr<base::ListValue> WatchedGalleryIdsToValue(
-    const WatchedGalleryIds gallery_ids) {
+    const chrome::MediaGalleryPrefIdSet gallery_ids) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   scoped_ptr<base::ListValue> list(new ListValue());
-  for (WatchedGalleryIds::const_iterator iter = gallery_ids.begin();
-       iter != gallery_ids.end(); ++iter)
-    list->AppendString(base::Uint64ToString(*iter));
+  for (chrome::MediaGalleryPrefIdSet::const_iterator id_iter =
+           gallery_ids.begin();
+       id_iter != gallery_ids.end(); ++id_iter)
+    list->AppendString(base::Uint64ToString(*id_iter));
   return list.Pass();
 }
 
@@ -127,6 +127,37 @@ void GalleryWatchStateTracker::OnGalleryPermissionChanged(
   // Revoked gallery permission.
   if (!has_permission && HasGalleryWatchInfo(extension_id, gallery_id, true))
     RemoveGalleryWatch(extension_id, gallery_id);
+}
+
+chrome::MediaGalleryPrefIdSet
+GalleryWatchStateTracker::GetAllWatchedGalleryIDsForExtension(
+    const std::string& extension_id) const {
+  chrome::MediaGalleryPrefIdSet gallery_ids;
+  WatchedExtensionsMap::const_iterator extension_id_iter =
+      watched_extensions_map_.find(extension_id);
+  if (extension_id_iter != watched_extensions_map_.end()) {
+    for (WatchedGalleriesMap::const_iterator gallery_id_iter =
+             extension_id_iter->second.begin();
+         gallery_id_iter != extension_id_iter->second.end();
+         ++gallery_id_iter) {
+      gallery_ids.insert(gallery_id_iter->first);
+    }
+  }
+  return gallery_ids;
+}
+
+void GalleryWatchStateTracker::RemoveAllGalleryWatchersForExtension(
+    const std::string& extension_id) {
+  WatchedExtensionsMap::iterator extension_id_iter =
+      watched_extensions_map_.find(extension_id);
+  if (extension_id_iter == watched_extensions_map_.end())
+    return;
+  const WatchedGalleriesMap& galleries = extension_id_iter->second;
+  for (WatchedGalleriesMap::const_iterator gallery_id_iter = galleries.begin();
+       gallery_id_iter != galleries.end(); ++gallery_id_iter)
+    RemoveGalleryWatch(extension_id, gallery_id_iter->second);
+  watched_extensions_map_.erase(extension_id_iter);
+  WriteToStorage(extension_id);
 }
 
 void GalleryWatchStateTracker::OnGalleryWatchAdded(
@@ -200,19 +231,11 @@ void GalleryWatchStateTracker::WriteToStorage(const std::string& extension_id) {
   StateStore* storage = ExtensionSystem::Get(profile_)->state_store();
   if (!storage)
     return;
-  WatchedGalleryIds gallery_ids;
-  WatchedExtensionsMap::iterator extension_id_iter =
-      watched_extensions_map_.find(extension_id);
-  if (extension_id_iter != watched_extensions_map_.end()) {
-    for (WatchedGalleriesMap::const_iterator gallery_id_iter =
-             extension_id_iter->second.begin();
-         gallery_id_iter != extension_id_iter->second.end();
-         ++gallery_id_iter) {
-      gallery_ids.insert(gallery_id_iter->first);
-    }
-  }
+  chrome::MediaGalleryPrefIdSet gallery_ids =
+      GetAllWatchedGalleryIDsForExtension(extension_id);
   storage->SetExtensionValue(
-      extension_id, kRegisteredGalleryWatchers,
+      extension_id,
+      kRegisteredGalleryWatchers,
       WatchedGalleryIdsToValue(gallery_ids).PassAs<base::Value>());
 }
 
@@ -222,11 +245,12 @@ void GalleryWatchStateTracker::ReadFromStorage(const std::string& extension_id,
   base::ListValue* list = NULL;
   if (!value.get() || !value->GetAsList(&list))
     return;
-  WatchedGalleryIds gallery_ids = WatchedGalleryIdsFromValue(list);
-  for (WatchedGalleryIds::const_iterator gallery_id_iter = gallery_ids.begin();
-       gallery_id_iter != gallery_ids.end(); ++gallery_id_iter) {
-    watched_extensions_map_[extension_id][*gallery_id_iter] = false;
-    SetupGalleryWatch(extension_id, *gallery_id_iter);
+  chrome::MediaGalleryPrefIdSet gallery_ids = WatchedGalleryIdsFromValue(list);
+  for (chrome::MediaGalleryPrefIdSet::const_iterator id_iter =
+           gallery_ids.begin();
+       id_iter != gallery_ids.end(); ++id_iter) {
+    watched_extensions_map_[extension_id][*id_iter] = false;
+    SetupGalleryWatch(extension_id, *id_iter);
   }
 }
 

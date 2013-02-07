@@ -99,6 +99,32 @@ class MediaGalleriesPrivateRemoveGalleryWatchFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
+// Implements the chrome.mediaGalleriesPrivate.getAllGalleryWatch method.
+class MediaGalleriesPrivateGetAllGalleryWatchFunction
+    : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("mediaGalleriesPrivate.getAllGalleryWatch",
+                             MEDIAGALLERIESPRIVATE_GETALLGALLERYWATCH);
+ protected:
+  virtual ~MediaGalleriesPrivateGetAllGalleryWatchFunction();
+
+  // SyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+};
+
+// Implements the chrome.mediaGalleriesPrivate.removeAllGalleryWatch method.
+class MediaGalleriesPrivateRemoveAllGalleryWatchFunction
+    : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("mediaGalleriesPrivate.removeAllGalleryWatch",
+                             MEDIAGALLERIESPRIVATE_REMOVEALLGALLERYWATCH);
+ protected:
+  virtual ~MediaGalleriesPrivateRemoveAllGalleryWatchFunction();
+
+  // SyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_PRIVATE_MEDIA_GALLERIES_PRIVATE_API_H_

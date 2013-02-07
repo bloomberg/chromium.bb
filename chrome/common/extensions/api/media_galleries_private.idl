@@ -45,10 +45,13 @@ namespace mediaGalleriesPrivate {
   };
 
   callback AddGalleryWatchCallback = void (AddGalleryWatchResult result);
+  callback GetAllGalleryWatchCallback = void (long[] galleryIds);
 
   interface Functions {
     static void addGalleryWatch(long galleryId,
                                 AddGalleryWatchCallback callback);
     static void removeGalleryWatch(long galleryId);
+    static void getAllGalleryWatch(GetAllGalleryWatchCallback callback);
+    static void removeAllGalleryWatch();
   };
 };

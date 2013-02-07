@@ -24,6 +24,26 @@ var onAddWatchRequestCallback = function (details) {
     chrome.test.sendMessage('add_watch_request_succeeded');
 };
 
+// chrome.mediaGalleries.getAllGalleryWatch callback.
+var getAllGalleryWatchCallback = function (results) {
+  if (!results) {
+    chrome.test.sendMessage('get_all_gallery_watch_failed');
+    return;
+  }
+  if (results.length == 0) {
+    chrome.test.sendMessage('gallery_watchers_does_not_exists');
+  } else {
+    var gallery_ids_str = "";
+    for (var i = 0; i < results.length; ++i) {
+      if (gallery_ids_str != "")
+        gallery_ids_str += ", ";
+      gallery_ids_str += results[i];
+    }
+    chrome.test.sendMessage(
+       'watchers_for_galleries_{' + gallery_ids_str + '}_found');
+  }
+};
+
 // Helpers to add and remove event listeners.
 function addGalleryChangedListener() {
   chrome.mediaGalleriesPrivate.onGalleryChanged.addListener(
@@ -63,4 +83,14 @@ function removeGalleryChangedListener() {
   chrome.mediaGalleriesPrivate.onGalleryChanged.removeListener(
       onGalleryChangedCallback);
   chrome.test.sendMessage('remove_gallery_changed_listener_ok');
+};
+
+function getAllWatchedGalleryIds() {
+  chrome.mediaGalleriesPrivate.getAllGalleryWatch(getAllGalleryWatchCallback);
+  chrome.test.sendMessage('get_all_gallery_watch_ok');
+};
+
+function removeAllGalleryWatch() {
+  chrome.mediaGalleriesPrivate.removeAllGalleryWatch();
+  chrome.test.sendMessage('remove_all_gallery_watch_ok');
 };

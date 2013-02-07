@@ -29,6 +29,8 @@ namespace AddGalleryWatch =
     extensions::api::media_galleries_private::AddGalleryWatch;
 namespace RemoveGalleryWatch =
     extensions::api::media_galleries_private::RemoveGalleryWatch;
+namespace GetAllGalleryWatch =
+    extensions::api::media_galleries_private::GetAllGalleryWatch;
 
 namespace {
 
@@ -236,6 +238,57 @@ bool MediaGalleriesPrivateRemoveGalleryWatchFunction::RunImpl() {
   GalleryWatchStateTracker* state_tracker =
       MediaGalleriesPrivateAPI::Get(profile_)->GetGalleryWatchStateTracker();
   state_tracker->OnGalleryWatchRemoved(extension_id(), gallery_pref_id);
+#endif
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//              MediaGalleriesPrivateGetAllGalleryWatchFunction              //
+///////////////////////////////////////////////////////////////////////////////
+
+MediaGalleriesPrivateGetAllGalleryWatchFunction::
+~MediaGalleriesPrivateGetAllGalleryWatchFunction() {
+}
+
+bool MediaGalleriesPrivateGetAllGalleryWatchFunction::RunImpl() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (!render_view_host() || !render_view_host()->GetProcess())
+    return false;
+
+  std::vector<int> result;
+#if defined(OS_WIN)
+  GalleryWatchStateTracker* state_tracker =
+      MediaGalleriesPrivateAPI::Get(profile_)->GetGalleryWatchStateTracker();
+  chrome::MediaGalleryPrefIdSet gallery_ids =
+      state_tracker->GetAllWatchedGalleryIDsForExtension(extension_id());
+  for (chrome::MediaGalleryPrefIdSet::const_iterator iter =
+           gallery_ids.begin();
+       iter != gallery_ids.end(); ++iter) {
+    if (*iter < kint32max)
+      result.push_back(*iter);
+  }
+#endif
+  results_ = GetAllGalleryWatch::Results::Create(result);
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//              MediaGalleriesPrivateRemoveAllGalleryWatchFunction           //
+///////////////////////////////////////////////////////////////////////////////
+
+MediaGalleriesPrivateRemoveAllGalleryWatchFunction::
+~MediaGalleriesPrivateRemoveAllGalleryWatchFunction() {
+}
+
+bool MediaGalleriesPrivateRemoveAllGalleryWatchFunction::RunImpl() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+#if defined(OS_WIN)
+  if (!render_view_host() || !render_view_host()->GetProcess())
+    return false;
+
+  GalleryWatchStateTracker* state_tracker =
+      MediaGalleriesPrivateAPI::Get(profile_)->GetGalleryWatchStateTracker();
+  state_tracker->RemoveAllGalleryWatchersForExtension(extension_id());
 #endif
   return true;
 }
