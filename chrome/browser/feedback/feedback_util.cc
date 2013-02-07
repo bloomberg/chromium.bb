@@ -106,7 +106,7 @@ class FeedbackUtil::PostCleanup : public net::URLFetcherDelegate {
                                       post_body_(post_body),
                                       previous_delay_(previous_delay) { }
   // Overridden from net::URLFetcherDelegate.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source);
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  protected:
   virtual ~PostCleanup() {}

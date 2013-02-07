@@ -139,24 +139,24 @@ class PosixConsole : public SimpleConsole {
  public:
   PosixConsole() : use_color_(false) { }
 
-  virtual bool Init() {
+  virtual bool Init() OVERRIDE {
     // Technically, we should also check the terminal capabilities before using
     // color, but in practice this is unlikely to be an issue.
     use_color_ = isatty(STDOUT_FILENO);
     return true;
   }
 
-  virtual bool Write(const std::wstring& text) {
+  virtual bool Write(const std::wstring& text) OVERRIDE {
     printf("%s", base::SysWideToNativeMB(text).c_str());
     return true;
   }
 
-  virtual void OnQuit() {
+  virtual void OnQuit() OVERRIDE {
     // The "press enter to continue" prompt isn't very unixy, so only do that on
     // Windows.
   }
 
-  virtual bool SetColor(Color color) {
+  virtual bool SetColor(Color color) OVERRIDE {
     if (!use_color_)
       return false;
 
@@ -292,19 +292,21 @@ class TestController : public DiagnosticsModel::Observer {
   }
 
   // Next four are overridden from DiagnosticsModel::Observer.
-  virtual void OnProgress(int id, int percent, DiagnosticsModel* model) {
+  virtual void OnProgress(int id,
+                          int percent,
+                          DiagnosticsModel* model) OVERRIDE {
   }
 
-  virtual void OnSkipped(int id, DiagnosticsModel* model) {
+  virtual void OnSkipped(int id, DiagnosticsModel* model) OVERRIDE {
     // TODO(cpu): display skipped tests.
   }
 
-  virtual void OnFinished(int id, DiagnosticsModel* model) {
+  virtual void OnFinished(int id, DiagnosticsModel* model) OVERRIDE {
     // As each test completes we output the results.
     ShowResult(&model->GetTest(id));
   }
 
-  virtual void OnDoneAll(DiagnosticsModel* model) {
+  virtual void OnDoneAll(DiagnosticsModel* model) OVERRIDE {
     if (writer_->failures() > 0) {
       writer_->WriteInfoText(base::StringPrintf(
           "DONE. %d failure(s)\n\n", writer_->failures()));

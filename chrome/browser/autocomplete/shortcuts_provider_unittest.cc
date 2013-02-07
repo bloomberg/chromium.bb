@@ -142,8 +142,8 @@ class ShortcutsProviderTest : public testing::Test,
     std::set<std::string> matches_;
   };
 
-  void SetUp();
-  void TearDown();
+  virtual void SetUp();
+  virtual void TearDown();
 
   // Fills test data into the provider.
   void FillData(TestShortcutInfo* db, size_t db_size);

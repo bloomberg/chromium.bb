@@ -19,7 +19,7 @@ class ServiceProcessControlBrowserTest
   ServiceProcessControlBrowserTest()
       : service_process_handle_(base::kNullProcessHandle) {
   }
-  ~ServiceProcessControlBrowserTest() {
+  virtual ~ServiceProcessControlBrowserTest() {
     base::CloseProcessHandle(service_process_handle_);
     service_process_handle_ = base::kNullProcessHandle;
   }

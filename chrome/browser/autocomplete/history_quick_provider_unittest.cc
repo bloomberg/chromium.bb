@@ -104,8 +104,8 @@ class HistoryQuickProviderTest : public testing::Test,
     std::set<std::string> matches_;
   };
 
-  void SetUp();
-  void TearDown();
+  virtual void SetUp();
+  virtual void TearDown();
 
   virtual void GetTestData(size_t* data_count, TestURLInfo** test_data);
 

@@ -528,7 +528,7 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
  protected:
   virtual ~FakeSafeBrowsingService() { }
 
-  virtual SafeBrowsingDatabaseManager* CreateDatabaseManager() {
+  virtual SafeBrowsingDatabaseManager* CreateDatabaseManager() OVERRIDE {
     fake_database_manager_ = new FakeSafeBrowsingDatabaseManager(this);
     return fake_database_manager_;
   }

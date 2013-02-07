@@ -171,19 +171,19 @@ class TestFaviconHandlerDelegate : public FaviconHandlerDelegate {
       : web_contents_(web_contents) {
   }
 
-  virtual NavigationEntry* GetActiveEntry() {
+  virtual NavigationEntry* GetActiveEntry() OVERRIDE {
     ADD_FAILURE() << "TestFaviconHandlerDelegate::GetActiveEntry() "
                   << "should never be called in tests.";
     return NULL;
   }
 
-  virtual int StartDownload(const GURL& url, int image_size) {
+  virtual int StartDownload(const GURL& url, int image_size) OVERRIDE {
     ADD_FAILURE() << "TestFaviconHandlerDelegate::StartDownload() "
                   << "should never be called in tests.";
     return -1;
   }
 
-  virtual void NotifyFaviconUpdated() {
+  virtual void NotifyFaviconUpdated() OVERRIDE {
     web_contents_->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
   }
 
@@ -223,7 +223,7 @@ class TestFaviconHandler : public FaviconHandler {
     return download_handler_.get();
   }
 
-  virtual NavigationEntry* GetEntry() {
+  virtual NavigationEntry* GetEntry() OVERRIDE {
     return entry_.get();
   }
 

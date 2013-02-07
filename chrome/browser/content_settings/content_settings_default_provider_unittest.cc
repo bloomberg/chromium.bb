@@ -24,7 +24,7 @@ class DefaultProviderTest : public testing::Test {
       : ui_thread_(BrowserThread::UI, &message_loop_),
         provider_(profile_.GetPrefs(), false) {
   }
-  ~DefaultProviderTest() {
+  virtual ~DefaultProviderTest() {
     provider_.ShutdownOnUIThread();
   }
 

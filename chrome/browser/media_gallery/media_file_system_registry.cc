@@ -107,7 +107,7 @@ class RPHReferenceManager : public content::NotificationObserver {
       : no_references_callback_(no_references_callback) {
   }
 
-  ~RPHReferenceManager() {
+  virtual ~RPHReferenceManager() {
     Reset();
   }
 

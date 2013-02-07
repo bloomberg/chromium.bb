@@ -691,9 +691,9 @@ class CaptivePortalObserver : public content::NotificationObserver {
 
  private:
   // Records results and exits the message loop, if needed.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details);
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Number of times OnPortalResult has been called since construction.
   int num_results_received_;

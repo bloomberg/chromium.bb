@@ -103,7 +103,7 @@ class TestingTemplateURLService : public TemplateURLService {
  protected:
   virtual void SetKeywordSearchTermsForURL(const TemplateURL* t_url,
                                            const GURL& url,
-                                           const string16& term) {
+                                           const string16& term) OVERRIDE {
     search_term_ = term;
   }
 

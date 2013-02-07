@@ -121,7 +121,7 @@ class LoadThumbnailsFromHistoryTask : public HistoryDBTask {
   }
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) {
+                             history::HistoryDatabase* db) OVERRIDE {
     // Get the most visited urls.
     backend->QueryMostVisitedURLsImpl(result_count_,
                                       kDaysOfHistory,
@@ -139,7 +139,7 @@ class LoadThumbnailsFromHistoryTask : public HistoryDBTask {
     return true;
   }
 
-  virtual void DoneRunOnMainThread() {
+  virtual void DoneRunOnMainThread() OVERRIDE {
     top_sites_->FinishHistoryMigration(data_);
   }
 

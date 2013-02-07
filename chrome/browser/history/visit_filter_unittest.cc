@@ -28,8 +28,8 @@ class VisitFilterTest : public testing::Test {
   VisitFilterTest();
 
  protected:
-  void SetUp();
-  void TearDown();
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
 VisitFilterTest::VisitFilterTest() {

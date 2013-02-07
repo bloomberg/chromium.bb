@@ -43,7 +43,8 @@ class TestAppNotificationDataTypeController
         manager_(new extensions::AppNotificationManager(profile_)) {
   }
 
-  virtual extensions::AppNotificationManager* GetAppNotificationManager() {
+  virtual extensions::AppNotificationManager*
+  GetAppNotificationManager() OVERRIDE {
     return manager_.get();
   }
 

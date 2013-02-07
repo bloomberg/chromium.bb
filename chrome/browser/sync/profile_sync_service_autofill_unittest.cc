@@ -365,7 +365,7 @@ class ProfileSyncServiceAutofillTest
       const syncer::DataTypeAssociationStats& association_stats) OVERRIDE {
     association_stats_ = association_stats;
   }
-  virtual void OnConfigureComplete() {
+  virtual void OnConfigureComplete() OVERRIDE {
     // Do nothing.
   }
 

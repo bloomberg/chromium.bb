@@ -187,9 +187,9 @@ class SyncRefreshListener : public content::NotificationObserver {
         content::NotificationService::AllSources());
   }
 
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) {
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
     if (type == chrome::NOTIFICATION_SYNC_REFRESH_LOCAL) {
       notified_of_refresh_ = true;
     }

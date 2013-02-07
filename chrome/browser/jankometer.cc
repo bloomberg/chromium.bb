@@ -66,7 +66,7 @@ class JankWatchdog : public base::Watchdog {
 
   virtual ~JankWatchdog() {}
 
-  virtual void Alarm() {
+  virtual void Alarm() OVERRIDE {
     // Put break point here if you want to stop threads and look at what caused
     // the jankiness.
     alarm_count_++;
@@ -257,7 +257,7 @@ class IOJankObserver : public base::RefCountedThreadSafe<IOJankObserver>,
  private:
   friend class base::RefCountedThreadSafe<IOJankObserver>;
 
-  ~IOJankObserver() {}
+  virtual ~IOJankObserver() {}
 
   JankObserverHelper helper_;
 
@@ -337,7 +337,7 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
   }
 #elif defined(TOOLKIT_GTK)
-  virtual void WillProcessEvent(GdkEvent* event) {
+  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {
     if (!helper_.MessageWillBeMeasured())
       return;
     // TODO(evanm): we want to set queueing_time_ using
@@ -348,7 +348,7 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
     helper_.StartProcessingTimers(queueing_time);
   }
 
-  virtual void DidProcessEvent(GdkEvent* event) {
+  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {
     helper_.EndProcessingTimers();
   }
 #endif
@@ -356,7 +356,7 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
  private:
   friend class base::RefCountedThreadSafe<UIJankObserver>;
 
-  ~UIJankObserver() {}
+  virtual ~UIJankObserver() {}
 
   JankObserverHelper helper_;
 

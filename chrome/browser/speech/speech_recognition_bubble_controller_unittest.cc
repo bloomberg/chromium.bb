@@ -63,10 +63,10 @@ class MockSpeechRecognitionBubble : public SpeechRecognitionBubbleBase {
     return type_;
   }
 
-  virtual void Show() {}
-  virtual void Hide() {}
-  virtual void UpdateLayout() {}
-  virtual void UpdateImage() {}
+  virtual void Show() OVERRIDE {}
+  virtual void Hide() OVERRIDE {}
+  virtual void UpdateLayout() OVERRIDE {}
+  virtual void UpdateImage() OVERRIDE {}
 
  private:
   static BubbleType type_;
@@ -89,13 +89,14 @@ class SpeechRecognitionBubbleControllerTest
     test_fixture_ = this;
   }
 
-  ~SpeechRecognitionBubbleControllerTest() {
+  virtual ~SpeechRecognitionBubbleControllerTest() {
     test_fixture_ = NULL;
   }
 
   // SpeechRecognitionBubbleControllerDelegate methods.
-  virtual void InfoBubbleButtonClicked(int session_id,
-                                       SpeechRecognitionBubble::Button button) {
+  virtual void InfoBubbleButtonClicked(
+      int session_id,
+      SpeechRecognitionBubble::Button button) OVERRIDE {
     VLOG(1) << "Received InfoBubbleButtonClicked for button " << button;
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     if (button == SpeechRecognitionBubble::BUTTON_CANCEL) {
@@ -106,7 +107,7 @@ class SpeechRecognitionBubbleControllerTest
     message_loop()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
-  virtual void InfoBubbleFocusChanged(int session_id) {
+  virtual void InfoBubbleFocusChanged(int session_id) OVERRIDE {
     VLOG(1) << "Received InfoBubbleFocusChanged";
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     focus_changed_ = true;

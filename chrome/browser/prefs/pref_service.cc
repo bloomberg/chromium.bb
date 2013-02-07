@@ -30,7 +30,7 @@ class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
   ReadErrorHandler(base::Callback<void(PersistentPrefStore::PrefReadError)> cb)
       : callback_(cb) {}
 
-  virtual void OnError(PersistentPrefStore::PrefReadError error) {
+  virtual void OnError(PersistentPrefStore::PrefReadError error) OVERRIDE {
     callback_.Run(error);
   }
 

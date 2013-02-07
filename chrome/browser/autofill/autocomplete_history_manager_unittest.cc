@@ -179,7 +179,10 @@ class AutocompleteHistoryManagerStubSend : public AutocompleteHistoryManager {
       : AutocompleteHistoryManager(web_contents, profile, wds.Pass()) {}
 
   // Intentionally swallow the message.
-  virtual bool Send(IPC::Message* message) { delete message; return true; }
+  virtual bool Send(IPC::Message* message) OVERRIDE {
+    delete message;
+    return true;
+  }
 };
 
 }  // namespace

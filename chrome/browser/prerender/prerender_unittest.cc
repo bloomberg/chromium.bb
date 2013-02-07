@@ -290,7 +290,7 @@ class PrerenderTest : public testing::Test {
         switches::kPrerenderFromOmniboxSwitchValueEnabled);
   }
 
-  ~PrerenderTest() {
+  virtual ~PrerenderTest() {
     prerender_link_manager_->OnChannelClosing(kDefaultChildId);
     prerender_link_manager_->Shutdown();
     prerender_manager_->Shutdown();

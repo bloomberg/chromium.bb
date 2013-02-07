@@ -90,7 +90,7 @@ class TestingClock : public Database::Clock {
       : counter_(other.counter_) {
   }
   virtual ~TestingClock() {}
-  base::Time GetTime() {
+  virtual base::Time GetTime() OVERRIDE {
     return base::Time::FromInternalValue(++counter_);
   }
  private:
@@ -107,7 +107,7 @@ class PerformanceMonitorDatabaseEventTest : public ::testing::Test {
     db_->set_clock(scoped_ptr<Database::Clock>(clock_));
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(db_.get());
     PopulateDB();
   }
@@ -160,7 +160,7 @@ class PerformanceMonitorDatabaseMetricTest : public ::testing::Test {
     activity_ = std::string("A");
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(db_.get());
     PopulateDB();
   }

@@ -208,9 +208,9 @@ class ProfileSyncServiceSessionTest
         content::NotificationService::AllSources());
   }
 
-  void Observe(int type,
+  virtual void Observe(int type,
       const content::NotificationSource& source,
-      const content::NotificationDetails& details) {
+      const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
         notified_of_update_ = true;

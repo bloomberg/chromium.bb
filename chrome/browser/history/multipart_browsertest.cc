@@ -19,8 +19,9 @@ class MultipartResponseTest : public InProcessBrowserTest,
   MultipartResponseTest() : did_navigate_any_frame_count_(0),
                             update_history_count_(0) {}
 
-  void DidNavigateAnyFrame(const content::LoadCommittedDetails& details,
-                           const content::FrameNavigateParams& params) {
+  virtual void DidNavigateAnyFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE {
     did_navigate_any_frame_count_++;
     if (params.should_update_history)
       update_history_count_++;

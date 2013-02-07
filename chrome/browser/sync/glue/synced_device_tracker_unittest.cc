@@ -21,9 +21,9 @@ namespace browser_sync {
 class SyncedDeviceTrackerTest : public ::testing::Test {
  protected:
   SyncedDeviceTrackerTest() : transaction_count_baseline_(0) { }
-  ~SyncedDeviceTrackerTest() { }
+  virtual ~SyncedDeviceTrackerTest() { }
 
-  void SetUp() {
+  virtual void SetUp() {
     test_user_share_.SetUp();
     syncer::TestUserShare::CreateRoot(syncer::DEVICE_INFO, user_share());
 
@@ -38,7 +38,7 @@ class SyncedDeviceTrackerTest : public ::testing::Test {
     synced_device_tracker_->Start(NULL, user_share());
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     synced_device_tracker_.reset();
     test_user_share_.TearDown();
   }

@@ -96,7 +96,7 @@ class WindowedPersonalDataManagerObserver
                    content::NotificationService::AllSources());
   }
 
-  ~WindowedPersonalDataManagerObserver() {
+  virtual ~WindowedPersonalDataManagerObserver() {
     if (!infobar_service_)
       return;
 

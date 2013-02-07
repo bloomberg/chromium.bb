@@ -33,8 +33,8 @@ class ShortcutsBackendTest : public testing::Test,
         load_notified_(false),
         changed_notified_(false) {}
 
-  void SetUp();
-  void TearDown();
+  virtual void SetUp();
+  virtual void TearDown();
 
   virtual void OnShortcutsLoaded() OVERRIDE;
   virtual void OnShortcutsChanged() OVERRIDE;

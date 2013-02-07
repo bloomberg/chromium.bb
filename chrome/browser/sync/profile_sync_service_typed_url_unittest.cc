@@ -115,7 +115,7 @@ class TestTypedUrlModelAssociator : public TypedUrlModelAssociator {
  protected:
   // Don't clear error stats - that way we can verify their values in our
   // tests.
-  virtual void ClearErrorStats() {}
+  virtual void ClearErrorStats() OVERRIDE {}
 };
 
 void RunOnDBThreadCallback(HistoryBackend* backend,

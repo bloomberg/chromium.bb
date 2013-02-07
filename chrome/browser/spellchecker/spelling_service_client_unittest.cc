@@ -162,7 +162,7 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
   }
 
  private:
-  virtual net::URLFetcher* CreateURLFetcher(const GURL& url) {
+  virtual net::URLFetcher* CreateURLFetcher(const GURL& url) OVERRIDE {
     EXPECT_EQ("https://www.googleapis.com/rpc", url.spec());
     fetcher_ = new TestSpellingURLFetcher(0, url, this,
                                           request_type_, request_text_,
@@ -189,7 +189,7 @@ class SpellingServiceClientTest : public testing::Test {
   SpellingServiceClientTest() {}
   virtual ~SpellingServiceClientTest() {}
 
-  void SetUp() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
   }
 
   void OnTextCheckComplete(int tag,

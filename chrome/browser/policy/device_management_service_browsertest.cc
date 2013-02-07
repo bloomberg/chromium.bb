@@ -54,7 +54,7 @@ class CannedResponseInterceptor {
   class Delegate : public net::URLRequestJobFactory::ProtocolHandler {
    public:
     explicit Delegate(const GURL& service_url) : service_url_(service_url) {}
-    ~Delegate() {}
+    virtual ~Delegate() {}
 
     void Register() {
       net::URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(

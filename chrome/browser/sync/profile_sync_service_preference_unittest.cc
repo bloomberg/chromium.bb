@@ -100,10 +100,10 @@ class ProfileSyncServicePreferenceTest
 
   // DataTypeDebugInfoListener implementation.
   virtual void OnDataTypeAssociationComplete(
-      const syncer::DataTypeAssociationStats& association_stats) {
+      const syncer::DataTypeAssociationStats& association_stats) OVERRIDE {
     association_stats_ = association_stats;
   }
-  virtual void OnConfigureComplete() {
+  virtual void OnConfigureComplete() OVERRIDE {
     // Do nothing.
   }
 

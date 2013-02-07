@@ -90,13 +90,13 @@ class AutocompleteActionPredictorTest : public testing::Test {
         predictor_(new AutocompleteActionPredictor(profile_.get())) {
   }
 
-  ~AutocompleteActionPredictorTest() {
+  virtual ~AutocompleteActionPredictorTest() {
     predictor_.reset(NULL);
     profile_.reset(NULL);
     loop_.RunUntilIdle();
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kPrerenderFromOmnibox,
         switches::kPrerenderFromOmniboxSwitchValueEnabled);
@@ -110,7 +110,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
     ASSERT_TRUE(db_id_cache()->empty());
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     profile_->DestroyHistoryService();
     predictor_->Shutdown();
   }

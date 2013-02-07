@@ -141,16 +141,16 @@ class FirefoxObserver : public ProfileWriter,
     EXPECT_EQ(arraysize(kFirefox2Keywords), keyword_count_);
   }
 
-  virtual bool BookmarkModelIsLoaded() const {
+  virtual bool BookmarkModelIsLoaded() const OVERRIDE {
     // Profile is ready for writing.
     return true;
   }
 
-  virtual bool TemplateURLServiceIsLoaded() const {
+  virtual bool TemplateURLServiceIsLoaded() const OVERRIDE {
     return true;
   }
 
-  virtual void AddPasswordForm(const content::PasswordForm& form) {
+  virtual void AddPasswordForm(const content::PasswordForm& form) OVERRIDE {
     PasswordInfo p = kFirefox2Passwords[password_count_];
     EXPECT_EQ(p.origin, form.origin.spec());
     EXPECT_EQ(p.realm, form.signon_realm);
@@ -164,7 +164,7 @@ class FirefoxObserver : public ProfileWriter,
   }
 
   virtual void AddHistoryPage(const history::URLRows& page,
-                              history::VisitSource visit_source) {
+                              history::VisitSource visit_source) OVERRIDE {
     ASSERT_EQ(1U, page.size());
     EXPECT_EQ("http://en-us.www.mozilla.com/", page[0].url().spec());
     EXPECT_EQ(ASCIIToUTF16("Firefox Updated"), page[0].title());
@@ -182,7 +182,7 @@ class FirefoxObserver : public ProfileWriter,
   }
 
   virtual void AddKeywords(ScopedVector<TemplateURL> template_urls,
-                           bool unique_on_host_and_path) {
+                           bool unique_on_host_and_path) OVERRIDE {
     for (size_t i = 0; i < template_urls.size(); ++i) {
       // The order might not be deterministic, look in the expected list for
       // that template URL.
@@ -201,11 +201,12 @@ class FirefoxObserver : public ProfileWriter,
     }
   }
 
-  void AddFavicons(const std::vector<history::ImportedFaviconUsage>& favicons) {
+  virtual void AddFavicons(
+      const std::vector<history::ImportedFaviconUsage>& favicons) OVERRIDE {
   }
 
  private:
-  ~FirefoxObserver() {}
+  virtual ~FirefoxObserver() {}
 
   size_t bookmark_count_;
   size_t history_count_;
@@ -286,16 +287,16 @@ class Firefox3Observer : public ProfileWriter,
       EXPECT_EQ(arraysize(kFirefox3Keywords), keyword_count_);
   }
 
-  virtual bool BookmarkModelIsLoaded() const {
+  virtual bool BookmarkModelIsLoaded() const OVERRIDE {
     // Profile is ready for writing.
     return true;
   }
 
-  virtual bool TemplateURLServiceIsLoaded() const {
+  virtual bool TemplateURLServiceIsLoaded() const OVERRIDE {
     return true;
   }
 
-  virtual void AddPasswordForm(const content::PasswordForm& form) {
+  virtual void AddPasswordForm(const content::PasswordForm& form) OVERRIDE {
     PasswordInfo p = kFirefox3Passwords[password_count_];
     EXPECT_EQ(p.origin, form.origin.spec());
     EXPECT_EQ(p.realm, form.signon_realm);
@@ -309,7 +310,7 @@ class Firefox3Observer : public ProfileWriter,
   }
 
   virtual void AddHistoryPage(const history::URLRows& page,
-                              history::VisitSource visit_source) {
+                              history::VisitSource visit_source) OVERRIDE {
     ASSERT_EQ(3U, page.size());
     EXPECT_EQ("http://www.google.com/", page[0].url().spec());
     EXPECT_EQ(ASCIIToUTF16("Google"), page[0].title());
@@ -331,8 +332,8 @@ class Firefox3Observer : public ProfileWriter,
     }
   }
 
-  void AddKeywords(ScopedVector<TemplateURL> template_urls,
-                   bool unique_on_host_and_path) {
+  virtual void AddKeywords(ScopedVector<TemplateURL> template_urls,
+                           bool unique_on_host_and_path) OVERRIDE {
     for (size_t i = 0; i < template_urls.size(); ++i) {
       // The order might not be deterministic, look in the expected list for
       // that template URL.
@@ -351,11 +352,12 @@ class Firefox3Observer : public ProfileWriter,
     }
   }
 
-  void AddFavicons(const std::vector<history::ImportedFaviconUsage>& favicons) {
+  virtual void AddFavicons(
+      const std::vector<history::ImportedFaviconUsage>& favicons) OVERRIDE {
   }
 
  private:
-  ~Firefox3Observer() {}
+  virtual ~Firefox3Observer() {}
 
   size_t bookmark_count_;
   size_t history_count_;

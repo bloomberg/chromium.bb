@@ -144,7 +144,7 @@ class SSLTabHelper::SSLAddCertData
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   InfoBarService* infobar_service_;
   InfoBarDelegate* infobar_delegate_;

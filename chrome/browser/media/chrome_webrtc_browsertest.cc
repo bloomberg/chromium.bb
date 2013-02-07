@@ -40,17 +40,17 @@ class WebrtcBrowserTest : public InProcessBrowserTest {
  public:
   WebrtcBrowserTest() : peerconnection_server_(0) {}
 
-  void SetUp() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     RunPeerConnectionServer();
     InProcessBrowserTest::SetUp();
   }
 
-  void TearDown() OVERRIDE {
+  virtual void TearDown() OVERRIDE {
     ShutdownPeerConnectionServer();
     InProcessBrowserTest::TearDown();
   }
 
-  void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // TODO(phoglund): check that user actually has the requisite devices and
     // print a nice message if not; otherwise the test just times out which can
     // be confusing.

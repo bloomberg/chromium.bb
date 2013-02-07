@@ -147,7 +147,7 @@ class RemovableDeviceNotificationsLinuxTestWrapper
   // Avoids code deleting the object while there are references to it.
   // Aside from the base::RefCountedThreadSafe friend class, any attempts to
   // call this dtor will result in a compile-time error.
-  ~RemovableDeviceNotificationsLinuxTestWrapper() {}
+  virtual ~RemovableDeviceNotificationsLinuxTestWrapper() {}
 
   virtual void OnFilePathChanged(const base::FilePath& path,
                                  bool error) OVERRIDE {

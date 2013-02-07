@@ -46,10 +46,10 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
                                    profile,
                                    sync_service),
         mock_(mock) {}
-  virtual syncer::ModelType type() const { return syncer::BOOKMARKS; }
+  virtual syncer::ModelType type() const OVERRIDE { return syncer::BOOKMARKS; }
 
  private:
-  virtual void CreateSyncComponents() {
+  virtual void CreateSyncComponents() OVERRIDE {
     ProfileSyncComponentsFactory::SyncComponents sync_components =
         profile_sync_factory_->
             CreateBookmarkSyncComponents(sync_service_, this);
@@ -59,21 +59,22 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
 
   // We mock the following methods because their default implementations do
   // nothing, but we still want to make sure they're called appropriately.
-  virtual bool StartModels() {
+  virtual bool StartModels() OVERRIDE {
     return mock_->StartModels();
   }
-  virtual void CleanUpState() {
+  virtual void CleanUpState() OVERRIDE {
     mock_->CleanUpState();
   }
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,
-      const std::string& message) {
+      const std::string& message) OVERRIDE {
     mock_->RecordUnrecoverableError(from_here, message);
   }
-  virtual void RecordAssociationTime(base::TimeDelta time) {
+  virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE {
     mock_->RecordAssociationTime(time);
   }
-  virtual void RecordStartFailure(DataTypeController::StartResult result) {
+  virtual void RecordStartFailure(
+      DataTypeController::StartResult result) OVERRIDE {
     mock_->RecordStartFailure(result);
   }
  private:

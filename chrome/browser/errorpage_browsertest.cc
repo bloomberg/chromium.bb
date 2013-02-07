@@ -69,7 +69,7 @@ class ErrorPageTest : public InProcessBrowserTest {
   }
 
  protected:
-  void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));

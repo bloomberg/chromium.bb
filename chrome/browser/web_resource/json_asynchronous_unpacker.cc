@@ -31,7 +31,7 @@ class JSONAsynchronousUnpackerImpl
       got_response_(false) {
   }
 
-  void Start(const std::string& json_data) {
+  virtual void Start(const std::string& json_data) OVERRIDE {
     AddRef();  // balanced in Cleanup.
 
     // TODO(willchan): Look for a better signal of whether we're in a unit test

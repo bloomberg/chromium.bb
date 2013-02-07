@@ -20,7 +20,7 @@ class ProxyPolicyProviderTest : public testing::Test {
     proxy_provider_.AddObserver(&observer_);
   }
 
-  ~ProxyPolicyProviderTest() {
+  virtual ~ProxyPolicyProviderTest() {
     proxy_provider_.RemoveObserver(&observer_);
     proxy_provider_.Shutdown();
     mock_provider_.Shutdown();

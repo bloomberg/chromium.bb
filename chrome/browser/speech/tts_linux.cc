@@ -21,15 +21,15 @@ const char kNotSupportedError[] =
 
 class TtsPlatformImplLinux : public TtsPlatformImpl {
  public:
-  virtual bool PlatformImplAvailable();
+  virtual bool PlatformImplAvailable() OVERRIDE;
   virtual bool Speak(
       int utterance_id,
       const std::string& utterance,
       const std::string& lang,
-      const UtteranceContinuousParameters& params);
-  virtual bool StopSpeaking();
-  virtual bool IsSpeaking();
-  virtual bool SendsEvent(TtsEventType event_type);
+      const UtteranceContinuousParameters& params) OVERRIDE;
+  virtual bool StopSpeaking() OVERRIDE;
+  virtual bool IsSpeaking() OVERRIDE;
+  virtual bool SendsEvent(TtsEventType event_type) OVERRIDE;
   void OnSpeechEvent(SPDNotificationType type);
 
   // Get the single instance of this class.

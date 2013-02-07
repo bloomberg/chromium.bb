@@ -155,7 +155,7 @@ class ThemeSyncableServiceTest : public testing::Test {
         file_thread_(BrowserThread::FILE, &loop_),
         fake_theme_service_(NULL) {}
 
-  ~ThemeSyncableServiceTest() {}
+  virtual ~ThemeSyncableServiceTest() {}
 
   virtual void SetUp() {
     profile_.reset(new TestingProfile);

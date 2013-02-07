@@ -175,7 +175,7 @@ class WebIntentsRegistry::QueryAdapter : public WebDataServiceConsumer {
     registry_->TrackQuery(this);
   }
 
-  void OnWebDataServiceRequestDone(
+  virtual void OnWebDataServiceRequestDone(
       WebDataService::Handle h,
       const WDTypedResult* result) OVERRIDE {
 

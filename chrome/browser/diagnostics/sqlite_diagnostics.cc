@@ -32,9 +32,9 @@ class SqliteIntegrityTest : public DiagnosticTest {
         db_path_(profile_relative_db_path) {
   }
 
-  virtual int GetId() { return 0; }
+  virtual int GetId() OVERRIDE { return 0; }
 
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
+  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
     FilePath path = GetUserDefaultProfileDir();
     path = path.Append(db_path_);
     if (!file_util::PathExists(path)) {

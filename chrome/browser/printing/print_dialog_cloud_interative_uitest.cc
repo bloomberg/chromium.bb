@@ -78,7 +78,7 @@ class SimpleTestJob : public net::URLRequestTestJob {
                                TestData::GetInstance()->GetTestData(),
                                true) {}
 
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) {
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE {
     net::URLRequestTestJob::GetResponseInfo(info);
     if (request_->url().SchemeIsSecure()) {
       // Make up a fake certificate for this response since we don't have
@@ -98,7 +98,7 @@ class SimpleTestJob : public net::URLRequestTestJob {
   }
 
  private:
-  ~SimpleTestJob() {}
+  virtual ~SimpleTestJob() {}
 };
 
 class TestController {
@@ -159,7 +159,7 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
    public:
     AutoQuitDelegate() {}
 
-    virtual void OnResponseCompleted(net::URLRequest* request) {
+    virtual void OnResponseCompleted(net::URLRequest* request) OVERRIDE {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                               MessageLoop::QuitClosure());
     }

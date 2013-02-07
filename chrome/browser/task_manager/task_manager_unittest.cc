@@ -36,8 +36,8 @@ class TestResource : public TaskManager::Resource {
   virtual string16 GetProfileName() const OVERRIDE {
     return ASCIIToUTF16("test profile");
   }
-  virtual gfx::ImageSkia GetIcon() const { return gfx::ImageSkia(); }
-  virtual base::ProcessHandle GetProcess() const {
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE { return gfx::ImageSkia(); }
+  virtual base::ProcessHandle GetProcess() const OVERRIDE {
     return base::GetCurrentProcessHandle();
   }
   virtual int GetUniqueChildProcessId() const OVERRIDE {
@@ -45,10 +45,10 @@ class TestResource : public TaskManager::Resource {
     // but for testing purposes it shouldn't make difference.
     return static_cast<int>(base::GetCurrentProcId());
   }
-  virtual Type GetType() const { return RENDERER; }
-  virtual bool SupportNetworkUsage() const { return false; }
-  virtual void SetSupportNetworkUsage() { NOTREACHED(); }
-  virtual void Refresh() { refresh_called_ = true; }
+  virtual Type GetType() const OVERRIDE { return RENDERER; }
+  virtual bool SupportNetworkUsage() const OVERRIDE { return false; }
+  virtual void SetSupportNetworkUsage() OVERRIDE { NOTREACHED(); }
+  virtual void Refresh() OVERRIDE { refresh_called_ = true; }
   bool refresh_called() const { return refresh_called_; }
   void set_refresh_called(bool refresh_called) {
     refresh_called_ = refresh_called;

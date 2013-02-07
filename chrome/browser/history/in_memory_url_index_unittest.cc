@@ -385,7 +385,7 @@ void InMemoryURLIndexTest::ExpectPrivateDataEqual(
 
 class LimitedInMemoryURLIndexTest : public InMemoryURLIndexTest {
  protected:
-  FilePath::StringType TestDBName() const;
+  virtual FilePath::StringType TestDBName() const OVERRIDE;
 };
 
 FilePath::StringType LimitedInMemoryURLIndexTest::TestDBName() const {

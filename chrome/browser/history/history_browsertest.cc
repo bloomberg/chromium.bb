@@ -43,11 +43,11 @@ class WaitForHistoryTask : public HistoryDBTask {
   WaitForHistoryTask() {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) {
+                             history::HistoryDatabase* db) OVERRIDE {
     return true;
   }
 
-  virtual void DoneRunOnMainThread() {
+  virtual void DoneRunOnMainThread() OVERRIDE {
     MessageLoop::current()->Quit();
   }
 

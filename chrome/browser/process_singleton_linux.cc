@@ -435,8 +435,8 @@ class ProcessSingleton::LinuxWatcher
     }
 
     // MessageLoopForIO::Watcher impl.
-    virtual void OnFileCanReadWithoutBlocking(int fd);
-    virtual void OnFileCanWriteWithoutBlocking(int fd) {
+    virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
+    virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE {
       // SocketReader only watches for accept (read) events.
       NOTREACHED();
     }
@@ -494,14 +494,14 @@ class ProcessSingleton::LinuxWatcher
                      SocketReader* reader);
 
   // MessageLoopForIO::Watcher impl.  These run on the IO thread.
-  virtual void OnFileCanReadWithoutBlocking(int fd);
-  virtual void OnFileCanWriteWithoutBlocking(int fd) {
+  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE {
     // ProcessSingleton only watches for accept (read) events.
     NOTREACHED();
   }
 
   // MessageLoop::DestructionObserver
-  virtual void WillDestroyCurrentMessageLoop() {
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE {
     fd_watcher_.StopWatchingFileDescriptor();
   }
 

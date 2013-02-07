@@ -105,7 +105,7 @@ class GoogleURLObserver : public content::NotificationObserver {
   // Implementation of content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   virtual ~GoogleURLObserver() {}

@@ -144,7 +144,7 @@ class MockReporter : public ChromeFraudulentCertificateReporter {
   virtual void SendReport(
       const std::string& hostname,
       const net::SSLInfo& ssl_info,
-      bool sni_available) {
+      bool sni_available) OVERRIDE {
     DCHECK(!hostname.empty());
     DCHECK(ssl_info.is_valid());
     ChromeFraudulentCertificateReporter::SendReport(hostname, ssl_info,

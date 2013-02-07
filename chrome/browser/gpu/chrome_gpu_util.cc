@@ -57,7 +57,7 @@ class BrowserMonitor : public chrome::BrowserListObserver {
   BrowserMonitor() : num_browsers_(0), installed_(false) {
   }
 
-  ~BrowserMonitor() {
+  virtual ~BrowserMonitor() {
   }
 
   // BrowserListObserver implementation.

@@ -22,7 +22,7 @@ class NaClGdbTest : public PPAPINaClNewlibTest {
   NaClGdbTest() {
   }
 
-  void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     PPAPINaClNewlibTest::SetUpCommandLine(command_line);
 
     FilePath mock_nacl_gdb;

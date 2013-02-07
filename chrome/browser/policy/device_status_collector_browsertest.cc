@@ -160,7 +160,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     RestartStatusCollector();
   }
 
-  ~DeviceStatusCollectorTest() {
+  virtual ~DeviceStatusCollectorTest() {
     // Finish pending tasks.
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
     message_loop_.RunUntilIdle();

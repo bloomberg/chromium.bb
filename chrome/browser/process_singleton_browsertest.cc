@@ -138,7 +138,7 @@ class ProcessSingletonTest : public InProcessBrowserTest {
     EXPECT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     // Start the threads and create the starters.
     for (size_t i = 0; i < kNbThreads; ++i) {
       chrome_starter_threads_[i].reset(new base::Thread("ChromeStarter"));
@@ -148,7 +148,7 @@ class ProcessSingletonTest : public InProcessBrowserTest {
     }
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     // Stop the threads.
     for (size_t i = 0; i < kNbThreads; ++i)
       chrome_starter_threads_[i]->Stop();
@@ -168,7 +168,7 @@ class ProcessSingletonTest : public InProcessBrowserTest {
       explicit ProcessTreeFilter(base::ProcessId parent_pid) {
         ancestor_pids_.insert(parent_pid);
       }
-      virtual bool Includes(const base::ProcessEntry & entry) const {
+      virtual bool Includes(const base::ProcessEntry & entry) const OVERRIDE {
         if (ancestor_pids_.find(entry.parent_pid()) != ancestor_pids_.end()) {
           ancestor_pids_.insert(entry.pid());
           return true;

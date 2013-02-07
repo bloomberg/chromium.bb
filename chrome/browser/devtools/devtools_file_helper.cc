@@ -83,18 +83,20 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener,
   }
 
   // ui::SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path, int index, void* params) {
+  virtual void FileSelected(const FilePath& path,
+                            int index,
+                            void* params) OVERRIDE {
     selected_callback_.Run(path);
     Release();  // Balanced in ::Show.
   }
 
   virtual void MultiFilesSelected(const std::vector<FilePath>& files,
-                                  void* params) {
+                                  void* params) OVERRIDE {
     Release();  // Balanced in ::Show.
     NOTREACHED() << "Should not be able to select multiple files";
   }
 
-  virtual void FileSelectionCanceled(void* params) {
+  virtual void FileSelectionCanceled(void* params) OVERRIDE {
     canceled_callback_.Run();
     Release();  // Balanced in ::Show.
   }

@@ -42,8 +42,8 @@ struct ShortcutsDatabaseTestInfo {
 
 class ShortcutsDatabaseTest : public testing::Test {
  public:
-  void SetUp();
-  void TearDown();
+  virtual void SetUp();
+  virtual void TearDown();
 
   void ClearDB();
   size_t CountRecords() const;

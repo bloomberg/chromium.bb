@@ -33,7 +33,7 @@ class InstantLoaderUserData : public base::SupportsUserData::Data {
   InstantLoader* loader() const { return loader_; }
 
  private:
-  ~InstantLoaderUserData() {}
+  virtual ~InstantLoaderUserData() {}
 
   InstantLoader* const loader_;
 

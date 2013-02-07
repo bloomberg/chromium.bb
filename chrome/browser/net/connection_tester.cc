@@ -321,8 +321,9 @@ class ConnectionTester::TestRunner : public net::URLRequest::Delegate {
   void Run(const Experiment& experiment);
 
   // Overridden from net::URLRequest::Delegate:
-  virtual void OnResponseStarted(net::URLRequest* request);
-  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
+  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
+  virtual void OnReadCompleted(net::URLRequest* request,
+                               int bytes_read) OVERRIDE;
   // TODO(eroman): handle cases requiring authentication.
 
  private:

@@ -73,7 +73,7 @@ class NavEntryCommittedObserver : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     DCHECK(type == content::NOTIFICATION_NAV_ENTRY_COMMITTED);
     details_ =
         *(content::Details<content::LoadCommittedDetails>(details).ptr());
@@ -342,11 +342,11 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     return menu_model_.GetIndexOfCommandId(id) != -1;
   }
 
-  virtual void PlatformInit() { }
-  virtual void PlatformCancel() { }
+  virtual void PlatformInit() OVERRIDE { }
+  virtual void PlatformCancel() OVERRIDE { }
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) { return false; }
+      ui::Accelerator* accelerator) OVERRIDE { return false; }
 
  private:
   TestRenderViewContextMenu(WebContents* web_contents,

@@ -26,7 +26,7 @@ class TransportSecurityPersisterTest : public testing::Test {
         test_io_thread_(content::BrowserThread::IO, &message_loop_) {
   }
 
-  ~TransportSecurityPersisterTest() {
+  virtual ~TransportSecurityPersisterTest() {
     message_loop_.RunUntilIdle();
   }
 

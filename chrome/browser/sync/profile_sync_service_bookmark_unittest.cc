@@ -236,7 +236,7 @@ class ExtensiveChangesBookmarkModelObserver : public BaseBookmarkModelObserver {
     ++completed_count_;
   }
 
-  void BookmarkModelChanged() {}
+  virtual void BookmarkModelChanged() OVERRIDE {}
 
   int get_started() const {
     return started_count_;

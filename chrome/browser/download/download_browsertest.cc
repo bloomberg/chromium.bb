@@ -144,15 +144,20 @@ class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
   }
 
   // Simulate a user abort on an extension installation.
-  virtual void ConfirmInstall(Delegate* delegate,
-                              const Extension* extension,
-                              const ShowDialogCallback& show_dialog_callback) {
+  virtual void ConfirmInstall(
+      Delegate* delegate,
+      const Extension* extension,
+      const ShowDialogCallback& show_dialog_callback) OVERRIDE {
     delegate->InstallUIAbort(true);
     MessageLoopForUI::current()->Quit();
   }
 
-  virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
-  virtual void OnInstallFailure(const extensions::CrxInstallerError& error) {}
+  virtual void OnInstallSuccess(const Extension* extension,
+                                SkBitmap* icon) OVERRIDE {
+  }
+  virtual void OnInstallFailure(
+      const extensions::CrxInstallerError& error) OVERRIDE {
+  }
 };
 
 // Mock that simulates a permissions dialog where the user allows
@@ -164,14 +169,19 @@ class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
       : ExtensionInstallPrompt(web_contents) {}
 
   // Proceed without confirmation prompt.
-  virtual void ConfirmInstall(Delegate* delegate,
-                              const Extension* extension,
-                              const ShowDialogCallback& show_dialog_callback) {
+  virtual void ConfirmInstall(
+      Delegate* delegate,
+      const Extension* extension,
+      const ShowDialogCallback& show_dialog_callback) OVERRIDE {
     delegate->InstallUIProceed();
   }
 
-  virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
-  virtual void OnInstallFailure(const extensions::CrxInstallerError& error) {}
+  virtual void OnInstallSuccess(const Extension* extension,
+                                SkBitmap* icon) OVERRIDE {
+  }
+  virtual void OnInstallFailure(
+      const extensions::CrxInstallerError& error) OVERRIDE {
+  }
 };
 
 static DownloadManager* DownloadManagerForBrowser(Browser* browser) {
@@ -187,9 +197,9 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   virtual ~TestRenderViewContextMenu() {}
 
  private:
-  virtual void PlatformInit() {}
-  virtual void PlatformCancel() {}
-  virtual bool GetAcceleratorForCommandId(int, ui::Accelerator*) {
+  virtual void PlatformInit() OVERRIDE {}
+  virtual void PlatformCancel() OVERRIDE {}
+  virtual bool GetAcceleratorForCommandId(int, ui::Accelerator*) OVERRIDE {
     return false;
   }
 

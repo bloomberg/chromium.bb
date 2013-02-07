@@ -170,11 +170,11 @@ class ComponentUpdaterTest : public testing::Test {
     net::URLFetcher::SetEnableInterceptionForTests(true);
   }
 
-  ~ComponentUpdaterTest() {
+  virtual ~ComponentUpdaterTest() {
     net::URLFetcher::SetEnableInterceptionForTests(false);
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     xmlCleanupGlobals();
   }
 

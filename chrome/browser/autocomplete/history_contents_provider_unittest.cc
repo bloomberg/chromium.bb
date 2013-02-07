@@ -116,7 +116,7 @@ class HistoryContentsProviderTest : public testing::Test,
 
 class HistoryContentsProviderBodyOnlyTest : public HistoryContentsProviderTest {
  protected:
-  virtual bool BodyOnly() { return true; }
+  virtual bool BodyOnly() OVERRIDE { return true; }
 };
 
 TEST_F(HistoryContentsProviderTest, Body) {

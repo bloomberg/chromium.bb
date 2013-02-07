@@ -190,7 +190,7 @@ class TestAutofillManager : public AutofillManager {
     set_metric_logger(new MockAutofillMetrics);
   }
 
-  virtual bool IsAutofillEnabled() const { return autofill_enabled_; }
+  virtual bool IsAutofillEnabled() const OVERRIDE { return autofill_enabled_; }
 
   void set_autofill_enabled(bool autofill_enabled) {
     autofill_enabled_ = autofill_enabled;

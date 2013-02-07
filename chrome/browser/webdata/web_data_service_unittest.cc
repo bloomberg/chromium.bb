@@ -58,7 +58,7 @@ class AutofillDBThreadObserverHelper : public DBThreadObserverHelper {
  protected:
   virtual ~AutofillDBThreadObserverHelper() {}
 
-  virtual void RegisterObservers() {
+  virtual void RegisterObservers() OVERRIDE {
     registrar_.Add(&observer_,
                    chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
                    content::NotificationService::AllSources());
@@ -163,8 +163,9 @@ static void WaitUntilCalled() {
 // quits UI message loop when callback is invoked.
 class WebIntentsConsumer : public WebDataServiceConsumer {
  public:
-  virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
-                                           const WDTypedResult* result) {
+  virtual void OnWebDataServiceRequestDone(
+      WebDataService::Handle h,
+      const WDTypedResult* result) OVERRIDE {
     services_.clear();
     if (result) {
       DCHECK(result->GetType() == WEB_INTENTS_RESULT);
@@ -185,8 +186,9 @@ class WebIntentsConsumer : public WebDataServiceConsumer {
 // quits UI message loop when callback is invoked.
 class WebIntentsDefaultsConsumer : public WebDataServiceConsumer {
  public:
-  virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
-                                           const WDTypedResult* result) {
+  virtual void OnWebDataServiceRequestDone(
+      WebDataService::Handle h,
+      const WDTypedResult* result) OVERRIDE {
     services_.clear();
     if (result) {
       DCHECK(result->GetType() == WEB_INTENTS_DEFAULTS_RESULT);
@@ -209,8 +211,9 @@ class KeywordsConsumer : public WebDataServiceConsumer {
  public:
   KeywordsConsumer() : load_succeeded(false) {}
 
-  virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
-                                           const WDTypedResult* result) {
+  virtual void OnWebDataServiceRequestDone(
+      WebDataService::Handle h,
+      const WDTypedResult* result) OVERRIDE {
     if (result) {
       load_succeeded = true;
       DCHECK(result->GetType() == KEYWORDS_RESULT);

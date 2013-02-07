@@ -17,21 +17,21 @@ class DummyTtsPlatformImpl : public TtsPlatformImpl {
  public:
   DummyTtsPlatformImpl() {}
   virtual ~DummyTtsPlatformImpl() {}
-  virtual bool PlatformImplAvailable() { return true; }
+  virtual bool PlatformImplAvailable() OVERRIDE { return true; }
   virtual bool Speak(
       int utterance_id,
       const std::string& utterance,
       const std::string& lang,
-      const UtteranceContinuousParameters& params) {
+      const UtteranceContinuousParameters& params) OVERRIDE {
     return true;
   }
-  virtual bool IsSpeaking() { return false; }
-  virtual bool StopSpeaking() { return true; }
-  virtual bool SendsEvent(TtsEventType event_type) { return false; }
-  virtual std::string gender() { return std::string(); }
-  virtual std::string error() { return std::string(); }
-  virtual void clear_error() {}
-  virtual void set_error(const std::string& error) {}
+  virtual bool IsSpeaking() OVERRIDE { return false; }
+  virtual bool StopSpeaking() OVERRIDE { return true; }
+  virtual bool SendsEvent(TtsEventType event_type) OVERRIDE { return false; }
+  virtual std::string gender() OVERRIDE { return std::string(); }
+  virtual std::string error() OVERRIDE { return std::string(); }
+  virtual void clear_error() OVERRIDE {}
+  virtual void set_error(const std::string& error) OVERRIDE {}
 };
 
 // Subclass of TtsController with a public ctor and dtor.

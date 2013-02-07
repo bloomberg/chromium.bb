@@ -35,7 +35,7 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
     return extension;
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     InitializeEmptyExtensionService();
   }
 };

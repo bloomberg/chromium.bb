@@ -60,7 +60,7 @@ class ObservationCountingQueueController :
   // GeolocationInfoBarQueueController
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   static void NotifyPermissionSet(const GeolocationPermissionRequestID& id,
                                   const GURL& requesting_frame,

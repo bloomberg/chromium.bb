@@ -566,7 +566,7 @@ class LoadCompleteListener : public content::NotificationObserver {
    // content::NotificationObserver implementation.
    virtual void Observe(int type,
                         const content::NotificationSource& source,
-                        const content::NotificationDetails& details) {
+                        const content::NotificationDetails& details) OVERRIDE {
      DCHECK(type == content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME);
      startup_metric_utils::OnInitialPageLoadComplete();
      delete this;

@@ -46,14 +46,14 @@ class FakeExternalProtocolHandlerDelegate
 
   virtual ShellIntegration::DefaultProtocolClientWorker* CreateShellWorker(
       ShellIntegration::DefaultWebClientObserver* observer,
-      const std::string& protocol) {
+      const std::string& protocol) OVERRIDE {
     return new FakeExternalProtocolHandlerWorker(observer, protocol, os_state_);
   }
 
   virtual ExternalProtocolHandler::BlockState GetBlockState(
-      const std::string& scheme) { return block_state_; }
+      const std::string& scheme) OVERRIDE { return block_state_; }
 
-  virtual void BlockRequest() {
+  virtual void BlockRequest() OVERRIDE {
     ASSERT_TRUE(block_state_ == ExternalProtocolHandler::BLOCK ||
                 os_state_ == ShellIntegration::IS_DEFAULT);
     has_blocked_ = true;
@@ -61,19 +61,19 @@ class FakeExternalProtocolHandlerDelegate
 
   virtual void RunExternalProtocolDialog(const GURL& url,
                                          int render_process_host_id,
-                                         int routing_id) {
+                                         int routing_id) OVERRIDE {
     ASSERT_EQ(block_state_, ExternalProtocolHandler::UNKNOWN);
     ASSERT_NE(os_state_, ShellIntegration::IS_DEFAULT);
     has_prompted_ = true;
   }
 
-  virtual void LaunchUrlWithoutSecurityCheck(const GURL& url) {
+  virtual void LaunchUrlWithoutSecurityCheck(const GURL& url) OVERRIDE {
     ASSERT_EQ(block_state_, ExternalProtocolHandler::DONT_BLOCK);
     ASSERT_NE(os_state_, ShellIntegration::IS_DEFAULT);
     has_launched_ = true;
   }
 
-  virtual void FinishedProcessingCheck() {
+  virtual void FinishedProcessingCheck() OVERRIDE {
     MessageLoop::current()->Quit();
   }
 

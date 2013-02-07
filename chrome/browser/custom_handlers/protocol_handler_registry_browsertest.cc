@@ -28,11 +28,11 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
                             content::ContextMenuParams params)
       : RenderViewContextMenu(web_contents, params) { }
 
-  virtual void PlatformInit() { }
-  virtual void PlatformCancel() { }
+  virtual void PlatformInit() OVERRIDE { }
+  virtual void PlatformCancel() OVERRIDE { }
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) {
+      ui::Accelerator* accelerator) OVERRIDE {
     return false;
   }
 

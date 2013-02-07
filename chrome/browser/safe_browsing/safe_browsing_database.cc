@@ -314,7 +314,7 @@ class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
       bool enable_download_protection,
       bool enable_client_side_whitelist,
       bool enable_download_whitelist,
-      bool enable_extension_blacklist) {
+      bool enable_extension_blacklist) OVERRIDE {
     return new SafeBrowsingDatabaseNew(
         new SafeBrowsingStoreFile,
         enable_download_protection ? new SafeBrowsingStoreFile : NULL,

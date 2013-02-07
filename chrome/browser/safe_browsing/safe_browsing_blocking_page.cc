@@ -124,10 +124,11 @@ static base::LazyInstance<SafeBrowsingBlockingPage::UnsafeResourceMap>
 class SafeBrowsingBlockingPageFactoryImpl
     : public SafeBrowsingBlockingPageFactory {
  public:
-  SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
+  virtual SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
       SafeBrowsingUIManager* ui_manager,
       WebContents* web_contents,
-      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources) {
+      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
+      OVERRIDE {
     // Only do the trial if the interstitial is for a single malware or
     // phishing resource, the multi-threat interstitial has not been updated to
     // V2 yet.

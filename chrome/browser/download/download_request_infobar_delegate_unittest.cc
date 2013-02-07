@@ -16,8 +16,8 @@ class MockTabDownloadState : public DownloadRequestLimiter::TabDownloadState {
   virtual ~MockTabDownloadState();
 
   // DownloadRequestLimiter::TabDownloadState
-  virtual void Cancel();
-  virtual void Accept();
+  virtual void Cancel() OVERRIDE;
+  virtual void Accept() OVERRIDE;
 
   ConfirmInfoBarDelegate* infobar() { return infobar_.get(); }
   void delete_infobar_delegate() { infobar_.reset(); }

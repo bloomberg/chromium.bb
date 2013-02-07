@@ -423,12 +423,12 @@ class MetricsMemoryDetails : public MemoryDetails {
   explicit MetricsMemoryDetails(const base::Closure& callback)
       : callback_(callback) {}
 
-  virtual void OnDetailsAvailable() {
+  virtual void OnDetailsAvailable() OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE, callback_);
   }
 
  private:
-  ~MetricsMemoryDetails() {}
+  virtual ~MetricsMemoryDetails() {}
 
   base::Closure callback_;
   DISALLOW_COPY_AND_ASSIGN(MetricsMemoryDetails);

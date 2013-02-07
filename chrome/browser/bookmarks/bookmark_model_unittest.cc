@@ -150,7 +150,7 @@ class BookmarkModelTest : public testing::Test,
     ClearCounts();
   }
 
-  void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE {
+  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE {
     // We never load from the db, so that this should never get invoked.
     NOTREACHED();
   }

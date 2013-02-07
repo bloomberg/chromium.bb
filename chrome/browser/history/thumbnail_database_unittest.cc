@@ -55,7 +55,7 @@ class ThumbnailDatabaseTest : public testing::Test {
  public:
   ThumbnailDatabaseTest() {
   }
-  ~ThumbnailDatabaseTest() {
+  virtual ~ThumbnailDatabaseTest() {
   }
 
  protected:
@@ -89,7 +89,7 @@ class IconMappingMigrationTest : public HistoryUnitTestBase {
  public:
   IconMappingMigrationTest() {
   }
-  ~IconMappingMigrationTest() {
+  virtual ~IconMappingMigrationTest() {
   }
 
  protected:

@@ -69,7 +69,8 @@ class TestSafeBrowsingUIManager: public SafeBrowsingUIManager {
       : SafeBrowsingUIManager(service) {
   }
 
-  virtual void SendSerializedMalwareDetails(const std::string& serialized) {
+  virtual void SendSerializedMalwareDetails(
+      const std::string& serialized) OVERRIDE {
     details_.push_back(serialized);
   }
 
@@ -87,12 +88,13 @@ class TestSafeBrowsingBlockingPageFactory
     : public SafeBrowsingBlockingPageFactory {
  public:
   TestSafeBrowsingBlockingPageFactory() { }
-  ~TestSafeBrowsingBlockingPageFactory() { }
+  virtual ~TestSafeBrowsingBlockingPageFactory() { }
 
   virtual SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
       SafeBrowsingUIManager* manager,
       WebContents* web_contents,
-      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources) {
+      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
+      OVERRIDE {
     // TODO(mattm): remove this when SafeBrowsingBlockingPageV2 supports
     // multi-threat warnings.
     if (unsafe_resources.size() == 1 &&

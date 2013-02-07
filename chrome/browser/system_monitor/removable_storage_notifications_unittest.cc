@@ -16,7 +16,7 @@ class TestStorageNotifications : public RemovableStorageNotifications {
   TestStorageNotifications() {
   }
 
-  ~TestStorageNotifications() {}
+  virtual ~TestStorageNotifications() {}
 
   virtual bool GetDeviceInfoForPath(
       const base::FilePath& path,

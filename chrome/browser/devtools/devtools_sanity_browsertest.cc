@@ -60,7 +60,7 @@ class BrowserClosedObserver : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     MessageLoopForUI::current()->Quit();
   }
 
@@ -241,9 +241,9 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
     return true;
   }
 
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) {
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSION_LOADED:
       case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
@@ -260,7 +260,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
 
 class DevToolsExperimentalExtensionTest : public DevToolsExtensionTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
 };

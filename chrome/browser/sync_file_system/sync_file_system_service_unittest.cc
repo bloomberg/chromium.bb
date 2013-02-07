@@ -116,7 +116,7 @@ ACTION_P3(MockSyncOperationCallback, status, url, operation_type) {
 class SyncFileSystemServiceTest : public testing::Test {
  protected:
   SyncFileSystemServiceTest() {}
-  ~SyncFileSystemServiceTest() {}
+  virtual ~SyncFileSystemServiceTest() {}
 
   virtual void SetUp() OVERRIDE {
     thread_helper_.SetUp();

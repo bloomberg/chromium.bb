@@ -52,11 +52,12 @@ class WaitForHistoryTask : public HistoryDBTask {
  public:
   WaitForHistoryTask() {}
 
-  virtual bool RunOnDBThread(HistoryBackend* backend, HistoryDatabase* db) {
+  virtual bool RunOnDBThread(HistoryBackend* backend,
+                             HistoryDatabase* db) OVERRIDE {
     return true;
   }
 
-  virtual void DoneRunOnMainThread() {
+  virtual void DoneRunOnMainThread() OVERRIDE {
     MessageLoop::current()->Quit();
   }
 
@@ -362,7 +363,7 @@ class TopSitesMigrationTest : public TopSitesTest {
   }
 
   // Returns true if history and top sites should be created in SetUp.
-  virtual bool CreateHistoryAndTopSites() {
+  virtual bool CreateHistoryAndTopSites() OVERRIDE {
     return false;
   }
 

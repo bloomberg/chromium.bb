@@ -117,32 +117,32 @@ class CustomThreadWatcher : public ThreadWatcher {
     return old_state;
   }
 
-  void ActivateThreadWatching() {
+  virtual void ActivateThreadWatching() OVERRIDE {
     State old_state = UpdateState(ACTIVATED);
     EXPECT_EQ(old_state, INITIALIZED);
     ThreadWatcher::ActivateThreadWatching();
   }
 
-  void DeActivateThreadWatching() {
+  virtual void DeActivateThreadWatching() OVERRIDE {
     State old_state = UpdateState(DEACTIVATED);
     EXPECT_TRUE(old_state == ACTIVATED || old_state == SENT_PING ||
                 old_state == RECEIVED_PONG);
     ThreadWatcher::DeActivateThreadWatching();
   }
 
-  void PostPingMessage() {
+  virtual void PostPingMessage() OVERRIDE {
     State old_state = UpdateState(SENT_PING);
     EXPECT_TRUE(old_state == ACTIVATED || old_state == RECEIVED_PONG);
     ThreadWatcher::PostPingMessage();
   }
 
-  void OnPongMessage(uint64 ping_sequence_number) {
+  virtual void OnPongMessage(uint64 ping_sequence_number) OVERRIDE {
     State old_state = UpdateState(RECEIVED_PONG);
     EXPECT_TRUE(old_state == SENT_PING || old_state == DEACTIVATED);
     ThreadWatcher::OnPongMessage(ping_sequence_number);
   }
 
-  void OnCheckResponsiveness(uint64 ping_sequence_number) {
+  virtual void OnCheckResponsiveness(uint64 ping_sequence_number) OVERRIDE {
     ThreadWatcher::OnCheckResponsiveness(ping_sequence_number);
     {
       base::AutoLock auto_lock(custom_lock_);
@@ -297,7 +297,7 @@ class ThreadWatcherTest : public ::testing::Test {
     }
   }
 
-  ~ThreadWatcherTest() {
+  virtual ~ThreadWatcherTest() {
     ThreadWatcherList::DeleteAll();
     io_watcher_ = NULL;
     webkit_watcher_ = NULL;

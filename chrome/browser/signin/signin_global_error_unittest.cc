@@ -17,7 +17,7 @@
 
 class SigninGlobalErrorTest : public testing::Test {
  public:
-  void SetUp() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     // Create a signed-in profile.
     profile_.reset(new TestingProfile());
 

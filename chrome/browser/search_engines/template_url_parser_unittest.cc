@@ -18,7 +18,7 @@
 class ParamFilterImpl : public TemplateURLParser::ParameterFilter {
  public:
   ParamFilterImpl(std::string name_str, std::string value_str);
-  ~ParamFilterImpl();
+  virtual ~ParamFilterImpl();
 
   virtual bool KeepParameter(const std::string& key,
                              const std::string& value) OVERRIDE;
@@ -50,7 +50,7 @@ bool ParamFilterImpl::KeepParameter(const std::string& key,
 class TemplateURLParserTest : public testing::Test {
  protected:
   TemplateURLParserTest();
-  ~TemplateURLParserTest();
+  virtual ~TemplateURLParserTest();
 
   virtual void SetUp() OVERRIDE;
 

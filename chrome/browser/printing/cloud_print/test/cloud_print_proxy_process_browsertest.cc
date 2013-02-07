@@ -80,7 +80,9 @@ void ShutdownTask() {
 
 class TestStartupClientChannelListener : public IPC::Listener {
  public:
-  virtual bool OnMessageReceived(const IPC::Message& message) { return false; }
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+    return false;
+  }
 };
 
 }  // namespace
@@ -283,7 +285,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
                                          public IPC::Listener {
  public:
   CloudPrintProxyPolicyStartupTest();
-  ~CloudPrintProxyPolicyStartupTest();
+  virtual ~CloudPrintProxyPolicyStartupTest();
 
   virtual void SetUp();
   base::MessageLoopProxy* IOMessageLoopProxy() {
@@ -295,8 +297,10 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   void ShutdownAndWaitForExitWithTimeout(base::ProcessHandle handle);
 
   // IPC::Listener implementation
-  virtual bool OnMessageReceived(const IPC::Message& message) { return false; }
-  virtual void OnChannelConnected(int32 peer_pid);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+    return false;
+  }
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
   // MultiProcessTest implementation.
   virtual CommandLine MakeCmdLine(const std::string& procname,

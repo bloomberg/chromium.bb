@@ -70,10 +70,10 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
   virtual ~TestSafeBrowsingDatabase() {}
 
   // Initializes the database with the given filename.
-  virtual void Init(const FilePath& filename) {}
+  virtual void Init(const FilePath& filename) OVERRIDE {}
 
   // Deletes the current database and creates a new one.
-  virtual bool ResetDatabase() {
+  virtual bool ResetDatabase() OVERRIDE {
     badurls_.clear();
     return true;
   }
@@ -85,14 +85,15 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
                                  std::string* matching_list,
                                  std::vector<SBPrefix>* prefix_hits,
                                  std::vector<SBFullHashResult>* full_hits,
-                                 base::Time last_update) {
+                                 base::Time last_update) OVERRIDE {
     std::vector<GURL> urls(1, url);
     return ContainsUrl(safe_browsing_util::kMalwareList,
                        safe_browsing_util::kPhishingList,
                        urls, prefix_hits, full_hits);
   }
-  virtual bool ContainsDownloadUrl(const std::vector<GURL>& urls,
-                                   std::vector<SBPrefix>* prefix_hits) {
+  virtual bool ContainsDownloadUrl(
+      const std::vector<GURL>& urls,
+      std::vector<SBPrefix>* prefix_hits) OVERRIDE {
     std::vector<SBFullHashResult> full_hits;
     bool found = ContainsUrl(safe_browsing_util::kBinUrlList,
                              safe_browsing_util::kBinHashList,
@@ -102,16 +103,17 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
     DCHECK_LE(1U, prefix_hits->size());
     return true;
   }
-  virtual bool ContainsDownloadHashPrefix(const SBPrefix& prefix) {
+  virtual bool ContainsDownloadHashPrefix(const SBPrefix& prefix) OVERRIDE {
     return download_digest_prefix_.count(prefix) > 0;
   }
-  virtual bool ContainsCsdWhitelistedUrl(const GURL& url) {
+  virtual bool ContainsCsdWhitelistedUrl(const GURL& url) OVERRIDE {
     return true;
   }
-  virtual bool ContainsDownloadWhitelistedString(const std::string& str) {
+  virtual bool ContainsDownloadWhitelistedString(
+      const std::string& str) OVERRIDE {
     return true;
   }
-  virtual bool ContainsDownloadWhitelistedUrl(const GURL& url) {
+  virtual bool ContainsDownloadWhitelistedUrl(const GURL& url) OVERRIDE {
     return true;
   }
   virtual bool ContainsExtensionPrefixes(
@@ -119,22 +121,23 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
       std::vector<SBPrefix>* prefix_hits) OVERRIDE {
     return true;
   }
-  virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists) {
+  virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists) OVERRIDE {
     ADD_FAILURE() << "Not implemented.";
     return false;
   }
   virtual void InsertChunks(const std::string& list_name,
-                            const SBChunkList& chunks) {
+                            const SBChunkList& chunks) OVERRIDE {
     ADD_FAILURE() << "Not implemented.";
   }
-  virtual void DeleteChunks(const std::vector<SBChunkDelete>& chunk_deletes) {
+  virtual void DeleteChunks(
+      const std::vector<SBChunkDelete>& chunk_deletes) OVERRIDE {
     ADD_FAILURE() << "Not implemented.";
   }
-  virtual void UpdateFinished(bool update_succeeded) {
+  virtual void UpdateFinished(bool update_succeeded) OVERRIDE {
     ADD_FAILURE() << "Not implemented.";
   }
   virtual void CacheHashResults(const std::vector<SBPrefix>& prefixes,
-      const std::vector<SBFullHashResult>& full_hits) {
+      const std::vector<SBFullHashResult>& full_hits) OVERRIDE {
     // Do nothing for the cache.
   }
 
@@ -203,7 +206,7 @@ class TestSafeBrowsingDatabaseFactory : public SafeBrowsingDatabaseFactory {
       bool enable_download_protection,
       bool enable_client_side_whitelist,
       bool enable_download_whitelist,
-      bool enable_extension_blacklist) {
+      bool enable_extension_blacklist) OVERRIDE {
     db_ = new TestSafeBrowsingDatabase();
     return db_;
   }
@@ -226,7 +229,7 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
     create_count_++;
   }
 
-  ~TestProtocolManager() {
+  virtual ~TestProtocolManager() {
     delete_count_++;
   }
 
@@ -869,7 +872,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
  public:
   SafeBrowsingDatabaseManagerCookieTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // We need to start the test server to get the host&port in the url.
     ASSERT_TRUE(test_server()->Start());
 
@@ -885,7 +888,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
     command_line->AppendSwitchASCII(switches::kSbURLPrefix, url_prefix.spec());
   }
 
-  virtual bool SetUpUserDataDirectory() {
+  virtual bool SetUpUserDataDirectory() OVERRIDE {
     FilePath cookie_path(SafeBrowsingService::GetCookieFilePathForTesting());
     EXPECT_FALSE(file_util::PathExists(cookie_path));
 
@@ -930,7 +933,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
     return InProcessBrowserTest::SetUpUserDataDirectory();
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() {
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
     InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
 
     sql::Connection db;
@@ -950,12 +953,12 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
     EXPECT_FALSE(smt.Step());
   }
 
-  virtual void SetUpOnMainThread() {
+  virtual void SetUpOnMainThread() OVERRIDE {
     sb_service_ = g_browser_process->safe_browsing_service();
     ASSERT_TRUE(sb_service_ != NULL);
   }
 
-  virtual void CleanUpOnMainThread() {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     sb_service_ = NULL;
   }
 

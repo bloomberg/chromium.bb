@@ -51,9 +51,9 @@ class CaptivePortalObserver : public content::NotificationObserver {
   int num_results_received() const { return num_results_received_; }
 
  private:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) {
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
     ASSERT_EQ(type, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT);
     ASSERT_EQ(profile_, content::Source<Profile>(source).ptr());
 

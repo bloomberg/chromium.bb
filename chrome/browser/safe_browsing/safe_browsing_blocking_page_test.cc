@@ -58,7 +58,7 @@ class FakeSafeBrowsingDatabaseManager :  public SafeBrowsingDatabaseManager {
   // Otherwise it returns false, and "client" is called asynchronously with the
   // result when it is ready.
   // Overrides SafeBrowsingDatabaseManager::CheckBrowseUrl.
-  virtual bool CheckBrowseUrl(const GURL& gurl, Client* client) {
+  virtual bool CheckBrowseUrl(const GURL& gurl, Client* client) OVERRIDE {
     if (badurls[gurl.spec()] == SB_THREAT_TYPE_SAFE)
       return true;
 
@@ -97,7 +97,8 @@ class FakeSafeBrowsingUIManager :  public SafeBrowsingUIManager {
       SafeBrowsingUIManager(service) { }
 
   // Overrides SafeBrowsingUIManager
-  virtual void SendSerializedMalwareDetails(const std::string& serialized) {
+  virtual void SendSerializedMalwareDetails(
+      const std::string& serialized) OVERRIDE {
     reports_.push_back(serialized);
     // Notify the UI thread that we got a report.
     BrowserThread::PostTask(
@@ -265,7 +266,7 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPageV2 {
     malware_details_proceed_delay_ms_ = 100;
   }
 
-  ~TestSafeBrowsingBlockingPage() {
+  virtual ~TestSafeBrowsingBlockingPage() {
     if (!wait_for_delete_)
       return;
 
@@ -287,7 +288,7 @@ class TestSafeBrowsingBlockingPageFactory
     : public SafeBrowsingBlockingPageFactory {
  public:
   TestSafeBrowsingBlockingPageFactory() { }
-  ~TestSafeBrowsingBlockingPageFactory() { }
+  virtual ~TestSafeBrowsingBlockingPageFactory() { }
 
   virtual SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
       SafeBrowsingUIManager* delegate,

@@ -127,7 +127,7 @@ class TestSelectFileDialogFactory : public ui::SelectFileDialogFactory {
  public:
   virtual ui::SelectFileDialog* Create(
       ui::SelectFileDialog::Listener* listener,
-      ui::SelectFilePolicy* policy) {
+      ui::SelectFilePolicy* policy) OVERRIDE {
     return TestSelectFileDialog::Create(listener, policy);
   }
 };

@@ -107,7 +107,7 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
   virtual void OnCookieChanged(
       const net::CanonicalCookie& cookie,
       bool removed,
-      net::CookieMonster::Delegate::ChangeCause cause) {
+      net::CookieMonster::Delegate::ChangeCause cause) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&ChromeCookieMonsterDelegate::OnCookieChangedAsyncHelper,

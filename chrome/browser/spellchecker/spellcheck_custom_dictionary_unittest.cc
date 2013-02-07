@@ -57,13 +57,13 @@ class SpellcheckCustomDictionaryTest : public testing::Test {
         profile_(new TestingProfile) {
   }
 
-  void SetUp() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     // Use SetTestingFactoryAndUse to force creation and initialization.
     SpellcheckServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         profile_.get(), &BuildSpellcheckService);
   }
 
-  void TearDown() OVERRIDE {
+  virtual void TearDown() OVERRIDE {
     MessageLoop::current()->RunUntilIdle();
   }
 

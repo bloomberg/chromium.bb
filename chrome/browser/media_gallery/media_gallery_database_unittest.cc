@@ -19,13 +19,13 @@ class MediaGalleryDatabaseTest : public testing::Test,
   MediaGalleryDatabaseTest() { }
 
  protected:
-  virtual sql::Connection& GetDB() {
+  virtual sql::Connection& GetDB() OVERRIDE {
     return db_;
   }
 
  private:
   // Test setup.
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath db_file =
         temp_dir_.path().AppendASCII("MediaGalleryTest.db");
@@ -36,7 +36,7 @@ class MediaGalleryDatabaseTest : public testing::Test,
     ASSERT_EQ(sql::INIT_OK, InitInternal(&db_));
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     db_.Close();
   }
 

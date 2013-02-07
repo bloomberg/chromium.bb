@@ -93,7 +93,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
         DownloadRequestLimiterTest* test)
         : test_(test) { }
 
-    virtual bool ShouldAllowDownload() {
+    virtual bool ShouldAllowDownload() OVERRIDE {
       return test_->ShouldAllowDownload();
     }
 

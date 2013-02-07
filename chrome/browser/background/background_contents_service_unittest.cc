@@ -26,8 +26,8 @@
 class BackgroundContentsServiceTest : public testing::Test {
  public:
   BackgroundContentsServiceTest() {}
-  ~BackgroundContentsServiceTest() {}
-  void SetUp() {
+  virtual ~BackgroundContentsServiceTest() {}
+  virtual void SetUp() {
     command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
   }
 
@@ -75,7 +75,7 @@ class MockBackgroundContents : public BackgroundContents {
         content::Source<Profile>(profile_),
         content::Details<BackgroundContents>(this));
   }
-  virtual const GURL& GetURL() const { return url_; }
+  virtual const GURL& GetURL() const OVERRIDE { return url_; }
 
   void MockClose(Profile* profile) {
     content::NotificationService::current()->Notify(
@@ -85,7 +85,7 @@ class MockBackgroundContents : public BackgroundContents {
     delete this;
   }
 
-  ~MockBackgroundContents() {
+  virtual ~MockBackgroundContents() {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
         content::Source<Profile>(profile_),

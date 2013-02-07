@@ -454,7 +454,7 @@ class GuestSessionProfile : public OffTheRecordProfileImpl {
       : OffTheRecordProfileImpl(real_profile) {
   }
 
-  virtual void InitChromeOSPreferences() {
+  virtual void InitChromeOSPreferences() OVERRIDE {
     chromeos_preferences_.reset(new chromeos::Preferences());
     chromeos_preferences_->Init(GetPrefs());
   }

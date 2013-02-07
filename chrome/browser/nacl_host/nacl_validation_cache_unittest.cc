@@ -20,7 +20,7 @@ class NaClValidationCacheTest : public ::testing::Test {
   NaClValidationCache cache1;
   NaClValidationCache cache2;
 
-  void SetUp() {
+  virtual void SetUp() {
     // The compiler chokes if std::string(key1) is passed directly as an arg.
     std::string key(key1);
     cache1.SetValidationCacheKey(key);

@@ -80,7 +80,7 @@ class IFrameLoader : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     if (type == content::NOTIFICATION_LOAD_STOP) {
       navigation_completed_ = true;
     } else if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {
@@ -156,7 +156,7 @@ class GeolocationNotificationObserver : public content::NotificationObserver {
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     if (type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED) {
       infobar_ = content::Details<InfoBarAddedDetails>(details).ptr();
       ASSERT_TRUE(infobar_->GetIcon());
@@ -211,12 +211,12 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
       started_test_server_(false) {}
 
   // InProcessBrowserTest
-  virtual void SetUpOnMainThread() {
+  virtual void SetUpOnMainThread() OVERRIDE {
     ui_test_utils::OverrideGeolocation(fake_latitude_, fake_longitude_);
   }
 
   // InProcessBrowserTest
-  virtual void TearDownInProcessBrowserTestFixture() {
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
     LOG(WARNING) << "TearDownInProcessBrowserTestFixture. Test Finished.";
   }
 

@@ -71,7 +71,7 @@ class ProvisionalLoadWaiter : public content::WebContentsObserver {
     content::RunMessageLoop();
   }
 
-  void DidFailProvisionalLoad(
+  virtual void DidFailProvisionalLoad(
       int64 frame_id,
       bool is_main_frame,
       const GURL& validated_url,
@@ -106,7 +106,7 @@ class SSLUITest : public InProcessBrowserTest {
                             SSLOptions(SSLOptions::CERT_EXPIRED),
                             net::GetWebSocketTestDataDirectory()) {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // Browser will both run and display insecure content.
     command_line->AppendSwitch(switches::kAllowRunningInsecureContent);
     // Use process-per-site so that navigating to a same-site page in a
@@ -311,7 +311,7 @@ class SSLUITestBlock : public SSLUITest {
   SSLUITestBlock() : SSLUITest() {}
 
   // Browser will neither run nor display insecure content.
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kNoDisplayingInsecureContent);
   }
 };

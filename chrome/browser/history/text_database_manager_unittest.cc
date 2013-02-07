@@ -51,11 +51,11 @@ class InMemDB : public URLDatabase, public VisitDatabase {
     CreateURLTable(false);
     InitVisitTable();
   }
-  ~InMemDB() {
+  virtual ~InMemDB() {
   }
 
  private:
-  virtual sql::Connection& GetDB() { return db_; }
+  virtual sql::Connection& GetDB() OVERRIDE { return db_; }
 
   sql::Connection db_;
 
@@ -157,10 +157,10 @@ class TextDatabaseManagerTest : public testing::Test {
   }
 
  protected:
-  void SetUp() {
+  virtual void SetUp() {
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     file_util::Delete(dir_, true);
   }
 

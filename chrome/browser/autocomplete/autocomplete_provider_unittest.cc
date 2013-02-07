@@ -52,7 +52,7 @@ class TestProvider : public AutocompleteProvider {
   }
 
   virtual void Start(const AutocompleteInput& input,
-                     bool minimal_changes);
+                     bool minimal_changes) OVERRIDE;
 
   void set_listener(AutocompleteProviderListener* listener) {
     listener_ = listener;
@@ -192,7 +192,7 @@ class AutocompleteProviderTest : public testing::Test,
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   MessageLoopForUI message_loop_;
   content::NotificationRegistrar registrar_;

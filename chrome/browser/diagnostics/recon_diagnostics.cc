@@ -45,9 +45,9 @@ class OperatingSystemTest : public DiagnosticTest {
  public:
   OperatingSystemTest() : DiagnosticTest(ASCIIToUTF16("Operating System")) {}
 
-  virtual int GetId() { return 0; }
+  virtual int GetId() OVERRIDE { return 0; }
 
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
+  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
 #if defined(OS_WIN)
     base::win::Version version = base::win::GetVersion();
     if ((version < base::win::VERSION_XP) ||
@@ -75,9 +75,9 @@ class ConflictingDllsTest : public DiagnosticTest {
  public:
   ConflictingDllsTest() : DiagnosticTest(ASCIIToUTF16("Conflicting modules")) {}
 
-  virtual int GetId() { return 0; }
+  virtual int GetId() OVERRIDE { return 0; }
 
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
+  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
 #if defined(OS_WIN)
     EnumerateModulesModel* model = EnumerateModulesModel::GetInstance();
     model->set_limited_mode(true);
@@ -131,9 +131,9 @@ class InstallTypeTest : public DiagnosticTest {
   InstallTypeTest() : DiagnosticTest(ASCIIToUTF16("Install Type")),
                       user_level_(false) {}
 
-  virtual int GetId() { return 0; }
+  virtual int GetId() OVERRIDE { return 0; }
 
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
+  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
 #if defined(OS_WIN)
     FilePath chrome_exe;
     if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
@@ -163,9 +163,9 @@ class VersionTest : public DiagnosticTest {
  public:
   VersionTest() : DiagnosticTest(ASCIIToUTF16("Browser Version")) {}
 
-  virtual int GetId() { return 0; }
+  virtual int GetId() OVERRIDE { return 0; }
 
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
+  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
     chrome::VersionInfo version_info;
     if (!version_info.is_valid()) {
       RecordFailure(ASCIIToUTF16("No Version"));
@@ -223,9 +223,9 @@ class PathTest : public DiagnosticTest {
       : DiagnosticTest(ASCIIToUTF16(path_info.test_name)),
         path_info_(path_info) {}
 
-  virtual int GetId() { return 0; }
+  virtual int GetId() OVERRIDE { return 0; }
 
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
+  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
     if (!g_install_type) {
       RecordStopFailure(ASCIIToUTF16("dependency failure"));
       return false;
@@ -288,9 +288,9 @@ class DiskSpaceTest : public DiagnosticTest {
  public:
   DiskSpaceTest() : DiagnosticTest(ASCIIToUTF16("Disk Space")) {}
 
-  virtual int GetId() { return 0; }
+  virtual int GetId() OVERRIDE { return 0; }
 
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
+  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
     FilePath data_dir;
     if (!PathService::Get(chrome::DIR_USER_DATA, &data_dir))
       return false;
@@ -319,9 +319,9 @@ class JSONTest : public DiagnosticTest {
       : DiagnosticTest(name), path_(path), max_file_size_(max_file_size) {
   }
 
-  virtual int GetId() { return 0; }
+  virtual int GetId() OVERRIDE { return 0; }
 
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
+  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
     if (!file_util::PathExists(path_)) {
       RecordFailure(ASCIIToUTF16("File not found"));
       return true;

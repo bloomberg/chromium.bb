@@ -90,7 +90,7 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
 
  private:
   // Private ctor forces it to be created only in the heap.
-  ~FirstRunDelayedTasks() {}
+  virtual ~FirstRunDelayedTasks() {}
 
   // The extension work is to basically trigger an extension update check.
   // If the extension specified in the master pref is older than the live

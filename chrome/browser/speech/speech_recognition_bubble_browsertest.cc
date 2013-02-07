@@ -14,9 +14,10 @@ class SpeechRecognitionBubbleTest : public SpeechRecognitionBubbleDelegate,
                               public InProcessBrowserTest {
  public:
   // SpeechRecognitionBubble::Delegate methods.
-  virtual void InfoBubbleButtonClicked(SpeechRecognitionBubble::Button button) {
+  virtual void InfoBubbleButtonClicked(
+      SpeechRecognitionBubble::Button button) OVERRIDE {
   }
-  virtual void InfoBubbleFocusChanged() {}
+  virtual void InfoBubbleFocusChanged() OVERRIDE {}
 
  protected:
 };

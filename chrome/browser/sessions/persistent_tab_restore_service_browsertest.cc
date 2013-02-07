@@ -46,7 +46,7 @@ class PersistentTabRestoreTimeFactory : public TabRestoreService::TimeFactory {
 
   virtual ~PersistentTabRestoreTimeFactory() {}
 
-  virtual base::Time TimeNow() {
+  virtual base::Time TimeNow() OVERRIDE {
     return time_;
   }
 
@@ -65,7 +65,7 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
         " (KHTML, like Gecko) Chrome/18.0.1025.45 Safari/535.19";
   }
 
-  ~PersistentTabRestoreServiceTest() {
+  virtual ~PersistentTabRestoreServiceTest() {
   }
 
  protected:

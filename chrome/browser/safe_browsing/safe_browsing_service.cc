@@ -130,7 +130,7 @@ SafeBrowsingServiceFactory* SafeBrowsingService::factory_ = NULL;
 // don't leak it.
 class SafeBrowsingServiceFactoryImpl : public SafeBrowsingServiceFactory {
  public:
-  virtual SafeBrowsingService* CreateSafeBrowsingService() {
+  virtual SafeBrowsingService* CreateSafeBrowsingService() OVERRIDE {
     return new SafeBrowsingService();
   }
 

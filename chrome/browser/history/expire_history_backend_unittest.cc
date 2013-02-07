@@ -127,7 +127,7 @@ class ExpireHistoryTest : public testing::Test,
   NotificationList notifications_;
 
  private:
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
 
     FilePath history_name = path().Append(kHistoryFile);
@@ -157,7 +157,7 @@ class ExpireHistoryTest : public testing::Test,
     top_sites_ = profile_.GetTopSites();
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     top_sites_ = NULL;
 
     ClearLastNotifications();
@@ -171,8 +171,9 @@ class ExpireHistoryTest : public testing::Test,
   }
 
   // BroadcastNotificationDelegate implementation.
-  void BroadcastNotifications(int type,
-                              HistoryDetails* details_deleted) {
+  virtual void BroadcastNotifications(
+      int type,
+      HistoryDetails* details_deleted) OVERRIDE {
     // This gets called when there are notifications to broadcast. Instead, we
     // store them so we can tell that the correct notifications were sent.
     notifications_.push_back(std::make_pair(type, details_deleted));

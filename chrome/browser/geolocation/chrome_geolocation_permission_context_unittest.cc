@@ -52,7 +52,7 @@ class ClosedDelegateTracker : public content::NotificationObserver {
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   size_t size() const {
     return removed_infobar_delegates_.size();

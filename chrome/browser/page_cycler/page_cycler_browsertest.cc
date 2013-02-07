@@ -109,7 +109,7 @@ class PageCyclerBrowserTest : public content::NotificationObserver,
   // content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_BROWSER_CLOSED:
         MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());

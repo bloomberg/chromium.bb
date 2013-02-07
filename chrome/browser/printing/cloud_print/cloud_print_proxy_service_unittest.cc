@@ -169,7 +169,7 @@ class TestCloudPrintProxyService : public CloudPrintProxyService {
   explicit TestCloudPrintProxyService(Profile* profile)
       : CloudPrintProxyService(profile) { }
 
-  virtual ServiceProcessControl* GetServiceProcessControl() {
+  virtual ServiceProcessControl* GetServiceProcessControl() OVERRIDE {
     return &process_control_;
   }
   MockServiceProcessControl* GetMockServiceProcessControl() {

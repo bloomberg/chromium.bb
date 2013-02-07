@@ -155,7 +155,7 @@ class ShutdownDetector : public base::PlatformThread::Delegate {
  public:
   explicit ShutdownDetector(int shutdown_fd);
 
-  virtual void ThreadMain();
+  virtual void ThreadMain() OVERRIDE;
 
  private:
   const int shutdown_fd_;

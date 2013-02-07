@@ -23,7 +23,7 @@ class InfoBarsTest : public InProcessBrowserTest {
  public:
   InfoBarsTest() {}
 
-  void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitchASCII(
         switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
   }

@@ -15,7 +15,7 @@ using testing::Mock;
 class ScopedUserPrefUpdateTest : public testing::Test {
  public:
   ScopedUserPrefUpdateTest() : observer_(&prefs_) {}
-  ~ScopedUserPrefUpdateTest() {}
+  virtual ~ScopedUserPrefUpdateTest() {}
 
  protected:
   virtual void SetUp() {

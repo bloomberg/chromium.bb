@@ -72,7 +72,7 @@ class TestTypedUrlModelAssociator : public TypedUrlModelAssociator {
       : TypedUrlModelAssociator(&mock_, NULL, NULL),
         startup_(startup),
         aborted_(aborted) {}
-  virtual bool IsAbortPending() {
+  virtual bool IsAbortPending() OVERRIDE {
     // Let the main thread know that we've been started up, and block until
     // they've called Abort().
     startup_->Signal();

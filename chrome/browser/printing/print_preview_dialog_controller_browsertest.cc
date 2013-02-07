@@ -24,7 +24,7 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
   PrintPreviewDialogControllerBrowserTest() {}
   virtual ~PrintPreviewDialogControllerBrowserTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
 #if !defined(GOOGLE_CHROME_BUILD)
     command_line->AppendSwitch(switches::kEnablePrintPreview);
 #endif

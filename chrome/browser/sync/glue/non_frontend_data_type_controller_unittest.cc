@@ -61,8 +61,8 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
                                       sync_service),
         mock_(mock) {}
 
-  virtual syncer::ModelType type() const { return syncer::BOOKMARKS; }
-  virtual syncer::ModelSafeGroup model_safe_group() const {
+  virtual syncer::ModelType type() const OVERRIDE { return syncer::BOOKMARKS; }
+  virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE {
     return syncer::GROUP_DB;
   }
 
@@ -93,13 +93,14 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
   }
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,
-      const std::string& message) {
+      const std::string& message) OVERRIDE {
     mock_->RecordUnrecoverableError(from_here, message);
   }
-  virtual void RecordAssociationTime(base::TimeDelta time) {
+  virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE {
     mock_->RecordAssociationTime(time);
   }
-  virtual void RecordStartFailure(DataTypeController::StartResult result) {
+  virtual void RecordStartFailure(
+      DataTypeController::StartResult result) OVERRIDE {
     mock_->RecordStartFailure(result);
   }
  private:

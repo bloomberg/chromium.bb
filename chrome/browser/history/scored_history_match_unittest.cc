@@ -276,7 +276,7 @@ class BookmarkServiceMock : public BookmarkService {
   virtual ~BookmarkServiceMock() {}
 
   // Returns true if the given |url| is the same as |url_|.
-  bool IsBookmarked(const GURL& url) OVERRIDE;
+  virtual bool IsBookmarked(const GURL& url) OVERRIDE;
 
   // Required but unused.
   virtual void GetBookmarks(std::vector<URLAndTitle>* bookmarks) OVERRIDE {}

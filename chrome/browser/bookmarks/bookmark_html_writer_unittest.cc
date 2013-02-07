@@ -129,7 +129,7 @@ class BookmarksObserver : public BookmarksExportObserver {
     DCHECK(loop);
   }
 
-  virtual void OnExportFinished() {
+  virtual void OnExportFinished() OVERRIDE {
     loop_->Quit();
   }
 

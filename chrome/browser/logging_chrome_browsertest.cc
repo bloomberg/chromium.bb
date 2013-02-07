@@ -72,7 +72,7 @@ class RendererCrashTest : public InProcessBrowserTest,
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     content::RenderProcessHost::RendererClosedDetails* process_details =
           content::Details<
               content::RenderProcessHost::RendererClosedDetails>(

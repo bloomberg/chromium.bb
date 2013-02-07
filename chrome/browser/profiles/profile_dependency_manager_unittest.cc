@@ -42,12 +42,12 @@ class TestService : public ProfileKeyedServiceFactory {
   }
 
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const {
+      Profile* profile) const OVERRIDE {
     ADD_FAILURE() << "This isn't part of the tests!";
     return NULL;
   }
 
-  virtual void ProfileShutdown(Profile* profile) {
+  virtual void ProfileShutdown(Profile* profile) OVERRIDE {
     fill_on_shutdown_->push_back(name_);
   }
 

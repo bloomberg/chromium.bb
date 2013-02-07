@@ -32,7 +32,7 @@ class UsbEventHandler : public base::PlatformThread::Delegate {
 
   virtual ~UsbEventHandler() {}
 
-  virtual void ThreadMain() {
+  virtual void ThreadMain() OVERRIDE {
     base::PlatformThread::SetName("UsbEventHandler");
 
     DLOG(INFO) << "UsbEventHandler started.";

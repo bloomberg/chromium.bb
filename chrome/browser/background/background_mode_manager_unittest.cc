@@ -20,8 +20,8 @@ class BackgroundModeManagerTest : public testing::Test {
  public:
   BackgroundModeManagerTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
-  ~BackgroundModeManagerTest() {}
-  void SetUp() {
+  virtual ~BackgroundModeManagerTest() {}
+  virtual void SetUp() {
     command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
     ASSERT_TRUE(profile_manager_.SetUp());
   }

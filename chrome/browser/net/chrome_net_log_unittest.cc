@@ -17,7 +17,7 @@ class CountingObserver : public net::NetLog::ThreadSafeObserver {
  public:
   CountingObserver() : count_(0) {}
 
-  ~CountingObserver() {
+  virtual ~CountingObserver() {
     if (net_log())
       net_log()->RemoveThreadSafeObserver(this);
   }
@@ -76,7 +76,7 @@ class ChromeNetLogTestThread : public base::SimpleThread {
 class AddEventsTestThread : public ChromeNetLogTestThread {
  public:
   AddEventsTestThread() {}
-  ~AddEventsTestThread() {}
+  virtual ~AddEventsTestThread() {}
 
  private:
   virtual void RunTestThread() OVERRIDE {
@@ -92,7 +92,7 @@ class AddRemoveObserverTestThread : public ChromeNetLogTestThread {
  public:
   AddRemoveObserverTestThread() {}
 
-  ~AddRemoveObserverTestThread() {
+  virtual ~AddRemoveObserverTestThread() {
     EXPECT_TRUE(!observer_.net_log());
   }
 

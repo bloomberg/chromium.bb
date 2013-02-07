@@ -149,7 +149,7 @@ class AwaitCompletionHelper : public BrowsingDataRemover::Observer {
 
  protected:
   // BrowsingDataRemover::Observer implementation.
-  virtual void OnBrowsingDataRemoverDone() {
+  virtual void OnBrowsingDataRemoverDone() OVERRIDE {
     Notify();
   }
 
@@ -515,7 +515,7 @@ class BrowsingDataRemoverTest : public testing::Test,
   virtual ~BrowsingDataRemoverTest() {
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     // TestingProfile contains a DOMStorageContext.  BrowserContext's destructor
     // posts a message to the WEBKIT thread to delete some of its member
     // variables. We need to ensure that the profile is destroyed, and that

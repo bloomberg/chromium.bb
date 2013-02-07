@@ -86,7 +86,7 @@ class DownloadPersistedObserver : public DownloadHistory::Observer {
   }
 
   virtual void OnDownloadStored(DownloadItem* item,
-                                const history::DownloadRow& info) {
+                                const history::DownloadRow& info) OVERRIDE {
     persisted_ = filter_.Run(item, info);
     if (persisted_ && waiting_)
       MessageLoopForUI::current()->Quit();
@@ -123,10 +123,10 @@ class DownloadRemovedObserver : public DownloadPersistedObserver {
   }
 
   virtual void OnDownloadStored(DownloadItem* item,
-                                const history::DownloadRow& info) {
+                                const history::DownloadRow& info) OVERRIDE {
   }
 
-  virtual void OnDownloadsRemoved(const DownloadHistory::IdSet& ids) {
+  virtual void OnDownloadsRemoved(const DownloadHistory::IdSet& ids) OVERRIDE {
     removed_ = ids.find(download_id_) != ids.end();
     if (removed_ && waiting_)
       MessageLoopForUI::current()->Quit();
@@ -195,7 +195,7 @@ class DownloadItemCreatedObserver : public DownloadManager::Observer {
     manager->AddObserver(this);
   }
 
-  ~DownloadItemCreatedObserver() {
+  virtual ~DownloadItemCreatedObserver() {
     if (manager_)
       manager_->RemoveObserver(this);
   }
@@ -284,13 +284,13 @@ class SavePageBrowserTest : public InProcessBrowserTest {
   virtual ~SavePageBrowserTest();
 
  protected:
-  void SetUp() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir_));
     ASSERT_TRUE(save_dir_.CreateUniqueTempDir());
     InProcessBrowserTest::SetUp();
   }
 
-  void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() OVERRIDE {
     browser()->profile()->GetPrefs()->SetFilePath(
         prefs::kDownloadDefaultDirectory, save_dir_.path());
     BrowserThread::PostTask(

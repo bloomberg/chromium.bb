@@ -106,7 +106,7 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
   HistoryBackendDBTest() : db_(NULL) {
   }
 
-  ~HistoryBackendDBTest() {
+  virtual ~HistoryBackendDBTest() {
   }
 
  protected:
@@ -564,7 +564,7 @@ class HistoryTest : public testing::Test {
         query_url_success_(false) {
   }
 
-  ~HistoryTest() {
+  virtual ~HistoryTest() {
   }
 
   void OnSegmentUsageAvailable(CancelableRequestProvider::Handle handle,
@@ -1189,11 +1189,12 @@ class HistoryDBTaskImpl : public HistoryDBTask {
 
   HistoryDBTaskImpl() : invoke_count(0), done_invoked(false) {}
 
-  virtual bool RunOnDBThread(HistoryBackend* backend, HistoryDatabase* db) {
+  virtual bool RunOnDBThread(HistoryBackend* backend,
+                             HistoryDatabase* db) OVERRIDE {
     return (++invoke_count == kWantInvokeCount);
   }
 
-  virtual void DoneRunOnMainThread() {
+  virtual void DoneRunOnMainThread() OVERRIDE {
     done_invoked = true;
     MessageLoop::current()->Quit();
   }

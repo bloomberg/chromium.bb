@@ -109,7 +109,7 @@ const std::string CLOSE_TAB_WHEN_OTHER_TAB_HAS_LISTENER =
 
 class UnloadTest : public InProcessBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
     if (strcmp(test_info->name(),

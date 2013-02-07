@@ -88,7 +88,7 @@ class TextDatabaseTest : public PlatformTest {
   TextDatabaseTest() {}
 
  protected:
-  void SetUp() {
+  virtual void SetUp() {
     PlatformTest::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }

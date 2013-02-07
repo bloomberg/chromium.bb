@@ -151,7 +151,7 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
           true);
     }
  protected:
-  virtual void CreateSyncService() {
+  virtual void CreateSyncService() OVERRIDE {
     sync_ = static_cast<TestProfileSyncService*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), BuildCrosService));

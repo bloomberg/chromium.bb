@@ -107,7 +107,7 @@ class LocalFileSyncServiceTest
  protected:
   LocalFileSyncServiceTest() : num_changes_(0) {}
 
-  ~LocalFileSyncServiceTest() {}
+  virtual ~LocalFileSyncServiceTest() {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -147,7 +147,7 @@ class LocalFileSyncServiceTest
   }
 
   // LocalChangeObserver overrides.
-  virtual void OnLocalChangeAvailable(int64 num_changes) {
+  virtual void OnLocalChangeAvailable(int64 num_changes) OVERRIDE {
     num_changes_ = num_changes;
   }
 
@@ -572,7 +572,7 @@ TEST_F(LocalFileSyncServiceTest, RecordFakeChange) {
 class OriginChangeMapTest : public testing::Test {
  protected:
   OriginChangeMapTest() {}
-  ~OriginChangeMapTest() {}
+  virtual ~OriginChangeMapTest() {}
 
   bool NextOriginToProcess(GURL* origin) {
     return map_.NextOriginToProcess(origin);

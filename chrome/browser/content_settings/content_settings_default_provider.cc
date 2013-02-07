@@ -69,11 +69,11 @@ class DefaultRuleIterator : public RuleIterator {
       value_.reset(value->DeepCopy());
   }
 
-  bool HasNext() const {
+  virtual bool HasNext() const OVERRIDE {
     return value_.get() != NULL;
   }
 
-  Rule Next() {
+  virtual Rule Next() OVERRIDE {
     DCHECK(value_.get());
     return Rule(ContentSettingsPattern::Wildcard(),
                 ContentSettingsPattern::Wildcard(),

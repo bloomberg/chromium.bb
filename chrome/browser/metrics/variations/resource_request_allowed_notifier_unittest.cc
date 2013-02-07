@@ -56,7 +56,7 @@ class ResourceRequestAllowedNotifierTest
 #endif
     resource_request_allowed_notifier_.Init(this);
   }
-  ~ResourceRequestAllowedNotifierTest() { }
+  virtual ~ResourceRequestAllowedNotifierTest() { }
 
   bool was_notified() const { return was_notified_; }
 

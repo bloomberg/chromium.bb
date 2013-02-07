@@ -5,6 +5,7 @@
 #include "chrome/browser/diagnostics/diagnostics_model.h"
 
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Basic harness to adquire and release the Diagnostic model object.
@@ -40,16 +41,18 @@ class UTObserver: public DiagnosticsModel::Observer {
         id_of_failed_stop_test(-1) {
   }
 
-  virtual void OnProgress(int id, int percent, DiagnosticsModel* model) {
+  virtual void OnProgress(int id,
+                          int percent,
+                          DiagnosticsModel* model) OVERRIDE {
     EXPECT_TRUE(model != NULL);
     ++progress_called_;
   }
 
-  virtual void OnSkipped(int id, DiagnosticsModel* model) {
+  virtual void OnSkipped(int id, DiagnosticsModel* model) OVERRIDE {
     EXPECT_TRUE(model != NULL);
   }
 
-  virtual void OnFinished(int id, DiagnosticsModel* model) {
+  virtual void OnFinished(int id, DiagnosticsModel* model) OVERRIDE {
     EXPECT_TRUE(model != NULL);
     ++finished_;
     if (model->GetTest(id).GetResult() == DiagnosticsModel::TEST_FAIL_STOP) {
@@ -58,7 +61,7 @@ class UTObserver: public DiagnosticsModel::Observer {
     }
   }
 
-  virtual void OnDoneAll(DiagnosticsModel* model) {
+  virtual void OnDoneAll(DiagnosticsModel* model) OVERRIDE {
     done_ = true;
     EXPECT_TRUE(model != NULL);
   }
