@@ -159,6 +159,21 @@ class Preferences : public PrefServiceSyncableObserver {
 
   BooleanPrefMember enable_drm_;
 
+  // Power-management-related preferences.
+  IntegerPrefMember power_ac_screen_dim_delay_ms_;
+  IntegerPrefMember power_ac_screen_off_delay_ms_;
+  IntegerPrefMember power_ac_screen_lock_delay_ms_;
+  IntegerPrefMember power_ac_idle_delay_ms_;
+  IntegerPrefMember power_battery_screen_dim_delay_ms_;
+  IntegerPrefMember power_battery_screen_off_delay_ms_;
+  IntegerPrefMember power_battery_screen_lock_delay_ms_;
+  IntegerPrefMember power_battery_idle_delay_ms_;
+  IntegerPrefMember power_idle_action_;
+  IntegerPrefMember power_lid_closed_action_;
+  BooleanPrefMember power_use_audio_activity_;
+  BooleanPrefMember power_use_video_activity_;
+  DoublePrefMember power_presentation_idle_delay_factor_;
+
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };
 

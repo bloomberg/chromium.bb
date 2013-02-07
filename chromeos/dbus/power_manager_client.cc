@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/format_macros.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/observer_list.h"
@@ -17,6 +18,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chromeos/dbus/power_manager/input_event.pb.h"
+#include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/dbus/power_state_control.pb.h"
 #include "chromeos/dbus/power_supply_properties.pb.h"
@@ -274,6 +276,22 @@ class PowerManagerClientImpl : public PowerManagerClient {
     if (!writer.AppendProtoAsArrayOfBytes(protobuf)) {
       LOG(ERROR) << "Error calling "
                  << power_manager::kHandleVideoActivityMethod;
+      return;
+    }
+    power_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
+  virtual void SetPolicy(
+      const power_manager::PowerManagementPolicy& policy) OVERRIDE {
+    dbus::MethodCall method_call(
+        power_manager::kPowerManagerInterface,
+        power_manager::kSetPolicyMethod);
+    dbus::MessageWriter writer(&method_call);
+    if (!writer.AppendProtoAsArrayOfBytes(policy)) {
+      LOG(ERROR) << "Error calling " << power_manager::kSetPolicyMethod;
       return;
     }
     power_manager_proxy_->CallMethod(
@@ -844,6 +862,8 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   virtual void NotifyVideoActivity(
       const base::TimeTicks& last_activity_time,
       bool is_fullscreen) OVERRIDE {}
+  virtual void SetPolicy(
+      const power_manager::PowerManagementPolicy& policy) OVERRIDE {}
   virtual void RequestPowerStateOverrides(
       uint32 request_id,
       base::TimeDelta duration,
