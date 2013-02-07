@@ -135,6 +135,8 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
       nibPath = @"ContentBlockedMixedScript"; break;
     case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
       nibPath = @"ContentProtocolHandlers"; break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+      nibPath = @"ContentBlockedMedia"; break;
     // These content types have no bubble:
     case CONTENT_SETTINGS_TYPE_DEFAULT:
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
@@ -142,7 +144,6 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
     case CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE:
     case CONTENT_SETTINGS_TYPE_FULLSCREEN:
     case CONTENT_SETTINGS_TYPE_MOUSELOCK:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
     case CONTENT_SETTINGS_TYPE_PPAPI_BROKER:

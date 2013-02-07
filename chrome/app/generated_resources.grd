@@ -3221,20 +3221,20 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_BLOCKED_POPUPS_LINK" desc="Link to popups section of content blocking management dialog, displayed in bubble when a page tries to display popups.">
         Manage pop-up blocking...
       </message>
-      <message name="IDS_BLOCKED_MEDIASTREAM_ALLOW" desc="TODO">
-        Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your camera and microphone.
+      <message name="IDS_BLOCKED_MEDIASTREAM_ALLOW" desc="Radio button choice to allow a site to access microphone and camera, displayed in bubble when a page tries to access microphone and camera.">
+        Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your camera and microphone
       </message>
-      <message name="IDS_BLOCKED_MEDIASTREAM_ASK" desc="TODO">
-        Ask if <ph name="HOST">$1<ex>mail.google.com</ex></ph> wants to access your camera and microphone.
+      <message name="IDS_BLOCKED_MEDIASTREAM_ASK" desc="Radio button choice to ask the user for permission when a site tries to access microphone and camera, displayed in bubble when a page was blocked from accessing microphone and camera.">
+        Ask if <ph name="HOST">$1<ex>mail.google.com</ex></ph> wants to access your camera and microphone
       </message>
-      <message name="IDS_ALLOWED_MEDIASTREAM_BLOCK" desc="TODO">
-        Always block camera and microphone access.
+      <message name="IDS_ALLOWED_MEDIASTREAM_BLOCK" desc="Radio button choice to block a site to access microphone and camera, displayed in bubble when a page is accessing microphone and camera.">
+        Always block camera and microphone access
       </message>
-      <message name="IDS_BLOCKED_MEDIASTREAM_NO_ACTION" desc="TODO">
-        Continue blocking camera and microphone access.
+      <message name="IDS_BLOCKED_MEDIASTREAM_NO_ACTION" desc="Radio button choice to block a site to access microphone and camera, displayed in bubble when a page was blocked from accesssing microphone and camera.">
+        Continue blocking camera and microphone access
       </message>
-      <message name="IDS_ALLOWED_MEDIASTREAM_NO_ACTION" desc="TODO">
-        Continue allowing <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your camera and microphone.
+      <message name="IDS_ALLOWED_MEDIASTREAM_NO_ACTION" desc="Radio button choice to allow a site to access microphone and camera, displayed in bubble when a page is accessing microphone and camera.">
+        Continue allowing <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your camera and microphone
       </message>
       <message name="IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT" desc="Explanatory animated text that appears (and then disappears) in the address line when popup is blocked">
         Pop-up blocked
