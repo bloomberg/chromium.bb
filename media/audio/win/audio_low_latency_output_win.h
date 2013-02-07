@@ -171,7 +171,7 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // for exclusive audio mode.
   HRESULT ExclusiveModeInitialization(IAudioClient* client,
                                       HANDLE event_handle,
-                                      size_t* endpoint_buffer_size);
+                                      uint32* endpoint_buffer_size);
 
   // Contains the thread ID of the creating thread.
   base::PlatformThreadId creating_thread_id_;

@@ -148,7 +148,7 @@ class MEDIA_EXPORT CoreAudioUtil {
   static HRESULT SharedModeInitialize(IAudioClient* client,
                                       const WAVEFORMATPCMEX* format,
                                       HANDLE event_handle,
-                                      size_t* endpoint_buffer_size);
+                                      uint32* endpoint_buffer_size);
   // TODO(henrika): add ExclusiveModeInitialize(...)
 
   // Create an IAudioRenderClient client for an existing IAudioClient given by

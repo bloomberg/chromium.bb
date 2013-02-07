@@ -606,7 +606,7 @@ void WASAPIAudioOutputStream::HandleError(HRESULT err) {
 }
 
 HRESULT WASAPIAudioOutputStream::ExclusiveModeInitialization(
-    IAudioClient* client, HANDLE event_handle, size_t* endpoint_buffer_size) {
+    IAudioClient* client, HANDLE event_handle, uint32* endpoint_buffer_size) {
   DCHECK_EQ(share_mode_, AUDCLNT_SHAREMODE_EXCLUSIVE);
 
   float f = (1000.0 * packet_size_frames_) / format_.Format.nSamplesPerSec;
@@ -679,7 +679,7 @@ HRESULT WASAPIAudioOutputStream::ExclusiveModeInitialization(
     return hr;
   }
 
-  *endpoint_buffer_size = static_cast<size_t>(buffer_size_in_frames);
+  *endpoint_buffer_size = buffer_size_in_frames;
   DVLOG(2) << "endpoint buffer size: " << buffer_size_in_frames;
   return hr;
 }

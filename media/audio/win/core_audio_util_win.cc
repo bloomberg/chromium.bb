@@ -466,7 +466,7 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(
 HRESULT CoreAudioUtil::SharedModeInitialize(IAudioClient* client,
                                             const WAVEFORMATPCMEX* format,
                                             HANDLE event_handle,
-                                            size_t* endpoint_buffer_size) {
+                                            uint32* endpoint_buffer_size) {
   DCHECK(IsSupported());
   DWORD stream_flags = AUDCLNT_STREAMFLAGS_NOPERSIST;
 
@@ -508,7 +508,7 @@ HRESULT CoreAudioUtil::SharedModeInitialize(IAudioClient* client,
     return hr;
   }
 
-  *endpoint_buffer_size = static_cast<size_t>(buffer_size_in_frames);
+  *endpoint_buffer_size = buffer_size_in_frames;
   DVLOG(2) << "endpoint buffer size: " << buffer_size_in_frames;
 
   // TODO(henrika): utilize when delay measurements are added.

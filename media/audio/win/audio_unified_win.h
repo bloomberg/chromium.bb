@@ -129,8 +129,8 @@ class MEDIA_EXPORT WASAPIUnifiedStream
   size_t packet_size_frames_;
 
   // Length of the audio endpoint buffer.
-  size_t endpoint_render_buffer_size_frames_;
-  size_t endpoint_capture_buffer_size_frames_;
+  uint32 endpoint_render_buffer_size_frames_;
+  uint32 endpoint_capture_buffer_size_frames_;
 
   // Counts the number of audio frames written to the endpoint buffer.
   uint64 num_written_frames_;
