@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
-#include "base/utf_offset_string_conversions.h"
+#include "base/strings/utf_offset_string_conversions.h"
 #include "base/utf_string_conversions.h"
 
 namespace net {
@@ -104,7 +104,7 @@ STR UnescapeURLWithOffsetsImpl(const STR& escaped_text,
   if (offsets_for_adjustment) {
     std::for_each(offsets_for_adjustment->begin(),
                   offsets_for_adjustment->end(),
-                  LimitOffset<STR>(escaped_text.length()));
+                  base::LimitOffset<STR>(escaped_text.length()));
   }
   // Do not unescape anything, return the |escaped_text| text.
   if (rules == UnescapeRule::NONE)
@@ -312,15 +312,16 @@ string16 UnescapeAndDecodeUTF8URLComponentWithOffsets(
     original_offsets = *offsets_for_adjustment;
   std::string unescaped_url(
       UnescapeURLWithOffsetsImpl(text, rules, offsets_for_adjustment));
-  if (UTF8ToUTF16AndAdjustOffsets(unescaped_url.data(), unescaped_url.length(),
-                                  &result, offsets_for_adjustment))
+  if (base::UTF8ToUTF16AndAdjustOffsets(unescaped_url.data(),
+                                        unescaped_url.length(),
+                                        &result, offsets_for_adjustment))
     return result;  // Character set looks like it's valid.
 
   // Not valid.  Return the escaped version.  Undo our changes to
   // |offset_for_adjustment| since we haven't changed the string after all.
   if (offsets_for_adjustment)
     *offsets_for_adjustment = original_offsets;
-  return UTF8ToUTF16AndAdjustOffsets(text, offsets_for_adjustment);
+  return base::UTF8ToUTF16AndAdjustOffsets(text, offsets_for_adjustment);
 }
 
 string16 UnescapeForHTML(const string16& input) {

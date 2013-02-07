@@ -25,8 +25,8 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
+#include "base/strings/utf_offset_string_conversions.h"
 #include "base/time.h"
-#include "base/utf_offset_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_gtk.h"
 #include "content/browser/renderer_host/backing_store_gtk.h"
@@ -1397,7 +1397,7 @@ bool RenderWidgetHostViewGtk::RetrieveSurrounding(std::string* text,
     return true;
   }
 
-  *text = UTF16ToUTF8AndAdjustOffset(
+  *text = base::UTF16ToUTF8AndAdjustOffset(
       base::StringPiece16(selection_text_), &offset);
   if (offset == string16::npos) {
     NOTREACHED() << "Invalid offset in UTF16 string.";

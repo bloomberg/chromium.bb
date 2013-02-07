@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_UTF_OFFSET_STRING_CONVERSIONS_H_
-#define BASE_UTF_OFFSET_STRING_CONVERSIONS_H_
+#ifndef BASE_STRINGS_UTF_OFFSET_STRING_CONVERSIONS_H_
+#define BASE_STRINGS_UTF_OFFSET_STRING_CONVERSIONS_H_
 
 #include <string>
 #include <vector>
@@ -11,6 +11,8 @@
 #include "base/base_export.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
+
+namespace base {
 
 // Like the conversions in utf_string_conversions.h, but also takes one or more
 // offsets (|offset[s]_for_adjustment|) into the source strings, each offset
@@ -86,4 +88,6 @@ class BASE_EXPORT OffsetAdjuster {
   std::vector<Adjustment> adjustments_;
 };
 
-#endif  // BASE_UTF_OFFSET_STRING_CONVERSIONS_H_
+}  // namespace base
+
+#endif  // BASE_STRINGS_UTF_OFFSET_STRING_CONVERSIONS_H_

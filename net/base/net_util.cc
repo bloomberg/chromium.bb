@@ -45,11 +45,11 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/utf_offset_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_byteorder.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
-#include "base/utf_offset_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
@@ -459,7 +459,7 @@ void LimitOffsets(const string16& str,
   if (offsets_for_adjustment) {
     std::for_each(offsets_for_adjustment->begin(),
                   offsets_for_adjustment->end(),
-                  LimitOffset<string16>(str.length()));
+                  base::LimitOffset<string16>(str.length()));
   }
 }
 
@@ -482,7 +482,7 @@ string16 IDNToUnicodeWithOffsets(const std::string& host,
   // on a per-component basis.
   string16 out16;
   {
-    OffsetAdjuster offset_adjuster(offsets_for_adjustment);
+    base::OffsetAdjuster offset_adjuster(offsets_for_adjustment);
     for (size_t component_start = 0, component_end;
          component_start < input16.length();
          component_start = component_end + 1) {
@@ -502,7 +502,7 @@ string16 IDNToUnicodeWithOffsets(const std::string& host,
       size_t new_component_length = out16.length() - new_component_start;
 
       if (converted_idn && offsets_for_adjustment) {
-        offset_adjuster.Add(OffsetAdjuster::Adjustment(component_start,
+        offset_adjuster.Add(base::OffsetAdjuster::Adjustment(component_start,
             component_length, new_component_length));
       }
 
@@ -665,7 +665,8 @@ class NonHostComponentTransform : public AppendComponentTransform {
       const std::string& component_text,
       std::vector<size_t>* offsets_into_component) const OVERRIDE {
     return (unescape_rules_ == UnescapeRule::NONE) ?
-        UTF8ToUTF16AndAdjustOffsets(component_text, offsets_into_component) :
+        base::UTF8ToUTF16AndAdjustOffsets(component_text,
+                                          offsets_into_component) :
         UnescapeAndDecodeUTF8URLComponentWithOffsets(component_text,
             unescape_rules_, offsets_into_component);
   }
@@ -1552,11 +1553,11 @@ string16 FormatUrlWithOffsets(const GURL& url,
     // Update the offsets based on removed username and/or password.
     if (offsets_for_adjustment && !offsets_for_adjustment->empty() &&
         (parsed.username.is_nonempty() || parsed.password.is_nonempty())) {
-      OffsetAdjuster offset_adjuster(offsets_for_adjustment);
+      base::OffsetAdjuster offset_adjuster(offsets_for_adjustment);
       if (parsed.username.is_nonempty() && parsed.password.is_nonempty()) {
         // The seeming off-by-one and off-by-two in these first two lines are to
         // account for the ':' after the username and '@' after the password.
-        offset_adjuster.Add(OffsetAdjuster::Adjustment(
+        offset_adjuster.Add(base::OffsetAdjuster::Adjustment(
             static_cast<size_t>(parsed.username.begin),
             static_cast<size_t>(parsed.username.len + parsed.password.len + 2),
             0));
@@ -1565,7 +1566,7 @@ string16 FormatUrlWithOffsets(const GURL& url,
             parsed.username.is_nonempty() ? &parsed.username : &parsed.password;
         // The seeming off-by-one in below is to account for the '@' after the
         // username/password.
-        offset_adjuster.Add(OffsetAdjuster::Adjustment(
+        offset_adjuster.Add(base::OffsetAdjuster::Adjustment(
             static_cast<size_t>(nonempty_component->begin),
             static_cast<size_t>(nonempty_component->len + 1), 0));
       }
@@ -1644,7 +1645,7 @@ string16 FormatUrlWithOffsets(const GURL& url,
     std::vector<size_t> offsets_into_ref(
         OffsetsIntoComponent(original_offsets, original_ref_begin));
     if (parsed.ref.len > 0) {
-      url_string.append(UTF8ToUTF16AndAdjustOffsets(
+      url_string.append(base::UTF8ToUTF16AndAdjustOffsets(
           spec.substr(original_ref_begin, static_cast<size_t>(parsed.ref.len)),
           &offsets_into_ref));
     }
@@ -1662,8 +1663,8 @@ string16 FormatUrlWithOffsets(const GURL& url,
     const size_t kHTTPSize = arraysize(kHTTP) - 1;
     url_string = url_string.substr(kHTTPSize);
     if (offsets_for_adjustment && !offsets_for_adjustment->empty()) {
-      OffsetAdjuster offset_adjuster(offsets_for_adjustment);
-      offset_adjuster.Add(OffsetAdjuster::Adjustment(0, kHTTPSize, 0));
+      base::OffsetAdjuster offset_adjuster(offsets_for_adjustment);
+      offset_adjuster.Add(base::OffsetAdjuster::Adjustment(0, kHTTPSize, 0));
     }
     if (prefix_end)
       *prefix_end -= kHTTPSize;

@@ -12,8 +12,8 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/utf_offset_string_conversions.h"
 #include "base/time.h"
-#include "base/utf_offset_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "cc/texture_layer.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
@@ -645,7 +645,7 @@ bool PluginInstance::SendCompositionEventWithUnderlineInformationToPlugin(
     utf16_offsets.push_back(underlines[i].endOffset);
   }
   std::vector<size_t> utf8_offsets(utf16_offsets);
-  event.character_text = UTF16ToUTF8AndAdjustOffsets(text, &utf8_offsets);
+  event.character_text = base::UTF16ToUTF8AndAdjustOffsets(text, &utf8_offsets);
 
   // Set the converted selection range.
   event.composition_selection_start = (utf8_offsets[0] == std::string::npos ?
@@ -727,7 +727,7 @@ void PluginInstance::GetSurroundingText(string16* text,
   std::vector<size_t> offsets;
   offsets.push_back(selection_anchor_);
   offsets.push_back(selection_caret_);
-  *text = UTF8ToUTF16AndAdjustOffsets(surrounding_text_, &offsets);
+  *text = base::UTF8ToUTF16AndAdjustOffsets(surrounding_text_, &offsets);
   range->set_start(offsets[0] == string16::npos ? text->size() : offsets[0]);
   range->set_end(offsets[1] == string16::npos ? text->size() : offsets[1]);
 }
@@ -1838,7 +1838,7 @@ void PluginInstance::SimulateImeSetCompositionEvent(
                  input_event.composition_segment_offsets.end());
 
   string16 utf16_text =
-      UTF8ToUTF16AndAdjustOffsets(input_event.character_text, &offsets);
+      base::UTF8ToUTF16AndAdjustOffsets(input_event.character_text, &offsets);
 
   std::vector<WebKit::WebCompositionUnderline> underlines;
   for (size_t i = 2; i + 1 < offsets.size(); ++i) {

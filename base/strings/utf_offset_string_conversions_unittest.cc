@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/string_piece.h"
-#include "base/utf_offset_string_conversions.h"
+#include "base/strings/utf_offset_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

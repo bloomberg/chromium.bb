@@ -19,7 +19,7 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/utf_offset_string_conversions.h"
+#include "base/strings/utf_offset_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
@@ -514,8 +514,8 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
   std::vector<size_t> offsets;
   offsets.push_back(start_index - html_start);
   offsets.push_back(end_index - html_start);
-  markup->assign(UTF8ToUTF16AndAdjustOffsets(cf_html.data() + html_start,
-                                             &offsets));
+  markup->assign(base::UTF8ToUTF16AndAdjustOffsets(cf_html.data() + html_start,
+                                                   &offsets));
   *fragment_start = base::checked_numeric_cast<uint32>(offsets[0]);
   *fragment_end = base::checked_numeric_cast<uint32>(offsets[1]);
 }

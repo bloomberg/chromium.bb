@@ -2,18 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/utf_offset_string_conversions.h"
+#include "base/strings/utf_offset_string_conversions.h"
 
 #include <algorithm>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
-#include "base/utf_string_conversion_utils.h"
+#include "base/strings/utf_string_conversion_utils.h"
 
-using base::PrepareForUTF16Or32Output;
-using base::PrepareForUTF8Output;
-using base::ReadUnicodeCharacter;
-using base::WriteUnicodeCharacter;
+namespace base {
 
 // Converts the given source Unicode character type to the given destination
 // Unicode character type as a STL string. The given input buffer and size
@@ -165,3 +162,5 @@ void OffsetAdjuster::AdjustOffset(std::vector<size_t>::iterator offset) {
   }
   *offset -= adjustment;
 }
+
+}  // namespace base
