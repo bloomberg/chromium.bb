@@ -167,12 +167,11 @@ const char* InstantController::kLocalOmniboxPopupURL =
     "chrome://local-omnibox-popup/local-omnibox-popup.html";
 
 InstantController::InstantController(chrome::BrowserInstantController* browser,
-                                     bool extended_enabled,
-                                     bool use_local_preview_only)
+                                     bool extended_enabled)
     : browser_(browser),
       extended_enabled_(extended_enabled),
       instant_enabled_(false),
-      use_local_preview_only_(use_local_preview_only),
+      use_local_preview_only_(true),
       model_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       last_omnibox_text_has_inline_autocompletion_(false),
       last_verbatim_(false),
@@ -729,10 +728,21 @@ void InstantController::TabDeactivated(content::WebContents* contents) {
     CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
 }
 
-void InstantController::SetInstantEnabled(bool instant_enabled) {
+void InstantController::SetInstantEnabled(bool instant_enabled,
+                                          bool use_local_preview_only) {
   LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
-      "SetInstantEnabled: %d", instant_enabled));
+      "SetInstantEnabled: instant_enabled=%d, use_local_preview_only=%d",
+      instant_enabled, use_local_preview_only));
+
+  // Non extended mode does not care about |use_local_preview_only|.
+  if (instant_enabled == instant_enabled_ &&
+      (!extended_enabled_ ||
+       use_local_preview_only == use_local_preview_only_)) {
+    return;
+  }
+
   instant_enabled_ = instant_enabled;
+  use_local_preview_only_ = use_local_preview_only;
   HideInternal();
   loader_.reset();
   if (extended_enabled_ || instant_enabled_)
@@ -859,7 +869,7 @@ void InstantController::InstantSupportDetermined(
     const content::WebContents* contents,
     bool supports_instant) {
   LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
-      "InstantSupportDetermined: supports_instant= %d", supports_instant));
+      "InstantSupportDetermined: supports_instant=%d", supports_instant));
 
   if (instant_tab_ && instant_tab_->contents() == contents) {
     if (!supports_instant)

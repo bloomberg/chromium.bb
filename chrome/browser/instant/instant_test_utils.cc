@@ -59,8 +59,8 @@ void InstantTestBase::SetupInstant() {
   SetupInstantUsingTemplateURL();
 
   // TODO(shishir): Fix this ugly hack.
-  instant()->SetInstantEnabled(false);
-  instant()->SetInstantEnabled(true);
+  instant()->SetInstantEnabled(false, true);
+  instant()->SetInstantEnabled(true, false);
 }
 
 void InstantTestBase::SetupInstantUsingTemplateURL() {

@@ -53,11 +53,8 @@ class InstantController {
   // The URL for the local omnibox popup.
   static const char* kLocalOmniboxPopupURL;
 
-  // |use_local_preview_only| will force the use of kLocalOmniboxPopupURL as the
-  // instant URL and is only applicable if |extended_enabled| is true.
   InstantController(chrome::BrowserInstantController* browser,
-                    bool extended_enabled,
-                    bool use_local_preview_only);
+                    bool extended_enabled);
   ~InstantController();
 
   // Invoked as the user types into the omnibox. |user_text| is what the user
@@ -123,8 +120,10 @@ class InstantController {
   // The user is about to switch tabs. Commit the preview if needed.
   void TabDeactivated(content::WebContents* contents);
 
-  // Sets whether Instant should show result previews.
-  void SetInstantEnabled(bool instant_enabled);
+  // Sets whether Instant should show result previews. |use_local_preview_only|
+  // will force the use of kLocalOmniboxPopupURL as the Instant URL and is only
+  // applicable if |extended_enabled_| is true.
+  void SetInstantEnabled(bool instant_enabled, bool use_local_preview_only);
 
   // The theme has changed. Pass the message to the preview page.
   void ThemeChanged(const ThemeBackgroundInfo& theme_info);
@@ -274,7 +273,7 @@ class InstantController {
   bool instant_enabled_;
 
   // If true, the instant URL is set to kLocalOmniboxPopupURL.
-  const bool use_local_preview_only_;
+  bool use_local_preview_only_;
 
   // The state of the preview page, i.e., the page owned by |loader_|. Ignored
   // if |instant_tab_| is in use.

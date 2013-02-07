@@ -39,14 +39,17 @@ namespace chrome {
 BrowserInstantController::BrowserInstantController(Browser* browser)
     : browser_(browser),
       instant_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-               chrome::search::IsInstantExtendedAPIEnabled(browser->profile()),
-               browser->profile()->IsOffTheRecord()),
+               chrome::search::IsInstantExtendedAPIEnabled(browser->profile())),
       instant_unload_handler_(browser),
       initialized_theme_info_(false),
       theme_area_height_(0) {
   profile_pref_registrar_.Init(browser_->profile()->GetPrefs());
   profile_pref_registrar_.Add(
       GetInstantPrefName(browser_->profile()),
+      base::Bind(&BrowserInstantController::ResetInstant,
+                 base::Unretained(this)));
+  profile_pref_registrar_.Add(
+      prefs::kSearchSuggestEnabled,
       base::Bind(&BrowserInstantController::ResetInstant,
                  base::Unretained(this)));
   ResetInstant();
@@ -197,7 +200,13 @@ void BrowserInstantController::SetMarginSize(int start, int end) {
 }
 
 void BrowserInstantController::ResetInstant() {
-  instant_.SetInstantEnabled(IsInstantEnabled(browser_->profile()));
+  Profile* profile = browser_->profile();
+
+  bool instant_enabled = IsInstantEnabled(profile);
+  bool use_local_preview_only = profile->IsOffTheRecord() ||
+      (!instant_enabled &&
+       !profile->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled));
+  instant_.SetInstantEnabled(instant_enabled, use_local_preview_only);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
