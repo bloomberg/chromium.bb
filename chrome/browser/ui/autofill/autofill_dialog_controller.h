@@ -72,7 +72,7 @@ class AutofillDialogController {
   virtual string16 SuggestionTextForSection(DialogSection section) = 0;
   virtual gfx::Image SuggestionIconForSection(DialogSection section) = 0;
   virtual void EditClickedForSection(DialogSection section) = 0;
-  virtual bool InputIsValid(const DetailInput* input,
+  virtual bool InputIsValid(AutofillFieldType type,
                             const string16& value) = 0;
 
   // Called when the user changes the contents of a text field or activates it

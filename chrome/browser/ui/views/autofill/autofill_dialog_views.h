@@ -69,6 +69,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void UpdateSection(DialogSection section) OVERRIDE;
   virtual void GetUserInput(DialogSection section,
                             DetailOutputMap* output) OVERRIDE;
+  virtual string16 GetCvc() OVERRIDE;
   virtual bool UseBillingForShipping() OVERRIDE;
   virtual bool SaveDetailsLocally() OVERRIDE;
   virtual const content::NavigationController& ShowSignIn() OVERRIDE;
@@ -197,7 +198,7 @@ class AutofillDialogViews : public AutofillDialogView,
   class SuggestionView : public views::View {
    public:
     SuggestionView(const string16& edit_label,
-                   views::LinkListener* edit_listener);
+                   AutofillDialogViews* autofill_dialog);
     virtual ~SuggestionView();
 
     // Sets the display text of the suggestion.
@@ -206,6 +207,12 @@ class AutofillDialogViews : public AutofillDialogView,
     // Sets the icon which should be displayed ahead of the text.
     void SetSuggestionIcon(const gfx::Image& image);
 
+    // Shows an auxiliary textfield to the right of the suggestion icon and
+    // text. This is currently only used to show a CVC field for the CC section.
+    void ShowTextfield(const string16& placeholder_text);
+
+    DecoratedTextfield* decorated_textfield() { return decorated_; }
+
    private:
     // The label that holds the suggestion description text.
     views::Label* label_;
@@ -213,6 +220,8 @@ class AutofillDialogViews : public AutofillDialogView,
     views::ImageView* icon_;
     // A view to contain |label_| and |icon_|.
     views::View* label_container_;
+    // The input set by ShowTextfield.
+    DecoratedTextfield* decorated_;
 
     DISALLOW_COPY_AND_ASSIGN(SuggestionView);
   };

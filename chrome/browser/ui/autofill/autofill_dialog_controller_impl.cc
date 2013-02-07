@@ -432,10 +432,10 @@ void AutofillDialogControllerImpl::EditClickedForSection(
   view_->UpdateSection(section);
 }
 
-bool AutofillDialogControllerImpl::InputIsValid(const DetailInput* input,
+bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
                                                 const string16& value) {
   // TODO(groby): Add the missing checks.
-  switch (input->type) {
+  switch (type) {
     case CREDIT_CARD_NUMBER:
       return autofill::IsValidCreditCardNumber(value);
     default:
@@ -835,6 +835,11 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
     }
 
     FillFormStructureForSection(*form_group, variant, section, compare);
+
+    // CVC needs special-casing because the CreditCard class doesn't store
+    // or handle them.
+    if (section == SECTION_CC)
+      SetCvcResult(view_->GetCvc());
   } else {
     // The user manually input data.
     DetailOutputMap output;
@@ -848,19 +853,12 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
         manager->SaveImportedCreditCard(card);
       FillFormStructureForSection(card, 0, section, compare);
 
-      // CVC needs special-casing because the CreditCard class doesn't store
-      // or handle them. Fill it in directly from |output|.
-      for (size_t i = 0; i < form_structure_.field_count(); ++i) {
-        AutofillField* field = form_structure_.field(i);
-        if (field->type() != CREDIT_CARD_VERIFICATION_CODE)
-          continue;
-
-        for (DetailOutputMap::iterator iter = output.begin();
-             iter != output.end(); ++iter) {
-          if (!iter->second.empty() && compare.Run(*iter->first, *field)) {
-            field->value = iter->second;
-            break;
-          }
+      // Again, CVC needs special-casing. Fill it in directly from |output|.
+      for (DetailOutputMap::iterator iter = output.begin();
+           iter != output.end(); ++iter) {
+        if (iter->first->type == CREDIT_CARD_VERIFICATION_CODE) {
+          SetCvcResult(iter->second);
+          break;
         }
       }
     } else {
@@ -895,6 +893,16 @@ void AutofillDialogControllerImpl::FillFormStructureForSection(
         form_group.FillFormField(*field, variant, field);
         break;
       }
+    }
+  }
+}
+
+void AutofillDialogControllerImpl::SetCvcResult(const string16& cvc) {
+  for (size_t i = 0; i < form_structure_.field_count(); ++i) {
+    AutofillField* field = form_structure_.field(i);
+    if (field->type() == CREDIT_CARD_VERIFICATION_CODE) {
+      field->value = cvc;
+      break;
     }
   }
 }

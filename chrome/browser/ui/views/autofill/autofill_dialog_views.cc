@@ -279,21 +279,27 @@ ui::MouseEvent AutofillDialogViews::SectionContainer::ProxyEvent(
 
 AutofillDialogViews::SuggestionView::SuggestionView(
     const string16& edit_label,
-    views::LinkListener* edit_listener)
+    AutofillDialogViews* autofill_dialog)
     : label_(new views::Label()),
       icon_(new views::ImageView()),
-      label_container_(new views::View()) {
+      label_container_(new views::View()),
+      decorated_(
+          new DecoratedTextfield(string16(), string16(), autofill_dialog)) {
   // Label and icon.
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
   label_container_->AddChildView(icon_);
   label_container_->AddChildView(label_);
+  label_container_->AddChildView(decorated_);
+  decorated_->SetVisible(false);
+  // TODO(estade): get the sizing and spacing right on this textfield.
+  decorated_->textfield()->set_default_width_in_chars(10);
   AddChildView(label_container_);
 
   // TODO(estade): The link needs to have a different color when hovered.
   views::Link* edit_link = new views::Link(edit_label);
-  edit_link->set_listener(edit_listener);
+  edit_link->set_listener(autofill_dialog);
   edit_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   edit_link->SetUnderline(false);
 
@@ -319,6 +325,11 @@ void AutofillDialogViews::SuggestionView::SetSuggestionIcon(
   icon_->SetImage(image.AsImageSkia());
 }
 
+void AutofillDialogViews::SuggestionView::ShowTextfield(
+    const string16& placeholder_text) {
+  decorated_->textfield()->set_placeholder_text(placeholder_text);
+  decorated_->SetVisible(true);
+}
 
 // AutofilDialogViews::AutocheckoutProgressBar ---------------------------------
 AutofillDialogViews::AutocheckoutProgressBar::AutocheckoutProgressBar() {}
@@ -327,7 +338,6 @@ gfx::Size AutofillDialogViews::AutocheckoutProgressBar::GetPreferredSize() {
   return gfx::Size(kAutocheckoutProgressBarWidth,
                    kAutocheckoutProgressBarHeight);
 }
-
 
 // AutofillDialogView ----------------------------------------------------------
 
@@ -429,6 +439,11 @@ void AutofillDialogViews::GetUserInput(DialogSection section,
        it != group->textfields.end(); ++it) {
     output->insert(std::make_pair(it->first, it->second->textfield()->text()));
   }
+}
+
+string16 AutofillDialogViews::GetCvc() {
+  return GroupForSection(SECTION_CC)->suggested_info->decorated_textfield()->
+      textfield()->text();
 }
 
 bool AutofillDialogViews::UseBillingForShipping() {
@@ -749,6 +764,11 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
   info_view->AddChildView(suggested_info);
   layout->AddView(info_view);
 
+  if (section == SECTION_CC) {
+    // TODO(estade): don't hardcode this string.
+    suggested_info->ShowTextfield(ASCIIToUTF16("CVC"));
+  }
+
   // TODO(estade): Fix the appearance of this button.
   views::ImageButton* menu_button = new views::ImageButton(this);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -883,11 +903,19 @@ bool AutofillDialogViews::ValidateForm() {
     if (group->manual_input->visible()) {
       for (TextfieldMap::iterator iter = group->textfields.begin();
            iter != group->textfields.end(); ++iter) {
-        if (!controller_->InputIsValid(iter->first,
+        if (!controller_->InputIsValid(iter->first->type,
                                        iter->second->textfield()->text())) {
           iter->second->SetInvalid(true);
           all_valid = false;
         }
+      }
+    } else if (group->section == SECTION_CC) {
+      DecoratedTextfield* decorated_cvc =
+          group->suggested_info->decorated_textfield();
+      if (!controller_->InputIsValid(CREDIT_CARD_VERIFICATION_CODE,
+                                     decorated_cvc->textfield()->text())) {
+        decorated_cvc->SetInvalid(true);
+        all_valid = false;
       }
     }
   }
@@ -902,17 +930,23 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
   DetailsGroup* group = NULL;
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
        iter != detail_groups_.end(); ++iter) {
-    if (ancestor->parent() == iter->second.manual_input) {
+    if (ancestor->parent() == iter->second.manual_input ||
+        ancestor == iter->second.suggested_info->decorated_textfield()) {
       group = &iter->second;
       break;
     }
   }
   DCHECK(group);
 
+  // Figure out the AutofillFieldType this textfield represents.
+  AutofillFieldType type = UNKNOWN_TYPE;
+  DecoratedTextfield* decorated = NULL;
+
+  // Look for the input in the manual inputs.
   for (TextfieldMap::const_iterator iter = group->textfields.begin();
        iter != group->textfields.end();
        ++iter) {
-    DecoratedTextfield* decorated = iter->second;
+    decorated = iter->second;
     if (decorated == ancestor) {
       controller_->UserEditedOrActivatedInput(iter->first,
                                               group->section,
@@ -920,16 +954,20 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
                                               textfield->GetBoundsInScreen(),
                                               textfield->text(),
                                               was_edit);
-
-      // If the field is marked as invalid, check if the text is now valid.
-      if (decorated->invalid() && was_edit) {
-        decorated->SetInvalid(
-            !controller_->InputIsValid(iter->first, textfield->text()));
-      }
-
+      type = iter->first->type;
       break;
     }
   }
+
+  if (ancestor == group->suggested_info->decorated_textfield()) {
+    decorated = group->suggested_info->decorated_textfield();
+    type = CREDIT_CARD_VERIFICATION_CODE;
+  }
+  DCHECK_NE(UNKNOWN_TYPE, type);
+
+  // If the field is marked as invalid, check if the text is now valid.
+  if (decorated->invalid() && was_edit)
+    decorated->SetInvalid(!controller_->InputIsValid(type, textfield->text()));
 }
 
 AutofillDialogViews::DetailsGroup* AutofillDialogViews::GroupForSection(

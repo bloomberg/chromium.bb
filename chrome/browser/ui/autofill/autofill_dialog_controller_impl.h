@@ -79,7 +79,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual string16 SuggestionTextForSection(DialogSection section) OVERRIDE;
   virtual gfx::Image SuggestionIconForSection(DialogSection section) OVERRIDE;
   virtual void EditClickedForSection(DialogSection section) OVERRIDE;
-  virtual bool InputIsValid(const DetailInput* input, const string16& value)
+  virtual bool InputIsValid(AutofillFieldType type, const string16& value)
       OVERRIDE;
   virtual void UserEditedOrActivatedInput(const DetailInput* input,
                                           DialogSection section,
@@ -176,6 +176,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
                                    size_t variant,
                                    DialogSection section,
                                    const InputFieldComparator& compare);
+
+  // Sets the CVC result on |form_structure_| to the value in |cvc|.
+  void SetCvcResult(const string16& cvc);
 
   // Gets the SuggestionsMenuModel for |section|.
   SuggestionsMenuModel* SuggestionsMenuModelForSection(DialogSection section);
