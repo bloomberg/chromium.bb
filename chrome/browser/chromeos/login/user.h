@@ -49,10 +49,10 @@ class User {
   } UserType;
 
   // User OAuth token status according to the last check.
+  // Please note that enum values 1 and 2 were used for OAuth1 status and are
+  // deprecated now.
   typedef enum {
      OAUTH_TOKEN_STATUS_UNKNOWN  = 0,
-     OAUTH1_TOKEN_STATUS_INVALID = 1,
-     OAUTH1_TOKEN_STATUS_VALID   = 2,
      OAUTH2_TOKEN_STATUS_INVALID = 3,
      OAUTH2_TOKEN_STATUS_VALID   = 4,
    } OAuthTokenStatus;

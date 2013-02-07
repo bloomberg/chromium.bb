@@ -1017,9 +1017,7 @@ void ExistingUserController::ShowGaiaPasswordChanged(
   // changed.
   UserManager::Get()->SaveUserOAuthStatus(
       username,
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceOAuth1) ?
-          User::OAUTH1_TOKEN_STATUS_INVALID :
-          User::OAUTH2_TOKEN_STATUS_INVALID);
+      User::OAUTH2_TOKEN_STATUS_INVALID);
 
   login_display_->SetUIEnabled(true);
   login_display_->ShowGaiaPasswordChanged(username);

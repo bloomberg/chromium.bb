@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/oauth_login_manager.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/chromeos/login/oauth1_login_manager.h"
 #include "chrome/browser/chromeos/login/oauth2_login_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
@@ -21,9 +20,6 @@ namespace chromeos {
 // static.
 OAuthLoginManager* OAuthLoginManager::Create(
     OAuthLoginManager::Delegate* delegate) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(::switches::kForceOAuth1))
-    return new OAuth1LoginManager(delegate);
-
   return new OAuth2LoginManager(delegate);
 }
 

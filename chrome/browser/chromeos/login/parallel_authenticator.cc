@@ -403,9 +403,7 @@ void ParallelAuthenticator::RecordOAuthCheckFailure(
   // Mark this account's OAuth token state as invalid in the local state.
   UserManager::Get()->SaveUserOAuthStatus(
       user_name,
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceOAuth1) ?
-          User::OAUTH1_TOKEN_STATUS_INVALID :
-          User::OAUTH2_TOKEN_STATUS_INVALID);
+      User::OAUTH2_TOKEN_STATUS_INVALID);
 }
 
 void ParallelAuthenticator::RecoverEncryptedData(

@@ -1492,10 +1492,6 @@ const char kFirstBoot[] = "first-boot";
 // tests can change how it's brought up. This flag disables that.
 const char kForceLoginManagerInTests[]     = "force-login-manager-in-tests";
 
-// Forces driving authentication through the legacy OAuth1 flow instead of
-// new flow based on OAuth2.
-const char kForceOAuth1[]                  = "force-oauth1";
-
 // If true, the Chromebook has a Chrome OS keyboard. Don't use the flag for
 // Chromeboxes.
 const char kHasChromeOSKeyboard[]           = "has-chromeos-keyboard";

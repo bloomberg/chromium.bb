@@ -279,16 +279,6 @@ void Preferences::RegisterUserPrefs(PrefServiceSyncable* prefs) {
                             "0.0.0.0",
                             PrefServiceSyncable::SYNCABLE_PREF);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceOAuth1)) {
-    // Legacy OAuth1 all access token and secret pair.
-    prefs->RegisterStringPref(prefs::kOAuth1Token,
-                              "",
-                              PrefServiceSyncable::UNSYNCABLE_PREF);
-    prefs->RegisterStringPref(prefs::kOAuth1Secret,
-                              "",
-                              PrefServiceSyncable::UNSYNCABLE_PREF);
-  }
-
   // TODO(wad): Once UI is connected, a final default can be set. At that point
   // change this pref from UNSYNCABLE to SYNCABLE.
   prefs->RegisterBooleanPref(prefs::kEnableCrosDRM,

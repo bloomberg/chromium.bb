@@ -638,9 +638,7 @@ void UserManagerImpl::OnStateChanged() {
     DVLOG(1) << "Invalidate OAuth token because of a sync error.";
     SaveUserOAuthStatus(
         logged_in_user_->email(),
-        CommandLine::ForCurrentProcess()->HasSwitch(::switches::kForceOAuth1) ?
-            User::OAUTH1_TOKEN_STATUS_INVALID :
-            User::OAUTH2_TOKEN_STATUS_INVALID);
+        User::OAUTH2_TOKEN_STATUS_INVALID);
   }
 }
 
