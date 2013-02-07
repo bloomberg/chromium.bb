@@ -50,10 +50,6 @@ class ImeAdapterAndroid {
   // Called from native -> java
   void CancelComposition();
 
-  // Native methods related to dialog like types
-  void CancelDialog(JNIEnv*, jobject);
-  void ReplaceDateTime(JNIEnv*, jobject, jstring text);
-
  private:
   RenderWidgetHostViewAndroid* rwhva_;
   jobject java_ime_adapter_;

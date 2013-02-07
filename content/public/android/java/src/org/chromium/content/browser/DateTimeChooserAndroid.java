@@ -25,8 +25,12 @@ class DateTimeChooserAndroid {
                 new InputDialogContainer.InputActionDelegate() {
 
             @Override
-            public void replaceDateTime(String text) {
-                nativeReplaceDateTime(mNativeDateTimeChooserAndroid, text);
+            public void replaceDateTime(
+                    int dialogType,
+                    int year, int month, int day, int hour, int minute, int second) {
+                nativeReplaceDateTime(mNativeDateTimeChooserAndroid,
+                        dialogType,
+                        year, month, day, hour, minute, second);
             }
 
             @Override
@@ -36,18 +40,22 @@ class DateTimeChooserAndroid {
         });
     }
 
-    private void showDialog(int dialogType, String text) {
-        mInputDialogContainer.showDialog(text, dialogType);
+    private void showDialog(int dialogType, int year, int month, int monthDay,
+            int hour, int minute, int second) {
+        mInputDialogContainer.showDialog(dialogType, year, month, monthDay,
+                hour, minute, second);
     }
 
     @CalledByNative
     private static DateTimeChooserAndroid createDateTimeChooser(
             ContentViewCore contentViewCore,
-            int nativeDateTimeChooserAndroid, String text, int dialogType) {
+            int nativeDateTimeChooserAndroid, int dialogType,
+            int year, int month, int day,
+            int hour, int minute, int second) {
         DateTimeChooserAndroid chooser =
                 new DateTimeChooserAndroid(
                         contentViewCore.getContext(), nativeDateTimeChooserAndroid);
-        chooser.showDialog(dialogType, text);
+        chooser.showDialog(dialogType, year, month, day, hour, minute, second);
         return chooser;
     }
 
@@ -59,6 +67,9 @@ class DateTimeChooserAndroid {
                 textInputTypeDateTimeLocal, textInputTypeMonth, textInputTypeTime);
     }
 
-    private native void nativeReplaceDateTime(int nativeDateTimeChooserAndroid, String text);
+    private native void nativeReplaceDateTime(int nativeDateTimeChooserAndroid,
+            int dialogType,
+            int year, int month, int day, int hour, int minute, int second);
+
     private native void nativeCancelDialog(int nativeDateTimeChooserAndroid);
 }

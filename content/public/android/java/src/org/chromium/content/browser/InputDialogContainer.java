@@ -24,13 +24,15 @@ import org.chromium.content.R;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 class InputDialogContainer {
 
     interface InputActionDelegate {
         void cancelDateTimeDialog();
-        void replaceDateTime(String dateTime);
+        void replaceDateTime(int dialogType,
+                int year, int month, int day, int hour, int minute, int second);
     }
 
     // Default values used in Time representations of selected date/time before formatting.
@@ -49,13 +51,6 @@ class InputDialogContainer {
     private static final String HTML_DATE_TIME_FORMAT = "%Y-%m-%dT%H:%MZ";
     private static final String HTML_DATE_TIME_LOCAL_FORMAT = "%Y-%m-%dT%H:%M";
     private static final String HTML_MONTH_FORMAT = "%Y-%m";
-
-    // Date formats as accepted by SimpleDateFormat.
-    private static final String PARSE_DATE_FORMAT = "yyyy-MM-dd";
-    private static final String PARSE_TIME_FORMAT = "HH:mm";
-    private static final String PARSE_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm'Z'";
-    private static final String PARSE_DATE_TIME_LOCAL_FORMAT = "yyyy-MM-dd'T'HH:mm";
-    private static final String PARSE_MONTH_FORMAT = "yyyy-MM";
 
     private static int sTextInputTypeDate;
     private static int sTextInputTypeDateTime;
@@ -91,24 +86,40 @@ class InputDialogContainer {
         mInputActionDelegate = inputActionDelegate;
     }
 
-    void showDialog(String text, int textInputType) {
+    private Time normalizeTime(int year, int month, int monthDay,
+            int hour, int minute, int second)  {
+        Time result = new Time();
+        if (year == 0 && month == 0 && monthDay == 0 && hour == 0 &&
+                minute == 0 && second == 0) {
+            Calendar cal = Calendar.getInstance();
+            result.set(cal.get(Calendar.SECOND), cal.get(Calendar.MINUTE),
+                    cal.get(Calendar.HOUR), cal.get(Calendar.DATE),
+                    cal.get(Calendar.MONTH), cal.get(Calendar.YEAR));
+        } else {
+            result.set(second, minute, hour, monthDay, month, year);
+        }
+        return result;
+    }
+
+    void showDialog(final int dialogType, int year, int month, int monthDay,
+            int hour, int minute, int second) {
         if (isDialogShowing()) mDialog.dismiss();
 
-        Time time = parse(text, textInputType);
-        if (textInputType == sTextInputTypeDate) {
-            mDialog = new DatePickerDialog(mContext, new DateListener(),
+        Time time = normalizeTime(year, month, monthDay, hour, minute, second);
+        if (dialogType == sTextInputTypeDate) {
+            mDialog = new DatePickerDialog(mContext, new DateListener(dialogType),
                     time.year, time.month, time.monthDay);
-        } else if (textInputType == sTextInputTypeTime) {
-            mDialog = new TimePickerDialog(mContext, new TimeListener(),
+        } else if (dialogType == sTextInputTypeTime) {
+            mDialog = new TimePickerDialog(mContext, new TimeListener(dialogType),
                     time.hour, time.minute, DateFormat.is24HourFormat(mContext));
-        } else if (textInputType == sTextInputTypeDateTime ||
-                textInputType == sTextInputTypeDateTimeLocal) {
+        } else if (dialogType == sTextInputTypeDateTime ||
+                dialogType == sTextInputTypeDateTimeLocal) {
             mDialog = new DateTimePickerDialog(mContext,
-                    new DateTimeListener(textInputType == sTextInputTypeDateTimeLocal),
+                    new DateTimeListener(dialogType),
                     time.year, time.month, time.monthDay,
                     time.hour, time.minute, DateFormat.is24HourFormat(mContext));
-        } else if (textInputType == sTextInputTypeMonth) {
-            mDialog = new MonthPickerDialog(mContext, new MonthListener(),
+        } else if (dialogType == sTextInputTypeMonth) {
+            mDialog = new MonthPickerDialog(mContext, new MonthListener(dialogType),
                     time.year, time.month);
         }
 
@@ -132,7 +143,7 @@ class InputDialogContainer {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogAlreadyDismissed = true;
-                        mInputActionDelegate.replaceDateTime("");
+                        mInputActionDelegate.replaceDateTime(dialogType, 0, 0, 0, 0, 0, 0);
                     }
                 });
 
@@ -148,78 +159,47 @@ class InputDialogContainer {
         if (isDialogShowing()) mDialog.dismiss();
     }
 
-    private static SimpleDateFormat getParseDateFormat(int textInputType) {
-        String formatString = null;
-        if (textInputType == sTextInputTypeDate) {
-            formatString = PARSE_DATE_FORMAT;
-        } else if (textInputType == sTextInputTypeTime) {
-            formatString = PARSE_TIME_FORMAT;
-        } else if (textInputType == sTextInputTypeDateTime) {
-            formatString = PARSE_DATE_TIME_FORMAT;
-        } else if (textInputType == sTextInputTypeDateTimeLocal) {
-            formatString = PARSE_DATE_TIME_LOCAL_FORMAT;
-        } else if (textInputType == sTextInputTypeMonth) {
-            formatString = PARSE_MONTH_FORMAT;
-        }
-
-        if (formatString != null) {
-            return new SimpleDateFormat(formatString);
-        }
-
-        return null;
-    }
-
-    /**
-     * Parse the text String as a date or time according to the provided text input type.
-     */
-    private static Time parse(String text, int textInputType) {
-        Time result = null;
-        if (!TextUtils.isEmpty(text)) {
-            try {
-                SimpleDateFormat format = getParseDateFormat(textInputType);
-                if (format != null) {
-                    Date date = format.parse(text);
-                    result = new Time();
-                    result.set(date.getTime());
-                }
-            } catch (ParseException e) {
-                // Leave time as null.
-            }
-        }
-
-        if (result == null) {
-            result = new Time();
-            result.setToNow();
-        }
-
-        return result;
-    }
-
     private class DateListener implements OnDateSetListener {
+        private final int mDialogType;
+
+        DateListener(int dialogType) {
+            mDialogType = dialogType;
+        }
+
         @Override
         public void onDateSet(DatePicker view, int year, int month, int monthDay) {
             if (!mDialogAlreadyDismissed) {
-                setFieldDateTimeValue(year, month, monthDay, HOUR_DEFAULT, MINUTE_DEFAULT,
+                setFieldDateTimeValue(mDialogType,
+                        year, month, monthDay, HOUR_DEFAULT, MINUTE_DEFAULT,
                         HTML_DATE_FORMAT);
             }
         }
     }
 
     private class TimeListener implements OnTimeSetListener {
+        private final int mDialogType;
+
+        TimeListener(int dialogType) {
+            mDialogType = dialogType;
+        }
+
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             if (!mDialogAlreadyDismissed) {
-                setFieldDateTimeValue(YEAR_DEFAULT, MONTH_DEFAULT, MONTHDAY_DEFAULT,
+                setFieldDateTimeValue(mDialogType,
+                        YEAR_DEFAULT, MONTH_DEFAULT, MONTHDAY_DEFAULT,
                         hourOfDay, minute, HTML_TIME_FORMAT);
             }
         }
     }
 
     private class DateTimeListener implements OnDateTimeSetListener {
-        private boolean mLocal;
+        private final boolean mLocal;
+        private final int mDialogType;
 
-        public DateTimeListener(boolean local) {
-            mLocal = local;
+        public DateTimeListener(int dialogType) {
+            mLocal = dialogType == sTextInputTypeDateTimeLocal;
+            mDialogType = dialogType;
         }
 
         @Override
@@ -227,34 +207,36 @@ class InputDialogContainer {
                 int year, int month, int monthDay,
                 int hourOfDay, int minute) {
             if (!mDialogAlreadyDismissed) {
-                setFieldDateTimeValue(year, month, monthDay, hourOfDay, minute,
+                setFieldDateTimeValue(mDialogType, year, month, monthDay, hourOfDay, minute,
                         mLocal ? HTML_DATE_TIME_LOCAL_FORMAT : HTML_DATE_TIME_FORMAT);
             }
         }
     }
 
     private class MonthListener implements OnMonthSetListener {
+        private final int mDialogType;
+
+        MonthListener(int dialogType) {
+            mDialogType = dialogType;
+        }
+
         @Override
         public void onMonthSet(MonthPicker view, int year, int month) {
             if (!mDialogAlreadyDismissed) {
-                setFieldDateTimeValue(year, month, MONTHDAY_DEFAULT,
+                setFieldDateTimeValue(mDialogType, year, month, MONTHDAY_DEFAULT,
                         HOUR_DEFAULT, MINUTE_DEFAULT, HTML_MONTH_FORMAT);
             }
         }
     }
 
-    private void setFieldDateTimeValue(int year, int month, int monthDay, int hourOfDay,
+    private void setFieldDateTimeValue(int dialogType,
+            int year, int month, int monthDay, int hourOfDay,
             int minute, String dateFormat) {
         // Prevents more than one callback being sent to the native
         // side when the dialog triggers multiple events.
         mDialogAlreadyDismissed = true;
 
-        Time time = new Time();
-        time.year = year;
-        time.month = month;
-        time.monthDay = monthDay;
-        time.hour = hourOfDay;
-        time.minute = minute;
-        mInputActionDelegate.replaceDateTime(time.format(dateFormat));
+        mInputActionDelegate.replaceDateTime(dialogType,
+                year, month, monthDay, hourOfDay, minute, 0 /* second */);
     }
 }

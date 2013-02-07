@@ -227,6 +227,8 @@
     'renderer/browser_plugin/browser_plugin_compositing_helper.cc',
     'renderer/browser_plugin/browser_plugin_constants.cc',
     'renderer/browser_plugin/browser_plugin_constants.h',
+    'renderer/date_time_formatter.cc',
+    'renderer/date_time_formatter.h',
     'renderer/render_process.h',
     'renderer/render_process_impl.cc',
     'renderer/render_process_impl.h',

@@ -360,6 +360,16 @@ IPC_STRUCT_BEGIN(ViewHostMsg_TextInputState_Params)
   IPC_STRUCT_MEMBER(bool, show_ime_if_needed)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(ViewHostMsg_DateTimeDialogValue_Params)
+  IPC_STRUCT_MEMBER(int, dialog_type)
+  IPC_STRUCT_MEMBER(int, year)
+  IPC_STRUCT_MEMBER(int, month)
+  IPC_STRUCT_MEMBER(int, day)
+  IPC_STRUCT_MEMBER(int, hour)
+  IPC_STRUCT_MEMBER(int, minute)
+  IPC_STRUCT_MEMBER(int, second)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(ViewHostMsg_SelectionBounds_Params)
   IPC_STRUCT_MEMBER(gfx::Rect, anchor_rect)
   IPC_STRUCT_MEMBER(WebKit::WebTextDirection, anchor_dir)
@@ -924,7 +934,8 @@ IPC_MESSAGE_ROUTED0(ViewMsg_Delete)
 IPC_MESSAGE_ROUTED0(ViewMsg_SelectAll)
 
 // Replaces a date time input field.
-IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceDateTime, string16 /* text */)
+IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceDateTime,
+                    ViewHostMsg_DateTimeDialogValue_Params /* value */)
 
 IPC_MESSAGE_ROUTED0(ViewMsg_Unselect)
 
@@ -1999,9 +2010,8 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_TakeFocus,
                     bool /* reverse */)
 
 // Required for opening a date/time dialog
-IPC_MESSAGE_ROUTED2(ViewHostMsg_OpenDateTimeDialog,
-                    int /* type */,
-                    std::string /* value */)
+IPC_MESSAGE_ROUTED1(ViewHostMsg_OpenDateTimeDialog,
+                    ViewHostMsg_DateTimeDialogValue_Params /* value */)
 
 // Required for updating text input state.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_TextInputStateChanged,

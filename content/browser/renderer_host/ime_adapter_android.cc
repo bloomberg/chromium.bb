@@ -172,26 +172,6 @@ void ImeAdapterAndroid::CancelComposition() {
   Java_ImeAdapter_cancelComposition(AttachCurrentThread(), java_ime_adapter_);
 }
 
-void ImeAdapterAndroid::ReplaceDateTime(JNIEnv* env, jobject, jstring text) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
-      rwhva_->GetRenderWidgetHost());
-  if (!rwhi)
-    return;
-
-  string16 text16 = ConvertJavaStringToUTF16(env, text);
-  rwhi->Send(new ViewMsg_ReplaceDateTime(rwhi->GetRoutingID(), text16));
-}
-
-
-void ImeAdapterAndroid::CancelDialog(JNIEnv* env, jobject) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
-      rwhva_->GetRenderWidgetHost());
-  if (!rwhi)
-    return;
-
-  rwhi->Send(new ViewMsg_CancelDateTimeDialog(rwhi->GetRoutingID()));
-}
-
 void ImeAdapterAndroid::SetEditableSelectionOffsets(JNIEnv*, jobject,
                                                     int start, int end) {
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(

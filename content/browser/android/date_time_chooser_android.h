@@ -24,10 +24,13 @@ class DateTimeChooserAndroid {
   // DateTimeChooser implementation:
   void ShowDialog(ContentViewCore* content,
                   RenderViewHost* sender,
-                  int type, const std::string& value);
+                  int type, int year, int month, int day,
+                  int hour, int minute, int second);
 
-  // Replaces the current value with the one passed in text.
-  void ReplaceDateTime(JNIEnv* env, jobject, jstring text);
+  // Replaces the current value with the one passed the different fields
+  void ReplaceDateTime(JNIEnv* env, jobject, jint dialog_type,
+                       jint year, jint month, jint day,
+                       jint hour, jint minute, jint second);
 
   // Closes the dialog without propagating any changes.
   void CancelDialog(JNIEnv* env, jobject);
@@ -42,7 +45,7 @@ class DateTimeChooserAndroid {
  private:
   class DateTimeIPCSender;
 
-  scoped_ptr<DateTimeIPCSender> communicator_;
+  scoped_ptr<DateTimeIPCSender> sender_;
   base::android::ScopedJavaGlobalRef<jobject> j_date_time_chooser_;
 
   DISALLOW_COPY_AND_ASSIGN(DateTimeChooserAndroid);

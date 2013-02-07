@@ -6,15 +6,16 @@
 
 #include "base/string_util.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/date_time_formatter.h"
 #include "content/renderer/render_view_impl.h"
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDateTimeChooserCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDateTimeChooserParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDateTimeInputType.h"
 
-namespace content {
-
 using WebKit::WebString;
+
+namespace content {
 
 RendererDateTimePicker::RendererDateTimePicker(
     RenderViewImpl* sender,
@@ -22,34 +23,26 @@ RendererDateTimePicker::RendererDateTimePicker(
     WebKit::WebDateTimeChooserCompletion* completion)
     : RenderViewObserver(sender),
       chooser_params_(params),
-      chooser_completion_(completion) {
+      chooser_completion_(completion){
 }
 
 RendererDateTimePicker::~RendererDateTimePicker() {
 }
 
-static ui::TextInputType ExtractType(
-    const WebKit::WebDateTimeChooserParams& source) {
-
-  if (source.type == WebKit::WebDateTimeInputTypeDate)
-    return ui::TEXT_INPUT_TYPE_DATE;
-  if (source.type == WebKit::WebDateTimeInputTypeDateTime)
-    return ui::TEXT_INPUT_TYPE_DATE_TIME;
-  if (source.type == WebKit::WebDateTimeInputTypeDateTimeLocal)
-    return ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL;
-  if (source.type == WebKit::WebDateTimeInputTypeMonth)
-    return ui::TEXT_INPUT_TYPE_MONTH;
-  if (source.type == WebKit::WebDateTimeInputTypeTime)
-    return ui::TEXT_INPUT_TYPE_TIME;
-  if (source.type == WebKit::WebDateTimeInputTypeWeek)
-    return ui::TEXT_INPUT_TYPE_WEEK;
-  return ui::TEXT_INPUT_TYPE_NONE;
-}
-
 bool RendererDateTimePicker::Open() {
-  Send(new ViewHostMsg_OpenDateTimeDialog(
-      routing_id(), ExtractType(chooser_params_),
-      chooser_params_.currentValue.utf8()));
+  DateTimeFormatter parser(chooser_params_);
+  std::string test_s = chooser_params_.currentValue.utf8();
+
+  ViewHostMsg_DateTimeDialogValue_Params message;
+  message.year =  parser.GetYear();
+  message.month =  parser.GetMonth();
+  message.day =  parser.GetDay();
+  message.hour =  parser.GetHour();
+  message.minute = parser.GetMinute();
+  message.second = parser.GetSecond();
+  message.dialog_type = parser.GetType();
+
+  Send(new ViewHostMsg_OpenDateTimeDialog(routing_id(), message));
   return true;
 }
 
@@ -64,9 +57,17 @@ bool RendererDateTimePicker::OnMessageReceived(
   return handled;
 }
 
-void RendererDateTimePicker::OnReplaceDateTime(const string16& new_date) {
+void RendererDateTimePicker::OnReplaceDateTime(
+    const ViewHostMsg_DateTimeDialogValue_Params& value) {
+
+  DateTimeFormatter formatter(
+      static_cast<ui::TextInputType>(value.dialog_type),
+      value.year, value.month, value.day,
+      value.hour, value.minute, value.second);
+
   if (chooser_completion_)
-    chooser_completion_->didChooseValue(new_date);
+    chooser_completion_->didChooseValue(WebString::fromUTF8(
+        formatter.GetFormattedValue().c_str()));
 }
 
 void RendererDateTimePicker::OnCancel() {

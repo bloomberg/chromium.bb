@@ -23,7 +23,8 @@ class DateTimeChooserAndroid::DateTimeIPCSender :
  public:
   explicit DateTimeIPCSender(RenderViewHost* sender);
   virtual ~DateTimeIPCSender() {}
-  void ReplaceDateTime(string16 text);
+  void ReplaceDateTime(int dialog_type,
+      int year, int month, int day, int hour, int minute, int second);
   void CancelDialog();
 
  private:
@@ -36,8 +37,17 @@ DateTimeChooserAndroid::DateTimeIPCSender::DateTimeIPCSender(
 }
 
 void DateTimeChooserAndroid::DateTimeIPCSender::ReplaceDateTime(
-    string16 text) {
-  Send(new ViewMsg_ReplaceDateTime(routing_id(), text));
+    int dialog_type,
+    int year, int month, int day, int hour, int minute, int second) {
+  ViewHostMsg_DateTimeDialogValue_Params value;
+  value.year = year;
+  value.month = month;
+  value.day = day;
+  value.hour = hour;
+  value.minute = minute;
+  value.second = second;
+  value.dialog_type = dialog_type;
+  Send(new ViewMsg_ReplaceDateTime(routing_id(), value));
 }
 
 void DateTimeChooserAndroid::DateTimeIPCSender::CancelDialog() {
@@ -65,25 +75,26 @@ void DateTimeChooserAndroid::InitializeDateInputTypes(
 }
 
 void DateTimeChooserAndroid::ReplaceDateTime(
-    JNIEnv* env, jobject, jstring text) {
-  string16 text16 = ConvertJavaStringToUTF16(env, text);
-  communicator_->ReplaceDateTime(text16);
+    JNIEnv* env, jobject, int dialog_type,
+    int year, int month, int day, int hour, int minute, int second) {
+  sender_->ReplaceDateTime(
+      dialog_type, year, month, day, hour, minute, second);
 }
 
 void DateTimeChooserAndroid::CancelDialog(JNIEnv* env, jobject) {
-  communicator_->CancelDialog();
+  sender_->CancelDialog();
 }
 
 void DateTimeChooserAndroid::ShowDialog(
     ContentViewCore* content, RenderViewHost* sender,
-    int type, const std::string& value) {
-  communicator_.reset(new DateTimeIPCSender(sender));
+    int type, int year, int month, int day,
+    int hour, int minute, int second) {
+  sender_.reset(new DateTimeIPCSender(sender));
   JNIEnv* env = AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> java_value =
-      ConvertUTF8ToJavaString(env, value);
   j_date_time_chooser_.Reset(Java_DateTimeChooserAndroid_createDateTimeChooser(
       env, content->GetJavaObject().obj(),
-      reinterpret_cast<intptr_t>(this), java_value.obj(), type));
+      reinterpret_cast<intptr_t>(this),
+      type, year, month, day, hour, minute, second));
 }
 
 // ----------------------------------------------------------------------------

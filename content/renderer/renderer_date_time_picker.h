@@ -8,7 +8,8 @@
 #include "base/basictypes.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDateTimeChooserParams.h"
-#include "ui/base/ime/text_input_type.h"
+
+struct ViewHostMsg_DateTimeDialogValue_Params;
 
 namespace WebKit {
 class WebDateTimeChooserCompletion;
@@ -28,7 +29,7 @@ class RendererDateTimePicker : public RenderViewObserver {
   bool Open();
 
  private:
-  void OnReplaceDateTime(const string16& new_date);
+  void OnReplaceDateTime(const ViewHostMsg_DateTimeDialogValue_Params& value);
   void OnCancel();
 
   // RenderViewObserver

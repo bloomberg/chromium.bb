@@ -31,6 +31,7 @@
 
 struct BrowserPluginHostMsg_CreateGuest_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
+struct ViewHostMsg_DateTimeDialogValue_Params;
 struct ViewMsg_PostMessage_Params;
 
 namespace webkit_glue {
@@ -562,7 +563,8 @@ class CONTENT_EXPORT WebContentsImpl
                              const std::vector<gfx::RectF>& rects,
                              const gfx::RectF& active_rect);
 
-  void OnOpenDateTimeDialog(int type, const std::string& value);
+  void OnOpenDateTimeDialog(
+      const ViewHostMsg_DateTimeDialogValue_Params& value);
 #endif
   void OnCrashedPlugin(const base::FilePath& plugin_path,
                        base::ProcessId plugin_pid);

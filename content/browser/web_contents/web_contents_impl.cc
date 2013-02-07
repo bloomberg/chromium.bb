@@ -2355,9 +2355,12 @@ void WebContentsImpl::OnFindMatchRectsReply(
     delegate_->FindMatchRectsReply(this, version, rects, active_rect);
 }
 
-void WebContentsImpl::OnOpenDateTimeDialog(int type, const std::string& value) {
+void WebContentsImpl::OnOpenDateTimeDialog(
+    const ViewHostMsg_DateTimeDialogValue_Params& value) {
   date_time_chooser_->ShowDialog(
-      GetContentNativeView(), GetRenderViewHost(), type, value);
+      GetContentNativeView(), GetRenderViewHost(), value.dialog_type,
+      value.year, value.month, value.day, value.hour,
+      value.minute, value.second);
 }
 
 #endif
