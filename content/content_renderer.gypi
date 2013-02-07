@@ -361,6 +361,8 @@
         'renderer/media/peer_connection_tracker.h',
         'renderer/media/rtc_data_channel_handler.cc',
         'renderer/media/rtc_data_channel_handler.h',
+        'renderer/media/rtc_dtmf_sender_handler.cc',
+        'renderer/media/rtc_dtmf_sender_handler.h',
         'renderer/media/rtc_media_constraints.cc',
         'renderer/media/rtc_media_constraints.h',
         'renderer/media/rtc_peer_connection_handler.cc',

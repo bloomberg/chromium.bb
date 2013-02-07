@@ -128,6 +128,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const WebKit::WebRTCStatsRequest& request) OVERRIDE;
   virtual WebKit::WebRTCDataChannelHandler* createDataChannel(
       const WebKit::WebString& label, bool reliable) OVERRIDE;
+  virtual WebKit::WebRTCDTMFSenderHandler* createDTMFSender(
+      const WebKit::WebMediaStreamTrack& track) OVERRIDE;
   virtual void stop() OVERRIDE;
 
   // webrtc::PeerConnectionObserver implementation

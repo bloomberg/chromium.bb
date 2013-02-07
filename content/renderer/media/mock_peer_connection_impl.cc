@@ -9,8 +9,10 @@
 
 #include "base/logging.h"
 
+using webrtc::AudioTrackInterface;
 using webrtc::CreateSessionDescriptionObserver;
 using webrtc::DtmfSenderInterface;
+using webrtc::DtmfSenderObserverInterface;
 using webrtc::IceCandidateInterface;
 using webrtc::LocalMediaStreamInterface;
 using webrtc::MediaConstraintsInterface;
@@ -47,7 +49,7 @@ class MockStreamCollection : public webrtc::StreamCollectionInterface {
     return NULL;
   }
   virtual webrtc::MediaStreamTrackInterface* FindVideoTrack(
-      const std::string& id) OVERRIDE{
+      const std::string& id) OVERRIDE {
     for (size_t i = 0; i < streams_.size(); ++i) {
       webrtc::MediaStreamTrackInterface* track =
           streams_.at(i)->video_tracks()->Find(id);
@@ -128,6 +130,50 @@ class MockDataChannel : public webrtc::DataChannelInterface {
   webrtc::DataChannelInterface::DataState state_;
 };
 
+class MockDtmfSender : public DtmfSenderInterface {
+ public:
+  explicit MockDtmfSender(AudioTrackInterface* track)
+      : track_(track),
+        observer_(NULL),
+        duration_(0),
+        inter_tone_gap_(0) {}
+  virtual void RegisterObserver(
+      DtmfSenderObserverInterface* observer) OVERRIDE {
+    observer_ = observer;
+  }
+  virtual void UnregisterObserver() OVERRIDE {
+    observer_ = NULL;
+  }
+  virtual bool CanInsertDtmf() {
+    return true;
+  }
+  virtual bool InsertDtmf(const std::string& tones, int duration,
+                          int inter_tone_gap) OVERRIDE {
+    tones_ = tones;
+    duration_ = duration;
+    inter_tone_gap_ = inter_tone_gap;
+    return true;
+  }
+  virtual const AudioTrackInterface* track() const OVERRIDE {
+    return track_.get();
+  }
+  virtual std::string tones() const OVERRIDE {
+    return tones_;
+  }
+  virtual int duration() const OVERRIDE { return duration_; }
+  virtual int inter_tone_gap() const OVERRIDE { return inter_tone_gap_; }
+
+ protected:
+  virtual ~MockDtmfSender() {}
+
+ private:
+  talk_base::scoped_refptr<AudioTrackInterface> track_;
+  DtmfSenderObserverInterface* observer_;
+  std::string tones_;
+  int duration_;
+  int inter_tone_gap_;
+};
+
 const char MockPeerConnectionImpl::kDummyOffer[] = "dummy offer";
 const char MockPeerConnectionImpl::kDummyAnswer[] = "dummy answer";
 
@@ -171,12 +217,12 @@ void MockPeerConnectionImpl::RemoveStream(
   local_streams_->RemoveStream(local_stream);
 }
 
-
 talk_base::scoped_refptr<DtmfSenderInterface>
-MockPeerConnectionImpl::CreateDtmfSender(
-    webrtc::AudioTrackInterface* track) {
-  NOTIMPLEMENTED();
-  return NULL;
+MockPeerConnectionImpl::CreateDtmfSender(AudioTrackInterface* track) {
+  if (!track) {
+    return NULL;
+  }
+  return new talk_base::RefCountedObject<MockDtmfSender>(track);
 }
 
 talk_base::scoped_refptr<webrtc::DataChannelInterface>

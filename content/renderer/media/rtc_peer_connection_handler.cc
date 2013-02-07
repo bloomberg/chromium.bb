@@ -14,10 +14,12 @@
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/rtc_data_channel_handler.h"
+#include "content/renderer/media/rtc_dtmf_sender_handler.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
 // TODO(hta): Move the following include to WebRTCStatsRequest.h file.
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamTrack.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCConfiguration.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCICECandidate.h"
@@ -579,6 +581,28 @@ WebKit::WebRTCDataChannelHandler* RTCPeerConnectionHandler::createDataChannel(
         this, webrtc_channel.get(), PeerConnectionTracker::SOURCE_LOCAL);
 
   return new RtcDataChannelHandler(webrtc_channel);
+}
+
+WebKit::WebRTCDTMFSenderHandler* RTCPeerConnectionHandler::createDTMFSender(
+    const WebKit::WebMediaStreamTrack& track) {
+  DVLOG(1) << "createDTMFSender.";
+
+  if (track.source().type() != WebKit::WebMediaStreamSource::TypeAudio) {
+    DLOG(ERROR) << "Could not create DTMF sender from a non-audio track.";
+    return NULL;
+  }
+
+  webrtc::AudioTrackInterface* audio_track =
+      static_cast<webrtc::AudioTrackInterface*>(
+          GetLocalNativeMediaStreamTrack(track.stream(), track));
+
+  talk_base::scoped_refptr<webrtc::DtmfSenderInterface> sender(
+      native_peer_connection_->CreateDtmfSender(audio_track));
+  if (!sender) {
+    DLOG(ERROR) << "Could not create native DTMF sender.";
+    return NULL;
+  }
+  return new RtcDtmfSenderHandler(sender);
 }
 
 void RTCPeerConnectionHandler::stop() {

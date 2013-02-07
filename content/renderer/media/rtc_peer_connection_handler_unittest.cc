@@ -21,6 +21,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamTrack.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCConfiguration.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCDTMFSenderHandler.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCDataChannelHandler.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCICECandidate.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandlerClient.h"
@@ -397,13 +398,13 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithSelector) {
       CreateLocalMediaStream(stream_label));
   WebKit::WebMediaConstraints constraints;
   pc_handler_->addStream(local_stream, constraints);
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> components;
-  local_stream.audioSources(components);
-  ASSERT_LE(1ul, components.size());
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> tracks;
+  local_stream.audioSources(tracks);
+  ASSERT_LE(1ul, tracks.size());
 
   scoped_refptr<MockRTCStatsRequest> request(
       new talk_base::RefCountedObject<MockRTCStatsRequest>());
-  request->setSelector(local_stream, components[0]);
+  request->setSelector(local_stream, tracks[0]);
   pc_handler_->getStats(request.get());
   EXPECT_EQ(1, request->result()->report_count());
 }
@@ -426,9 +427,9 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
   WebKit::WebMediaStream local_stream(
       CreateLocalMediaStream(stream_label));
   WebKit::WebMediaConstraints constraints;
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> components;
-  local_stream.audioSources(components);
-  WebKit::WebMediaStreamTrack component = components[0];
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> tracks;
+  local_stream.audioSources(tracks);
+  WebKit::WebMediaStreamTrack component = tracks[0];
   EXPECT_EQ(0u, mock_peer_connection_->local_streams()->count());
 
   scoped_refptr<MockRTCStatsRequest> request(
@@ -552,6 +553,24 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateDataChannel) {
       pc_handler_->createDataChannel("d1", true));
   EXPECT_TRUE(channel.get() != NULL);
   EXPECT_EQ(label, channel->label());
+}
+
+TEST_F(RTCPeerConnectionHandlerTest, CreateDtmfSender) {
+  std::string stream_label = "local_stream";
+  WebKit::WebMediaStream local_stream(CreateLocalMediaStream(stream_label));
+  WebKit::WebMediaConstraints constraints;
+  pc_handler_->addStream(local_stream, constraints);
+
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> tracks;
+  local_stream.videoSources(tracks);
+  ASSERT_LE(1ul, tracks.size());
+  EXPECT_FALSE(pc_handler_->createDTMFSender(tracks[0]));
+
+  local_stream.audioSources(tracks);
+  ASSERT_LE(1ul, tracks.size());
+  scoped_ptr<WebKit::WebRTCDTMFSenderHandler> sender(
+      pc_handler_->createDTMFSender(tracks[0]));
+  EXPECT_TRUE(sender.get());
 }
 
 }  // namespace content
