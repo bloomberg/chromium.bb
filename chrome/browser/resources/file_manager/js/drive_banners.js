@@ -388,9 +388,9 @@ FileListBannerController.prototype.closeBanner_ = function() {
 FileListBannerController.prototype.checkSpaceAndShowBanner_ = function() {
   var self = this;
   this.preparePromo_(function() {
-    if (this.newWelcome_ && this.isOnDrive()) {
+    if (self.newWelcome_ && self.isOnDrive()) {
       chrome.fileBrowserPrivate.getSizeStats(
-          util.makeFilesystemUrl(this.directoryModel_.getCurrentRootPath()),
+          util.makeFilesystemUrl(self.directoryModel_.getCurrentRootPath()),
           function(result) {
             // Already >= 100 GB.
             if (result && result.totalSizeKB >= 100 * 1024 * 1024)
