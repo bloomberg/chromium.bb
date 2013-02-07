@@ -82,10 +82,10 @@ bool SpellingServiceClient::RequestTextCheck(
       "\"text\":\"%s\","
       "\"language\":\"%s\","
       "\"originCountry\":\"%s\","
-      "\"key\":\"%s\""
+      "\"key\":%s"
       "}"
       "}";
-  std::string api_key = google_apis::GetAPIKey();
+  std::string api_key = base::GetDoubleQuotedJson(google_apis::GetAPIKey());
   std::string request = base::StringPrintf(
       kSpellingRequest,
       type,
