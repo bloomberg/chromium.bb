@@ -140,4 +140,9 @@ TEST_F(AudioFileReaderTest, VorbisInvalidChannelLayout) {
   RunFailingTest("9ch.ogg");
 }
 
+TEST_F(AudioFileReaderTest, WaveValidFourChannelLayout) {
+  RunTest("4ch.wav", "d40bb7dbe532b2f1cf2e3558e780caa2", 4, 44100,
+          base::TimeDelta::FromMicroseconds(100001), 4410, 4410);
+}
+
 }  // namespace media

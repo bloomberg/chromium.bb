@@ -261,27 +261,28 @@ static AVSampleFormat SampleFormatToAVSampleFormat(SampleFormat sample_format) {
   return AV_SAMPLE_FMT_NONE;
 }
 
-ChannelLayout OpusChannelCountToChromeChannelLayout(int channels) {
+// Converts a channel count into a channel layout.  Layouts chosen based on the
+// Vorbis / Opus channel layout.
+static ChannelLayout GuessChannelLayout(int channels) {
   switch (channels) {
     case 1:
-      return ChannelLayoutToChromeChannelLayout(AV_CH_LAYOUT_MONO, channels);
+      return CHANNEL_LAYOUT_MONO;
     case 2:
-      return ChannelLayoutToChromeChannelLayout(AV_CH_LAYOUT_STEREO, channels);
+      return CHANNEL_LAYOUT_STEREO;
     case 3:
-      return ChannelLayoutToChromeChannelLayout(AV_CH_LAYOUT_SURROUND,
-                                                channels);
+      return CHANNEL_LAYOUT_SURROUND;
     case 4:
-      return ChannelLayoutToChromeChannelLayout(AV_CH_LAYOUT_QUAD, channels);
+      return CHANNEL_LAYOUT_QUAD;
     case 5:
-      return ChannelLayoutToChromeChannelLayout(AV_CH_LAYOUT_5POINT0, channels);
+      return CHANNEL_LAYOUT_5_0;
     case 6:
-      return ChannelLayoutToChromeChannelLayout(AV_CH_LAYOUT_5POINT1, channels);
+      return CHANNEL_LAYOUT_5_1;
     case 7:
-      return ChannelLayoutToChromeChannelLayout(AV_CH_LAYOUT_6POINT1, channels);
+      return CHANNEL_LAYOUT_6_1;
     case 8:
-      return ChannelLayoutToChromeChannelLayout(AV_CH_LAYOUT_7POINT1, channels);
+      return CHANNEL_LAYOUT_7_1;
     default:
-      LOG(ERROR) << "Unsupported Opus channel count: " << channels;
+      DVLOG(1) << "Unsupported channel count: " << channels;
   }
   return CHANNEL_LAYOUT_UNSUPPORTED;
 }
@@ -300,14 +301,9 @@ void AVCodecContextToAudioDecoderConfig(
       codec_context->channel_layout, codec_context->channels);
 
   if (codec == kCodecOpus) {
-    // |channel_layout| and |sample_fmt| in |codec_context| are not set by
-    // FFmpeg. This happens because Opus is not enabled in ffmpegsumo. This is
-    // not that big a deal, because:
-    // 1. OpusAudioDecoder always uses signed 16 bit samples, and...
-    // 2. OpusAudioDecoder outputs audio using the same channel order as FFmpeg.
+    // |codec_context->sample_fmt| is not set by FFmpeg because Opus decoding is
+    // not enabled in FFmpeg, so we need to manually set the sample format.
     sample_format = kSampleFormatS16;
-    channel_layout =
-        OpusChannelCountToChromeChannelLayout(codec_context->channels);
   }
 
   config->Initialize(codec,
@@ -420,8 +416,7 @@ void VideoDecoderConfigToAVCodecContext(
   }
 }
 
-ChannelLayout ChannelLayoutToChromeChannelLayout(int64_t layout,
-                                                 int channels) {
+ChannelLayout ChannelLayoutToChromeChannelLayout(int64_t layout, int channels) {
   switch (layout) {
     case AV_CH_LAYOUT_MONO:
       return CHANNEL_LAYOUT_MONO;
@@ -478,15 +473,10 @@ ChannelLayout ChannelLayoutToChromeChannelLayout(int64_t layout,
     case AV_CH_LAYOUT_OCTAGONAL:
       return CHANNEL_LAYOUT_OCTAGONAL;
     default:
-      // FFmpeg channel_layout is 0 for .wav and .mp3.  We know mono and stereo
-      // from the number of channels, otherwise report errors.
-      if (channels == 1)
-        return CHANNEL_LAYOUT_MONO;
-      if (channels == 2)
-        return CHANNEL_LAYOUT_STEREO;
-      LOG(ERROR) << "Unsupported channel layout: " << layout;
+      // FFmpeg channel_layout is 0 for .wav and .mp3.  Attempt to guess layout
+      // based on the channel count.
+      return GuessChannelLayout(channels);
   }
-  return CHANNEL_LAYOUT_UNSUPPORTED;
 }
 
 VideoFrame::Format PixelFormatToVideoFormat(PixelFormat pixel_format) {
