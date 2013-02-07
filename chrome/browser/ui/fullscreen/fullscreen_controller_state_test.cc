@@ -502,13 +502,9 @@ void FullscreenControllerStateTest::VerifyWindowState() {
       break;
     case STATE_TAB_BROWSER_FULLSCREEN_CHROME:
 #if defined(OS_MACOSX)
-      // http://crbug.com/168513
-      // Tab fullscreen does not remove the chrome when previously in
-      // 'with chrome' browser fullscreen. The following two With and Without
-      // expectations should be swapped so there is no chrome in this state.
-      EXPECT_TRUE(GetBrowser()->window()->IsFullscreenWithChrome())
+      EXPECT_FALSE(GetBrowser()->window()->IsFullscreenWithChrome())
           << GetAndClearDebugLog();
-      EXPECT_FALSE(GetBrowser()->window()->IsFullscreenWithoutChrome())
+      EXPECT_TRUE(GetBrowser()->window()->IsFullscreenWithoutChrome())
           << GetAndClearDebugLog();
 #endif
       EXPECT_TRUE(GetFullscreenController()->IsFullscreenForBrowser())
