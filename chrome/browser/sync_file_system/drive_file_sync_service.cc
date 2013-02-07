@@ -745,6 +745,10 @@ void DriveFileSyncService::NotifyTaskDone(fileapi::SyncStatusCode status,
     RemoteServiceState old_state = GetCurrentState();
     UpdateServiceState();
 
+    // Reset the polling delay. This will adjust the polling timer
+    // based on the current service state.
+    UpdatePollingDelay(polling_delay_seconds_);
+
     // Notify remote sync service state if the state has been changed.
     if (!token_->description().empty() || old_state != GetCurrentState()) {
       FOR_EACH_OBSERVER(
@@ -767,11 +771,12 @@ void DriveFileSyncService::NotifyTaskDone(fileapi::SyncStatusCode status,
 
   SchedulePolling();
 
-  if (GetCurrentState() != REMOTE_SERVICE_OK)
+  if (GetCurrentState() != REMOTE_SERVICE_OK &&
+      GetCurrentState() != REMOTE_SERVICE_TEMPORARY_UNAVAILABLE)
     return;
 
-  // If the state has become OK and we have any pending batch sync origins
-  // restart batch sync for them.
+  // If the state has become OK or TEMPORARY_UNAVAILABLE and we have any
+  // pending batch sync origins, restart batch sync for them.
   if (!pending_batch_sync_origins_.empty()) {
     GURL origin = *pending_batch_sync_origins_.begin();
     pending_batch_sync_origins_.erase(pending_batch_sync_origins_.begin());
@@ -1778,17 +1783,22 @@ bool DriveFileSyncService::GetPendingChangeForFileSystemURL(
 }
 
 void DriveFileSyncService::FetchChangesForIncrementalSync() {
+  scoped_ptr<TaskToken> token(GetToken(FROM_HERE, TASK_TYPE_DRIVE,
+                                       "Fetching remote change list"));
   if (!sync_enabled_ ||
       is_fetching_changes_ ||
       !pending_batch_sync_origins_.empty() ||
       metadata_store_->incremental_sync_origins().empty() ||
-      !pending_changes_.empty())
+      !pending_changes_.empty()) {
+    if (token) {
+      token->ResetTask(FROM_HERE);
+      NotifyTaskDone(last_operation_status_, token.Pass());
+    }
     return;
+  }
 
   is_fetching_changes_ = true;
 
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE, TASK_TYPE_DRIVE,
-                                       "Fetching remote change list"));
   if (!token) {
     pending_tasks_.push_back(base::Bind(
         &DriveFileSyncService::FetchChangesForIncrementalSync, AsWeakPtr()));
@@ -1941,6 +1951,7 @@ void DriveFileSyncService::UpdatePollingDelay(int64 new_delay_sec) {
     // kPollingDelaySecondsWithNotification) so that we have a mild chance
     // to recover the state.
     polling_delay_seconds_ = kMaximumPollingDelaySeconds;
+    polling_timer_.Stop();
     return;
   }
 
@@ -1949,11 +1960,13 @@ void DriveFileSyncService::UpdatePollingDelay(int64 new_delay_sec) {
     return;
   }
 
+  int64 old_delay = polling_delay_seconds_;
+
   // Push notifications off.
   polling_delay_seconds_ = std::min(new_delay_sec, kMaximumPollingDelaySeconds);
 
-  // TODO(tzik): Reset the timer if new_delay_sec is less than
-  // polling_delay_seconds_.
+  if (polling_delay_seconds_ < old_delay)
+    polling_timer_.Stop();
 }
 
 fileapi::SyncStatusCode
