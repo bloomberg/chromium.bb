@@ -8,6 +8,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -33,13 +34,32 @@ MessageSimpleView::MessageSimpleView(
 }
 
 MessageSimpleView::~MessageSimpleView() {
+  // old_style_close_button_ has to be cleared before content_view_ is cleared.
+  // Otherwise, resetting content_view_ will delete old_style_close_button_ so
+  // a double-free happens.
+  old_style_close_button_.reset();
+  content_view_.reset();
+}
+
+void MessageSimpleView::Layout() {
+  if (content_view_) {
+    gfx::Rect contents_bounds = GetContentsBounds();
+    content_view_->SetBoundsRect(contents_bounds);
+  }
+}
+
+gfx::Size MessageSimpleView::GetPreferredSize() {
+  if (!content_view_)
+    return gfx::Size();
+  gfx::Size size = content_view_->GetPreferredSize();
+  if (border()) {
+    gfx::Insets border_insets = border()->GetInsets();
+    size.Enlarge(border_insets.width(), border_insets.height());
+  }
+  return size;
 }
 
 void MessageSimpleView::SetUpView() {
-  SkColor bg_color = notification().is_read ?
-      kNotificationReadColor : kNotificationColor;
-  set_background(views::Background::CreateSolidBackground(bg_color));
-
   views::ImageView* icon = new views::ImageView;
   icon->SetImageSize(
       gfx::Size(kWebNotificationIconSize, kWebNotificationIconSize));
@@ -52,8 +72,14 @@ void MessageSimpleView::SetUpView() {
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetMultiLine(true);
 
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
+  SkColor bg_color = notification().is_read ?
+      kNotificationReadColor : kNotificationColor;
+  content_view_.reset(new views::View);
+  content_view_->set_background(
+      views::Background::CreateSolidBackground(bg_color));
+  AddChildView(content_view_.get());
+  views::GridLayout* layout = new views::GridLayout(content_view_.get());
+  content_view_->SetLayoutManager(layout);
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
 

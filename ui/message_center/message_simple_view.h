@@ -25,10 +25,15 @@ class MessageSimpleView : public MessageView {
                              const ui::Event& event) OVERRIDE;
 
  protected:
+  // Overridden from views::View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+
   MessageSimpleView();
 
  private:
   scoped_ptr<views::ImageButton> old_style_close_button_;
+  scoped_ptr<views::View> content_view_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageSimpleView);
 };
