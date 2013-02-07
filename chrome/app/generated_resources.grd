@@ -7061,6 +7061,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_DISABLE_LAUNCHER_PER_DISPLAY_DESCRIPTION" desc="Description for the flag to disable a launcher on secondary display.">
           Diables showing the launcher on the second display.
         </message>
+        <message name="IDS_FLAGS_ENABLE_KIOSK_APPS_NAME" desc="Name for the flag to enable kiosk applications.">
+           Enable Kiosk Applications.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_KIOSK_APPS_DESCRIPTION" desc="Description for the flag to enable kiosk applications.">
+          Enable kiosk applications on the device.
+        </message>
       </if>
 
       <message name="IDS_FLAGS_OLD_CHECKBOX_STYLE" desc="Name of the flag to turn off the new checkbox style.">

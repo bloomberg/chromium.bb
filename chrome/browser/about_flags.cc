@@ -1062,6 +1062,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableLauncherPerDisplay),
   },
+  {
+    "enable-app-mode",
+    IDS_FLAGS_ENABLE_KIOSK_APPS_NAME,
+    IDS_FLAGS_ENABLE_KIOSK_APPS_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableAppMode),
+  },
 #endif  // defined(OS_CHROMEOS)
   {
     "enable-views-textfield",

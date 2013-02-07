@@ -397,6 +397,7 @@ extern const char kDisableNewOobe[];
 extern const char kDisableNewPasswordChangedDialog[];
 extern const char kDisableOobeAnimation[];
 extern const char kDisableStubEthernet[];
+extern const char kEnableAppMode[];
 extern const char kEnableStubInteractive[];
 extern const char kEnableBackgroundLoader[];
 extern const char kEnableCarrierSwitching[];
