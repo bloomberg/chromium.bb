@@ -1248,6 +1248,8 @@
         'browser/ui/sad_tab_helper.cc',
         'browser/ui/sad_tab_helper.h',
         'browser/ui/sad_tab_types.h',
+        'browser/ui/screen_capture_infobar_delegate.cc',
+        'browser/ui/screen_capture_infobar_delegate.h',
         'browser/ui/search/other_device_menu_controller.cc',
         'browser/ui/search/other_device_menu_controller.h',
         'browser/ui/search/search.cc',

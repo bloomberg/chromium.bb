@@ -20,6 +20,7 @@ class MediaStreamInfoBarDelegate;
 class PluginInstallerInfoBarDelegate;
 class RegisterProtocolHandlerInfoBarDelegate;
 class SavePasswordInfoBarDelegate;
+class ScreenCaptureInfoBarDelegate;
 class ThemeInstalledInfoBarDelegate;
 class ThreeDAPIInfoBarDelegate;
 class TranslateInfoBarDelegate;
@@ -100,6 +101,7 @@ class InfoBarDelegate {
   virtual MediaStreamInfoBarDelegate* AsMediaStreamInfoBarDelegate();
   virtual RegisterProtocolHandlerInfoBarDelegate*
       AsRegisterProtocolHandlerInfoBarDelegate();
+  virtual ScreenCaptureInfoBarDelegate* AsScreenCaptureInfoBarDelegate();
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
   virtual ThreeDAPIInfoBarDelegate* AsThreeDAPIInfoBarDelegate();
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();

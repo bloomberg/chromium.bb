@@ -48,9 +48,7 @@ MediaStreamDevicesController::MediaStreamDevicesController(
       microphone_requested_(
           request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE),
       webcam_requested_(
-          request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE),
-      screen_capture_requested_(
-          request.video_type == content::MEDIA_SCREEN_VIDEO_CAPTURE) {
+          request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE) {
   // Don't call GetDevicePolicy from the initializer list since the
   // implementation depends on member variables.
   if (microphone_requested_ &&
@@ -164,14 +162,6 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
       SetPermission(true);
   }
 
-  if (screen_capture_requested_ &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableUserMediaScreenCapturing)) {
-    // Add screen capturer source if it was requested.
-    devices.push_back(content::MediaStreamDevice(
-        content::MEDIA_SCREEN_VIDEO_CAPTURE, "", "Screen"));
-  }
-
   callback_.Run(devices);
 }
 
@@ -233,9 +223,6 @@ bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
     // If we get here, then either policy is set to ALWAYS_ALLOW or the content
     // settings allow the request by default.
   }
-
-  // TODO(sergeyu): Add content setting and UI notifications for screen
-  // capturing and use them when screen_capture_requested_==true.
 
   return true;
 }

@@ -93,7 +93,6 @@ class MediaStreamDevicesController {
 
   bool microphone_requested_;
   bool webcam_requested_;
-  bool screen_capture_requested_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDevicesController);
 };

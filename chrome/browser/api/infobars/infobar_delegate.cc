@@ -73,6 +73,11 @@ RegisterProtocolHandlerInfoBarDelegate*
   return NULL;
 }
 
+ScreenCaptureInfoBarDelegate*
+    InfoBarDelegate::AsScreenCaptureInfoBarDelegate() {
+  return NULL;
+}
+
 ThemeInstalledInfoBarDelegate*
     InfoBarDelegate::AsThemePreviewInfobarDelegate() {
   return NULL;

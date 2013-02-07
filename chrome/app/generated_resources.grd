@@ -15367,6 +15367,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_MEDIA_CAPTURE_VIDEO" desc="Label for a camera element in a device list.">
       Camera: <ph name="DEVICE_NAME">$1<ex>Built-in camera</ex></ph>
     </message>
+    <message name="IDS_MEDIA_CAPTURE_SCREEN" desc="Text on the info bar that's shown when screen capturing is requrested by the tab.">
+      <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to capture the content of your screen.
+    </message>
     <message name="IDS_MEDIA_CAPTURE_ALLOW" desc="Label for a button that grants access to a web page, so they can use a camera and/or a microphone.">
       Allow
     </message>
