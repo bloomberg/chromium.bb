@@ -1274,8 +1274,9 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     int* extra_info_spec,
     std::vector<const ExtensionWebRequestEventRouter::EventListener*>*
         matching_listeners) {
+  ExtensionRendererState::WebViewInfo web_view_info;
   bool is_guest = ExtensionRendererState::GetInstance()->
-      IsGuestProcess(render_process_host_id);
+      GetWebViewInfo(render_process_host_id, routing_id, &web_view_info);
   std::set<EventListener>& listeners = listeners_[profile][event_name];
   for (std::set<EventListener>::iterator it = listeners.begin();
        it != listeners.end(); ++it) {

@@ -51,20 +51,14 @@ ExtensionRendererState::TabObserver::TabObserver() {
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this,
+                 content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_TAB_PARENTED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_RETARGETING,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
@@ -93,6 +87,31 @@ void ExtensionRendererState::TabObserver::Observe(
               host->GetProcess()->GetID(), host->GetRoutingID(),
               session_tab_helper->session_id().id(),
               session_tab_helper->window_id().id()));
+      break;
+    }
+    case content::NOTIFICATION_WEB_CONTENTS_CONNECTED: {
+      WebContents* web_contents = content::Source<WebContents>(source).ptr();
+      if (!web_contents->GetRenderProcessHost()->IsGuest())
+        return;
+
+      WebContents* embedder_web_contents =
+          web_contents->GetEmbedderWebContents();
+      WebViewInfo web_view_info;
+      web_view_info.embedder_process_id =
+          embedder_web_contents->GetRenderProcessHost()->GetID();
+      web_view_info.embedder_routing_id =
+          embedder_web_contents->GetRoutingID();
+      web_view_info.web_view_instance_id =
+          web_contents->GetEmbeddedInstanceID();
+
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(
+              &ExtensionRendererState::AddWebView,
+              base::Unretained(ExtensionRendererState::GetInstance()),
+              web_contents->GetRenderProcessHost()->GetID(),
+              web_contents->GetRoutingID(),
+              web_view_info));
       break;
     }
     case chrome::NOTIFICATION_TAB_PARENTED: {
@@ -133,39 +152,22 @@ void ExtensionRendererState::TabObserver::Observe(
     }
     case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED: {
       RenderViewHost* host = content::Source<RenderViewHost>(source).ptr();
+      if (host->GetProcess()->IsGuest()) {
+        BrowserThread::PostTask(
+            BrowserThread::IO, FROM_HERE,
+            base::Bind(
+                &ExtensionRendererState::RemoveWebView,
+                base::Unretained(ExtensionRendererState::GetInstance()),
+                host->GetProcess()->GetID(),
+                host->GetRoutingID()));
+        return;
+      }
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(
               &ExtensionRendererState::ClearTabAndWindowId,
               base::Unretained(ExtensionRendererState::GetInstance()),
               host->GetProcess()->GetID(), host->GetRoutingID()));
-      break;
-    }
-    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      RenderProcessHost* render_process_host =
-          content::Source<RenderProcessHost>(source).ptr();
-      if (!render_process_host->IsGuest())
-        return;
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &ExtensionRendererState::AddGuestProcess,
-              base::Unretained(ExtensionRendererState::GetInstance()),
-              render_process_host->GetID()));
-      break;
-    }
-    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      RenderProcessHost* render_process_host =
-          content::Source<RenderProcessHost>(source).ptr();
-      if (!render_process_host->IsGuest())
-        return;
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &ExtensionRendererState::RemoveGuestProcess,
-              base::Unretained(ExtensionRendererState::GetInstance()),
-              render_process_host->GetID()));
       break;
     }
     default:
@@ -224,17 +226,30 @@ bool ExtensionRendererState::GetTabAndWindowId(
   return false;
 }
 
-void ExtensionRendererState::AddGuestProcess(int render_process_host_id) {
+void ExtensionRendererState::AddWebView(int guest_process_id,
+                                        int guest_routing_id,
+                                        const WebViewInfo& web_view_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  guest_set_.insert(render_process_host_id);
+  RenderId render_id(guest_process_id, guest_routing_id);
+  web_view_info_map_[render_id] = web_view_info;
 }
 
-void ExtensionRendererState::RemoveGuestProcess(int render_process_host_id) {
+void ExtensionRendererState::RemoveWebView(int guest_process_id,
+                                           int guest_routing_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  guest_set_.erase(render_process_host_id);
+  RenderId render_id(guest_process_id, guest_routing_id);
+  web_view_info_map_.erase(render_id);
 }
 
-bool ExtensionRendererState::IsGuestProcess(int render_process_host_id) {
+bool ExtensionRendererState::GetWebViewInfo(int guest_process_id,
+                                            int guest_routing_id,
+                                            WebViewInfo* web_view_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return guest_set_.count(render_process_host_id) > 0;
+  RenderId render_id(guest_process_id, guest_routing_id);
+  WebViewInfoMap::iterator iter = web_view_info_map_.find(render_id);
+  if (iter != web_view_info_map_.end()) {
+    *web_view_info = iter->second;
+    return true;
+  }
+  return false;
 }

@@ -146,6 +146,15 @@ class WebContents : public PageNavigator,
       int y,
       const GetRenderViewHostCallback& callback) = 0;
 
+  // Returns the WebContents embedding this WebContents, if any.
+  // If this is a top-level WebContents then it returns NULL.
+  virtual WebContents* GetEmbedderWebContents() const = 0;
+
+  // Gets the instance ID of the current WebContents if it is embedded
+  // within a BrowserPlugin. The instance ID of a WebContents uniquely
+  // identifies it within its embedder WebContents.
+  virtual int GetEmbeddedInstanceID() const = 0;
+
   // Gets the current RenderViewHost's routing id. Returns
   // MSG_ROUTING_NONE when there is no RenderViewHost.
   virtual int GetRoutingID() const = 0;

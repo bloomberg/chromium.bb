@@ -194,6 +194,8 @@ class CONTENT_EXPORT WebContentsImpl
       int x,
       int y,
       const GetRenderViewHostCallback& callback) OVERRIDE;
+  virtual WebContents* GetEmbedderWebContents() const OVERRIDE;
+  virtual int GetEmbeddedInstanceID() const OVERRIDE;
   virtual int GetRoutingID() const OVERRIDE;
   virtual RenderWidgetHostView* GetRenderWidgetHostView() const OVERRIDE;
   virtual WebContentsView* GetView() const OVERRIDE;

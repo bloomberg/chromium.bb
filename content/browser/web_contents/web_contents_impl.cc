@@ -827,6 +827,20 @@ void WebContentsImpl::GetRenderViewHostAtPosition(
     callback.Run(GetRenderViewHost(), x, y);
 }
 
+WebContents* WebContentsImpl::GetEmbedderWebContents() const {
+  BrowserPluginGuest* guest = GetBrowserPluginGuest();
+  if (guest)
+    return guest->embedder_web_contents();
+  return NULL;
+}
+
+int WebContentsImpl::GetEmbeddedInstanceID() const {
+  BrowserPluginGuest* guest = GetBrowserPluginGuest();
+  if (guest)
+    return guest->instance_id();
+  return 0;
+}
+
 int WebContentsImpl::GetRoutingID() const {
   if (!GetRenderViewHost())
     return MSG_ROUTING_NONE;

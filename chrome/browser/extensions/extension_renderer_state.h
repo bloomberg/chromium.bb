@@ -16,6 +16,12 @@
 // methods should be called on the IO thread except for Init and Shutdown.
 class ExtensionRendererState {
  public:
+  struct WebViewInfo {
+    int embedder_process_id;
+    int embedder_routing_id;
+    int web_view_instance_id;
+  };
+
   static ExtensionRendererState* GetInstance();
 
   // These are called on the UI thread to start and stop listening to tab
@@ -23,9 +29,10 @@ class ExtensionRendererState {
   void Init();
   void Shutdown();
 
-  // Looks up whether the given render process is a guest renderer hosted by a
-  // <webview>.
-  bool IsGuestProcess(int render_process_host_id);
+  // Looks up the information for the embedder <webview> for a given render
+  // view, if one exists. Called on the IO thread.
+  bool GetWebViewInfo(int guest_process_id, int guest_routing_id,
+                      WebViewInfo* web_view_info);
 
   // Looks up the tab and window ID for a given render view. Returns true
   // if we have the IDs in our map. Called on the IO thread.
@@ -40,7 +47,7 @@ class ExtensionRendererState {
   typedef std::pair<int, int> RenderId;
   typedef std::pair<int, int> TabAndWindowId;
   typedef std::map<RenderId, TabAndWindowId> TabAndWindowIdMap;
-  typedef std::set<int> ProcessIdGuestRenderProcessSet;
+  typedef std::map<RenderId, WebViewInfo> WebViewInfoMap;
 
   ExtensionRendererState();
   ~ExtensionRendererState();
@@ -52,12 +59,13 @@ class ExtensionRendererState {
       int render_process_host_id, int routing_id);
 
   // Adds or removes a <webview> guest render process from the set.
-  void AddGuestProcess(int render_process_host_id);
-  void RemoveGuestProcess(int render_process_host_id);
+  void AddWebView(int render_process_host_id, int routing_id,
+                  const WebViewInfo& web_view_info);
+  void RemoveWebView(int render_process_host_id, int routing_id);
 
   TabObserver* observer_;
   TabAndWindowIdMap map_;
-  ProcessIdGuestRenderProcessSet guest_set_;
+  WebViewInfoMap web_view_info_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionRendererState);
 };
