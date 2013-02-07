@@ -245,7 +245,7 @@ bool TrayPower::UpdateNotificationState(const PowerSupplyStatus& status) {
     return false;
   }
 
-  int remaining_seconds = status.battery_seconds_to_empty;
+  int remaining_seconds = status.averaged_battery_time_to_empty;
   if (remaining_seconds >= kNoWarningSeconds) {
     notification_state_ = NOTIFICATION_NONE;
     return false;
