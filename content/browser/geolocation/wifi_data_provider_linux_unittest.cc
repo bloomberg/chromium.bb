@@ -37,14 +37,14 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
             "org.freedesktop.NetworkManager",
             dbus::ObjectPath("/org/freedesktop/NetworkManager"));
     // Set an expectation so mock_network_manager_proxy_'s
-    // CallMethodAndBlock() will use CreateNetowrkManagerProxyResponse()
+    // CallMethodAndBlock() will use CreateNetworkManagerProxyResponse()
     // to return responses.
     EXPECT_CALL(*mock_network_manager_proxy_,
-                CallMethodAndBlock(_, _))
+                MockCallMethodAndBlock(_, _))
         .WillRepeatedly(Invoke(
             this,
             &GeolocationWifiDataProviderLinuxTest::
-            CreateNetowrkManagerProxyResponse));
+            CreateNetworkManagerProxyResponse));
 
     // Create a mock proxy that behaves as NetworkManager/Devices/0.
     mock_device_proxy_ =
@@ -53,7 +53,7 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
             "org.freedesktop.NetworkManager",
             dbus::ObjectPath("/org/freedesktop/NetworkManager/Devices/0"));
     EXPECT_CALL(*mock_device_proxy_,
-                CallMethodAndBlock(_, _))
+                MockCallMethodAndBlock(_, _))
         .WillRepeatedly(Invoke(
             this,
             &GeolocationWifiDataProviderLinuxTest::CreateDeviceProxyResponse));
@@ -65,7 +65,7 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
             "org.freedesktop.NetworkManager",
             dbus::ObjectPath("/org/freedesktop/NetworkManager/AccessPoint/0"));
     EXPECT_CALL(*mock_access_point_proxy_,
-                CallMethodAndBlock(_, _))
+                MockCallMethodAndBlock(_, _))
         .WillRepeatedly(Invoke(
             this,
             &GeolocationWifiDataProviderLinuxTest::
@@ -114,7 +114,7 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
 
  private:
   // Creates a response for |mock_network_manager_proxy_|.
-  dbus::Response* CreateNetowrkManagerProxyResponse(
+  dbus::Response* CreateNetworkManagerProxyResponse(
       dbus::MethodCall* method_call,
       Unused) {
     if (method_call->GetInterface() == "org.freedesktop.NetworkManager" &&
@@ -124,10 +124,10 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
       object_paths.push_back(
           dbus::ObjectPath("/org/freedesktop/NetworkManager/Devices/0"));
 
-      dbus::Response* response = dbus::Response::CreateEmpty();
-      dbus::MessageWriter writer(response);
+      scoped_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
+      dbus::MessageWriter writer(response.get());
       writer.AppendArrayOfObjectPaths(object_paths);
-      return response;
+      return response.release();
     }
 
     LOG(ERROR) << "Unexpected method call: " << method_call->ToString();
@@ -145,24 +145,24 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
       if (reader.PopString(&interface_name) &&
           reader.PopString(&property_name)) {
         // The device type is asked. Respond that the device type is wifi.
-        dbus::Response* response = dbus::Response::CreateEmpty();
-        dbus::MessageWriter writer(response);
+        scoped_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
+        dbus::MessageWriter writer(response.get());
         // This matches NM_DEVICE_TYPE_WIFI in wifi_data_provider_linux.cc.
         const int kDeviceTypeWifi = 2;
         writer.AppendVariantOfUint32(kDeviceTypeWifi);
-        return response;
+        return response.release();
       }
     } else if (method_call->GetInterface() ==
                "org.freedesktop.NetworkManager.Device.Wireless" &&
                method_call->GetMember() == "GetAccessPoints") {
       // The list of access points is asked. Return the object path.
-      dbus::Response* response = dbus::Response::CreateEmpty();
-      dbus::MessageWriter writer(response);
+      scoped_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
+      dbus::MessageWriter writer(response.get());
       std::vector<dbus::ObjectPath> object_paths;
       object_paths.push_back(
           dbus::ObjectPath("/org/freedesktop/NetworkManager/AccessPoint/0"));
       writer.AppendArrayOfObjectPaths(object_paths);
-      return response;
+      return response.release();
     }
 
     LOG(ERROR) << "Unexpected method call: " << method_call->ToString();
@@ -181,12 +181,12 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
       std::string property_name;
       if (reader.PopString(&interface_name) &&
           reader.PopString(&property_name)) {
-        dbus::Response* response = dbus::Response::CreateEmpty();
-        dbus::MessageWriter writer(response);
+        scoped_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
+        dbus::MessageWriter writer(response.get());
 
         if (property_name == "Ssid") {
           const uint8 kSsid[] = {0x74, 0x65, 0x73, 0x74};  // "test"
-          dbus::MessageWriter variant_writer(response);
+          dbus::MessageWriter variant_writer(response.get());
           writer.OpenVariant("ay", &variant_writer);
           variant_writer.AppendArrayOfBytes(kSsid, arraysize(kSsid));
           writer.CloseContainer(&variant_writer);
@@ -203,7 +203,7 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
           const uint32 kFrequency = 2427;
           writer.AppendVariantOfUint32(kFrequency);
         }
-        return response;
+        return response.release();
       }
     }
 

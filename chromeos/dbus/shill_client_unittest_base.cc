@@ -115,7 +115,7 @@ void ShillClientUnittestBase::SetUp() {
 
   // Set an expectation so mock_proxy's CallMethodAndBlock() will use
   // OnCallMethodAndBlock() to return responses.
-  EXPECT_CALL(*mock_proxy_, CallMethodAndBlock(_, _))
+  EXPECT_CALL(*mock_proxy_, MockCallMethodAndBlock(_, _))
       .WillRepeatedly(Invoke(
           this, &ShillClientUnittestBase::OnCallMethodAndBlock));
 
@@ -315,7 +315,7 @@ dbus::Response* ShillClientUnittestBase::OnCallMethodAndBlock(
   dbus::MessageReader reader(method_call);
   argument_checker_.Run(&reader);
   return dbus::Response::FromRawMessage(
-      dbus_message_copy(response_->raw_message()));
+      dbus_message_copy(response_->raw_message())).release();
 }
 
 }  // namespace chromeos

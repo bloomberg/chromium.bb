@@ -58,15 +58,21 @@ class MockCreateEngineResponseSender {
  public:
   explicit MockCreateEngineResponseSender(const dbus::ObjectPath& expected_path)
       : expected_path_(expected_path) {}
-  MOCK_METHOD1(Run, void(dbus::Response*));
+  // GMock doesn't support mocking methods which take scoped_ptr<>.
+  MOCK_METHOD1(MockRun, void(dbus::Response*));
+  void Run(scoped_ptr<dbus::Response> response) {
+    MockRun(response.get());
+  }
 
   // Checks the given |response| meets expectation for the CreateEngine method.
-  void CheckCreateEngineResponse(dbus::Response* response) {
-    scoped_ptr<dbus::Response> response_deleter(response);
+  void CheckCreateEngineResponsePtr(dbus::Response* response) {
     dbus::MessageReader reader(response);
     dbus::ObjectPath actual_path;
     ASSERT_TRUE(reader.PopObjectPath(&actual_path));
     EXPECT_EQ(expected_path_, actual_path);
+  }
+  void CheckCreateEngineResponse(scoped_ptr<dbus::Response> response) {
+    CheckCreateEngineResponsePtr(response.get());
   }
 
  private:
@@ -143,10 +149,11 @@ TEST_F(IBusEngineFactoryServiceTest, SyncCreateEngineTest) {
   const char kSampleEngine[] = "Sample Engine";
   const dbus::ObjectPath kObjectPath("/org/freedesktop/IBus/Engine/10");
   MockCreateEngineResponseSender response_sender(kObjectPath);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(
           Invoke(&response_sender,
-                 &MockCreateEngineResponseSender::CheckCreateEngineResponse));
+                 &MockCreateEngineResponseSender::
+                 CheckCreateEngineResponsePtr));
 
   SynchronousCreateEngineHandler handler(kObjectPath);
   // Set handler expectations.
@@ -185,10 +192,11 @@ TEST_F(IBusEngineFactoryServiceTest, AsyncCreateEngineTest) {
   const char kSampleEngine[] = "Sample Engine";
   const dbus::ObjectPath kObjectPath("/org/freedesktop/IBus/Engine/10");
   MockCreateEngineResponseSender response_sender(kObjectPath);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(
           Invoke(&response_sender,
-                 &MockCreateEngineResponseSender::CheckCreateEngineResponse));
+                 &MockCreateEngineResponseSender::
+                 CheckCreateEngineResponsePtr));
 
   AsynchronousCreateEngineHandler handler(kObjectPath, &message_loop_);
   // Set handler expectations.

@@ -63,7 +63,11 @@ class MockIBusPanelPropertyHandler : public IBusPanelPropertyHandlerInterface {
 
 class MockResponseSender {
  public:
-  MOCK_METHOD1(Run, void(dbus::Response* reponse));
+  // GMock doesn't support mocking methods which take scoped_ptr<>.
+  MOCK_METHOD1(MockRun, void(dbus::Response* reponse));
+  void Run(scoped_ptr<dbus::Response> response) {
+    MockRun(response.get());
+  }
 };
 
 // This class is used to verify that a method call response is empty. This class
@@ -76,7 +80,6 @@ class EmptyResponseVerifier {
 
   // Verifies the given |response| has no argument.
   void Verify(dbus::Response* response) {
-    scoped_ptr<dbus::Response> response_deleter(response);
     EXPECT_EQ(expected_serial_number_, response->GetReplySerial());
     dbus::MessageReader reader(response);
     EXPECT_FALSE(reader.HasMoreData());
@@ -349,7 +352,7 @@ TEST_F(IBusPanelServiceTest, HideLookupTableTest) {
   EXPECT_CALL(*candidate_window_handler_, HideLookupTable());
   MockResponseSender response_sender;
   EmptyResponseVerifier response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseVerifier::Verify));
 
@@ -373,7 +376,7 @@ TEST_F(IBusPanelServiceTest, HideAuxiliaryTextTest) {
   EXPECT_CALL(*candidate_window_handler_, HideAuxiliaryText());
   MockResponseSender response_sender;
   EmptyResponseVerifier response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseVerifier::Verify));
 
@@ -397,7 +400,7 @@ TEST_F(IBusPanelServiceTest, HidePreeditTextTest) {
   EXPECT_CALL(*candidate_window_handler_, HidePreeditText());
   MockResponseSender response_sender;
   EmptyResponseVerifier response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseVerifier::Verify));
 
@@ -430,7 +433,7 @@ TEST_F(IBusPanelServiceTest, UpdateLookupTableTest) {
                        &UpdateLookupTableVerifier::Verify));
   MockResponseSender response_sender;
   EmptyResponseVerifier response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseVerifier::Verify));
 
@@ -460,7 +463,7 @@ TEST_F(IBusPanelServiceTest, UpdateAuxiliaryTextTest) {
   EXPECT_CALL(*candidate_window_handler_, UpdateAuxiliaryText(text, kVisible));
   MockResponseSender response_sender;
   EmptyResponseVerifier response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseVerifier::Verify));
 
@@ -492,7 +495,7 @@ TEST_F(IBusPanelServiceTest, UpdatePreeditTextTest) {
               UpdatePreeditText(text, kCursorPos, kVisible));
   MockResponseSender response_sender;
   EmptyResponseVerifier response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseVerifier::Verify));
 
@@ -573,7 +576,7 @@ TEST_F(IBusPanelServiceTest, RegisterPropertiesTest) {
                         &PropertyListVerifier::Verify));
 
   MockResponseSender response_sender;
-  EXPECT_CALL(response_sender, Run(_));
+  EXPECT_CALL(response_sender, MockRun(_));
 
   // Create method call;
   dbus::MethodCall method_call(ibus::panel::kServiceInterface,
@@ -601,7 +604,7 @@ TEST_F(IBusPanelServiceTest, UpdatePropertyTest) {
       .WillOnce(Invoke(&response_expectation, &PropertyVerifier::Verify));
 
   MockResponseSender response_sender;
-  EXPECT_CALL(response_sender, Run(_));
+  EXPECT_CALL(response_sender, MockRun(_));
 
   // Create method call;
   dbus::MethodCall method_call(ibus::panel::kServiceInterface,

@@ -251,7 +251,7 @@ void NativeBackendKWalletTest::SetUp() {
                                 "org.kde.klauncher",
                                 dbus::ObjectPath("/KLauncher"));
   EXPECT_CALL(*mock_klauncher_proxy_,
-              CallMethodAndBlock(_, _))
+              MockCallMethodAndBlock(_, _))
       .WillRepeatedly(Invoke(this,
           &NativeBackendKWalletTest::KLauncherMethodCall));
 
@@ -260,7 +260,7 @@ void NativeBackendKWalletTest::SetUp() {
                                 "org.kde.kwalletd",
                                 dbus::ObjectPath("/modules/kwalletd"));
   EXPECT_CALL(*mock_kwallet_proxy_,
-              CallMethodAndBlock(_, _))
+              MockCallMethodAndBlock(_, _))
       .WillRepeatedly(Invoke(this,
           &NativeBackendKWalletTest::KWalletMethodCall));
 
@@ -312,13 +312,13 @@ dbus::Response* NativeBackendKWalletTest::KLauncherMethodCall(
   if (kwallet_runnable_)
     kwallet_running_ = true;
 
-  dbus::Response* response = dbus::Response::CreateEmpty();
-  dbus::MessageWriter writer(response);
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
   writer.AppendInt32(klauncher_ret_);
   writer.AppendString("");   // dbus_name
   writer.AppendString(klauncher_error_);
   writer.AppendInt32(1234);  // pid
-  return response;
+  return response.release();
 }
 
 dbus::Response* NativeBackendKWalletTest::KWalletMethodCall(
@@ -327,14 +327,14 @@ dbus::Response* NativeBackendKWalletTest::KWalletMethodCall(
     return NULL;
   EXPECT_EQ("org.kde.KWallet", method_call->GetInterface());
 
-  dbus::Response* response = NULL;
+  scoped_ptr<dbus::Response> response;
   if (method_call->GetMember() == "isEnabled") {
     response = dbus::Response::CreateEmpty();
-    dbus::MessageWriter writer(response);
+    dbus::MessageWriter writer(response.get());
     writer.AppendBool(kwallet_enabled_);
   } else if (method_call->GetMember() == "networkWallet") {
     response = dbus::Response::CreateEmpty();
-    dbus::MessageWriter writer(response);
+    dbus::MessageWriter writer(response.get());
     writer.AppendString("test_wallet");  // Should match |open| below.
   } else if (method_call->GetMember() == "open") {
     dbus::MessageReader reader(method_call);
@@ -346,7 +346,7 @@ dbus::Response* NativeBackendKWalletTest::KWalletMethodCall(
     EXPECT_TRUE(reader.PopString(&app_name));
     EXPECT_EQ("test_wallet", wallet_name);  // Should match |networkWallet|.
     response = dbus::Response::CreateEmpty();
-    dbus::MessageWriter writer(response);
+    dbus::MessageWriter writer(response.get());
     writer.AppendInt32(1);  // Can be anything but kInvalidKWalletHandle.
   } else if (method_call->GetMember() == "hasFolder" ||
              method_call->GetMember() == "createFolder") {
@@ -359,7 +359,7 @@ dbus::Response* NativeBackendKWalletTest::KWalletMethodCall(
     EXPECT_TRUE(reader.PopString(&app_name));
     EXPECT_NE(NativeBackendKWalletStub::kInvalidKWalletHandle, handle);
     response = dbus::Response::CreateEmpty();
-    dbus::MessageWriter writer(response);
+    dbus::MessageWriter writer(response.get());
     if (method_call->GetMember() == "hasFolder")
       writer.AppendBool(wallet_.hasFolder(folder_name));
     else
@@ -377,7 +377,7 @@ dbus::Response* NativeBackendKWalletTest::KWalletMethodCall(
     EXPECT_TRUE(reader.PopString(&app_name));
     EXPECT_NE(NativeBackendKWalletStub::kInvalidKWalletHandle, handle);
     response = dbus::Response::CreateEmpty();
-    dbus::MessageWriter writer(response);
+    dbus::MessageWriter writer(response.get());
     if (method_call->GetMember() == "hasEntry")
       writer.AppendBool(wallet_.hasEntry(folder_name, key));
     else
@@ -394,7 +394,7 @@ dbus::Response* NativeBackendKWalletTest::KWalletMethodCall(
     std::vector<std::string> entries;
     if (wallet_.entryList(folder_name, &entries)) {
       response = dbus::Response::CreateEmpty();
-      dbus::MessageWriter writer(response);
+      dbus::MessageWriter writer(response.get());
       writer.AppendArrayOfStrings(entries);
     }
   } else if (method_call->GetMember() == "readEntry") {
@@ -411,7 +411,7 @@ dbus::Response* NativeBackendKWalletTest::KWalletMethodCall(
     TestKWallet::Blob value;
     if (wallet_.readEntry(folder_name, key, &value)) {
       response = dbus::Response::CreateEmpty();
-      dbus::MessageWriter writer(response);
+      dbus::MessageWriter writer(response.get());
       writer.AppendArrayOfBytes(value.data(), value.size());
     }
   } else if (method_call->GetMember() == "writeEntry") {
@@ -429,14 +429,14 @@ dbus::Response* NativeBackendKWalletTest::KWalletMethodCall(
     EXPECT_TRUE(reader.PopString(&app_name));
     EXPECT_NE(NativeBackendKWalletStub::kInvalidKWalletHandle, handle);
     response = dbus::Response::CreateEmpty();
-    dbus::MessageWriter writer(response);
+    dbus::MessageWriter writer(response.get());
     writer.AppendInt32(
         wallet_.writeEntry(folder_name, key,
                            TestKWallet::Blob(bytes, length)) ? 0 : 1);
   }
 
-  EXPECT_FALSE(response == NULL);
-  return response;
+  EXPECT_FALSE(response.get() == NULL);
+  return response.release();
 }
 
 void NativeBackendKWalletTest::CheckPasswordForms(

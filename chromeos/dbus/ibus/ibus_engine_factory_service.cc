@@ -73,19 +73,19 @@ class IBusEngineFactoryServiceImpl : public IBusEngineFactoryService {
       create_engine_callback_map_[engine_name].Run(
           base::Bind(&IBusEngineFactoryServiceImpl::CreateEngineSendReply,
                      weak_ptr_factory_.GetWeakPtr(),
-                     dbus::Response::FromMethodCall(method_call),
+                     base::Passed(dbus::Response::FromMethodCall(method_call)),
                      response_sender));
     }
   }
 
   // Sends reply message for CreateEngine method call.
   void CreateEngineSendReply(
-      dbus::Response* response,
+      scoped_ptr<dbus::Response> response,
       const dbus::ExportedObject::ResponseSender response_sender,
       const dbus::ObjectPath& path) {
-    dbus::MessageWriter writer(response);
+    dbus::MessageWriter writer(response.get());
     writer.AppendObjectPath(path);
-    response_sender.Run(response);
+    response_sender.Run(response.Pass());
   }
 
   // Called when the CreateEngine method is exported.

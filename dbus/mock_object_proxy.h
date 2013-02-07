@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,8 +21,17 @@ class MockObjectProxy : public ObjectProxy {
                   const std::string& service_name,
                   const ObjectPath& object_path);
 
-  MOCK_METHOD2(CallMethodAndBlock, Response*(MethodCall* method_call,
-                                             int timeout_ms));
+  // GMock doesn't support the return type of scoped_ptr<> because scoped_ptr is
+  // uncopyable. This is a workaround which defines |MockCallMethodAndBlock| as
+  // a mock method and makes |CallMethodAndBlock| call the mocked method.
+  // Use |MockCallMethodAndBlock| for setting/testing expectations.
+  MOCK_METHOD2(MockCallMethodAndBlock, Response*(MethodCall* method_call,
+                                                 int timeout_ms));
+  virtual scoped_ptr<Response> CallMethodAndBlock(MethodCall* method_call,
+                                                  int timeout_ms) OVERRIDE {
+    return scoped_ptr<Response>(MockCallMethodAndBlock(method_call,
+                                                       timeout_ms));
+  }
   MOCK_METHOD3(CallMethod, void(MethodCall* method_call,
                                 int timeout_ms,
                                 ResponseCallback callback));

@@ -63,14 +63,14 @@ ObjectProxy::~ObjectProxy() {
 // Originally we tried to make |method_call| a const reference, but we
 // gave up as dbus_connection_send_with_reply_and_block() takes a
 // non-const pointer of DBusMessage as the second parameter.
-Response* ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
-                                          int timeout_ms) {
+scoped_ptr<Response> ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
+                                                     int timeout_ms) {
   bus_->AssertOnDBusThread();
 
   if (!bus_->Connect() ||
       !method_call->SetDestination(service_name_) ||
       !method_call->SetPath(object_path_))
-    return NULL;
+    return scoped_ptr<Response>();
 
   DBusMessage* request_message = method_call->raw_message();
 
@@ -93,7 +93,7 @@ Response* ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
                          method_call->GetMember(),
                          error.is_set() ? error.name() : "unknown error type",
                          error.is_set() ? error.message() : "");
-    return NULL;
+    return scoped_ptr<Response>();
   }
   // Record time spent for the method call. Don't include failures.
   UMA_HISTOGRAM_TIMES("DBus.SyncMethodCallTime",

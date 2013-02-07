@@ -57,17 +57,17 @@ void ServiceProviderTestHelper::SetUp(
       new dbus::MockObjectProxy(mock_bus_.get(),
                                 kLibCrosServiceName,
                                 dbus::ObjectPath(kLibCrosServicePath));
-  // |mock_object_proxy_|'s CallMethodAndBlock() will use
+  // |mock_object_proxy_|'s MockCallMethodAndBlock() will use
   // MockCallMethodAndBlock() to return responses.
   EXPECT_CALL(*mock_object_proxy_,
-              CallMethodAndBlock(
+              MockCallMethodAndBlock(
                   AllOf(
                       ResultOf(
                           std::mem_fun(&dbus::MethodCall::GetInterface),
-                                        kLibCrosServiceInterface),
+                          kLibCrosServiceInterface),
                       ResultOf(
                           std::mem_fun(&dbus::MethodCall::GetMember),
-                                        exported_method_name)),
+                          exported_method_name)),
                   _))
       .WillOnce(Invoke(this,
                        &ServiceProviderTestHelper::MockCallMethodAndBlock));
@@ -102,9 +102,10 @@ void ServiceProviderTestHelper::SetUpReturnSignal(
                                       signal_callback, on_connected_callback);
 }
 
-dbus::Response* ServiceProviderTestHelper::CallMethod(
+scoped_ptr<dbus::Response> ServiceProviderTestHelper::CallMethod(
     dbus::MethodCall* method_call) {
-  return mock_object_proxy_->CallMethodAndBlock(method_call,
+  return mock_object_proxy_->CallMethodAndBlock(
+      method_call,
       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT);
 }
 
@@ -155,12 +156,12 @@ void ServiceProviderTestHelper::MockSendSignal(dbus::Signal* signal) {
   on_signal_callback_.Run(signal);
 }
 
-void ServiceProviderTestHelper::OnResponse(dbus::Response* response) {
-  response_.reset(response);
+void ServiceProviderTestHelper::OnResponse(
+    scoped_ptr<dbus::Response> response) {
+  response_ = response.Pass();
   response_received_ = true;
   if (message_loop_.is_running())
     message_loop_.Quit();
 }
 
 }  // namespace chromeos
-

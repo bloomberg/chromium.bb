@@ -47,8 +47,7 @@ void LivenessServiceProvider::CheckLiveness(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-  response_sender.Run(response);
+  response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
 }  // namespace chromeos

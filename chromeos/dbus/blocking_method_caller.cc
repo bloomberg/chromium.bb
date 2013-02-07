@@ -15,7 +15,7 @@ namespace {
 
 // This function is a part of CallMethodAndBlock implementation.
 void CallMethodAndBlockInternal(
-    dbus::Response** response,
+    scoped_ptr<dbus::Response>* response,
     base::ScopedClosureRunner* signaler,
     dbus::ObjectProxy* proxy,
     dbus::MethodCall* method_call) {
@@ -36,7 +36,7 @@ BlockingMethodCaller::BlockingMethodCaller(dbus::Bus* bus,
 BlockingMethodCaller::~BlockingMethodCaller() {
 }
 
-dbus::Response* BlockingMethodCaller::CallMethodAndBlock(
+scoped_ptr<dbus::Response> BlockingMethodCaller::CallMethodAndBlock(
     dbus::MethodCall* method_call) {
   // on_blocking_method_call_->Signal() will be called when |signaler| is
   // destroyed.
@@ -46,7 +46,7 @@ dbus::Response* BlockingMethodCaller::CallMethodAndBlock(
   base::ScopedClosureRunner* signaler =
       new base::ScopedClosureRunner(signal_task);
 
-  dbus::Response* response = NULL;
+  scoped_ptr<dbus::Response> response;
   bus_->PostTaskToDBusThread(
       FROM_HERE,
       base::Bind(&CallMethodAndBlockInternal,
@@ -57,7 +57,7 @@ dbus::Response* BlockingMethodCaller::CallMethodAndBlock(
   // http://crbug.com/125360
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   on_blocking_method_call_.Wait();
-  return response;
+  return response.Pass();
 }
 
 }  // namespace chromeos

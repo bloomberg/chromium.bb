@@ -8,13 +8,12 @@
 #include "base/callback.h"
 #include "base/synchronization/waitable_event.h"
 #include "chromeos/chromeos_export.h"
+#include "dbus/message.h"
 
 namespace dbus {
 
 class Bus;
 class ObjectProxy;
-class MethodCall;
-class Response;
 
 }  // namespace dbus
 
@@ -29,8 +28,7 @@ class CHROMEOS_EXPORT BlockingMethodCaller {
   virtual ~BlockingMethodCaller();
 
   // Calls the method and blocks until it returns.
-  // The caller is responsible to delete the returned object.
-  dbus::Response* CallMethodAndBlock(dbus::MethodCall* method_call);
+  scoped_ptr<dbus::Response> CallMethodAndBlock(dbus::MethodCall* method_call);
 
  private:
   dbus::Bus* bus_;

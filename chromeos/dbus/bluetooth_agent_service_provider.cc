@@ -139,8 +139,7 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
 
     delegate_->Release();
 
-    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-    response_sender.Run(response);
+    response_sender.Run(dbus::Response::FromMethodCall(method_call));
   }
 
   // Called by dbus:: when the Release method is exported.
@@ -235,8 +234,7 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
 
     delegate_->DisplayPinCode(device_path, pincode);
 
-    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-    response_sender.Run(response);
+    response_sender.Run(dbus::Response::FromMethodCall(method_call));
   }
 
   // Called by dbus:: when the DisplayPinCode method is exported.
@@ -267,8 +265,7 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
 
     delegate_->DisplayPasskey(device_path, passkey);
 
-    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-    response_sender.Run(response);
+    response_sender.Run(dbus::Response::FromMethodCall(method_call));
   }
 
   // Called by dbus:: when the DisplayPasskey method is exported.
@@ -404,8 +401,7 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
 
     delegate_->Cancel();
 
-    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-    response_sender.Run(response);
+    response_sender.Run(dbus::Response::FromMethodCall(method_call));
   }
 
   // Called by dbus:: when the Cancel method is exported.
@@ -425,22 +421,25 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
 
     switch (status) {
       case Delegate::SUCCESS: {
-        dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-        dbus::MessageWriter writer(response);
+        scoped_ptr<dbus::Response> response(
+            dbus::Response::FromMethodCall(method_call));
+        dbus::MessageWriter writer(response.get());
         writer.AppendString(pincode);
-        response_sender.Run(response);
+        response_sender.Run(response.Pass());
         break;
       }
       case Delegate::REJECTED: {
-        dbus::ErrorResponse* response = dbus::ErrorResponse::FromMethodCall(
-            method_call, bluetooth_agent::kErrorRejected, "rejected");
-        response_sender.Run(response);
+        response_sender.Run(
+            dbus::ErrorResponse::FromMethodCall(
+                method_call, bluetooth_agent::kErrorRejected, "rejected")
+            .PassAs<dbus::Response>());
         break;
       }
       case Delegate::CANCELLED: {
-        dbus::ErrorResponse* response = dbus::ErrorResponse::FromMethodCall(
-            method_call, bluetooth_agent::kErrorCanceled, "canceled");
-        response_sender.Run(response);
+        response_sender.Run(
+            dbus::ErrorResponse::FromMethodCall(
+                method_call, bluetooth_agent::kErrorCanceled, "canceled")
+            .PassAs<dbus::Response>());
         break;
       }
       default:
@@ -457,22 +456,25 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
 
     switch (status) {
       case Delegate::SUCCESS: {
-        dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-        dbus::MessageWriter writer(response);
+        scoped_ptr<dbus::Response> response(
+            dbus::Response::FromMethodCall(method_call));
+        dbus::MessageWriter writer(response.get());
         writer.AppendUint32(passkey);
-        response_sender.Run(response);
+        response_sender.Run(response.Pass());
         break;
       }
       case Delegate::REJECTED: {
-        dbus::ErrorResponse* response = dbus::ErrorResponse::FromMethodCall(
-            method_call, bluetooth_agent::kErrorRejected, "rejected");
-        response_sender.Run(response);
+        response_sender.Run(
+            dbus::ErrorResponse::FromMethodCall(
+                method_call, bluetooth_agent::kErrorRejected, "rejected")
+            .PassAs<dbus::Response>());
         break;
       }
       case Delegate::CANCELLED: {
-        dbus::ErrorResponse* response = dbus::ErrorResponse::FromMethodCall(
-            method_call, bluetooth_agent::kErrorCanceled, "canceled");
-        response_sender.Run(response);
+        response_sender.Run(
+            dbus::ErrorResponse::FromMethodCall(
+                method_call, bluetooth_agent::kErrorCanceled, "canceled")
+            .PassAs<dbus::Response>());
         break;
       }
       default:
@@ -488,20 +490,21 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
 
     switch (status) {
       case Delegate::SUCCESS: {
-        dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-        response_sender.Run(response);
+        response_sender.Run(dbus::Response::FromMethodCall(method_call));
         break;
       }
       case Delegate::REJECTED: {
-        dbus::ErrorResponse* response = dbus::ErrorResponse::FromMethodCall(
-            method_call, bluetooth_agent::kErrorRejected, "rejected");
-        response_sender.Run(response);
+        response_sender.Run(
+            dbus::ErrorResponse::FromMethodCall(
+                method_call, bluetooth_agent::kErrorRejected, "rejected")
+            .PassAs<dbus::Response>());
         break;
       }
       case Delegate::CANCELLED: {
-        dbus::ErrorResponse* response = dbus::ErrorResponse::FromMethodCall(
-            method_call, bluetooth_agent::kErrorCanceled, "canceled");
-        response_sender.Run(response);
+        response_sender.Run(
+            dbus::ErrorResponse::FromMethodCall(
+                method_call, bluetooth_agent::kErrorCanceled, "canceled")
+            .PassAs<dbus::Response>());
         break;
       }
       default:

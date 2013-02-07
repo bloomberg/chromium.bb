@@ -239,7 +239,7 @@ void ProxyResolutionServiceProvider::ResolveProxyHandler(
       !reader.PopString(&signal_interface) ||
       !reader.PopString(&signal_name)) {
     LOG(ERROR) << "Unexpected method call: " << method_call->ToString();
-    response_sender.Run(NULL);
+    response_sender.Run(scoped_ptr<dbus::Response>());
     return;
   }
 
@@ -250,8 +250,7 @@ void ProxyResolutionServiceProvider::ResolveProxyHandler(
 
   // Send an empty response for now. We'll send a signal once the network proxy
   // resolution is completed.
-  dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-  response_sender.Run(response);
+  response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
 // static
@@ -261,7 +260,7 @@ void ProxyResolutionServiceProvider::CallResolveProxyHandler(
     dbus::ExportedObject::ResponseSender response_sender) {
   if (!provider_weak_ptr) {
     LOG(WARNING) << "Called after the object is deleted";
-    response_sender.Run(NULL);
+    response_sender.Run(scoped_ptr<dbus::Response>());
     return;
   }
   provider_weak_ptr->ResolveProxyHandler(method_call, response_sender);

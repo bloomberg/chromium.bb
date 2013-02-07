@@ -39,7 +39,7 @@ class BlockingMethodCallerTest : public testing::Test {
 
     // Set an expectation so mock_proxy's CallMethodAndBlock() will use
     // CreateMockProxyResponse() to return responses.
-    EXPECT_CALL(*mock_proxy_, CallMethodAndBlock(_, _))
+    EXPECT_CALL(*mock_proxy_, MockCallMethodAndBlock(_, _))
         .WillRepeatedly(Invoke(
             this, &BlockingMethodCallerTest::CreateMockProxyResponse));
 
@@ -78,10 +78,10 @@ class BlockingMethodCallerTest : public testing::Test {
       dbus::MessageReader reader(method_call);
       std::string text_message;
       if (reader.PopString(&text_message)) {
-        dbus::Response* response = dbus::Response::CreateEmpty();
-        dbus::MessageWriter writer(response);
+        scoped_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
+        dbus::MessageWriter writer(response.get());
         writer.AppendString(text_message);
-        return response;
+        return response.release();
       }
     }
 

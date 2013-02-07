@@ -211,8 +211,7 @@ class IBusPanelServiceImpl : public IBusPanelService {
       return;
     }
     candidate_window_handler_->UpdateLookupTable(table, visible);
-    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-    response_sender.Run(response);
+    response_sender.Run(dbus::Response::FromMethodCall(method_call));
   }
 
   // Handles HideLookupTable method call from ibus-daemon.
@@ -222,8 +221,7 @@ class IBusPanelServiceImpl : public IBusPanelService {
       return;
 
     candidate_window_handler_->HideLookupTable();
-    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-    response_sender.Run(response);
+    response_sender.Run(dbus::Response::FromMethodCall(method_call));
   }
 
   // Handles UpdateAuxiliaryText method call from ibus-daemon.
@@ -247,8 +245,7 @@ class IBusPanelServiceImpl : public IBusPanelService {
       return;
     }
     candidate_window_handler_->UpdateAuxiliaryText(text, visible);
-    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-    response_sender.Run(response);
+    response_sender.Run(dbus::Response::FromMethodCall(method_call));
   }
 
   // Handles HideAuxiliaryText method call from ibus-daemon.
@@ -258,8 +255,7 @@ class IBusPanelServiceImpl : public IBusPanelService {
       return;
 
     candidate_window_handler_->HideAuxiliaryText();
-    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-    response_sender.Run(response);
+    response_sender.Run(dbus::Response::FromMethodCall(method_call));
   }
 
   // Handles UpdatePreeditText method call from ibus-daemon.
@@ -288,8 +284,7 @@ class IBusPanelServiceImpl : public IBusPanelService {
       return;
     }
     candidate_window_handler_->UpdatePreeditText(text, cursor_pos, visible);
-    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-    response_sender.Run(response);
+    response_sender.Run(dbus::Response::FromMethodCall(method_call));
   }
 
   // Handles HidePreeditText method call from ibus-daemon.
@@ -299,8 +294,7 @@ class IBusPanelServiceImpl : public IBusPanelService {
       return;
 
     candidate_window_handler_->HidePreeditText();
-    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-    response_sender.Run(response);
+    response_sender.Run(dbus::Response::FromMethodCall(method_call));
   }
 
   // Handles RegisterProperties method call from ibus-daemon.
@@ -319,8 +313,7 @@ class IBusPanelServiceImpl : public IBusPanelService {
     }
     property_handler_->RegisterProperties(properties);
 
-    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-    response_sender.Run(response);
+    response_sender.Run(dbus::Response::FromMethodCall(method_call));
   }
 
   // Handles UpdateProperty method call from ibus-daemon.
@@ -338,8 +331,7 @@ class IBusPanelServiceImpl : public IBusPanelService {
     }
     property_handler_->UpdateProperty(property);
 
-    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-    response_sender.Run(response);
+    response_sender.Run(dbus::Response::FromMethodCall(method_call));
   }
 
   void SetCursorLocation(const ibus::Rect& cursor_location,
@@ -356,8 +348,7 @@ class IBusPanelServiceImpl : public IBusPanelService {
     if (!property_handler_)
       return;
 
-    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-    response_sender.Run(response);
+    response_sender.Run(dbus::Response::FromMethodCall(method_call));
   }
 
   // Called when the method call is exported.

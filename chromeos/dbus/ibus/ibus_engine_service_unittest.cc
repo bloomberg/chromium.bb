@@ -56,7 +56,11 @@ class MockIBusEngineHandler : public IBusEngineHandlerInterface {
 
 class MockResponseSender {
  public:
-  MOCK_METHOD1(Run, void(dbus::Response* reponse));
+  // GMock doesn't support mocking methods which take scoped_ptr<>.
+  MOCK_METHOD1(MockRun, void(dbus::Response* reponse));
+  void Run(scoped_ptr<dbus::Response> response) {
+    MockRun(response.get());
+  }
 };
 
 // Used for method call empty response evaluation.
@@ -67,7 +71,6 @@ class EmptyResponseExpectation {
 
   // Evaluates the given |response| has no argument.
   void Evaluate(dbus::Response* response) {
-    scoped_ptr<dbus::Response> response_deleter(response);
     EXPECT_EQ(serial_no_, response->GetReplySerial());
     dbus::MessageReader reader(response);
     EXPECT_FALSE(reader.HasMoreData());
@@ -89,7 +92,6 @@ class BoolResponseExpectation {
   // Evaluates the given |response| has only one boolean and which is equals to
   // |result_| which is given in ctor.
   void Evaluate(dbus::Response* response) {
-    scoped_ptr<dbus::Response> response_deleter(response);
     EXPECT_EQ(serial_no_, response->GetReplySerial());
     dbus::MessageReader reader(response);
     bool result = false;
@@ -519,7 +521,7 @@ TEST_F(IBusEngineServiceTest, FocusInTest) {
   EXPECT_CALL(*engine_handler_, FocusIn());
   MockResponseSender response_sender;
   EmptyResponseExpectation response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseExpectation::Evaluate));
 
@@ -539,7 +541,7 @@ TEST_F(IBusEngineServiceTest, FocusInTest) {
   // Call exported function without engine.
   service_->UnsetEngine();
   EXPECT_CALL(*engine_handler_, FocusIn()).Times(0);
-  EXPECT_CALL(response_sender, Run(_)).Times(0);
+  EXPECT_CALL(response_sender, MockRun(_)).Times(0);
   method_callback_map_[ibus::engine::kFocusInMethod].Run(
       &method_call,
       base::Bind(&MockResponseSender::Run,
@@ -552,7 +554,7 @@ TEST_F(IBusEngineServiceTest, FocusOutTest) {
   EXPECT_CALL(*engine_handler_, FocusOut());
   MockResponseSender response_sender;
   EmptyResponseExpectation response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseExpectation::Evaluate));
 
@@ -572,7 +574,7 @@ TEST_F(IBusEngineServiceTest, FocusOutTest) {
   // Call exported function without engine.
   service_->UnsetEngine();
   EXPECT_CALL(*engine_handler_, FocusOut()).Times(0);
-  EXPECT_CALL(response_sender, Run(_)).Times(0);
+  EXPECT_CALL(response_sender, MockRun(_)).Times(0);
   method_callback_map_[ibus::engine::kFocusOutMethod].Run(
       &method_call,
       base::Bind(&MockResponseSender::Run,
@@ -585,7 +587,7 @@ TEST_F(IBusEngineServiceTest, EnableTest) {
   EXPECT_CALL(*engine_handler_, Enable());
   MockResponseSender response_sender;
   EmptyResponseExpectation response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseExpectation::Evaluate));
 
@@ -605,7 +607,7 @@ TEST_F(IBusEngineServiceTest, EnableTest) {
   // Call exported function without engine.
   service_->UnsetEngine();
   EXPECT_CALL(*engine_handler_, Enable()).Times(0);
-  EXPECT_CALL(response_sender, Run(_)).Times(0);
+  EXPECT_CALL(response_sender, MockRun(_)).Times(0);
   method_callback_map_[ibus::engine::kEnableMethod].Run(
       &method_call,
       base::Bind(&MockResponseSender::Run,
@@ -618,7 +620,7 @@ TEST_F(IBusEngineServiceTest, DisableTest) {
   EXPECT_CALL(*engine_handler_, Disable());
   MockResponseSender response_sender;
   EmptyResponseExpectation response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseExpectation::Evaluate));
 
@@ -638,7 +640,7 @@ TEST_F(IBusEngineServiceTest, DisableTest) {
   // Call exported function without engine.
   service_->UnsetEngine();
   EXPECT_CALL(*engine_handler_, Disable()).Times(0);
-  EXPECT_CALL(response_sender, Run(_)).Times(0);
+  EXPECT_CALL(response_sender, MockRun(_)).Times(0);
   method_callback_map_[ibus::engine::kDisableMethod].Run(
       &method_call,
       base::Bind(&MockResponseSender::Run,
@@ -655,7 +657,7 @@ TEST_F(IBusEngineServiceTest, PropertyActivateTest) {
                                                  kIBusPropertyState));
   MockResponseSender response_sender;
   EmptyResponseExpectation response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseExpectation::Evaluate));
 
@@ -679,7 +681,7 @@ TEST_F(IBusEngineServiceTest, PropertyActivateTest) {
   service_->UnsetEngine();
   EXPECT_CALL(*engine_handler_, PropertyActivate(kPropertyName,
                                                  kIBusPropertyState)).Times(0);
-  EXPECT_CALL(response_sender, Run(_)).Times(0);
+  EXPECT_CALL(response_sender, MockRun(_)).Times(0);
   method_callback_map_[ibus::engine::kPropertyActivateMethod].Run(
       &method_call,
       base::Bind(&MockResponseSender::Run,
@@ -692,7 +694,7 @@ TEST_F(IBusEngineServiceTest, ResetTest) {
   EXPECT_CALL(*engine_handler_, Reset());
   MockResponseSender response_sender;
   EmptyResponseExpectation response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseExpectation::Evaluate));
 
@@ -712,7 +714,7 @@ TEST_F(IBusEngineServiceTest, ResetTest) {
   // Call exported function without engine.
   service_->UnsetEngine();
   EXPECT_CALL(*engine_handler_, Reset()).Times(0);
-  EXPECT_CALL(response_sender, Run(_)).Times(0);
+  EXPECT_CALL(response_sender, MockRun(_)).Times(0);
   method_callback_map_[ibus::engine::kResetMethod].Run(
       &method_call,
       base::Bind(&MockResponseSender::Run,
@@ -726,7 +728,7 @@ TEST_F(IBusEngineServiceTest, PropertyShowTest) {
   EXPECT_CALL(*engine_handler_, PropertyShow(kPropertyName));
   MockResponseSender response_sender;
   EmptyResponseExpectation response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseExpectation::Evaluate));
 
@@ -748,7 +750,7 @@ TEST_F(IBusEngineServiceTest, PropertyShowTest) {
   // Call exported function without engine.
   service_->UnsetEngine();
   EXPECT_CALL(*engine_handler_, PropertyShow(kPropertyName)).Times(0);
-  EXPECT_CALL(response_sender, Run(_)).Times(0);
+  EXPECT_CALL(response_sender, MockRun(_)).Times(0);
   method_callback_map_[ibus::engine::kPropertyShowMethod].Run(
       &method_call,
       base::Bind(&MockResponseSender::Run,
@@ -762,7 +764,7 @@ TEST_F(IBusEngineServiceTest, PropertyHideTest) {
   EXPECT_CALL(*engine_handler_, PropertyHide(kPropertyName));
   MockResponseSender response_sender;
   EmptyResponseExpectation response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseExpectation::Evaluate));
 
@@ -784,7 +786,7 @@ TEST_F(IBusEngineServiceTest, PropertyHideTest) {
   // Call exported function without engine.
   service_->UnsetEngine();
   EXPECT_CALL(*engine_handler_, PropertyHide(kPropertyName)).Times(0);
-  EXPECT_CALL(response_sender, Run(_)).Times(0);
+  EXPECT_CALL(response_sender, MockRun(_)).Times(0);
   method_callback_map_[ibus::engine::kPropertyHideMethod].Run(
       &method_call,
       base::Bind(&MockResponseSender::Run,
@@ -799,7 +801,7 @@ TEST_F(IBusEngineServiceTest, SetCapabilityTest) {
   EXPECT_CALL(*engine_handler_, SetCapability(kIBusCapability));
   MockResponseSender response_sender;
   EmptyResponseExpectation response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseExpectation::Evaluate));
 
@@ -821,7 +823,7 @@ TEST_F(IBusEngineServiceTest, SetCapabilityTest) {
   // Call exported function without engine.
   service_->UnsetEngine();
   EXPECT_CALL(*engine_handler_, SetCapability(kIBusCapability)).Times(0);
-  EXPECT_CALL(response_sender, Run(_)).Times(0);
+  EXPECT_CALL(response_sender, MockRun(_)).Times(0);
   method_callback_map_[ibus::engine::kSetCapabilityMethod].Run(
       &method_call,
       base::Bind(&MockResponseSender::Run,
@@ -842,7 +844,7 @@ TEST_F(IBusEngineServiceTest, ProcessKeyEventTest) {
                        &ProcessKeyEventHandler::ProcessKeyEvent));
   MockResponseSender response_sender;
   BoolResponseExpectation response_expectation(kSerialNo, kResult);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &BoolResponseExpectation::Evaluate));
 
@@ -867,7 +869,7 @@ TEST_F(IBusEngineServiceTest, ProcessKeyEventTest) {
   service_->UnsetEngine();
   EXPECT_CALL(*engine_handler_,
               ProcessKeyEvent(kKeySym, kKeyCode, kState, _)).Times(0);
-  EXPECT_CALL(response_sender, Run(_)).Times(0);
+  EXPECT_CALL(response_sender, MockRun(_)).Times(0);
   method_callback_map_[ibus::engine::kProcessKeyEventMethod].Run(
       &method_call,
       base::Bind(&MockResponseSender::Run,
@@ -888,7 +890,7 @@ TEST_F(IBusEngineServiceTest, DelayProcessKeyEventTest) {
                        &DelayProcessKeyEventHandler::ProcessKeyEvent));
   MockResponseSender response_sender;
   BoolResponseExpectation response_expectation(kSerialNo, kResult);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &BoolResponseExpectation::Evaluate));
 
@@ -916,7 +918,7 @@ TEST_F(IBusEngineServiceTest, DelayProcessKeyEventTest) {
   service_->UnsetEngine();
   EXPECT_CALL(*engine_handler_,
               ProcessKeyEvent(kKeySym, kKeyCode, kState, _)).Times(0);
-  EXPECT_CALL(response_sender, Run(_)).Times(0);
+  EXPECT_CALL(response_sender, MockRun(_)).Times(0);
   method_callback_map_[ibus::engine::kProcessKeyEventMethod].Run(
       &method_call,
       base::Bind(&MockResponseSender::Run,
@@ -933,7 +935,7 @@ TEST_F(IBusEngineServiceTest, CandidateClickedTest) {
                                                  kState));
   MockResponseSender response_sender;
   EmptyResponseExpectation response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseExpectation::Evaluate));
 
@@ -958,7 +960,7 @@ TEST_F(IBusEngineServiceTest, CandidateClickedTest) {
   service_->UnsetEngine();
   EXPECT_CALL(*engine_handler_, CandidateClicked(kIndex, kIBusMouseButton,
                                                  kState)).Times(0);
-  EXPECT_CALL(response_sender, Run(_)).Times(0);
+  EXPECT_CALL(response_sender, MockRun(_)).Times(0);
   method_callback_map_[ibus::engine::kCandidateClickedMethod].Run(
       &method_call,
       base::Bind(&MockResponseSender::Run,
@@ -975,7 +977,7 @@ TEST_F(IBusEngineServiceTest, SetSurroundingTextTest) {
                                                    kAnchorPos));
   MockResponseSender response_sender;
   EmptyResponseExpectation response_expectation(kSerialNo);
-  EXPECT_CALL(response_sender, Run(_))
+  EXPECT_CALL(response_sender, MockRun(_))
       .WillOnce(Invoke(&response_expectation,
                        &EmptyResponseExpectation::Evaluate));
 
@@ -1000,7 +1002,7 @@ TEST_F(IBusEngineServiceTest, SetSurroundingTextTest) {
   service_->UnsetEngine();
   EXPECT_CALL(*engine_handler_, SetSurroundingText(kText, kCursorPos,
                                                    kAnchorPos)).Times(0);
-  EXPECT_CALL(response_sender, Run(_)).Times(0);
+  EXPECT_CALL(response_sender, MockRun(_)).Times(0);
   method_callback_map_[ibus::engine::kSetSurroundingTextMethod].Run(
       &method_call,
       base::Bind(&MockResponseSender::Run,

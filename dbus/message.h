@@ -10,6 +10,7 @@
 #include <dbus/dbus.h>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "dbus/dbus_export.h"
 #include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
@@ -200,18 +201,17 @@ class CHROME_DBUS_EXPORT Signal : public Message {
 class CHROME_DBUS_EXPORT Response : public Message {
  public:
   // Returns a newly created Response from the given raw message of the
-  // type DBUS_MESSAGE_TYPE_METHOD_RETURN. The caller must delete the
-  // returned object. Takes the ownership of |raw_message|.
-  static Response* FromRawMessage(DBusMessage* raw_message);
+  // type DBUS_MESSAGE_TYPE_METHOD_RETURN. Takes the ownership of |raw_message|.
+  static scoped_ptr<Response> FromRawMessage(DBusMessage* raw_message);
 
-  // Returns a newly created Response from the given method call. The
-  // caller must delete the returned object. Used for implementing
-  // exported methods.
-  static Response* FromMethodCall(MethodCall* method_call);
+  // Returns a newly created Response from the given method call.
+  // Used for implementing exported methods. Does NOT take the ownership of
+  // |method_call|.
+  static scoped_ptr<Response> FromMethodCall(MethodCall* method_call);
 
-  // Returns a newly created Response with an empty payload. The caller
-  // must delete the returned object. Useful for testing.
-  static Response* CreateEmpty();
+  // Returns a newly created Response with an empty payload.
+  // Useful for testing.
+  static scoped_ptr<Response> CreateEmpty();
 
  protected:
   // Creates a Response message. The internal raw message is NULL.
@@ -226,17 +226,17 @@ class CHROME_DBUS_EXPORT Response : public Message {
 class CHROME_DBUS_EXPORT ErrorResponse: public Response {
  public:
   // Returns a newly created Response from the given raw message of the
-  // type DBUS_MESSAGE_TYPE_METHOD_RETURN. The caller must delete the
-  // returned object. Takes the ownership of |raw_message|.
-  static ErrorResponse* FromRawMessage(DBusMessage* raw_message);
+  // type DBUS_MESSAGE_TYPE_METHOD_RETURN. Takes the ownership of |raw_message|.
+  static scoped_ptr<ErrorResponse> FromRawMessage(DBusMessage* raw_message);
 
   // Returns a newly created ErrorResponse from the given method call, the
   // error name, and the error message.  The error name looks like
   // "org.freedesktop.DBus.Error.Failed". Used for returning an error to a
-  // failed method call.
-  static ErrorResponse* FromMethodCall(MethodCall* method_call,
-                                       const std::string& error_name,
-                                       const std::string& error_message);
+  // failed method call. Does NOT take the ownership of |method_call|.
+  static scoped_ptr<ErrorResponse> FromMethodCall(
+      MethodCall* method_call,
+      const std::string& error_name,
+      const std::string& error_message);
 
  private:
   // Creates an ErrorResponse message. The internal raw message is NULL.

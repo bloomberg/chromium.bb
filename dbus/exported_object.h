@@ -41,12 +41,7 @@ class CHROME_DBUS_EXPORT ExportedObject
   // Called to send a response from an exported method. |response| is the
   // response message. Callers should pass NULL in the event of an error that
   // prevents the sending of a response.
-  //
-  // ResponseSender takes ownership of |response| hence client code should
-  // not delete |response|.
-  // TODO(satorux): Change this to take scoped_ptr<Response> to make
-  // ownership clearer. crbug.com/163231
-  typedef base::Callback<void (Response* response)> ResponseSender;
+  typedef base::Callback<void (scoped_ptr<Response> response)> ResponseSender;
 
   // Called when an exported method is called. |method_call| is the request
   // message. |sender| is the callback that's used to send a response.
@@ -134,20 +129,20 @@ class CHROME_DBUS_EXPORT ExportedObject
 
   // Runs the method. Helper function for HandleMessage().
   void RunMethod(MethodCallCallback method_call_callback,
-                 MethodCall* method_call,
+                 scoped_ptr<MethodCall> method_call,
                  base::TimeTicks start_time);
 
   // Callback invoked by service provider to send a response to a method call.
   // Can be called immediately from a MethodCallCallback to implement a
   // synchronous service or called later to implement an asynchronous service.
   void SendResponse(base::TimeTicks start_time,
-                    MethodCall* method_call,
-                    Response* response);
+                    scoped_ptr<MethodCall> method_call,
+                    scoped_ptr<Response> response);
 
   // Called on completion of the method run from SendResponse().
   // Takes ownership of |method_call| and |response|.
-  void OnMethodCompleted(MethodCall* method_call,
-                         Response* response,
+  void OnMethodCompleted(scoped_ptr<MethodCall> method_call,
+                         scoped_ptr<Response> response,
                          base::TimeTicks start_time);
 
   // Called when the object is unregistered.

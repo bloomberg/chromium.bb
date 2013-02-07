@@ -81,11 +81,10 @@ class CHROME_DBUS_EXPORT ObjectProxy
 
   // Calls the method of the remote object and blocks until the response
   // is returned. Returns NULL on error.
-  // The caller is responsible to delete the returned object.
   //
   // BLOCKING CALL.
-  virtual Response* CallMethodAndBlock(MethodCall* method_call,
-                                       int timeout_ms);
+  virtual scoped_ptr<Response> CallMethodAndBlock(MethodCall* method_call,
+                                                  int timeout_ms);
 
   // Requests to call the method of the remote object.
   //
