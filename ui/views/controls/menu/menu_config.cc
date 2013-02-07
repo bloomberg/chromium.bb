@@ -61,8 +61,8 @@ MenuConfig::~MenuConfig() {}
 
 void MenuConfig::AdjustForCommonTheme() {
   render_gutter = false;
-  item_top_margin = 5;
-  item_bottom_margin = 5;
+  item_top_margin = 7;
+  item_bottom_margin = 6;
   item_no_icon_top_margin = 7;
   item_no_icon_bottom_margin = 7;
   separator_height = 15;

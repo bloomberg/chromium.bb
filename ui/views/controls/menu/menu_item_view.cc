@@ -941,7 +941,14 @@ MenuItemView::MenuItemDimensions MenuItemView::GetPreferredDimensions() {
   MenuItemDimensions dimensions;
   // Get the container height.
   dimensions.children_width = child_size.width();
-  dimensions.height = child_size.height() + GetBottomMargin() + GetTopMargin();
+  dimensions.height = child_size.height();
+  // Adjust item content height if menu has both items with and without icons.
+  // This way all menu items will have the same height.
+  if (!icon_view_ && GetRootMenuItem()->has_icons()) {
+    dimensions.height = std::max(dimensions.height,
+                                 GetMenuConfig().check_height);
+  }
+  dimensions.height += GetBottomMargin() + GetTopMargin();
 
   // In case of a container, only the container size needs to be filled.
   if (IsContainer())
