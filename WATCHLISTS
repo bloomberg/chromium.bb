@@ -563,7 +563,7 @@
     'browser_components': ['browser-components-watch@chromium.org'],
     'browser_compositor': ['backer@chromium.org', 'vollick@chromium.org',
                            'piman+watch@chromium.org'],
-    'browser_resources': ['arv@chromium.org'],
+    'browser_resources': ['arv+watch@chromium.org'],
     'browsing_data': ['markusheintz@chromium.org'],
     'bubble': ['alicet@chromium.org', 'msw+watch@chromium.org'],
     'cc': ['cc-bugs@chromium.org'],
