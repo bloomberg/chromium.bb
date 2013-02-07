@@ -9,9 +9,7 @@
     // TODO(vadimt): Replace <all_urls> with real URL patterns once we know
     // them.
     "<all_urls>",
-    // TODO(vadimt): Uncomment "experimental" permission once the startup time
-    // experiment is over.
-    //"experimental",
+    "experimental",
     "alarms"
   ],
   "manifest_version": 2,
