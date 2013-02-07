@@ -74,12 +74,17 @@ void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager,
                              number_of_profiles);
 
     size_t number_of_managed_profiles = 0;
+    size_t number_of_signed_in_profiles = 0;
     for (size_t i = 0; i < number_of_profiles; ++i) {
       if (info_cache.ProfileIsManagedAtIndex(i))
         ++number_of_managed_profiles;
+      if (!info_cache.GetUserNameOfProfileAtIndex(i).empty())
+        ++number_of_signed_in_profiles;
     }
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfManagedProfilesOnStartup",
                              number_of_managed_profiles);
+    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSignedInProfilesOnStartup",
+                             number_of_signed_in_profiles);
   } else {
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfProfilesAfterAddOrDelete",
                              number_of_profiles);
