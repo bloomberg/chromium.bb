@@ -161,10 +161,12 @@ class IsolateBase(unittest.TestCase):
 
     Returns the equivalent string.
     """
+    flavor = isolate.get_flavor()
+    chromeos_value = int(flavor == 'linux')
     return cls._isolate_dict_to_string(
         {
           'conditions': [
-            ['OS=="%s"' % isolate.get_flavor(), {
+            ['OS=="%s" and chromeos==%d' % (flavor, chromeos_value), {
               'variables': variables
             }],
           ],
@@ -253,16 +255,17 @@ class IsolateModeBase(IsolateBase):
 
   def _expected_saved_state(self, args, read_only, empty_file, extra_vars):
     flavor = isolate.get_flavor()
+    chromeos_value = int(flavor == 'linux')
     expected = {
       u'command': [],
       u'files': self._gen_files(read_only, empty_file, True),
       u'isolate_file': unicode(self.filename()),
       u'isolated_files': [self.isolated],
-      u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
       u'variables': {
         u'EXECUTABLE_SUFFIX': u'.exe' if flavor == 'win' else u'',
         u'OS': unicode(flavor),
+        u'chromeos': chromeos_value,
       },
     }
     if args:
@@ -285,12 +288,14 @@ class IsolateModeBase(IsolateBase):
         case,
         self.case() + '.isolate',
         'Rename the test case to test_%s()' % case)
+    chromeos_value = int(isolate.get_flavor() == 'linux')
     cmd = [
       sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
       mode,
       '--isolated', self.isolated,
       '--outdir', self.outdir,
       '--isolate', self.filename(),
+      '-V', 'chromeos', str(chromeos_value),
     ]
     cmd.extend(args)
 
@@ -340,7 +345,7 @@ class IsolateModeBase(IsolateBase):
 
   def _test_missing_trailing_slash(self, mode):
     try:
-      self._execute(mode, 'missing_trailing_slash.isolate', [], False)
+      self._execute(mode, 'missing_trailing_slash.isolate', [], True)
       self.fail()
     except subprocess.CalledProcessError as e:
       self.assertEquals('', e.output)
@@ -356,7 +361,7 @@ class IsolateModeBase(IsolateBase):
 
   def _test_non_existent(self, mode):
     try:
-      self._execute(mode, 'non_existent.isolate', [], False)
+      self._execute(mode, 'non_existent.isolate', [], True)
       self.fail()
     except subprocess.CalledProcessError as e:
       self.assertEquals('', e.output)
@@ -372,7 +377,7 @@ class IsolateModeBase(IsolateBase):
 
   def _test_all_items_invalid(self, mode):
     out = self._execute(mode, 'all_items_invalid.isolate',
-                        ['--ignore_broken_item'], False)
+                        ['--ignore_broken_item'], True)
     self._expect_results(['empty.py'], None, None, None)
 
     return out or ''
@@ -909,10 +914,12 @@ class IsolateNoOutdir(IsolateBase):
 
   def _execute(self, mode, args, need_output):
     """Executes isolate.py."""
+    chromeos_value = int(isolate.get_flavor() == 'linux')
     cmd = [
       sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
       mode,
       '--isolated', self.isolated,
+      '-V', 'chromeos', str(chromeos_value),
     ]
     cmd.extend(args)
 

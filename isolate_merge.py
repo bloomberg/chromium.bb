@@ -14,13 +14,12 @@ import logging
 import os
 import sys
 
-from isolate import Configs, DEFAULT_OSES, eval_content, extract_comment
-from isolate import load_isolate_as_config, union, convert_map_to_isolate_dict
-from isolate import reduce_inputs, invert_map, print_all
+from isolate import eval_content, extract_comment
+from isolate import load_isolate_as_config, print_all, union
 import run_test_cases
 
 
-def load_isolates(items, default_oses):
+def load_isolates(items):
   """Parses each .isolate file and returns the merged results.
 
   It only loads what load_isolate_as_config() can process.
@@ -30,7 +29,7 @@ def load_isolates(items, default_oses):
     dirs:  dict(dirame, set(OS where this dirname is a dependency))
     oses:  set(all the OSes referenced)
     """
-  configs = Configs(default_oses, None)
+  configs = None
   for item in items:
     item = os.path.abspath(item)
     logging.debug('loading %s' % item)
@@ -42,11 +41,10 @@ def load_isolates(items, default_oses):
     new_config = load_isolate_as_config(
         os.path.dirname(item),
         eval_content(content),
-        extract_comment(content),
-        default_oses)
-    logging.debug('has OSes: %s' % ','.join(k for k in new_config.per_os if k))
+        extract_comment(content))
+    logging.debug('has configs: ' + ','.join(map(repr, new_config.by_config)))
     configs = union(configs, new_config)
-  logging.debug('Total OSes: %s' % ','.join(k for k in configs.per_os if k))
+  logging.debug('Total configs: ' + ','.join(map(repr, configs.by_config)))
   return configs
 
 
@@ -55,15 +53,11 @@ def main(args=None):
       usage='%prog <options> [file1] [file2] ...')
   parser.add_option(
       '-o', '--output', help='Output to file instead of stdout')
-  parser.add_option(
-      '--os', default=','.join(DEFAULT_OSES),
-      help='Inject the list of OSes, default: %default')
 
   options, args = parser.parse_args(args)
 
-  configs = load_isolates(args, options.os.split(','))
-  data = convert_map_to_isolate_dict(
-      *reduce_inputs(*invert_map(configs.flatten())))
+  configs = load_isolates(args)
+  data = configs.make_isolate_file()
   if options.output:
     with open(options.output, 'wb') as f:
       print_all(configs.file_comment, data, f)

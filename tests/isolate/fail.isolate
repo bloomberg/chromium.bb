@@ -2,13 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
-  'variables': {
-    'command': [
-      'python',
-      'fail.py',
-    ],
-    'isolate_dependency_tracked': [
-      'fail.py',
-    ],
-  },
+  'conditions': [
+    ['(OS=="linux" and chromeos==1) or ((OS=="mac" or OS=="win") and chromeos==0)', {
+      'variables': {
+        'command': [
+          'python',
+          'fail.py',
+        ],
+        'isolate_dependency_tracked': [
+          'fail.py',
+        ],
+      },
+    }],
+  ],
 }

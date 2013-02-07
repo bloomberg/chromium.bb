@@ -43,15 +43,6 @@ class IsolateBase(unittest.TestCase):
 
 
 class IsolateTest(IsolateBase):
-  def test_load_isolate_for_flavor_empty(self):
-    content = "{}"
-    command, infiles, touched, read_only = isolate.load_isolate_for_flavor(
-        self.cwd, content, isolate.get_flavor())
-    self.assertEqual([], command)
-    self.assertEqual([], infiles)
-    self.assertEqual([], touched)
-    self.assertEqual(None, read_only)
-
   def test_savedstate_load_empty(self):
     values = {
     }
@@ -59,25 +50,34 @@ class IsolateTest(IsolateBase):
       'command': [],
       'files': {},
       'isolated_files': [],
-      'os': isolate.get_flavor(),
-      'variables': {},
+      'variables': {
+        'OS': isolate.get_flavor(),
+      },
     }
-    self.assertEqual(expected, isolate.SavedState.load(values).flatten())
+    saved_state = isolate.SavedState()
+    saved_state.load(values)
+    self.assertEqual(expected, saved_state.flatten())
 
   def test_savedstate_load(self):
     values = {
       'isolate_file': os.path.join(ROOT_DIR, 'maybe'),
-      'variables': {'foo': 42},
+      'variables': {
+        'foo': 42,
+        'OS': isolate.get_flavor(),
+      },
     }
     expected = {
       'command': [],
       'files': {},
       'isolate_file': unicode(os.path.join(ROOT_DIR, 'maybe')),
       'isolated_files': [],
-      'os': isolate.get_flavor(),
-      'variables': {'foo': 42},
+      'variables': {
+        'foo': 42,
+        'OS': isolate.get_flavor(),
+      },
     }
-    self.assertEqual(expected, isolate.SavedState.load(values).flatten())
+    saved_state = isolate.SavedState().load(values)
+    self.assertEqual(expected, saved_state.flatten())
 
   def test_unknown_key(self):
     try:
@@ -88,7 +88,7 @@ class IsolateTest(IsolateBase):
 
   def test_unknown_var(self):
     try:
-      isolate.verify_condition({'variables': {'foo': [],}})
+      isolate.verify_condition({'variables': {'foo': [],}}, {})
       self.fail()
     except AssertionError:
       pass
@@ -122,16 +122,18 @@ class IsolateTest(IsolateBase):
 
   def test_load_isolate_as_config_empty(self):
     self.assertEqual({}, isolate.load_isolate_as_config(
-      self.cwd, {}, None, []).flatten())
+        self.cwd, {}, None).flatten())
 
   def test_load_isolate_as_config(self):
     value = {
-      'variables': {
-        KEY_TRACKED: ['a'],
-        KEY_UNTRACKED: ['b'],
-        KEY_TOUCHED: ['touched'],
-      },
       'conditions': [
+        ['OS=="amiga" or OS=="atari" or OS=="coleco" or OS=="dendy"', {
+          'variables': {
+            KEY_TRACKED: ['a'],
+            KEY_UNTRACKED: ['b'],
+            KEY_TOUCHED: ['touched'],
+          },
+        }],
         ['OS=="atari"', {
           'variables': {
             KEY_TRACKED: ['c', 'x'],
@@ -140,7 +142,8 @@ class IsolateTest(IsolateBase):
             'command': ['echo', 'Hello World'],
             'read_only': True,
           },
-        }, {  # else
+        }],
+        ['OS=="amiga" or OS=="coleco" or OS=="dendy"', {
           'variables': {
             KEY_TRACKED: ['e', 'x'],
             KEY_UNTRACKED: ['f'],
@@ -154,39 +157,35 @@ class IsolateTest(IsolateBase):
             'read_only': False,
           },
         }],
-        ['OS=="dendy"', {
-        }],
-        ['OS=="coleco"', {
-        }, {  # else
+        ['OS=="amiga" or OS=="atari" or OS=="dendy"', {
           'variables': {
             KEY_UNTRACKED: ['h'],
-            'read_only': None,
           },
         }],
       ],
     }
     expected = {
-      'amiga': {
+      ('amiga',): {
         'command': ['echo', 'You should get an Atari'],
         KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'g', 'x'],
         KEY_UNTRACKED: ['b', 'f', 'h'],
         'read_only': False,
       },
-      'atari': {
+      ('atari',): {
         'command': ['echo', 'Hello World'],
         KEY_TOUCHED: ['touched', 'touched_a'],
         KEY_TRACKED: ['a', 'c', 'x'],
         KEY_UNTRACKED: ['b', 'd', 'h'],
         'read_only': True,
       },
-      'coleco': {
+      ('coleco',): {
         'command': ['echo', 'You should get an Atari'],
         KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'x'],
         KEY_UNTRACKED: ['b', 'f'],
       },
-      'dendy': {
+      ('dendy',): {
         'command': ['echo', 'You should get an Atari'],
         KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'x'],
@@ -195,7 +194,7 @@ class IsolateTest(IsolateBase):
     }
     self.assertEqual(
         expected, isolate.load_isolate_as_config(
-            self.cwd, value, None, []).flatten())
+            self.cwd, value, None).flatten())
 
   def test_load_isolate_as_config_duplicate_command(self):
     value = {
@@ -211,325 +210,305 @@ class IsolateTest(IsolateBase):
       ],
     }
     try:
-      isolate.load_isolate_as_config(self.cwd, value, None, [])
+      isolate.load_isolate_as_config(self.cwd, value, None)
       self.fail()
     except AssertionError:
       pass
 
-  def test_load_isolate_as_config_no_condition(self):
-    value = {
-      'variables': {
-        KEY_TRACKED: ['a'],
-        KEY_UNTRACKED: ['b'],
-      },
-    }
-    expected = {
-      KEY_TRACKED: ['a'],
-      KEY_UNTRACKED: ['b'],
-    }
-    actual = isolate.load_isolate_as_config(self.cwd, value, None, [])
-    # Flattening the whole config will discard 'None'.
-    self.assertEqual({}, actual.flatten())
-    self.assertEqual([None], actual.per_os.keys())
-    # But the 'None' value is still available as a backup.
-    self.assertEqual(expected, actual.per_os[None].flatten())
-
   def test_invert_map(self):
     value = {
-      'amiga': {
+      ('amiga',): {
         'command': ['echo', 'You should get an Atari'],
         KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'g', 'x'],
         KEY_UNTRACKED: ['b', 'f', 'h'],
         'read_only': False,
       },
-      'atari': {
+      ('atari',): {
         'command': ['echo', 'Hello World'],
         KEY_TOUCHED: ['touched', 'touched_a'],
         KEY_TRACKED: ['a', 'c', 'x'],
         KEY_UNTRACKED: ['b', 'd', 'h'],
         'read_only': True,
       },
-      'coleco': {
+      ('coleco',): {
         'command': ['echo', 'You should get an Atari'],
         KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'x'],
         KEY_UNTRACKED: ['b', 'f'],
       },
-      'dendy': {
+      ('dendy',): {
         'command': ['echo', 'You should get an Atari'],
         KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'x'],
         KEY_UNTRACKED: ['b', 'f', 'h'],
       },
     }
+    amiga, atari, coleco, dendy = (
+        set([(os,)]) for os in ('amiga', 'atari', 'coleco', 'dendy'))
     expected_values = {
       'command': {
-        ('echo', 'Hello World'): set(['atari']),
-        ('echo', 'You should get an Atari'): set(['amiga', 'coleco', 'dendy']),
+        ('echo', 'Hello World'): atari,
+        ('echo', 'You should get an Atari'): amiga | coleco | dendy,
       },
       KEY_TRACKED: {
-        'a': set(['amiga', 'atari', 'coleco', 'dendy']),
-        'c': set(['atari']),
-        'e': set(['amiga', 'coleco', 'dendy']),
-        'g': set(['amiga']),
-        'x': set(['amiga', 'atari', 'coleco', 'dendy']),
+        'a': amiga | atari | coleco | dendy,
+        'c': atari,
+        'e': amiga | coleco | dendy,
+        'g': amiga,
+        'x': amiga | atari | coleco | dendy,
       },
       KEY_UNTRACKED: {
-        'b': set(['amiga', 'atari', 'coleco', 'dendy']),
-        'd': set(['atari']),
-        'f': set(['amiga', 'coleco', 'dendy']),
-        'h': set(['amiga', 'atari', 'dendy']),
+        'b': amiga | atari | coleco | dendy,
+        'd': atari,
+        'f': amiga | coleco | dendy,
+        'h': amiga | atari | dendy,
       },
       KEY_TOUCHED: {
-        'touched': set(['amiga', 'atari', 'coleco', 'dendy']),
-        'touched_a': set(['atari']),
-        'touched_e': set(['amiga', 'coleco', 'dendy']),
+        'touched': amiga | atari | coleco | dendy,
+        'touched_a': atari,
+        'touched_e': amiga | coleco | dendy,
       },
       'read_only': {
-        None: set(['coleco', 'dendy']),
-        False: set(['amiga']),
-        True: set(['atari']),
+        False: amiga,
+        True: atari,
       },
     }
-    expected_oses = set(['amiga', 'atari', 'coleco', 'dendy'])
-    actual_values, actual_oses = isolate.invert_map(value)
+    actual_values = isolate.invert_map(value)
     self.assertEqual(expected_values, actual_values)
-    self.assertEqual(expected_oses, actual_oses)
 
   def test_reduce_inputs(self):
+    amiga, atari, coleco, dendy = (
+        set([(os,)]) for os in ('amiga', 'atari', 'coleco', 'dendy'))
     values = {
       'command': {
-        ('echo', 'Hello World'): set(['atari']),
-        ('echo', 'You should get an Atari'): set(['amiga', 'coleco', 'dendy']),
+        ('echo', 'Hello World'): atari,
+        ('echo', 'You should get an Atari'): amiga | coleco | dendy,
       },
       KEY_TRACKED: {
-        'a': set(['amiga', 'atari', 'coleco', 'dendy']),
-        'c': set(['atari']),
-        'e': set(['amiga', 'coleco', 'dendy']),
-        'g': set(['amiga']),
-        'x': set(['amiga', 'atari', 'coleco', 'dendy']),
+        'a': amiga | atari | coleco | dendy,
+        'c': atari,
+        'e': amiga | coleco | dendy,
+        'g': amiga,
+        'x': amiga | atari | coleco | dendy,
       },
       KEY_UNTRACKED: {
-        'b': set(['amiga', 'atari', 'coleco', 'dendy']),
-        'd': set(['atari']),
-        'f': set(['amiga', 'coleco', 'dendy']),
-        'h': set(['amiga', 'atari', 'dendy']),
+        'b': amiga | atari | coleco | dendy,
+        'd': atari,
+        'f': amiga | coleco | dendy,
+        'h': amiga | atari | dendy,
       },
       KEY_TOUCHED: {
-        'touched': set(['amiga', 'atari', 'coleco', 'dendy']),
-        'touched_a': set(['atari']),
-        'touched_e': set(['amiga', 'coleco', 'dendy']),
+        'touched': amiga | atari | coleco | dendy,
+        'touched_a': atari,
+        'touched_e': amiga | coleco | dendy,
       },
       'read_only': {
-        None: set(['coleco', 'dendy']),
-        False: set(['amiga']),
-        True: set(['atari']),
+        False: amiga,
+        True: atari,
       },
     }
-    oses = set(['amiga', 'atari', 'coleco', 'dendy'])
     expected_values = {
       'command': {
-        ('echo', 'Hello World'): set(['atari']),
-        ('echo', 'You should get an Atari'): set(['!atari']),
+        ('echo', 'Hello World'): atari,
+        ('echo', 'You should get an Atari'): amiga | coleco | dendy,
       },
       KEY_TRACKED: {
-        'a': set([None]),
-        'c': set(['atari']),
-        'e': set(['!atari']),
-        'g': set(['amiga']),
-        'x': set([None]),
+        'a': amiga | atari | coleco | dendy,
+        'c': atari,
+        'e': amiga | coleco | dendy,
+        'g': amiga,
+        'x': amiga | atari | coleco | dendy,
       },
       KEY_UNTRACKED: {
-        'b': set([None]),
-        'd': set(['atari']),
-        'f': set(['!atari']),
-        'h': set(['!coleco']),
+        'b': amiga | atari | coleco | dendy,
+        'd': atari,
+        'f': amiga | coleco | dendy,
+        'h': amiga | atari | dendy,
       },
       KEY_TOUCHED: {
-        'touched': set([None]),
-        'touched_a': set(['atari']),
-        'touched_e': set(['!atari']),
+        'touched': amiga | atari | coleco | dendy,
+        'touched_a': atari,
+        'touched_e': amiga | coleco | dendy,
       },
       'read_only': {
-        None: set(['coleco', 'dendy']),
-        False: set(['amiga']),
-        True: set(['atari']),
+        False: amiga,
+        True: atari,
       },
     }
-    actual_values, actual_oses = isolate.reduce_inputs(values, oses)
+    actual_values = isolate.reduce_inputs(values)
     self.assertEqual(expected_values, actual_values)
-    self.assertEqual(oses, actual_oses)
 
   def test_reduce_inputs_merge_subfolders_and_files(self):
+    linux, mac, win = (set([(os,)]) for os in ('linux', 'mac', 'win'))
     values = {
-      'command': {},
       KEY_TRACKED: {
-        'folder/tracked_file': set(['win']),
-        'folder_helper/tracked_file': set(['win']),
+        'folder/tracked_file': win,
+        'folder_helper/tracked_file': win,
       },
       KEY_UNTRACKED: {
-        'folder/': set(['linux', 'mac', 'win']),
-        'folder/subfolder/': set(['win']),
-        'folder/untracked_file': set(['linux', 'mac', 'win']),
-        'folder_helper/': set(['linux']),
+        'folder/': linux | mac | win,
+        'folder/subfolder/': win,
+        'folder/untracked_file': linux | mac | win,
+        'folder_helper/': linux,
       },
       KEY_TOUCHED: {
-        'folder/touched_file': set (['win']),
-        'folder/helper_folder/deep_file': set(['win']),
-        'folder_helper/touched_file1': set (['mac', 'win']),
-        'folder_helper/touched_file2': set (['linux']),
+        'folder/touched_file': win,
+        'folder/helper_folder/deep_file': win,
+        'folder_helper/touched_file1': mac | win,
+        'folder_helper/touched_file2': linux,
       },
     }
-    oses = set(['linux', 'mac', 'win'])
     expected_values = {
       'command': {},
       KEY_TRACKED: {
-        'folder_helper/tracked_file': set(['win']),
+        'folder_helper/tracked_file': win,
       },
       KEY_UNTRACKED: {
-        'folder/': set([None]),
-        'folder_helper/': set(['linux']),
+        'folder/': linux | mac | win,
+        'folder_helper/': linux,
       },
       KEY_TOUCHED: {
-        'folder_helper/touched_file1': set (['!linux']),
+        'folder_helper/touched_file1': mac | win,
       },
       'read_only': {},
     }
-    actual_values, actual_oses = isolate.reduce_inputs(values, oses)
+    actual_values = isolate.reduce_inputs(values)
     self.assertEqual(expected_values, actual_values)
-    self.assertEqual(oses, actual_oses)
 
   def test_reduce_inputs_take_strongest_dependency(self):
+    amiga, atari, coleco, dendy = (
+        set([(os,)]) for os in ('amiga', 'atari', 'coleco', 'dendy'))
     values = {
       'command': {
-        ('echo', 'Hello World'): set(['atari']),
-        ('echo', 'You should get an Atari'): set(['amiga', 'coleco', 'dendy']),
+        ('echo', 'Hello World'): atari,
+        ('echo', 'You should get an Atari'): amiga | coleco | dendy,
       },
       KEY_TRACKED: {
-        'a': set(['amiga', 'atari', 'coleco', 'dendy']),
-        'b': set(['amiga', 'atari', 'coleco']),
+        'a': amiga | atari | coleco | dendy,
+        'b': amiga | atari | coleco,
       },
       KEY_UNTRACKED: {
-        'c': set(['amiga', 'atari', 'coleco', 'dendy']),
-        'd': set(['amiga', 'coleco', 'dendy']),
+        'c': amiga | atari | coleco | dendy,
+        'd': amiga | coleco | dendy,
       },
       KEY_TOUCHED: {
-        'a': set(['amiga', 'atari', 'coleco', 'dendy']),
-        'b': set(['atari', 'coleco', 'dendy']),
-        'c': set(['amiga', 'atari', 'coleco', 'dendy']),
-        'd': set(['atari', 'coleco', 'dendy']),
+        'a': amiga | atari | coleco | dendy,
+        'b': atari | coleco | dendy,
+        'c': amiga | atari | coleco | dendy,
+        'd': atari | coleco | dendy,
       },
     }
-    oses = set(['amiga', 'atari', 'coleco', 'dendy'])
     expected_values = {
       'command': {
-        ('echo', 'Hello World'): set(['atari']),
-        ('echo', 'You should get an Atari'): set(['!atari']),
+        ('echo', 'Hello World'): atari,
+        ('echo', 'You should get an Atari'): amiga | coleco | dendy,
       },
       KEY_TRACKED: {
-        'a': set([None]),
-        'b': set(['!dendy']),
+        'a': amiga | atari | coleco | dendy,
+        'b': amiga | atari | coleco,
       },
       KEY_UNTRACKED: {
-        'c': set([None]),
-        'd': set(['!atari']),
+        'c': amiga | atari | coleco | dendy,
+        'd': amiga | coleco | dendy,
       },
       KEY_TOUCHED: {
-        'b': set(['dendy']),
-        'd': set(['atari']),
+        'b': dendy,
+        'd': atari,
       },
       'read_only': {},
     }
-    actual_values, actual_oses = isolate.reduce_inputs(values, oses)
+    actual_values = isolate.reduce_inputs(values)
     self.assertEqual(expected_values, actual_values)
-    self.assertEqual(oses, actual_oses)
 
   def test_convert_map_to_isolate_dict(self):
+    amiga = ('amiga',)
+    atari = ('atari',)
+    coleco = ('coleco',)
+    dendy = ('dendy',)
     values = {
       'command': {
-        ('echo', 'Hello World'): set(['atari']),
-        ('echo', 'You should get an Atari'): set(['!atari']),
+        ('echo', 'Hello World'): (atari,),
+        ('echo', 'You should get an Atari'): (amiga, coleco, dendy),
       },
       KEY_TRACKED: {
-        'a': set([None]),
-        'c': set(['atari']),
-        'e': set(['!atari']),
-        'g': set(['amiga']),
-        'x': set([None]),
+        'a': (amiga, atari, coleco, dendy),
+        'c': (atari,),
+        'e': (amiga, coleco, dendy),
+        'g': (amiga,),
+        'x': (amiga, atari, coleco, dendy),
       },
       KEY_UNTRACKED: {
-        'b': set([None]),
-        'd': set(['atari']),
-        'f': set(['!atari']),
-        'h': set(['!coleco']),
+        'b': (amiga, atari, coleco, dendy),
+        'd': (atari,),
+        'f': (amiga, coleco, dendy),
+        'h': (amiga, atari, dendy),
       },
       KEY_TOUCHED: {
-        'touched': set([None]),
-        'touched_a': set(['atari']),
-        'touched_e': set(['!atari']),
+        'touched': (amiga, atari, coleco, dendy),
+        'touched_a': (atari,),
+        'touched_e': (amiga, coleco, dendy),
       },
       'read_only': {
-        None: set(['coleco', 'dendy']),
-        False: set(['amiga']),
-        True: set(['atari']),
+        False: (amiga,),
+        True: (atari,),
       },
     }
-    oses = set(['amiga', 'atari', 'coleco', 'dendy'])
-    expected = {
-      'variables': {
-        KEY_TRACKED: ['a', 'x'],
-        KEY_UNTRACKED: ['b'],
-        KEY_TOUCHED: ['touched'],
-      },
-      'conditions': [
-        ['OS=="amiga"', {
-          'variables': {
-            KEY_TRACKED: ['g'],
-            'read_only': False,
-          },
-        }],
-        ['OS=="atari"', {
-          'variables': {
-            'command': ['echo', 'Hello World'],
-            KEY_TRACKED: ['c'],
-            KEY_UNTRACKED: ['d'],
-            KEY_TOUCHED: ['touched_a'],
-            'read_only': True,
-          },
-        }, {
-          'variables': {
-            'command': ['echo', 'You should get an Atari'],
-            KEY_TRACKED: ['e'],
-            KEY_UNTRACKED: ['f'],
-            KEY_TOUCHED: ['touched_e'],
-          },
-        }],
-        ['OS=="coleco"', {
-        }, {
-          'variables': {
-            KEY_UNTRACKED: ['h'],
-          },
-        }],
-      ],
-    }
-    self.assertEqual(
-        expected, isolate.convert_map_to_isolate_dict(values, oses))
+    expected_conditions = [
+      ['OS=="amiga"', {
+        'variables': {
+          KEY_TRACKED: ['g'],
+          'read_only': False,
+        },
+      }],
+      ['OS=="amiga" or OS=="atari" or OS=="coleco" or OS=="dendy"', {
+        'variables': {
+          KEY_TRACKED: ['a', 'x'],
+          KEY_UNTRACKED: ['b'],
+          KEY_TOUCHED: ['touched'],
+        },
+      }],
+      ['OS=="amiga" or OS=="atari" or OS=="dendy"', {
+        'variables': {
+          KEY_UNTRACKED: ['h'],
+        },
+      }],
+      ['OS=="amiga" or OS=="coleco" or OS=="dendy"', {
+        'variables': {
+          'command': ['echo', 'You should get an Atari'],
+          KEY_TRACKED: ['e'],
+          KEY_UNTRACKED: ['f'],
+          KEY_TOUCHED: ['touched_e'],
+        },
+      }],
+      ['OS=="atari"', {
+        'variables': {
+          'command': ['echo', 'Hello World'],
+          KEY_TRACKED: ['c'],
+          KEY_UNTRACKED: ['d'],
+          KEY_TOUCHED: ['touched_a'],
+          'read_only': True,
+        },
+      }],
+    ]
+    actual = isolate.convert_map_to_isolate_dict(values, ('OS',))
+    self.assertEqual(expected_conditions, sorted(actual.pop('conditions')))
+    self.assertFalse(actual)
 
   def test_merge_two_empty(self):
     # Flat stay flat. Pylint is confused about union() return type.
     # pylint: disable=E1103
     actual = isolate.union(
         isolate.union(
-          isolate.Configs([], None),
-          isolate.load_isolate_as_config(self.cwd, {}, None, [])),
-        isolate.load_isolate_as_config(self.cwd, {}, None, [])).flatten()
+          isolate.Configs(None),
+          isolate.load_isolate_as_config(self.cwd, {}, None)),
+        isolate.load_isolate_as_config(self.cwd, {}, None)).flatten()
     self.assertEqual({}, actual)
 
   def test_merge_empty(self):
     actual = isolate.convert_map_to_isolate_dict(
-        *isolate.reduce_inputs(*isolate.invert_map({})))
-    self.assertEqual({}, actual)
+        isolate.reduce_inputs(isolate.invert_map({})), ('dummy1', 'dummy2'))
+    self.assertEqual({'conditions': []}, actual)
 
   def test_load_two_conditions(self):
     linux = {
@@ -557,10 +536,10 @@ class IsolateTest(IsolateBase):
       ],
     }
     expected = {
-      'linux': {
+      ('linux',): {
         'isolate_dependency_tracked': ['file_common', 'file_linux'],
       },
-      'mac': {
+      ('mac',): {
         'isolate_dependency_tracked': ['file_common', 'file_mac'],
       },
     }
@@ -568,15 +547,15 @@ class IsolateTest(IsolateBase):
     # pylint: disable=E1103
     configs = isolate.union(
         isolate.union(
-          isolate.Configs([], None),
-          isolate.load_isolate_as_config(self.cwd, linux, None, [])),
-        isolate.load_isolate_as_config(self.cwd, mac, None, [])).flatten()
+          isolate.Configs(None),
+          isolate.load_isolate_as_config(self.cwd, linux, None)),
+        isolate.load_isolate_as_config(self.cwd, mac, None)).flatten()
     self.assertEqual(expected, configs)
 
   def test_load_three_conditions(self):
     linux = {
       'conditions': [
-        ['OS=="linux"', {
+        ['OS=="linux" and chromeos==1', {
           'variables': {
             'isolate_dependency_tracked': [
               'file_linux',
@@ -588,7 +567,7 @@ class IsolateTest(IsolateBase):
     }
     mac = {
       'conditions': [
-        ['OS=="mac"', {
+        ['OS=="mac" and chromeos==0', {
           'variables': {
             'isolate_dependency_tracked': [
               'file_mac',
@@ -600,7 +579,7 @@ class IsolateTest(IsolateBase):
     }
     win = {
       'conditions': [
-        ['OS=="win"', {
+        ['OS=="win" and chromeos==0', {
           'variables': {
             'isolate_dependency_tracked': [
               'file_win',
@@ -611,13 +590,13 @@ class IsolateTest(IsolateBase):
       ],
     }
     expected = {
-      'linux': {
+      ('linux', 1): {
         'isolate_dependency_tracked': ['file_common', 'file_linux'],
       },
-      'mac': {
+      ('mac', 0): {
         'isolate_dependency_tracked': ['file_common', 'file_mac'],
       },
-      'win': {
+      ('win', 0): {
         'isolate_dependency_tracked': ['file_common', 'file_win'],
       },
     }
@@ -626,35 +605,37 @@ class IsolateTest(IsolateBase):
     configs = isolate.union(
         isolate.union(
           isolate.union(
-            isolate.Configs([], None),
-            isolate.load_isolate_as_config(self.cwd, linux, None, [])),
-          isolate.load_isolate_as_config(self.cwd, mac, None, [])),
-        isolate.load_isolate_as_config(self.cwd, win, None, [])).flatten()
+            isolate.Configs(None),
+            isolate.load_isolate_as_config(self.cwd, linux, None)),
+          isolate.load_isolate_as_config(self.cwd, mac, None)),
+        isolate.load_isolate_as_config(self.cwd, win, None)).flatten()
     self.assertEqual(expected, configs)
 
   def test_merge_three_conditions(self):
     values = {
-      'linux': {
+      ('linux',): {
         'isolate_dependency_tracked': ['file_common', 'file_linux'],
       },
-      'mac': {
+      ('mac',): {
         'isolate_dependency_tracked': ['file_common', 'file_mac'],
       },
-      'win': {
+      ('win',): {
         'isolate_dependency_tracked': ['file_common', 'file_win'],
       },
     }
     expected = {
-      'variables': {
-        'isolate_dependency_tracked': [
-          'file_common',
-        ],
-      },
       'conditions': [
         ['OS=="linux"', {
           'variables': {
             'isolate_dependency_tracked': [
               'file_linux',
+            ],
+          },
+        }],
+        ['OS=="linux" or OS=="mac" or OS=="win"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_common',
             ],
           },
         }],
@@ -675,7 +656,7 @@ class IsolateTest(IsolateBase):
       ],
     }
     actual = isolate.convert_map_to_isolate_dict(
-        *isolate.reduce_inputs(*isolate.invert_map(values)))
+        isolate.reduce_inputs(isolate.invert_map(values)), ('OS',))
     self.assertEqual(expected, actual)
 
   def test_configs_comment(self):
@@ -683,20 +664,20 @@ class IsolateTest(IsolateBase):
     # pylint: disable=E1103
     configs = isolate.union(
         isolate.load_isolate_as_config(
-            self.cwd, {}, '# Yo dawg!\n# Chill out.\n', []),
-        isolate.load_isolate_as_config(self.cwd, {}, None, []))
+            self.cwd, {}, '# Yo dawg!\n# Chill out.\n'),
+        isolate.load_isolate_as_config(self.cwd, {}, None))
     self.assertEqual('# Yo dawg!\n# Chill out.\n', configs.file_comment)
 
     configs = isolate.union(
-        isolate.load_isolate_as_config(self.cwd, {}, None, []),
+        isolate.load_isolate_as_config(self.cwd, {}, None),
         isolate.load_isolate_as_config(
-            self.cwd, {}, '# Yo dawg!\n# Chill out.\n', []))
+            self.cwd, {}, '# Yo dawg!\n# Chill out.\n'))
     self.assertEqual('# Yo dawg!\n# Chill out.\n', configs.file_comment)
 
     # Only keep the first one.
     configs = isolate.union(
-        isolate.load_isolate_as_config(self.cwd, {}, '# Yo dawg!\n', []),
-        isolate.load_isolate_as_config(self.cwd, {}, '# Chill out.\n', []))
+        isolate.load_isolate_as_config(self.cwd, {}, '# Yo dawg!\n'),
+        isolate.load_isolate_as_config(self.cwd, {}, '# Chill out.\n'))
     self.assertEqual('# Yo dawg!\n', configs.file_comment)
 
   def test_load_with_includes(self):
@@ -741,18 +722,17 @@ class IsolateTest(IsolateBase):
         }],
       ],
     }
-    actual = isolate.load_isolate_as_config(
-        self.cwd, values, None, isolate.DEFAULT_OSES)
+    actual = isolate.load_isolate_as_config(self.cwd, values, None)
 
     expected = {
-      'linux': {
+      ('linux',): {
         'isolate_dependency_tracked': [
           'file_common',
           'file_less_common',
           'file_linux',
         ],
       },
-      'mac': {
+      ('mac',): {
         'isolate_dependency_tracked': [
           'file_common',
           'file_less_common',
@@ -760,7 +740,7 @@ class IsolateTest(IsolateBase):
           'file_non_linux',
         ],
       },
-      'win': {
+      ('win',): {
         'isolate_dependency_tracked': [
           'file_common',
           'file_less_common',
@@ -864,11 +844,13 @@ class IsolateLoad(IsolateBase):
     super(IsolateLoad, self).tearDown()
 
   def _get_option(self, isolate_file):
+    OS = isolate.get_flavor()
+    chromeos_value = int(OS == 'linux')
     class Options(object):
       isolated = os.path.join(self.directory, 'foo.isolated')
       outdir = os.path.join(self.directory, 'outdir')
       isolate = isolate_file
-      variables = {'foo': 'bar'}
+      variables = {'foo': 'bar', 'OS': OS, 'chromeos': chromeos_value}
       ignore_broken_items = False
     return Options()
 
@@ -955,9 +937,12 @@ class IsolateLoad(IsolateBase):
       },
       'isolate_file': isolate_file,
       'isolated_files': [],
-      'os': isolate.get_flavor(),
       'relative_cwd': os.path.join('tests', 'isolate'),
-      'variables': {'foo': 'bar'},
+      'variables': {
+        'foo': 'bar',
+        'OS': isolate.get_flavor(),
+        'chromeos': options.variables['chromeos'],
+      }
     }
     self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
@@ -969,6 +954,8 @@ class IsolateLoad(IsolateBase):
     isolate_file = os.path.join(
         ROOT_DIR, 'tests', 'isolate', 'touch_root.isolate')
     options = self._get_option(isolate_file)
+    chromeos_value = int(isolate.get_flavor() == 'linux')
+    options.variables['chromeos'] = chromeos_value
     complete_state = isolate.load_complete_state(
         options, self.cwd, os.path.join('tests', 'isolate'))
     actual_isolated = complete_state.saved_state.to_isolated()
@@ -1000,9 +987,12 @@ class IsolateLoad(IsolateBase):
       },
       'isolate_file': isolate_file,
       'isolated_files': [],
-      'os': isolate.get_flavor(),
       'relative_cwd': os.path.join('tests', 'isolate'),
-      'variables': {'foo': 'bar'},
+      'variables': {
+        'foo': 'bar',
+        'OS': isolate.get_flavor(),
+        'chromeos': chromeos_value,
+      },
     }
     self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
@@ -1014,6 +1004,8 @@ class IsolateLoad(IsolateBase):
     isolate_file = os.path.join(
         ROOT_DIR, 'tests', 'isolate', 'touch_root.isolate')
     options = self._get_option(isolate_file)
+    chromeos_value = int(isolate.get_flavor() == 'linux')
+    options.variables['chromeos'] = chromeos_value
     options.variables['BAZ'] = os.path.join('tests', 'isolate')
     complete_state = isolate.load_complete_state(options, self.cwd, '<(BAZ)')
     actual_isolated = complete_state.saved_state.to_isolated()
@@ -1045,11 +1037,12 @@ class IsolateLoad(IsolateBase):
       },
       'isolate_file': isolate_file,
       'isolated_files': [],
-      'os': isolate.get_flavor(),
       'relative_cwd': os.path.join('tests', 'isolate'),
       'variables': {
         'foo': 'bar',
         'BAZ': os.path.join('tests', 'isolate'),
+        'OS': isolate.get_flavor(),
+        'chromeos': chromeos_value,
       },
     }
     self._cleanup_isolated(expected_saved_state)
@@ -1074,6 +1067,8 @@ class IsolateLoad(IsolateBase):
     isolate_file = os.path.join(
         ROOT_DIR, 'tests', 'isolate', 'touch_root.isolate')
     options = self._get_option(isolate_file)
+    chromeos_value = int(isolate.get_flavor() == 'linux')
+    options.variables['chromeos'] = chromeos_value
     options.variables['PRODUCT_DIR'] = os.path.join('tests', 'isolate')
     complete_state = isolate.load_complete_state(options, ROOT_DIR, None)
     actual_isolated = complete_state.saved_state.to_isolated()
@@ -1115,11 +1110,12 @@ class IsolateLoad(IsolateBase):
       },
       'isolate_file': isolate_file,
       'isolated_files': [],
-      'os': isolate.get_flavor(),
       'relative_cwd': os.path.join('tests', 'isolate'),
       'variables': {
         'foo': 'bar',
         'PRODUCT_DIR': '.',
+        'OS': isolate.get_flavor(),
+        'chromeos': chromeos_value,
       },
     }
     self._cleanup_isolated(expected_saved_state)
@@ -1133,6 +1129,7 @@ class IsolateLoad(IsolateBase):
         ROOT_DIR, 'tests', 'isolate', 'split.isolate')
     options = self._get_option(isolate_file)
     options.variables = {
+      'OS': isolate.get_flavor(),
       'DEPTH': '.',
       'PRODUCT_DIR': os.path.join('files1'),
     }
@@ -1221,9 +1218,9 @@ class IsolateLoad(IsolateBase):
         unicode(options.isolated[:-len('.isolated')] + '.0.isolated'),
         unicode(options.isolated[:-len('.isolated')] + '.1.isolated'),
       ],
-      u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': u'.',
       u'variables': {
+        u'OS': unicode(isolate.get_flavor()),
         u'DEPTH': u'.',
         u'PRODUCT_DIR': u'files1',
       },
@@ -1264,7 +1261,7 @@ class IsolateCommand(IsolateBase):
     with open(isolate_file, 'rb') as f:
       actual = f.read()
 
-    expected = "# Foo\n{\n  'variables': {\n  },\n}\n"
+    expected = "# Foo\n{\n  'conditions': [\n  ],\n}\n"
     self.assertEqual(expected, actual)
 
 

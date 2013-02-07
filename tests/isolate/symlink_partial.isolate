@@ -2,16 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
-  'variables': {
-    'command': [
-      'python',
-      'symlink_partial.py',
-    ],
-    'isolate_dependency_tracked': [
-      'symlink_partial.py',
-    ],
-    'isolate_dependency_untracked': [
-      'files2/test_file2.txt',
-    ],
-  },
+  'conditions': [
+    ['(OS=="linux" and chromeos==1) or ((OS=="mac" or OS=="win") and chromeos==0)', {
+      'variables': {
+        'command': [
+          'python',
+          'symlink_partial.py',
+        ],
+        'isolate_dependency_tracked': [
+          'symlink_partial.py',
+        ],
+        'isolate_dependency_untracked': [
+          'files2/test_file2.txt',
+        ],
+      },
+    }],
+  ],
 }

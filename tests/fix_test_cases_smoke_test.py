@@ -55,17 +55,22 @@ class FixTestCases(unittest.TestCase):
   def test_simple(self):
     # Create a directory with nothing in it and progressively add more stuff.
     isolate = os.path.join(self.srcdir, 'gtest_fake_pass.isolate')
+    chromeos_value = int(run_isolated.get_flavor() == 'linux')
+    condition = 'OS=="%s" and chromeos==%d' % (run_isolated.get_flavor(),
+                                               chromeos_value)
     with open(isolate, 'w') as f:
       # Write a minimal .isolate file.
-      f.write(
-          str(
-              {
-                'variables': {
-                  'command': [
-                    'run_test_cases.py', 'gtest_fake_pass.py',
-                  ],
-                },
-              }))
+      f.write(str({
+        'conditions': [
+          [condition, {
+            'variables': {
+              'command': [
+                'run_test_cases.py', 'gtest_fake_pass.py',
+              ],
+            },
+          }],
+        ],
+      }))
     def _copy(filename):
       shutil.copy(
           os.path.join(BASE_DIR, 'gtest_fake', filename),
@@ -81,7 +86,8 @@ class FixTestCases(unittest.TestCase):
 
     logging.debug('1. Create a .isolated file out of the .isolate file.')
     isolated = os.path.join(self.srcdir, 'gtest_fake_pass.isolated')
-    out = self._run(['isolate.py', 'check', '-i', isolate, '-s', isolated])
+    out = self._run(['isolate.py', 'check', '-i', isolate, '-s', isolated,
+                     '-V', 'chromeos', str(chromeos_value)])
     if not VERBOSE:
       self.assertEqual('', out)
 
@@ -137,12 +143,12 @@ class FixTestCases(unittest.TestCase):
     with open(isolate) as f:
       actual = eval(f.read(), {'__builtins__': None}, None)
     expected = {
-      'variables': {
-        'command': ['run_test_cases.py', 'gtest_fake_pass.py'],
-      },
       'conditions': [
-        ['OS=="%s"' % run_isolated.get_flavor(), {
+        [condition, {
           'variables': {
+            'command': [
+              'run_test_cases.py', 'gtest_fake_pass.py'
+            ],
             'isolate_dependency_tracked': [
               'gtest_fake_base.py',
               'gtest_fake_pass.py',

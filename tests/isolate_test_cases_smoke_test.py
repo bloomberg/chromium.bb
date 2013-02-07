@@ -178,25 +178,31 @@ class IsolateTestCases(unittest.TestCase):
     # you say wow!)
     with open(os.path.join(self.tempdir, gtest_fake_pass_isolate)) as f:
       actual = eval(f.read(), {'__builtins__': None}, None)
+    all_oses = set(['linux', 'mac', 'win'])
+    host_os = isolate.get_flavor()
+    other_oses = all_oses - set([host_os])
     expected = {
-      'variables': {
-        'command': ['../gtest_fake/gtest_fake_pass.py'],
-      },
-      'conditions': [
+      'conditions': sorted([
         ['OS=="%s"' % isolate.get_flavor(), {
           'variables': {
             'isolate_dependency_untracked': [
               '../gtest_fake/',
             ],
           },
-        }, {
+        }],
+        [' or '.join('OS=="%s"' % os for os in sorted(other_oses)), {
          'variables': {
            'isolate_dependency_tracked': [
              '../gtest_fake/gtest_fake_pass.py',
-             ],
-           },
+            ],
+          },
         }],
-      ],
+        [' or '.join('OS=="%s"' % os for os in sorted(all_oses)), {
+         'variables': {
+           'command': ['../gtest_fake/gtest_fake_pass.py'],
+         },
+        }],
+      ]),
     }
     self.assertEqual(expected, actual)
 

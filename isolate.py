@@ -11,8 +11,10 @@ See more information at
 http://dev.chromium.org/developers/testing/isolated-testing
 """
 
+import ast
 import copy
 import hashlib
+import itertools
 import logging
 import optparse
 import os
@@ -24,6 +26,7 @@ import sys
 
 import isolateserver_archive
 import run_isolated
+import short_expression_finder
 import trace_inputs
 
 # Import here directly so isolate is easier to use as a library.
@@ -31,7 +34,6 @@ from run_isolated import get_flavor
 
 
 PATH_VARIABLES = ('DEPTH', 'PRODUCT_DIR')
-DEFAULT_OSES = ('linux', 'mac', 'win')
 
 # Files that should be 0-length when mapped.
 KEY_TOUCHED = 'isolate_dependency_touched'
@@ -586,18 +588,27 @@ def generate_simplified(
   return out
 
 
+def chromium_filter_flags(variables):
+  """Filters out build flags used in Chromium that we don't want to treat as
+  configuration variables.
+  """
+  # TODO(benrg): Need a better way to determine this.
+  blacklist = set(PATH_VARIABLES + ('EXECUTABLE_SUFFIX', 'FLAG'))
+  return dict((k, v) for k, v in variables.iteritems() if k not in blacklist)
+
+
 def generate_isolate(
     tracked, untracked, touched, root_dir, variables, relative_cwd):
   """Generates a clean and complete .isolate file."""
-  result = generate_simplified(
+  dependencies = generate_simplified(
       tracked, untracked, touched, root_dir, variables, relative_cwd)
-  return {
-    'conditions': [
-      ['OS=="%s"' % get_flavor(), {
-        'variables': result,
-      }],
-    ],
-  }
+  config_variables = chromium_filter_flags(variables)
+  config_variable_names, config_values = zip(
+      *sorted(config_variables.iteritems()))
+  out = Configs(None)
+  # The new dependencies apply to just one configuration, namely config_values.
+  out.merge_dependencies(dependencies, config_variable_names, [config_values])
+  return out.make_isolate_file()
 
 
 def split_touched(files):
@@ -691,7 +702,7 @@ def union(lhs, rhs):
     return copy.deepcopy(lhs)
   assert type(lhs) == type(rhs), (lhs, rhs)
   if hasattr(lhs, 'union'):
-    # Includes set, OSSettings and Configs.
+    # Includes set, ConfigSettings and Configs.
     return lhs.union(rhs)
   if isinstance(lhs, dict):
     return dict((k, union(lhs.get(k), rhs.get(k))) for k in set(lhs).union(rhs))
@@ -729,6 +740,21 @@ def eval_content(content):
   return value
 
 
+def match_configs(expr, config_variables, all_configs):
+  """Returns the configs from |all_configs| that match the |expr|, where
+  the elements of |all_configs| are tuples of values for the |config_variables|.
+  Example:
+  >>> match_configs(expr = "(foo==1 or foo==2) and bar=='b'",
+                    config_variables = ["foo", "bar"],
+                    all_configs = [(1, 'a'), (1, 'b'), (2, 'a'), (2, 'b')])
+  [(1, 'b'), (2, 'b')]
+  """
+  return [
+    config for config in all_configs
+    if eval(expr, dict(zip(config_variables, config)))
+  ]
+
+
 def verify_variables(variables):
   """Verifies the |variables| dictionary is in the expected format."""
   VALID_VARIABLES = [
@@ -748,23 +774,52 @@ def verify_variables(variables):
       assert all(isinstance(i, basestring) for i in value), value
 
 
-def verify_condition(condition):
-  """Verifies the |condition| dictionary is in the expected format."""
+def verify_ast(expr, variables_and_values):
+  """Verifies that |expr| is of the form
+  expr ::= expr ( "or" | "and" ) expr
+         | identifier "==" ( string | int )
+  Also collects the variable identifiers and string/int values in the dict
+  |variables_and_values|, in the form {'var': set([val1, val2, ...]), ...}.
+  """
+  assert isinstance(expr, (ast.BoolOp, ast.Compare))
+  if isinstance(expr, ast.BoolOp):
+    assert isinstance(expr.op, (ast.And, ast.Or))
+    for subexpr in expr.values:
+      verify_ast(subexpr, variables_and_values)
+  else:
+    assert isinstance(expr.left.ctx, ast.Load)
+    assert len(expr.ops) == 1
+    assert isinstance(expr.ops[0], ast.Eq)
+    var_values = variables_and_values.setdefault(expr.left.id, set())
+    rhs = expr.comparators[0]
+    assert isinstance(rhs, (ast.Str, ast.Num))
+    var_values.add(rhs.n if isinstance(rhs, ast.Num) else rhs.s)
+
+
+def verify_condition(condition, variables_and_values):
+  """Verifies the |condition| dictionary is in the expected format.
+  See verify_ast() for the meaning of |variables_and_values|.
+  """
   VALID_INSIDE_CONDITION = ['variables']
   assert isinstance(condition, list), condition
-  assert 2 <= len(condition) <= 3, condition
-  assert re.match(r'OS==\"([a-z]+)\"', condition[0]), condition[0]
-  for c in condition[1:]:
-    assert isinstance(c, dict), c
-    assert set(VALID_INSIDE_CONDITION).issuperset(set(c)), c.keys()
-    verify_variables(c.get('variables', {}))
+  assert len(condition) == 2, condition
+  expr, then = condition
+
+  test_ast = compile(expr, '<condition>', 'eval', ast.PyCF_ONLY_AST)
+  verify_ast(test_ast.body, variables_and_values)
+
+  assert isinstance(then, dict), then
+  assert set(VALID_INSIDE_CONDITION).issuperset(set(then)), then.keys()
+  verify_variables(then['variables'])
 
 
-def verify_root(value):
-  VALID_ROOTS = ['includes', 'variables', 'conditions']
+def verify_root(value, variables_and_values):
+  """Verifies that |value| is the parsed form of a valid .isolate file.
+  See verify_ast() for the meaning of |variables_and_values|.
+  """
+  VALID_ROOTS = ['includes', 'conditions']
   assert isinstance(value, dict), value
   assert set(VALID_ROOTS).issuperset(set(value)), value.keys()
-  verify_variables(value.get('variables', {}))
 
   includes = value.get('includes', [])
   assert isinstance(includes, list), includes
@@ -774,44 +829,48 @@ def verify_root(value):
   conditions = value.get('conditions', [])
   assert isinstance(conditions, list), conditions
   for condition in conditions:
-    verify_condition(condition)
+    verify_condition(condition, variables_and_values)
 
 
-def remove_weak_dependencies(values, key, item, item_oses):
-  """Remove any oses from this key if the item is already under a strong key."""
+def remove_weak_dependencies(values, key, item, item_configs):
+  """Removes any configs from this key if the item is already under a
+  strong key.
+  """
   if key == KEY_TOUCHED:
+    item_configs = set(item_configs)
     for stronger_key in (KEY_TRACKED, KEY_UNTRACKED):
-      oses = values.get(stronger_key, {}).get(item, None)
-      if oses:
-        item_oses -= oses
+      try:
+        item_configs -= values[stronger_key][item]
+      except KeyError:
+        pass
 
-  return item_oses
+  return item_configs
 
 
-def remove_repeated_dependencies(folders, key, item, item_oses):
-  """Remove any OSes from this key if the item is in a folder that is already
-  included."""
+def remove_repeated_dependencies(folders, key, item, item_configs):
+  """Removes any configs from this key if the item is in a folder that is
+  already included."""
 
   if key in (KEY_UNTRACKED, KEY_TRACKED, KEY_TOUCHED):
-    for (folder, oses) in folders.iteritems():
+    item_configs = set(item_configs)
+    for (folder, configs) in folders.iteritems():
       if folder != item and item.startswith(folder):
-        item_oses -= oses
+        item_configs -= configs
 
-  return item_oses
+  return item_configs
 
 
 def get_folders(values_dict):
-  """Return a dict of all the folders in the given value_dict."""
-  return dict((item, oses) for (item, oses) in values_dict.iteritems()
-          if item.endswith('/'))
+  """Returns a dict of all the folders in the given value_dict."""
+  return dict(
+    (item, configs) for (item, configs) in values_dict.iteritems()
+    if item.endswith('/')
+  )
 
 
 def invert_map(variables):
-  """Converts a dict(OS, dict(deptype, list(dependencies)) to a flattened view.
-
-  Returns a tuple of:
-    1. dict(deptype, dict(dependency, set(OSes)) for easier processing.
-    2. All the OSes found as a set.
+  """Converts {config: {deptype: list(depvals)}} to
+  {deptype: {depval: set(configs)}}.
   """
   KEYS = (
     KEY_TOUCHED,
@@ -821,31 +880,27 @@ def invert_map(variables):
     'read_only',
   )
   out = dict((key, {}) for key in KEYS)
-  for os_name, values in variables.iteritems():
-    for key in (KEY_TOUCHED, KEY_TRACKED, KEY_UNTRACKED):
-      for item in values.get(key, []):
-        out[key].setdefault(item, set()).add(os_name)
+  for config, values in variables.iteritems():
+    for key in KEYS:
+      if key == 'command':
+        items = [tuple(values[key])] if key in values else []
+      elif key == 'read_only':
+        items = [values[key]] if key in values else []
+      else:
+        assert key in (KEY_TOUCHED, KEY_TRACKED, KEY_UNTRACKED)
+        items = values.get(key, [])
+      for item in items:
+        out[key].setdefault(item, set()).add(config)
+  return out
 
-    # command needs special handling.
-    command = tuple(values.get('command', []))
-    out['command'].setdefault(command, set()).add(os_name)
 
-    # read_only needs special handling.
-    out['read_only'].setdefault(values.get('read_only'), set()).add(os_name)
-  return out, set(variables)
+def reduce_inputs(values):
+  """Reduces the output of invert_map() to the strictest minimum list.
 
+  Looks at each individual file and directory, maps where they are used and
+  reconstructs the inverse dictionary.
 
-def reduce_inputs(values, oses):
-  """Reduces the invert_map() output to the strictest minimum list.
-
-  1. Construct the inverse map first.
-  2. Look at each individual file and directory, map where they are used and
-     reconstruct the inverse dictionary.
-  3. Do not convert back to negative if only 2 OSes were merged.
-
-  Returns a tuple of:
-    1. the minimized dictionary
-    2. oses passed through as-is.
+  Returns the minimized dictionary.
   """
   KEYS = (
     KEY_TOUCHED,
@@ -859,99 +914,70 @@ def reduce_inputs(values, oses):
   folders = get_folders(values.get(KEY_UNTRACKED, {}))
 
   out = dict((key, {}) for key in KEYS)
-  assert all(oses), oses
-  if len(oses) > 2:
-    for key in KEYS:
-      for item, item_oses in values.get(key, {}).iteritems():
-        item_oses = remove_weak_dependencies(values, key, item, item_oses)
-        item_oses = remove_repeated_dependencies(folders, key, item, item_oses)
-        if not item_oses:
-          continue
-
-        # Converts all oses.difference('foo') to '!foo'.
-        assert all(item_oses), item_oses
-        missing = oses.difference(item_oses)
-        if len(missing) == 1:
-          # Replace it with a negative.
-          out[key][item] = set(['!' + tuple(missing)[0]])
-        elif not missing:
-          out[key][item] = set([None])
-        else:
-          out[key][item] = set(item_oses)
-  else:
-    for key in KEYS:
-      for item, item_oses in values.get(key, {}).iteritems():
-        item_oses = remove_weak_dependencies(values, key, item, item_oses)
-        if not item_oses:
-          continue
-
-        # Converts all oses.difference('foo') to '!foo'.
-        assert None not in item_oses, item_oses
-        out[key][item] = set(item_oses)
-  return out, oses
+  for key in KEYS:
+    for item, item_configs in values.get(key, {}).iteritems():
+      item_configs = remove_weak_dependencies(values, key, item, item_configs)
+      item_configs = remove_repeated_dependencies(
+          folders, key, item, item_configs)
+      if item_configs:
+        out[key][item] = item_configs
+  return out
 
 
-def convert_map_to_isolate_dict(values, oses):
+def convert_map_to_isolate_dict(values, config_variables):
   """Regenerates back a .isolate configuration dict from files and dirs
   mappings generated from reduce_inputs().
   """
-  # First, inverse the mapping to make it dict first.
-  config = {}
+  # Gather a list of configurations for set inversion later.
+  all_mentioned_configs = set()
+  for configs_by_item in values.itervalues():
+    for configs in configs_by_item.itervalues():
+      all_mentioned_configs.update(configs)
+
+  # Invert the mapping to make it dict first.
+  conditions = {}
   for key in values:
-    for item, oses in values[key].iteritems():
-      if item is None:
-        # For read_only default.
-        continue
-      for cond_os in oses:
-        cond_key = None if cond_os is None else cond_os.lstrip('!')
-        # Insert the if/else dicts.
-        condition_values = config.setdefault(cond_key, [{}, {}])
-        # If condition is negative, use index 1, else use index 0.
-        cond_value = condition_values[int((cond_os or '').startswith('!'))]
-        variables = cond_value.setdefault('variables', {})
+    for item, configs in values[key].iteritems():
+      then = conditions.setdefault(frozenset(configs), {})
+      variables = then.setdefault('variables', {})
 
-        if item in (True, False):
-          # One-off for read_only.
-          variables[key] = item
-        else:
-          if isinstance(item, tuple) and item:
-            # One-off for command.
-            # Do not merge lists and do not sort!
-            # Note that item is a tuple.
-            assert key not in variables
-            variables[key] = list(item)
-          elif item:
-            # The list of items (files or dirs). Append the new item and keep
-            # the list sorted.
-            l = variables.setdefault(key, [])
-            l.append(item)
-            l.sort()
-
-  out = {}
-  for o in sorted(config):
-    d = config[o]
-    if o is None:
-      assert not d[1]
-      out = union(out, d[0])
-    else:
-      c = out.setdefault('conditions', [])
-      if d[1]:
-        c.append(['OS=="%s"' % o] + d)
+      if item in (True, False):
+        # One-off for read_only.
+        variables[key] = item
       else:
-        c.append(['OS=="%s"' % o] + d[0:1])
-  return out
+        assert item
+        if isinstance(item, tuple):
+          # One-off for command.
+          # Do not merge lists and do not sort!
+          # Note that item is a tuple.
+          assert key not in variables
+          variables[key] = list(item)
+        else:
+          # The list of items (files or dirs). Append the new item and keep
+          # the list sorted.
+          l = variables.setdefault(key, [])
+          l.append(item)
+          l.sort()
+
+  if all_mentioned_configs:
+    config_values = map(set, zip(*all_mentioned_configs))
+    sef = short_expression_finder.ShortExpressionFinder(
+        zip(config_variables, config_values))
+
+  conditions = sorted(
+      [sef.get_expr(configs), then] for configs, then in conditions.iteritems())
+  return {'conditions': conditions}
 
 
 ### Internal state files.
 
 
-class OSSettings(object):
-  """Represents the dependencies for an OS. The structure is immutable.
-
-  It's the .isolate settings for a specific file.
+class ConfigSettings(object):
+  """Represents the dependency variables for a single build configuration.
+  The structure is immutable.
   """
-  def __init__(self, name, values):
-    self.name = name
+  def __init__(self, config, values):
+    self.config = config
     verify_variables(values)
     self.touched = sorted(values.get(KEY_TOUCHED, []))
     self.tracked = sorted(values.get(KEY_TRACKED, []))
@@ -960,7 +986,7 @@ class OSSettings(object):
     self.read_only = values.get('read_only')
 
   def union(self, rhs):
-    assert self.name == rhs.name
+    assert not (self.config and rhs.config) or (self.config == rhs.config)
     assert not (self.command and rhs.command) or (self.command == rhs.command)
     var = {
       KEY_TOUCHED: sorted(self.touched + rhs.touched),
@@ -969,7 +995,7 @@ class OSSettings(object):
       'command': self.command or rhs.command,
       'read_only': rhs.read_only if self.read_only is None else self.read_only,
     }
-    return OSSettings(self.name, var)
+    return ConfigSettings(self.config or rhs.config, var)
 
   def flatten(self):
     out = {}
@@ -989,53 +1015,117 @@ class OSSettings(object):
 class Configs(object):
   """Represents a processed .isolate file.
 
-  Stores the file in a processed way, split by each the OS-specific
-  configurations.
-
-  The self.per_os[None] member contains all the 'else' clauses plus the default
-  values. It is not included in the flatten() result.
+  Stores the file in a processed way, split by configuration.
   """
-  def __init__(self, oses, file_comment):
+  def __init__(self, file_comment):
     self.file_comment = file_comment
-    self.per_os = {
-        None: OSSettings(None, {}),
-    }
-    self.per_os.update(dict((name, OSSettings(name, {})) for name in oses))
+    # The keys of by_config are tuples of values for the configuration
+    # variables. The names of the variables (which must be the same for
+    # every by_config key) are kept in config_variables. Initially by_config
+    # is empty and we don't know what configuration variables will be used,
+    # so config_variables also starts out empty. It will be set by the first
+    # call to union() or merge_dependencies().
+    self.by_config = {}
+    self.config_variables = ()
 
   def union(self, rhs):
-    items = list(set(self.per_os.keys() + rhs.per_os.keys()))
+    """Adds variables from rhs (a Configs) to the existing variables.
+    """
+    config_variables = self.config_variables
+    if not config_variables:
+      config_variables = rhs.config_variables
+    else:
+      # We can't proceed if this isn't true since we don't know the correct
+      # default values for extra variables. The variables are sorted so we
+      # don't need to worry about permutations.
+      if rhs.config_variables and rhs.config_variables != config_variables:
+        raise ExecutionError(
+            'Variables in merged .isolate files do not match: %r and %r' % (
+                config_variables, rhs.config_variables))
+
     # Takes the first file comment, prefering lhs.
-    out = Configs(items, self.file_comment or rhs.file_comment)
-    for key in items:
-      out.per_os[key] = union(self.per_os.get(key), rhs.per_os.get(key))
+    out = Configs(self.file_comment or rhs.file_comment)
+    out.config_variables = config_variables
+    for config in set(self.by_config) | set(rhs.by_config):
+      out.by_config[config] = union(
+          self.by_config.get(config), rhs.by_config.get(config))
     return out
 
-  def add_globals(self, values):
-    for key in self.per_os:
-      self.per_os[key] = self.per_os[key].union(OSSettings(key, values))
-
-  def add_values(self, for_os, values):
-    self.per_os[for_os] = self.per_os[for_os].union(OSSettings(for_os, values))
-
-  def add_negative_values(self, for_os, values):
-    """Includes the variables to all OSes except |for_os|.
-
-    This includes 'None' so unknown OSes gets it too.
+  def merge_dependencies(self, values, config_variables, configs):
+    """Adds new dependencies to this object for the given configurations.
+    Arguments:
+      values: A variables dict as found in a .isolate file, e.g.,
+          {KEY_TOUCHED: [...], 'command': ...}.
+      config_variables: An ordered list of configuration variables, e.g.,
+          ["OS", "chromeos"]. If this object already contains any dependencies,
+          the configuration variables must match.
+      configs: a list of tuples of values of the configuration variables,
+          e.g., [("mac", 0), ("linux", 1)]. The dependencies in |values|
+          are added to all of these configurations, and other configurations
+          are unchanged.
     """
-    for key in self.per_os:
-      if key != for_os:
-        self.per_os[key] = self.per_os[key].union(OSSettings(key, values))
+    if not values:
+      return
+
+    if not self.config_variables:
+      self.config_variables = config_variables
+    else:
+      # See comment in Configs.union().
+      assert self.config_variables == config_variables
+
+    for config in configs:
+      self.by_config[config] = union(
+          self.by_config.get(config), ConfigSettings(config, values))
 
   def flatten(self):
     """Returns a flat dictionary representation of the configuration.
-
-    Skips None pseudo-OS.
     """
-    return dict(
-        (k, v.flatten()) for k, v in self.per_os.iteritems() if k is not None)
+    return dict((k, v.flatten()) for k, v in self.by_config.iteritems())
+
+  def make_isolate_file(self):
+    """Returns a dictionary suitable for writing to a .isolate file.
+    """
+    dependencies_by_config = self.flatten()
+    configs_by_dependency = reduce_inputs(invert_map(dependencies_by_config))
+    return convert_map_to_isolate_dict(configs_by_dependency,
+                                       self.config_variables)
 
 
-def load_isolate_as_config(isolate_dir, value, file_comment, default_oses):
+# TODO(benrg): Remove this function when no old-format files are left.
+def convert_old_to_new_format(value):
+  """Converts from the old .isolate format, which only has one variable (OS),
+  always includes 'linux', 'mac' and 'win' in the set of valid values for OS,
+  and allows conditions that depend on the set of all OSes, to the new format,
+  which allows any set of variables, has no hardcoded values, and only allows
+  explicit positive tests of variable values.
+  """
+  conditions = value.setdefault('conditions', [])
+  if 'variables' not in value and all(len(cond) == 2 for cond in conditions):
+    return value  # Nothing to change
+
+  def parse_condition(cond):
+    return re.match(r'OS=="(\w+)"\Z', cond[0]).group(1)
+
+  oses = set(map(parse_condition, conditions))
+  default_oses = set(['linux', 'mac', 'win'])
+  oses = sorted(oses | default_oses)
+
+  def if_not_os(not_os, then):
+    expr = ' or '.join('OS=="%s"' % os for os in oses if os != not_os)
+    return [expr, then]
+
+  conditions += [
+    if_not_os(parse_condition(cond), cond.pop())
+    for cond in conditions if len(cond) == 3
+  ]
+  if 'variables' in value:
+    conditions.append(if_not_os(None, {'variables': value.pop('variables')}))
+  conditions.sort()
+
+  return value
+
+
+def load_isolate_as_config(isolate_dir, value, file_comment):
   """Parses one .isolate file and returns a Configs() instance.
 
   |value| is the loaded dictionary that was defined in the gyp file.
@@ -1046,39 +1136,43 @@ def load_isolate_as_config(isolate_dir, value, file_comment, default_oses):
     'includes': [
       'foo.isolate',
     ],
-    'variables': {
-      'command': [
-        ...
-      ],
-      'isolate_dependency_tracked': [
-        ...
-      ],
-      'isolate_dependency_untracked': [
-        ...
-      ],
-      'read_only': False,
-    },
     'conditions': [
-      ['OS=="<os>"', {
+      ['OS=="vms" and foo=42', {
         'variables': {
-          ...
-        },
-      }, {  # else
-        'variables': {
-          ...
+          'command': [
+            ...
+          ],
+          'isolate_dependency_tracked': [
+            ...
+          ],
+          'isolate_dependency_untracked': [
+            ...
+          ],
+          'read_only': False,
         },
       }],
       ...
     ],
   }
   """
-  verify_root(value)
+  value = convert_old_to_new_format(value)
 
-  # Scan to get the list of OSes.
-  conditions = value.get('conditions', [])
-  oses = set(re.match(r'OS==\"([a-z]+)\"', c[0]).group(1) for c in conditions)
-  oses = oses.union(default_oses)
-  configs = Configs(oses, file_comment)
+  variables_and_values = {}
+  verify_root(value, variables_and_values)
+  if variables_and_values:
+    config_variables, config_values = zip(
+        *sorted(variables_and_values.iteritems()))
+    all_configs = list(itertools.product(*config_values))
+  else:
+    config_variables = None
+    all_configs = []
+
+  isolate = Configs(file_comment)
+
+  # Add configuration-specific variables.
+  for expr, then in value.get('conditions', []):
+    configs = match_configs(expr, config_variables, all_configs)
+    isolate.merge_dependencies(then['variables'], config_variables, configs)
 
   # Load the includes.
   for include in value.get('includes', []):
@@ -1088,27 +1182,16 @@ def load_isolate_as_config(isolate_dir, value, file_comment, default_oses):
           include)
     included_isolate = os.path.normpath(os.path.join(isolate_dir, include))
     with open(included_isolate, 'r') as f:
-      included_config = load_isolate_as_config(
+      included_isolate = load_isolate_as_config(
           os.path.dirname(included_isolate),
           eval_content(f.read()),
-          None,
-          default_oses)
-    configs = union(configs, included_config)
+          None)
+    isolate = union(isolate, included_isolate)
 
-  # Global level variables.
-  configs.add_globals(value.get('variables', {}))
-
-  # OS specific variables.
-  for condition in conditions:
-    condition_os = re.match(r'OS==\"([a-z]+)\"', condition[0]).group(1)
-    configs.add_values(condition_os, condition[1].get('variables', {}))
-    if len(condition) > 2:
-      configs.add_negative_values(
-          condition_os, condition[2].get('variables', {}))
-  return configs
+  return isolate
 
 
-def load_isolate_for_flavor(isolate_dir, content, flavor):
+def load_isolate_for_config(isolate_dir, content, variables):
   """Loads the .isolate file and returns the information unprocessed but
   filtered for the specific OS.
 
@@ -1117,13 +1200,19 @@ def load_isolate_for_flavor(isolate_dir, content, flavor):
   """
   # Load the .isolate file, process its conditions, retrieve the command and
   # dependencies.
-  configs = load_isolate_as_config(
-      isolate_dir, eval_content(content), None, DEFAULT_OSES)
-  config = configs.per_os.get(flavor) or configs.per_os.get(None)
+  isolate = load_isolate_as_config(isolate_dir, eval_content(content), None)
+  try:
+    config = tuple(variables[var] for var in isolate.config_variables)
+  except KeyError:
+    raise ExecutionError(
+        'These configuration variables were missing from the command line: %s' %
+        ', '.join(sorted(set(isolate.config_variables) - set(variables))))
+  config = isolate.by_config.get(config)
   if not config:
-    raise ExecutionError('Failed to load configuration for \'%s\'' % flavor)
-  # Merge tracked and untracked dependencies, isolate.py doesn't care about the
-  # trackability of the dependencies, only the build tool does.
+    raise ExecutionError('Failed to load configuration for (%s) = (%s)' % (
+        ', '.join(isolate.config_variables), ', '.join(map(str, config))))
+  # Merge tracked and untracked variables, isolate.py doesn't care about the
+  # trackability of the variables, only the build tool does.
   dependencies = [
     f.replace('/', os.path.sep) for f in config.tracked + config.untracked
   ]
@@ -1226,13 +1315,10 @@ class SavedState(Flattenable):
     'files',
     'isolate_file',
     'isolated_files',
-    'os',
     'read_only',
     'relative_cwd',
     'variables',
   )
-
-  os = get_flavor()
 
   def __init__(self):
     super(SavedState, self).__init__()
@@ -1246,7 +1332,7 @@ class SavedState(Flattenable):
     self.relative_cwd = None
     # Variables are saved so a user can use isolate.py after building and the
     # GYP variables are still defined.
-    self.variables = {}
+    self.variables = {'OS': get_flavor()}
 
   def update(self, isolate_file, variables):
     """Updates the saved state with new data to keep GYP variables and internal
@@ -1283,7 +1369,7 @@ class SavedState(Flattenable):
     out = {
       'files': dict(
           (filepath, strip(data)) for filepath, data in self.files.iteritems()),
-      'os': self.os,
+      'os': self.variables['OS'],
     }
     if self.command:
       out['command'] = self.command
@@ -1296,18 +1382,15 @@ class SavedState(Flattenable):
   @classmethod
   def load(cls, data):
     out = super(SavedState, cls).load(data)
+    if 'os' in data:
+      out.variables['OS'] = data['os']
+    if out.variables['OS'] != get_flavor():
+      raise run_isolated.ConfigError(
+          'The .isolated.state file was created on another platform')
     if out.isolate_file:
       out.isolate_file = trace_inputs.get_native_path_case(
           unicode(out.isolate_file))
     return out
-
-  def _load_member(self, member, value):
-    if member == 'os':
-      if value != self.os:
-        raise run_isolated.ConfigError(
-            'The .isolated file was created on another platform')
-    else:
-      super(SavedState, self)._load_member(member, value)
 
   def __str__(self):
     out = '%s(\n' % self.__class__.__name__
@@ -1356,15 +1439,16 @@ class CompleteState(object):
     # Processes the variables and update the saved state.
     variables = process_variables(cwd, variables, relative_base_dir)
     self.saved_state.update(isolate_file, variables)
+    variables = self.saved_state.variables
 
     with open(isolate_file, 'r') as f:
       # At that point, variables are not replaced yet in command and infiles.
       # infiles may contain directory entries and is in posix style.
-      command, infiles, touched, read_only = load_isolate_for_flavor(
-          os.path.dirname(isolate_file), f.read(), get_flavor())
-    command = [eval_variables(i, self.saved_state.variables) for i in command]
-    infiles = [eval_variables(f, self.saved_state.variables) for f in infiles]
-    touched = [eval_variables(f, self.saved_state.variables) for f in touched]
+      command, infiles, touched, read_only = load_isolate_for_config(
+          os.path.dirname(isolate_file), f.read(), variables)
+    command = [eval_variables(i, variables) for i in command]
+    infiles = [eval_variables(f, variables) for f in infiles]
+    touched = [eval_variables(f, variables) for f in touched]
     # root_dir is automatically determined by the deepest root accessed with the
     # form '../../foo/bar'.
     root_dir = determine_root_dir(relative_base_dir, infiles + touched)
@@ -1551,13 +1635,10 @@ def merge(complete_state):
   prev_config = load_isolate_as_config(
       isolate_dir,
       eval_content(prev_content),
-      extract_comment(prev_content),
-      DEFAULT_OSES)
-  new_config = load_isolate_as_config(isolate_dir, value, '', DEFAULT_OSES)
+      extract_comment(prev_content))
+  new_config = load_isolate_as_config(isolate_dir, value, '')
   config = union(prev_config, new_config)
-  # pylint: disable=E1103
-  data = convert_map_to_isolate_dict(
-      *reduce_inputs(*invert_map(config.flatten())))
+  data = config.make_isolate_file()
   print('Updating %s' % complete_state.saved_state.isolate_file)
   with open(complete_state.saved_state.isolate_file, 'wb') as f:
     print_all(config.file_comment, data, f)
@@ -1736,11 +1817,8 @@ def CMDrewrite(args):
   config = load_isolate_as_config(
       os.path.dirname(os.path.abspath(isolate)),
       eval_content(content),
-      extract_comment(content),
-      DEFAULT_OSES)
-  # pylint: disable=E1103
-  data = convert_map_to_isolate_dict(
-      *reduce_inputs(*invert_map(config.flatten())))
+      extract_comment(content))
+  data = config.make_isolate_file()
   print('Updating %s' % isolate)
   with open(isolate, 'wb') as f:
     print_all(config.file_comment, data, f)
@@ -1896,7 +1974,14 @@ def parse_variable_option(parser, options, cwd, require_isolated):
                  'file- to see how to create the .isolated file.')
   if options.isolated and not options.isolated.endswith('.isolated'):
     parser.error('--isolated value must end with \'.isolated\'')
-  options.variables = dict(options.variables)
+  # TODO(benrg): Maybe we should use a copy of gyp's NameValueListToDict here,
+  # but it wouldn't be backward compatible.
+  def try_make_int(s):
+    try:
+      return int(s)
+    except ValueError:
+      return s
+  options.variables = dict((k, try_make_int(v)) for k, v in options.variables)
 
 
 class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
