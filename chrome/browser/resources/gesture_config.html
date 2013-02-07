@@ -7,20 +7,24 @@
   <script src="gesture_config.js"></script>
 </head>
 <body>
-<h2>Gesture Preferences</h2>
-<hr>
 <form>
   <div id="gesture-form"></div>
   <div class="buttons-pane">
     <button id="reset-button">Reset</button>
   </div>
 </form>
-<div hidden>
-  <div id="gesture-form-row" class="row">
-    <label class="row-label"></label>
-    <input class="row-input" type="number" size="20">
-    <div class="row-units"></div>
+<div id="section-template">
+  <h2 class="section-title"></h2>
+  <div class="section-properties">
+    <!-- Section rows are inserted here. -->
   </div>
+</div>
+<div id="section-row-template" class="row">
+  <label class="row-label"></label>
+  <div class="row-input">
+    <input class="input" type="number" size="20">
+  </div>
+  <div class="row-units"></div>
 </div>
 </body>
 </html>
