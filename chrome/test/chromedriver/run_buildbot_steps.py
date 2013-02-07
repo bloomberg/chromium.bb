@@ -66,10 +66,8 @@ def MaybeRelease(revision):
     '--label', 'Release-Alpha',
     zip_path
   ]
-  code = util.RunCommand(cmd)
-  if code != 0:
+  if util.RunCommand(cmd):
     print '@@@STEP_FAILURE@@@'
-  return code
 
 
 def main():
@@ -85,12 +83,10 @@ def main():
     sys.executable,
     os.path.join(_THIS_DIR, 'run_all_tests.py'),
   ]
-  code = util.RunCommand(cmd)
-  if code != 0:
-    return code
-
-  return MaybeRelease(options.revision)
+  passed = (util.RunCommand(cmd) == 0)
+  if passed:
+    MaybeRelease(options.revision)
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  main()

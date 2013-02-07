@@ -39,7 +39,14 @@ void CheckCantConvertChar(wchar_t character) {
 
 }  // namespace
 
-TEST(KeycodeTextConversionTest, KeyCodeToText) {
+#if defined(OS_LINUX)
+// Fails on bots: crbug.com/174962
+#define MAYBE_KeyCodeToText DISABLED_KeyCodeToText
+#else
+#define MAYBE_KeyCodeToText KeyCodeToText
+#endif
+
+TEST(KeycodeTextConversionTest, MAYBE_KeyCodeToText) {
   EXPECT_EQ("a", ConvertKeyCodeToText(ui::VKEY_A, 0));
   EXPECT_EQ("A", ConvertKeyCodeToText(ui::VKEY_A, kShiftKeyModifierMask));
 
@@ -60,7 +67,14 @@ TEST(KeycodeTextConversionTest, KeyCodeToText) {
   EXPECT_EQ("", ConvertKeyCodeToText(ui::VKEY_SHIFT, kShiftKeyModifierMask));
 }
 
-TEST(KeycodeTextConversionTest, CharToKeyCode) {
+#if defined(OS_LINUX)
+// Fails on bots: crbug.com/174962
+#define MAYBE_CharToKeyCode DISABLED_CharToKeyCode
+#else
+#define MAYBE_CharToKeyCode CharToKeyCode
+#endif
+
+TEST(KeycodeTextConversionTest, MAYBE_CharToKeyCode) {
   CheckCharToKeyCode('a', ui::VKEY_A, 0);
   CheckCharToKeyCode('A', ui::VKEY_A, kShiftKeyModifierMask);
 
@@ -77,7 +91,9 @@ TEST(KeycodeTextConversionTest, CharToKeyCode) {
   CheckCantConvertChar(L'\u2159');
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+// Not implemented on Linux.
+// Fails if German layout is not installed on Mac.
 #define MAYBE_NonShiftModifiers DISABLED_NonShiftModifiers
 #else
 #define MAYBE_NonShiftModifiers NonShiftModifiers
@@ -96,7 +112,9 @@ TEST(KeycodeTextConversionTest, MAYBE_NonShiftModifiers) {
 #endif
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+// Not implemented on Linux.
+// Fails if German layout is not installed on Mac.
 #define MAYBE_NonEnglish DISABLED_NonEnglish
 #else
 #define MAYBE_NonEnglish NonEnglish

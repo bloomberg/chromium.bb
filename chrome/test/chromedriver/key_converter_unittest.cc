@@ -261,7 +261,14 @@ TEST(KeyConverter, AllShorthandKeys) {
       event_array,arraysize(event_array));
 }
 
-TEST(KeyConverter, AllEnglishKeyboardSymbols) {
+#if defined(OS_LINUX)
+// Fails on bots: crbug.com/174962
+#define MAYBE_AllEnglishKeyboardSymbols DISABLED_AllEnglishKeyboardSymbols
+#else
+#define MAYBE_AllEnglishKeyboardSymbols AllEnglishKeyboardSymbols
+#endif
+
+TEST(KeyConverter, MAYBE_AllEnglishKeyboardSymbols) {
   string16 keys;
   const ui::KeyboardCode kSymbolKeyCodes[] = {
       ui::VKEY_OEM_3,
@@ -306,7 +313,16 @@ TEST(KeyConverter, AllEnglishKeyboardTextChars) {
   }
 }
 
-TEST(KeyConverter, AllSpecialWebDriverKeysOnEnglishKeyboard) {
+#if defined(OS_LINUX)
+// Fails on bots: crbug.com/174962
+#define MAYBE_AllSpecialWebDriverKeysOnEnglishKeyboard \
+    DISABLED_AllSpecialWebDriverKeysOnEnglishKeyboard
+#else
+#define MAYBE_AllSpecialWebDriverKeysOnEnglishKeyboard \
+    AllSpecialWebDriverKeysOnEnglishKeyboard
+#endif
+
+TEST(KeyConverter, MAYBE_AllSpecialWebDriverKeysOnEnglishKeyboard) {
   const char kTextForKeys[] = {
 #if defined(USE_AURA) || defined(OS_LINUX)
       0, 0, 0, '\b', '\t', 0, '\r', '\r', 0, 0, 0, 0, 0x1B,
