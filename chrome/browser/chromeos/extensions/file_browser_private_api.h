@@ -363,9 +363,16 @@ class AddMountFunction : public FileBrowserFunction {
  private:
   // A callback method to handle the result of
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const std::string& mount_type_str,
+  void GetLocalPathsResponseOnUIThread(const std::string& mount_type,
                                        const SelectedFileInfoList& files);
-  // A callback method to handle the result of SetMountedState.
+
+  // Calls DriveCache::MarkCacheAsMounted.
+  void MarkCacheAsMounted(const std::string& mount_type,
+                          const FilePath::StringType& display_name,
+                          drive::DriveFileError error,
+                          scoped_ptr<drive::DriveEntryProto> entry_proto);
+
+  // A callback method to handle the result of MarkCacheAsMounted.
   void OnMountedStateSet(const std::string& mount_type,
                          const FilePath::StringType& file_name,
                          drive::DriveFileError error,

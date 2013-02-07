@@ -458,7 +458,6 @@ class DriveCacheTest : public testing::Test {
   void TestMarkAsMounted(
       const std::string& resource_id,
       const std::string& md5,
-      const FilePath& file_path,
       DriveFileError expected_error,
       int expected_cache_state,
       DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
@@ -470,7 +469,8 @@ class DriveCacheTest : public testing::Test {
     DriveFileError error = DRIVE_FILE_OK;
     FilePath cache_file_path;
     cache_->MarkAsMounted(
-        file_path,
+        resource_id,
+        md5,
         base::Bind(&test_util::CopyResultsFromGetFileFromCacheCallback,
                    &error, &cache_file_path));
     google_apis::test_util::RunBlockingPoolTask();
@@ -1271,10 +1271,8 @@ TEST_F(DriveCacheTest, MountUnmount) {
       DriveCache::CACHE_TYPE_TMP);
 
   // Mark the file mounted.
-  file_path = cache_->GetCacheFilePath(resource_id, md5,
-                                       DriveCache::CACHE_TYPE_TMP,
-                                       DriveCache::CACHED_FILE_FROM_SERVER);
-  TestMarkAsMounted(resource_id, md5, file_path,
+  TestMarkAsMounted(resource_id,
+                    md5,
                     DRIVE_FILE_OK,
                     test_util::TEST_CACHE_STATE_PRESENT |
                     test_util::TEST_CACHE_STATE_MOUNTED |

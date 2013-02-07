@@ -1610,7 +1610,7 @@ bool AddMountFunction::RunImpl() {
 }
 
 void AddMountFunction::GetLocalPathsResponseOnUIThread(
-    const std::string& mount_type_str,
+    const std::string& mount_type,
     const SelectedFileInfoList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -1619,21 +1619,51 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
-  const FilePath& source_path = files[0].local_path;
+  const FilePath& source_path = files[0].file_path;
   const FilePath::StringType& display_name = files[0].display_name;
+
   // Check if the source path is under Drive cache directory.
+  if (drive::util::IsUnderDriveMountPoint(source_path)) {
+    drive::DriveSystemService* system_service =
+        drive::DriveSystemServiceFactory::GetForProfile(profile_);
+    drive::DriveFileSystemInterface* file_system =
+        system_service ? system_service->file_system() : NULL;
+    if (!file_system) {
+      SendResponse(false);
+      return;
+    }
+    file_system->GetEntryInfoByPath(
+        drive::util::ExtractDrivePath(source_path),
+        base::Bind(&AddMountFunction::MarkCacheAsMounted,
+                   this, mount_type, display_name));
+  } else {
+    OnMountedStateSet(mount_type, display_name,
+                      drive::DRIVE_FILE_OK, source_path);
+  }
+}
+
+void AddMountFunction::MarkCacheAsMounted(
+    const std::string& mount_type,
+    const FilePath::StringType& display_name,
+    drive::DriveFileError error,
+    scoped_ptr<drive::DriveEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
   drive::DriveCache* cache = system_service ? system_service->cache() : NULL;
-  if (cache && cache->IsUnderDriveCacheDirectory(source_path)) {
-    cache->MarkAsMounted(
-        source_path,
-        base::Bind(&AddMountFunction::OnMountedStateSet, this, mount_type_str,
-                   display_name));
-  } else {
-    OnMountedStateSet(mount_type_str, display_name,
-                      drive::DRIVE_FILE_OK, source_path);
+
+  if (!cache ||
+      error != drive::DRIVE_FILE_OK ||
+      !entry_proto ||
+      !entry_proto->has_file_specific_info()) {
+    SendResponse(false);
+    return;
   }
+  cache->MarkAsMounted(entry_proto->resource_id(),
+                       entry_proto->file_specific_info().file_md5(),
+                       base::Bind(&AddMountFunction::OnMountedStateSet,
+                                  this, mount_type, display_name));
 }
 
 void AddMountFunction::OnMountedStateSet(const std::string& mount_type,
@@ -1641,6 +1671,12 @@ void AddMountFunction::OnMountedStateSet(const std::string& mount_type,
                                          drive::DriveFileError error,
                                          const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != drive::DRIVE_FILE_OK) {
+    SendResponse(false);
+    return;
+  }
+
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   // Pass back the actual source path of the mount point.
   SetResult(new base::StringValue(file_path.value()));

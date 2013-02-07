@@ -354,7 +354,8 @@ void DriveCache::Unpin(const std::string& resource_id,
                  weak_ptr_factory_.GetWeakPtr(), resource_id, md5, callback));
 }
 
-void DriveCache::MarkAsMounted(const FilePath& file_path,
+void DriveCache::MarkAsMounted(const std::string& resource_id,
+                               const std::string& md5,
                                const GetFileFromCacheCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -363,7 +364,7 @@ void DriveCache::MarkAsMounted(const FilePath& file_path,
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&DriveCache::MarkAsMountedOnBlockingPool,
-                 base::Unretained(this), file_path),
+                 base::Unretained(this), resource_id, md5),
       base::Bind(RunGetFileFromCacheCallback, callback));
 }
 
@@ -791,18 +792,11 @@ DriveFileError DriveCache::UnpinOnBlockingPool(const std::string& resource_id,
 }
 
 scoped_ptr<DriveCache::GetFileResult> DriveCache::MarkAsMountedOnBlockingPool(
-    const FilePath& file_path) {
+    const std::string& resource_id,
+    const std::string& md5) {
   AssertOnSequencedWorkerPool();
 
   scoped_ptr<GetFileResult> result(new GetFileResult);
-
-  // Parse file path to obtain resource_id, md5 and extra_extension.
-  std::string resource_id;
-  std::string md5;
-  std::string extra_extension;
-  util::ParseCacheFilePath(file_path, &resource_id, &md5, &extra_extension);
-  // The extra_extension shall be ".mounted" iff we're unmounting.
-  DCHECK(extra_extension != util::kMountedArchiveFileExtension);
 
   // Get cache entry associated with the resource_id and md5
   DriveCacheEntry cache_entry;
