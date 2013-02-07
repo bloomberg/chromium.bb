@@ -661,7 +661,7 @@
               ['include', '^memory/discardable_memory_mac\\.'],
               ['include', '^message_pump_mac\\.'],
               ['include', '^threading/platform_thread_mac\\.'],
-              ['include', '^sys_string_conversions_mac\\.'],
+              ['include', '^strings/sys_string_conversions_mac\\.'],
               ['include', '^time_mac\\.'],
               ['include', '^worker_pool_mac\\.'],
               # Exclude all process_util except the minimal implementation
