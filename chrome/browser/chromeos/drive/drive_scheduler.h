@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
+#include "chrome/browser/google_apis/drive_uploader.h"
 #include "net/base/network_change_notifier.h"
 
 #include <deque>
@@ -40,6 +41,7 @@ class DriveScheduler
     TYPE_REMOVE_RESOURCE_FROM_DIRECTORY,
     TYPE_ADD_NEW_DIRECTORY,
     TYPE_DOWNLOAD_FILE,
+    TYPE_UPLOAD_EXISTING_FILE,
   };
 
   // Current state of the job.
@@ -78,7 +80,8 @@ class DriveScheduler
   };
 
   DriveScheduler(Profile* profile,
-                 google_apis::DriveServiceInterface* drive_service);
+                 google_apis::DriveServiceInterface* drive_service,
+                 google_apis::DriveUploaderInterface* uploader);
   virtual ~DriveScheduler();
 
   // Initializes the object. This function should be called before any
@@ -147,6 +150,15 @@ class DriveScheduler
       const GURL& download_url,
       const google_apis::DownloadActionCallback& download_action_callback,
       const google_apis::GetContentCallback& get_content_callback);
+
+  // Adds an UploadExistingFile operation to the queue.
+  void UploadExistingFile(
+      const GURL& upload_location,
+      const FilePath& drive_file_path,
+      const FilePath& local_file_path,
+      const std::string& content_type,
+      const std::string& etag,
+      const google_apis::UploadCompletionCallback& upload_completion_callback);
 
  private:
   friend class DriveSchedulerTest;
@@ -239,6 +251,16 @@ class DriveScheduler
     // Used by:
     //   TYPE_DOWNLOAD_FILE
     google_apis::GetContentCallback get_content_callback;
+
+    // Parameters for UploadExistingFile
+    // Used by:
+    //   TYPE_UPLOAD_EXISTING_FILE
+    GURL upload_location;
+    FilePath drive_file_path;
+    FilePath local_file_path;
+    std::string content_type;
+    std::string etag;
+    google_apis::UploadCompletionCallback upload_completion_callback;
   };
 
   // Adds the specified job to the queue.  Takes ownership of |job|
@@ -299,6 +321,14 @@ class DriveScheduler
                                google_apis::GDataErrorCode error,
                                const FilePath& temp_file);
 
+  // Callback for job finishing with a UploadCompletionCallback.
+  void OnUploadCompletionJobDone(
+      int job_id,
+      google_apis::DriveUploadError error,
+      const FilePath& drive_path,
+      const FilePath& file_path,
+      scoped_ptr<google_apis::ResourceEntry> resource_entry);
+
   // net::NetworkChangeNotifier::ConnectionTypeObserver override.
   virtual void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
@@ -329,6 +359,7 @@ class DriveScheduler
   std::deque<int> queue_;
 
   google_apis::DriveServiceInterface* drive_service_;
+  google_apis::DriveUploaderInterface* uploader_;
 
   Profile* profile_;
 

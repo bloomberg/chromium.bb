@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
@@ -17,14 +18,11 @@ namespace base {
 class FilePath;
 }
 
-namespace google_apis {
-class DriveUploaderInterface;
-}
-
 namespace drive {
 
 class DriveCache;
 class DriveEntryProto;
+class DriveScheduler;
 
 namespace file_system {
 
@@ -37,7 +35,7 @@ class UpdateOperation {
  public:
   UpdateOperation(DriveCache* cache,
                   DriveResourceMetadata* metadata,
-                  google_apis::DriveUploaderInterface* uploader,
+                  DriveScheduler* scheduler,
                   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                   OperationObserver* observer);
   virtual ~UpdateOperation();
@@ -94,7 +92,7 @@ class UpdateOperation {
 
   DriveCache* cache_;
   DriveResourceMetadata* metadata_;
-  google_apis::DriveUploaderInterface* uploader_;
+  DriveScheduler* scheduler_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
 

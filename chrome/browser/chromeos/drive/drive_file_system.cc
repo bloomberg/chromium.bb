@@ -309,7 +309,7 @@ DriveFileSystem::DriveFileSystem(
       last_update_check_error_(DRIVE_FILE_OK),
       hide_hosted_docs_(false),
       blocking_task_runner_(blocking_task_runner),
-      scheduler_(new DriveScheduler(profile, drive_service)),
+      scheduler_(new DriveScheduler(profile, drive_service, uploader)),
       polling_interval_sec_(kFastPollingIntervalInSec),
       push_notification_enabled_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(ui_weak_ptr_factory_(this)),

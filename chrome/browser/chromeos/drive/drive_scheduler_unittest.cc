@@ -36,6 +36,31 @@ class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
                      net::NetworkChangeNotifier::ConnectionType());
 };
 
+class FakeDriveUploader : public google_apis::DriveUploaderInterface {
+ public:
+  FakeDriveUploader() {}
+  virtual ~FakeDriveUploader() {}
+
+  // DriveUploaderInterface overrides.
+  virtual void UploadNewFile(
+      const GURL& upload_location,
+      const FilePath& drive_file_path,
+      const FilePath& local_file_path,
+      const std::string& title,
+      const std::string& content_type,
+      const google_apis::UploadCompletionCallback& callback) OVERRIDE {
+  }
+
+  virtual void UploadExistingFile(
+      const GURL& upload_location,
+      const FilePath& drive_file_path,
+      const FilePath& local_file_path,
+      const std::string& content_type,
+      const std::string& etag,
+      const google_apis::UploadCompletionCallback& callback) OVERRIDE {
+  }
+};
+
 }  // namespace
 
 class DriveSchedulerTest : public testing::Test {
@@ -55,9 +80,11 @@ class DriveSchedulerTest : public testing::Test {
         "gdata/account_metadata.json");
     fake_drive_service_->LoadAppListForDriveApi(
         "drive/applist.json");
+    fake_uploader_.reset(new FakeDriveUploader);
 
     scheduler_.reset(new DriveScheduler(profile_.get(),
-                                        fake_drive_service_.get()));
+                                        fake_drive_service_.get(),
+                                        fake_uploader_.get()));
 
     scheduler_->Initialize();
     scheduler_->SetDisableThrottling(true);
@@ -110,6 +137,7 @@ class DriveSchedulerTest : public testing::Test {
   scoped_ptr<DriveScheduler> scheduler_;
   scoped_ptr<MockNetworkChangeNotifier> mock_network_change_notifier_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
+  scoped_ptr<FakeDriveUploader> fake_uploader_;
 };
 
 TEST_F(DriveSchedulerTest, GetAppList) {

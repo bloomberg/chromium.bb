@@ -44,12 +44,14 @@ DriveScheduler::QueueEntry::~QueueEntry() {
 
 DriveScheduler::DriveScheduler(
     Profile* profile,
-    google_apis::DriveServiceInterface* drive_service)
+    google_apis::DriveServiceInterface* drive_service,
+    google_apis::DriveUploaderInterface* uploader)
     : job_loop_is_running_(false),
       next_job_id_(0),
       throttle_count_(0),
       disable_throttling_(false),
       drive_service_(drive_service),
+      uploader_(uploader),
       profile_(profile),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       initialized_(false) {
@@ -259,6 +261,28 @@ void DriveScheduler::DownloadFile(
   StartJobLoop();
 }
 
+void DriveScheduler::UploadExistingFile(
+    const GURL& upload_location,
+    const FilePath& drive_file_path,
+    const FilePath& local_file_path,
+    const std::string& content_type,
+    const std::string& etag,
+    const google_apis::UploadCompletionCallback& upload_completion_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_UPLOAD_EXISTING_FILE));
+  new_job->upload_location = upload_location;
+  new_job->drive_file_path = drive_file_path;
+  new_job->local_file_path = local_file_path;
+  new_job->content_type = content_type;
+  new_job->etag = etag;
+  new_job->upload_completion_callback = upload_completion_callback;
+
+  QueueJob(new_job.Pass());
+
+  StartJobLoop();
+}
+
 int DriveScheduler::QueueJob(scoped_ptr<QueueEntry> job) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -411,6 +435,19 @@ void DriveScheduler::DoJobLoop() {
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id),
           queue_entry->get_content_callback);
+    }
+    break;
+
+    case TYPE_UPLOAD_EXISTING_FILE: {
+      uploader_->UploadExistingFile(
+          queue_entry->upload_location,
+          queue_entry->drive_file_path,
+          queue_entry->local_file_path,
+          queue_entry->content_type,
+          queue_entry->etag,
+          base::Bind(&DriveScheduler::OnUploadCompletionJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     job_id));
     }
     break;
 
@@ -610,6 +647,25 @@ void DriveScheduler::OnDownloadActionJobDone(int job_id,
   // Handle the callback.
   DCHECK(!job_info->download_action_callback.is_null());
   job_info->download_action_callback.Run(error, temp_file);
+}
+
+void DriveScheduler::OnUploadCompletionJobDone(
+    int job_id,
+    google_apis::DriveUploadError error,
+    const FilePath& drive_path,
+    const FilePath& file_path,
+    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
+  DriveFileError drive_error(DriveUploadErrorToDriveFileError(error));
+
+  scoped_ptr<QueueEntry> job_info = OnJobDone(job_id, drive_error);
+
+  if (!job_info)
+    return;
+
+  // Handle the callback.
+  DCHECK(!job_info->upload_completion_callback.is_null());
+  job_info->upload_completion_callback.Run(
+      error, drive_path, file_path, resource_entry.Pass());
 }
 
 void DriveScheduler::OnConnectionTypeChanged(

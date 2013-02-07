@@ -8,9 +8,9 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
-#include "chrome/browser/google_apis/drive_uploader.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -21,12 +21,12 @@ namespace file_system {
 UpdateOperation::UpdateOperation(
     DriveCache* cache,
     DriveResourceMetadata* metadata,
-    google_apis::DriveUploaderInterface* uploader,
+    DriveScheduler* scheduler,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     OperationObserver* observer)
     : cache_(cache),
       metadata_(metadata),
-      uploader_(uploader),
+      scheduler_(scheduler),
       blocking_task_runner_(blocking_task_runner),
       observer_(observer),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -96,7 +96,7 @@ void UpdateOperation::OnGetFileCompleteForUpdateFile(
     return;
   }
 
-  uploader_->UploadExistingFile(
+  scheduler_->UploadExistingFile(
       GURL(entry_proto->upload_url()),
       drive_file_path,
       cache_file_path,

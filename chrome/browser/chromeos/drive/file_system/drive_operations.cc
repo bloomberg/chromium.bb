@@ -49,7 +49,7 @@ void DriveOperations::Init(
                                                            observer));
   update_operation_.reset(new file_system::UpdateOperation(cache,
                                                            metadata,
-                                                           uploader,
+                                                           drive_scheduler,
                                                            blocking_task_runner,
                                                            observer));
 }
