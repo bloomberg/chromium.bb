@@ -12,7 +12,6 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/async_file_test_helper.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -93,10 +92,6 @@ class LocalFileUtilTest : public testing::Test {
 
   const LocalFileSystemTestOriginHelper& test_helper() const {
     return test_helper_;
-  }
-
-  FileSystemContext* file_system_context() {
-    return test_helper_.file_system_context();
   }
 
  private:
@@ -223,14 +218,15 @@ TEST_F(LocalFileUtilTest, CopyFile) {
   EXPECT_TRUE(FileExists(from_file));
   EXPECT_EQ(1020, GetSize(from_file));
 
+  context.reset(NewContext());
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            AsyncFileTestHelper::Copy(file_system_context(),
-                                      Path(from_file), Path(to_file1)));
+            test_helper().SameFileUtilCopy(context.get(),
+                                           Path(from_file), Path(to_file1)));
 
   context.reset(NewContext());
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            AsyncFileTestHelper::Copy(file_system_context(),
-                                      Path(from_file), Path(to_file2)));
+            test_helper().SameFileUtilCopy(context.get(),
+                                           Path(from_file), Path(to_file2)));
 
   EXPECT_TRUE(FileExists(from_file));
   EXPECT_EQ(1020, GetSize(from_file));
@@ -265,8 +261,8 @@ TEST_F(LocalFileUtilTest, CopyDirectory) {
 
   context.reset(NewContext());
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            AsyncFileTestHelper::Copy(file_system_context(),
-                                      Path(from_dir), Path(to_dir)));
+            test_helper().SameFileUtilCopy(context.get(),
+                                           Path(from_dir), Path(to_dir)));
 
   EXPECT_TRUE(DirectoryExists(from_dir));
   EXPECT_TRUE(FileExists(from_file));
@@ -293,8 +289,8 @@ TEST_F(LocalFileUtilTest, MoveFile) {
 
   context.reset(NewContext());
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            AsyncFileTestHelper::Move(file_system_context(),
-                                      Path(from_file), Path(to_file)));
+            test_helper().SameFileUtilMove(context.get(),
+                                           Path(from_file), Path(to_file)));
 
   EXPECT_FALSE(FileExists(from_file));
   EXPECT_TRUE(FileExists(to_file));
@@ -326,8 +322,8 @@ TEST_F(LocalFileUtilTest, MoveDirectory) {
 
   context.reset(NewContext());
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            AsyncFileTestHelper::Move(file_system_context(),
-                                      Path(from_dir), Path(to_dir)));
+            test_helper().SameFileUtilMove(context.get(),
+                                           Path(from_dir), Path(to_dir)));
 
   EXPECT_FALSE(DirectoryExists(from_dir));
   EXPECT_TRUE(DirectoryExists(to_dir));

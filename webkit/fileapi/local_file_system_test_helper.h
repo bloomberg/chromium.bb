@@ -62,6 +62,16 @@ class LocalFileSystemTestOriginHelper {
     return CreateURL(base::FilePath::FromUTF8Unsafe(utf8));
   }
 
+  // Helper methods for same-FileUtil copy/move.
+  base::PlatformFileError SameFileUtilCopy(
+      FileSystemOperationContext* context,
+      const FileSystemURL& src,
+      const FileSystemURL& dest) const;
+  base::PlatformFileError SameFileUtilMove(
+      FileSystemOperationContext* context,
+      const FileSystemURL& src,
+      const FileSystemURL& dest) const;
+
   // This returns cached usage size returned by QuotaUtil.
   int64 GetCachedOriginUsage() const;
 
