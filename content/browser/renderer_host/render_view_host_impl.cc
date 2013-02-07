@@ -1723,6 +1723,7 @@ void RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl* policy,
     // navigation to the home page. This is often a privileged page
     // (chrome://newtab/) which is exactly what we don't want.
     *url = GURL(chrome::kAboutBlankURL);
+    RecordAction(UserMetricsAction("FilterURLTermiate_Invalid"));
     return;
   }
 
@@ -1730,6 +1731,7 @@ void RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl* policy,
     // The renderer treats all URLs in the about: scheme as being about:blank.
     // Canonicalize about: URLs to about:blank.
     *url = GURL(chrome::kAboutBlankURL);
+    RecordAction(UserMetricsAction("FilterURLTermiate_About"));
   }
 
   // Do not allow browser plugin guests to navigate to non-web URLs, since they
@@ -1743,6 +1745,7 @@ void RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl* policy,
     // later.
     VLOG(1) << "Blocked URL " << url->spec();
     *url = GURL(chrome::kAboutBlankURL);
+    RecordAction(UserMetricsAction("FilterURLTermiate_Blocked"));
   }
 }
 

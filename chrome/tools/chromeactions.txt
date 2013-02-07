@@ -319,6 +319,9 @@
 0x4268aeb48d5c0d1e	FileBrowser.CreateNewFolder
 0x604a1468d08b7c7b	FileBrowser.PhotoEditor.Edit
 0xca74d47b273dd801	FileBrowser.PhotoEditor.View
+0xd1b4f6b656a826e8	FilterURLTermiate_About
+0x933a3a418a658dec	FilterURLTermiate_Blocked
+0x6a372395e62bd36e	FilterURLTermiate_Invalid
 0x4cfa6c981549e990	Find
 0x058404d575478e31	FindNext
 0xca56592cf013fc40	FindPrevious
