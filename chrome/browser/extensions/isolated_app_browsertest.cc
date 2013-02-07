@@ -310,9 +310,17 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_NoCookieIsolationWithoutApp) {
   EXPECT_EQ("ls_normal", result);
 }
 
+// Test timing out on Windows debug bots.
+// http://crbug.com/174926
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_SubresourceCookieIsolation DISABLED_SubresourceCookieIsolation
+#else
+#define MAYBE_SubresourceCookieIsolation SubresourceCookieIsolation
+#endif  // defined(OS_WIN) && !defined(NDEBUG)
+
 // Tests that subresource and media requests use the app's cookie store.
 // See http://crbug.com/141172.
-IN_PROC_BROWSER_TEST_F(IsolatedAppTest, SubresourceCookieIsolation) {
+IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_SubresourceCookieIsolation) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
