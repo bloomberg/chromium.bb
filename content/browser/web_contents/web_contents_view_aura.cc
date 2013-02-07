@@ -654,12 +654,15 @@ void WebContentsViewAura::PrepareContentWindowForOverscroll() {
   ui::ScopedLayerAnimationSettings settings(content->layer()->GetAnimator());
   settings.SetPreemptionStrategy(ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
   content->SetTransform(gfx::Transform());
+  content->layer()->SetLayerBrightness(0.f);
 }
 
 void WebContentsViewAura::ResetOverscrollTransform() {
   if (!web_contents_->GetRenderWidgetHostView())
     return;
   aura::Window* target = GetWindowToAnimateForOverscroll();
+  if (!target)
+    return;
   {
     ui::ScopedLayerAnimationSettings settings(target->layer()->GetAnimator());
     settings.SetPreemptionStrategy(
@@ -1056,10 +1059,11 @@ void WebContentsViewAura::OnOverscrollComplete(OverscrollMode mode) {
 
 void WebContentsViewAura::OnOverscrollModeChange(OverscrollMode old_mode,
                                                  OverscrollMode new_mode) {
+  // Reset any in-progress overscroll animation first.
+  ResetOverscrollTransform();
+
   if (new_mode == OVERSCROLL_NONE) {
-    // Reset any in-progress overscroll animation first.
-    ResetOverscrollTransform();
-    current_overscroll_gesture_ = new_mode;
+    current_overscroll_gesture_ = OVERSCROLL_NONE;
   } else {
     // Cleanup state of the content window first, because that can reset the
     // value of |current_overscroll_gesture_|.
