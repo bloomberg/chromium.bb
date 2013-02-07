@@ -170,6 +170,14 @@ class TabStrip : public views::View,
   // Sets a painting style with miniature "tab indicator" rectangles at the top.
   void SetImmersiveStyle(bool enable);
 
+  // Returns true if Tabs in this TabStrip are currently changing size or
+  // position.
+  bool IsAnimating() const;
+
+  // Stops any ongoing animations. If |layout| is true and an animation is
+  // ongoing this does a layout.
+  void StopAnimating(bool layout);
+
   // TabController overrides:
   virtual const ui::ListSelectionModel& GetSelectionModel() OVERRIDE;
   virtual bool SupportsMultipleSelection() OVERRIDE;
@@ -300,10 +308,6 @@ class TabStrip : public views::View,
   // Schedules the animations and bounds changes necessary for a remove tab
   // animation.
   void ScheduleRemoveTabAnimation(Tab* tab);
-
-  // Stops any ongoing animations. If |layout| is true and an animation is
-  // ongoing this does a layout.
-  void StopAnimating(bool layout);
 
   // Animates all the views to their ideal bounds.
   // NOTE: this does *not* invoke GenerateIdealBounds, it uses the bounds
@@ -454,10 +458,6 @@ class TabStrip : public views::View,
   static gfx::ImageSkia* GetDropArrowImage(bool is_down);
 
   // -- Animations ------------------------------------------------------------
-
-  // Returns true if Tabs in this TabStrip are currently changing size or
-  // position.
-  bool IsAnimating() const;
 
   // Invoked prior to starting a new animation.
   void PrepareForAnimation();
