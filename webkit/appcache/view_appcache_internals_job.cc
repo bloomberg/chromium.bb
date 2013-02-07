@@ -331,7 +331,7 @@ class MainPageJob : public BaseInternalsJob {
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   }
 
-  virtual void Start() {
+  virtual void Start() OVERRIDE {
     DCHECK(request_);
     info_collection_ = new AppCacheInfoCollection;
     appcache_service_->GetAllAppCacheInfo(
@@ -400,7 +400,8 @@ class RedirectToMainPageJob : public BaseInternalsJob {
     return net::OK;  // IsRedirectResponse induces a redirect.
   }
 
-  virtual bool IsRedirectResponse(GURL* location, int* http_status_code) {
+  virtual bool IsRedirectResponse(GURL* location,
+                                  int* http_status_code) OVERRIDE {
     *location = ClearQuery(request_->url());
     *http_status_code = 307;
     return true;
@@ -423,7 +424,7 @@ class RemoveAppCacheJob : public RedirectToMainPageJob {
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   }
 
-  virtual void Start() {
+  virtual void Start() OVERRIDE {
     DCHECK(request_);
 
     appcache_service_->DeleteAppCacheGroup(
@@ -455,7 +456,7 @@ class ViewAppCacheJob : public BaseInternalsJob,
       : BaseInternalsJob(request, network_delegate, service),
         manifest_url_(manifest_url) {}
 
-  virtual void Start() {
+  virtual void Start() OVERRIDE {
     DCHECK(request_);
     appcache_service_->storage()->LoadOrCreateGroup(manifest_url_, this);
   }
@@ -530,7 +531,7 @@ class ViewEntryJob : public BaseInternalsJob,
         response_id_(response_id), group_id_(group_id), amount_read_(0) {
   }
 
-  virtual void Start() {
+  virtual void Start() OVERRIDE {
     DCHECK(request_);
     appcache_service_->storage()->LoadResponseInfo(
         manifest_url_, group_id_, response_id_, this);

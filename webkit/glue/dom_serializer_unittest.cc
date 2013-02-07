@@ -84,9 +84,9 @@ class DomSerializerTests : public TestShellTest,
     : local_directory_name_(FILE_PATH_LITERAL("./dummy_files/")) { }
 
   // DomSerializerDelegate.
-  void didSerializeDataForFrame(const WebURL& frame_web_url,
-                                const WebCString& data,
-                                PageSerializationStatus status) {
+  virtual void didSerializeDataForFrame(const WebURL& frame_web_url,
+                                        const WebCString& data,
+                                        PageSerializationStatus status) {
 
     GURL frame_url(frame_web_url);
     // If the all frames are finished saving, check all finish status

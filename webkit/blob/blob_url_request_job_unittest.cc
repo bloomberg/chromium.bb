@@ -58,7 +58,7 @@ class BlobURLRequestJobTest : public testing::Test {
     MockURLRequestDelegate()
         : received_data_(new net::IOBuffer(kBufferSize)) {}
 
-    virtual void OnResponseStarted(net::URLRequest* request) {
+    virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE {
       if (request->status().is_success()) {
         EXPECT_TRUE(request->response_headers());
         ReadSome(request);
@@ -67,7 +67,8 @@ class BlobURLRequestJobTest : public testing::Test {
       }
     }
 
-    virtual void OnReadCompleted(net::URLRequest* request, int bytes_read) {
+    virtual void OnReadCompleted(net::URLRequest* request,
+                                 int bytes_read) OVERRIDE {
        if (bytes_read > 0)
          ReceiveData(request, bytes_read);
        else
@@ -139,7 +140,7 @@ class BlobURLRequestJobTest : public testing::Test {
         expected_status_code_(0) {
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     temp_file1_ = temp_dir_.path().AppendASCII("BlobFile1.dat");
@@ -163,7 +164,7 @@ class BlobURLRequestJobTest : public testing::Test {
     url_request_context_.set_job_factory(&url_request_job_factory_);
   }
 
-  void TearDown() {
+  virtual void TearDown() {
   }
 
   void SetUpFileSystem() {

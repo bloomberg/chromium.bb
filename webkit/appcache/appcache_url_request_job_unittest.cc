@@ -48,7 +48,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     }
 
     virtual void OnResponseInfoLoaded(AppCacheResponseInfo* info,
-                                      int64 response_id) {
+                                      int64 response_id) OVERRIDE {
       loaded_info_ = info;
       loaded_info_id_ = response_id;
       test_->ScheduleNextTask();
@@ -68,7 +68,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
           kill_after_amount_received_(0), kill_with_io_pending_(false) {
     }
 
-    virtual void OnResponseStarted(net::URLRequest* request) {
+    virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE {
       amount_received_ = 0;
       did_receive_headers_ = false;
       if (request->status().is_success()) {
@@ -81,7 +81,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
       }
     }
 
-    virtual void OnReadCompleted(net::URLRequest* request, int bytes_read) {
+    virtual void OnReadCompleted(net::URLRequest* request,
+                                 int bytes_read) OVERRIDE {
       if (bytes_read > 0) {
         amount_received_ += bytes_read;
 

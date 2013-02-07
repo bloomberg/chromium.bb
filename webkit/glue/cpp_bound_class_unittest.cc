@@ -171,7 +171,7 @@ class CppBoundClassTest : public testing::Test, public WebKit::WebFrameClient {
 
 class CppBoundClassWithFallbackMethodTest : public CppBoundClassTest {
  protected:
-  virtual bool useFallback() {
+  virtual bool useFallback() OVERRIDE {
     return true;
   }
 };

@@ -185,7 +185,7 @@ class EvilFetcherDelegate : public FetcherDelegate {
   }
 
   virtual void OnURLFetchComplete(const WebURLResponse& response,
-                                  const std::string& data) {
+                                  const std::string& data) OVERRIDE {
     // Destroy the ResourceFetcher here.  We are testing that upon returning
     // to the ResourceFetcher that it does not crash.
     fetcher_.reset();

@@ -14,7 +14,7 @@ class NativeFileUtilTest : public testing::Test {
  public:
   NativeFileUtilTest() {}
 
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
   }
 

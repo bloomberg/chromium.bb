@@ -291,26 +291,27 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
       WebKitPlatformSupportImpl* platform);
 
   // ResourceLoaderBridge::Peer methods:
-  virtual void OnUploadProgress(uint64 position, uint64 size);
+  virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
       const ResourceResponseInfo& info,
       bool* has_new_first_party_for_cookies,
-      GURL* new_first_party_for_cookies);
-  virtual void OnReceivedResponse(const ResourceResponseInfo& info);
-  virtual void OnDownloadedData(int len);
+      GURL* new_first_party_for_cookies) OVERRIDE;
+  virtual void OnReceivedResponse(const ResourceResponseInfo& info) OVERRIDE;
+  virtual void OnDownloadedData(int len) OVERRIDE;
   virtual void OnReceivedData(const char* data,
                               int data_length,
-                              int encoded_data_length);
-  virtual void OnReceivedCachedMetadata(const char* data, int len);
-  virtual void OnCompletedRequest(int error_code,
-                                  bool was_ignored_by_handler,
-                                  const std::string& security_info,
-                                  const base::TimeTicks& completion_time);
+                              int encoded_data_length) OVERRIDE;
+  virtual void OnReceivedCachedMetadata(const char* data, int len) OVERRIDE;
+  virtual void OnCompletedRequest(
+      int error_code,
+      bool was_ignored_by_handler,
+      const std::string& security_info,
+      const base::TimeTicks& completion_time) OVERRIDE;
 
  private:
   friend class base::RefCounted<Context>;
-  ~Context() {}
+  virtual ~Context() {}
 
   // We can optimize the handling of data URLs in most cases.
   bool CanHandleDataURL(const GURL& url) const;

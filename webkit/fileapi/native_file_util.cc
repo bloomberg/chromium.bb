@@ -47,7 +47,7 @@ class NativeFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
 #endif  // defined(OS_WIN)
   }
 
-  ~NativeFileEnumerator() {}
+  virtual ~NativeFileEnumerator() {}
 
   virtual base::FilePath Next() OVERRIDE;
   virtual int64 Size() OVERRIDE;

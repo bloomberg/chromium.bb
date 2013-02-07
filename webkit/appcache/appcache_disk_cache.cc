@@ -56,7 +56,7 @@ class AppCacheDiskCache::EntryImpl : public Entry {
 
   // Entry implementation.
   virtual int Read(int index, int64 offset, net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) {
+                   const net::CompletionCallback& callback) OVERRIDE {
     if (offset < 0 || offset > kint32max)
       return net::ERR_INVALID_ARGUMENT;
     return disk_cache_entry_->ReadData(
@@ -64,7 +64,7 @@ class AppCacheDiskCache::EntryImpl : public Entry {
   }
 
   virtual int Write(int index, int64 offset, net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) {
+                    const net::CompletionCallback& callback) OVERRIDE {
     if (offset < 0 || offset > kint32max)
       return net::ERR_INVALID_ARGUMENT;
     const bool kTruncate = true;
@@ -72,11 +72,11 @@ class AppCacheDiskCache::EntryImpl : public Entry {
         index, static_cast<int>(offset), buf, buf_len, callback, kTruncate);
   }
 
-  virtual int64 GetSize(int index) {
+  virtual int64 GetSize(int index) OVERRIDE {
     return disk_cache_entry_->GetDataSize(index);
   }
 
-  virtual void Close() {
+  virtual void Close() OVERRIDE {
     disk_cache_entry_->Close();
     delete this;
   }

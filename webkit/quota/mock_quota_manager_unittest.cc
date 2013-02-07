@@ -39,7 +39,7 @@ class MockQuotaManagerTest : public testing::Test {
       deletion_callback_count_(0) {
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     policy_ = new MockSpecialStoragePolicy;
     manager_ = new MockQuotaManager(
@@ -50,7 +50,7 @@ class MockQuotaManagerTest : public testing::Test {
         policy_);
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     // Make sure the quota manager cleans up correctly.
     manager_ = NULL;
     MessageLoop::current()->RunUntilIdle();

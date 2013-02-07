@@ -34,25 +34,30 @@ class AppCacheRequestHandlerTest : public testing::Test {
   class MockFrontend : public AppCacheFrontend {
    public:
     virtual void OnCacheSelected(
-        int host_id, const appcache::AppCacheInfo& info) {}
+        int host_id, const appcache::AppCacheInfo& info) OVERRIDE {}
 
     virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                                 appcache::Status status) {}
+                                 appcache::Status status) OVERRIDE {}
 
     virtual void OnEventRaised(const std::vector<int>& host_ids,
-                               appcache::EventID event_id) {}
+                               appcache::EventID event_id) OVERRIDE {}
 
     virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                    const std::string& message) {}
+                                    const std::string& message) OVERRIDE {}
 
     virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
                                        const GURL& url,
-                                       int num_total, int num_complete) {}
+                                       int num_total,
+                                       int num_complete) OVERRIDE {
+    }
 
-    virtual void OnLogMessage(int host_id, appcache::LogLevel log_level,
-                              const std::string& message) {}
+    virtual void OnLogMessage(int host_id,
+                              appcache::LogLevel log_level,
+                              const std::string& message) OVERRIDE {
+    }
 
-    virtual void OnContentBlocked(int host_id, const GURL& manifest_url) {}
+    virtual void OnContentBlocked(int host_id,
+                                  const GURL& manifest_url) OVERRIDE {}
   };
 
   // Helper callback to run a test on our io_thread. The io_thread is spun up
@@ -67,8 +72,10 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // exercise fallback code paths.
 
   class MockURLRequestDelegate : public net::URLRequest::Delegate {
-    virtual void OnResponseStarted(net::URLRequest* request) {}
-    virtual void OnReadCompleted(net::URLRequest* request, int bytes_read) {}
+    virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE {}
+    virtual void OnReadCompleted(net::URLRequest* request,
+                                 int bytes_read) OVERRIDE {
+    }
   };
 
   class MockURLRequestJob : public net::URLRequestJob {

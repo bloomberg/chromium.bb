@@ -732,11 +732,11 @@ WebURL LocalFileToDataURL(const WebURL& fileUrl) {
 // by webkit layout tests.
 class ScopedTempDirectoryInternal : public ScopedTempDirectory {
  public:
-  virtual bool CreateUniqueTempDir() {
+  virtual bool CreateUniqueTempDir() OVERRIDE {
     return tempDirectory_.CreateUniqueTempDir();
   }
 
-  virtual std::string path() const {
+  virtual std::string path() const OVERRIDE {
     return tempDirectory_.path().MaybeAsASCII();
   }
 

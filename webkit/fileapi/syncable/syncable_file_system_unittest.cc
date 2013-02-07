@@ -31,7 +31,7 @@ class SyncableFileSystemTest : public testing::Test {
                      base::MessageLoopProxy::current()),
         weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
-  void SetUp() {
+  virtual void SetUp() {
     file_system_.SetUp();
 
     sync_context_ = new LocalFileSyncContext(base::MessageLoopProxy::current(),
@@ -40,7 +40,7 @@ class SyncableFileSystemTest : public testing::Test {
               file_system_.MaybeInitializeFileSystemContext(sync_context_));
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     if (sync_context_)
       sync_context_->ShutdownOnUIThread();
     sync_context_ = NULL;

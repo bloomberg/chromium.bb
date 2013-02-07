@@ -43,7 +43,7 @@ class FileSystemContextTest : public testing::Test {
  public:
   FileSystemContextTest() {}
 
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
 
     storage_policy_ = new quota::MockSpecialStoragePolicy();

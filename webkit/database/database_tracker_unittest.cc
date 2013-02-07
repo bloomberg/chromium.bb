@@ -41,7 +41,7 @@ class TestObserver : public webkit_database::DatabaseTracker::Observer {
   virtual ~TestObserver() {}
   virtual void OnDatabaseSizeChanged(const string16& origin_identifier,
                                      const string16& database_name,
-                                     int64 database_size) {
+                                     int64 database_size) OVERRIDE {
     if (!observe_size_changes_)
       return;
     new_notification_received_ = true;
@@ -49,8 +49,9 @@ class TestObserver : public webkit_database::DatabaseTracker::Observer {
     database_name_ = database_name;
     database_size_ = database_size;
   }
-  virtual void OnDatabaseScheduledForDeletion(const string16& origin_identifier,
-                                              const string16& database_name) {
+  virtual void OnDatabaseScheduledForDeletion(
+      const string16& origin_identifier,
+      const string16& database_name) OVERRIDE {
     if (!observe_scheduled_deletions_)
       return;
     new_notification_received_ = true;
@@ -95,14 +96,14 @@ class TestQuotaManagerProxy : public quota::QuotaManagerProxy {
         registered_client_(NULL) {
   }
 
-  virtual void RegisterClient(quota::QuotaClient* client) {
+  virtual void RegisterClient(quota::QuotaClient* client) OVERRIDE {
     EXPECT_FALSE(registered_client_);
     registered_client_ = client;
   }
 
   virtual void NotifyStorageAccessed(quota::QuotaClient::ID client_id,
                                      const GURL& origin,
-                                     quota::StorageType type) {
+                                     quota::StorageType type) OVERRIDE {
     EXPECT_EQ(quota::QuotaClient::kDatabase, client_id);
     EXPECT_EQ(quota::kStorageTypeTemporary, type);
     accesses_[origin] += 1;
@@ -111,7 +112,7 @@ class TestQuotaManagerProxy : public quota::QuotaManagerProxy {
   virtual void NotifyStorageModified(quota::QuotaClient::ID client_id,
                                      const GURL& origin,
                                      quota::StorageType type,
-                                     int64 delta) {
+                                     int64 delta) OVERRIDE {
     EXPECT_EQ(quota::QuotaClient::kDatabase, client_id);
     EXPECT_EQ(quota::kStorageTypeTemporary, type);
     modifications_[origin].first += 1;
@@ -119,8 +120,8 @@ class TestQuotaManagerProxy : public quota::QuotaManagerProxy {
   }
 
   // Not needed for our tests.
-  virtual void NotifyOriginInUse(const GURL& origin) {}
-  virtual void NotifyOriginNoLongerInUse(const GURL& origin) {}
+  virtual void NotifyOriginInUse(const GURL& origin) OVERRIDE {}
+  virtual void NotifyOriginNoLongerInUse(const GURL& origin) OVERRIDE {}
 
   void SimulateQuotaManagerDestroyed() {
     if (registered_client_) {

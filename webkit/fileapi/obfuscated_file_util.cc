@@ -214,7 +214,7 @@ class ObfuscatedOriginEnumerator
       origin_database->ListAllOrigins(&origins_);
   }
 
-  ~ObfuscatedOriginEnumerator() {}
+  virtual ~ObfuscatedOriginEnumerator() {}
 
   // Returns the next origin.  Returns empty if there are no more origins.
   virtual GURL Next() OVERRIDE {

@@ -32,11 +32,11 @@ class CppVariantPropertyCallback : public CppBoundClass::PropertyCallback {
  public:
   CppVariantPropertyCallback(CppVariant* value) : value_(value) { }
 
-  virtual bool GetValue(CppVariant* value) {
+  virtual bool GetValue(CppVariant* value) OVERRIDE {
     value->Set(*value_);
     return true;
   }
-  virtual bool SetValue(const CppVariant& value) {
+  virtual bool SetValue(const CppVariant& value) OVERRIDE {
     value_->Set(value);
     return true;
   }
@@ -50,12 +50,12 @@ public:
   GetterPropertyCallback(const CppBoundClass::GetterCallback& callback)
       : callback_(callback) { }
 
-  virtual bool GetValue(CppVariant* value) {
+  virtual bool GetValue(CppVariant* value) OVERRIDE {
     callback_.Run(value);
     return true;
   }
 
-  virtual bool SetValue(const CppVariant& value) {
+  virtual bool SetValue(const CppVariant& value) OVERRIDE {
     return false;
   }
 

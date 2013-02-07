@@ -48,14 +48,16 @@ class WebSocketStreamHandleImpl::Context
   void Detach();
 
   // WebSocketStreamHandleDelegate methods:
-  virtual void DidOpenStream(WebSocketStreamHandle*, int);
-  virtual void DidSendData(WebSocketStreamHandle*, int);
-  virtual void DidReceiveData(WebSocketStreamHandle*, const char*, int);
-  virtual void DidClose(WebSocketStreamHandle*);
+  virtual void DidOpenStream(WebSocketStreamHandle*, int) OVERRIDE;
+  virtual void DidSendData(WebSocketStreamHandle*, int) OVERRIDE;
+  virtual void DidReceiveData(WebSocketStreamHandle*,
+                              const char*,
+                              int) OVERRIDE;
+  virtual void DidClose(WebSocketStreamHandle*) OVERRIDE;
 
  private:
   friend class base::RefCounted<Context>;
-  ~Context() {
+  virtual ~Context() {
     DCHECK(!handle_);
     DCHECK(!client_);
     DCHECK(!bridge_);

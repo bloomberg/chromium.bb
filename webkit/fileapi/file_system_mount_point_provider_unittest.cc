@@ -205,7 +205,7 @@ class FileSystemMountPointProviderTest : public testing::Test {
       : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     special_storage_policy_ = new quota::MockSpecialStoragePolicy;
   }

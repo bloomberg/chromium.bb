@@ -145,7 +145,7 @@ class QuotaTemporaryStorageEvictorTest : public testing::Test {
       : num_get_usage_and_quota_for_eviction_(0),
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
-  void SetUp() {
+  virtual void SetUp() {
     quota_eviction_handler_.reset(new MockQuotaEvictionHandler(this));
 
     // Run multiple evictions in a single RunUntilIdle() when interval_ms == 0
@@ -153,7 +153,7 @@ class QuotaTemporaryStorageEvictorTest : public testing::Test {
         quota_eviction_handler_.get(), 0));
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     temporary_storage_evictor_.reset();
     quota_eviction_handler_.reset();
     MessageLoop::current()->RunUntilIdle();

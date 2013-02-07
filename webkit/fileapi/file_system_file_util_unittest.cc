@@ -32,7 +32,7 @@ class FileSystemFileUtilTest : public testing::Test {
   FileSystemFileUtilTest() {
   }
 
-  void SetUp() {
+  virtual void SetUp() {
   }
 
   FileSystemOperationContext* NewContext(

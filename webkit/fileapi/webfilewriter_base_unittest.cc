@@ -65,7 +65,7 @@ class TestableFileWriter : public WebFileWriterBase {
   bool received_cancel_;
 
  protected:
-  virtual void DoTruncate(const GURL& path, int64 offset) {
+  virtual void DoTruncate(const GURL& path, int64 offset) OVERRIDE {
     received_truncate_ = true;
     received_truncate_path_ = path;
     received_truncate_offset_ = offset;
@@ -88,7 +88,7 @@ class TestableFileWriter : public WebFileWriterBase {
   }
 
   virtual void DoWrite(const GURL& path, const GURL& blob_url,
-                       int64 offset) {
+                       int64 offset) OVERRIDE {
     received_write_ = true;
     received_write_path_ = path;
     received_write_offset_ = offset;
@@ -121,7 +121,7 @@ class TestableFileWriter : public WebFileWriterBase {
     }
   }
 
-  virtual void DoCancel() {
+  virtual void DoCancel() OVERRIDE {
     received_cancel_ = true;
   }
 };

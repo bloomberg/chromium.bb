@@ -43,38 +43,41 @@ class AppCacheHostTest : public testing::Test {
     }
 
     virtual void OnCacheSelected(
-        int host_id, const appcache::AppCacheInfo& info) {
+        int host_id, const appcache::AppCacheInfo& info) OVERRIDE {
       last_host_id_ = host_id;
       last_cache_id_ = info.cache_id;
       last_status_ = info.status;
     }
 
     virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                                 appcache::Status status) {
+                                 appcache::Status status) OVERRIDE {
       last_status_changed_ = status;
     }
 
     virtual void OnEventRaised(const std::vector<int>& host_ids,
-                               appcache::EventID event_id) {
+                               appcache::EventID event_id) OVERRIDE {
       last_event_id_ = event_id;
     }
 
     virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                    const std::string& message) {
+                                    const std::string& message) OVERRIDE {
       last_event_id_ = ERROR_EVENT;
     }
 
     virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
                                        const GURL& url,
-                                       int num_total, int num_complete) {
+                                       int num_total,
+                                       int num_complete) OVERRIDE {
       last_event_id_ = PROGRESS_EVENT;
     }
 
-    virtual void OnLogMessage(int host_id, appcache::LogLevel log_level,
-                              const std::string& message) {
+    virtual void OnLogMessage(int host_id,
+                              appcache::LogLevel log_level,
+                              const std::string& message) OVERRIDE {
     }
 
-    virtual void OnContentBlocked(int host_id, const GURL& manifest_url) {
+    virtual void OnContentBlocked(int host_id,
+                                  const GURL& manifest_url) OVERRIDE {
       content_blocked_ = true;
     }
 
@@ -91,20 +94,20 @@ class AppCacheHostTest : public testing::Test {
     MockQuotaManagerProxy() : QuotaManagerProxy(NULL, NULL) {}
 
     // Not needed for our tests.
-    virtual void RegisterClient(quota::QuotaClient* client) {}
+    virtual void RegisterClient(quota::QuotaClient* client) OVERRIDE {}
     virtual void NotifyStorageAccessed(quota::QuotaClient::ID client_id,
                                        const GURL& origin,
-                                       quota::StorageType type) {}
+                                       quota::StorageType type) OVERRIDE {}
     virtual void NotifyStorageModified(quota::QuotaClient::ID client_id,
                                        const GURL& origin,
                                        quota::StorageType type,
-                                       int64 delta) {}
+                                       int64 delta) OVERRIDE {}
 
-    virtual void NotifyOriginInUse(const GURL& origin) {
+    virtual void NotifyOriginInUse(const GURL& origin) OVERRIDE {
       inuse_[origin] += 1;
     }
 
-    virtual void NotifyOriginNoLongerInUse(const GURL& origin) {
+    virtual void NotifyOriginNoLongerInUse(const GURL& origin) OVERRIDE {
       inuse_[origin] -= 1;
     }
 

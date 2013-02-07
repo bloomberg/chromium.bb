@@ -68,7 +68,7 @@ class IsolatedFileUtilTest : public testing::Test {
   IsolatedFileUtilTest()
       : other_file_util_helper_(GURL("http://foo/"), kFileSystemTypeTest) {}
 
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(partition_dir_.CreateUniqueTempDir());
     file_util_.reset(new DraggedFileUtil());
@@ -91,7 +91,7 @@ class IsolatedFileUtilTest : public testing::Test {
     isolated_context()->AddReference(filesystem_id_);
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     isolated_context()->RemoveReference(filesystem_id_);
     other_file_util_helper_.TearDown();
   }

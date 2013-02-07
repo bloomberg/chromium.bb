@@ -22,7 +22,7 @@ namespace fileapi {
 
 class SandboxMountPointProviderOriginEnumeratorTest : public testing::Test {
  public:
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     sandbox_provider_.reset(
         new SandboxMountPointProvider(

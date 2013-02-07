@@ -252,7 +252,7 @@ class IOThread : public base::Thread {
  public:
   IOThread() : base::Thread("IOThread") {}
 
-  ~IOThread() {
+  virtual ~IOThread() {
     Stop();
   }
 
@@ -921,13 +921,13 @@ class ResourceLoaderBridgeImpl : public ResourceLoaderBridge {
   // --------------------------------------------------------------------------
   // ResourceLoaderBridge implementation:
 
-  virtual void SetRequestBody(ResourceRequestBody* request_body) {
+  virtual void SetRequestBody(ResourceRequestBody* request_body) OVERRIDE {
     DCHECK(params_.get());
     DCHECK(!params_->request_body);
     params_->request_body = request_body;
   }
 
-  virtual bool Start(Peer* peer) {
+  virtual bool Start(Peer* peer) OVERRIDE {
     DCHECK(!proxy_);
 
     if (!SimpleResourceLoaderBridge::EnsureIOThread())
@@ -941,16 +941,16 @@ class ResourceLoaderBridgeImpl : public ResourceLoaderBridge {
     return true;  // Any errors will be reported asynchronously.
   }
 
-  virtual void Cancel() {
+  virtual void Cancel() OVERRIDE {
     DCHECK(proxy_);
     proxy_->Cancel();
   }
 
-  virtual void SetDefersLoading(bool value) {
+  virtual void SetDefersLoading(bool value) OVERRIDE {
     // TODO(darin): implement me
   }
 
-  virtual void SyncLoad(SyncLoadResponse* response) {
+  virtual void SyncLoad(SyncLoadResponse* response) OVERRIDE {
     DCHECK(!proxy_);
 
     if (!SimpleResourceLoaderBridge::EnsureIOThread())

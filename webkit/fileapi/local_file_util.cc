@@ -32,7 +32,7 @@ class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
 #endif  // defined(OS_WIN)
   }
 
-  ~LocalFileEnumerator() {}
+  virtual ~LocalFileEnumerator() {}
 
   virtual base::FilePath Next() OVERRIDE;
   virtual int64 Size() OVERRIDE;

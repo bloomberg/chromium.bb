@@ -106,7 +106,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
         usage_(-1) {
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
 
     scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
@@ -135,7 +135,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     quota_manager_ = NULL;
     test_helper_.TearDown();
   }

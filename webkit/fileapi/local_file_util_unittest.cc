@@ -28,12 +28,12 @@ class LocalFileUtilTest : public testing::Test {
   LocalFileUtilTest()
       : test_helper_(GURL("http://foo/"), kFileSystemTypeTest) {}
 
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     test_helper_.SetUp(data_dir_.path());
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     test_helper_.TearDown();
   }
 

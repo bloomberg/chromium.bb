@@ -45,7 +45,7 @@ class FileSystemQuotaClientTest : public testing::Test {
         deletion_status_(quota::kQuotaStatusUnknown) {
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     file_system_context_ =
         new FileSystemContext(

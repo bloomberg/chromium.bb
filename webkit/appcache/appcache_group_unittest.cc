@@ -23,35 +23,35 @@ class TestAppCacheFrontend : public appcache::AppCacheFrontend {
   }
 
   virtual void OnCacheSelected(
-      int host_id, const appcache::AppCacheInfo& info) {
+      int host_id, const appcache::AppCacheInfo& info) OVERRIDE {
     last_host_id_ = host_id;
     last_cache_id_ = info.cache_id;
     last_status_ = info.status;
   }
 
   virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                               appcache::Status status) {
+                               appcache::Status status) OVERRIDE {
   }
 
   virtual void OnEventRaised(const std::vector<int>& host_ids,
-                             appcache::EventID event_id) {
+                             appcache::EventID event_id) OVERRIDE {
   }
 
   virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                  const std::string& message) {
+                                  const std::string& message) OVERRIDE {
   }
 
   virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
                                      const GURL& url,
-                                     int num_total, int num_complete) {
+                                     int num_total, int num_complete) OVERRIDE {
   }
 
   virtual void OnLogMessage(int host_id, appcache::LogLevel log_level,
-                            const std::string& message) {
+                            const std::string& message) OVERRIDE {
   }
 
   virtual void OnContentBlocked(int host_id,
-                                const GURL& manifest_url) {
+                                const GURL& manifest_url) OVERRIDE {
   }
 
   int last_host_id_;
@@ -68,7 +68,7 @@ class TestUpdateObserver : public AppCacheGroup::UpdateObserver {
   TestUpdateObserver() : update_completed_(false), group_has_cache_(false) {
   }
 
-  virtual void OnUpdateComplete(AppCacheGroup* group) {
+  virtual void OnUpdateComplete(AppCacheGroup* group) OVERRIDE {
     update_completed_ = true;
     group_has_cache_ = group->HasCache();
   }
@@ -88,7 +88,7 @@ class TestAppCacheHost : public AppCacheHost {
         update_completed_(false) {
   }
 
-  virtual void OnUpdateComplete(AppCacheGroup* group) {
+  virtual void OnUpdateComplete(AppCacheGroup* group) OVERRIDE {
     update_completed_ = true;
   }
 

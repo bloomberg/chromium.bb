@@ -10,7 +10,7 @@ class BMPImageDecoderTest : public ImageDecoderTest {
   BMPImageDecoderTest() : ImageDecoderTest("bmp") { }
 
  protected:
-  virtual WebKit::WebImageDecoder* CreateWebKitImageDecoder() const {
+  virtual WebKit::WebImageDecoder* CreateWebKitImageDecoder() const OVERRIDE {
     return new WebKit::WebImageDecoder(WebKit::WebImageDecoder::TypeBMP);
   }
 

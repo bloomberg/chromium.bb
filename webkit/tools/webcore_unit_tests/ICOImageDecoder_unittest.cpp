@@ -14,7 +14,7 @@ class ICOImageDecoderTest : public ImageDecoderTest {
   ICOImageDecoderTest() : ImageDecoderTest("ico") { }
 
  protected:
-   virtual WebKit::WebImageDecoder* CreateWebKitImageDecoder() const {
+   virtual WebKit::WebImageDecoder* CreateWebKitImageDecoder() const OVERRIDE {
      return new WebKit::WebImageDecoder(WebKit::WebImageDecoder::TypeICO);
   }
 };

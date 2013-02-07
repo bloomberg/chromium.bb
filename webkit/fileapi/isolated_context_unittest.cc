@@ -48,7 +48,7 @@ class IsolatedContextTest : public testing::Test {
       fileset_.insert(kTestPaths[i].NormalizePathSeparators());
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     IsolatedContext::FileInfoSet files;
     for (size_t i = 0; i < arraysize(kTestPaths); ++i) {
       std::string name;
@@ -61,7 +61,7 @@ class IsolatedContextTest : public testing::Test {
     ASSERT_FALSE(id_.empty());
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     IsolatedContext::GetInstance()->RemoveReference(id_);
   }
 

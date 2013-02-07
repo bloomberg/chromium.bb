@@ -21,33 +21,37 @@ class MockAppCacheStorageTest : public testing::Test {
           obsoleted_success_(false), found_cache_id_(kNoCacheId) {
     }
 
-    void OnCacheLoaded(AppCache* cache, int64 cache_id) {
+    virtual void OnCacheLoaded(AppCache* cache, int64 cache_id) OVERRIDE {
       loaded_cache_ = cache;
       loaded_cache_id_ = cache_id;
     }
 
-    void OnGroupLoaded(AppCacheGroup* group, const GURL& manifest_url) {
+    virtual void OnGroupLoaded(AppCacheGroup* group,
+                               const GURL& manifest_url) OVERRIDE {
       loaded_group_ = group;
       loaded_manifest_url_ = manifest_url;
     }
 
-    void OnGroupAndNewestCacheStored(
+    virtual void OnGroupAndNewestCacheStored(
         AppCacheGroup* group, AppCache* newest_cache, bool success,
-        bool would_exceed_quota) {
+        bool would_exceed_quota) OVERRIDE {
       stored_group_ = group;
       stored_group_success_ = success;
     }
 
-    void OnGroupMadeObsolete(AppCacheGroup* group, bool success) {
+    virtual void OnGroupMadeObsolete(AppCacheGroup* group,
+                                     bool success) OVERRIDE {
       obsoleted_group_ = group;
       obsoleted_success_ = success;
     }
 
-    void OnMainResponseFound(const GURL& url, const AppCacheEntry& entry,
-                             const GURL& fallback_url,
-                             const AppCacheEntry& fallback_entry,
-                             int64 cache_id, int64 group_id,
-                             const GURL& manifest_url) {
+    virtual void OnMainResponseFound(const GURL& url,
+                                     const AppCacheEntry& entry,
+                                     const GURL& fallback_url,
+                                     const AppCacheEntry& fallback_entry,
+                                     int64 cache_id,
+                                     int64 group_id,
+                                     const GURL& manifest_url) OVERRIDE {
       found_url_ = url;
       found_entry_ = entry;
       found_fallback_url_ = fallback_url;

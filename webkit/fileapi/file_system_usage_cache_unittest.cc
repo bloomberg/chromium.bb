@@ -15,7 +15,7 @@ class FileSystemUsageCacheTest : public testing::Test {
  public:
   FileSystemUsageCacheTest() {}
 
-  void SetUp() {
+  virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
   }
 

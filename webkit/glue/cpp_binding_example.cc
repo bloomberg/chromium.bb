@@ -18,12 +18,12 @@ namespace {
 
 class PropertyCallbackExample : public CppBoundClass::PropertyCallback {
  public:
-  virtual bool GetValue(CppVariant* value) {
+  virtual bool GetValue(CppVariant* value) OVERRIDE {
     value->Set(value_);
     return true;
   }
 
-  virtual bool SetValue(const CppVariant& value) {
+  virtual bool SetValue(const CppVariant& value) OVERRIDE {
     value_.Set(value);
     return true;
   }
