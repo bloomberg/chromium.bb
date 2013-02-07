@@ -15,8 +15,8 @@ int main(int argc, char** argv) {
 #if !defined(OS_ANDROID)
   base::AtExitManager exit_manager;
 #endif
-  gfx::InitializeGLBindings(gfx::kGLImplementationMockGL);
   CommandLine::Init(argc, argv);
+  gfx::InitializeGLBindings(gfx::kGLImplementationMockGL);
   testing::InitGoogleMock(&argc, argv);
   return RUN_ALL_TESTS();
 }

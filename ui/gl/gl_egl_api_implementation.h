@@ -40,6 +40,22 @@ class GL_EXPORT RealEGLApi : public EGLApiBase {
   void Initialize(DriverEGL* driver);
 };
 
+
+// Inserts a TRACE for every EGL call.
+class GL_EXPORT TraceEGLApi : public EGLApi {
+ public:
+  TraceEGLApi(EGLApi* egl_api) : egl_api_(egl_api) { }
+  virtual ~TraceEGLApi();
+
+  // Include the auto-generated part of this class. We split this because
+  // it means we can easily edit the non-auto generated parts right here in
+  // this file instead of having to edit some template or the code generator.
+  #include "gl_bindings_api_autogen_egl.h"
+
+ private:
+  EGLApi* egl_api_;
+};
+
 }  // namespace gfx
 
 #endif  // UI_GL_EGL_API_IMPLEMENTATION_H_

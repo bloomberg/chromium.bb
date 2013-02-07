@@ -26,6 +26,7 @@ namespace switches {
 GL_EXPORT extern const char kDisableGpuVsync[];
 GL_EXPORT extern const char kEnableGPUServiceLogging[];
 GL_EXPORT extern const char kEnableGPUClientLogging[];
+GL_EXPORT extern const char kEnableGPUServiceTracing[];
 GL_EXPORT extern const char kGpuNoContextLost[];
 GL_EXPORT extern const char kGpuSwapDelay[];
 
@@ -41,6 +42,9 @@ GL_EXPORT extern const char kGpuSwitchingOptionNameAutomatic[];
 GL_EXPORT extern const char kUseGL[];
 GL_EXPORT extern const char kSwiftShaderPath[];
 GL_EXPORT extern const char kTestGLLib[];
+
+GL_EXPORT extern const char* kGLSwitchesCopiedFromGpuProcessHost[];
+GL_EXPORT extern const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches;
 
 }  // namespace switches
 

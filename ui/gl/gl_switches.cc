@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/gl/gl_switches.h"
+#include "base/basictypes.h"
 
 namespace gfx {
 
@@ -23,6 +24,9 @@ const char kDisableGpuVsync[]               = "disable-gpu-vsync";
 // Turns on GPU logging (debug build only).
 const char kEnableGPUServiceLogging[]       = "enable-gpu-service-logging";
 const char kEnableGPUClientLogging[]        = "enable-gpu-client-logging";
+
+// Turns on calling TRACE for every GL call.
+const char kEnableGPUServiceTracing[]       = "enable-gpu-service-tracing";
 
 // Select which implementation of GL the GPU process should use. Options are:
 //  desktop: whatever desktop OpenGL the user has installed (Linux and Mac
@@ -57,6 +61,19 @@ const char kGpuSwitchingOptionNameAutomatic[]   = "automatic";
 // Flag used for Linux tests: for desktop GL bindings, try to load this GL
 // library first, but fall back to regular library if loading fails.
 const char kTestGLLib[]                     = "test-gl-lib";
+
+// This is the list of switches passed from this file that are passed from the
+// GpuProcessHost to the GPU Process. Add your switch to this list if you need
+// to read it in the GPU process, else don't add it.
+const char* kGLSwitchesCopiedFromGpuProcessHost[] = {
+  kDisableGpuVsync,
+  kEnableGPUServiceLogging,
+  kEnableGPUServiceTracing,
+  kGpuNoContextLost,
+  kGpuSwitching,
+};
+const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches =
+    arraysize(kGLSwitchesCopiedFromGpuProcessHost);
 
 }  // namespace switches
 

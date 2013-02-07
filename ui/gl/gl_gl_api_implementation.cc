@@ -7,21 +7,34 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/string_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_state_restorer.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_switches.h"
 
 namespace gfx {
 
-RealGLApi* g_real_gl;
+// The GL Api being used. This could be g_real_gl or gl_trace_gl
+static GLApi* g_gl;
+// A GL Api that calls directly into the driver.
+static RealGLApi* g_real_gl;
+// A GL Api that calls TRACE and then calls another GL api.
+static TraceGLApi* g_trace_gl;
 
 void InitializeGLBindingsGL() {
   g_driver_gl.InitializeBindings();
   if (!g_real_gl) {
     g_real_gl = new RealGLApi();
+    g_trace_gl = new TraceGLApi(g_real_gl);
   }
   g_real_gl->Initialize(&g_driver_gl);
+  g_gl = g_real_gl;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableGPUServiceTracing)) {
+    g_gl = g_trace_gl;
+  }
   SetGLToRealGLApi();
 }
 
@@ -34,7 +47,7 @@ void SetGLApi(GLApi* api) {
 }
 
 void SetGLToRealGLApi() {
-  SetGLApi(g_real_gl);
+  SetGLApi(g_gl);
 }
 
 void InitializeGLExtensionBindingsGL(GLContext* context) {
@@ -50,6 +63,11 @@ void ClearGLBindingsGL() {
     delete g_real_gl;
     g_real_gl = NULL;
   }
+  if (g_trace_gl) {
+    delete g_trace_gl;
+    g_trace_gl = NULL;
+  }
+  g_gl = NULL;
   g_current_gl_context = NULL;
   g_driver_gl.ClearBindings();
 }
@@ -79,6 +97,9 @@ RealGLApi::~RealGLApi() {
 
 void RealGLApi::Initialize(DriverGL* driver) {
   InitializeBase(driver);
+}
+
+TraceGLApi::~TraceGLApi() {
 }
 
 VirtualGLApi::VirtualGLApi()

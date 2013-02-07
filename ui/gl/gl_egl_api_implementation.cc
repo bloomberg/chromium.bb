@@ -61,6 +61,9 @@ void RealEGLApi::Initialize(DriverEGL* driver) {
   InitializeBase(driver);
 }
 
+TraceEGLApi::~TraceEGLApi() {
+}
+
 }  // namespace gfx
 
 

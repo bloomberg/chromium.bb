@@ -40,6 +40,21 @@ class GL_EXPORT RealWGLApi : public WGLApiBase {
   void Initialize(DriverWGL* driver);
 };
 
+// Inserts a TRACE for every WGL call.
+class GL_EXPORT TraceWGLApi : public WGLApi {
+ public:
+  TraceWGLApi(WGLApi* wgl_api) : wgl_api_(wgl_api) { }
+  virtual ~TraceWGLApi();
+
+  // Include the auto-generated part of this class. We split this because
+  // it means we can easily edit the non-auto generated parts right here in
+  // this file instead of having to edit some template or the code generator.
+  #include "gl_bindings_api_autogen_wgl.h"
+
+ private:
+  WGLApi* wgl_api_;
+};
+
 }  // namespace gfx
 
 #endif  // UI_GL_WGL_API_IMPLEMENTATION_H_

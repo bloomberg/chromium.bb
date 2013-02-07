@@ -61,6 +61,9 @@ void RealOSMESAApi::Initialize(DriverOSMESA* driver) {
   InitializeBase(driver);
 }
 
+TraceOSMESAApi::~TraceOSMESAApi() {
+}
+
 }  // namespace gfx
 
 

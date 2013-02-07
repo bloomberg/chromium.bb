@@ -61,6 +61,9 @@ void RealGLXApi::Initialize(DriverGLX* driver) {
   InitializeBase(driver);
 }
 
+TraceGLXApi::~TraceGLXApi() {
+}
+
 }  // namespace gfx
 
 

@@ -49,6 +49,21 @@ class GL_EXPORT RealGLApi : public GLApiBase {
   void Initialize(DriverGL* driver);
 };
 
+// Inserts a TRACE for every GL call.
+class GL_EXPORT TraceGLApi : public GLApi {
+ public:
+  TraceGLApi(GLApi* gl_api) : gl_api_(gl_api) { }
+  virtual ~TraceGLApi();
+
+  // Include the auto-generated part of this class. We split this because
+  // it means we can easily edit the non-auto generated parts right here in
+  // this file instead of having to edit some template or the code generator.
+  #include "gl_bindings_api_autogen_gl.h"
+
+ private:
+  GLApi* gl_api_;
+};
+
 // Implementents the GL API using co-operative state restoring.
 // Assumes there is only one real GL context and that multiple virtual contexts
 // are implemented above it. Restores the needed state from the current context.

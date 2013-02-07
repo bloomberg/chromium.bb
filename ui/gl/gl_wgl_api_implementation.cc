@@ -61,6 +61,9 @@ void RealWGLApi::Initialize(DriverWGL* driver) {
   InitializeBase(driver);
 }
 
+TraceWGLApi::~TraceWGLApi() {
+}
+
 }  // namespace gfx
 
 
