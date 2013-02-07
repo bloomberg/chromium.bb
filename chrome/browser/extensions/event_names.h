@@ -91,8 +91,8 @@ extern const char kOnStorageRemoved[];
 extern const char kOnSystemIndicatorClicked[];
 
 // SyncFileSystem.
-extern const char kOnSyncStateChanged[];
-extern const char kOnFileSynced[];
+extern const char kOnServiceStatusChanged[];
+extern const char kOnFileStatusChanged[];
 
 // MediaGalleriesPrivate.
 extern const char kOnAttachEventName[];

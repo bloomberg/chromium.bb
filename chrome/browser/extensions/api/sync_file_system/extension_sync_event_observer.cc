@@ -22,45 +22,43 @@ namespace extensions {
 
 namespace {
 
-api::sync_file_system::SyncStateStatus SyncServiceStateEnumToExtensionEnum(
+api::sync_file_system::ServiceStatus SyncServiceStateEnumToExtensionEnum(
     SyncEventObserver::SyncServiceState state) {
   switch (state) {
     case SyncEventObserver::SYNC_SERVICE_RUNNING:
-      return api::sync_file_system::SYNC_STATE_STATUS_RUNNING;
+      return api::sync_file_system::SERVICE_STATUS_RUNNING;
     case SyncEventObserver::SYNC_SERVICE_AUTHENTICATION_REQUIRED:
-      return api::sync_file_system::
-          SYNC_STATE_STATUS_AUTHENTICATION_REQUIRED;
+      return api::sync_file_system::SERVICE_STATUS_AUTHENTICATION_REQUIRED;
     case SyncEventObserver::SYNC_SERVICE_TEMPORARY_UNAVAILABLE:
-      return api::sync_file_system::
-          SYNC_STATE_STATUS_TEMPORARY_UNAVAILABLE;
+      return api::sync_file_system::SERVICE_STATUS_TEMPORARY_UNAVAILABLE;
     case SyncEventObserver::SYNC_SERVICE_DISABLED:
-      return api::sync_file_system::SYNC_STATE_STATUS_DISABLED;
+      return api::sync_file_system::SERVICE_STATUS_DISABLED;
   }
   NOTREACHED();
-  return api::sync_file_system::SYNC_STATE_STATUS_NONE;
+  return api::sync_file_system::SERVICE_STATUS_NONE;
 }
 
-api::sync_file_system::SyncOperationResult SyncOperationResultToExtensionEnum(
+api::sync_file_system::SyncOperationStatus SyncOperationResultToExtensionEnum(
     fileapi::SyncOperationResult operation_result) {
   switch (operation_result) {
     case fileapi::SYNC_OPERATION_NONE:
       return api::sync_file_system::
-          SYNC_OPERATION_RESULT_NONE;
+          SYNC_OPERATION_STATUS_NONE;
     case fileapi::SYNC_OPERATION_ADDED:
       return api::sync_file_system::
-          SYNC_OPERATION_RESULT_ADDED;
+          SYNC_OPERATION_STATUS_ADDED;
     case fileapi::SYNC_OPERATION_UPDATED:
       return api::sync_file_system::
-          SYNC_OPERATION_RESULT_UPDATED;
+          SYNC_OPERATION_STATUS_UPDATED;
     case fileapi::SYNC_OPERATION_DELETED:
       return api::sync_file_system::
-          SYNC_OPERATION_RESULT_DELETED;
+          SYNC_OPERATION_STATUS_DELETED;
     case fileapi::SYNC_OPERATION_CONFLICTED:
       return api::sync_file_system::
-          SYNC_OPERATION_RESULT_CONFLICTED;
+          SYNC_OPERATION_STATUS_CONFLICTED;
   }
   NOTREACHED();
-  return api::sync_file_system::SYNC_OPERATION_RESULT_NONE;
+  return api::sync_file_system::SYNC_OPERATION_STATUS_NONE;
 }
 
 }  // namespace
@@ -103,15 +101,14 @@ void ExtensionSyncEventObserver::OnSyncStateUpdated(
     sync_file_system::SyncEventObserver::SyncServiceState state,
     const std::string& description) {
   // Convert state and description into SyncState Object.
-  api::sync_file_system::SyncState sync_state;
-  sync_state.service_name = service_name_;
-  sync_state.state = SyncServiceStateEnumToExtensionEnum(state);
-  sync_state.description = description;
+  api::sync_file_system::ServiceInfo service_info;
+  service_info.state = SyncServiceStateEnumToExtensionEnum(state);
+  service_info.description = description;
   scoped_ptr<base::ListValue> params(
-      api::sync_file_system::OnSyncStateChanged::Create(sync_state));
+      api::sync_file_system::OnServiceStatusChanged::Create(service_info));
 
   BroadcastOrDispatchEvent(app_origin,
-                           event_names::kOnSyncStateChanged,
+                           event_names::kOnServiceStatusChanged,
                            params.Pass());
 }
 
@@ -125,7 +122,7 @@ void ExtensionSyncEventObserver::OnFileSynced(
   GURL root_url = fileapi::GetSyncableFileSystemRootURI(url.origin(),
                                                         url.filesystem_id());
   FilePath file_path = url.path();
-  const api::sync_file_system::SyncOperationResult sync_operation_result =
+  const api::sync_file_system::SyncOperationStatus sync_operation_status =
       SyncOperationResultToExtensionEnum(result);
 
   // All arguments must be basic types for args massager.
@@ -134,10 +131,10 @@ void ExtensionSyncEventObserver::OnFileSynced(
   params->AppendString(file_system_name);
   params->AppendString(root_url.spec());
   params->AppendString(fileapi::VirtualPath::GetNormalizedFilePath(file_path));
-  params->AppendString(api::sync_file_system::ToString(sync_operation_result));
+  params->AppendString(api::sync_file_system::ToString(sync_operation_status));
 
   BroadcastOrDispatchEvent(url.origin(),
-                           event_names::kOnFileSynced,
+                           event_names::kOnFileStatusChanged,
                            params.Pass());
 }
 

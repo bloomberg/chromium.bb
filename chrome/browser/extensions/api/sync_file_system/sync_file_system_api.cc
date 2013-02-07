@@ -42,21 +42,21 @@ const char* const kDriveCloudService =
 const char kFileError[] = "File error %d.";
 const char kQuotaError[] = "Quota error %d.";
 
-api::sync_file_system::FileSyncStatus FileSyncStatusEnumToExtensionEnum(
+api::sync_file_system::FileStatus FileSyncStatusEnumToExtensionEnum(
     const fileapi::SyncFileStatus state) {
   switch (state) {
     case fileapi::SYNC_FILE_STATUS_UNKNOWN:
-      return api::sync_file_system::FILE_SYNC_STATUS_NONE;
+      return api::sync_file_system::FILE_STATUS_NONE;
     case fileapi::SYNC_FILE_STATUS_SYNCED:
-      return api::sync_file_system::FILE_SYNC_STATUS_SYNCED;
+      return api::sync_file_system::FILE_STATUS_SYNCED;
     case fileapi::SYNC_FILE_STATUS_HAS_PENDING_CHANGES:
-      return api::sync_file_system::FILE_SYNC_STATUS_PENDING;
+      return api::sync_file_system::FILE_STATUS_PENDING;
     case fileapi::SYNC_FILE_STATUS_CONFLICTING:
       return api::sync_file_system::
-          FILE_SYNC_STATUS_CONFLICTING;
+          FILE_STATUS_CONFLICTING;
   }
   NOTREACHED();
-  return api::sync_file_system::FILE_SYNC_STATUS_NONE;
+  return api::sync_file_system::FILE_STATUS_NONE;
 }
 
 sync_file_system::SyncFileSystemService* GetSyncFileSystemService(
@@ -224,7 +224,7 @@ bool SyncFileSystemGetUsageAndQuotaFunction::RunImpl() {
   return true;
 }
 
-bool SyncFileSystemGetFileSyncStatusFunction::RunImpl() {
+bool SyncFileSystemGetFileStatusFunction::RunImpl() {
   std::string url;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
 
@@ -237,12 +237,12 @@ bool SyncFileSystemGetFileSyncStatusFunction::RunImpl() {
 
   SyncFileSystemServiceFactory::GetForProfile(profile())->GetFileSyncStatus(
       file_system_url,
-      Bind(&SyncFileSystemGetFileSyncStatusFunction::DidGetFileSyncStatus,
+      Bind(&SyncFileSystemGetFileStatusFunction::DidGetFileStatus,
            this));
   return true;
 }
 
-void SyncFileSystemGetFileSyncStatusFunction::DidGetFileSyncStatus(
+void SyncFileSystemGetFileStatusFunction::DidGetFileStatus(
     const fileapi::SyncStatusCode sync_service_status,
     const fileapi::SyncFileStatus sync_file_status) {
   // Repost to switch from IO thread to UI thread for SendResponse().
@@ -251,7 +251,7 @@ void SyncFileSystemGetFileSyncStatusFunction::DidGetFileSyncStatus(
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        Bind(&SyncFileSystemGetFileSyncStatusFunction::DidGetFileSyncStatus,
+        Bind(&SyncFileSystemGetFileStatusFunction::DidGetFileStatus,
              this, sync_service_status, sync_file_status));
     return;
   }
@@ -264,7 +264,7 @@ void SyncFileSystemGetFileSyncStatusFunction::DidGetFileSyncStatus(
   }
 
   // Convert from C++ to JavaScript enum.
-  results_ = api::sync_file_system::GetFileSyncStatus::Results::Create(
+  results_ = api::sync_file_system::GetFileStatus::Results::Create(
       FileSyncStatusEnumToExtensionEnum(sync_file_status));
   SendResponse(true);
 }

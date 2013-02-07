@@ -19,7 +19,7 @@ chromeHidden.registerCustomHook('syncFileSystem', function(bindingsAPI) {
       return [fileSystemUrl, callback];
     });
   }
-  ['getFileSyncStatus']
+  ['getFileStatus']
       .forEach(bindFileEntryFunction);
 
   // Functions which take in an [instanceOf=DOMFileSystem].
@@ -47,8 +47,8 @@ chromeHidden.registerCustomHook('syncFileSystem', function(bindingsAPI) {
   });
 });
 
-chromeHidden.Event.registerArgumentMassager('syncFileSystem.onFileSynced',
-    function(args, dispatch) {
+chromeHidden.Event.registerArgumentMassager(
+    'syncFileSystem.onFileStatusChanged', function(args, dispatch) {
   // Make FileEntry object using all the base string fields.
   var fileSystemType = args[0];
   var fileSystemName = args[1];

@@ -79,8 +79,8 @@ const char kOnStorageRemoved[] = "experimental.systemInfo.storage.onRemoved";
 
 const char kOnSystemIndicatorClicked[] = "systemIndicator.onClicked";
 
-const char kOnSyncStateChanged[] = "syncFileSystem.onSyncStateChanged";
-const char kOnFileSynced[] = "syncFileSystem.onFileSynced";
+const char kOnServiceStatusChanged[] = "syncFileSystem.onServiceStatusChanged";
+const char kOnFileStatusChanged[] = "syncFileSystem.onFileStatusChanged";
 
 const char kOnAttachEventName[] = "mediaGalleriesPrivate.onDeviceAttached";
 const char kOnDetachEventName[] = "mediaGalleriesPrivate.onDeviceDetached";

@@ -13,10 +13,10 @@ var testStep = [
   },
   // Confirm file is conflicting as this is the mocked value.
   function(fileEntry) {
-    chrome.syncFileSystem.getFileSyncStatus(fileEntry, testStep.shift());
+    chrome.syncFileSystem.getFileStatus(fileEntry, testStep.shift());
   },
-  function(fileSyncStatus) {
-    chrome.test.assertEq("conflicting", fileSyncStatus);
+  function(fileStatus) {
+    chrome.test.assertEq("conflicting", fileStatus);
     chrome.test.succeed();
   }
 ];

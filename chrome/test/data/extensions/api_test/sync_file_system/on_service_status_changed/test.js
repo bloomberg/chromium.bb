@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 
 function setupListener() {
-  chrome.syncFileSystem.onSyncStateChanged.addListener(checkEventReceived);
+  chrome.syncFileSystem.onServiceStatusChanged.addListener(checkEventReceived);
   chrome.syncFileSystem.requestFileSystem(function() {});
 }
 
-function checkEventReceived(syncState) {
-  chrome.test.assertEq("drive", syncState.service_name);
-  chrome.test.assertEq("running", syncState.state);
-  chrome.test.assertEq("Test event description.", syncState.description);
+function checkEventReceived(serviceInfo) {
+  chrome.test.assertEq("running", serviceInfo.state);
+  chrome.test.assertEq("Test event description.", serviceInfo.description);
   chrome.test.succeed();
 }
 
