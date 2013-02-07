@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_IMPL_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "content/public/browser/keyboard_listener.h"
@@ -33,8 +34,8 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   // Creates a new |AutofillPopupControllerImpl|, or reuses |previous| if
   // the construction arguments are the same. |previous| may be invalidated by
   // this call.
-  static AutofillPopupControllerImpl* GetOrCreate(
-      AutofillPopupControllerImpl* previous,
+  static base::WeakPtr<AutofillPopupControllerImpl> GetOrCreate(
+      base::WeakPtr<AutofillPopupControllerImpl> previous,
       AutofillPopupDelegate* delegate,
       gfx::NativeView container_view,
       const gfx::RectF& element_bounds);
@@ -138,6 +139,8 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   int GetDesiredPopupHeight() const;
 #endif
 
+  base::WeakPtr<AutofillPopupControllerImpl> GetWeakPtr();
+
  private:
   const gfx::Rect RoundedElementBounds() const;
 #if !defined(OS_ANDROID)
@@ -208,6 +211,8 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
 
   // True if the delegate should be informed when |this| is destroyed.
   bool inform_delegate_of_destruction_;
+
+  base::WeakPtrFactory<AutofillPopupControllerImpl> weak_ptr_factory_;
 };
 
 #endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_IMPL_H_

@@ -138,7 +138,6 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_cc_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_billing_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_shipping_(this)),
-      popup_controller_(NULL),
       section_showing_popup_(SECTION_BILLING) {
   // TODO(estade): |this| should observe PersonalDataManager.
   // TODO(estade): remove duplicates from |form|?
@@ -590,6 +589,12 @@ content::WebContents* AutofillDialogControllerImpl::web_contents() {
 ////////////////////////////////////////////////////////////////////////////////
 // AutofillPopupDelegate
 
+void AutofillDialogControllerImpl::OnPopupShown(
+    content::KeyboardListener* listener) {}
+
+void AutofillDialogControllerImpl::OnPopupHidden(
+    content::KeyboardListener* listener) {}
+
 void AutofillDialogControllerImpl::DidSelectSuggestion(int identifier) {
   // TODO(estade): implement.
 }
@@ -623,10 +628,6 @@ void AutofillDialogControllerImpl::RemoveSuggestion(const string16& value,
 
 void AutofillDialogControllerImpl::ClearPreviewedForm() {
   // TODO(estade): implement.
-}
-
-void AutofillDialogControllerImpl::ControllerDestroyed() {
-  popup_controller_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -949,10 +950,8 @@ DetailInputs* AutofillDialogControllerImpl::MutableRequestedFieldsForSection(
 }
 
 void AutofillDialogControllerImpl::HidePopup() {
-  if (popup_controller_) {
+  if (popup_controller_)
     popup_controller_->Hide();
-    ControllerDestroyed();
-  }
 }
 
 }  // namespace autofill

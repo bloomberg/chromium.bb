@@ -7,10 +7,22 @@
 
 #include "base/string16.h"
 
+namespace content {
+class KeyboardListener;
+}
+
 // An interface for interaction with AutofillPopupController. Will be notified
 // of events by the controller.
 class AutofillPopupDelegate {
  public:
+  // Called when the Autofill popup is shown. |listener| may be used to pass
+  // keyboard events to the popup.
+  virtual void OnPopupShown(content::KeyboardListener* listener) = 0;
+
+  // Called when the Autofill popup is hidden. |listener| must be unregistered
+  // if it was registered in OnPopupShown.
+  virtual void OnPopupHidden(content::KeyboardListener* listener) = 0;
+
   // Called when the autofill suggestion indicated by |identifier| has been
   // temporarily selected (e.g., hovered).
   virtual void DidSelectSuggestion(int identifier) = 0;
@@ -23,9 +35,6 @@ class AutofillPopupDelegate {
 
   // Informs the delegate that the Autofill previewed form should be cleared.
   virtual void ClearPreviewedForm() = 0;
-
-  // Called to inform the delegate the controller is experiencing destruction.
-  virtual void ControllerDestroyed() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_DELEGATE_H_

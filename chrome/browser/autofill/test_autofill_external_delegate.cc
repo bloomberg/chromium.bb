@@ -48,6 +48,4 @@ void TestAutofillExternalDelegate::HideAutofillPopup() {}
 void TestAutofillExternalDelegate::EnsurePopupForElement(
     const gfx::RectF& element_bounds) {}
 
-void TestAutofillExternalDelegate::ControllerDestroyed() {}
-
 }  // namespace autofill

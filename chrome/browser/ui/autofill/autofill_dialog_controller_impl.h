@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
@@ -98,13 +99,14 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual content::WebContents* web_contents() OVERRIDE;
 
   // AutofillPopupDelegate implementation.
+  virtual void OnPopupShown(content::KeyboardListener* listener) OVERRIDE;
+  virtual void OnPopupHidden(content::KeyboardListener* listener) OVERRIDE;
   virtual void DidSelectSuggestion(int identifier) OVERRIDE;
   virtual void DidAcceptSuggestion(const string16& value,
                                    int identifier) OVERRIDE;
   virtual void RemoveSuggestion(const string16& value,
                                 int identifier) OVERRIDE;
   virtual void ClearPreviewedForm() OVERRIDE;
-  virtual void ControllerDestroyed() OVERRIDE;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
@@ -257,9 +259,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // The GUIDs for the currently showing unverified profiles popup.
   std::vector<PersonalDataManager::GUIDPair> popup_guids_;
 
-  // If non-NULL, the controller for the currently showing popup (which helps
-  // users when they're manually filling the dialog).
-  AutofillPopupControllerImpl* popup_controller_;
+  // The controller for the currently showing popup (which helps users when
+  // they're manually filling the dialog).
+  base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
 
   // The section for which |popup_controller_| is currently showing a popup
   // (if any).

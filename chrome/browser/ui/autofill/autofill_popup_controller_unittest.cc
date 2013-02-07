@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
@@ -14,6 +14,7 @@
 
 using ::testing::_;
 using ::testing::AtLeast;
+using base::WeakPtr;
 using WebKit::WebAutofillClient;
 
 namespace {
@@ -94,6 +95,10 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
     return AutofillPopupControllerImpl::GetDesiredPopupHeight();
   }
 
+  WeakPtr<AutofillPopupControllerImpl> GetWeakPtr() {
+    return AutofillPopupControllerImpl::GetWeakPtr();
+  }
+
   MOCK_METHOD1(InvalidateRow, void(size_t));
   MOCK_METHOD0(UpdateBoundsAndRedrawPopup, void());
   MOCK_METHOD0(Hide, void());
@@ -112,6 +117,7 @@ class AutofillPopupControllerUnitTest : public ::testing::Test {
     : autofill_popup_controller_(
           new testing::NiceMock<TestAutofillPopupController>(
               &external_delegate_, gfx::Rect())) {}
+
   virtual ~AutofillPopupControllerUnitTest() {
     // This will make sure the controller and the view (if any) are both
     // cleaned up.
@@ -216,8 +222,6 @@ TEST_F(AutofillPopupControllerUnitTest, RemoveLine) {
 
   // Remove the last entry. The popup should then be hidden since there are
   // no Autofill entries left.
-  EXPECT_CALL(external_delegate_, ControllerDestroyed());
-
   autofill_popup_controller_->SetSelectedLine(0);
   // The controller self-deletes here, don't double delete.
   EXPECT_TRUE(autofill_popup_controller_->RemoveSelectedLine());
@@ -247,32 +251,21 @@ TEST_F(AutofillPopupControllerUnitTest, SkipSeparator) {
 TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
   MockAutofillExternalDelegate delegate;
 
-  AutofillPopupControllerImpl* controller =
+  WeakPtr<AutofillPopupControllerImpl> controller =
       AutofillPopupControllerImpl::GetOrCreate(
-          NULL,
-          &delegate,
-          NULL,
-          gfx::Rect());
+          WeakPtr<AutofillPopupControllerImpl>(), &delegate, NULL, gfx::Rect());
   EXPECT_TRUE(controller);
 
-  // This should not inform |delegate| of its destruction.
-  EXPECT_CALL(delegate, ControllerDestroyed()).Times(0);
   controller->Hide();
 
-  controller =
-      AutofillPopupControllerImpl::GetOrCreate(
-          NULL,
-          &delegate,
-          NULL,
-          gfx::Rect());
+  controller = AutofillPopupControllerImpl::GetOrCreate(
+      WeakPtr<AutofillPopupControllerImpl>(), &delegate, NULL, gfx::Rect());
   EXPECT_TRUE(controller);
-  AutofillPopupControllerImpl* controller2 =
-      AutofillPopupControllerImpl::GetOrCreate(
-          controller,
-          &delegate,
-          NULL,
-          gfx::Rect());
-  EXPECT_EQ(controller, controller2);
+
+  WeakPtr<AutofillPopupControllerImpl> controller2 =
+      AutofillPopupControllerImpl::GetOrCreate(controller, &delegate, NULL,
+                                               gfx::Rect());
+  EXPECT_EQ(controller.get(), controller2.get());
   controller->Hide();
 
   testing::NiceMock<TestAutofillPopupController>* test_controller =
@@ -283,7 +276,7 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
   gfx::RectF bounds(0.f, 0.f, 1.f, 2.f);
   AutofillPopupControllerImpl* controller3 =
       AutofillPopupControllerImpl::GetOrCreate(
-          test_controller,
+          test_controller->GetWeakPtr(),
           &delegate,
           NULL,
           bounds);
@@ -292,7 +285,6 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
       static_cast<AutofillPopupController*>(controller3)->element_bounds());
   controller3->Hide();
 
-  EXPECT_CALL(delegate, ControllerDestroyed());
   delete test_controller;
 }
 

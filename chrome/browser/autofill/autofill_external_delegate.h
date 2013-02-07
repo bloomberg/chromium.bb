@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/password_autofill_manager.h"
 #include "chrome/browser/ui/autofill/autofill_popup_delegate.h"
@@ -47,12 +48,13 @@ class AutofillExternalDelegate
                                              AutofillManager* autofill_manager);
 
   // AutofillPopupDelegate implementation.
+  virtual void OnPopupShown(content::KeyboardListener* listener) OVERRIDE;
+  virtual void OnPopupHidden(content::KeyboardListener* listener) OVERRIDE;
   virtual void DidSelectSuggestion(int identifier) OVERRIDE;
   virtual void DidAcceptSuggestion(const string16& value,
                                    int identifier) OVERRIDE;
   virtual void RemoveSuggestion(const string16& value, int identifier) OVERRIDE;
   virtual void ClearPreviewedForm() OVERRIDE;
-  virtual void ControllerDestroyed() OVERRIDE;
 
   // Records and associates a query_id with web form data.  Called
   // when the renderer posts an Autofill query to the browser. |bounds|
@@ -161,7 +163,7 @@ class AutofillExternalDelegate
   // The web_contents associated with this delegate.
   content::WebContents* web_contents_;  // weak; owns me.
   AutofillManager* autofill_manager_;  // weak.
-  AutofillPopupControllerImpl* controller_;  // weak.
+  base::WeakPtr<AutofillPopupControllerImpl> controller_;
 
   // Password Autofill manager, handles all password-related Autofilling.
   PasswordAutofillManager password_autofill_manager_;

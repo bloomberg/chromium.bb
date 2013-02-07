@@ -21,6 +21,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/vector2d.h"
 
+using base::WeakPtr;
 using WebKit::WebAutofillClient;
 
 namespace {
@@ -71,8 +72,8 @@ const DataResource kDataResources[] = {
 }  // end namespace
 
 // static
-AutofillPopupControllerImpl* AutofillPopupControllerImpl::GetOrCreate(
-    AutofillPopupControllerImpl* previous,
+WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
+    WeakPtr<AutofillPopupControllerImpl> previous,
     AutofillPopupDelegate* delegate,
     gfx::NativeView container_view,
     const gfx::RectF& element_bounds) {
@@ -87,8 +88,9 @@ AutofillPopupControllerImpl* AutofillPopupControllerImpl::GetOrCreate(
   if (previous)
     previous->Hide();
 
-  return new AutofillPopupControllerImpl(
-      delegate, container_view, element_bounds);
+  AutofillPopupControllerImpl* controller =
+      new AutofillPopupControllerImpl(delegate, container_view, element_bounds);
+  return controller->GetWeakPtr();
 }
 
 AutofillPopupControllerImpl::AutofillPopupControllerImpl(
@@ -102,16 +104,14 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
       selected_line_(kNoSelection),
       delete_icon_hovered_(false),
       is_hiding_(false),
-      inform_delegate_of_destruction_(true) {
+      inform_delegate_of_destruction_(true),
+      weak_ptr_factory_(this) {
 #if !defined(OS_ANDROID)
   subtext_font_ = name_font_.DeriveFont(kLabelFontSizeDelta);
 #endif
 }
 
-AutofillPopupControllerImpl::~AutofillPopupControllerImpl() {
-  if (inform_delegate_of_destruction_)
-    delegate_->ControllerDestroyed();
-}
+AutofillPopupControllerImpl::~AutofillPopupControllerImpl() {}
 
 void AutofillPopupControllerImpl::Show(
     const std::vector<string16>& names,
@@ -165,6 +165,8 @@ void AutofillPopupControllerImpl::Show(
   } else {
     UpdateBoundsAndRedrawPopup();
   }
+
+  delegate_->OnPopupShown(this);
 }
 
 void AutofillPopupControllerImpl::Hide() {
@@ -332,6 +334,9 @@ void AutofillPopupControllerImpl::HideInternal() {
   is_hiding_ = true;
 
   SetSelectedLine(kNoSelection);
+
+  if (inform_delegate_of_destruction_)
+    delegate_->OnPopupHidden(this);
 
   if (view_)
     view_->Hide();
@@ -579,6 +584,10 @@ void AutofillPopupControllerImpl::UpdatePopupBounds() {
                             popup_y_and_height.second);
 }
 #endif  // !defined(OS_ANDROID)
+
+WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
 
 const gfx::Rect AutofillPopupControllerImpl::RoundedElementBounds() const {
   return gfx::ToNearestRect(element_bounds_);
