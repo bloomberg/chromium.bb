@@ -99,8 +99,10 @@ NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
 
   gtk_window_set_title(window_, extension()->name().c_str());
 
+  std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
+      extension()->id());
   gtk_window_util::SetWindowCustomClass(window_,
-      web_app::GetWMClassFromAppName(extension()->name()));
+      web_app::GetWMClassFromAppName(app_name));
 
   g_signal_connect(window_, "delete-event",
                    G_CALLBACK(OnMainWindowDeleteEventThunk), this);
