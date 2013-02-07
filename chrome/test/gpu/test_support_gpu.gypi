@@ -53,6 +53,7 @@
         '<(src_dir)/chrome/app/chrome_dll_resource.h',
         '<(src_dir)/chrome/app/chrome_version.rc.version',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/chrome_unscaled_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/extensions_api_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
