@@ -200,7 +200,7 @@ class DriveFileSyncClient
                        scoped_ptr<google_apis::ResourceList> feed);
 
   void DidCreateDirectory(const std::string& parent_resource_id,
-                          const string16& title,
+                          const std::string& title,
                           const ResourceIdCallback& callback,
                           google_apis::GDataErrorCode error,
                           scoped_ptr<google_apis::ResourceEntry> entry);
@@ -275,11 +275,11 @@ class DriveFileSyncClient
                      google_apis::GDataErrorCode error);
 
   void EnsureTitleUniqueness(const std::string& parent_resource_id,
-                             const string16& expected_title,
+                             const std::string& expected_title,
                              const ResourceEntryCallback& callback);
   void DidListEntriesToEnsureUniqueness(
       const std::string& parent_resource_id,
-      const string16& expected_title,
+      const std::string& expected_title,
       const ResourceEntryCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> feed);

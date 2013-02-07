@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 
 #include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -1642,7 +1643,7 @@ bool DriveFileSyncService::AppendRemoteChange(
     int64 changestamp,
     RemoteSyncType sync_type) {
   // TODO(tzik): Normalize the path here.
-  FilePath path = FilePath::FromUTF8Unsafe(UTF16ToUTF8(entry.title()));
+  FilePath path = FilePath::FromUTF8Unsafe(entry.title());
   DCHECK(!entry.is_folder());
   return AppendRemoteChangeInternal(
       origin, path, entry.deleted(),
@@ -1871,8 +1872,7 @@ bool DriveFileSyncService::GetOriginForEntry(
        itr != entry.links().end(); ++itr) {
     if ((*itr)->type() != google_apis::Link::LINK_PARENT)
       continue;
-    GURL origin(DriveFileSyncClient::DirectoryTitleToOrigin(
-        UTF16ToUTF8((*itr)->title())));
+    GURL origin(DriveFileSyncClient::DirectoryTitleToOrigin((*itr)->title()));
     DCHECK(origin.is_valid());
 
     if (!metadata_store_->IsBatchSyncOrigin(origin) &&

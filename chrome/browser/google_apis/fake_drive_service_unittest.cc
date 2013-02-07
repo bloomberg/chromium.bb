@@ -4,6 +4,8 @@
 
 #include "chrome/browser/google_apis/fake_drive_service.h"
 
+#include <string>
+
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
@@ -339,8 +341,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithNewEntry) {
   ASSERT_TRUE(resource_list);
   // The result should only contain the newly created directory.
   ASSERT_EQ(1U, resource_list->entries().size());
-  EXPECT_EQ("new directory",
-            UTF16ToUTF8(resource_list->entries()[0]->title()));
+  EXPECT_EQ("new directory", resource_list->entries()[0]->title());
   EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
@@ -631,7 +632,7 @@ TEST_F(FakeDriveServiceTest, CopyHostedDocument_ExistingHostedDocument) {
   ASSERT_TRUE(resource_entry);
   // The copied entry should have the new resource ID and the title.
   EXPECT_EQ(kResourceId + "_copied", resource_entry->resource_id());
-  EXPECT_EQ("new name", UTF16ToUTF8(resource_entry->title()));
+  EXPECT_EQ("new name", resource_entry->title());
   // Should be incremented as a new hosted document was created.
   EXPECT_EQ(1, fake_service_.largest_changestamp());
 }
@@ -708,7 +709,7 @@ TEST_F(FakeDriveServiceTest, RenameResource_ExistingFile) {
 
   scoped_ptr<ResourceEntry> resource_entry = FindEntry(kResourceId);
   ASSERT_TRUE(resource_entry);
-  EXPECT_EQ("new name", UTF16ToUTF8(resource_entry->title()));
+  EXPECT_EQ("new name", resource_entry->title());
   // Should be incremented as a file was renamed.
   EXPECT_EQ(1, fake_service_.largest_changestamp());
 }
@@ -934,7 +935,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
   EXPECT_EQ(HTTP_CREATED, error);
   ASSERT_TRUE(resource_entry);
   EXPECT_EQ("resource_id_1", resource_entry->resource_id());
-  EXPECT_EQ("new directory", UTF16ToUTF8(resource_entry->title()));
+  EXPECT_EQ("new directory", resource_entry->title());
   // The parent link should not exist as the new directory was added in the
   // root.
   const google_apis::Link* parent_link =
@@ -960,7 +961,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectoryOnEmptyFileSystem) {
   EXPECT_EQ(HTTP_CREATED, error);
   ASSERT_TRUE(resource_entry);
   EXPECT_EQ("resource_id_1", resource_entry->resource_id());
-  EXPECT_EQ("new directory", UTF16ToUTF8(resource_entry->title()));
+  EXPECT_EQ("new directory", resource_entry->title());
   // The parent link should not exist as the new directory was added in the
   // root.
   const google_apis::Link* parent_link =
@@ -988,7 +989,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
   EXPECT_EQ(HTTP_CREATED, error);
   ASSERT_TRUE(resource_entry);
   EXPECT_EQ("resource_id_1", resource_entry->resource_id());
-  EXPECT_EQ("new directory", UTF16ToUTF8(resource_entry->title()));
+  EXPECT_EQ("new directory", resource_entry->title());
   const google_apis::Link* parent_link =
       resource_entry->GetLinkByType(Link::LINK_PARENT);
   ASSERT_TRUE(parent_link);

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"

@@ -112,7 +112,7 @@ class DriveWebAppsRegistry {
       const GURL& product_link,
       const google_apis::InstalledApp::IconList& app_icons,
       const google_apis::InstalledApp::IconList& document_icons,
-      const string16& object_type,
+      const std::string& object_type,
       const std::string& app_id,
       bool is_primary_selector,
       const ScopedVector<std::string>& selectors,
@@ -124,7 +124,7 @@ class DriveWebAppsRegistry {
                               SelectorWebAppList* apps);
 
   // Map of web store product URL to application name.
-  std::map<GURL, string16> url_to_name_map_;
+  std::map<GURL, std::string> url_to_name_map_;
 
   // Map of filename extension to application info.
   WebAppFileSelectorMap webapp_extension_map_;

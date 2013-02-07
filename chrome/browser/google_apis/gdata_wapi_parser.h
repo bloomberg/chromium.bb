@@ -87,7 +87,7 @@ class Link {
   const GURL& href() const { return href_; }
 
   // Title of the link.
-  const string16& title() const { return title_; }
+  const std::string& title() const { return title_; }
 
   // For OPEN_WITH links, this contains the application ID. For all other link
   // types, it is the empty string.
@@ -98,7 +98,7 @@ class Link {
 
   void set_type(LinkType type) { type_ = type; }
   void set_href(const GURL& href) { href_ = href; }
-  void set_title(const string16& title) { title_ = title; }
+  void set_title(const std::string& title) { title_ = title; }
   void set_app_id(const std::string& app_id) { app_id_ = app_id; }
   void set_mime_type(const std::string& mime_type) { mime_type_ = mime_type; }
 
@@ -116,7 +116,7 @@ class Link {
 
   LinkType type_;
   GURL href_;
-  string16 title_;
+  std::string title_;
   std::string app_id_;
   std::string mime_type_;
 
@@ -173,16 +173,16 @@ class Author {
       base::JSONValueConverter<Author>* converter);
 
   // Getters.
-  const string16& name() const { return name_; }
+  const std::string& name() const { return name_; }
   const std::string& email() const { return email_; }
 
-  void set_name(const string16& name) { name_ = name; }
+  void set_name(const std::string& name) { name_ = name; }
   void set_email(const std::string& email) { email_ = email; }
 
  private:
   friend class ResourceEntry;
 
-  string16 name_;
+  std::string name_;
   std::string email_;
 
   DISALLOW_COPY_AND_ASSIGN(Author);
@@ -206,7 +206,7 @@ class Category {
       base::JSONValueConverter<Category>* converter);
 
   // Category label.
-  const string16& label() const { return label_; }
+  const std::string& label() const { return label_; }
 
   // Category type.
   CategoryType type() const { return type_; }
@@ -214,7 +214,7 @@ class Category {
   // Category term.
   const std::string& term() const { return term_; }
 
-  void set_label(const string16& label) { label_ = label; }
+  void set_label(const std::string& label) { label_ = label; }
   void set_type(CategoryType type) { type_ = type; }
   void set_term(const std::string& term) { term_ = term; }
 
@@ -227,7 +227,7 @@ class Category {
   static bool GetCategoryTypeFromScheme(
       const base::StringPiece& scheme, CategoryType* result);
 
-  string16 label_;
+  std::string label_;
   CategoryType type_;
   std::string term_;
 
@@ -438,10 +438,10 @@ class ResourceEntry : public FeedEntry {
   const std::string& id() const { return id_; }
 
   DriveEntryKind kind() const { return kind_; }
-  const string16& title() const { return title_; }
+  const std::string& title() const { return title_; }
   base::Time published_time() const { return published_time_; }
   base::Time last_viewed_time() const { return last_viewed_time_; }
-  const std::vector<string16>& labels() const { return labels_; }
+  const std::vector<std::string>& labels() const { return labels_; }
 
   // Content URL is the main URL of a resource, used to perform
   // non-destructive operations like downloading a file. Search for
@@ -456,10 +456,10 @@ class ResourceEntry : public FeedEntry {
   const ScopedVector<FeedLink>& feed_links() const { return feed_links_; }
 
   // File name (exists only for kinds FILE and PDF).
-  const string16& filename() const { return filename_; }
+  const std::string& filename() const { return filename_; }
 
   // Suggested file name (exists only for kinds FILE and PDF).
-  const string16& suggested_filename() const { return suggested_filename_; }
+  const std::string& suggested_filename() const { return suggested_filename_; }
 
   // File content MD5 (exists only for kinds FILE and PDF).
   const std::string& file_md5() const { return file_md5_; }
@@ -530,14 +530,14 @@ class ResourceEntry : public FeedEntry {
   }
   void set_id(const std::string& id) { id_ = id; }
   void set_kind(DriveEntryKind kind) { kind_ = kind; }
-  void set_title(const string16& title) { title_ = title; }
+  void set_title(const std::string& title) { title_ = title; }
   void set_published_time(const base::Time& published_time) {
     published_time_ = published_time;
   }
   void set_last_viewed_time(const base::Time& last_viewed_time) {
     last_viewed_time_ = last_viewed_time;
   }
-  void set_labels(const std::vector<string16>& labels) {
+  void set_labels(const std::vector<std::string>& labels) {
     labels_ = labels;
   }
   void set_content(const Content& content) {
@@ -546,8 +546,8 @@ class ResourceEntry : public FeedEntry {
   void set_feed_links(ScopedVector<FeedLink>* feed_links) {
     feed_links_.swap(*feed_links);
   }
-  void set_filename(const string16& filename) { filename_ = filename; }
-  void set_suggested_filename(const string16& suggested_filename) {
+  void set_filename(const std::string& filename) { filename_ = filename; }
+  void set_suggested_filename(const std::string& suggested_filename) {
     suggested_filename_ = suggested_filename;
   }
   void set_file_md5(const std::string& file_md5) { file_md5_ = file_md5; }
@@ -572,16 +572,16 @@ class ResourceEntry : public FeedEntry {
   std::string resource_id_;
   std::string id_;
   DriveEntryKind kind_;
-  string16 title_;
+  std::string title_;
   base::Time published_time_;
   // Last viewed value may be unreliable. See: crbug.com/152628.
   base::Time last_viewed_time_;
-  std::vector<string16> labels_;
+  std::vector<std::string> labels_;
   Content content_;
   ScopedVector<FeedLink> feed_links_;
   // Optional fields for files only.
-  string16 filename_;
-  string16 suggested_filename_;
+  std::string filename_;
+  std::string suggested_filename_;
   std::string file_md5_;
   int64 file_size_;
   bool deleted_;
@@ -691,13 +691,13 @@ class InstalledApp {
   virtual ~InstalledApp();
 
   // WebApp name.
-  const string16& app_name() const { return app_name_; }
+  const std::string& app_name() const { return app_name_; }
 
   // Drive app id
   const std::string& app_id() const { return app_id_; }
 
   // Object (file) type name that is generated by this WebApp.
-  const string16& object_type() const { return object_type_; }
+  const std::string& object_type() const { return object_type_; }
 
   // True if WebApp supports creation of new file instances.
   bool supports_create() const { return supports_create_; }
@@ -751,8 +751,8 @@ class InstalledApp {
       base::JSONValueConverter<InstalledApp>* converter);
 
   void set_app_id(const std::string& app_id) { app_id_ = app_id; }
-  void set_app_name(const string16& app_name) { app_name_ = app_name; }
-  void set_object_type(const string16& object_type) {
+  void set_app_name(const std::string& app_name) { app_name_ = app_name; }
+  void set_object_type(const std::string& object_type) {
     object_type_ = object_type;
   }
   void set_supports_create(bool supports_create) {
@@ -785,8 +785,8 @@ class InstalledApp {
                              std::string* result);
 
   std::string app_id_;
-  string16 app_name_;
-  string16 object_type_;
+  std::string app_name_;
+  std::string object_type_;
   bool supports_create_;
   ScopedVector<std::string> primary_mimetypes_;
   ScopedVector<std::string> secondary_mimetypes_;

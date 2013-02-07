@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
 
 #include <sstream>
+#include <string>
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -51,7 +52,7 @@ bool HasParentLinkTo(const ScopedVector<google_apis::Link>& links,
 
 struct TitleAndParentQuery
     : std::unary_function<const google_apis::ResourceEntry*, bool> {
-  TitleAndParentQuery(const string16& title,
+  TitleAndParentQuery(const std::string& title,
                       const GURL& parent_link)
       : title(title),
         parent_link(parent_link) {
@@ -62,13 +63,13 @@ struct TitleAndParentQuery
         HasParentLinkTo(entry->links(), parent_link);
   }
 
-  const string16& title;
+  const std::string& title;
   const GURL& parent_link;
 };
 
 void FilterEntriesByTitleAndParent(
     ScopedVector<google_apis::ResourceEntry>* entries,
-    const string16& title,
+    const std::string& title,
     const GURL& parent_link) {
   typedef ScopedVector<google_apis::ResourceEntry>::iterator iterator;
   iterator itr = std::partition(entries->begin(), entries->end(),
@@ -78,7 +79,7 @@ void FilterEntriesByTitleAndParent(
 
 google_apis::ResourceEntry* GetDocumentByTitleAndParent(
     const ScopedVector<google_apis::ResourceEntry>& entries,
-    const string16& title,
+    const std::string& title,
     const GURL& parent_link) {
   typedef ScopedVector<google_apis::ResourceEntry>::const_iterator iterator;
   iterator found = std::find_if(entries.begin(), entries.end(),
@@ -203,7 +204,7 @@ void DriveFileSyncClient::DidGetDirectory(
   GURL parent_link;
   if (!parent_resource_id.empty())
     parent_link = ResourceIdToResourceLink(parent_resource_id);
-  string16 title(ASCIIToUTF16(directory_name));
+  std::string title(directory_name);
   google_apis::ResourceEntry* entry = GetDocumentByTitleAndParent(
       feed->entries(), title, parent_link);
   if (!entry) {
@@ -221,14 +222,14 @@ void DriveFileSyncClient::DidGetDirectory(
 
   // TODO(tzik): Handle error.
   DCHECK_EQ(google_apis::ENTRY_KIND_FOLDER, entry->kind());
-  DCHECK_EQ(ASCIIToUTF16(directory_name), entry->title());
+  DCHECK_EQ(directory_name, entry->title());
 
   callback.Run(error, entry->resource_id());
 }
 
 void DriveFileSyncClient::DidCreateDirectory(
     const std::string& parent_resource_id,
-    const string16& title,
+    const std::string& title,
     const ResourceIdCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
@@ -572,7 +573,7 @@ void DriveFileSyncClient::DidUploadNewFile(
   }
 
   EnsureTitleUniqueness(
-      parent_resource_id, UTF8ToUTF16(title),
+      parent_resource_id, title,
       base::Bind(&DriveFileSyncClient::DidEnsureUniquenessForCreateFile,
                  AsWeakPtr(), entry->resource_id(), callback));
 }
@@ -701,19 +702,19 @@ void DriveFileSyncClient::DidDeleteFile(
 
 void DriveFileSyncClient::EnsureTitleUniqueness(
     const std::string& parent_resource_id,
-    const string16& expected_title,
+    const std::string& expected_title,
     const ResourceEntryCallback& callback) {
   DCHECK(CalledOnValidThread());
   SearchFilesInDirectory(
       parent_resource_id,
-      FormatTitleQuery(UTF16ToUTF8(expected_title)),
+      FormatTitleQuery(expected_title),
       base::Bind(&DriveFileSyncClient::DidListEntriesToEnsureUniqueness,
                  AsWeakPtr(), parent_resource_id, expected_title, callback));
 }
 
 void DriveFileSyncClient::DidListEntriesToEnsureUniqueness(
     const std::string& parent_resource_id,
-    const string16& expected_title,
+    const std::string& expected_title,
     const ResourceEntryCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceList> feed) {

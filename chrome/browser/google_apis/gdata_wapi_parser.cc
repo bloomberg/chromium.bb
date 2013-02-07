@@ -5,6 +5,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 
 #include <algorithm>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -701,7 +702,7 @@ scoped_ptr<ResourceEntry> ResourceEntry::CreateFromFileResource(
   entry->resource_id_ = file.file_id();
   entry->id_ = file.file_id();
   entry->kind_ = file.GetKind();
-  entry->title_ = UTF8ToUTF16(file.title());
+  entry->title_ = file.title();
   entry->published_time_ = file.created_date();
   // TODO(kochi): entry->labels_
   // This should be the url to download the file.
@@ -710,8 +711,8 @@ scoped_ptr<ResourceEntry> ResourceEntry::CreateFromFileResource(
   // TODO(kochi): entry->feed_links_
 
   // For file entries
-  entry->filename_ = UTF8ToUTF16(file.title());
-  entry->suggested_filename_ = UTF8ToUTF16(file.title());
+  entry->filename_ = file.title();
+  entry->suggested_filename_ = file.title();
   entry->file_md5_ = file.md5_checksum();
   entry->file_size_ = file.file_size();
 

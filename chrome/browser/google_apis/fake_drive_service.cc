@@ -4,6 +4,8 @@
 
 #include "chrome/browser/google_apis/fake_drive_service.h"
 
+#include <string>
+
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -52,7 +54,7 @@ bool EntryMatchWithQuery(const ResourceEntry& entry,
     if (!key.empty() && key != "title")
       return false;
     // Search query in the title.
-    if (UTF16ToUTF8(entry.title()).find(value) == std::string::npos)
+    if (entry.title().find(value) == std::string::npos)
       return false;
   }
   return true;
