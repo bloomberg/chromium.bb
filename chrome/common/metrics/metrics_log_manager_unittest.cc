@@ -21,12 +21,12 @@ class MetricsLogManagerTest : public testing::Test {
 class DummyLogSerializer : public MetricsLogManager::LogSerializer {
  public:
   virtual void SerializeLogs(const std::vector<SerializedLog>& logs,
-                             MetricsLogManager::LogType log_type) {
+                             MetricsLogManager::LogType log_type) OVERRIDE {
     persisted_logs_[log_type] = logs;
   }
 
   virtual void DeserializeLogs(MetricsLogManager::LogType log_type,
-                               std::vector<SerializedLog>* logs) {
+                               std::vector<SerializedLog>* logs) OVERRIDE {
     ASSERT_NE(static_cast<void*>(NULL), logs);
     *logs = persisted_logs_[log_type];
   }

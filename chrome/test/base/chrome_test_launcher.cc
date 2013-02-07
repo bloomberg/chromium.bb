@@ -85,7 +85,7 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
 #endif
   }
 
-  virtual void PostRunMessageLoop() {
+  virtual void PostRunMessageLoop() OVERRIDE {
 #if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
     if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
       DCHECK_EQ(handlers_.empty(), false);

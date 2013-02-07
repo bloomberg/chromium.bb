@@ -68,7 +68,7 @@ TEST(ServiceProcessUtilTest, ScopedVersionedName) {
 class ServiceProcessStateTest : public base::MultiProcessTest {
  public:
   ServiceProcessStateTest();
-  ~ServiceProcessStateTest();
+  virtual ~ServiceProcessStateTest();
   virtual void SetUp();
   base::MessageLoopProxy* IOMessageLoopProxy() {
     return io_thread_.message_loop_proxy();

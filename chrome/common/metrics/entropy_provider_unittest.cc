@@ -79,7 +79,7 @@ class SHA1EntropyGenerator : public TrialEntropyGenerator {
       : trial_name_(trial_name) {
   }
 
-  ~SHA1EntropyGenerator() {
+  virtual ~SHA1EntropyGenerator() {
   }
 
   virtual double GenerateEntropyValue() const OVERRIDE {
@@ -110,7 +110,7 @@ class PermutedEntropyGenerator : public TrialEntropyGenerator {
     internal::PermuteMappingUsingTrialName(trial_name, &mapping_);
   }
 
-  ~PermutedEntropyGenerator() {
+  virtual ~PermutedEntropyGenerator() {
   }
 
   virtual double GenerateEntropyValue() const OVERRIDE {

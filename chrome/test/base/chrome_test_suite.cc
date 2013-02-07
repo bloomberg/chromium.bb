@@ -90,7 +90,7 @@ class LocalHostResolverProc : public net::HostResolverProc {
                       net::AddressFamily address_family,
                       net::HostResolverFlags host_resolver_flags,
                       net::AddressList* addrlist,
-                      int* os_error) {
+                      int* os_error) OVERRIDE {
     const char* kLocalHostNames[] = {"localhost", "127.0.0.1", "::1"};
     bool local = false;
 

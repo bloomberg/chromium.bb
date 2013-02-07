@@ -61,7 +61,7 @@ class MockScorer : public Scorer {
 class PhishingClassifierDelegateTest
     : public content::RenderViewFakeResourcesTest {
  protected:
-  bool OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PhishingClassifierDelegateTest, message)
         IPC_MESSAGE_HANDLER(SafeBrowsingHostMsg_PhishingDetectionDone,

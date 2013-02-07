@@ -38,7 +38,7 @@ class TestExceptionHandler : public ModuleSystem::ExceptionHandler {
       : handled_exception_(false) {
   }
 
-  virtual void HandleUncaughtException() {
+  virtual void HandleUncaughtException() OVERRIDE {
     handled_exception_ = true;
   }
 

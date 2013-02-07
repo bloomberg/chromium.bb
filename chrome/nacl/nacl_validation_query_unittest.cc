@@ -39,7 +39,7 @@ class MockValidationDB : public NaClValidationDB {
       status_(true) {
   }
 
-  bool QueryKnownToValidate(const std::string& signature) {
+  virtual bool QueryKnownToValidate(const std::string& signature) OVERRIDE {
     // The typecast is needed to work around gtest trying to take the address
     // of a constant.
     EXPECT_EQ((int) NaClValidationQuery::kDigestLength,
@@ -52,7 +52,7 @@ class MockValidationDB : public NaClValidationDB {
     return status_;
   }
 
-  void SetKnownToValidate(const std::string& signature) {
+  virtual void SetKnownToValidate(const std::string& signature) OVERRIDE {
     // The typecast is needed to work around gtest trying to take the address
     // of a constant.
     ASSERT_EQ((int) NaClValidationQuery::kDigestLength,
@@ -93,7 +93,7 @@ class NaClValidationQueryTest : public ::testing::Test {
   scoped_ptr<TestQuery> query1;
   scoped_ptr<TestQuery> query2;
 
-  void SetUp() {
+  virtual void SetUp() {
     query1.reset(new TestQuery(kKey, kVersion));
     query2.reset(new TestQuery(kKey, kVersion));
   }

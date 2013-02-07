@@ -125,75 +125,75 @@ class DefaultFuzzer : public IPC::Fuzzer {
 
   virtual ~DefaultFuzzer() {}
 
-  virtual bool FuzzThisMessage(const IPC::Message *msg) {
+  virtual bool FuzzThisMessage(const IPC::Message *msg) OVERRIDE {
     return (message_set_.empty() ||
             std::find(message_set_.begin(),
                       message_set_.end(),
                       msg->type()) != message_set_.end());
   }
 
-  virtual void FuzzBool(bool* value) {
+  virtual void FuzzBool(bool* value) OVERRIDE {
     if (rand() % frequency_ == 0)
       (*value) = !(*value);
   }
 
-  virtual void FuzzInt(int* value) {
+  virtual void FuzzInt(int* value) OVERRIDE {
     FuzzIntegralType<int>(value, frequency_);
   }
 
-  virtual void FuzzLong(long* value) {
+  virtual void FuzzLong(long* value) OVERRIDE {
     FuzzIntegralType<long>(value, frequency_);
   }
 
-  virtual void FuzzSize(size_t* value) {
+  virtual void FuzzSize(size_t* value) OVERRIDE {
     FuzzIntegralType<size_t>(value, frequency_);
   }
 
-  virtual void FuzzUChar(unsigned char* value) {
+  virtual void FuzzUChar(unsigned char* value) OVERRIDE {
     FuzzIntegralType<unsigned char>(value, frequency_);
   }
 
-  virtual void FuzzUInt16(uint16* value) {
+  virtual void FuzzUInt16(uint16* value) OVERRIDE {
     FuzzIntegralType<uint16>(value, frequency_);
   }
 
-  virtual void FuzzUInt32(uint32* value) {
+  virtual void FuzzUInt32(uint32* value) OVERRIDE {
     FuzzIntegralType<uint32>(value, frequency_);
   }
 
-  virtual void FuzzInt64(int64* value) {
+  virtual void FuzzInt64(int64* value) OVERRIDE {
     FuzzIntegralType<int64>(value, frequency_);
   }
 
-  virtual void FuzzUInt64(uint64* value) {
+  virtual void FuzzUInt64(uint64* value) OVERRIDE {
     FuzzIntegralType<uint64>(value, frequency_);
   }
 
-  virtual void FuzzFloat(float* value) {
+  virtual void FuzzFloat(float* value) OVERRIDE {
     if (rand() % frequency_ == 0)
       (*value) *= rand() / 1000000.0;
   }
 
-  virtual void FuzzDouble(double* value) {
+  virtual void FuzzDouble(double* value) OVERRIDE {
     if (rand() % frequency_ == 0)
       (*value) *= rand() / 1000000.0;
   }
 
-  virtual void FuzzString(std::string* value) {
+  virtual void FuzzString(std::string* value) OVERRIDE {
     FuzzStringType<std::string>(value, frequency_, "BORKED", "");
   }
 
-  virtual void FuzzWString(std::wstring* value) {
+  virtual void FuzzWString(std::wstring* value) OVERRIDE {
     FuzzStringType<std::wstring>(value, frequency_, L"BORKED", L"");
   }
 
-  virtual void FuzzString16(string16* value) {
+  virtual void FuzzString16(string16* value) OVERRIDE {
     FuzzStringType<string16>(value, frequency_,
                              WideToUTF16(L"BORKED"),
                              WideToUTF16(L""));
   }
 
-  virtual void FuzzData(char* data, int length) {
+  virtual void FuzzData(char* data, int length) OVERRIDE {
     if (rand() % frequency_ == 0) {
       for (int i = 0; i < length; ++i) {
         FuzzIntegralType<char>(&data[i], frequency_);
@@ -201,7 +201,7 @@ class DefaultFuzzer : public IPC::Fuzzer {
     }
   }
 
-  virtual void FuzzBytes(void* data, int data_len) {
+  virtual void FuzzBytes(void* data, int data_len) OVERRIDE {
     FuzzData(static_cast<char*>(data), data_len);
   }
 
@@ -218,26 +218,26 @@ class NoOpFuzzer : public IPC::Fuzzer {
   NoOpFuzzer() {}
   virtual ~NoOpFuzzer() {}
 
-  virtual bool FuzzThisMessage(const IPC::Message *msg) {
+  virtual bool FuzzThisMessage(const IPC::Message *msg) OVERRIDE {
     return true;
   }
 
-  virtual void FuzzBool(bool* value) {}
-  virtual void FuzzInt(int* value) {}
-  virtual void FuzzLong(long* value) {}
-  virtual void FuzzSize(size_t* value) {}
-  virtual void FuzzUChar(unsigned char* value) {}
-  virtual void FuzzUInt16(uint16* value) {}
-  virtual void FuzzUInt32(uint32* value) {}
-  virtual void FuzzInt64(int64* value) {}
-  virtual void FuzzUInt64(uint64* value) {}
-  virtual void FuzzFloat(float* value) {}
-  virtual void FuzzDouble(double* value) {}
-  virtual void FuzzString(std::string* value) {}
-  virtual void FuzzWString(std::wstring* value) {}
-  virtual void FuzzString16(string16* value) {}
-  virtual void FuzzData(char* data, int length) {}
-  virtual void FuzzBytes(void* data, int data_len) {}
+  virtual void FuzzBool(bool* value) OVERRIDE {}
+  virtual void FuzzInt(int* value) OVERRIDE {}
+  virtual void FuzzLong(long* value) OVERRIDE {}
+  virtual void FuzzSize(size_t* value) OVERRIDE {}
+  virtual void FuzzUChar(unsigned char* value) OVERRIDE {}
+  virtual void FuzzUInt16(uint16* value) OVERRIDE {}
+  virtual void FuzzUInt32(uint32* value) OVERRIDE {}
+  virtual void FuzzInt64(int64* value) OVERRIDE {}
+  virtual void FuzzUInt64(uint64* value) OVERRIDE {}
+  virtual void FuzzFloat(float* value) OVERRIDE {}
+  virtual void FuzzDouble(double* value) OVERRIDE {}
+  virtual void FuzzString(std::string* value) OVERRIDE {}
+  virtual void FuzzWString(std::wstring* value) OVERRIDE {}
+  virtual void FuzzString16(string16* value) OVERRIDE {}
+  virtual void FuzzData(char* data, int length) OVERRIDE {}
+  virtual void FuzzBytes(void* data, int data_len) OVERRIDE {}
 };
 
 class FuzzerFactory {
@@ -661,7 +661,7 @@ class ipcfuzz : public IPC::ChannelProxy::OutgoingMessageFilter {
     PopulateFuzzFunctionMap(&fuzz_function_map_);
   }
 
-  IPC::Message* Rewrite(IPC::Message* message) {
+  virtual IPC::Message* Rewrite(IPC::Message* message) OVERRIDE {
     if (fuzzer_ && fuzzer_->FuzzThisMessage(message)) {
       FuzzFunctionMap::iterator it = fuzz_function_map_.find(message->type());
       if (it != fuzz_function_map_.end()) {

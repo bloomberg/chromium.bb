@@ -74,7 +74,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
     RouteStaticFunction("BindToGC", &BindToGC);
   }
 
-  ~ExtensionImpl() {}
+  virtual ~ExtensionImpl() {}
 
   // Sends a message along the given channel.
   static v8::Handle<v8::Value> PostMessage(const v8::Arguments& args) {

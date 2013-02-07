@@ -75,7 +75,7 @@ void ContentWatcher::OnWatchPages(
   // selectors.
   struct NotifyVisitor : public content::RenderViewVisitor {
     explicit NotifyVisitor(ContentWatcher* watcher) : watcher_(watcher) {}
-    virtual bool Visit(content::RenderView* view) {
+    virtual bool Visit(content::RenderView* view) OVERRIDE {
       watcher_->NotifyBrowserOfChange(view->GetWebView()->mainFrame());
       return true;  // Continue visiting.
     }

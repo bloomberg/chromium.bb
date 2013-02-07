@@ -87,18 +87,19 @@ class UIControlsX11 : public UIControlsAura {
                             bool control,
                             bool shift,
                             bool alt,
-                            bool command) {
+                            bool command) OVERRIDE {
     DCHECK(!command);  // No command key on Aura
     return SendKeyPressNotifyWhenDone(
         window, key, control, shift, alt, command, base::Closure());
   }
-  virtual bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
-                                          ui::KeyboardCode key,
-                                          bool control,
-                                          bool shift,
-                                          bool alt,
-                                          bool command,
-                                          const base::Closure& closure) {
+  virtual bool SendKeyPressNotifyWhenDone(
+      gfx::NativeWindow window,
+      ui::KeyboardCode key,
+      bool control,
+      bool shift,
+      bool alt,
+      bool command,
+      const base::Closure& closure) OVERRIDE {
     DCHECK(!command);  // No command key on Aura
     XEvent xevent = {0};
     xevent.xkey.type = KeyPress;
@@ -128,12 +129,13 @@ class UIControlsX11 : public UIControlsAura {
   }
 
   // Simulate a mouse move. (x,y) are absolute screen coordinates.
-  virtual bool SendMouseMove(long x, long y) {
+  virtual bool SendMouseMove(long x, long y) OVERRIDE {
     return SendMouseMoveNotifyWhenDone(x, y, base::Closure());
   }
-  virtual bool SendMouseMoveNotifyWhenDone(long x,
-                                           long y,
-                                           const base::Closure& closure) {
+  virtual bool SendMouseMoveNotifyWhenDone(
+      long x,
+      long y,
+      const base::Closure& closure) OVERRIDE {
     XEvent xevent = {0};
     XMotionEvent* xmotion = &xevent.xmotion;
     xmotion->type = MotionNotify;
@@ -149,12 +151,13 @@ class UIControlsX11 : public UIControlsAura {
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
   }
-  virtual bool SendMouseEvents(MouseButton type, int state) {
+  virtual bool SendMouseEvents(MouseButton type, int state) OVERRIDE {
     return SendMouseEventsNotifyWhenDone(type, state, base::Closure());
   }
-  virtual bool SendMouseEventsNotifyWhenDone(MouseButton type,
-                                             int state,
-                                             const base::Closure& closure) {
+  virtual bool SendMouseEventsNotifyWhenDone(
+      MouseButton type,
+      int state,
+      const base::Closure& closure) OVERRIDE {
     XEvent xevent = {0};
     XButtonEvent* xbutton = &xevent.xbutton;
     DCHECK_NE(g_current_x, -1000);
@@ -190,10 +193,11 @@ class UIControlsX11 : public UIControlsAura {
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
   }
-  virtual bool SendMouseClick(MouseButton type) {
+  virtual bool SendMouseClick(MouseButton type) OVERRIDE {
     return SendMouseEvents(type, UP | DOWN);
   }
-  virtual void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
+  virtual void RunClosureAfterAllPendingUIEvents(
+      const base::Closure& closure) OVERRIDE {
     if (closure.is_null())
       return;
     static XEvent* marker_event = NULL;

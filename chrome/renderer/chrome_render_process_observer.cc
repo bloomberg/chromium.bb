@@ -75,7 +75,7 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
   virtual webkit_glue::ResourceLoaderBridge::Peer* OnRequestComplete(
       webkit_glue::ResourceLoaderBridge::Peer* current_peer,
       ResourceType::Type resource_type,
-      int error_code) {
+      int error_code) OVERRIDE {
     // Update the browser about our cache.
     // Rate limit informing the host of our cache stats.
     if (!weak_factory_.HasWeakPtrs()) {
@@ -98,7 +98,7 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
   virtual webkit_glue::ResourceLoaderBridge::Peer* OnReceivedResponse(
       webkit_glue::ResourceLoaderBridge::Peer* current_peer,
       const std::string& mime_type,
-      const GURL& url) {
+      const GURL& url) OVERRIDE {
     return ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
         current_peer, RenderThread::Get(), mime_type, url);
   }

@@ -108,7 +108,7 @@ void CreatePrintSettingsDictionary(DictionaryValue* dict) {
 class PrintWebViewHelperTestBase : public ChromeRenderViewTest {
  public:
   PrintWebViewHelperTestBase() {}
-  ~PrintWebViewHelperTestBase() {}
+  virtual ~PrintWebViewHelperTestBase() {}
 
  protected:
   // The renderer should be done calculating the number of rendered pages

@@ -55,7 +55,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
     gpu_test_dir_ = test_dir.AppendASCII("gpu");
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // Do not use mesa if real GPU is required.
     if (!command_line->HasSwitch(switches::kUseGpuInTests)) {
 #if !defined(OS_MACOSX)
@@ -235,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(AcceleratedCompositingBlockedTest,
 
 class AcceleratedCompositingTest : public GpuFeatureTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     GpuFeatureTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
   }
@@ -290,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLBlocked) {
 
 class WebGLTest : public GpuFeatureTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     GpuFeatureTest::SetUpCommandLine(command_line);
 #if !defined(OS_ANDROID)
     // On Android, WebGL is disabled by default
@@ -357,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingBlocked) {
 
 class WebGLMultisamplingTest : public GpuFeatureTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     GpuFeatureTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableGLMultisampling);
   }
@@ -411,7 +411,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {
 
 class Canvas2DDisabledTest : public GpuFeatureTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     GpuFeatureTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
   }
@@ -435,7 +435,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, CanOpenPopupAndRenderWith2DCanvas) {
 
 class ThreadedCompositorTest : public GpuFeatureTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     GpuFeatureTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableThreadedCompositing);
   }

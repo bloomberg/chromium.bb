@@ -26,7 +26,7 @@ namespace extensions {
 
 class UnpackerTest : public testing::Test {
 public:
-  ~UnpackerTest() {
+  virtual ~UnpackerTest() {
     LOG(WARNING) << "Deleting temp dir: "
                  << temp_dir_.path().LossyDisplayName();
     LOG(WARNING) << temp_dir_.Delete();

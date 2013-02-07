@@ -29,7 +29,7 @@ class SyncUrlFetcher : public net::URLFetcherDelegate {
     return success_;
   }
 
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) {
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
     success_ = (source->GetResponseCode() == 200);
     if (success_)
       success_ = source->GetResponseAsString(response_);

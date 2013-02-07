@@ -92,16 +92,16 @@ class QuittingHistoryDBTask : public HistoryDBTask {
   QuittingHistoryDBTask() {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) {
+                             history::HistoryDatabase* db) OVERRIDE {
     return true;
   }
 
-  virtual void DoneRunOnMainThread() {
+  virtual void DoneRunOnMainThread() OVERRIDE {
     MessageLoop::current()->Quit();
   }
 
  private:
-  ~QuittingHistoryDBTask() {}
+  virtual ~QuittingHistoryDBTask() {}
 
   DISALLOW_COPY_AND_ASSIGN(QuittingHistoryDBTask);
 };
@@ -121,7 +121,7 @@ class TestExtensionURLRequestContext : public net::URLRequestContext {
 class TestExtensionURLRequestContextGetter
     : public net::URLRequestContextGetter {
  public:
-  virtual net::URLRequestContext* GetURLRequestContext() {
+  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
     if (!context_.get())
       context_.reset(new TestExtensionURLRequestContext());
     return context_.get();

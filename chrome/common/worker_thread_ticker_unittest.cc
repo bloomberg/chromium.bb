@@ -15,7 +15,7 @@ class TestCallback : public WorkerThreadTicker::Callback {
   TestCallback() : counter_(0), message_loop_(MessageLoop::current()) {
   }
 
-  virtual void OnTick() {
+  virtual void OnTick() OVERRIDE {
     counter_++;
 
     // Finish the test faster.
@@ -31,7 +31,7 @@ class TestCallback : public WorkerThreadTicker::Callback {
 
 class LongCallback : public WorkerThreadTicker::Callback {
  public:
-  virtual void OnTick() {
+  virtual void OnTick() OVERRIDE {
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1500));
   }
 };

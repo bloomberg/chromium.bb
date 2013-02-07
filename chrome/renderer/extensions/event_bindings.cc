@@ -81,7 +81,7 @@ class ExtensionImpl : public ChromeV8Extension {
     RouteStaticFunction("MatchAgainstEventFilter", &MatchAgainstEventFilter);
   }
 
-  ~ExtensionImpl() {}
+  virtual ~ExtensionImpl() {}
 
   // Attach an event name to an object.
   static v8::Handle<v8::Value> AttachEvent(const v8::Arguments& args) {

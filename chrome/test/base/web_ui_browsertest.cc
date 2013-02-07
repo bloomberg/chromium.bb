@@ -288,7 +288,7 @@ class MockWebUIDataSource : public content::URLDataSource {
     callback.Run(response);
   }
 
-  std::string GetMimeType(const std::string& path) const OVERRIDE {
+  virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
     return "text/html";
   }
 
@@ -303,7 +303,8 @@ class MockWebUIProvider
   MockWebUIProvider() {}
 
   // Returns a new WebUI
-  WebUIController* NewWebUI(content::WebUI* web_ui, const GURL& url) OVERRIDE {
+  virtual WebUIController* NewWebUI(content::WebUI* web_ui,
+                                    const GURL& url) OVERRIDE {
     WebUIController* controller = new content::WebUIController(web_ui);
     Profile* profile = Profile::FromWebUI(web_ui);
     content::URLDataSource::Add(profile, new MockWebUIDataSource());

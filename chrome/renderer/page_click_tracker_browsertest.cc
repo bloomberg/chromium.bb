@@ -27,7 +27,7 @@ class TestPageClickListener : public PageClickListener {
 
   virtual bool InputElementClicked(const WebKit::WebInputElement& element,
                                    bool was_focused,
-                                   bool is_focused) {
+                                   bool is_focused) OVERRIDE {
     input_element_clicked_called_ = true;
     element_clicked_ = element;
     was_focused_ = was_focused;
@@ -35,7 +35,7 @@ class TestPageClickListener : public PageClickListener {
     return notification_response_;
   }
 
-  virtual bool InputElementLostFocus() {
+  virtual bool InputElementLostFocus() OVERRIDE {
     input_element_lost_focus_called_ = true;
     return notification_response_;
   }

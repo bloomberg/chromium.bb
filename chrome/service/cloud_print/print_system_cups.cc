@@ -289,7 +289,8 @@ class PrinterWatcherCUPS
     return true;
   }
 
-  bool GetCurrentPrinterInfo(printing::PrinterBasicInfo* printer_info) {
+  virtual bool GetCurrentPrinterInfo(
+      printing::PrinterBasicInfo* printer_info) OVERRIDE {
     DCHECK(printer_info);
     return print_system_->GetPrinterInfo(printer_name_, printer_info);
   }

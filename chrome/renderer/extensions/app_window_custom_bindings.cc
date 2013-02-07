@@ -74,8 +74,9 @@ class LoadWatcher : public content::RenderViewObserver {
     CallbackAndDie(frame, true);
   }
 
-  virtual void DidFailProvisionalLoad(WebKit::WebFrame* frame,
-                                      const WebKit::WebURLError& error) {
+  virtual void DidFailProvisionalLoad(
+      WebKit::WebFrame* frame,
+      const WebKit::WebURLError& error) OVERRIDE {
     CallbackAndDie(frame, false);
   }
 

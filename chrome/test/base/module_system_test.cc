@@ -57,13 +57,13 @@ class StringSourceMap : public ModuleSystem::SourceMap {
   StringSourceMap() {}
   virtual ~StringSourceMap() {}
 
-  v8::Handle<v8::Value> GetSource(const std::string& name) OVERRIDE {
+  virtual v8::Handle<v8::Value> GetSource(const std::string& name) OVERRIDE {
     if (source_map_.count(name) == 0)
       return v8::Undefined();
     return v8::String::New(source_map_[name].c_str());
   }
 
-  bool Contains(const std::string& name) OVERRIDE {
+  virtual bool Contains(const std::string& name) OVERRIDE {
     return source_map_.count(name);
   }
 
@@ -78,7 +78,7 @@ class StringSourceMap : public ModuleSystem::SourceMap {
 
 class FailsOnException : public ModuleSystem::ExceptionHandler {
  public:
-  virtual void HandleUncaughtException() {
+  virtual void HandleUncaughtException() OVERRIDE {
     FAIL();
   }
 };

@@ -113,7 +113,7 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
   gfx::Rect selection_rect() const { return selection_rect_; }
 
   virtual void Observe(int type, const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     if (type == chrome::NOTIFICATION_FIND_RESULT_AVAILABLE) {
       content::Details<FindNotificationDetails> find_details(details);
       if (find_details->request_id() == current_find_request_id_) {

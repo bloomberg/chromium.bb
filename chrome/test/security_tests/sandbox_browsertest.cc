@@ -12,7 +12,7 @@ class SandboxTest : public InProcessBrowserTest {
  protected:
   SandboxTest() : InProcessBrowserTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitchASCII(switches::kTestSandbox,
                                     "security_tests.dll");
   }

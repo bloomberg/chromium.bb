@@ -110,7 +110,7 @@ class BrowserValidationDBProxy : public NaClValidationDB {
       : listener_(listener) {
   }
 
-  bool QueryKnownToValidate(const std::string& signature) {
+  virtual bool QueryKnownToValidate(const std::string& signature) OVERRIDE {
     // Initialize to false so that if the Send fails to write to the return
     // value we're safe.  For example if the message is (for some reason)
     // dispatched as an async message the return parameter will not be written.
@@ -123,7 +123,7 @@ class BrowserValidationDBProxy : public NaClValidationDB {
     return result;
   }
 
-  void SetKnownToValidate(const std::string& signature) {
+  virtual void SetKnownToValidate(const std::string& signature) OVERRIDE {
     // Caching is optional: NaCl will still work correctly if the IPC fails.
     if (!listener_->Send(new NaClProcessMsg_SetKnownToValidate(signature))) {
       LOG(ERROR) << "Failed to update NaCl validation cache.";

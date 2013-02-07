@@ -60,7 +60,7 @@ class ServiceIOThread : public base::Thread {
   virtual ~ServiceIOThread();
 
  protected:
-  virtual void CleanUp();
+  virtual void CleanUp() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceIOThread);
