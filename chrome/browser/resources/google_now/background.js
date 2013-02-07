@@ -71,7 +71,11 @@ function parseAndShowNotificationCards(response) {
 
   for (var i = 0; i != cards.length; ++i) {
     try {
-      chrome.experimental.notification.show(cards[i], function(showInfo) {});
+      var card = cards[i];
+      // TODO(vadimt): Use URLs for buttons.
+      delete card.buttonOneIntent;
+      delete card.buttonTwoIntent;
+      chrome.experimental.notification.show(card, function(showInfo) {});
     } catch (error) {
       // TODO(vadimt): Report errors to the user.
       return;
@@ -95,7 +99,10 @@ function requestNotificationCards(requestParameters) {
       parseAndShowNotificationCards(request.response);
   }
 
-  request.open('GET', NOTIFICATION_CARDS_URL + requestParameters, true);
+  request.open(
+      'GET',
+      NOTIFICATION_CARDS_URL + '/notifications' + requestParameters,
+      true);
   request.send();
 }
 
@@ -141,6 +148,28 @@ function updateNotificationsCards() {
 }
 
 /**
+* Callback for chrome.experimental.notification.onClosed event.
+* @param {string} replaceId Replace ID of the notification.
+* @param {boolean} byUser Flag indicating whether the notification was closed by
+*     the user.
+*/
+function onNotificationClosed(replaceId, byUser) {
+  if (byUser) {
+    // Send a dismiss request to the server.
+    var requestParameters = '?id=' + replaceId;
+    var request = new XMLHttpRequest();
+    request.responseType = 'text';
+    // TODO(vadimt): If the request fails, for example, because there is no
+    // internet connection, do retry with exponential backoff.
+    request.open(
+      'GET',
+      NOTIFICATION_CARDS_URL + '/dismiss' + requestParameters,
+      true);
+    request.send();
+  }
+}
+
+/**
  * Schedule next update for notification cards.
  * @param {int} delaySeconds Length of time in seconds after which the alarm
  *     event should fire.
@@ -168,3 +197,5 @@ chrome.runtime.onStartup.addListener(function() {
 chrome.alarms.onAlarm.addListener(function(alarm) {
   updateNotificationsCards();
 });
+
+chrome.experimental.notification.onClosed.addListener(onNotificationClosed);
