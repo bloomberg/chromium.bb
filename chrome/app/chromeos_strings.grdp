@@ -2388,7 +2388,7 @@ Battery full
     Entering Demo.
   </message>
   <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNIN_PUBLIC_ACCOUNT" desc="Status when signing in into a public account.">
-    Entering public account.
+    Entering public session.
   </message>
   <message name="IDS_CHROMEOS_ACC_ACCOUNT_PICTURE" desc="Tooltip for the take account picture button.">
     Take picture.
@@ -3529,6 +3529,6 @@ Battery full
     Enter
   </message>
   <message name="IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME" desc="Text to be spoken when focus is set to the sign-in button in the public account user pod.">
-    Enter public account
+    Enter public session
   </message>
 </grit-part>

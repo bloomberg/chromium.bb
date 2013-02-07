@@ -240,7 +240,7 @@ Press Ctrl+Alt+Z to disable.
         End public\nsession
       </message>
       <message name="IDS_ASH_STATUS_TRAY_PUBLIC_LABEL" desc="Text of the the ash system bubble's user card when the current session is a public account session.">
-        <ph name="DISPLAY_NAME">$1<ex>Internet kiosk</ex></ph> is a shared account managed by <ph name="DOMAIN">$2<ex>yourdomain.com</ex></ph>
+        <ph name="DISPLAY_NAME">$1<ex>Internet kiosk</ex></ph> is a public session managed by <ph name="DOMAIN">$2<ex>yourdomain.com</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_LOCK" desc="The label used for the button in the status tray to lock the screen.">
         Lock
