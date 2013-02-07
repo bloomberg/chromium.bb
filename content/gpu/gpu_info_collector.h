@@ -12,6 +12,9 @@
 
 namespace gpu_info_collector {
 
+// Collect GPU vendor_id and device ID.
+CONTENT_EXPORT bool CollectGpuID(uint32* vendor_id, uint32* device_id);
+
 // Collects basic GPU info without creating a GL/DirectX context (and without
 // the danger of crashing), including vendor_id and device_id.
 // This is called at browser process startup time.

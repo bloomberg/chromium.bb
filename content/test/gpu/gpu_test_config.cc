@@ -212,7 +212,8 @@ bool GPUTestBotConfig::LoadCurrentConfig(const content::GPUInfo* gpu_info) {
   bool rt;
   if (gpu_info == NULL) {
     content::GPUInfo my_gpu_info;
-    gpu_info_collector::CollectBasicGraphicsInfo(&my_gpu_info);
+    gpu_info_collector::CollectGpuID(&my_gpu_info.gpu.vendor_id,
+                                     &my_gpu_info.gpu.device_id);
     rt = SetGPUInfo(my_gpu_info);
   } else {
     rt = SetGPUInfo(*gpu_info);

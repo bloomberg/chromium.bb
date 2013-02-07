@@ -53,6 +53,13 @@ bool CollectContextGraphicsInfo(content::GPUInfo* gpu_info) {
   return CollectGraphicsInfoGL(gpu_info);
 }
 
+bool CollectGpuID(uint32* vendor_id, uint32* device_id) {
+  DCHECK(vendor_id && device_id);
+  *vendor_id = 0;
+  *device_id = 0;
+  return false;
+}
+
 bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
   gpu_info->can_lose_context = false;
   // Create a short-lived context on the UI thread to collect the GL strings.

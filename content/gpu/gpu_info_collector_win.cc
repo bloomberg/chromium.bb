@@ -426,6 +426,35 @@ bool CollectContextGraphicsInfo(content::GPUInfo* gpu_info) {
   return true;
 }
 
+bool CollectGpuID(uint32* vendor_id, uint32* device_id) {
+  DCHECK(vendor_id && device_id);
+  *vendor_id = 0;
+  *device_id = 0;
+
+  // Taken from http://developer.nvidia.com/object/device_ids.html
+  DISPLAY_DEVICE dd;
+  dd.cb = sizeof(DISPLAY_DEVICE);
+  std::wstring id;
+  for (int i = 0; EnumDisplayDevices(NULL, i, &dd, 0); ++i) {
+    if (dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) {
+      id = dd.DeviceID;
+      break;
+    }
+  }
+
+  if (id.length() > 20) {
+    int vendor = 0, device = 0;
+    std::wstring vendor_string = id.substr(8, 4);
+    std::wstring device_string = id.substr(17, 4);
+    base::HexStringToInt(WideToASCII(vendor_string), &vendor);
+    base::HexStringToInt(WideToASCII(device_string), &device);
+    *vendor_id = vendor;
+    *device_id = device;
+    return true;
+  }
+  return false;
+}
+
 bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectPreliminaryGraphicsInfo");
 
@@ -440,7 +469,6 @@ bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
   // Taken from http://developer.nvidia.com/object/device_ids.html
   DISPLAY_DEVICE dd;
   dd.cb = sizeof(DISPLAY_DEVICE);
-  int i = 0;
   std::wstring id;
   for (int i = 0; EnumDisplayDevices(NULL, i, &dd, 0); ++i) {
     if (dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) {
