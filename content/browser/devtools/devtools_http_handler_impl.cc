@@ -879,6 +879,7 @@ DictionaryValue* DevToolsHttpHandlerImpl::SerializePageInfo(
   dictionary->SetString("title", page_info.title);
   dictionary->SetString("url", page_info.url);
   dictionary->SetString("type", page_info.type);
+  dictionary->SetString("id", page_info.id);
   dictionary->SetString("thumbnailUrl", page_info.thumbnail_url);
   dictionary->SetString("faviconUrl", page_info.favicon_url);
   if (!page_info.attached) {
