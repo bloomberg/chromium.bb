@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 

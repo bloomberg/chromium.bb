@@ -11,7 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "base/synchronization/lock.h"
 
 namespace {

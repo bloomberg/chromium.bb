@@ -13,9 +13,9 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/string_split.h"
-#include "base/win/scoped_handle.h"
+#include "base/strings/string_split.h"
 #include "base/threading/platform_thread.h"
+#include "base/win/scoped_handle.h"
 
 namespace file_util {
 
