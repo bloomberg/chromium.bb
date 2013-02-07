@@ -191,7 +191,7 @@ class AutofillImporter : public PersonalDataManagerObserver {
  public:
   explicit AutofillImporter(PersonalDataManager* personal_data_manager)
     : personal_data_manager_(personal_data_manager) {
-      personal_data_manager_->SetObserver(this);
+      personal_data_manager_->AddObserver(this);
   }
 
   bool ImportProfiles() {

@@ -82,19 +82,18 @@ bool AutofillProfileDataTypeController::StartModels() {
   // association, the local ids in the mappings would wind up colliding.
   personal_data_ = PersonalDataManagerFactory::GetForProfile(profile());
   if (!personal_data_->IsDataLoaded()) {
-    personal_data_->SetObserver(this);
+    personal_data_->AddObserver(this);
     return false;
   }
 
   web_data_service_ = WebDataServiceFactory::GetForProfile(
       profile(), Profile::IMPLICIT_ACCESS);
-  if (web_data_service_.get() && web_data_service_->IsDatabaseLoaded()) {
+  if (web_data_service_.get() && web_data_service_->IsDatabaseLoaded())
     return true;
-  } else {
-    notification_registrar_.Add(this, chrome::NOTIFICATION_WEB_DATABASE_LOADED,
-                                content::NotificationService::AllSources());
-    return false;
-  }
+
+  notification_registrar_.Add(this, chrome::NOTIFICATION_WEB_DATABASE_LOADED,
+                              content::NotificationService::AllSources());
+  return false;
 }
 
 void AutofillProfileDataTypeController::StopModels() {

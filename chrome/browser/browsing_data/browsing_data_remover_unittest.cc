@@ -384,7 +384,7 @@ class RemoveAutofillTester : public PersonalDataManagerObserver {
       : personal_data_manager_(
             PersonalDataManagerFactory::GetForProfile(profile)) {
     autofill_test::DisableSystemServices(profile);
-    personal_data_manager_->SetObserver(this);
+    personal_data_manager_->AddObserver(this);
   }
 
   virtual ~RemoveAutofillTester() {

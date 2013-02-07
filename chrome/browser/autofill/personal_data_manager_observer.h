@@ -7,7 +7,7 @@
 
 // An interface the PersonalDataManager uses to notify its clients (observers)
 // when it has finished loading personal data from the web database.  Register
-// the observer via PersonalDataManager::SetObserver.
+// observers via PersonalDataManager::AddObserver.
 class PersonalDataManagerObserver {
  public:
   // Notifies the observer that the PersonalDataManager changed in some way.

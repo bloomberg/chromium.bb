@@ -88,7 +88,7 @@ class PersonalDataManagerTest : public testing::Test {
   void ResetPersonalDataManager() {
     personal_data_.reset(new PersonalDataManager);
     personal_data_->Init(profile_.get());
-    personal_data_->SetObserver(&personal_data_observer_);
+    personal_data_->AddObserver(&personal_data_observer_);
 
     // Verify that the web database has been updated and the notification sent.
     EXPECT_CALL(personal_data_observer_,

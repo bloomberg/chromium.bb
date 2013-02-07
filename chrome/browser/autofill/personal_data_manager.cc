@@ -168,10 +168,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   }
 }
 
-void PersonalDataManager::SetObserver(PersonalDataManagerObserver* observer) {
-  // TODO(dhollowa): RemoveObserver is for compatibility with old code, it
-  // should be nuked.
-  observers_.RemoveObserver(observer);
+void PersonalDataManager::AddObserver(PersonalDataManagerObserver* observer) {
   observers_.AddObserver(observer);
 }
 

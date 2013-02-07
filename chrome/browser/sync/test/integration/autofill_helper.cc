@@ -216,7 +216,7 @@ void SetProfiles(int profile, std::vector<AutofillProfile>* autofill_profiles) {
   EXPECT_CALL(observer, OnPersonalDataChanged()).
       WillOnce(QuitUIMessageLoop());
   PersonalDataManager* pdm = GetPersonalDataManager(profile);
-  pdm->SetObserver(&observer);
+  pdm->AddObserver(&observer);
   pdm->SetProfiles(autofill_profiles);
   MessageLoop::current()->Run();
   pdm->RemoveObserver(&observer);
@@ -227,7 +227,7 @@ void SetCreditCards(int profile, std::vector<CreditCard>* credit_cards) {
   EXPECT_CALL(observer, OnPersonalDataChanged()).
       WillOnce(QuitUIMessageLoop());
   PersonalDataManager* pdm = GetPersonalDataManager(profile);
-  pdm->SetObserver(&observer);
+  pdm->AddObserver(&observer);
   pdm->SetCreditCards(credit_cards);
   MessageLoop::current()->Run();
   pdm->RemoveObserver(&observer);
@@ -272,7 +272,7 @@ const std::vector<AutofillProfile*>& GetAllProfiles(
   EXPECT_CALL(observer, OnPersonalDataChanged()).
       WillOnce(QuitUIMessageLoop());
   PersonalDataManager* pdm = GetPersonalDataManager(profile);
-  pdm->SetObserver(&observer);
+  pdm->AddObserver(&observer);
   pdm->Refresh();
   MessageLoop::current()->Run();
   pdm->RemoveObserver(&observer);

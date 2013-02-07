@@ -261,7 +261,7 @@ void AutofillOptionsHandler::InitializeHandler() {
       Profile::FromWebUI(web_ui()));
   // personal_data_ is NULL in guest mode on Chrome OS.
   if (personal_data_)
-    personal_data_->SetObserver(this);
+    personal_data_->AddObserver(this);
 }
 
 void AutofillOptionsHandler::InitializePage() {

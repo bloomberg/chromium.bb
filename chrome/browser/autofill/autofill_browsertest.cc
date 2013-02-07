@@ -91,7 +91,7 @@ class WindowedPersonalDataManagerObserver
       browser_(browser),
       infobar_service_(NULL) {
     PersonalDataManagerFactory::GetForProfile(browser_->profile())->
-        SetObserver(this);
+        AddObserver(this);
     registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
                    content::NotificationService::AllSources());
   }

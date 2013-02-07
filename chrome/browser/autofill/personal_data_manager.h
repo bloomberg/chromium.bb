@@ -53,10 +53,10 @@ class PersonalDataManager
       WebDataServiceBase::Handle h,
       const WDTypedResult* result) OVERRIDE;
 
-  // Sets the listener to be notified of PersonalDataManager events.
-  virtual void SetObserver(PersonalDataManagerObserver* observer);
+  // Adds a listener to be notified of PersonalDataManager events.
+  virtual void AddObserver(PersonalDataManagerObserver* observer);
 
-  // Removes |observer| as the observer of this PersonalDataManager.
+  // Removes |observer| as an observer of this PersonalDataManager.
   virtual void RemoveObserver(PersonalDataManagerObserver* observer);
 
   // ProfileSyncServiceObserver:
