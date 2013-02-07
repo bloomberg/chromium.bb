@@ -82,7 +82,7 @@ class BaseTestRunner(object):
 
   def SetUp(self):
     """Called before tests run."""
-    Forwarder.KillDevice(self.adb)
+    Forwarder.KillDevice(self.adb, self.tool)
 
   def HasTests(self):
     """Whether the test suite has tests to run."""
@@ -169,7 +169,7 @@ class BaseTestRunner(object):
     # Forwarders should be killed before the actual servers they're forwarding
     # to as they are clients potentially with open connections and to allow for
     # proper hand-shake/shutdown.
-    Forwarder.KillDevice(self.adb)
+    Forwarder.KillDevice(self.adb, self.tool)
     if self._http_server:
       self._http_server.ShutdownHttpServer()
     if self._spawning_server:

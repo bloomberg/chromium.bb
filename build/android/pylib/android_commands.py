@@ -209,6 +209,7 @@ class AndroidCommands(object):
     self._device_utc_offset = self.RunShellCommand('date +%z')[0]
     self._md5sum_path = ''
     self._external_storage = ''
+    self._util_wrapper = ''
 
   def Adb(self):
     """Returns our AdbInterface to avoid us wrapping all its methods."""
@@ -668,7 +669,8 @@ class AndroidCommands(object):
 
     self._pushed_files.append(device_path)
     hashes_on_device = _ComputeFileListHash(
-        self.RunShellCommand(MD5SUM_DEVICE_PATH + ' ' + device_path))
+        self.RunShellCommand(self._util_wrapper + ' ' + MD5SUM_DEVICE_PATH +
+                             ' ' + device_path))
     assert os.path.exists(local_path), 'Local path not found %s' % local_path
     hashes_on_host = _ComputeFileListHash(
         subprocess.Popen(
@@ -1169,6 +1171,12 @@ class AndroidCommands(object):
     self.RunShellCommand('/system/bin/screencap -p %s' % device_file)
     assert self._adb.Pull(device_file, host_file)
     assert os.path.exists(host_file)
+
+  def SetUtilWrapper(self, util_wrapper):
+    """Sets a wrapper prefix to be used when running a locally-built
+    binary on the device (ex.: md5sum_bin).
+    """
+    self._util_wrapper = util_wrapper
 
 
 class NewLineNormalizer(object):

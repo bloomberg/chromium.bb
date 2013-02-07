@@ -91,7 +91,13 @@ class AddressSanitizerTool(BaseTool):
   def __init__(self, adb):
     self._adb = adb
     self._wrap_properties = ['wrap.com.google.android.apps.ch',
-                             'wrap.org.chromium.native_test']
+                             'wrap.org.chromium.native_test',
+                             'wrap.org.chromium.content_shell',
+                             'wrap.org.chromium.chrome.testsh']
+    # Configure AndroidCommands to run utils (such as md5sum_bin) under ASan.
+    # This is required because ASan is a compiler-based tool, and md5sum
+    # includes instrumented code from base.
+    adb.SetUtilWrapper(self.GetUtilWrapper())
 
   def CopyFiles(self):
     """Copies ASan tools to the device."""
