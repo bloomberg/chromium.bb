@@ -127,6 +127,8 @@
         'disks/disk_mount_manager.h',
         'display/output_configurator.cc',
         'display/output_configurator.h',
+        'ime/ibus_bridge.cc',
+        'ime/ibus_bridge.h',
         'ime/ibus_daemon_controller.cc',
         'ime/ibus_daemon_controller.h',
         'network/cros_network_functions.cc',
