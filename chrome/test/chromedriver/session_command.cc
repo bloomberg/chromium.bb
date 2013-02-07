@@ -13,22 +13,6 @@
 #include "chrome/test/chromedriver/session_map.h"
 #include "chrome/test/chromedriver/status.h"
 
-namespace {
-
-Status WaitForPendingNavigations(const Session& session) {
-  if (!session.chrome)
-    return Status(kOk);
-  std::string frame = session.frame;
-  if (frame == "") {
-    Status status = session.chrome->GetMainFrame(&frame);
-    if (status.IsError())
-      return status;
-  }
-  return session.chrome->WaitForPendingNavigations(frame);
-}
-
-} // namespace
-
 Status ExecuteSessionCommand(
     SessionMap* session_map,
     const SessionCommand& command,
@@ -45,11 +29,19 @@ Status ExecuteSessionCommand(
   if (!session)
     return Status(kNoSuchSession, session_id);
 
-  Status nav_status = WaitForPendingNavigations(*session);
+  Status nav_status = session->WaitForPendingNavigations();
   if (nav_status.IsError())
     return nav_status;
   Status status = command.Run(session, params, out_value);
-  nav_status = WaitForPendingNavigations(*session);
+  // Switch to main frame and retry command if subframe no longer exists.
+  if (status.code() == kNoSuchFrame) {
+    session->frame = "";
+    nav_status = session->WaitForPendingNavigations();
+    if (nav_status.IsError())
+      return nav_status;
+    status = command.Run(session, params, out_value);
+  }
+  nav_status = session->WaitForPendingNavigations();
   if (status.IsOk() && nav_status.IsError() &&
       nav_status.code() != kDisconnected)
     return nav_status;

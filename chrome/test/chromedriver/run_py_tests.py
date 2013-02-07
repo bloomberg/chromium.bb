@@ -86,6 +86,20 @@ class ChromeDriverTest(unittest.TestCase):
     self._driver.SwitchToFrameByIndex(0)
     self.assertTrue(self._driver.ExecuteScript('return window.top != window'))
 
+  def testExecuteInRemovedFrame(self):
+    self._driver.ExecuteScript(
+        'var frame = document.createElement("iframe");'
+        'frame.id="id";'
+        'frame.name="name";'
+        'document.body.appendChild(frame);'
+        'window.addEventListener("message",'
+        '    function(event) { document.body.removeChild(frame); });')
+    self.assertTrue(self._driver.ExecuteScript('return window.top == window'))
+    self._driver.SwitchToFrame('id')
+    self.assertTrue(self._driver.ExecuteScript('return window.top != window'))
+    self._driver.ExecuteScript('parent.postMessage("remove", "*");')
+    self.assertTrue(self._driver.ExecuteScript('return window.top == window'))
+
   def testGetTitle(self):
     script = 'document.title = "title"; return 1;'
     self.assertEquals(1, self._driver.ExecuteScript(script))

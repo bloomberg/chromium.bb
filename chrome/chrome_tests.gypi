@@ -888,6 +888,8 @@
         'test/chromedriver/session_command_unittest.cc',
         'test/chromedriver/session_unittest.cc',
         'test/chromedriver/status_unittest.cc',
+        'test/chromedriver/stub_chrome.cc',
+        'test/chromedriver/stub_chrome.h',
         'test/chromedriver/synchronized_map_unittest.cc',
       ],
     },

@@ -11,11 +11,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
-#include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/command_executor_impl.h"
 #include "chrome/test/chromedriver/commands.h"
 #include "chrome/test/chromedriver/fake_session_accessor.h"
 #include "chrome/test/chromedriver/status.h"
+#include "chrome/test/chromedriver/stub_chrome.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webdriver/atoms.h"
 
@@ -34,55 +34,6 @@ TEST(CommandsTest, GetStatus) {
 }
 
 namespace {
-
-class StubChrome : public Chrome {
- public:
-  StubChrome() {}
-  virtual ~StubChrome() {}
-
-  // Overridden from Chrome:
-  virtual Status Load(const std::string& url) OVERRIDE {
-    return Status(kOk);
-  }
-  virtual Status Reload() OVERRIDE {
-    return Status(kOk);
-  }
-  virtual Status EvaluateScript(const std::string& frame,
-                                const std::string& function,
-                                scoped_ptr<base::Value>* result) OVERRIDE {
-    return Status(kOk);
-  }
-  virtual Status CallFunction(const std::string& frame,
-                              const std::string& function,
-                              const base::ListValue& args,
-                              scoped_ptr<base::Value>* result) OVERRIDE {
-    return Status(kOk);
-  }
-  virtual Status GetFrameByFunction(const std::string& frame,
-                                    const std::string& function,
-                                    const base::ListValue& args,
-                                    std::string* out_frame) OVERRIDE {
-    return Status(kOk);
-  }
-  virtual Status DispatchMouseEvents(
-      const std::list<MouseEvent>& events) OVERRIDE {
-    return Status(kOk);
-  }
-  virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events) OVERRIDE {
-    return Status(kOk);
-  }
-  virtual Status Quit() OVERRIDE {
-    return Status(kOk);
-  }
-  virtual Status WaitForPendingNavigations(
-      const std::string& frame_id) OVERRIDE {
-    return Status(kOk);
-  }
-  virtual Status GetMainFrame(
-      std::string* frame_id) OVERRIDE {
-    return Status(kOk);
-  }
-};
 
 Status ExecuteStubQuit(
     int* count,

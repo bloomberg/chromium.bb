@@ -14,11 +14,13 @@
 #include "chrome/test/chromedriver/basic_types.h"
 
 class Chrome;
+class Status;
 
 struct Session {
   explicit Session(const std::string& id);
   Session(const std::string& id, scoped_ptr<Chrome> chrome);
   ~Session();
+  Status WaitForPendingNavigations();
 
   const std::string id;
   scoped_ptr<Chrome> chrome;

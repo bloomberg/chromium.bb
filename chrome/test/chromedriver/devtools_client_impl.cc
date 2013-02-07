@@ -14,6 +14,26 @@
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/status.h"
 
+namespace {
+
+const char* kInspectorContextError =
+    "Execution context with given id not found.";
+
+Status ParseInspectorError(const std::string& error_json) {
+  scoped_ptr<base::Value> error(base::JSONReader::Read(error_json));
+  base::DictionaryValue* error_dict;
+  if (!error || !error->GetAsDictionary(&error_dict))
+    return Status(kUnknownError, "inspector error with no error message");
+  std::string error_message;
+  if (error_dict->GetString("message", &error_message) &&
+      error_message == kInspectorContextError) {
+    return Status(kNoSuchFrame);
+  }
+  return Status(kUnknownError, "unhandled inspector error: " + error_json);
+}
+
+}  // namespace
+
 namespace internal {
 
 InspectorEvent::InspectorEvent() {}
@@ -160,7 +180,8 @@ Status DevToolsClientImpl::ReceiveNextMessage(
     } else if (response->result) {
       cmd_response_map_[response->id] = response->result.release();
     } else {
-      return Status(kUnknownError, "inspector error: " + response->error);
+      cmd_response_map_.erase(response->id);
+      return ParseInspectorError(response->error);
     }
   }
   return Status(kOk);
