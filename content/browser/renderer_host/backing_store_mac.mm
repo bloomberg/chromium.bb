@@ -166,7 +166,7 @@ bool BackingStoreMac::CopyFromBackingStore(const gfx::Rect& rect,
   gfx::ScopedCGContextSaveGState save_gstate(temp_context);
   CGContextTranslateCTM(temp_context, 0.0, size().height());
   CGContextScaleCTM(temp_context, 1.0, -1.0);
-  CGContextDrawLayerAtPoint(temp_context, CGPointMake(rect.x(), rect.y()),
+  CGContextDrawLayerAtPoint(temp_context, CGPointMake(-rect.x(), -rect.y()),
                             cg_layer());
   return true;
 }
