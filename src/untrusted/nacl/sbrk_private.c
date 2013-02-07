@@ -20,13 +20,13 @@ void *sbrk(intptr_t increment) {
   void *new_break;
 
   if (0 == current_break)
-    current_break = NACL_SYSCALL(sysbrk)(0);
+    current_break = NACL_SYSCALL(brk)(0);
 
   old_break = current_break;
   new_break = old_break + increment;
 
   if (new_break != old_break) {
-    new_break = NACL_SYSCALL(sysbrk)(new_break);
+    new_break = NACL_SYSCALL(brk)(new_break);
     if (new_break == old_break) {
       errno = ENOMEM;
       return (void *) -1;

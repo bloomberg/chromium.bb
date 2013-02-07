@@ -137,8 +137,8 @@ _start:
         nop
 
         addu  $a0, $zero, 0
-        lui   $t9, %hi(NACL_SYSCALL_ADDR(NACL_sys_sysbrk))
-        addiu $t9, $t9, %lo(NACL_SYSCALL_ADDR(NACL_sys_sysbrk))
+        lui   $t9, %hi(NACL_SYSCALL_ADDR(NACL_sys_brk))
+        addiu $t9, $t9, %lo(NACL_SYSCALL_ADDR(NACL_sys_brk))
         nop
 
         nop

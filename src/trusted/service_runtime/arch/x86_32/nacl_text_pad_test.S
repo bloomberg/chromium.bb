@@ -139,7 +139,7 @@ _start:
         addl $8, %esp
 
         pushl $0
-        call NACL_SYSCALL_ADDR(NACL_sys_sysbrk)
+        call NACL_SYSCALL_ADDR(NACL_sys_brk)
         addl $4, %esp
 
         xorl %edi, %edi  /* edi holds our eventual exit status */

@@ -7,5 +7,5 @@
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 void *sysbrk(void *new_break) {
-  return NACL_SYSCALL(sysbrk)(new_break);
+  return NACL_SYSCALL(brk)(new_break);
 }

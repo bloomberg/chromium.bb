@@ -108,8 +108,8 @@ int32_t NaClSysNull(struct NaClAppThread *natp) {
   return 0;
 }
 
-int32_t NaClSetBreak(struct NaClAppThread *natp,
-                     uintptr_t            new_break) {
+int32_t NaClSysBrk(struct NaClAppThread *natp,
+                   uintptr_t            new_break) {
   struct NaClApp        *nap = natp->nap;
   uintptr_t             break_addr;
   int32_t               rv = -NACL_ABI_EINVAL;
@@ -127,7 +127,7 @@ int32_t NaClSetBreak(struct NaClAppThread *natp,
 
   break_addr = nap->break_addr;
 
-  NaClLog(3, "Entered NaClSetBreak(new_break 0x%08"NACL_PRIxPTR")\n",
+  NaClLog(3, "Entered NaClSysBrk(new_break 0x%08"NACL_PRIxPTR")\n",
           new_break);
 
   sys_new_break = NaClUserToSysAddr(nap, new_break);
@@ -254,7 +254,7 @@ cleanup_no_lock:
    */
   rv = (int32_t) break_addr;
 
-  NaClLog(3, "NaClSetBreak: returning 0x%08"NACL_PRIx32"\n", rv);
+  NaClLog(3, "NaClSysBrk: returning 0x%08"NACL_PRIx32"\n", rv);
   return rv;
 }
 

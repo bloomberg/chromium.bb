@@ -162,7 +162,7 @@ typedef int (*TYPE_nacl_sched_yield) (void);
 
 typedef int (*TYPE_nacl_sysconf) (int name, int *res);
 
-typedef void *(*TYPE_nacl_sysbrk) (void *p);
+typedef void *(*TYPE_nacl_brk) (void *p);
 
 typedef pid_t (*TYPE_nacl_getpid) (void);
 

@@ -144,8 +144,8 @@ _start:
         bl write_char
 
         mov r0, #0
-        movw r3, lower_16(NACL_SYSCALL_ADDR(NACL_sys_sysbrk))
-        movt r3, upper_16(NACL_SYSCALL_ADDR(NACL_sys_sysbrk))
+        movw r3, lower_16(NACL_SYSCALL_ADDR(NACL_sys_brk))
+        movt r3, upper_16(NACL_SYSCALL_ADDR(NACL_sys_brk))
         nop
 
         nop

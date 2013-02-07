@@ -7,8 +7,8 @@
 /*
  * This provides a private allocator to be used only within the IRT.
  * This is distinct from the user application's allocators.  This
- * allocator cannot use sbrk (the NaCl sysbrk syscall), which is
- * reserved for the user application.
+ * allocator cannot use sbrk (the NaCl brk syscall), which is reserved
+ * for the user application.
  *
  * NOTE: However, this allocator is exposed to PPAPI applications via the
  * PPB_Core MemAlloc and MemFree function pointers.  That should go away.

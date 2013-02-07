@@ -726,10 +726,10 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
   return retval;
 }
 
-int32_t NaClTextSysDyncodeCreate(struct NaClAppThread *natp,
-                                 uint32_t             dest,
-                                 uint32_t             src,
-                                 uint32_t             size) {
+int32_t NaClSysDyncodeCreate(struct NaClAppThread *natp,
+                             uint32_t             dest,
+                             uint32_t             src,
+                             uint32_t             size) {
   struct NaClApp              *nap = natp->nap;
   uintptr_t                   src_addr;
   uint8_t                     *code_copy;
@@ -737,7 +737,7 @@ int32_t NaClTextSysDyncodeCreate(struct NaClAppThread *natp,
 
   src_addr = NaClUserToSysAddrRange(nap, src, size);
   if (kNaClBadAddress == src_addr) {
-    NaClLog(1, "NaClTextSysDyncodeCreate: Source address out of range\n");
+    NaClLog(1, "NaClSysDyncodeCreate: Source address out of range\n");
     return -NACL_ABI_EFAULT;
   }
 
@@ -757,10 +757,10 @@ int32_t NaClTextSysDyncodeCreate(struct NaClAppThread *natp,
   return retval;
 }
 
-int32_t NaClTextSysDyncodeModify(struct NaClAppThread *natp,
-                                 uint32_t             dest,
-                                 uint32_t             src,
-                                 uint32_t             size) {
+int32_t NaClSysDyncodeModify(struct NaClAppThread *natp,
+                             uint32_t             dest,
+                             uint32_t             src,
+                             uint32_t             size) {
   struct NaClApp              *nap = natp->nap;
   uintptr_t                   dest_addr;
   uintptr_t                   src_addr;
@@ -775,7 +775,7 @@ int32_t NaClTextSysDyncodeModify(struct NaClAppThread *natp,
   struct NaClDynamicRegion    *region;
 
   if (NULL == nap->text_shm) {
-    NaClLog(1, "NaClTextSysDyncodeModify: Dynamic loading not enabled\n");
+    NaClLog(1, "NaClSysDyncodeModify: Dynamic loading not enabled\n");
     return -NACL_ABI_EINVAL;
   }
 
@@ -787,7 +787,7 @@ int32_t NaClTextSysDyncodeModify(struct NaClAppThread *natp,
   dest_addr = NaClUserToSysAddrRange(nap, dest, size);
   src_addr = NaClUserToSysAddrRange(nap, src, size);
   if (kNaClBadAddress == src_addr || kNaClBadAddress == dest_addr) {
-    NaClLog(1, "NaClTextSysDyncodeModify: Address out of range\n");
+    NaClLog(1, "NaClSysDyncodeModify: Address out of range\n");
     return -NACL_ABI_EFAULT;
   }
 
@@ -797,7 +797,7 @@ int32_t NaClTextSysDyncodeModify(struct NaClAppThread *natp,
   if (NULL == region || region->start > dest_addr
         || region->start + region->size < dest_addr + size) {
     /* target not a subregion of region or region is null */
-    NaClLog(1, "NaClTextSysDyncodeModify: Can't find region to modify\n");
+    NaClLog(1, "NaClSysDyncodeModify: Can't find region to modify\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup_unlock;
   }
@@ -849,8 +849,7 @@ int32_t NaClTextSysDyncodeModify(struct NaClAppThread *natp,
   }
 
   if (validator_result != LOAD_OK) {
-    NaClLog(1, "NaClTextSysDyncodeModify: "
-               "Validation of dynamic code failed\n");
+    NaClLog(1, "NaClSysDyncodeModify: Validation of dynamic code failed\n");
     retval = -NACL_ABI_EINVAL;
     goto cleanup_unlock;
   }
@@ -861,8 +860,7 @@ int32_t NaClTextSysDyncodeModify(struct NaClAppThread *natp,
   }
 
   if (LOAD_OK != NaClCopyCode(nap, dest, mapped_addr, code_copy, size)) {
-    NaClLog(1, "NaClTextSysDyncodeModify "
-               "Copying of replacement code failed\n");
+    NaClLog(1, "NaClSysDyncodeModify: Copying of replacement code failed\n");
     retval = -NACL_ABI_EINVAL;
     goto cleanup_unlock;
   }
@@ -880,9 +878,9 @@ int32_t NaClTextSysDyncodeModify(struct NaClAppThread *natp,
   return retval;
 }
 
-int32_t NaClTextSysDyncodeDelete(struct NaClAppThread *natp,
-                                 uint32_t             dest,
-                                 uint32_t             size) {
+int32_t NaClSysDyncodeDelete(struct NaClAppThread *natp,
+                             uint32_t             dest,
+                             uint32_t             size) {
   struct NaClApp              *nap = natp->nap;
   uintptr_t                    dest_addr;
   uint8_t                     *mapped_addr;
@@ -890,7 +888,7 @@ int32_t NaClTextSysDyncodeDelete(struct NaClAppThread *natp,
   struct NaClDynamicRegion    *region;
 
   if (NULL == nap->text_shm) {
-    NaClLog(1, "NaClTextSysDyncodeDelete: Dynamic loading not enabled\n");
+    NaClLog(1, "NaClSysDyncodeDelete: Dynamic loading not enabled\n");
     return -NACL_ABI_EINVAL;
   }
 
@@ -908,7 +906,7 @@ int32_t NaClTextSysDyncodeDelete(struct NaClAppThread *natp,
 
   dest_addr = NaClUserToSysAddrRange(nap, dest, size);
   if (kNaClBadAddress == dest_addr) {
-    NaClLog(1, "NaClTextSysDyncodeDelete: Address out of range\n");
+    NaClLog(1, "NaClSysDyncodeDelete: Address out of range\n");
     return -NACL_ABI_EFAULT;
   }
 
@@ -920,7 +918,7 @@ int32_t NaClTextSysDyncodeDelete(struct NaClAppThread *natp,
    */
   region = NaClDynamicRegionFind(nap, dest_addr, size);
   if (NULL == region || region->start != dest_addr || region->size != size) {
-    NaClLog(1, "NaClTextSysDyncodeDelete: Can't find region to delete\n");
+    NaClLog(1, "NaClSysDyncodeDelete: Can't find region to delete\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup_unlock;
   }
@@ -930,7 +928,7 @@ int32_t NaClTextSysDyncodeDelete(struct NaClAppThread *natp,
     /* first deletion request */
 
     if (nap->dynamic_delete_generation == INT32_MAX) {
-      NaClLog(1, "NaClTextSysDyncodeDelete:"
+      NaClLog(1, "NaClSysDyncodeDelete:"
                  "Overflow, can only delete INT32_MAX regions\n");
       retval = -NACL_ABI_EFAULT;
       goto cleanup_unlock;

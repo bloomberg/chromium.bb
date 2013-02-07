@@ -117,7 +117,7 @@ SYSCALL_LIST = [
      ['const char *path', 'struct nacl_abi_stat *nasp']),
     ('NACL_sys_getdents', 'NaClSysGetdents',
      ['int d', 'void *buf', 'size_t count']),
-    ('NACL_sys_sysbrk', 'NaClSetBreak', ['uintptr_t new_break']),
+    ('NACL_sys_brk', 'NaClSysBrk', ['uintptr_t new_break']),
     ('NACL_sys_mmap', 'NaClSysMmap',
      ['void *start', 'size_t length', 'int prot',
       'int flags', 'int d', 'nacl_abi_off_t *offp']),
@@ -179,11 +179,11 @@ SYSCALL_LIST = [
      ['int32_t sem_handle']),
     ('NACL_sys_sched_yield', 'NaClSysSchedYield', []),
     ('NACL_sys_sysconf', 'NaClSysSysconf', ['int32_t name', 'int32_t *result']),
-    ('NACL_sys_dyncode_create', 'NaClTextSysDyncodeCreate',
+    ('NACL_sys_dyncode_create', 'NaClSysDyncodeCreate',
      ['uint32_t dest', 'uint32_t src', 'uint32_t size']),
-    ('NACL_sys_dyncode_modify', 'NaClTextSysDyncodeModify',
+    ('NACL_sys_dyncode_modify', 'NaClSysDyncodeModify',
      ['uint32_t dest', 'uint32_t src', 'uint32_t size']),
-    ('NACL_sys_dyncode_delete', 'NaClTextSysDyncodeDelete',
+    ('NACL_sys_dyncode_delete', 'NaClSysDyncodeDelete',
      ['uint32_t dest', 'uint32_t size']),
     ('NACL_sys_second_tls_set', 'NaClSysSecondTlsSet',
      ['uint32_t new_value']),
@@ -328,6 +328,14 @@ def main(argv):
 
   if not ARG_REGISTERS.has_key(arch):
     raise Exception()
+
+  # Check naming consistency.
+  for syscall_number, func_name, alist in SYSCALL_LIST:
+    assert syscall_number.startswith('NACL_sys_'), syscall_number
+    name1 = syscall_number[len('NACL_sys_'):].replace('_', '')
+    assert func_name.startswith('NaClSys'), func_name
+    name2 = func_name[len('NaClSys'):].lower()
+    assert name1 == name2, '%r != %r' % (name1, name2)
 
   data = input_src.read()
   protos = SYSCALL_LIST

@@ -21,7 +21,7 @@ static int nacl_irt_sysbrk(void **newbrk) {
    * TODO(mcgrathr): this interface should just go away!!
    */
   void *requested = *newbrk;
-  void *got = NACL_SYSCALL(sysbrk)(requested);
+  void *got = NACL_SYSCALL(brk)(requested);
 
   if (got == requested || requested == NULL) {
     *newbrk = got;

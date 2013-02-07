@@ -33,7 +33,7 @@
 #define NACL_sys_chmod                  18
 /* no fchmod emulation on windows */
 
-#define NACL_sys_sysbrk                 20
+#define NACL_sys_brk                    20
 #define NACL_sys_mmap                   21
 #define NACL_sys_munmap                 22
 

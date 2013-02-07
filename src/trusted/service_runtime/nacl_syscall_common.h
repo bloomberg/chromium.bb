@@ -33,8 +33,8 @@ void NaClAddSyscall(int num, int32_t (*fn)(struct NaClAppThread *));
 
 int32_t NaClSysNull(struct NaClAppThread *natp);
 
-int32_t NaClSetBreak(struct NaClAppThread *natp,
-                     uintptr_t            new_break);
+int32_t NaClSysBrk(struct NaClAppThread *natp,
+                   uintptr_t            new_break);
 
 int NaClHighResolutionTimerEnabled(void);
 

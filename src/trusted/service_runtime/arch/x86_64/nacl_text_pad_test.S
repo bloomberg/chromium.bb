@@ -128,7 +128,7 @@ _start:
         call write_char
 
         movq $0, %rdi
-        movq $NACL_SYSCALL_ADDR(NACL_sys_sysbrk), %r10
+        movq $NACL_SYSCALL_ADDR(NACL_sys_brk), %r10
         naclcall %r10d,%r15
 
         xorq %r12, %r12  /* r12 holds our eventual exit status */
