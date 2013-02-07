@@ -36,13 +36,10 @@ class CC_EXPORT TopControlsManager {
 
   float controls_top_offset() { return controls_top_offset_; }
   float content_top_offset() { return content_top_offset_; }
-  float is_overlay_mode() { return is_overlay_mode_; }
   KeyframedFloatAnimationCurve* animation() {
     return top_controls_animation_.get();
   }
   AnimationDirection animation_direction() { return animation_direction_; }
-
-  void UpdateDrawPositions();
 
   void ScrollBegin();
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF pending_delta);
@@ -67,7 +64,6 @@ class CC_EXPORT TopControlsManager {
 
   scoped_ptr<KeyframedFloatAnimationCurve> top_controls_animation_;
   AnimationDirection animation_direction_;
-  bool is_overlay_mode_;
   bool in_scroll_gesture_;
   float controls_top_offset_;
   float content_top_offset_;

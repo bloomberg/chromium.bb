@@ -33,7 +33,6 @@ TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
                                        float top_controls_height)
     : client_(client),
       animation_direction_(NO_ANIMATION),
-      is_overlay_mode_(false),
       in_scroll_gesture_(false),
       top_controls_height_(top_controls_height),
       controls_top_offset_(0),
@@ -44,21 +43,6 @@ TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
 }
 
 TopControlsManager::~TopControlsManager() {
-}
-
-void TopControlsManager::UpdateDrawPositions() {
-  if (!client_->haveRootScrollLayer())
-    return;
-
-  // If the scroll position has changed underneath us (i.e. a javascript
-  // scroll), then simulate a scroll that covers the delta.
-  float scroll_total_y = RootScrollLayerTotalScrollY();
-  if (!in_scroll_gesture_
-      && scroll_total_y != previous_root_scroll_offset_) {
-    ScrollBy(gfx::Vector2dF(0, scroll_total_y - previous_root_scroll_offset_));
-    StartAnimationIfNecessary();
-    previous_root_scroll_offset_ = RootScrollLayerTotalScrollY();
-  }
 }
 
 void TopControlsManager::ScrollBegin() {
@@ -91,40 +75,34 @@ gfx::Vector2dF TopControlsManager::ScrollInternal(
 
   float previous_controls_offset = controls_top_offset_;
   float previous_content_offset = content_top_offset_;
-  bool previous_was_overlay = is_overlay_mode_;
 
   controls_top_offset_ -= scroll_delta_y;
   controls_top_offset_ = std::min(
       std::max(controls_top_offset_, -top_controls_height_), 0.f);
 
-  if (scroll_total_y > 0 || (scroll_total_y == 0
-      && content_top_offset_ < scroll_delta_y)) {
-    is_overlay_mode_ = true;
-
-    // The first case is where the page applies a scroll (javascript) and is
-    // being re-adjusted in a call to UpdateDrawPositions.  Instead of slamming
-    // the controls to the top, we adjust by the scroll delta until we reach
-    // zero as we expect.
-    if (scroll_total_y > 0 && content_top_offset_ != 0)
-      content_top_offset_ -= scroll_delta_y;
-    else
-      content_top_offset_ = 0;
-  } else if (scroll_total_y <= 0 && (scroll_delta_y < 0
-      || (scroll_delta_y > 0 && content_top_offset_ > 0))) {
-    is_overlay_mode_ = false;
-    content_top_offset_ -= scroll_delta_y;
+  // To determine if the scroll delta should be applied to the content position
+  // as well, we check the following:
+  // 1.) Scrolling down the page and the content position isn't already at 0.
+  //     This case handles corrections where the page content shifts outside of
+  //     the knowledge of the top controls manager.
+  // 2.) Scrolling either direction while the root scroll layer is scrolled to
+  //     the very top.
+  if ((scroll_delta_y > 0 && content_top_offset_ > 0) || scroll_total_y <= 0) {
+    float content_scroll_delta_y = scroll_delta_y;
+    if (content_scroll_delta_y > 0)
+      content_scroll_delta_y -= previous_controls_offset - controls_top_offset_;
+    content_top_offset_ -= content_scroll_delta_y;
   }
+
   content_top_offset_ = std::max(
       std::min(content_top_offset_,
                controls_top_offset_ + top_controls_height_), 0.f);
 
-  gfx::Vector2dF applied_delta;
-  if (!previous_was_overlay)
-    applied_delta.set_y(previous_content_offset - content_top_offset_);
+  gfx::Vector2dF applied_delta(
+      0.f, previous_content_offset - content_top_offset_);
 
-  if (is_overlay_mode_ != previous_was_overlay
-      || previous_controls_offset != controls_top_offset_
-      || previous_content_offset != content_top_offset_) {
+  if (previous_controls_offset != controls_top_offset_ ||
+      previous_content_offset != content_top_offset_) {
     client_->setNeedsRedraw();
     client_->setActiveTreeNeedsUpdateDrawProperties();
   }

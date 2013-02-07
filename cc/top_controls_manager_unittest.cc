@@ -80,7 +80,6 @@ TEST(TopControlsManagerTest, overlayModeDetection) {
   EXPECT_EQ(0.f, remaining_scroll.y());
   EXPECT_EQ(-30.f, manager->controls_top_offset());
   EXPECT_EQ(70.f, manager->content_top_offset());
-  EXPECT_FALSE(manager->is_overlay_mode());
   client.rootScrollLayer()->setScrollDelta(
       client.rootScrollLayer()->scrollDelta() + remaining_scroll);
 
@@ -88,7 +87,6 @@ TEST(TopControlsManagerTest, overlayModeDetection) {
   EXPECT_EQ(0.f, remaining_scroll.y());
   EXPECT_EQ(-99.f, manager->controls_top_offset());
   EXPECT_EQ(1.f, manager->content_top_offset());
-  EXPECT_FALSE(manager->is_overlay_mode());
   client.rootScrollLayer()->setScrollDelta(
       client.rootScrollLayer()->scrollDelta() + remaining_scroll);
 
@@ -96,7 +94,6 @@ TEST(TopControlsManagerTest, overlayModeDetection) {
   EXPECT_EQ(0.f, remaining_scroll.y());
   EXPECT_EQ(-79.f, manager->controls_top_offset());
   EXPECT_EQ(21.f, manager->content_top_offset());
-  EXPECT_FALSE(manager->is_overlay_mode());
   client.rootScrollLayer()->setScrollDelta(
       client.rootScrollLayer()->scrollDelta() + remaining_scroll);
 
@@ -105,7 +102,6 @@ TEST(TopControlsManagerTest, overlayModeDetection) {
   EXPECT_EQ(0.f, remaining_scroll.y());
   EXPECT_EQ(-100.f, manager->controls_top_offset());
   EXPECT_EQ(0.f, manager->content_top_offset());
-  EXPECT_FALSE(manager->is_overlay_mode());
   client.rootScrollLayer()->setScrollDelta(
       client.rootScrollLayer()->scrollDelta() + remaining_scroll);
 
@@ -113,7 +109,6 @@ TEST(TopControlsManagerTest, overlayModeDetection) {
   EXPECT_EQ(1.f, remaining_scroll.y());
   EXPECT_EQ(-100.f, manager->controls_top_offset());
   EXPECT_EQ(0.f, manager->content_top_offset());
-  EXPECT_TRUE(manager->is_overlay_mode());
   client.rootScrollLayer()->setScrollDelta(
       client.rootScrollLayer()->scrollDelta() + remaining_scroll);
 
@@ -121,22 +116,19 @@ TEST(TopControlsManagerTest, overlayModeDetection) {
   EXPECT_EQ(-1.f, remaining_scroll.y());
   EXPECT_EQ(-99.f, manager->controls_top_offset());
   EXPECT_EQ(0.f, manager->content_top_offset());
-  EXPECT_TRUE(manager->is_overlay_mode());
   client.rootScrollLayer()->setScrollDelta(
       client.rootScrollLayer()->scrollDelta() + remaining_scroll);
 
   remaining_scroll = manager->ScrollBy(gfx::Vector2dF(0.f, -50.f));
-  EXPECT_EQ(-50.f, remaining_scroll.y());
+  EXPECT_EQ(0.f, remaining_scroll.y());
   EXPECT_EQ(-49.f, manager->controls_top_offset());
   EXPECT_EQ(50.f, manager->content_top_offset());
-  EXPECT_FALSE(manager->is_overlay_mode());
   client.rootScrollLayer()->setScrollDelta(
       client.rootScrollLayer()->scrollDelta() + remaining_scroll);
 
   remaining_scroll = manager->ScrollBy(gfx::Vector2dF(0.f, -50.f));
   EXPECT_EQ(0.f, manager->controls_top_offset());
   EXPECT_EQ(100.f, manager->content_top_offset());
-  EXPECT_FALSE(manager->is_overlay_mode());
   client.rootScrollLayer()->setScrollDelta(
       client.rootScrollLayer()->scrollDelta() + remaining_scroll);
 }
@@ -198,13 +190,11 @@ TEST(TopControlsManagerTest, partialShownHideAnimation) {
   manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
   EXPECT_EQ(-100.f, manager->controls_top_offset());
   EXPECT_EQ(0.f, manager->content_top_offset());
-  EXPECT_TRUE(manager->is_overlay_mode());
 
   client.rootScrollLayer()->setScrollOffset(gfx::Vector2d(0, 270));
   manager->ScrollBy(gfx::Vector2dF(0.f, -15.f));
   EXPECT_EQ(-85.f, manager->controls_top_offset());
   EXPECT_EQ(0.f, manager->content_top_offset());
-  EXPECT_TRUE(manager->is_overlay_mode());
 
   manager->ScrollEnd();
   EXPECT_TRUE(manager->animation());
@@ -220,7 +210,6 @@ TEST(TopControlsManagerTest, partialShownHideAnimation) {
   EXPECT_FALSE(manager->animation());
   EXPECT_EQ(-100.f, manager->controls_top_offset());
   EXPECT_EQ(0.f, manager->content_top_offset());
-  EXPECT_TRUE(manager->is_overlay_mode());
 }
 
 TEST(TopControlsManagerTest, partialShownShowAnimation) {
@@ -230,13 +219,11 @@ TEST(TopControlsManagerTest, partialShownShowAnimation) {
   manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
   EXPECT_EQ(-100.f, manager->controls_top_offset());
   EXPECT_EQ(0.f, manager->content_top_offset());
-  EXPECT_TRUE(manager->is_overlay_mode());
 
   client.rootScrollLayer()->setScrollOffset(gfx::Vector2d(0, 230));
   manager->ScrollBy(gfx::Vector2dF(0.f, -70.f));
   EXPECT_EQ(-30.f, manager->controls_top_offset());
   EXPECT_EQ(0.f, manager->content_top_offset());
-  EXPECT_TRUE(manager->is_overlay_mode());
 
   manager->ScrollEnd();
   EXPECT_TRUE(manager->animation());
@@ -252,7 +239,6 @@ TEST(TopControlsManagerTest, partialShownShowAnimation) {
   EXPECT_FALSE(manager->animation());
   EXPECT_EQ(0.f, manager->controls_top_offset());
   EXPECT_EQ(0.f, manager->content_top_offset());
-  EXPECT_TRUE(manager->is_overlay_mode());
 }
 
 }  // namespace

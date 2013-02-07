@@ -658,8 +658,6 @@ bool LayerTreeHostImpl::prepareToDraw(FrameData& frame)
 {
     TRACE_EVENT0("cc", "LayerTreeHostImpl::prepareToDraw");
 
-    if (m_topControlsManager)
-        m_topControlsManager->UpdateDrawPositions();
     activeTree()->UpdateDrawProperties(LayerTreeImpl::UPDATE_ACTIVE_TREE_FOR_DRAW);
 
     frame.renderSurfaceLayerList = &activeTree()->RenderSurfaceLayerList();
