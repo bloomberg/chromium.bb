@@ -90,6 +90,33 @@ scoped_ptr<FormStructure> CreateTestCreditCardFormStructure() {
   return CreateTestFormStructure(autofill_types);
 }
 
+scoped_ptr<FormStructure> CreateTestFormStructureWithDefaultValues() {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  form.user_submitted = true;
+
+  // Add two radio button fields.
+  FormFieldData male = BuildFieldWithValue("sex", "male");
+  male.is_checkable = true;
+  form.fields.push_back(male);
+  FormFieldData female = BuildFieldWithValue("sex", "female");
+  female.is_checkable = true;
+  form.fields.push_back(female);
+
+  scoped_ptr<FormStructure> form_structure(new FormStructure(form));
+
+  // Fake server response. Set all fields as fields with default value.
+  form_structure->field(0)->set_server_type(FIELD_WITH_DEFAULT_VALUE);
+  form_structure->field(0)->set_default_value("female");
+  form_structure->field(1)->set_server_type(FIELD_WITH_DEFAULT_VALUE);
+  form_structure->field(1)->set_default_value("female");
+
+  return form_structure.Pass();
+}
+
 struct TestField {
   const char* const field_type;
   const char* const field_value;
@@ -322,4 +349,21 @@ TEST_F(AutocheckoutManagerTest, TestFillForms) {
   EXPECT_EQ(ASCIIToUTF16("California"), filled_forms[0].fields[7].value);
   EXPECT_EQ(ASCIIToUTF16("United States"), filled_forms[0].fields[8].value);
   EXPECT_EQ(ASCIIToUTF16("49012"), filled_forms[0].fields[9].value);
+
+  filled_forms.clear();
+  ClearIpcSink();
+
+  // Test form with default values.
+  autofill_manager_->SetFormStructure(
+      CreateTestFormStructureWithDefaultValues());
+
+  autocheckout_manager_->FillForms();
+
+  filled_forms = ReadFilledForms();
+  ASSERT_EQ(1U, filled_forms.size());
+  ASSERT_EQ(2U, filled_forms[0].fields.size());
+  EXPECT_FALSE(filled_forms[0].fields[0].is_checked);
+  EXPECT_EQ(ASCIIToUTF16("male"), filled_forms[0].fields[0].value);
+  EXPECT_TRUE(filled_forms[0].fields[1].is_checked);
+  EXPECT_EQ(ASCIIToUTF16("female"), filled_forms[0].fields[1].value);
 }

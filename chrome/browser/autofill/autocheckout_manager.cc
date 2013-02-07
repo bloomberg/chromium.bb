@@ -196,6 +196,27 @@ void AutocheckoutManager::ReturnAutocheckoutData(const FormStructure* result) {
 void AutocheckoutManager::SetValue(const AutofillField& field,
                                    FormFieldData* field_to_fill) {
   AutofillFieldType type = field.type();
+
+  if (type == FIELD_WITH_DEFAULT_VALUE) {
+    DCHECK(field.is_checkable);
+    // For a form with radio buttons, like:
+    // <form>
+    //   <input type="radio" name="sex" value="male">Male<br>
+    //   <input type="radio" name="sex" value="female">Female
+    // </form>
+    // If the default value specified at the server is "female", then
+    // Autofill server responds back with following field mappings
+    //   (fieldtype: FIELD_WITH_DEFAULT_VALUE, value: "female")
+    //   (fieldtype: FIELD_WITH_DEFAULT_VALUE, value: "female")
+    // Note that, the field mapping is repeated twice to respond to both the
+    // input elements with the same name/signature in the form.
+    string16 default_value = UTF8ToUTF16(field.default_value());
+    // Mark the field checked if server says the default value of the field
+    // to be this field's value.
+    field_to_fill->is_checked = (field.value == default_value);
+    return;
+  }
+
   // Handle verification code directly.
   if (type == CREDIT_CARD_VERIFICATION_CODE) {
     field_to_fill->value = cvv_;
