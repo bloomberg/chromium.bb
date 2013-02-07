@@ -38,7 +38,7 @@ const int64 kRequestTimeoutMs = 10 * 1000;
 
 class ServiceStateURLRequestDelegate : public net::URLRequest::Delegate {
  public:
-  virtual void OnResponseStarted(net::URLRequest* request) {
+  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE {
     if (request->GetResponseCode() == 200) {
       Read(request);
       if (request->status().is_io_pending())
@@ -47,7 +47,8 @@ class ServiceStateURLRequestDelegate : public net::URLRequest::Delegate {
     request->Cancel();
   };
 
-  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read) {
+  virtual void OnReadCompleted(net::URLRequest* request,
+                               int bytes_read) OVERRIDE {
     Read(request);
     if (!request->status().is_io_pending())
       MessageLoop::current()->Quit();

@@ -152,8 +152,8 @@ class VisitedLinkMaster::TableBuilder
   void DisownMaster();
 
   // VisitedLinkDelegate::URLEnumerator
-  virtual void OnURL(const GURL& url);
-  virtual void OnComplete(bool succeed);
+  virtual void OnURL(const GURL& url) OVERRIDE;
+  virtual void OnComplete(bool succeed) OVERRIDE;
 
  private:
   virtual ~TableBuilder() {}

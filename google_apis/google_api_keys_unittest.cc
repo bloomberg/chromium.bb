@@ -63,7 +63,7 @@ class GoogleAPIKeysTest : public testing::Test {
     env_cache_[8].variable_name = "GOOGLE_DEFAULT_CLIENT_SECRET";
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     // Unset all environment variables that can affect these tests,
     // for the duration of the tests.
     for (size_t i = 0; i < arraysize(env_cache_); ++i) {
@@ -77,7 +77,7 @@ class GoogleAPIKeysTest : public testing::Test {
     }
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     // Restore environment.
     for (size_t i = 0; i < arraysize(env_cache_); ++i) {
       EnvironmentCache& cache = env_cache_[i];

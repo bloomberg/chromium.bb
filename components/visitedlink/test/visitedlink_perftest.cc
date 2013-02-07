@@ -37,9 +37,9 @@ GURL TestURL(const char* prefix, int i) {
 class DummyVisitedLinkEventListener : public VisitedLinkMaster::Listener {
  public:
   DummyVisitedLinkEventListener() {}
-  virtual void NewTable(base::SharedMemory* table) {}
-  virtual void Add(VisitedLinkCommon::Fingerprint) {}
-  virtual void Reset() {}
+  virtual void NewTable(base::SharedMemory* table) OVERRIDE {}
+  virtual void Add(VisitedLinkCommon::Fingerprint) OVERRIDE {}
+  virtual void Reset() OVERRIDE {}
 
   static DummyVisitedLinkEventListener* GetInstance() {
     static DummyVisitedLinkEventListener instance;

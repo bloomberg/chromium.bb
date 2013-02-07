@@ -20,17 +20,20 @@ class GaiaAuthMockForGaiaAuthenticator : public GaiaAuthenticator {
  public:
   GaiaAuthMockForGaiaAuthenticator()
       : GaiaAuthenticator("useragent", "serviceid", "http://gaia_url") {}
-  ~GaiaAuthMockForGaiaAuthenticator() {}
+  virtual ~GaiaAuthMockForGaiaAuthenticator() {}
  protected:
-  bool Post(const GURL& url, const string& post_body,
-            unsigned long* response_code, string* response_body) {
+  virtual bool Post(
+      const GURL& url,
+      const string& post_body,
+      unsigned long* response_code,
+      string* response_body) OVERRIDE {
     *response_code = net::HTTP_OK;
     response_body->assign("body\n");
     return true;
   }
 
-  int GetBackoffDelaySeconds(
-      int current_backoff_delay) {
+  virtual int GetBackoffDelaySeconds(
+      int current_backoff_delay) OVERRIDE {
     // Dummy delay value.
     return 5;
   }

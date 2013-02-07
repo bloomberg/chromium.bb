@@ -84,7 +84,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // MediaTransferProtocolManager override.
-  const std::vector<std::string> GetStorages() const OVERRIDE {
+  virtual const std::vector<std::string> GetStorages() const OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
     std::vector<std::string> storages;
     for (StorageInfoMap::const_iterator it = storage_info_map_.begin();

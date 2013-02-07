@@ -107,7 +107,7 @@ class TrackingVisitedLinkEventListener : public VisitedLinkMaster::Listener {
       : reset_count_(0),
         add_count_(0) {}
 
-  virtual void NewTable(base::SharedMemory* table) {
+  virtual void NewTable(base::SharedMemory* table) OVERRIDE {
     if (table) {
       for (std::vector<VisitedLinkSlave>::size_type i = 0;
            i < g_slaves.size(); i++) {
@@ -117,8 +117,8 @@ class TrackingVisitedLinkEventListener : public VisitedLinkMaster::Listener {
       }
     }
   }
-  virtual void Add(VisitedLinkCommon::Fingerprint) { add_count_++; }
-  virtual void Reset() { reset_count_++; }
+  virtual void Add(VisitedLinkCommon::Fingerprint) OVERRIDE { add_count_++; }
+  virtual void Reset() OVERRIDE { reset_count_++; }
 
   void SetUp() {
     reset_count_ = 0;
