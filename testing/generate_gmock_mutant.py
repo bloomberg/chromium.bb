@@ -7,7 +7,7 @@ import string
 import sys
 
 HEADER = """\
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -417,8 +417,10 @@ def GenerateCreateFunctor(prebound, calltime):
   print "#endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING\n"
 
   # OS_WIN specific. Same functors but with stdcall calling conventions.
+  # These are not for WIN64 (x86_64) because there is only one calling
+  # convention in WIN64.
   # Functor for method with __stdcall calling conventions.
-  print "#if defined (OS_WIN)"
+  print "#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)"
   stdcall_method = CREATE_METHOD_FUNCTOR_TEMPLATE
   stdcall_method = stdcall_method.replace("U::", "__stdcall U::")
   stdcall_method = FixCode(stdcall_method % args)
@@ -435,7 +437,7 @@ def GenerateCreateFunctor(prebound, calltime):
   stdcall2 = stdcall2.replace(" " * 17 + "Tuple", " " * 31 + "Tuple")
   print stdcall2
   print "#endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING"
-  print "#endif  // OS_WIN\n"
+  print "#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)\n"
 
 
 def main():

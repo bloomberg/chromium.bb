@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1048,7 +1048,7 @@ CreateFunctor(T** obj, R (U::*method)()) {
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U>
 inline MutantFunctor<R, Tuple0>
 CreateFunctor(T* obj, R (__stdcall U::*method)()) {
@@ -1079,7 +1079,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)()) {
   return MutantFunctor<R, Tuple0>(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 0 - 1
 template <typename R, typename T, typename U, typename A1>
@@ -1114,7 +1114,7 @@ CreateFunctor(T** obj, R (U::*method)(A1)) {
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename A1>
 inline MutantFunctor<R, Tuple1<A1> >
 CreateFunctor(T* obj, R (__stdcall U::*method)(A1)) {
@@ -1145,7 +1145,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(A1)) {
   return MutantFunctor<R, Tuple1<A1> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 0 - 2
 template <typename R, typename T, typename U, typename A1, typename A2>
@@ -1180,7 +1180,7 @@ CreateFunctor(T** obj, R (U::*method)(A1, A2)) {
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename A1, typename A2>
 inline MutantFunctor<R, Tuple2<A1, A2> >
 CreateFunctor(T* obj, R (__stdcall U::*method)(A1, A2)) {
@@ -1211,7 +1211,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(A1, A2)) {
   return MutantFunctor<R, Tuple2<A1, A2> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 0 - 3
 template <typename R, typename T, typename U, typename A1, typename A2,
@@ -1248,7 +1248,7 @@ CreateFunctor(T** obj, R (U::*method)(A1, A2, A3)) {
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename A1, typename A2,
           typename A3>
 inline MutantFunctor<R, Tuple3<A1, A2, A3> >
@@ -1281,7 +1281,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(A1, A2, A3)) {
   return MutantFunctor<R, Tuple3<A1, A2, A3> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 0 - 4
 template <typename R, typename T, typename U, typename A1, typename A2,
@@ -1318,7 +1318,7 @@ CreateFunctor(T** obj, R (U::*method)(A1, A2, A3, A4)) {
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename A1, typename A2,
           typename A3, typename A4>
 inline MutantFunctor<R, Tuple4<A1, A2, A3, A4> >
@@ -1351,7 +1351,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(A1, A2, A3, A4)) {
   return MutantFunctor<R, Tuple4<A1, A2, A3, A4> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 0 - 5
 template <typename R, typename T, typename U, typename A1, typename A2,
@@ -1389,7 +1389,7 @@ CreateFunctor(T** obj, R (U::*method)(A1, A2, A3, A4, A5)) {
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename A1, typename A2,
           typename A3, typename A4, typename A5>
 inline MutantFunctor<R, Tuple5<A1, A2, A3, A4, A5> >
@@ -1423,7 +1423,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(A1, A2, A3, A4, A5)) {
   return MutantFunctor<R, Tuple5<A1, A2, A3, A4, A5> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 0 - 6
 template <typename R, typename T, typename U, typename A1, typename A2,
@@ -1461,7 +1461,7 @@ CreateFunctor(T** obj, R (U::*method)(A1, A2, A3, A4, A5, A6)) {
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename A1, typename A2,
           typename A3, typename A4, typename A5, typename A6>
 inline MutantFunctor<R, Tuple6<A1, A2, A3, A4, A5, A6> >
@@ -1495,7 +1495,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(A1, A2, A3, A4, A5, A6)) {
   return MutantFunctor<R, Tuple6<A1, A2, A3, A4, A5, A6> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 1 - 0
 template <typename R, typename T, typename U, typename P1, typename X1>
@@ -1530,7 +1530,7 @@ CreateFunctor(T** obj, R (U::*method)(X1), const P1& p1) {
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename X1>
 inline MutantFunctor<R, Tuple0>
 CreateFunctor(T* obj, R (__stdcall U::*method)(X1), const P1& p1) {
@@ -1561,7 +1561,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1), const P1& p1) {
   return MutantFunctor<R, Tuple0>(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 1 - 1
 template <typename R, typename T, typename U, typename P1, typename A1,
@@ -1598,7 +1598,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, A1), const P1& p1) {
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename A1,
           typename X1>
 inline MutantFunctor<R, Tuple1<A1> >
@@ -1631,7 +1631,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, A1), const P1& p1) {
   return MutantFunctor<R, Tuple1<A1> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 1 - 2
 template <typename R, typename T, typename U, typename P1, typename A1,
@@ -1668,7 +1668,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, A1, A2), const P1& p1) {
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename A1,
           typename A2, typename X1>
 inline MutantFunctor<R, Tuple2<A1, A2> >
@@ -1701,7 +1701,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, A1, A2), const P1& p1) {
   return MutantFunctor<R, Tuple2<A1, A2> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 1 - 3
 template <typename R, typename T, typename U, typename P1, typename A1,
@@ -1739,7 +1739,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, A1, A2, A3), const P1& p1) {
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename A1,
           typename A2, typename A3, typename X1>
 inline MutantFunctor<R, Tuple3<A1, A2, A3> >
@@ -1773,7 +1773,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, A1, A2, A3), const P1& p1) {
   return MutantFunctor<R, Tuple3<A1, A2, A3> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 1 - 4
 template <typename R, typename T, typename U, typename P1, typename A1,
@@ -1811,7 +1811,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, A1, A2, A3, A4), const P1& p1) {
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename A1,
           typename A2, typename A3, typename A4, typename X1>
 inline MutantFunctor<R, Tuple4<A1, A2, A3, A4> >
@@ -1847,7 +1847,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, A1, A2, A3, A4),
   return MutantFunctor<R, Tuple4<A1, A2, A3, A4> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 1 - 5
 template <typename R, typename T, typename U, typename P1, typename A1,
@@ -1885,7 +1885,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, A1, A2, A3, A4, A5), const P1& p1) {
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename A1,
           typename A2, typename A3, typename A4, typename A5, typename X1>
 inline MutantFunctor<R, Tuple5<A1, A2, A3, A4, A5> >
@@ -1921,7 +1921,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, A1, A2, A3, A4, A5),
   return MutantFunctor<R, Tuple5<A1, A2, A3, A4, A5> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 1 - 6
 template <typename R, typename T, typename U, typename P1, typename A1,
@@ -1963,7 +1963,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, A1, A2, A3, A4, A5, A6),
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename A1,
           typename A2, typename A3, typename A4, typename A5, typename A6,
           typename X1>
@@ -2002,7 +2002,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, A1, A2, A3, A4, A5, A6),
   return MutantFunctor<R, Tuple6<A1, A2, A3, A4, A5, A6> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 2 - 0
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -2039,7 +2039,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2), const P1& p1, const P2& p2) {
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename X1, typename X2>
 inline MutantFunctor<R, Tuple0>
@@ -2074,7 +2074,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2), const P1& p1,
   return MutantFunctor<R, Tuple0>(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 2 - 1
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -2112,7 +2112,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, A1), const P1& p1, const P2& p2) {
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename A1, typename X1, typename X2>
 inline MutantFunctor<R, Tuple1<A1> >
@@ -2149,7 +2149,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, A1), const P1& p1,
   return MutantFunctor<R, Tuple1<A1> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 2 - 2
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -2189,7 +2189,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, A1, A2), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename A1, typename A2, typename X1, typename X2>
 inline MutantFunctor<R, Tuple2<A1, A2> >
@@ -2226,7 +2226,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, A1, A2), const P1& p1,
   return MutantFunctor<R, Tuple2<A1, A2> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 2 - 3
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -2266,7 +2266,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, A1, A2, A3), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename A1, typename A2, typename A3, typename X1, typename X2>
 inline MutantFunctor<R, Tuple3<A1, A2, A3> >
@@ -2303,7 +2303,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, A1, A2, A3),
   return MutantFunctor<R, Tuple3<A1, A2, A3> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 2 - 4
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -2346,7 +2346,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, A1, A2, A3, A4), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename A1, typename A2, typename A3, typename A4, typename X1,
           typename X2>
@@ -2385,7 +2385,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, A1, A2, A3, A4),
   return MutantFunctor<R, Tuple4<A1, A2, A3, A4> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 2 - 5
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -2428,7 +2428,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, A1, A2, A3, A4, A5), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename A1, typename A2, typename A3, typename A4, typename A5,
           typename X1, typename X2>
@@ -2467,7 +2467,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, A1, A2, A3, A4, A5),
   return MutantFunctor<R, Tuple5<A1, A2, A3, A4, A5> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 2 - 6
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -2511,7 +2511,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, A1, A2, A3, A4, A5, A6),
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename A1, typename A2, typename A3, typename A4, typename A5,
           typename A6, typename X1, typename X2>
@@ -2551,7 +2551,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, A1, A2, A3, A4, A5, A6),
   return MutantFunctor<R, Tuple6<A1, A2, A3, A4, A5, A6> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 3 - 0
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -2592,7 +2592,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3), const P1& p1, const P2& p2,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename X1, typename X2, typename X3>
 inline MutantFunctor<R, Tuple0>
@@ -2629,7 +2629,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3), const P1& p1,
   return MutantFunctor<R, Tuple0>(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 3 - 1
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -2670,7 +2670,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, A1), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename A1, typename X1, typename X2, typename X3>
 inline MutantFunctor<R, Tuple1<A1> >
@@ -2707,7 +2707,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, A1), const P1& p1,
   return MutantFunctor<R, Tuple1<A1> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 3 - 2
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -2750,7 +2750,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, A1, A2), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename A1, typename A2, typename X1, typename X2,
           typename X3>
@@ -2789,7 +2789,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, A1, A2),
   return MutantFunctor<R, Tuple2<A1, A2> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 3 - 3
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -2832,7 +2832,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, A1, A2, A3), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename A1, typename A2, typename A3, typename X1,
           typename X2, typename X3>
@@ -2871,7 +2871,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, A1, A2, A3),
   return MutantFunctor<R, Tuple3<A1, A2, A3> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 3 - 4
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -2915,7 +2915,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, A1, A2, A3, A4), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename A1, typename A2, typename A3, typename A4,
           typename X1, typename X2, typename X3>
@@ -2955,7 +2955,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, A1, A2, A3, A4),
   return MutantFunctor<R, Tuple4<A1, A2, A3, A4> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 3 - 5
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -2999,7 +2999,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, A1, A2, A3, A4, A5),
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename A1, typename A2, typename A3, typename A4,
           typename A5, typename X1, typename X2, typename X3>
@@ -3039,7 +3039,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, A1, A2, A3, A4, A5),
   return MutantFunctor<R, Tuple5<A1, A2, A3, A4, A5> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 3 - 6
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -3083,7 +3083,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, A1, A2, A3, A4, A5, A6),
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename A1, typename A2, typename A3, typename A4,
           typename A5, typename A6, typename X1, typename X2, typename X3>
@@ -3123,7 +3123,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, A1, A2, A3, A4, A5,
   return MutantFunctor<R, Tuple6<A1, A2, A3, A4, A5, A6> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 4 - 0
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -3166,7 +3166,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename X1, typename X2, typename X3,
           typename X4>
@@ -3205,7 +3205,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4), const P1& p1,
   return MutantFunctor<R, Tuple0>(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 4 - 1
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -3248,7 +3248,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, A1), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename A1, typename X1, typename X2,
           typename X3, typename X4>
@@ -3287,7 +3287,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, A1),
   return MutantFunctor<R, Tuple1<A1> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 4 - 2
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -3331,7 +3331,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, A1, A2), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename A1, typename A2, typename X1,
           typename X2, typename X3, typename X4>
@@ -3371,7 +3371,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, A1, A2),
   return MutantFunctor<R, Tuple2<A1, A2> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 4 - 3
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -3415,7 +3415,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, A1, A2, A3), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename A1, typename A2, typename A3,
           typename X1, typename X2, typename X3, typename X4>
@@ -3455,7 +3455,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, A1, A2, A3),
   return MutantFunctor<R, Tuple3<A1, A2, A3> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 4 - 4
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -3499,7 +3499,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, A1, A2, A3, A4),
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename A1, typename A2, typename A3,
           typename A4, typename X1, typename X2, typename X3, typename X4>
@@ -3539,7 +3539,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, A1, A2, A3, A4),
   return MutantFunctor<R, Tuple4<A1, A2, A3, A4> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 4 - 5
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -3585,7 +3585,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, A1, A2, A3, A4, A5),
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename A1, typename A2, typename A3,
           typename A4, typename A5, typename X1, typename X2, typename X3,
@@ -3627,7 +3627,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, A1, A2, A3, A4,
   return MutantFunctor<R, Tuple5<A1, A2, A3, A4, A5> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 4 - 6
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -3673,7 +3673,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, A1, A2, A3, A4, A5, A6),
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename A1, typename A2, typename A3,
           typename A4, typename A5, typename A6, typename X1, typename X2,
@@ -3715,7 +3715,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, A1, A2, A3, A4,
   return MutantFunctor<R, Tuple6<A1, A2, A3, A4, A5, A6> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 5 - 0
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -3759,7 +3759,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, X5), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename P5, typename X1, typename X2,
           typename X3, typename X4, typename X5>
@@ -3799,7 +3799,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, X5),
   return MutantFunctor<R, Tuple0>(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 5 - 1
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -3843,7 +3843,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, X5, A1), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename P5, typename A1, typename X1,
           typename X2, typename X3, typename X4, typename X5>
@@ -3883,7 +3883,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, X5, A1),
   return MutantFunctor<R, Tuple1<A1> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 5 - 2
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -3927,7 +3927,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, X5, A1, A2), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename P5, typename A1, typename A2,
           typename X1, typename X2, typename X3, typename X4, typename X5>
@@ -3967,7 +3967,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, X5, A1, A2),
   return MutantFunctor<R, Tuple2<A1, A2> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 5 - 3
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -4013,7 +4013,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, X5, A1, A2, A3),
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename P5, typename A1, typename A2,
           typename A3, typename X1, typename X2, typename X3, typename X4,
@@ -4055,7 +4055,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, X5, A1, A2, A3),
   return MutantFunctor<R, Tuple3<A1, A2, A3> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 5 - 4
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -4101,7 +4101,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, X5, A1, A2, A3, A4),
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename P5, typename A1, typename A2,
           typename A3, typename A4, typename X1, typename X2, typename X3,
@@ -4145,7 +4145,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, X5, A1, A2, A3,
   return MutantFunctor<R, Tuple4<A1, A2, A3, A4> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 5 - 5
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -4192,7 +4192,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, X5, A1, A2, A3, A4, A5),
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename P5, typename A1, typename A2,
           typename A3, typename A4, typename A5, typename X1, typename X2,
@@ -4237,7 +4237,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, X5, A1, A2, A3,
   return MutantFunctor<R, Tuple5<A1, A2, A3, A4, A5> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 5 - 6
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -4286,7 +4286,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, X5, A1, A2, A3, A4, A5,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename P5, typename A1, typename A2,
           typename A3, typename A4, typename A5, typename A6, typename X1,
@@ -4332,7 +4332,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, X5, A1, A2, A3,
   return MutantFunctor<R, Tuple6<A1, A2, A3, A4, A5, A6> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 6 - 0
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -4376,7 +4376,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, X5, X6), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename P5, typename P6, typename X1,
           typename X2, typename X3, typename X4, typename X5, typename X6>
@@ -4418,7 +4418,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, X5, X6),
   return MutantFunctor<R, Tuple0>(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 6 - 1
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -4464,7 +4464,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, X5, X6, A1), const P1& p1,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename P5, typename P6, typename A1,
           typename X1, typename X2, typename X3, typename X4, typename X5,
@@ -4508,7 +4508,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, X5, X6, A1),
   return MutantFunctor<R, Tuple1<A1> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 6 - 2
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -4556,7 +4556,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, X5, X6, A1, A2),
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename P5, typename P6, typename A1,
           typename A2, typename X1, typename X2, typename X3, typename X4,
@@ -4601,7 +4601,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, X5, X6, A1, A2),
   return MutantFunctor<R, Tuple2<A1, A2> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 6 - 3
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -4650,7 +4650,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, X5, X6, A1, A2, A3),
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename P5, typename P6, typename A1,
           typename A2, typename A3, typename X1, typename X2, typename X3,
@@ -4696,7 +4696,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, X5, X6, A1, A2,
   return MutantFunctor<R, Tuple3<A1, A2, A3> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 6 - 4
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -4746,7 +4746,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, X5, X6, A1, A2, A3, A4),
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename P5, typename P6, typename A1,
           typename A2, typename A3, typename A4, typename X1, typename X2,
@@ -4792,7 +4792,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, X5, X6, A1, A2,
   return MutantFunctor<R, Tuple4<A1, A2, A3, A4> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 6 - 5
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -4842,7 +4842,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, X5, X6, A1, A2, A3, A4,
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename P5, typename P6, typename A1,
           typename A2, typename A3, typename A4, typename A5, typename X1,
@@ -4888,7 +4888,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, X5, X6, A1, A2,
   return MutantFunctor<R, Tuple5<A1, A2, A3, A4, A5> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 // 6 - 6
 template <typename R, typename T, typename U, typename P1, typename P2,
@@ -4940,7 +4940,7 @@ CreateFunctor(T** obj, R (U::*method)(X1, X2, X3, X4, X5, X6, A1, A2, A3, A4, A5
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 
-#if defined (OS_WIN)
+#if defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 template <typename R, typename T, typename U, typename P1, typename P2,
           typename P3, typename P4, typename P5, typename P6, typename A1,
           typename A2, typename A3, typename A4, typename A5, typename A6,
@@ -4988,7 +4988,7 @@ CreateFunctor(T** obj, R (__stdcall U::*method)(X1, X2, X3, X4, X5, X6, A1, A2,
   return MutantFunctor<R, Tuple6<A1, A2, A3, A4, A5, A6> >(t);
 }
 #endif  // GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
-#endif  // OS_WIN
+#endif  // defined (OS_WIN) && !defined (ARCH_CPU_X86_64)
 
 }  // namespace testing
 
