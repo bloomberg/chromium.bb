@@ -186,6 +186,21 @@ function final_compression {
   echo -ne "\r"
 }
 
+# Usage: get_color_type <file>
+# Returns the color type name of the png file. Here is the list of names
+# for each color type codes.
+# 0 : grayscale
+# 2 : RGB
+# 3 : colormap
+# 4 : gray+alpha
+# 6 : RGBA
+# See http://en.wikipedia.org/wiki/Portable_Network_Graphics#Color_depth
+# for details about the color type code.
+function get_color_type {
+  local file=$1
+  echo $(file $file | awk -F, '{print $3}' | awk '{print $2}')
+}
+
 # Usage: optimize_size <file>
 # Performs png file optimization.
 function optimize_size {
@@ -211,7 +226,20 @@ function optimize_size {
   fi
 
   echo -n "|filter"
-  optipng -q -zc9 -zm8 -zs0-3 -f0-5 $file
+  local old_color_type=$(get_color_type $file)
+  optipng -q -zc9 -zm8 -zs0-3 -f0-5 $file -out $file.tmp.png
+  local new_color_type=$(get_color_type $file.tmp.png)
+  # optipng may corrupt a png file when reducing the color type
+  # to grayscale/grayscale+alpha. Just skip such cases until
+  # the bug is fixed. See crbug.com/174505, crbug.com/174084.
+  # The issue is reported in
+  # https://sourceforge.net/tracker/?func=detail&aid=3603630&group_id=151404&atid=780913
+  if [[ $old_color_type == "RGBA" && $new_color_type =~ gray.* ]] ; then
+    rm $file.tmp.png
+    echo -n "[skip opting]"
+  else
+    mv $file.tmp.png $file
+  fi
   pngout -q -k1 -s1 $file
 
   huffman_blocks $file
