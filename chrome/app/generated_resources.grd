@@ -9434,6 +9434,21 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <!-- error page messages -->
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_ERRORPAGES_BUTTON_MORE" desc="Mobile: Label for the button that expands the details on an error page">
+          More
+        </message>
+        <message name="IDS_ERRORPAGES_BUTTON_LESS" desc="Mobile: Label for the button that hides the details on an error page">
+          Less
+        </message>
+        <message name="IDS_ERRORPAGES_BUTTON_RELOAD" desc="Mobile: Label for the button on an error page to reload the page">
+          Reload
+        </message>
+        <message name="IDS_ERRORPAGES_BUTTON_SETTINGS" desc="Mobile: Label for the button on an error page to launch system settings menu">
+          Settings
+        </message>
+      </if>
+
       <message name="IDS_ERRORPAGES_SUGGESTION_HEADING" desc="Heading in the error page above the actual suggestions">
         Here are some suggestions:
       </message>
@@ -9506,9 +9521,16 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_ERRORPAGES_HEADING_PROXY_CONNECTION_FAILED" desc="Heading in the error page when the proxy server connection failed.">
         Unable to connect to the proxy server
       </message>
-      <message name="IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED" desc="Heading of the error page when the network connection failed.">
-        Unable to connect to the Internet
-      </message>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED" desc="Heading of the error page when the network connection failed.">
+          Unable to connect to the Internet
+        </message>
+      </if>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED" desc="Mobile: Heading of the error page when the network connection failed.">
+          You are offline.
+        </message>
+      </if>
       <message name="IDS_ERRORPAGES_HEADING_CACHE_MISS" desc="Heading in the error page when we couldn't find a resource in the cache, and cannot fall back to the network.">
         Cache miss
       </message>
@@ -9598,13 +9620,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         </message>
 
         <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Mobile: Summary of the error page when the network connection failed.  May be followed by platform dependent instructions.">
-          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
-          can't display the webpage because your mobile device isn't connected to the Internet.
-        </message>
-        <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_INSTRUCTIONS_TEMPLATE" desc="Mobile: Template for the summary of the error page when the network connection failed, on platforms with instructions.">
-          <ph name="ERROR_DESCRIPTION_TEXT">
-            $1<ex>Google Chrome can't display the webpage because your mobile device isn't connected to the Internet.</ex>
-          </ph>
+          Wi-Fi and mobile data are turned off.
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+          The page can be loaded once you connect to a network.
         </message>
       </if>
       <if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
