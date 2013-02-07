@@ -1130,12 +1130,12 @@ DirectoryModel.prototype.onDriveStatusChanged_ = function() {
   if (this.getCurrentDirEntry() == DirectoryModel.fakeDriveEntry_) {
     if (mounted) {
       // Change fake entry to real one and rescan.
-      function onGotDirectory(entry) {
+      var onGotDirectory = function(entry) {
         this.updateRootEntry_(entry);
         if (this.getCurrentDirEntry() == DirectoryModel.fakeDriveEntry_) {
           this.changeDirectoryEntrySilent_(entry);
         }
-      }
+      };
       this.root_.getDirectory(RootDirectory.DRIVE, {},
                               onGotDirectory.bind(this));
     }

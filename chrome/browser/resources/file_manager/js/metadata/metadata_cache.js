@@ -154,14 +154,14 @@ MetadataCache.prototype.get = function(items, type, callback) {
   var remaining = items.length;
   this.startBatchUpdates();
 
-  function onOneItem(index, value) {
+  var onOneItem = function(index, value) {
     result[index] = value;
     remaining--;
     if (remaining == 0) {
       this.endBatchUpdates();
       if (callback) setTimeout(callback, 0, result);
     }
-  }
+  };
 
   for (var index = 0; index < items.length; index++) {
     result.push(null);
@@ -181,11 +181,11 @@ MetadataCache.prototype.getOne = function(item, type, callback) {
     var result = {};
     var typesLeft = types.length;
 
-    function onOneType(requestedType, metadata) {
+    var onOneType = function(requestedType, metadata) {
       result[requestedType] = metadata;
       typesLeft--;
       if (typesLeft == 0) callback(result);
-    }
+    };
 
     for (var index = 0; index < types.length; index++) {
       this.getOne(item, types[index], onOneType.bind(null, types[index]));
@@ -216,7 +216,7 @@ MetadataCache.prototype.getOne = function(item, type, callback) {
   var currentProvider;
   var self = this;
 
-  function onFetched() {
+  var onFetched = function() {
     if (type in entry.properties) {
       self.endBatchUpdates();
       // Got properties from provider.
@@ -224,9 +224,9 @@ MetadataCache.prototype.getOne = function(item, type, callback) {
     } else {
       tryNextProvider();
     }
-  }
+  };
 
-  function onProviderProperties(properties) {
+  var onProviderProperties = function(properties) {
     var id = currentProvider.getId();
     var fetchedCallbacks = entry[id].callbacks;
     delete entry[id].callbacks;
@@ -236,9 +236,9 @@ MetadataCache.prototype.getOne = function(item, type, callback) {
     for (var index = 0; index < fetchedCallbacks.length; index++) {
       fetchedCallbacks[index]();
     }
-  }
+  };
 
-  function queryProvider() {
+  var queryProvider = function() {
     var id = currentProvider.getId();
     if ('callbacks' in entry[id]) {
       // We are querying this provider now.
@@ -247,9 +247,9 @@ MetadataCache.prototype.getOne = function(item, type, callback) {
       entry[id].callbacks = [onFetched];
       currentProvider.fetch(url, type, onProviderProperties, fsEntry);
     }
-  }
+  };
 
-  function tryNextProvider() {
+  var tryNextProvider = function() {
     if (providers.length == 0) {
       self.endBatchUpdates();
       callback(entry.properties[type] || null);
@@ -263,7 +263,7 @@ MetadataCache.prototype.getOne = function(item, type, callback) {
     } else {
       tryNextProvider();
     }
-  }
+  };
 
   tryNextProvider();
 };

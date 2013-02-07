@@ -1144,9 +1144,9 @@ DialogType.isModal = function(type) {
     if (selectedIndex > 0) { // Specific filter selected.
       var regexp = new RegExp('.*(' +
           this.fileTypes_[selectedIndex - 1].extensions.join('|') + ')$', 'i');
-      function filter(entry) {
+      var filter = function(entry) {
         return entry.isDirectory || regexp.test(entry.name);
-      }
+      };
       this.directoryModel_.addFilter('fileType', filter);
     }
     this.directoryModel_.rescan();

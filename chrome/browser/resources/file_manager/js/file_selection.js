@@ -535,13 +535,13 @@ FileSelectionHandler.prototype.showPreviewThumbnails_ = function(selection) {
         var zoomed = doc.createElement('div');
         zoomed.hidden = true;
         thumbnails.push(zoomed);
-        function onFirstThumbnailLoaded(img, transform) {
+        var onFirstThumbnailLoaded = function(img, transform) {
           if (img && self.decorateThumbnailZoom_(zoomed, img, transform)) {
             zoomed.hidden = false;
             thumbnailsHaveZoom = true;
           }
           onThumbnailLoaded();
-        }
+        };
         var thumbnail = this.renderThumbnail_(entry, onFirstThumbnailLoaded);
         zoomed.addEventListener('click', thumbnailClickHandler);
       } else {

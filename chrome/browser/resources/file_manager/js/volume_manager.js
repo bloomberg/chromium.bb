@@ -122,11 +122,11 @@ VolumeManager.prototype.initMountPoints_ = function() {
       if (info.mountType == 'drive')
         console.error('Drive is not expected initially mounted');
       var error = info.mountCondition ? 'error_' + info.mountCondition : '';
-      function onVolumeInfo(volume) {
+      var onVolumeInfo = function(volume) {
         mountedVolumes.push(volume);
         index++;
         step(mountPoints);
-      }
+      };
       self.makeVolumeInfo_('/' + info.mountPath, error, onVolumeInfo);
     } else {
       for (var i = 0; i < mountedVolumes.length; i++) {
