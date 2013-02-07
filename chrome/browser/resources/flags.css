@@ -7,8 +7,8 @@ body {
 <if expr="not pp_ifdef('android')">
   min-width: 47em;
 </if>
-  /* Should match needs-restart.(height + padding-top + padding-bottom + 5) */
-  padding-bottom: 65px;
+  /* Should match needs-restart.height + 5 */
+  padding-bottom: 75px;
 }
 
 a {
@@ -148,13 +148,13 @@ div.needs-restart {
   background: #FFF;
   border-top: 1px solid rgb(181, 199, 222);
   bottom: 0;
+  box-sizing: border-box;
   /* If you change this, update body.padding-bottom */
-  height: 30px;
+  height: 70px;
   left: 0;
-  /* If you change this, update body.padding-bottom */
   padding-bottom: 25px;
   padding-left: 15px;
-  /* If you change this, update body.padding-bottom */
+  padding-right: 15px;
   padding-top: 15px;
   position: fixed;
   width: 100%;
