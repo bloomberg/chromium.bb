@@ -698,6 +698,23 @@ void SigninManager::OnGetUserInfoFailure(const GoogleServiceAuthError& error) {
   OnClientLoginFailure(error);
 }
 
+void SigninManager::OnUbertokenSuccess(const std::string& token) {
+  ubertoken_fetcher_.reset();
+  if (client_login_.get() == NULL) {
+    client_login_.reset(
+        new GaiaAuthFetcher(this,
+                            GaiaConstants::kChromeSource,
+                            profile_->GetRequestContext()));
+  }
+
+  client_login_->StartMergeSession(token);
+}
+
+void SigninManager::OnUbertokenFailure(const GoogleServiceAuthError& error) {
+  LOG(WARNING) << " Unable to login the user to the web: " << error.ToString();
+  ubertoken_fetcher_.reset();
+}
+
 void SigninManager::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
@@ -710,15 +727,10 @@ void SigninManager::Observe(int type,
 
       // If a GAIA service token has become available, use it to pre-login the
       // user to other services that depend on GAIA credentials.
-      if (tok_details->service() == GaiaConstants::kGaiaService) {
-        if (client_login_.get() == NULL) {
-          client_login_.reset(
-              new GaiaAuthFetcher(this,
-                                  GaiaConstants::kChromeSource,
-                                  profile_->GetRequestContext()));
-        }
-
-        client_login_->StartMergeSession(tok_details->token());
+      if (tok_details->service() ==
+          GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
+        ubertoken_fetcher_.reset(new UbertokenFetcher(profile_, this));
+        ubertoken_fetcher_->StartFetchingToken();
 
         // We only want to do this once per sign-in.
         CleanupNotificationRegistration();

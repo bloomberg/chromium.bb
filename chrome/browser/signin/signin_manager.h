@@ -27,6 +27,7 @@
 #include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/signin/signin_internals_util.h"
+#include "chrome/browser/signin/ubertoken_fetcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -59,6 +60,7 @@ struct GoogleServiceSignoutDetails {
 };
 
 class SigninManager : public GaiaAuthConsumer,
+                      public UbertokenConsumer,
                       public content::NotificationObserver,
                       public ProfileKeyedService {
  public:
@@ -162,6 +164,10 @@ class SigninManager : public GaiaAuthConsumer,
   virtual void OnGetUserInfoFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
 
+  // UbertokenConsumer
+  virtual void OnUbertokenSuccess(const std::string& token) OVERRIDE;
+  virtual void OnUbertokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
+
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -258,6 +264,9 @@ class SigninManager : public GaiaAuthConsumer,
 
   // Registrar for notifications from the TokenService.
   content::NotificationRegistrar registrar_;
+
+  // UbertokenFetcher to login to user to the web property.
+  scoped_ptr<UbertokenFetcher> ubertoken_fetcher_;
 
   // Helper object to listen for changes to signin preferences stored in non-
   // profile-specific local prefs (like kGoogleServicesUsernamePattern).

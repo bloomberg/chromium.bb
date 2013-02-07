@@ -44,6 +44,8 @@ const char kGetTokenPairValidResponse[] =
     "  \"token_type\": \"Bearer\""
     "}";
 
+const char kUberAuthTokenURLFormat[] = "%s?source=%s&issueuberauth=1";
+
 }  // namespace
 
 
@@ -103,6 +105,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
     DCHECK(fetcher);
     DCHECK(fetcher->delegate());
 
+    cookies_.insert(cookies_.end(), cookies.begin(), cookies.end());
     fetcher->set_url(GURL(url));
     fetcher->set_status(net::URLRequestStatus());
     fetcher->set_response_code(response_code);
@@ -211,6 +214,22 @@ class SigninManagerTest : public TokenServiceTestHarness {
                             net::ResponseCookies(), response_string);
   }
 
+  void SimulateValidUberToken() {
+    SetupFetcherAndComplete(GaiaUrls::GetInstance()->oauth2_token_url(), 200,
+                            net::ResponseCookies(), kGetTokenPairValidResponse);
+    std::string  uberauth_token_gurl = base::StringPrintf(
+        kUberAuthTokenURLFormat,
+        GaiaUrls::GetInstance()->oauth1_login_url().c_str(),
+        "source");
+    SetupFetcherAndComplete(uberauth_token_gurl, 200,
+                            net::ResponseCookies(), "ut1");
+
+    net::ResponseCookies cookies;
+    cookies.push_back("checkCookie = true");
+    SetupFetcherAndComplete(GaiaUrls::GetInstance()->merge_session_url(), 200,
+                            cookies, "<html></html>");
+  }
+
   void WaitUntilUIDone() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     BrowserThread::PostTask(
@@ -278,6 +297,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
   content::TestNotificationTracker google_login_failure_;
   scoped_ptr<TestingPrefServiceSimple> prefs_;
   scoped_ptr<content::TestBrowserThread> io_thread_;
+  std::vector<std::string> cookies_;
 };
 
 // NOTE: ClientLogin's "StartSignin" is called after collecting credentials
@@ -295,6 +315,13 @@ TEST_F(SigninManagerTest, SignInClientLogin) {
   // Should go into token service and stop.
   EXPECT_EQ(1U, google_login_success_.size());
   EXPECT_EQ(0U, google_login_failure_.size());
+
+  service_->OnIssueAuthTokenSuccess(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+                                    "oauth2Token");
+  SimulateValidUberToken();
+  // Check that the login cookie has been sent.
+  ASSERT_NE(std::find(cookies_.begin(), cookies_.end(), "checkCookie = true"),
+            cookies_.end());
 
   // Should persist across resets.
   manager_->Shutdown();
