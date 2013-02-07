@@ -52,19 +52,6 @@
 
 namespace media {
 
-// Amount of time to wait if we've exhausted the data source.  This is to avoid
-// busy looping.
-static const uint32 kNoDataSleepMilliseconds = 10;
-
-// Mininum interval between OnMoreData() calls.  This is to avoid glitches for
-// WebAudio which needs time to generate new data.
-static const uint32 kMinIntervalBetweenOnMoreDataCallsInMs = 5;
-
-// According to the linux nanosleep manpage, nanosleep on linux can miss the
-// deadline by up to 10ms because the kernel timeslice is 10ms.  This should be
-// enough to compensate for the timeslice, and any additional slowdowns.
-static const uint32 kSleepErrorMilliseconds = 10;
-
 // Set to 0 during debugging if you want error messages due to underrun
 // events or other recoverable errors.
 #if defined(NDEBUG)
@@ -155,12 +142,11 @@ AlsaPcmOutputStream::AlsaPcmOutputStream(const std::string& device_name,
       channel_layout_(params.channel_layout()),
       sample_rate_(params.sample_rate()),
       bytes_per_sample_(params.bits_per_sample() / 8),
-      bytes_per_frame_(channels_ * params.bits_per_sample() / 8),
+      bytes_per_frame_(params.GetBytesPerFrame()),
       packet_size_(params.GetBytesPerBuffer()),
-      micros_per_packet_(FramesToMicros(
-          params.frames_per_buffer(), sample_rate_)),
-      latency_micros_(std::max(AlsaPcmOutputStream::kMinLatencyMicros,
-                               micros_per_packet_ * 2)),
+      latency_(std::max(
+          base::TimeDelta::FromMicroseconds(kMinLatencyMicros),
+          FramesToTimeDelta(params.frames_per_buffer() * 2, sample_rate_))),
       bytes_per_output_frame_(bytes_per_frame_),
       alsa_buffer_frames_(0),
       stop_stream_(false),
@@ -216,14 +202,14 @@ bool AlsaPcmOutputStream::Open() {
 
   // Try to open the device.
   if (requested_device_name_ == kAutoSelectDevice) {
-    playback_handle_ = AutoSelectDevice(latency_micros_);
+    playback_handle_ = AutoSelectDevice(latency_.InMicroseconds());
     if (playback_handle_)
       DVLOG(1) << "Auto-selected device: " << device_name_;
   } else {
     device_name_ = requested_device_name_;
     playback_handle_ = alsa_util::OpenPlaybackDevice(
         wrapper_, device_name_.c_str(), channels_, sample_rate_,
-        pcm_format_, latency_micros_);
+        pcm_format_, latency_.InMicroseconds());
   }
 
   // Finish initializing the stream if the device was opened successfully.
@@ -291,35 +277,45 @@ void AlsaPcmOutputStream::Start(AudioSourceCallback* callback) {
   if (stop_stream_)
     return;
 
-  set_source_callback(callback);
-
   // Only post the task if we can enter the playing state.
-  if (TransitionTo(kIsPlaying) == kIsPlaying) {
-    // Before starting, the buffer might have audio from previous user of this
-    // device.
-    buffer_->Clear();
+  if (TransitionTo(kIsPlaying) != kIsPlaying)
+    return;
 
-    // When starting again, drop all packets in the device and prepare it again
-    // in case we are restarting from a pause state and need to flush old data.
-    int error = wrapper_->PcmDrop(playback_handle_);
-    if (error < 0 && error != -EAGAIN) {
-      LOG(ERROR) << "Failure clearing playback device ("
-                 << wrapper_->PcmName(playback_handle_) << "): "
-                 << wrapper_->StrError(error);
-      stop_stream_ = true;
-    } else {
-      error = wrapper_->PcmPrepare(playback_handle_);
-      if (error < 0 && error != -EAGAIN) {
-        LOG(ERROR) << "Failure preparing stream ("
-                   << wrapper_->PcmName(playback_handle_) << "): "
-                   << wrapper_->StrError(error);
-        stop_stream_ = true;
-      }
-    }
+  // Before starting, the buffer might have audio from previous user of this
+  // device.
+  buffer_->Clear();
 
-    if (!stop_stream_)
-      WriteTask();
+  // When starting again, drop all packets in the device and prepare it again
+  // in case we are restarting from a pause state and need to flush old data.
+  int error = wrapper_->PcmDrop(playback_handle_);
+  if (error < 0 && error != -EAGAIN) {
+    LOG(ERROR) << "Failure clearing playback device ("
+               << wrapper_->PcmName(playback_handle_) << "): "
+               << wrapper_->StrError(error);
+    stop_stream_ = true;
+    return;
   }
+
+  error = wrapper_->PcmPrepare(playback_handle_);
+  if (error < 0 && error != -EAGAIN) {
+    LOG(ERROR) << "Failure preparing stream ("
+               << wrapper_->PcmName(playback_handle_) << "): "
+               << wrapper_->StrError(error);
+    stop_stream_ = true;
+    return;
+  }
+
+  // Ensure the first buffer is silence to avoid startup glitches.
+  int buffer_size = GetAvailableFrames() * bytes_per_output_frame_;
+  scoped_refptr<DataBuffer> silent_packet = new DataBuffer(buffer_size);
+  silent_packet->SetDataSize(buffer_size);
+  memset(silent_packet->GetWritableData(), 0, silent_packet->GetDataSize());
+  buffer_->Append(silent_packet);
+  WritePacket();
+
+  // Start the callback chain.
+  set_source_callback(callback);
+  WriteTask();
 }
 
 void AlsaPcmOutputStream::Stop() {
@@ -327,6 +323,7 @@ void AlsaPcmOutputStream::Stop() {
 
   // Reset the callback, so that it is not called anymore.
   set_source_callback(NULL);
+  weak_factory_.InvalidateWeakPtrs();
 
   TransitionTo(kIsStopped);
 }
@@ -360,21 +357,15 @@ void AlsaPcmOutputStream::BufferPacket(bool* source_exhausted) {
   if (!buffer_->forward_bytes()) {
     // Before making a request to source for data we need to determine the
     // delay (in bytes) for the requested data to be played.
-
-    uint32 buffer_delay = buffer_->forward_bytes() * bytes_per_frame_ /
-        bytes_per_output_frame_;
-
-    uint32 hardware_delay = GetCurrentDelay() * bytes_per_frame_;
+    const uint32 hardware_delay = GetCurrentDelay() * bytes_per_frame_;
 
     scoped_refptr<media::DataBuffer> packet =
         new media::DataBuffer(packet_size_);
     int frames_filled = RunDataCallback(
-        audio_bus_.get(), AudioBuffersState(buffer_delay, hardware_delay));
+        audio_bus_.get(), AudioBuffersState(0, hardware_delay));
+
     size_t packet_size = frames_filled * bytes_per_frame_;
     DCHECK_LE(packet_size, packet_size_);
-
-    // Reset the |last_fill_time| to avoid back to back RunDataCallback().
-    last_fill_time_ = base::Time::Now();
 
     // TODO(dalecurtis): Channel downmixing, upmixing, should be done in mixer;
     // volume adjust should use SSE optimized vector_fmul() prior to interleave.
@@ -428,6 +419,9 @@ void AlsaPcmOutputStream::WritePacket() {
     snd_pcm_sframes_t frames = std::min(
         static_cast<snd_pcm_sframes_t>(buffer_size / bytes_per_output_frame_),
         GetAvailableFrames());
+
+    if (!frames)
+      return;
 
     snd_pcm_sframes_t frames_written =
         wrapper_->PcmWritei(playback_handle_, buffer_data, frames);
@@ -483,74 +477,47 @@ void AlsaPcmOutputStream::WriteTask() {
 void AlsaPcmOutputStream::ScheduleNextWrite(bool source_exhausted) {
   DCHECK(IsOnAudioThread());
 
-  if (stop_stream_)
+  if (stop_stream_ || state() != kIsPlaying)
     return;
 
   const uint32 kTargetFramesAvailable = alsa_buffer_frames_ / 2;
   uint32 available_frames = GetAvailableFrames();
-  uint32 frames_in_buffer = buffer_->forward_bytes() / bytes_per_output_frame_;
 
-  // Next write is initially scheduled for the moment when half of a packet
-  // has been played out.
-  uint32 next_fill_time_ms =
-      FramesToMillis(frames_per_packet_ / 2, sample_rate_);
-
-  if (frames_in_buffer && available_frames) {
-    // There is data in the current buffer, consume them immediately once we
-    // have enough space in the soundcard.
-    if (frames_in_buffer <= available_frames)
-      next_fill_time_ms = 0;
+  base::TimeDelta next_fill_time;
+  if (buffer_->forward_bytes() && available_frames) {
+    // If we've got data available and ALSA has room, deliver it immediately.
+    next_fill_time = base::TimeDelta();
+  } else if (buffer_->forward_bytes()) {
+    // If we've got data available and no room, poll until room is available.
+    // Polling in this manner allows us to ensure a more consistent callback
+    // schedule.  In testing this yields a variance of +/- 5ms versus the non-
+    // polling strategy which is around +/- 30ms and bimodal.
+    next_fill_time = base::TimeDelta::FromMilliseconds(5);
+  } else if (available_frames < kTargetFramesAvailable) {
+    // Schedule the next write for the moment when the available buffer of the
+    // sound card hits |kTargetFramesAvailable|.
+    next_fill_time = FramesToTimeDelta(
+        kTargetFramesAvailable - available_frames, sample_rate_);
+  } else if (!source_exhausted) {
+    // The sound card has |kTargetFramesAvailable| or more frames available.
+    // Invoke the next write immediately to avoid underrun.
+    next_fill_time = base::TimeDelta();
   } else {
-    // Otherwise schedule the next write for the moment when the available
-    // buffer of the soundcards hits the |kTargetFramesAvailable|.
-    if (available_frames < kTargetFramesAvailable) {
-      uint32 frames_until_empty_enough =
-          kTargetFramesAvailable - available_frames;
-      next_fill_time_ms =
-          FramesToMillis(frames_until_empty_enough, sample_rate_);
-
-      // Adjust for the kernel timeslice and any additional slowdown.
-      // TODO(xians): Remove this adjustment if it is not required by
-      // low performance machines any more.
-      if (next_fill_time_ms > kSleepErrorMilliseconds)
-        next_fill_time_ms -= kSleepErrorMilliseconds;
-      else
-        next_fill_time_ms = 0;
-    } else {
-      // The sound card has |kTargetFramesAvailable| or more frames available.
-      // Invoke the next write immediately to avoid underrun.
-      next_fill_time_ms = 0;
-    }
-
-    // Avoid back-to-back writing.
-    base::TimeDelta delay = base::Time::Now() - last_fill_time_;
-    if (delay.InMilliseconds() < kMinIntervalBetweenOnMoreDataCallsInMs &&
-        next_fill_time_ms < kMinIntervalBetweenOnMoreDataCallsInMs)
-      next_fill_time_ms = kMinIntervalBetweenOnMoreDataCallsInMs;
+    // The sound card has frames available, but our source is exhausted, so
+    // avoid busy looping by delaying a bit.
+    next_fill_time = base::TimeDelta::FromMilliseconds(10);
   }
 
-  // Avoid busy looping if the data source is exhausted.
-  if (source_exhausted)
-    next_fill_time_ms = std::max(next_fill_time_ms, kNoDataSleepMilliseconds);
-
-  // Only schedule more reads/writes if we are still in the playing state.
-  if (state() == kIsPlaying) {
-    message_loop_->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&AlsaPcmOutputStream::WriteTask,
-                   weak_factory_.GetWeakPtr()),
-                   base::TimeDelta::FromMilliseconds(next_fill_time_ms));
-  }
+  message_loop_->PostDelayedTask(FROM_HERE, base::Bind(
+      &AlsaPcmOutputStream::WriteTask, weak_factory_.GetWeakPtr()),
+      next_fill_time);
 }
 
-uint32 AlsaPcmOutputStream::FramesToMicros(uint32 frames,
-                                           uint32 sample_rate) {
-  return frames * base::Time::kMicrosecondsPerSecond / sample_rate;
-}
-
-uint32 AlsaPcmOutputStream::FramesToMillis(uint32 frames,
-                                           uint32 sample_rate) {
-  return frames * base::Time::kMillisecondsPerSecond / sample_rate;
+// static
+base::TimeDelta AlsaPcmOutputStream::FramesToTimeDelta(int frames,
+                                                       double sample_rate) {
+  return base::TimeDelta::FromMicroseconds(
+      frames * base::Time::kMicrosecondsPerSecond / sample_rate);
 }
 
 std::string AlsaPcmOutputStream::FindDeviceForChannels(uint32 channels) {
@@ -623,10 +590,18 @@ snd_pcm_sframes_t AlsaPcmOutputStream::GetCurrentDelay() {
     }
   }
 
-  // snd_pcm_delay() sometimes returns crazy values. In this case return delay
-  // of data we know currently is in ALSA's buffer.
-  if (delay < 0 || static_cast<snd_pcm_uframes_t>(delay) > alsa_buffer_frames_)
+  // snd_pcm_delay() sometimes returns crazy values.  In this case return delay
+  // of data we know currently is in ALSA's buffer.  Note: When the underlying
+  // driver is PulseAudio based, certain configuration settings (e.g., tsched=1)
+  // will generate much larger delay values than |alsa_buffer_frames_|, so only
+  // clip if delay is truly crazy (> 10x expected).
+  if (static_cast<snd_pcm_uframes_t>(delay) > alsa_buffer_frames_ * 10) {
     delay = alsa_buffer_frames_ - GetAvailableFrames();
+  }
+
+  if (delay < 0) {
+    delay = 0;
+  }
 
   return delay;
 }
@@ -650,7 +625,7 @@ snd_pcm_sframes_t AlsaPcmOutputStream::GetAvailableFrames() {
                << wrapper_->StrError(available_frames);
     return 0;
   }
-  if (static_cast<uint32>(available_frames) > alsa_buffer_frames_) {
+  if (static_cast<uint32>(available_frames) > alsa_buffer_frames_ * 2) {
     LOG(ERROR) << "ALSA returned " << available_frames << " of "
                << alsa_buffer_frames_ << " frames available.";
     return alsa_buffer_frames_;
@@ -775,8 +750,10 @@ int AlsaPcmOutputStream::RunDataCallback(AudioBus* audio_bus,
                                          AudioBuffersState buffers_state) {
   TRACE_EVENT0("audio", "AlsaPcmOutputStream::RunDataCallback");
 
-  if (source_callback_)
+  if (source_callback_) {
+    source_callback_->WaitTillDataReady();
     return source_callback_->OnMoreData(audio_bus, buffers_state);
+  }
 
   return 0;
 }
