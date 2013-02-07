@@ -186,6 +186,7 @@
       'webapp/plugin_settings.js',
       'webapp/xhr_proxy.js',
       'webapp/remoting.js',
+      'webapp/session_connector.js',
       'webapp/server_log_entry.js',
       'webapp/stats_accumulator.js',
       'webapp/storage.js',

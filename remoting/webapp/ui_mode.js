@@ -149,7 +149,7 @@ remoting.showOrHideCallback = function(mode, items) {
   document.getElementById(mode + '-content').hidden = !visited;
 };
 
-remoting.showOrHideIt2MeUi = function() {
+remoting.showOrHideIT2MeUi = function() {
   chrome.storage.local.get('it2me-visited',
                            remoting.showOrHideCallback.bind(null, 'it2me'));
 };
@@ -159,7 +159,7 @@ remoting.showOrHideMe2MeUi = function() {
                            remoting.showOrHideCallback.bind(null, 'me2me'));
 };
 
-remoting.showIt2MeUiAndSave = function() {
+remoting.showIT2MeUiAndSave = function() {
   var items = {};
   items['it2me-visited'] = true;
   chrome.storage.local.set(items);

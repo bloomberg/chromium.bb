@@ -64,7 +64,7 @@ remoting.init = function() {
 
   remoting.identity.getEmail(remoting.onEmail, remoting.showErrorMessage);
 
-  remoting.showOrHideIt2MeUi();
+  remoting.showOrHideIT2MeUi();
   remoting.showOrHideMe2MeUi();
 
   // The plugin's onFocus handler sends a paste command to |window|, because
@@ -88,7 +88,7 @@ remoting.init = function() {
     if ('mode' in urlParams) {
       if (urlParams['mode'] == 'me2me') {
         var hostId = urlParams['hostId'];
-        remoting.connectMe2Me(hostId, true);
+        remoting.connectMe2Me(hostId);
         return;
       }
     }
@@ -166,14 +166,15 @@ remoting.logExtensionInfoAsync_ = function() {
 };
 
 /**
- * If an It2Me client or host is active then prompt the user before closing.
+ * If an IT2Me client or host is active then prompt the user before closing.
  * If a Me2Me client is active then don't bother, since closing the window is
  * the more intuitive way to end a Me2Me session, and re-connecting is easy.
  *
  * @return {?string} The prompt string if a connection is active.
  */
 remoting.promptClose = function() {
-  if (remoting.currentConnectionType == remoting.ClientSession.Mode.ME2ME) {
+  if (!remoting.clientSession ||
+      remoting.clientSession.mode == remoting.ClientSession.Mode.ME2ME) {
     return null;
   }
   switch (remoting.currentMode) {

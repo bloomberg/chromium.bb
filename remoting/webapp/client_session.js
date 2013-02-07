@@ -34,15 +34,11 @@ var remoting = remoting || {};
  * @param {string} hostId The host identifier for Me2Me, or empty for IT2Me.
  *     Mixed into authentication hashes for some authentication methods.
  * @param {remoting.ClientSession.Mode} mode The mode of this connection.
- * @param {function(remoting.ClientSession.State,
-                    remoting.ClientSession.State):void} onStateChange
- *     The callback to invoke when the session changes state.
  * @constructor
  */
 remoting.ClientSession = function(hostJid, clientJid,
                                   hostPublicKey, sharedSecret,
-                                  authenticationMethods, hostId,
-                                  mode, onStateChange) {
+                                  authenticationMethods, hostId, mode) {
   this.state = remoting.ClientSession.State.CREATED;
 
   this.hostJid = hostJid;
@@ -51,6 +47,7 @@ remoting.ClientSession = function(hostJid, clientJid,
   this.sharedSecret = sharedSecret;
   this.authenticationMethods = authenticationMethods;
   this.hostId = hostId;
+  /** @type {remoting.ClientSession.Mode} */
   this.mode = mode;
   this.sessionId = '';
   /** @type {remoting.ClientPlugin} */
@@ -62,7 +59,9 @@ remoting.ClientSession = function(hostJid, clientJid,
   /** @private */
   this.hasReceivedFrame_ = false;
   this.logToServer = new remoting.LogToServer();
-  this.onStateChange = onStateChange;
+  /** @type {?function(remoting.ClientSession.State,
+                       remoting.ClientSession.State):void} */
+  this.onStateChange_ = null;
 
   /** @type {number?} @private */
   this.notifyClientDimensionsTimer_ = null;
@@ -118,9 +117,18 @@ remoting.ClientSession = function(hostJid, clientJid,
       'click', this.callToggleFullScreen_, false);
 };
 
+/**
+ * @param {?function(remoting.ClientSession.State,
+                     remoting.ClientSession.State):void} onStateChange
+ *     The callback to invoke when the session changes state.
+ */
+remoting.ClientSession.prototype.setOnStateChange = function(onStateChange) {
+  this.onStateChange_ = onStateChange;
+};
+
 // Note that the positive values in both of these enums are copied directly
 // from chromoting_scriptable_object.h and must be kept in sync. The negative
-// values represent states transitions that occur within the web-app that have
+// values represent state transitions that occur within the web-app that have
 // no corresponding plugin state transition.
 /** @enum {number} */
 remoting.ClientSession.State = {
@@ -197,8 +205,9 @@ remoting.ClientSession.prototype.state = remoting.ClientSession.State.UNKNOWN;
 /**
  * The last connection error. Set when state is set to FAILED.
  * @type {remoting.ClientSession.ConnectionError}
+ * @private
  */
-remoting.ClientSession.prototype.error =
+remoting.ClientSession.prototype.error_ =
     remoting.ClientSession.ConnectionError.NONE;
 
 /**
@@ -207,15 +216,6 @@ remoting.ClientSession.prototype.error =
  * @const
  */
 remoting.ClientSession.prototype.PLUGIN_ID = 'session-client-plugin';
-
-/**
- * Callback to invoke when the state is changed.
- *
- * @param {remoting.ClientSession.State} oldState The previous state.
- * @param {remoting.ClientSession.State} newState The current state.
- */
-remoting.ClientSession.prototype.onStateChange =
-    function(oldState, newState) { };
 
 /**
  * @param {Element} container The element to add the plugin to.
@@ -408,6 +408,27 @@ remoting.ClientSession.prototype.disconnect = function(isUserInitiated) {
         '</jingle>' +
       '</cli:iq>');
   this.removePlugin();
+};
+
+/**
+ * @return {?remoting.Error} The current error code, or null if the connection
+ *     is not in an error state.
+ */
+remoting.ClientSession.prototype.getError = function() {
+  switch (this.error_) {
+    case remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE:
+      return remoting.Error.HOST_IS_OFFLINE;
+    case remoting.ClientSession.ConnectionError.SESSION_REJECTED:
+      return remoting.Error.INVALID_ACCESS_CODE;
+    case remoting.ClientSession.ConnectionError.INCOMPATIBLE_PROTOCOL:
+      return remoting.Error.INCOMPATIBLE_PROTOCOL;
+    case remoting.ClientSession.ConnectionError.NETWORK_FAILURE:
+      return remoting.Error.NETWORK_FAILURE;
+    case remoting.ClientSession.ConnectionError.HOST_OVERLOAD:
+      return remoting.Error.HOST_OVERLOAD;
+    default:
+      return null;
+  }
 };
 
 /**
@@ -609,7 +630,7 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
       this.plugin.notifyClientDimensions(window.innerWidth, window.innerHeight);
     }
   } else if (status == remoting.ClientSession.State.FAILED) {
-    this.error = /** @type {remoting.ClientSession.ConnectionError} */ (error);
+    this.error_ = /** @type {remoting.ClientSession.ConnectionError} */ (error);
   }
   this.setState_(/** @type {remoting.ClientSession.State} */ (status));
 };
@@ -642,9 +663,9 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
     if (this.state == remoting.ClientSession.State.CLOSED) {
       state = remoting.ClientSession.State.CONNECTION_CANCELED;
     } else if (this.state == remoting.ClientSession.State.FAILED &&
-        this.error == remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE &&
+        this.error_ == remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE &&
         !this.logHostOfflineErrors_) {
-      // The upper layer requested host-offline errors to be suppressed, for
+      // The application requested host-offline errors to be suppressed, for
       // example, because this connection attempt is using a cached host JID.
       console.log('Suppressing host-offline error.');
       state = remoting.ClientSession.State.CONNECTION_CANCELED;
@@ -653,9 +674,9 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
              this.state == remoting.ClientSession.State.FAILED) {
     state = remoting.ClientSession.State.CONNECTION_DROPPED;
   }
-  this.logToServer.logClientSessionStateChange(state, this.error, this.mode);
-  if (this.onStateChange) {
-    this.onStateChange(oldState, newState);
+  this.logToServer.logClientSessionStateChange(state, this.error_, this.mode);
+  if (this.onStateChange_) {
+    this.onStateChange_(oldState, newState);
   }
 };
 
