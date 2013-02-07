@@ -40,6 +40,7 @@ const char kForgetCommand[] = "forget";
 // |SendDeviceNotification| may include a pairing parameter whose value
 // is one of the following constants instructing the UI to perform a certain
 // action.
+const char kStartConnecting[] = "bluetoothStartConnecting";
 const char kEnterPinCode[] = "bluetoothEnterPinCode";
 const char kEnterPasskey[] = "bluetoothEnterPasskey";
 const char kRemotePinCode[] = "bluetoothRemotePinCode";
@@ -264,6 +265,7 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
       args->GetString(kUpdateDeviceAuthTokenIndex, &auth_token);
 
       if (device->ExpectingPinCode()) {
+        DeviceConnecting(device);
         // PIN Code is an array of 1 to 16 8-bit bytes, the usual
         // interpretation, and the one shared by BlueZ, is a UTF-8 string
         // of as many characters that will fit in that space, thus we
@@ -271,6 +273,7 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
         DVLOG(1) << "PIN Code supplied: " << address << ": " << auth_token;
         device->SetPinCode(auth_token);
       } else if (device->ExpectingPasskey()) {
+        DeviceConnecting(device);
         // Passkey is a numeric in the range 0-999999, in this case the
         // JavaScript code should have ensured the auth token string only
         // contains digits so a simple conversion is sufficient. In the
@@ -407,9 +410,8 @@ void BluetoothOptionsHandler::SendDeviceNotification(
   js_properties.SetBoolean("paired", device->IsPaired());
   js_properties.SetBoolean("bonded", device->IsBonded());
   js_properties.SetBoolean("connected", device->IsConnected());
-  if (params) {
+  if (params)
     js_properties.MergeDictionary(params);
-  }
   web_ui()->CallJavascriptFunction(
       "options.BrowserOptions.addBluetoothDevice",
       js_properties);
@@ -490,6 +492,14 @@ void BluetoothOptionsHandler::DeviceRemoved(device::BluetoothAdapter* adapter,
   web_ui()->CallJavascriptFunction(
       "options.BrowserOptions.removeBluetoothDevice",
       address);
+}
+
+void BluetoothOptionsHandler::DeviceConnecting(
+    device::BluetoothDevice* device) {
+  DCHECK(device);
+  DictionaryValue params;
+  params.SetString("pairing", kStartConnecting);
+  SendDeviceNotification(device, &params);
 }
 
 }  // namespace options

@@ -135,6 +135,9 @@ class BluetoothOptionsHandler
                              device::BluetoothDevice* device) OVERRIDE;
 
  private:
+  // Displays in the UI a connecting to the device |device| message.
+  void DeviceConnecting(device::BluetoothDevice* device);
+
   // Called by device::BluetoothAdapter in response to a failure to
   // change the power status of the adapter.
   void EnableChangeError();
