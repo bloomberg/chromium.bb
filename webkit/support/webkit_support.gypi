@@ -21,6 +21,7 @@
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/third_party/hyphen/hyphen.gyp:hyphen',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
+        '<(DEPTH)/ui/ui.gyp:shell_dialogs',
         '<(DEPTH)/ui/ui.gyp:ui',
         'glue',
         'user_agent',

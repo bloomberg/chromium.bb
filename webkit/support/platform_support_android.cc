@@ -17,6 +17,7 @@
 #include "net/android/network_library.h"
 #include "net/android/net_jni_registrar.h"
 #include "media/base/android/media_jni_registrar.h"
+#include "ui/android/ui_jni_registrar.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/support/test_webkit_platform_support.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
@@ -53,6 +54,7 @@ void BeforeInitialize(bool unit_test_mode) {
   if (!unit_test_mode) {
     media::RegisterJni(env);
     net::android::RegisterJni(env);
+    ui::android::RegisterJni(env);
   }
 }
 
