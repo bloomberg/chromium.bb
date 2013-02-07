@@ -551,25 +551,25 @@ TEST_F(TranslateManagerTest, TestAllLanguages) {
   // kSupportedLanguages.
   bool kExpectations[] = {
     // 0-9
-    false, true, true, true, true, true, true, true, true, true,
+    false, true, true, true, true, true, false, true, true, true,
     // 10-19
-    true, true, true, true, true, true, true, true, true, true,
+    false, true, true, true, true, true, true, true, true, true,
     // 20-29
     true, true, true, true, true, false, false, true, true, true,
     // 30-39
-    true, true, true, true, true, true, true, false, true, false,
+    true, true, false, true, true, true, true, false, true, false,
     // 40-49
     true, false, true, false, false, true, false, true, false, false,
     // 50-59
-    true, false, false, true, true, true, false, true, false, false,
+    false, false, false, true, true, true, true, false, false, false,
     // 60-69
     false, false, true, true, false, true, true, false, true, true,
     // 70-79
-    false, false, false, false, true, true, false, true, false, false,
+    false, false, false, false, false, false, false, true, false, false,
     // 80-89
     false, true, true, false, false, false, false, false, false, false,
     // 90-99
-    false, true, false, false, false, false, false, true, false, false,
+    false, true, false, false, false, false, false, false, false, false,
     // 100-109
     false, true, false, false, false, false, false, false, false, false,
     // 110-119

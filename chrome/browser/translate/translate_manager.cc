@@ -77,11 +77,8 @@ namespace {
 // te Telugu
 const char* const kDefaultSupportedLanguages[] = {
     "af",     // Afrikaans
-    "az",     // Azerbaijani
     "sq",     // Albanian
     "ar",     // Arabic
-    "hy",     // Armenian
-    "eu",     // Basque
     "be",     // Belarusian
     "bg",     // Bulgarian
     "ca",     // Catalan
@@ -92,32 +89,30 @@ const char* const kDefaultSupportedLanguages[] = {
     "da",     // Danish
     "nl",     // Dutch
     "en",     // English
+    "eo",     // Esperanto
     "et",     // Estonian
+    "tl",     // Filipino
     "fi",     // Finnish
-    "fil",    // Filipino
     "fr",     // French
     "gl",     // Galician
     "de",     // German
     "el",     // Greek
     "ht",     // Haitian Creole
-    "he",     // Hebrew
-    "iw",     // Hebrew Synonym
+    "iw",     // Hebrew
     "hi",     // Hindi
     "hu",     // Hungarian
     "is",     // Icelandic
     "id",     // Indonesian
-    "it",     // Italian
     "ga",     // Irish
+    "it",     // Italian
     "ja",     // Japanese
-    "ka",     // Georgian
     "ko",     // Korean
     "lv",     // Latvian
     "lt",     // Lithuanian
     "mk",     // Macedonian
     "ms",     // Malay
     "mt",     // Maltese
-    "nb",     // Norwegian
-    "no",     // Norwegian synonym
+    "no",     // Norwegian
     "fa",     // Persian
     "pl",     // Polish
     "pt",     // Portuguese
@@ -132,7 +127,6 @@ const char* const kDefaultSupportedLanguages[] = {
     "th",     // Thai
     "tr",     // Turkish
     "uk",     // Ukrainian
-    "ur",     // Urdu
     "vi",     // Vietnamese
     "cy",     // Welsh
     "yi",     // Yiddish
