@@ -66,7 +66,7 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
     return true;
   }
 
-  FilePath generated_name = net::GenerateFileName(
+  base::FilePath generated_name = net::GenerateFileName(
       download->GetURL(),
       download->GetContentDisposition(),
       EmptyString(),
@@ -87,13 +87,13 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
 void ShellDownloadManagerDelegate::GenerateFilename(
     int32 download_id,
     const DownloadTargetCallback& callback,
-    const FilePath& generated_name,
-    const FilePath& suggested_directory) {
+    const base::FilePath& generated_name,
+    const base::FilePath& suggested_directory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!file_util::PathExists(suggested_directory))
     file_util::CreateDirectory(suggested_directory);
 
-  FilePath suggested_path(suggested_directory.Append(generated_name));
+  base::FilePath suggested_path(suggested_directory.Append(generated_name));
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -105,7 +105,7 @@ void ShellDownloadManagerDelegate::GenerateFilename(
 void ShellDownloadManagerDelegate::OnDownloadPathGenerated(
     int32 download_id,
     const DownloadTargetCallback& callback,
-    const FilePath& suggested_path) {
+    const base::FilePath& suggested_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (suppress_prompting_) {
     // Testing exit.
@@ -121,15 +121,15 @@ void ShellDownloadManagerDelegate::OnDownloadPathGenerated(
 void ShellDownloadManagerDelegate::ChooseDownloadPath(
     int32 download_id,
     const DownloadTargetCallback& callback,
-    const FilePath& suggested_path) {
+    const base::FilePath& suggested_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadItem* item = download_manager_->GetDownload(download_id);
   if (!item || (item->GetState() != DownloadItem::IN_PROGRESS))
     return;
 
-  FilePath result;
+  base::FilePath result;
 #if defined(OS_WIN) && !defined(USE_AURA)
-  std::wstring file_part = FilePath(suggested_path).BaseName().value();
+  std::wstring file_part = base::FilePath(suggested_path).BaseName().value();
   wchar_t file_name[MAX_PATH];
   base::wcslcpy(file_name, file_part.c_str(), arraysize(file_name));
   OPENFILENAME save_as;
@@ -148,11 +148,11 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
                   OFN_NOCHANGEDIR | OFN_PATHMUSTEXIST;
 
   if (GetSaveFileName(&save_as))
-    result = FilePath(std::wstring(save_as.lpstrFile));
+    result = base::FilePath(std::wstring(save_as.lpstrFile));
 #elif defined(TOOLKIT_GTK)
   GtkWidget *dialog;
   gfx::NativeWindow parent_window;
-  std::string base_name = FilePath(suggested_path).BaseName().value();
+  std::string base_name = base::FilePath(suggested_path).BaseName().value();
 
   parent_window = item->GetWebContents()->GetView()->GetTopLevelNativeWindow();
   dialog = gtk_file_chooser_dialog_new("Save File",
@@ -169,7 +169,7 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
     char *filename;
     filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-    result = FilePath(filename);
+    result = base::FilePath(filename);
   }
   gtk_widget_destroy(dialog);
 #else
@@ -181,7 +181,7 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
 }
 
 void ShellDownloadManagerDelegate::SetDownloadBehaviorForTesting(
-    const FilePath& default_download_path) {
+    const base::FilePath& default_download_path) {
   default_download_path_ = default_download_path;
   suppress_prompting_ = true;
 }

@@ -31,7 +31,7 @@ WebContentsView* TestContentBrowserClient::OverrideCreateWebContentsView(
 #endif
 }
 
-FilePath TestContentBrowserClient::GetDefaultDownloadDirectory() {
+base::FilePath TestContentBrowserClient::GetDefaultDownloadDirectory() {
   if (!download_dir_.IsValid()) {
     bool result = download_dir_.CreateUniqueTempDir();
     CHECK(result);

@@ -31,13 +31,13 @@ bool ShellMessageFilter::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
-void ShellMessageFilter::OnReadFileToString(const FilePath& local_file,
+void ShellMessageFilter::OnReadFileToString(const base::FilePath& local_file,
                                             std::string* contents) {
   file_util::ReadFileToString(local_file, contents);
 }
 
 void ShellMessageFilter::OnRegisterIsolatedFileSystem(
-    const std::vector<FilePath>& absolute_filenames,
+    const std::vector<base::FilePath>& absolute_filenames,
     std::string* filesystem_id) {
   fileapi::IsolatedContext::FileInfoSet files;
   ChildProcessSecurityPolicy* policy =

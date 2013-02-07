@@ -44,18 +44,18 @@ class ShellRenderProcessObserver : public RenderProcessObserver {
     return test_delegate_;
   }
   WebKitTestRunner* main_test_runner() const { return main_test_runner_; }
-  const FilePath& webkit_source_dir() const { return webkit_source_dir_; }
+  const base::FilePath& webkit_source_dir() const { return webkit_source_dir_; }
 
  private:
   // Message handlers.
   void OnResetAll();
-  void OnSetWebKitSourceDir(const FilePath& webkit_source_dir);
+  void OnSetWebKitSourceDir(const base::FilePath& webkit_source_dir);
 
   RenderView* main_render_view_;
   WebKitTestRunner* main_test_runner_;
   WebTestRunner::WebTestDelegate* test_delegate_;
 
-  FilePath webkit_source_dir_;
+  base::FilePath webkit_source_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellRenderProcessObserver);
 };

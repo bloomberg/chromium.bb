@@ -336,8 +336,8 @@ void WebRTCAudioDeviceTest::WaitForMessageLoopCompletion(
 }
 
 std::string WebRTCAudioDeviceTest::GetTestDataPath(
-    const FilePath::StringType& file_name) {
-  FilePath path;
+    const base::FilePath::StringType& file_name) {
+  base::FilePath path;
   EXPECT_TRUE(PathService::Get(DIR_TEST_DATA, &path));
   path = path.Append(file_name);
   EXPECT_TRUE(file_util::PathExists(path));

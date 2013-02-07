@@ -56,8 +56,8 @@ bool ShellDevToolsDelegate::BundlesFrontendResources() {
   return true;
 }
 
-FilePath ShellDevToolsDelegate::GetDebugFrontendDir() {
-  return FilePath();
+base::FilePath ShellDevToolsDelegate::GetDebugFrontendDir() {
+  return base::FilePath();
 }
 
 std::string ShellDevToolsDelegate::GetPageThumbnailData(const GURL& url) {

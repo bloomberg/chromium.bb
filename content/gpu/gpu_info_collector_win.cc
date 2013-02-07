@@ -67,18 +67,18 @@ content::GpuPerformanceStats RetrieveGpuPerformanceStats() {
 
   // Find most recent formal assessment results.
   file_util::FileEnumerator file_enumerator(
-      FilePath(winsat_results_path),
+      base::FilePath(winsat_results_path),
       false,  // not recursive
       file_util::FileEnumerator::FILES,
       FILE_PATH_LITERAL("* * Formal.Assessment (*).WinSAT.xml"));
 
-  FilePath current_results;
-  for (FilePath results = file_enumerator.Next(); !results.empty();
+  base::FilePath current_results;
+  for (base::FilePath results = file_enumerator.Next(); !results.empty();
        results = file_enumerator.Next()) {
     // The filenames start with the date and time as yyyy-mm-dd hh.mm.ss.xxx,
     // so the greatest file lexicographically is also the most recent file.
-    if (FilePath::CompareLessIgnoreCase(current_results.value(),
-                                        results.value()))
+    if (base::FilePath::CompareLessIgnoreCase(current_results.value(),
+                                              results.value()))
       current_results = results;
   }
 

@@ -22,7 +22,7 @@ class URLRequestPrepackagedJob : public net::URLRequestFileJob {
  public:
   URLRequestPrepackagedJob(net::URLRequest* request,
                            net::NetworkDelegate* network_delegate,
-                           const FilePath& file_path)
+                           const base::FilePath& file_path)
       : net::URLRequestFileJob(request, network_delegate, file_path) {}
 
   virtual int GetResponseCode() const { return 200; }
@@ -56,7 +56,7 @@ class URLRequestPrepackagedInterceptor::Delegate
   // hostname of |url| must be "localhost" to avoid DNS lookups, and the scheme
   // must be "http".
   void SetResponse(const GURL& url,
-                   const FilePath& path,
+                   const base::FilePath& path,
                    bool ignore_query) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     // It's ok to do a blocking disk access on this thread; this class
@@ -77,7 +77,7 @@ class URLRequestPrepackagedInterceptor::Delegate
   }
 
  private:
-  typedef std::map<GURL, FilePath> ResponseMap;
+  typedef std::map<GURL, base::FilePath> ResponseMap;
 
   // When computing matches, this ignores the query parameters of the url.
   virtual net::URLRequestJob* MaybeCreateJob(
@@ -135,7 +135,7 @@ URLRequestPrepackagedInterceptor::~URLRequestPrepackagedInterceptor() {
 }
 
 void URLRequestPrepackagedInterceptor::SetResponse(const GURL& url,
-                                                   const FilePath& path) {
+                                                   const base::FilePath& path) {
   CHECK_EQ("http", url.scheme());
   CHECK_EQ("localhost", url.host());
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -146,7 +146,7 @@ void URLRequestPrepackagedInterceptor::SetResponse(const GURL& url,
 
 void URLRequestPrepackagedInterceptor::SetResponseIgnoreQuery(
     const GURL& url,
-    const FilePath& path) {
+    const base::FilePath& path) {
   CHECK_EQ("http", url.scheme());
   CHECK_EQ("localhost", url.host());
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,

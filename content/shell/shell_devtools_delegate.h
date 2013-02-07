@@ -27,7 +27,7 @@ class ShellDevToolsDelegate : public DevToolsHttpHandlerDelegate {
   // DevToolsHttpProtocolHandler::Delegate overrides.
   virtual std::string GetDiscoveryPageHTML() OVERRIDE;
   virtual bool BundlesFrontendResources() OVERRIDE;
-  virtual FilePath GetDebugFrontendDir() OVERRIDE;
+  virtual base::FilePath GetDebugFrontendDir() OVERRIDE;
   virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE;
   virtual RenderViewHost* CreateNewTarget() OVERRIDE;
   virtual TargetType GetTargetType(RenderViewHost*) OVERRIDE;

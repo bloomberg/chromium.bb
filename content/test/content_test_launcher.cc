@@ -112,7 +112,7 @@ class ContentTestLauncherDelegate : public TestLauncherDelegate {
   }
 
   virtual bool AdjustChildProcessCommandLine(
-      CommandLine* command_line, const FilePath& temp_data_dir) OVERRIDE {
+      CommandLine* command_line, const base::FilePath& temp_data_dir) OVERRIDE {
     command_line->AppendSwitchPath(switches::kContentShellDataPath,
                                    temp_data_dir);
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);

@@ -56,7 +56,7 @@ void ShellBrowserContext::InitWhileIOAllowed() {
   path_ = path_.Append(std::wstring(L"content_shell"));
 #elif defined(OS_LINUX)
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  FilePath config_dir(
+  base::FilePath config_dir(
       base::nix::GetXDGDirectory(env.get(),
                                  base::nix::kXdgConfigHomeEnvVar,
                                  base::nix::kDotConfigDir));
@@ -75,7 +75,7 @@ void ShellBrowserContext::InitWhileIOAllowed() {
     file_util::CreateDirectory(path_);
 }
 
-FilePath ShellBrowserContext::GetPath() {
+base::FilePath ShellBrowserContext::GetPath() {
   return path_;
 }
 
@@ -129,14 +129,14 @@ net::URLRequestContextGetter*
 
 net::URLRequestContextGetter*
     ShellBrowserContext::GetMediaRequestContextForStoragePartition(
-        const FilePath& partition_path,
+        const base::FilePath& partition_path,
         bool in_memory) {
   return GetRequestContext();
 }
 
 net::URLRequestContextGetter*
     ShellBrowserContext::GetRequestContextForStoragePartition(
-        const FilePath& partition_path,
+        const base::FilePath& partition_path,
         bool in_memory) {
   return NULL;
 }

@@ -149,7 +149,7 @@ class WebRTCAudioDeviceTest : public ::testing::Test, public IPC::Listener {
     return *media_internals_.get();
   }
 
-  std::string GetTestDataPath(const FilePath::StringType& file_name);
+  std::string GetTestDataPath(const base::FilePath::StringType& file_name);
 
   scoped_ptr<ReplaceContentClientRenderer> saved_content_renderer_;
   MessageLoopForUI message_loop_;

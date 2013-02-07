@@ -65,7 +65,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   scoped_ptr<ShellResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
 
-  FilePath webkit_source_dir_;
+  base::FilePath webkit_source_dir_;
 
   ShellBrowserMainParts* shell_browser_main_parts_;
 };

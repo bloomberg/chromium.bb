@@ -364,7 +364,7 @@ int RunZygote(const MainFunctionParams& main_function_params,
     // Each Renderer we spawn will re-attempt initialization of the media
     // libraries, at which point failure will be detected and handled, so
     // we do not need to cope with initialization failures here.
-    FilePath media_path;
+    base::FilePath media_path;
     if (PathService::Get(DIR_MEDIA_LIBS, &media_path))
       media::InitializeMediaLibrary(media_path);
   }

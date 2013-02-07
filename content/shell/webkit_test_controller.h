@@ -77,7 +77,7 @@ class WebKitTestController : public base::NonThreadSafe,
 
   // True if the controller is ready for testing.
   bool PrepareForLayoutTest(const GURL& test_url,
-                            const FilePath& current_working_directory,
+                            const base::FilePath& current_working_directory,
                             bool enable_pixel_dumping,
                             const std::string& expected_pixel_hash);
   // True if the controller was reset successfully.
@@ -99,7 +99,7 @@ class WebKitTestController : public base::NonThreadSafe,
 
   // WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void PluginCrashed(const FilePath& plugin_path,
+  virtual void PluginCrashed(const base::FilePath& plugin_path,
                              base::ProcessId plugin_pid) OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
@@ -137,7 +137,7 @@ class WebKitTestController : public base::NonThreadSafe,
 
   scoped_ptr<WebKitTestResultPrinter> printer_;
 
-  FilePath current_working_directory_;
+  base::FilePath current_working_directory_;
 
   Shell* main_window_;
 

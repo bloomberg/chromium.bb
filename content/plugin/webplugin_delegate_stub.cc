@@ -160,7 +160,7 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
   }
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  FilePath path =
+  base::FilePath path =
       command_line.GetSwitchValuePath(switches::kPluginPath);
 
   webplugin_ = new WebPluginProxy(

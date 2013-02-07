@@ -105,7 +105,7 @@ void ShellRenderProcessObserver::OnResetAll() {
 }
 
 void ShellRenderProcessObserver::OnSetWebKitSourceDir(
-    const FilePath& webkit_source_dir) {
+    const base::FilePath& webkit_source_dir) {
   webkit_source_dir_ = webkit_source_dir;
 }
 

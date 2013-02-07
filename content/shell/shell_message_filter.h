@@ -25,9 +25,10 @@ class ShellMessageFilter : public BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
-  void OnReadFileToString(const FilePath& local_file, std::string* contents);
+  void OnReadFileToString(const base::FilePath& local_file,
+                          std::string* contents);
   void OnRegisterIsolatedFileSystem(
-      const std::vector<FilePath>& absolute_filenames,
+      const std::vector<base::FilePath>& absolute_filenames,
       std::string* filesystem_id);
 
   int render_process_id_;

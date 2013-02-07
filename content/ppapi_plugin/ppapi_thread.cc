@@ -225,7 +225,7 @@ void PpapiThread::Unregister(uint32 plugin_dispatcher_id) {
   plugin_dispatchers_.erase(plugin_dispatcher_id);
 }
 
-void PpapiThread::OnLoadPlugin(const FilePath& path,
+void PpapiThread::OnLoadPlugin(const base::FilePath& path,
                                const ppapi::PpapiPermissions& permissions) {
   SavePluginName(path);
 
@@ -450,7 +450,7 @@ bool PpapiThread::SetupRendererChannel(base::ProcessId renderer_pid,
   return true;
 }
 
-void PpapiThread::SavePluginName(const FilePath& path) {
+void PpapiThread::SavePluginName(const base::FilePath& path) {
   ppapi::proxy::PluginGlobals::Get()->set_plugin_name(
       path.BaseName().AsUTF8Unsafe());
 

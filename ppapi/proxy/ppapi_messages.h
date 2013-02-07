@@ -295,7 +295,7 @@ IPC_STRUCT_TRAITS_END()
 // These are from the browser to the plugin.
 // Loads the given plugin.
 IPC_MESSAGE_CONTROL2(PpapiMsg_LoadPlugin,
-                     FilePath /* path */,
+                     base::FilePath /* path */,
                      ppapi::PpapiPermissions /* permissions */)
 
 // Creates a channel to talk to a renderer. The plugin will respond with
@@ -359,7 +359,7 @@ IPC_MESSAGE_CONTROL1(PpapiMsg_SetNetworkState,
 // for Flash.
 IPC_MESSAGE_CONTROL2(PpapiMsg_GetSitesWithData,
                      uint32 /* request_id */,
-                     FilePath /* plugin_data_path */)
+                     base::FilePath /* plugin_data_path */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_GetSitesWithDataResult,
                      uint32 /* request_id */,
                      std::vector<std::string> /* sites */)
@@ -369,7 +369,7 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_GetSitesWithDataResult,
 // for Flash.
 IPC_MESSAGE_CONTROL5(PpapiMsg_ClearSiteData,
                      uint32 /* request_id */,
-                     FilePath /* plugin_data_path */,
+                     base::FilePath /* plugin_data_path */,
                      std::string /* site */,
                      uint64 /* flags */,
                      uint64 /* max_age */)
@@ -379,14 +379,14 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_ClearSiteDataResult,
 
 IPC_MESSAGE_CONTROL2(PpapiMsg_DeauthorizeContentLicenses,
                      uint32 /* request_id */,
-                     FilePath /* plugin_data_path */)
+                     base::FilePath /* plugin_data_path */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_DeauthorizeContentLicensesResult,
                      uint32 /* request_id */,
                      bool /* success */)
 
 IPC_MESSAGE_CONTROL3(PpapiMsg_GetPermissionSettings,
                      uint32 /* request_id */,
-                     FilePath /* plugin_data_path */,
+                     base::FilePath /* plugin_data_path */,
                      PP_Flash_BrowserOperations_SettingType /* setting_type */)
 IPC_MESSAGE_CONTROL4(
     PpapiHostMsg_GetPermissionSettingsResult,
@@ -397,7 +397,7 @@ IPC_MESSAGE_CONTROL4(
 
 IPC_MESSAGE_CONTROL5(PpapiMsg_SetDefaultPermission,
                      uint32 /* request_id */,
-                     FilePath /* plugin_data_path */,
+                     base::FilePath /* plugin_data_path */,
                      PP_Flash_BrowserOperations_SettingType /* setting_type */,
                      PP_Flash_BrowserOperations_Permission /* permission */,
                      bool /* clear_site_specific */)
@@ -407,7 +407,7 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_SetDefaultPermissionResult,
 
 IPC_MESSAGE_CONTROL4(PpapiMsg_SetSitePermission,
                      uint32 /* request_id */,
-                     FilePath /* plugin_data_path */,
+                     base::FilePath /* plugin_data_path */,
                      PP_Flash_BrowserOperations_SettingType /* setting_type */,
                      ppapi::FlashSiteSettings /* sites */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_SetSitePermissionResult,

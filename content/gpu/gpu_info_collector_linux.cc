@@ -31,8 +31,8 @@ namespace {
 // This checks if a system supports PCI bus.
 // We check the existence of /sys/bus/pci or /sys/bug/pci_express.
 bool IsPciSupported() {
-  const FilePath pci_path("/sys/bus/pci/");
-  const FilePath pcie_path("/sys/bus/pci_express/");
+  const base::FilePath pci_path("/sys/bus/pci/");
+  const base::FilePath pcie_path("/sys/bus/pci_express/");
   return (file_util::PathExists(pci_path) ||
           file_util::PathExists(pcie_path));
 }
@@ -40,9 +40,9 @@ bool IsPciSupported() {
 // Scan /etc/ati/amdpcsdb.default for "ReleaseVersion".
 // Return empty string on failing.
 std::string CollectDriverVersionATI() {
-  const FilePath::CharType kATIFileName[] =
+  const base::FilePath::CharType kATIFileName[] =
       FILE_PATH_LITERAL("/etc/ati/amdpcsdb.default");
-  FilePath ati_file_path(kATIFileName);
+  base::FilePath ati_file_path(kATIFileName);
   if (!file_util::PathExists(ati_file_path))
     return std::string();
   std::string contents;

@@ -96,7 +96,7 @@ void UtilityThreadImpl::OnBatchModeFinished() {
 
 #if defined(OS_POSIX)
 void UtilityThreadImpl::OnLoadPlugins(
-    const std::vector<FilePath>& plugin_paths) {
+    const std::vector<base::FilePath>& plugin_paths) {
   webkit::npapi::PluginList* plugin_list =
       webkit::npapi::PluginList::Singleton();
 

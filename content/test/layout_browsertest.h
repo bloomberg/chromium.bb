@@ -14,8 +14,8 @@ class WebKitTestController;
 
 class InProcessBrowserLayoutTest : public ContentBrowserTest {
  public:
-  explicit InProcessBrowserLayoutTest(const FilePath& test_parent_dir,
-                                      const FilePath& test_case_dir);
+  explicit InProcessBrowserLayoutTest(const base::FilePath& test_parent_dir,
+                                      const base::FilePath& test_case_dir);
   // Used when running HTTP layout tests. Starts the server in the constructor
   // and keeps it running through the lifetime of this test. This is done to
   // avoid flakiness in restarting the server while the port is still in use.
@@ -23,8 +23,8 @@ class InProcessBrowserLayoutTest : public ContentBrowserTest {
   // recommended when possible, in case multiple tests are running at the same
   // time. For some tests this isn't possible though, because they use resources
   // that hardcode a specific port.
-  InProcessBrowserLayoutTest(const FilePath& test_parent_dir,
-                             const FilePath& test_case_dir,
+  InProcessBrowserLayoutTest(const base::FilePath& test_parent_dir,
+                             const base::FilePath& test_case_dir,
                              int port);
   virtual ~InProcessBrowserLayoutTest();
 
@@ -44,12 +44,12 @@ class InProcessBrowserLayoutTest : public ContentBrowserTest {
   std::string SaveResults(const std::string& expected,
                           const std::string& actual);
 
-  FilePath layout_test_dir_;
-  FilePath test_parent_dir_;
-  FilePath test_case_dir_;
-  FilePath rebase_result_dir_;
-  FilePath rebase_result_chromium_dir_;
-  FilePath rebase_result_win_dir_;
+  base::FilePath layout_test_dir_;
+  base::FilePath test_parent_dir_;
+  base::FilePath test_case_dir_;
+  base::FilePath rebase_result_dir_;
+  base::FilePath rebase_result_chromium_dir_;
+  base::FilePath rebase_result_win_dir_;
   int port_;  // -2 means no port.  -1 means random.
   scoped_ptr<LayoutTestHttpServer> test_http_server_;
 

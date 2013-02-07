@@ -34,8 +34,8 @@ namespace content {
 
 namespace {
 
-FilePath GetWebKitRootDirFilePath() {
-  FilePath base_path;
+base::FilePath GetWebKitRootDirFilePath() {
+  base::FilePath base_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &base_path);
   if (file_util::PathExists(
           base_path.Append(FILE_PATH_LITERAL("third_party/WebKit")))) {
@@ -135,7 +135,7 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     int child_process_id,
     std::vector<content::FileDescriptorInfo>* mappings) {
   int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
-  FilePath pak_file;
+  base::FilePath pak_file;
   bool r = PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_file);
   CHECK(r);
   pak_file = pak_file.Append(FILE_PATH_LITERAL("paks"));

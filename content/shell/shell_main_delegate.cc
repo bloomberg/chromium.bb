@@ -65,7 +65,7 @@ const GUID kContentShellProviderName = {
 #endif
 
 void InitLogging() {
-  FilePath log_filename;
+  base::FilePath log_filename;
   PathService::Get(base::DIR_EXE, &log_filename);
   log_filename = log_filename.AppendASCII("content_shell.log");
   logging::InitLogging(
@@ -158,11 +158,11 @@ void ShellMainDelegate::InitializeResourceBundle() {
   }
 #endif
 
-  FilePath pak_file;
+  base::FilePath pak_file;
 #if defined(OS_MACOSX)
   pak_file = GetResourcesPakFilePath();
 #else
-  FilePath pak_dir;
+  base::FilePath pak_dir;
 
 #if defined(OS_ANDROID)
   bool got_path = PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_dir);

@@ -216,7 +216,7 @@ void WebKitTestRunner::postDelayedTask(WebTask* task, long long ms) {
 
 WebString WebKitTestRunner::registerIsolatedFileSystem(
     const WebKit::WebVector<WebKit::WebString>& absolute_filenames) {
-  std::vector<FilePath> files;
+  std::vector<base::FilePath> files;
   for (size_t i = 0; i < absolute_filenames.size(); ++i)
     files.push_back(webkit_base::WebStringToFilePath(absolute_filenames[i]));
   std::string filesystem_id;
@@ -233,9 +233,9 @@ long long WebKitTestRunner::getCurrentTimeInMillisecond() {
 WebString WebKitTestRunner::getAbsoluteWebStringFromUTF8Path(
     const std::string& utf8_path) {
 #if defined(OS_WIN)
-  FilePath path(UTF8ToWide(utf8_path));
+  base::FilePath path(UTF8ToWide(utf8_path));
 #else
-  FilePath path(base::SysWideToNativeMB(base::SysUTF8ToWide(utf8_path)));
+  base::FilePath path(base::SysWideToNativeMB(base::SysUTF8ToWide(utf8_path)));
 #endif
   if (!path.IsAbsolute()) {
     GURL base_url =
@@ -247,7 +247,7 @@ WebString WebKitTestRunner::getAbsoluteWebStringFromUTF8Path(
 }
 
 WebURL WebKitTestRunner::localFileToDataURL(const WebURL& file_url) {
-  FilePath local_path;
+  base::FilePath local_path;
   if (!net::FileURLToFilePath(file_url, &local_path))
     return WebURL();
 
@@ -270,7 +270,7 @@ WebURL WebKitTestRunner::rewriteLayoutTestsURL(const std::string& utf8_url) {
   if (utf8_url.compare(0, kPrefixLen, kPrefix, kPrefixLen))
     return WebURL(GURL(utf8_url));
 
-  FilePath replace_path =
+  base::FilePath replace_path =
       ShellRenderProcessObserver::GetInstance()->webkit_source_dir().Append(
           FILE_PATH_LITERAL("LayoutTests/"));
 #if defined(OS_WIN)
@@ -615,9 +615,9 @@ void WebKitTestRunner::OnCaptureImageDump(
 }
 
 void WebKitTestRunner::OnSetCurrentWorkingDirectory(
-    const FilePath& current_working_directory) {
+    const base::FilePath& current_working_directory) {
   current_working_directory_ = current_working_directory;
-  std::vector<FilePath::StringType> components;
+  std::vector<base::FilePath::StringType> components;
   current_working_directory_.GetComponents(&components);
   for (unsigned i = 0; i < components.size(); ++i) {
     if (components[i] == FILE_PATH_LITERAL("loading"))

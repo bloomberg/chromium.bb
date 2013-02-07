@@ -44,7 +44,7 @@ void ParseArgsFromCommandLineFile(std::vector<std::string>* args) {
   // "/data/local/tmp".
   static const char kCommandLineFilePath[] =
       "/data/local/tmp/content-browser-tests-command-line";
-  FilePath command_line(kCommandLineFilePath);
+  base::FilePath command_line(kCommandLineFilePath);
   std::string command_line_string;
   if (file_util::ReadFileToString(command_line, &command_line_string)) {
     ParseArgsFromString(command_line_string, args);

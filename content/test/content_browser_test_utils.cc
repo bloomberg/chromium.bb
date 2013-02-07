@@ -21,11 +21,11 @@
 
 namespace content {
 
-FilePath GetTestFilePath(const char* dir, const char* file) {
-  FilePath path;
+base::FilePath GetTestFilePath(const char* dir, const char* file) {
+  base::FilePath path;
   PathService::Get(DIR_TEST_DATA, &path);
-  return path.Append(
-      FilePath().AppendASCII(dir).Append(FilePath().AppendASCII(file)));
+  return path.Append(base::FilePath().AppendASCII(dir).Append(
+      base::FilePath().AppendASCII(file)));
 }
 
 GURL GetTestUrl(const char* dir, const char* file) {

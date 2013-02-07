@@ -11,9 +11,9 @@
 
 namespace {
 
-FilePath GetFrameworksPath() {
+base::FilePath GetFrameworksPath() {
   // Start out with the path to the running executable.
-  FilePath path;
+  base::FilePath path;
   PathService::Get(base::FILE_EXE, &path);
 
   // Up to Contents.
@@ -35,14 +35,15 @@ FilePath GetFrameworksPath() {
 }  // namespace
 
 void OverrideFrameworkBundlePath() {
-  FilePath helper_path =
+  base::FilePath helper_path =
       GetFrameworksPath().Append("Content Shell Framework.framework");
 
   base::mac::SetOverrideFrameworkBundlePath(helper_path);
 }
 
 void OverrideChildProcessPath() {
-  FilePath helper_path = GetFrameworksPath().Append("Content Shell Helper.app")
+  base::FilePath helper_path =
+      GetFrameworksPath().Append("Content Shell Helper.app")
                                             .Append("Contents")
                                             .Append("MacOS")
                                             .Append("Content Shell Helper");
@@ -50,7 +51,7 @@ void OverrideChildProcessPath() {
   PathService::Override(content::CHILD_PROCESS_EXE, helper_path);
 }
 
-FilePath GetResourcesPakFilePath() {
+base::FilePath GetResourcesPakFilePath() {
   NSString* pak_path =
       [base::mac::FrameworkBundle() pathForResource:@"content_shell"
                                              ofType:@"pak"];

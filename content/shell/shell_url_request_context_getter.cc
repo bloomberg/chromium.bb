@@ -35,7 +35,7 @@ namespace content {
 
 ShellURLRequestContextGetter::ShellURLRequestContextGetter(
     bool ignore_certificate_errors,
-    const FilePath& base_path,
+    const base::FilePath& base_path,
     MessageLoop* io_loop,
     MessageLoop* file_loop)
     : ignore_certificate_errors_(ignore_certificate_errors),
@@ -96,7 +96,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
     storage_->set_http_server_properties(new net::HttpServerPropertiesImpl);
 
-    FilePath cache_path = base_path_.Append(FILE_PATH_LITERAL("Cache"));
+    base::FilePath cache_path = base_path_.Append(FILE_PATH_LITERAL("Cache"));
     net::HttpCache::DefaultBackend* main_backend =
         new net::HttpCache::DefaultBackend(
             net::DISK_CACHE,

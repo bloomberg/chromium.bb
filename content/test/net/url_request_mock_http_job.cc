@@ -15,7 +15,7 @@
 #include "net/url_request/url_request_filter.h"
 
 const char kMockHostname[] = "mock.http";
-const FilePath::CharType kMockHeaderFileSuffix[] =
+const base::FilePath::CharType kMockHeaderFileSuffix[] =
     FILE_PATH_LITERAL(".mock-http-headers");
 
 namespace content {
@@ -28,7 +28,7 @@ class ProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   // contents of the file at |base_path|. When |map_all_requests_to_base_path|
   // is false, |base_path| is the file path leading to the root of the directory
   // to use as the root of the HTTP server.
-  explicit ProtocolHandler(const FilePath& base_path,
+  explicit ProtocolHandler(const base::FilePath& base_path,
                            bool map_all_requests_to_base_path)
       : base_path_(base_path),
         map_all_requests_to_base_path_(map_all_requests_to_base_path) {}
@@ -43,19 +43,19 @@ class ProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   }
 
  private:
-  FilePath GetOnDiskPath(net::URLRequest* request) const {
+  base::FilePath GetOnDiskPath(net::URLRequest* request) const {
     // Conceptually we just want to "return base_path_ + request->url().path()".
     // But path in the request URL is in URL space (i.e. %-encoded spaces).
     // So first we convert base FilePath to a URL, then append the URL
     // path to that, and convert the final URL back to a FilePath.
     GURL file_url(net::FilePathToFileURL(base_path_));
     std::string url = file_url.spec() + request->url().path();
-    FilePath file_path;
+    base::FilePath file_path;
     net::FileURLToFilePath(GURL(url), &file_path);
     return file_path;
   }
 
-  const FilePath base_path_;
+  const base::FilePath base_path_;
   const bool map_all_requests_to_base_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolHandler);
@@ -64,7 +64,7 @@ class ProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
 }  // namespace
 
 // static
-void URLRequestMockHTTPJob::AddUrlHandler(const FilePath& base_path) {
+void URLRequestMockHTTPJob::AddUrlHandler(const base::FilePath& base_path) {
   // Add kMockHostname to net::URLRequestFilter.
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
   filter->AddHostnameProtocolHandler("http", kMockHostname,
@@ -74,7 +74,7 @@ void URLRequestMockHTTPJob::AddUrlHandler(const FilePath& base_path) {
 // static
 void URLRequestMockHTTPJob::AddHostnameToFileHandler(
     const std::string& hostname,
-    const FilePath& file_path) {
+    const base::FilePath& file_path) {
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
   filter->AddHostnameProtocolHandler("http", hostname,
       scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
@@ -83,7 +83,7 @@ void URLRequestMockHTTPJob::AddHostnameToFileHandler(
 }
 
 // static
-GURL URLRequestMockHTTPJob::GetMockUrl(const FilePath& path) {
+GURL URLRequestMockHTTPJob::GetMockUrl(const base::FilePath& path) {
   std::string url = "http://";
   url.append(kMockHostname);
   url.append("/");
@@ -94,7 +94,7 @@ GURL URLRequestMockHTTPJob::GetMockUrl(const FilePath& path) {
 }
 
 // static
-GURL URLRequestMockHTTPJob::GetMockViewSourceUrl(const FilePath& path) {
+GURL URLRequestMockHTTPJob::GetMockViewSourceUrl(const base::FilePath& path) {
   std::string url = chrome::kViewSourceScheme;
   url.append(":");
   url.append(GetMockUrl(path).spec());
@@ -103,7 +103,7 @@ GURL URLRequestMockHTTPJob::GetMockViewSourceUrl(const FilePath& path) {
 
 // static
 scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-URLRequestMockHTTPJob::CreateProtocolHandler(const FilePath& base_path) {
+URLRequestMockHTTPJob::CreateProtocolHandler(const base::FilePath& base_path) {
   return scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
       new ProtocolHandler(base_path, false));
 }
@@ -111,7 +111,7 @@ URLRequestMockHTTPJob::CreateProtocolHandler(const FilePath& base_path) {
 URLRequestMockHTTPJob::URLRequestMockHTTPJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
-    const FilePath& file_path)
+    const base::FilePath& file_path)
     : net::URLRequestFileJob(request, network_delegate, file_path) { }
 
 URLRequestMockHTTPJob::~URLRequestMockHTTPJob() { }
@@ -136,7 +136,8 @@ void URLRequestMockHTTPJob::GetResponseInfoConst(
   // from tests, so allow these IO operations to happen on any thread.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
-  FilePath header_file = FilePath(file_path_.value() + kMockHeaderFileSuffix);
+  base::FilePath header_file =
+      base::FilePath(file_path_.value() + kMockHeaderFileSuffix);
   std::string raw_headers;
   if (!file_util::ReadFileToString(header_file, &raw_headers))
     return;

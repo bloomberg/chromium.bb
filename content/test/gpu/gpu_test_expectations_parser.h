@@ -33,7 +33,7 @@ class GPUTestExpectationsParser {
   // save all the entries. Otherwise, generate error messages.
   // Return true if parsing succeeds.
   bool LoadTestExpectations(const std::string& data);
-  bool LoadTestExpectations(const FilePath& path);
+  bool LoadTestExpectations(const base::FilePath& path);
   bool LoadTestExpectations(GPUTestProfile profile);
 
   // Query error messages from the last LoadTestExpectations() call.
@@ -82,7 +82,7 @@ class GPUTestExpectationsParser {
 
   // Return false if an error occurs or the path does not exist.
   static bool GetExpectationsPath(GPUTestProfile profile,
-                                  FilePath* path);
+                                  base::FilePath* path);
 
   std::vector<GPUTestExpectationEntry> entries_;
   std::vector<std::string> error_messages_;

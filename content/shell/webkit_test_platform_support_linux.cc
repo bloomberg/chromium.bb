@@ -78,9 +78,9 @@ const char* const kFonts[] = {
 bool SetupFontConfig() {
   FcInit();
 
-  FilePath base_path;
+  base::FilePath base_path;
   PathService::Get(base::DIR_MODULE, &base_path);
-  FilePath fonts_conf = base_path.Append(FILE_PATH_LITERAL("fonts.conf"));
+  base::FilePath fonts_conf = base_path.Append(FILE_PATH_LITERAL("fonts.conf"));
 
   FcConfig* font_config = FcConfigCreate();
   if (!FcConfigParseAndLoad(
@@ -119,7 +119,7 @@ bool SetupFontConfig() {
      "/usr/share/fonts/truetype/ttf-indic-fonts-core/lohit_pa.ttf",
      "/usr/share/fonts/truetype/ttf-punjabi-fonts/lohit_pa.ttf");
 
-  FilePath ahem_font = base_path.Append("AHEM____.TTF");
+  base::FilePath ahem_font = base_path.Append("AHEM____.TTF");
   if (!FcConfigAppFontAddFile(
           font_config,
           reinterpret_cast<const FcChar8*>(ahem_font.value().c_str()))) {

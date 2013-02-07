@@ -14,7 +14,7 @@
 
 // Sets the current working directory to use for layout tests.
 IPC_MESSAGE_ROUTED1(ShellViewMsg_SetCurrentWorkingDirectory,
-                    FilePath /* current_working_directory */)
+                    base::FilePath /* current_working_directory */)
 
 // Tells the render view to capture a text dump of the page. The render view
 // responds with a ShellViewHostMsg_TextDump.
@@ -33,7 +33,7 @@ IPC_MESSAGE_CONTROL0(ShellViewMsg_ResetAll)
 
 // Sets the path to the WebKit checkout.
 IPC_MESSAGE_CONTROL1(ShellViewMsg_SetWebKitSourceDir,
-                     FilePath /* webkit source dir */)
+                     base::FilePath /* webkit source dir */)
 
 // Send a text dump of the WebContents to the render host.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TextDump,
@@ -53,7 +53,7 @@ IPC_MESSAGE_ROUTED1(ShellViewHostMsg_PrintMessage,
 
 // Read a file and returns its contents.
 IPC_SYNC_MESSAGE_ROUTED1_1(ShellViewHostMsg_ReadFileToString,
-                           FilePath /* local path */,
+                           base::FilePath /* local path */,
                            std::string /* contents */)
 
 // The following messages correspond to methods of the testRunner.
@@ -71,7 +71,7 @@ IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CanOpenWindows)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_ShowWebInspector)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CloseWebInspector)
 IPC_SYNC_MESSAGE_ROUTED1_1(ShellViewHostMsg_RegisterIsolatedFileSystem,
-                           std::vector<FilePath> /* absolute_filenames */,
+                           std::vector<base::FilePath> /* absolute_filenames */,
                            std::string /* filesystem_id */)
 
 IPC_MESSAGE_ROUTED2(ShellViewHostMsg_NotImplemented,

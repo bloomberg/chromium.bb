@@ -150,7 +150,7 @@ WebKitTestController::~WebKitTestController() {
 
 bool WebKitTestController::PrepareForLayoutTest(
     const GURL& test_url,
-    const FilePath& current_working_directory,
+    const base::FilePath& current_working_directory,
     bool enable_pixel_dumping,
     const std::string& expected_pixel_hash) {
   DCHECK(CalledOnValidThread());
@@ -275,7 +275,7 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void WebKitTestController::PluginCrashed(const FilePath& plugin_path,
+void WebKitTestController::PluginCrashed(const base::FilePath& plugin_path,
                                          base::ProcessId plugin_pid) {
   DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage(

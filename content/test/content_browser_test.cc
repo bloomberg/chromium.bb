@@ -34,14 +34,14 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_ShouldntRun) {
 ContentBrowserTest::ContentBrowserTest() {
 #if defined(OS_MACOSX)
   // See comment in InProcessBrowserTest::InProcessBrowserTest().
-  FilePath content_shell_path;
+  base::FilePath content_shell_path;
   CHECK(PathService::Get(base::FILE_EXE, &content_shell_path));
   content_shell_path = content_shell_path.DirName();
   content_shell_path = content_shell_path.Append(
       FILE_PATH_LITERAL("Content Shell.app/Contents/MacOS/Content Shell"));
   CHECK(PathService::Override(base::FILE_EXE, content_shell_path));
 #endif
-  CreateTestServer(FilePath(FILE_PATH_LITERAL("content/test/data")));
+  CreateTestServer(base::FilePath(FILE_PATH_LITERAL("content/test/data")));
 }
 
 ContentBrowserTest::~ContentBrowserTest() {
@@ -66,7 +66,7 @@ void ContentBrowserTest::SetUp() {
 
 #if defined(OS_MACOSX)
   // See InProcessBrowserTest::PrepareTestCommandLine().
-  FilePath subprocess_path;
+  base::FilePath subprocess_path;
   PathService::Get(base::FILE_EXE, &subprocess_path);
   subprocess_path = subprocess_path.DirName().DirName();
   DCHECK_EQ(subprocess_path.BaseName().value(), "Contents");

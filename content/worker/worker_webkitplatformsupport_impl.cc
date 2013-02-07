@@ -262,14 +262,14 @@ WebString WorkerWebKitPlatformSupportImpl::mimeTypeFromFile(
     const WebString& file_path) {
   std::string mime_type;
   SendSyncMessageFromAnyThread(new MimeRegistryMsg_GetMimeTypeFromFile(
-      FilePath(webkit_base::WebStringToFilePathString(file_path)),
+      base::FilePath(webkit_base::WebStringToFilePathString(file_path)),
       &mime_type));
   return ASCIIToUTF16(mime_type);
 }
 
 WebString WorkerWebKitPlatformSupportImpl::preferredExtensionForMIMEType(
     const WebString& mime_type) {
-  FilePath::StringType file_extension;
+  base::FilePath::StringType file_extension;
   SendSyncMessageFromAnyThread(
       new MimeRegistryMsg_GetPreferredExtensionForMimeType(
           UTF16ToASCII(mime_type), &file_extension));

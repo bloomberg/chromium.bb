@@ -55,7 +55,7 @@ static GURL GetStartupURL() {
   if (url.is_valid() && url.has_scheme())
     return url;
 
-  return net::FilePathToFileURL(FilePath(args[0]));
+  return net::FilePathToFileURL(base::FilePath(args[0]));
 }
 
 base::StringPiece PlatformResourceProvider(int key) {

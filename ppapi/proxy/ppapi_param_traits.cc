@@ -575,7 +575,7 @@ bool ParamTraits<ppapi::PepperFilePath>::Read(const Message* m,
                                               PickleIterator* iter,
                                               param_type* p) {
   unsigned domain;
-  FilePath path;
+  base::FilePath path;
   if (!ReadParam(m, iter, &domain) || !ReadParam(m, iter, &path))
     return false;
   if (domain > ppapi::PepperFilePath::DOMAIN_MAX_VALID)

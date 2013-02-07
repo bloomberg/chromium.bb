@@ -23,7 +23,7 @@ class ShellBrowserContext : public BrowserContext {
   virtual ~ShellBrowserContext();
 
   // BrowserContext implementation.
-  virtual FilePath GetPath() OVERRIDE;
+  virtual base::FilePath GetPath() OVERRIDE;
   virtual bool IsOffTheRecord() const OVERRIDE;
   virtual DownloadManagerDelegate* GetDownloadManagerDelegate() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
@@ -34,10 +34,10 @@ class ShellBrowserContext : public BrowserContext {
       int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetMediaRequestContextForStoragePartition(
-          const FilePath& partition_path,
+          const base::FilePath& partition_path,
           bool in_memory) OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForStoragePartition(
-      const FilePath& partition_path,
+      const base::FilePath& partition_path,
       bool in_memory) OVERRIDE;
   virtual ResourceContext* GetResourceContext() OVERRIDE;
   virtual GeolocationPermissionContext*
@@ -53,7 +53,7 @@ class ShellBrowserContext : public BrowserContext {
 
   bool off_the_record_;
   bool ignore_certificate_errors_;
-  FilePath path_;
+  base::FilePath path_;
   scoped_ptr<ResourceContext> resource_context_;
   scoped_refptr<ShellDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<net::URLRequestContextGetter> url_request_getter_;

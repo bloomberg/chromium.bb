@@ -186,7 +186,8 @@ bool GPUTestExpectationsParser::LoadTestExpectations(const std::string& data) {
   return rt;
 }
 
-bool GPUTestExpectationsParser::LoadTestExpectations(const FilePath& path) {
+bool GPUTestExpectationsParser::LoadTestExpectations(
+    const base::FilePath& path) {
   entries_.clear();
   error_messages_.clear();
 
@@ -200,7 +201,7 @@ bool GPUTestExpectationsParser::LoadTestExpectations(const FilePath& path) {
 
 bool GPUTestExpectationsParser::LoadTestExpectations(
     GPUTestProfile profile) {
-  FilePath path;
+  base::FilePath path;
   if (!GetExpectationsPath(profile, &path))
     return false;
   return LoadTestExpectations(path);
@@ -504,7 +505,7 @@ void GPUTestExpectationsParser::PushErrorMessage(
 
 // static
 bool GPUTestExpectationsParser::GetExpectationsPath(
-    GPUTestProfile profile, FilePath* path) {
+    GPUTestProfile profile, base::FilePath* path) {
   DCHECK(path);
 
   bool rt = true;

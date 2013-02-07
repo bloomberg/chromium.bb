@@ -77,8 +77,9 @@ static base::LazyInstance<base::ThreadLocalPointer<PluginThread> > lazy_tls =
 
 PluginThread::PluginThread()
     : preloaded_plugin_module_(NULL) {
-  FilePath plugin_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-      switches::kPluginPath);
+  base::FilePath plugin_path =
+      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          switches::kPluginPath);
 
   lazy_tls.Pointer()->Set(this);
 #if defined(USE_AURA)

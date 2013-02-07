@@ -21,7 +21,7 @@ namespace content {
 // a more lightweight net/test/test_server HTTP server.
 class LayoutTestHttpServer {
  public:
-  LayoutTestHttpServer(const FilePath& root_directory, int port);
+  LayoutTestHttpServer(const base::FilePath& root_directory, int port);
   ~LayoutTestHttpServer();
 
   // Starts the server. Returns true on success.
@@ -38,7 +38,7 @@ class LayoutTestHttpServer {
   int port() const { return port_; }
 
  private:
-  FilePath root_directory_;  // Root directory of the server.
+  base::FilePath root_directory_;  // Root directory of the server.
 
   int port_;  // Port on which the server should listen.
 

@@ -16,7 +16,7 @@ TestContentClient::TestContentClient()
     : data_pack_(ui::SCALE_FACTOR_100P) {
   // content_resources.pak is not built on iOS as it is not required.
 #if !defined(OS_IOS)
-  FilePath content_resources_pack_path;
+  base::FilePath content_resources_pack_path;
 #if defined(OS_ANDROID)
   // on Android all pak files are inside the paks folder.
   PathService::Get(base::DIR_ANDROID_APP_DATA, &content_resources_pack_path);
