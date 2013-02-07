@@ -230,6 +230,9 @@ void ContentViewCoreImpl::InitWebContents() {
   notification_registrar_.Add(
       this, NOTIFICATION_RENDERER_PROCESS_CREATED,
       content::NotificationService::AllBrowserContextsAndSources());
+  notification_registrar_.Add(
+      this, NOTIFICATION_WEB_CONTENTS_CONNECTED,
+      Source<WebContents>(web_contents_));
 
   static_cast<WebContentsViewAndroid*>(web_contents_->GetView())->
       SetContentViewCore(this);
@@ -278,6 +281,14 @@ void ContentViewCoreImpl::Observe(int type,
         if (!obj.is_null()) {
           Java_ContentViewCore_onRenderProcessSwap(env, obj.obj(), 0, pid);
         }
+      }
+      break;
+    }
+    case NOTIFICATION_WEB_CONTENTS_CONNECTED: {
+      JNIEnv* env = AttachCurrentThread();
+      ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+      if (!obj.is_null()) {
+        Java_ContentViewCore_onWebContentsConnected(env, obj.obj());
       }
       break;
     }

@@ -1424,11 +1424,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      * @see View#dispatchKeyEvent(KeyEvent)
      */
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (mImeAdapter != null &&
-                !mImeAdapter.isNativeImeAdapterAttached() && mNativeContentViewCore != 0) {
-            mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore));
-        }
-
         if (getContentViewClient().shouldOverrideKeyEvent(event)) {
             return mContainerViewInternals.super_dispatchKeyEvent(event);
         }
@@ -2059,6 +2054,15 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             if (newPid > 0) {
                 SandboxedProcessLauncher.bindAsHighPriority(newPid);
             }
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onWebContentsConnected() {
+        if (mImeAdapter != null &&
+                !mImeAdapter.isNativeImeAdapterAttached() && mNativeContentViewCore != 0) {
+            mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore));
         }
     }
 
