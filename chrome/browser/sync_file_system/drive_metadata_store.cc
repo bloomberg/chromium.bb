@@ -278,6 +278,7 @@ void DriveMetadataStore::UpdateEntry(
     const fileapi::SyncStatusCallback& callback) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
+  DCHECK(!metadata.resource_id().empty());
   DCHECK(!metadata.conflicted() || !metadata.to_be_fetched());
 
   std::pair<PathToMetadata::iterator, bool> result =

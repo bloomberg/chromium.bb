@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
@@ -51,7 +52,7 @@ const char kDriveInvalidationObjectId[] = "CHANGELOG";
 // notifications are on or off.
 const int64 kMinimumPollingDelaySeconds = 5;
 const int64 kMaximumPollingDelaySeconds = 10 * 60;  // 10 min
-const int64 kPollingDelaySecondsWithNotification = 4 * 60 * 60; // 4 hr
+const int64 kPollingDelaySecondsWithNotification = 4 * 60 * 60;  // 4 hr
 const double kDelayMultiplier = 1.6;
 
 bool CreateTemporaryFile(const FilePath& dir_path, FilePath* temp_file) {
@@ -729,6 +730,8 @@ scoped_ptr<DriveFileSyncService::TaskToken> DriveFileSyncService::GetToken(
     const std::string& description) {
   if (!token_)
     return scoped_ptr<TaskToken>();
+  TRACE_EVENT_ASYNC_BEGIN1("Sync FileSystem", "GetToken", this,
+                           "description", description);
   token_->UpdateTask(from_here, task_type, description);
   return token_.Pass();
 }
@@ -738,6 +741,8 @@ void DriveFileSyncService::NotifyTaskDone(fileapi::SyncStatusCode status,
   DCHECK(token);
   last_operation_status_ = status;
   token_ = token.Pass();
+  TRACE_EVENT_ASYNC_END0("Sync FileSystem", "GetToken", this);
+
 
   if (token_->task_type() != TASK_TYPE_NONE) {
     DVLOG(2) << "NotifyTaskDone: " << token_->description()

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
 
+#include <algorithm>
+#include <functional>
 #include <sstream>
 #include <string>
 
@@ -164,6 +166,7 @@ void DriveFileSyncClient::RemoveObserver(
 void DriveFileSyncClient::GetDriveDirectoryForSyncRoot(
     const ResourceIdCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DVLOG(2) << "Getting Drive directory for SyncRoot";
 
   std::string directory_name(kSyncRootDirectoryName);
   SearchFilesInDirectory(
@@ -178,6 +181,7 @@ void DriveFileSyncClient::GetDriveDirectoryForOrigin(
     const GURL& origin,
     const ResourceIdCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DVLOG(2) << "Getting Drive directory for Origin: " << origin;
 
   std::string directory_name(OriginToDirectoryTitle(origin));
   SearchFilesInDirectory(
@@ -197,6 +201,7 @@ void DriveFileSyncClient::DidGetDirectory(
   DCHECK(IsStringASCII(directory_name));
 
   if (error != google_apis::HTTP_SUCCESS) {
+    DVLOG(2) << "Error on getting Drive directory: " << error;
     callback.Run(error, std::string());
     return;
   }
@@ -208,6 +213,8 @@ void DriveFileSyncClient::DidGetDirectory(
   google_apis::ResourceEntry* entry = GetDocumentByTitleAndParent(
       feed->entries(), title, parent_link);
   if (!entry) {
+    DVLOG(2) << "Directory not found. Creating: " << directory_name;
+
     // If the |parent_resource_id| is empty, create a directory under the root
     // directory. So here we use the result of GetRootResourceId() for such a
     // case.
@@ -219,6 +226,7 @@ void DriveFileSyncClient::DidGetDirectory(
                    parent_resource_id, title, callback));
     return;
   }
+  DVLOG(2) << "Found Drive directory.";
 
   // TODO(tzik): Handle error.
   DCHECK_EQ(google_apis::ENTRY_KIND_FOLDER, entry->kind());
@@ -237,9 +245,11 @@ void DriveFileSyncClient::DidCreateDirectory(
 
   if (error != google_apis::HTTP_SUCCESS &&
       error != google_apis::HTTP_CREATED) {
+    DVLOG(2) << "Error on creating Drive directory: " << error;
     callback.Run(error, std::string());
     return;
   }
+  DVLOG(2) << "Created Drive directory.";
   error = google_apis::HTTP_CREATED;
 
   DCHECK(entry);
@@ -254,19 +264,23 @@ void DriveFileSyncClient::DidEnsureUniquenessForCreateDirectory(
     const ResourceIdCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
+  DCHECK(CalledOnValidThread());
   // If error == HTTP_FOUND: the directory is successfully created without
   //   conflict.
   // If error == HTTP_SUCCESS: the directory is created with conflict, but
   //   the conflict was resolved.
   //
-  if (error == google_apis::HTTP_FOUND)
+
+  if (error == google_apis::HTTP_FOUND) {
     error = google_apis::HTTP_CREATED;
+  }
   callback.Run(error, entry->resource_id());
 }
 
 void DriveFileSyncClient::GetLargestChangeStamp(
     const ChangeStampCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DVLOG(2) << "Getting largest changestamp";
 
   drive_service_->GetAccountMetadata(
       base::Bind(&DriveFileSyncClient::DidGetAccountMetadata,
@@ -277,6 +291,8 @@ void DriveFileSyncClient::GetResourceEntry(
     const std::string& resource_id,
     const ResourceEntryCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DVLOG(2) << "Getting ResourceEntry for: " << resource_id;
+
   drive_service_->GetResourceEntry(
       resource_id,
       base::Bind(&DriveFileSyncClient::DidGetResourceEntry,
@@ -293,6 +309,9 @@ void DriveFileSyncClient::DidGetAccountMetadata(
   if (error == google_apis::HTTP_SUCCESS) {
     DCHECK(metadata);
     largest_changestamp = metadata->largest_changestamp();
+    DVLOG(2) << "Got largest changestamp: " << largest_changestamp;
+  } else {
+    DVLOG(2) << "Error on getting largest changestamp: " << error;
   }
 
   callback.Run(error, largest_changestamp);
@@ -303,6 +322,9 @@ void DriveFileSyncClient::SearchFilesInDirectory(
     const std::string& search_query,
     const ResourceListCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DVLOG(2) << "Searching resources in the directory [" << directory_resource_id
+           << "] with query [" << search_query << "]";
+
   drive_service_->GetResourceList(
       GURL(),  // feed_url
       0,  // start_changestamp
@@ -316,6 +338,9 @@ void DriveFileSyncClient::SearchFilesInDirectory(
 void DriveFileSyncClient::ListFiles(const std::string& directory_resource_id,
                                     const ResourceListCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DVLOG(2) << "Listing resources in the directory ["
+           << directory_resource_id << "]";
+
   SearchFilesInDirectory(directory_resource_id,
                          std::string() /* search_query */,
                          callback);
@@ -324,6 +349,8 @@ void DriveFileSyncClient::ListFiles(const std::string& directory_resource_id,
 void DriveFileSyncClient::ListChanges(int64 start_changestamp,
                                       const ResourceListCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DVLOG(2) << "Listing changes since: " << start_changestamp;
+
   drive_service_->GetResourceList(
       GURL(),  // feed_url
       start_changestamp,
@@ -338,6 +365,8 @@ void DriveFileSyncClient::ContinueListing(
     const GURL& feed_url,
     const ResourceListCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DVLOG(2) << "Continue listing on feed: " << feed_url;
+
   drive_service_->GetResourceList(
       feed_url,
       0,  // start_changestamp
@@ -354,6 +383,8 @@ void DriveFileSyncClient::DownloadFile(
     const FilePath& local_file_path,
     const DownloadFileCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DVLOG(2) << "Downloading file [" << resource_id << "]";
+
   drive_service_->GetResourceEntry(
       resource_id,
       base::Bind(&DriveFileSyncClient::DidGetResourceEntry,
@@ -369,6 +400,10 @@ void DriveFileSyncClient::UploadNewFile(
     const std::string& title,
     const UploadFileCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DVLOG(2) << "Uploading new file into the directory ["
+           << directory_resource_id << "] with title ["
+           << title << "]";
+
   drive_service_->GetResourceEntry(
       directory_resource_id,
       base::Bind(&DriveFileSyncClient::DidGetResourceEntry,
@@ -383,6 +418,7 @@ void DriveFileSyncClient::UploadExistingFile(
     const FilePath& local_file_path,
     const UploadFileCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DVLOG(2) << "Uploading existing file [" << resource_id << "]";
   drive_service_->GetResourceEntry(
       resource_id,
       base::Bind(&DriveFileSyncClient::DidGetResourceEntry,
@@ -397,6 +433,8 @@ void DriveFileSyncClient::DeleteFile(
     const std::string& remote_file_md5,
     const GDataErrorCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DVLOG(2) << "Deleting file: " << resource_id;
+
   drive_service_->GetResourceEntry(
       resource_id,
       base::Bind(&DriveFileSyncClient::DidGetResourceEntry,
@@ -441,10 +479,12 @@ void DriveFileSyncClient::DidGetResourceList(
   DCHECK(CalledOnValidThread());
 
   if (error != google_apis::HTTP_SUCCESS) {
+    DVLOG(2) << "Error on listing resource: " << error;
     callback.Run(error, scoped_ptr<google_apis::ResourceList>());
     return;
   }
 
+  DVLOG(2) << "Got resource list";
   DCHECK(resource_list);
   callback.Run(error, resource_list.Pass());
 }
@@ -456,10 +496,12 @@ void DriveFileSyncClient::DidGetResourceEntry(
   DCHECK(CalledOnValidThread());
 
   if (error != google_apis::HTTP_SUCCESS) {
+    DVLOG(2) << "Error on getting resource entry:" << error;
     callback.Run(error, scoped_ptr<google_apis::ResourceEntry>());
     return;
   }
 
+  DVLOG(2) << "Got resource entry";
   DCHECK(entry);
   callback.Run(error, entry.Pass());
 }
@@ -500,17 +542,20 @@ void DriveFileSyncClient::DownloadFileInternal(
   DCHECK(CalledOnValidThread());
 
   if (error != google_apis::HTTP_SUCCESS) {
+    DVLOG(2) << "Error on getting resource entry for download";
     callback.Run(error, std::string());
     return;
   }
   DCHECK(entry);
 
+  DVLOG(2) << "Got resource entry for download";
   // If local file and remote file are same, cancel the download.
   if (local_file_md5 == entry->file_md5()) {
     callback.Run(google_apis::HTTP_NOT_MODIFIED, local_file_md5);
     return;
   }
 
+  DVLOG(2) << "Downloading file: " << entry->resource_id();
   drive_service_->DownloadFile(
       FilePath(kDummyDrivePath),
       local_file_path,
@@ -526,6 +571,11 @@ void DriveFileSyncClient::DidDownloadFile(
     google_apis::GDataErrorCode error,
     const FilePath& downloaded_file_path) {
   DCHECK(CalledOnValidThread());
+  if (error == google_apis::HTTP_SUCCESS)
+    DVLOG(2) << "Download completed";
+  else
+    DVLOG(2) << "Error on downloading file: " << error;
+
   callback.Run(error, downloaded_file_md5);
 }
 
@@ -538,10 +588,12 @@ void DriveFileSyncClient::UploadNewFileInternal(
   DCHECK(CalledOnValidThread());
 
   if (error != google_apis::HTTP_SUCCESS) {
+    DVLOG(2) << "Error on getting parent resource id for upload: " << error;
     callback.Run(error, std::string(), std::string());
     return;
   }
   DCHECK(parent_directory_entry);
+  DVLOG(2) << "Got resource entry of parent directory for upload";
 
   std::string mime_type;
   if (!net::GetWellKnownMimeTypeFromExtension(
@@ -568,10 +620,12 @@ void DriveFileSyncClient::DidUploadNewFile(
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
   if (error != google_apis::HTTP_CREATED) {
+    DVLOG(2) << "Error on uploading new file: " << error;
     callback.Run(error, std::string(), std::string());
     return;
   }
 
+  DVLOG(2) << "Upload completed";
   EnsureTitleUniqueness(
       parent_resource_id, title,
       base::Bind(&DriveFileSyncClient::DidEnsureUniquenessForCreateFile,
@@ -586,6 +640,7 @@ void DriveFileSyncClient::DidEnsureUniquenessForCreateFile(
   if (error == google_apis::HTTP_FOUND) {
     // The file was uploaded successfully and no conflict was detected.
     DCHECK(entry);
+    DVLOG(2) << "No conflict detected on uploading new file";
     callback.Run(google_apis::HTTP_CREATED,
                  entry->resource_id(), entry->file_md5());
     return;
@@ -596,16 +651,19 @@ void DriveFileSyncClient::DidEnsureUniquenessForCreateFile(
     // The duplicated file was deleted successfully.
     DCHECK(entry);
     if (entry->resource_id() != expected_resource_id) {
+      DVLOG(2) << "Conflict detected on uploading new file";
       callback.Run(google_apis::HTTP_CONFLICT,
                    std::string(), std::string());
       return;
     }
 
+    DVLOG(2) << "Conflict detected on uploading new file and resolved";
     callback.Run(google_apis::HTTP_CREATED,
                  entry->resource_id(), entry->file_md5());
     return;
   }
 
+  DVLOG(2) << "Error on uploading new file: " << error;
   callback.Run(error, std::string(), std::string());
 }
 
@@ -618,6 +676,7 @@ void DriveFileSyncClient::UploadExistingFileInternal(
   DCHECK(CalledOnValidThread());
 
   if (error != google_apis::HTTP_SUCCESS) {
+    DVLOG(2) << "Error on uploading existing file: " << error;
     callback.Run(error, std::string(), std::string());
     return;
   }
@@ -626,6 +685,7 @@ void DriveFileSyncClient::UploadExistingFileInternal(
   // If remote file's hash value is different from the expected one, conflict
   // might have occurred.
   if (remote_file_md5 != entry->file_md5()) {
+    DVLOG(2) << "Conflict detected before uploading existing file";
     callback.Run(google_apis::HTTP_CONFLICT, std::string(), std::string());
     return;
   }
@@ -654,11 +714,13 @@ void DriveFileSyncClient::DidUploadExistingFile(
     scoped_ptr<google_apis::ResourceEntry> entry) {
   DCHECK(CalledOnValidThread());
   if (error != google_apis::HTTP_SUCCESS) {
+    DVLOG(2) << "Error on uploading existing file: " << error;
     callback.Run(error, std::string(), std::string());
     return;
   }
 
   DCHECK(entry);
+  DVLOG(2) << "Upload completed";
   callback.Run(error, entry->resource_id(), entry->file_md5());
 }
 
@@ -670,6 +732,7 @@ void DriveFileSyncClient::DeleteFileInternal(
   DCHECK(CalledOnValidThread());
 
   if (error != google_apis::HTTP_SUCCESS) {
+    DVLOG(2) << "Error on getting resource entry for deleting file: " << error;
     callback.Run(error);
     return;
   }
@@ -678,14 +741,13 @@ void DriveFileSyncClient::DeleteFileInternal(
   // If remote file's hash value is different from the expected one, conflict
   // might have occurred.
   if (remote_file_md5 != entry->file_md5()) {
+    DVLOG(2) << "Conflict detected before deleting file";
     callback.Run(google_apis::HTTP_CONFLICT);
     return;
   }
+  DVLOG(2) << "Got resource entry for deleting file";
 
   // Move the file to trash (don't delete it completely).
-  // TODO(nhiroki): support ETag. Currently we assume there is no change between
-  // GetResourceEntry and DeleteFile call.
-  // http://crbug.com/156037
   drive_service_->DeleteResource(
       entry->resource_id(),
       entry->etag(),
@@ -697,6 +759,11 @@ void DriveFileSyncClient::DidDeleteFile(
     const GDataErrorCallback& callback,
     google_apis::GDataErrorCode error) {
   DCHECK(CalledOnValidThread());
+  if (error == google_apis::HTTP_SUCCESS)
+    DVLOG(2) << "Deletion completed";
+  else
+    DVLOG(2) << "Error on deleting file: " << error;
+
   callback.Run(error);
 }
 
@@ -705,6 +772,8 @@ void DriveFileSyncClient::EnsureTitleUniqueness(
     const std::string& expected_title,
     const ResourceEntryCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DVLOG(2) << "Checking if there's no conflict on entry creation";
+
   SearchFilesInDirectory(
       parent_resource_id,
       FormatTitleQuery(expected_title),
@@ -719,11 +788,12 @@ void DriveFileSyncClient::DidListEntriesToEnsureUniqueness(
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceList> feed) {
   DCHECK(CalledOnValidThread());
-
   if (error != google_apis::HTTP_SUCCESS) {
+    DVLOG(2) << "Error on listing resource for ensuring title uniqueness";
     callback.Run(error, scoped_ptr<google_apis::ResourceEntry>());
     return;
   }
+  DVLOG(2) << "Got resource list for ensuring title uniqueness";
 
   // This filtering is needed only on WAPI. Once we move to Drive API we can
   // drop this.
@@ -735,12 +805,14 @@ void DriveFileSyncClient::DidListEntriesToEnsureUniqueness(
   FilterEntriesByTitleAndParent(&entries, expected_title, parent_link);
 
   if (entries.empty()) {
+    DVLOG(2) << "Uploaded file is not found";
     callback.Run(google_apis::HTTP_NOT_FOUND,
                  scoped_ptr<google_apis::ResourceEntry>());
     return;
   }
 
   if (entries.size() >= 2) {
+    DVLOG(2) << "Conflict detected on creating entry";
     for (size_t i = 0; i < entries.size() - 1; ++i) {
       // TODO(tzik): Replace published_time with creation time after we move to
       // Drive API.
@@ -758,6 +830,7 @@ void DriveFileSyncClient::DidListEntriesToEnsureUniqueness(
     return;
   }
 
+  DVLOG(2) << "no conflict detected";
   DCHECK_EQ(1u, entries.size());
   scoped_ptr<google_apis::ResourceEntry> entry(entries.front());
   entries.weak_clear();
@@ -768,6 +841,7 @@ void DriveFileSyncClient::DeleteEntries(
     ScopedVector<google_apis::ResourceEntry> entries,
     const GDataErrorCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DVLOG(2) << "Cleaning up conflict on entry creation";
 
   if (entries.empty()) {
     callback.Run(google_apis::HTTP_SUCCESS);
@@ -793,10 +867,12 @@ void DriveFileSyncClient::DidDeleteEntry(
 
   if (error != google_apis::HTTP_SUCCESS &&
       error != google_apis::HTTP_NOT_FOUND) {
+    DVLOG(2) << "Error on deleting file: " << error;
     callback.Run(error);
     return;
   }
 
+  DVLOG(2) << "Deletion completed";
   DeleteEntries(entries.Pass(), callback);
 }
 
