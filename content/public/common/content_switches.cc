@@ -319,6 +319,9 @@ const char kEnableGestureTapHighlight[]    = "enable-gesture-tap-highlight";
 // Enables the GPU benchmarking extension
 const char kEnableGpuBenchmarking[]         = "enable-gpu-benchmarking";
 
+// Enables TRACE for GL calls in the renderer.
+const char kEnableGpuClientTracing[]        = "enable-gpu-client-tracing";
+
 // Enables the memory benchmarking extension
 const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
 

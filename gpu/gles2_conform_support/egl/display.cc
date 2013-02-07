@@ -7,6 +7,7 @@
 #include <vector>
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/service/context_group.h"

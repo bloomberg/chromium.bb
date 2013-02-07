@@ -31,6 +31,7 @@ class TransferBuffer;
 namespace gles2 {
 class GLES2CmdHelper;
 class GLES2Implementation;
+class GLES2Interface;
 }
 }
 
@@ -103,7 +104,7 @@ class WebGraphicsContext3DCommandBufferImpl
 
   CommandBufferProxyImpl* GetCommandBufferProxy() { return command_buffer_; }
 
-  gpu::gles2::GLES2Implementation* GetImplementation() { return gl_; }
+  gpu::gles2::GLES2Implementation* GetImplementation() { return real_gl_; }
 
   // Return true if GPU process reported context lost or there was a
   // problem communicating with the GPU process.
@@ -758,7 +759,9 @@ class WebGraphicsContext3DCommandBufferImpl
   CommandBufferProxyImpl* command_buffer_;
   gpu::gles2::GLES2CmdHelper* gles2_helper_;
   gpu::TransferBuffer* transfer_buffer_;
-  gpu::gles2::GLES2Implementation* gl_;
+  gpu::gles2::GLES2Interface* gl_;
+  gpu::gles2::GLES2Implementation* real_gl_;
+  gpu::gles2::GLES2Interface* trace_gl_;
   Error last_error_;
   int frame_number_;
   bool bind_generates_resources_;

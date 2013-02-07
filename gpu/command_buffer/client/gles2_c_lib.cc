@@ -5,6 +5,7 @@
 // These functions emulate GLES2 over command buffers for C.
 
 #include <assert.h>
+#include <stdlib.h>
 #include "../client/gles2_lib.h"
 
 #ifndef GL_GLEXT_PROTOTYPES

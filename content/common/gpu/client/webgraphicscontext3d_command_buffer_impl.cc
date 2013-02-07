@@ -30,6 +30,7 @@
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/client/gles2_trace_implementation.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -151,6 +152,8 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       gles2_helper_(NULL),
       transfer_buffer_(NULL),
       gl_(NULL),
+      real_gl_(NULL),
+      trace_gl_(NULL),
       frame_number_(0),
       bind_generates_resources_(false),
       use_echo_for_swap_ack_(true) {
@@ -164,8 +167,8 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
 
 WebGraphicsContext3DCommandBufferImpl::
     ~WebGraphicsContext3DCommandBufferImpl() {
-  if (gl_) {
-    gl_->SetErrorMessageCallback(NULL);
+  if (real_gl_) {
+    real_gl_->SetErrorMessageCallback(NULL);
   }
 
   {
@@ -243,7 +246,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
 
   client_error_message_callback_.reset(
       new WebGraphicsContext3DErrorMessageCallback(this));
-  gl_->SetErrorMessageCallback(client_error_message_callback_.get());
+  real_gl_->SetErrorMessageCallback(client_error_message_callback_.get());
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   free_command_buffer_when_invisible_ =
@@ -362,19 +365,26 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
           NULL : *g_all_shared_contexts.Pointer()->begin();
 
   // Create the object exposing the OpenGL API.
-  gl_ = new gpu::gles2::GLES2Implementation(
+  real_gl_ = new gpu::gles2::GLES2Implementation(
       gles2_helper_,
       share_group_context ?
           share_group_context->GetImplementation()->share_group() : NULL,
       transfer_buffer_,
       attributes_.shareResources,
       bind_generates_resources_);
+  gl_ = real_gl_;
 
-  if (!gl_->Initialize(
+  if (!real_gl_->Initialize(
       kStartTransferBufferSize,
       kMinTransferBufferSize,
       kMaxTransferBufferSize)) {
     return false;
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableGpuClientTracing)) {
+    trace_gl_ = new gpu::gles2::GLES2TraceImplementation(gl_);
+    gl_ = trace_gl_;
   }
 
   return true;
@@ -410,13 +420,13 @@ bool WebGraphicsContext3DCommandBufferImpl::setParentContext(
 }
 
 unsigned int WebGraphicsContext3DCommandBufferImpl::insertSyncPoint() {
-  gl_->helper()->CommandBufferHelper::Flush();
+  real_gl_->helper()->CommandBufferHelper::Flush();
   return command_buffer_->InsertSyncPoint();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::waitSyncPoint(
     unsigned int sync_point) {
-  gl_->helper()->CommandBufferHelper::Flush();
+  real_gl_->helper()->CommandBufferHelper::Flush();
   command_buffer_->WaitSyncPoint(sync_point);
 }
 
@@ -434,11 +444,11 @@ bool WebGraphicsContext3DCommandBufferImpl::SetParent(
       int32 token = new_parent->gles2_helper_->InsertToken();
       new_parent->gles2_helper_->WaitForToken(token);
       new_parent_texture_id =
-        new_parent->gl_->MakeTextureId();
+        new_parent->real_gl_->MakeTextureId();
 
       if (!command_buffer_->SetParent(new_parent->command_buffer_,
                                       new_parent_texture_id)) {
-        new_parent->gl_->FreeTextureId(parent_texture_id_);
+        new_parent->real_gl_->FreeTextureId(parent_texture_id_);
         return false;
       }
     } else {
@@ -452,7 +462,7 @@ bool WebGraphicsContext3DCommandBufferImpl::SetParent(
     // Flush any remaining commands in the parent context to make sure the
     // texture id accounting stays consistent.
     gpu::gles2::GLES2Implementation* parent_gles2 =
-        parent_->gl_;
+        parent_->real_gl_;
     parent_gles2->helper()->CommandBufferHelper::Finish();
     parent_gles2->FreeTextureId(parent_texture_id_);
   }
@@ -478,9 +488,17 @@ void WebGraphicsContext3DCommandBufferImpl::Destroy() {
     // issued on this context might not be visible to other contexts in the
     // share group.
     gl_->Flush();
-
-    delete gl_;
     gl_ = NULL;
+  }
+
+  if (trace_gl_) {
+    delete trace_gl_;
+    trace_gl_ = NULL;
+  }
+
+  if (real_gl_) {
+    delete real_gl_;
+    real_gl_ = NULL;
   }
 
   if (transfer_buffer_) {
@@ -683,7 +701,7 @@ void WebGraphicsContext3DCommandBufferImpl::setVisibilityCHROMIUM(
   visible_ = visible;
   command_buffer_->SetSurfaceVisible(visible);
   if (!visible)
-    gl_->FreeEverything();
+    real_gl_->FreeEverything();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::discardFramebufferEXT(
@@ -958,13 +976,13 @@ DELEGATE_TO_GL_1(enableVertexAttribArray, EnableVertexAttribArray,
 void WebGraphicsContext3DCommandBufferImpl::finish() {
   gl_->Finish();
   if (!visible_ && free_command_buffer_when_invisible_)
-    gl_->FreeEverything();
+    real_gl_->FreeEverything();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::flush() {
   gl_->Flush();
   if (!visible_ && free_command_buffer_when_invisible_)
-    gl_->FreeEverything();
+    real_gl_->FreeEverything();
 }
 
 DELEGATE_TO_GL_4(framebufferRenderbuffer, FramebufferRenderbuffer,
@@ -1487,7 +1505,7 @@ void WebGraphicsContext3DCommandBufferImpl::OnMemoryAllocationChanged(
   // We may have allocated transfer buffers in order to free GL resources in a
   // backgrounded tab. Re-free the transfer buffers.
   if (!visible_)
-    gl_->FreeEverything();
+    real_gl_->FreeEverything();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::setErrorMessageCallback(

@@ -2850,6 +2850,26 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     """Writes the GLES2 Implemention."""
     self.WriteGLES2ImplementationDeclaration(func, file)
 
+  def WriteGLES2TraceImplementationHeader(self, func, file):
+    """Writes the GLES2 Trace Implemention header."""
+    file.Write("virtual %s %s(%s) OVERRIDE;\n" %
+               (func.return_type, func.original_name,
+                func.MakeTypedOriginalArgString("")))
+
+  def WriteGLES2TraceImplementation(self, func, file):
+    """Writes the GLES2 Trace Implemention."""
+    file.Write("%s GLES2TraceImplementation::%s(%s) {\n" %
+               (func.return_type, func.original_name,
+                func.MakeTypedOriginalArgString("")))
+    result_string = "return "
+    if func.return_type == "void":
+      result_string = ""
+    file.Write('  TRACE_EVENT0("gpu", "GLES2Trace::%s");\n' % func.name)
+    file.Write("  %sgl_->%s(%s);\n" %
+               (result_string, func.name, func.MakeOriginalArgString("")))
+    file.Write("}\n")
+    file.Write("\n")
+
   def WriteGLES2Implementation(self, func, file):
     """Writes the GLES2 Implemention."""
     impl_func = func.GetInfo('impl_func')
@@ -6305,6 +6325,14 @@ class Function(object):
     """Writes the GLES2 Implemention definition."""
     self.type_handler.WriteGLES2Implementation(self, file)
 
+  def WriteGLES2TraceImplementationHeader(self, file):
+    """Writes the GLES2 Trace Implemention declaration."""
+    self.type_handler.WriteGLES2TraceImplementationHeader(self, file)
+
+  def WriteGLES2TraceImplementation(self, file):
+    """Writes the GLES2 Trace Implemention definition."""
+    self.type_handler.WriteGLES2TraceImplementation(self, file)
+
   def WriteGLES2Header(self, file):
     """Writes the GLES2 Implemention unit test."""
     self.type_handler.WriteGLES2Header(self, file)
@@ -7162,6 +7190,24 @@ NameToFunc g_gles2_function_table[] = {
       func.WriteGLES2Implementation(file)
     file.Close()
 
+  def WriteGLES2TraceImplementationHeader(self, filename):
+    """Writes the GLES2 Trace Implementation header."""
+    file = CHeaderWriter(
+        filename,
+        "// This file is included by gles2_trace_implementation.h\n")
+    for func in self.original_functions:
+      func.WriteGLES2TraceImplementationHeader(file)
+    file.Close()
+
+  def WriteGLES2TraceImplementation(self, filename):
+    """Writes the GLES2 Trace Implementation."""
+    file = CHeaderWriter(
+        filename,
+        "// This file is included by gles2_trace_implementation.cc\n")
+    for func in self.original_functions:
+      func.WriteGLES2TraceImplementation(file)
+    file.Close()
+
   def WriteGLES2ImplementationUnitTests(self, filename):
     """Writes the GLES2 helper header."""
     file = CHeaderWriter(
@@ -7496,6 +7542,10 @@ def main(argv):
     gen.WriteGLES2Implementation("client/gles2_implementation_impl_autogen.h")
     gen.WriteGLES2ImplementationUnitTests(
         "client/gles2_implementation_unittest_autogen.h")
+    gen.WriteGLES2TraceImplementationHeader(
+        "client/gles2_trace_implementation_autogen.h")
+    gen.WriteGLES2TraceImplementation(
+        "client/gles2_trace_implementation_impl_autogen.h")
     gen.WriteGLES2CLibImplementation("client/gles2_c_lib_autogen.h")
     gen.WriteCmdHelperHeader("client/gles2_cmd_helper_autogen.h")
     gen.WriteServiceImplementation("service/gles2_cmd_decoder_autogen.h")
