@@ -600,33 +600,42 @@ bool InitiateUploadOperation::GetContentData(std::string* upload_content_type,
   return true;
 }
 
-//============================ ResumeUploadOperation ===========================
+//========================== UploadRangeOperationBase ==========================
 
-ResumeUploadOperation::ResumeUploadOperation(
+UploadRangeOperationBase::UploadRangeOperationBase(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
     const UploadRangeCallback& callback,
-    const ResumeUploadParams& params)
-  : UrlFetchOperationBase(registry,
-                          url_request_context_getter,
-                          OPERATION_UPLOAD,
-                          params.drive_file_path),
+    const UploadMode upload_mode,
+    const FilePath& drive_file_path,
+    const GURL& upload_url)
+    : UrlFetchOperationBase(registry,
+                            url_request_context_getter,
+                            OPERATION_UPLOAD,
+                            drive_file_path),
       callback_(callback),
-      params_(params),
+      upload_mode_(upload_mode),
+      drive_file_path_(drive_file_path),
+      upload_url_(upload_url),
       last_chunk_completed_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(!callback_.is_null());
 }
 
-ResumeUploadOperation::~ResumeUploadOperation() {}
+UploadRangeOperationBase::~UploadRangeOperationBase() {}
 
-GURL ResumeUploadOperation::GetURL() const {
+GURL UploadRangeOperationBase::GetURL() const {
   // This is very tricky to get json from this operation. To do that, &alt=json
   // has to be appended not here but in InitiateUploadOperation::GetURL().
-  return params_.upload_location;
+  return upload_url_;
 }
 
-void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
+URLFetcher::RequestType UploadRangeOperationBase::GetRequestType() const {
+  return URLFetcher::PUT;
+}
+
+void UploadRangeOperationBase::ProcessURLFetchResults(
+    const URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
   net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
 
@@ -649,7 +658,7 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
         end_position_received = ranges[0].last_byte_position() + 1;
       }
     }
-    DVLOG(1) << "Got response for [" << params_.drive_file_path.value()
+    DVLOG(1) << "Got response for [" << drive_file_path_.value()
              << "]: code=" << code
              << ", range_hdr=[" << range_received
              << "], range_parsed=" << start_position_received
@@ -665,25 +674,25 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
     // There might be explanation of unexpected error code in response.
     std::string response_content;
     source->GetResponseAsString(&response_content);
-    DVLOG(1) << "Got response for [" << params_.drive_file_path.value()
+    DVLOG(1) << "Got response for [" << drive_file_path_.value()
              << "]: code=" << code
              << ", content=[\n" << response_content << "\n]";
 
     ParseJson(response_content,
-              base::Bind(&ResumeUploadOperation::OnDataParsed,
+              base::Bind(&UploadRangeOperationBase::OnDataParsed,
                          weak_ptr_factory_.GetWeakPtr(),
                          code));
   }
 }
 
-void ResumeUploadOperation::OnDataParsed(GDataErrorCode code,
-                                         scoped_ptr<base::Value> value) {
+void UploadRangeOperationBase::OnDataParsed(GDataErrorCode code,
+                                            scoped_ptr<base::Value> value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // For a new file, HTTP_CREATED is returned.
   // For an existing file, HTTP_SUCCESS is returned.
-  if ((params_.upload_mode == UPLOAD_NEW_FILE && code == HTTP_CREATED) ||
-      (params_.upload_mode == UPLOAD_EXISTING_FILE && code == HTTP_SUCCESS)) {
+  if ((upload_mode_ == UPLOAD_NEW_FILE && code == HTTP_CREATED) ||
+      (upload_mode_ == UPLOAD_EXISTING_FILE && code == HTTP_SUCCESS)) {
     last_chunk_completed_ = true;
   }
 
@@ -698,30 +707,50 @@ void ResumeUploadOperation::OnDataParsed(GDataErrorCode code,
   OnProcessURLFetchResultsComplete(last_chunk_completed_);
 }
 
-void ResumeUploadOperation::NotifyStartToOperationRegistry() {
+void UploadRangeOperationBase::NotifyStartToOperationRegistry() {
   NotifyResume();
 }
 
-void ResumeUploadOperation::NotifySuccessToOperationRegistry() {
+void UploadRangeOperationBase::NotifySuccessToOperationRegistry() {
   if (last_chunk_completed_)
     NotifyFinish(OPERATION_COMPLETED);
   else
     NotifySuspend();
 }
 
-void ResumeUploadOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
+void UploadRangeOperationBase::RunCallbackOnPrematureFailure(
+    GDataErrorCode code) {
   callback_.Run(UploadRangeResponse(code, 0, 0), scoped_ptr<ResourceEntry>());
 }
 
-URLFetcher::RequestType ResumeUploadOperation::GetRequestType() const {
-  return URLFetcher::PUT;
+//============================ ResumeUploadOperation ===========================
+
+ResumeUploadOperation::ResumeUploadOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const UploadRangeCallback& callback,
+    const ResumeUploadParams& params)
+  : UploadRangeOperationBase(registry,
+                             url_request_context_getter,
+                             callback,
+                             params.upload_mode,
+                             params.drive_file_path,
+                             params.upload_location),
+    start_position_(params.start_position),
+    end_position_(params.end_position),
+    content_length_(params.content_length),
+    content_type_(params.content_type),
+    buf_(params.buf) {
+  DCHECK_LE(start_position_, end_position_);
 }
 
+ResumeUploadOperation::~ResumeUploadOperation() {}
+
 std::vector<std::string> ResumeUploadOperation::GetExtraRequestHeaders() const {
-  if (params_.content_length == 0) {
+  if (content_length_ == 0) {
     // For uploading an empty document, just PUT an empty content.
-    DCHECK_EQ(params_.start_position, 0);
-    DCHECK_EQ(params_.end_position, 0);
+    DCHECK_EQ(start_position_, 0);
+    DCHECK_EQ(end_position_, 0);
     return std::vector<std::string>();
   }
 
@@ -731,32 +760,31 @@ std::vector<std::string> ResumeUploadOperation::GetExtraRequestHeaders() const {
   // Content-Range: bytes 7864320-8388607/13851821
   // Use * for unknown/streaming content length.
   // The header takes inclusive range, so we adjust by "end_position - 1".
-  DCHECK_GE(params_.start_position, 0);
-  DCHECK_GT(params_.end_position, 0);
-  DCHECK_GE(params_.content_length, -1);
+  DCHECK_GE(start_position_, 0);
+  DCHECK_GT(end_position_, 0);
+  DCHECK_GE(content_length_, -1);
 
   std::vector<std::string> headers;
   headers.push_back(
       std::string(kUploadContentRange) +
-      base::Int64ToString(params_.start_position) + "-" +
-      base::Int64ToString(params_.end_position - 1) + "/" +
-      (params_.content_length == -1 ? "*" :
-          base::Int64ToString(params_.content_length)));
+      base::Int64ToString(start_position_) + "-" +
+      base::Int64ToString(end_position_ - 1) + "/" +
+      (content_length_ == -1 ? "*" :
+          base::Int64ToString(content_length_)));
   return headers;
 }
 
 bool ResumeUploadOperation::GetContentData(std::string* upload_content_type,
                                            std::string* upload_content) {
-  *upload_content_type = params_.content_type;
-  *upload_content = std::string(params_.buf->data(),
-                                params_.end_position - params_.start_position);
+  *upload_content_type = content_type_;
+  *upload_content = std::string(buf_->data(), end_position_ - start_position_);
   return true;
 }
 
 void ResumeUploadOperation::OnURLFetchUploadProgress(
     const URLFetcher* source, int64 current, int64 total) {
   // Adjust the progress values according to the range currently uploaded.
-  NotifyProgress(params_.start_position + current, params_.content_length);
+  NotifyProgress(start_position_ + current, content_length_);
 }
 
 }  // namespace google_apis
