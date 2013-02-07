@@ -47,6 +47,9 @@ class ActivityDatabase : public base::RefCountedThreadSafe<ActivityDatabase> {
   // Record an Action in the database.
   void RecordAction(scoped_refptr<Action> action);
 
+  // Break any outstanding transactions, raze the database, and close
+  // it.  Future calls on the current database handle will fail, when
+  // next opened the database will be empty.
   void KillDatabase();
 
   bool initialized() const { return initialized_; }

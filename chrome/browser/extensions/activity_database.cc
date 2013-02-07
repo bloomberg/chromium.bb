@@ -114,9 +114,7 @@ void ActivityDatabase::Close() {
 }
 
 void ActivityDatabase::KillDatabase() {
-  db_.RollbackTransaction();
-  db_.Raze();
-  db_.Close();
+  db_.RazeAndClose();
 }
 
 }  // namespace extensions

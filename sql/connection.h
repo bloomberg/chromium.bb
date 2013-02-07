@@ -164,7 +164,7 @@ class SQL_EXPORT Connection {
   // empty. You can call this or Open.
   bool OpenInMemory() WARN_UNUSED_RESULT;
 
-  // Returns trie if the database has been successfully opened.
+  // Returns true if the database has been successfully opened.
   bool is_open() const { return !!db_; }
 
   // Closes the database. This is automatically performed on destruction for
@@ -220,6 +220,16 @@ class SQL_EXPORT Connection {
   // just pick up the default.
   bool Raze();
   bool RazeWithTimout(base::TimeDelta timeout);
+
+  // Breaks all outstanding transactions (as initiated by
+  // BeginTransaction()), calls Raze() to destroy the database, then
+  // closes the database.  After this is called, any operations
+  // against the connections (or statements prepared by the
+  // connection) should fail safely.
+  //
+  // The value from Raze() is returned, with Close() called in all
+  // cases.
+  bool RazeAndClose();
 
   // Transactions --------------------------------------------------------------
 
@@ -341,6 +351,10 @@ class SQL_EXPORT Connection {
   // sqlite3_open. The string can also be sqlite's special ":memory:" string.
   bool OpenInternal(const std::string& file_name);
 
+  // Internal close function used by Close() and RazeAndClose().
+  // |forced| indicates that orderly-shutdown checks should not apply.
+  void CloseInternal(bool forced);
+
   // Check whether the current thread is allowed to make IO calls, but only
   // if database wasn't open in memory. Function is inlined to be a no-op in
   // official build.
@@ -365,13 +379,23 @@ class SQL_EXPORT Connection {
   // should always check validity before using.
   class SQL_EXPORT StatementRef : public base::RefCounted<StatementRef> {
    public:
-    // Default constructor initializes to an invalid statement.
-    StatementRef();
-    explicit StatementRef(sqlite3_stmt* stmt);
-    StatementRef(Connection* connection, sqlite3_stmt* stmt);
+    // |connection| is the sql::Connection instance associated with
+    // the statement, and is used for tracking outstanding statements
+    // and for error handling.  Set to NULL for invalid or untracked
+    // refs.  |stmt| is the actual statement, and should only be NULL
+    // to create an invalid ref.  |was_valid| indicates whether the
+    // statement should be considered valid for diagnistic purposes.
+    // |was_valid| can be true for NULL |stmt| if the connection has
+    // been forcibly closed by an error handler.
+    StatementRef(Connection* connection, sqlite3_stmt* stmt, bool was_valid);
 
     // When true, the statement can be used.
     bool is_valid() const { return !!stmt_; }
+
+    // When true, the statement is either currently valid, or was
+    // previously valid but the connection was forcibly closed.  Used
+    // for diagnostic checks.
+    bool was_valid() const { return was_valid_; }
 
     // If we've not been linked to a connection, this will be NULL.
     // TODO(shess): connection_ can be NULL in case of GetUntrackedStatement(),
@@ -383,8 +407,9 @@ class SQL_EXPORT Connection {
     sqlite3_stmt* stmt() const { return stmt_; }
 
     // Destroys the compiled statement and marks it NULL. The statement will
-    // no longer be active.
-    void Close();
+    // no longer be active.  |forced| is used to indicate if orderly-shutdown
+    // checks should apply (see Connection::RazeAndClose()).
+    void Close(bool forced);
 
     // Check whether the current thread is allowed to make IO calls, but only
     // if database wasn't open in memory.
@@ -397,6 +422,7 @@ class SQL_EXPORT Connection {
 
     Connection* connection_;
     sqlite3_stmt* stmt_;
+    bool was_valid_;
 
     DISALLOW_COPY_AND_ASSIGN(StatementRef);
   };
@@ -410,9 +436,6 @@ class SQL_EXPORT Connection {
   // open_statements_ below.
   void StatementRefCreated(StatementRef* ref);
   void StatementRefDeleted(StatementRef* ref);
-
-  // Frees all cached statements from statement_cache_.
-  void ClearCache();
 
   // Called by Statement objects when an sqlite function returns an error.
   // The return value is the error code reflected back to client code.
@@ -463,6 +486,12 @@ class SQL_EXPORT Connection {
   // True if database is open with OpenInMemory(), False if database is open
   // with Open().
   bool in_memory_;
+
+  // |true| if the connection was closed using RazeAndClose().  Used
+  // to enable diagnostics to distinguish calls to never-opened
+  // databases (incorrect use of the API) from calls to once-valid
+  // databases.
+  bool poisoned_;
 
   // This object handles errors resulting from all forms of executing sqlite
   // commands or statements. It can be null which means default handling.

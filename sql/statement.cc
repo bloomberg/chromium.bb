@@ -15,7 +15,7 @@ namespace sql {
 // we don't have to NULL-check the ref_ to see if the statement is valid: we
 // only have to check the ref's validity bit.
 Statement::Statement()
-    : ref_(new Connection::StatementRef),
+    : ref_(new Connection::StatementRef(NULL, NULL, false)),
       succeeded_(false) {
 }
 
@@ -37,13 +37,15 @@ void Statement::Assign(scoped_refptr<Connection::StatementRef> ref) {
 }
 
 void Statement::Clear() {
-  Assign(new Connection::StatementRef);
+  Assign(new Connection::StatementRef(NULL, NULL, false));
   succeeded_ = false;
 }
 
 bool Statement::CheckValid() const {
-  if (!is_valid())
-    DLOG(FATAL) << "Cannot call mutating statements on an invalid statement.";
+  // Allow operations to fail silently if a statement was invalidated
+  // because the database was closed by an error handler.
+  DLOG_IF(FATAL, !ref_->was_valid())
+      << "Cannot call mutating statements on an invalid statement.";
   return is_valid();
 }
 
@@ -306,7 +308,7 @@ bool Statement::CheckOk(int err) const {
 int Statement::CheckError(int err) {
   // Please don't add DCHECKs here, OnSqliteError() already has them.
   succeeded_ = (err == SQLITE_OK || err == SQLITE_ROW || err == SQLITE_DONE);
-  if (!succeeded_ && is_valid() && ref_->connection())
+  if (!succeeded_ && ref_ && ref_->connection())
     return ref_->connection()->OnSqliteError(err, this);
   return err;
 }

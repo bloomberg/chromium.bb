@@ -209,8 +209,7 @@ sql::InitStatus ThumbnailDatabase::Init(
                << "structure.";
     UMA_HISTOGRAM_BOOLEAN("History.InvalidFaviconsDBStructure", true);
 
-    db_.Raze();
-    db_.Close();
+    db_.RazeAndClose();
     return sql::INIT_FAILURE;
   }
 

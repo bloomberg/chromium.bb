@@ -74,30 +74,23 @@ bool StatementID::operator<(const StatementID& other) const {
 ErrorDelegate::~ErrorDelegate() {
 }
 
-Connection::StatementRef::StatementRef()
-    : connection_(NULL),
-      stmt_(NULL) {
-}
-
-Connection::StatementRef::StatementRef(sqlite3_stmt* stmt)
-    : connection_(NULL),
-      stmt_(stmt) {
-}
-
 Connection::StatementRef::StatementRef(Connection* connection,
-                                       sqlite3_stmt* stmt)
+                                       sqlite3_stmt* stmt,
+                                       bool was_valid)
     : connection_(connection),
-      stmt_(stmt) {
-  connection_->StatementRefCreated(this);
+      stmt_(stmt),
+      was_valid_(was_valid) {
+  if (connection)
+    connection_->StatementRefCreated(this);
 }
 
 Connection::StatementRef::~StatementRef() {
   if (connection_)
     connection_->StatementRefDeleted(this);
-  Close();
+  Close(false);
 }
 
-void Connection::StatementRef::Close() {
+void Connection::StatementRef::Close(bool forced) {
   if (stmt_) {
     // Call to AssertIOAllowed() cannot go at the beginning of the function
     // because Close() is called unconditionally from destructor to clean
@@ -111,6 +104,11 @@ void Connection::StatementRef::Close() {
     stmt_ = NULL;
   }
   connection_ = NULL;  // The connection may be getting deleted.
+
+  // Forced close is expected to happen from a statement error
+  // handler.  In that case maintain the sense of |was_valid_| which
+  // previously held for this ref.
+  was_valid_ = was_valid_ && forced;
 }
 
 Connection::Connection()
@@ -121,6 +119,7 @@ Connection::Connection()
       transaction_nesting_(0),
       needs_rollback_(false),
       in_memory_(false),
+      poisoned_(false),
       error_delegate_(NULL) {
 }
 
@@ -141,22 +140,28 @@ bool Connection::OpenInMemory() {
   return OpenInternal(":memory:");
 }
 
-void Connection::Close() {
+void Connection::CloseInternal(bool forced) {
   // TODO(shess): Calling "PRAGMA journal_mode = DELETE" at this point
   // will delete the -journal file.  For ChromiumOS or other more
   // embedded systems, this is probably not appropriate, whereas on
   // desktop it might make some sense.
 
   // sqlite3_close() needs all prepared statements to be finalized.
-  // Release all cached statements, then assert that the client has
-  // released all statements.
-  statement_cache_.clear();
-  DCHECK(open_statements_.empty());
 
-  // Additionally clear the prepared statements, because they contain
-  // weak references to this connection.  This case has come up when
-  // error-handling code is hit in production.
-  ClearCache();
+  // Release cached statements.
+  statement_cache_.clear();
+
+  // With cached statements released, in-use statements will remain.
+  // Closing the database while statements are in use is an API
+  // violation, except for forced close (which happens from within a
+  // statement's error handler).
+  DCHECK(forced || open_statements_.empty());
+
+  // Deactivate any outstanding statements so sqlite3_close() works.
+  for (StatementRefSet::iterator i = open_statements_.begin();
+       i != open_statements_.end(); ++i)
+    (*i)->Close(forced);
+  open_statements_.clear();
 
   if (db_) {
     // Call to AssertIOAllowed() cannot go at the beginning of the function
@@ -172,11 +177,23 @@ void Connection::Close() {
   }
 }
 
+void Connection::Close() {
+  // If the database was already closed by RazeAndClose(), then no
+  // need to close again.  Clear the |poisoned_| bit so that incorrect
+  // API calls are caught.
+  if (poisoned_) {
+    poisoned_ = false;
+    return;
+  }
+
+  CloseInternal(false);
+}
+
 void Connection::Preload() {
   AssertIOAllowed();
 
   if (!db_) {
-    DLOG(FATAL) << "Cannot preload null db";
+    DLOG_IF(FATAL, !poisoned_) << "Cannot preload null db";
     return;
   }
 
@@ -202,7 +219,7 @@ bool Connection::Raze() {
   AssertIOAllowed();
 
   if (!db_) {
-    DLOG(FATAL) << "Cannot raze null db";
+    DLOG_IF(FATAL, !poisoned_) << "Cannot raze null db";
     return false;
   }
 
@@ -292,13 +309,36 @@ bool Connection::Raze() {
 
 bool Connection::RazeWithTimout(base::TimeDelta timeout) {
   if (!db_) {
-    DLOG(FATAL) << "Cannot raze null db";
+    DLOG_IF(FATAL, !poisoned_) << "Cannot raze null db";
     return false;
   }
 
   ScopedBusyTimeout busy_timeout(db_);
   busy_timeout.SetTimeout(timeout);
   return Raze();
+}
+
+bool Connection::RazeAndClose() {
+  if (!db_) {
+    DLOG_IF(FATAL, !poisoned_) << "Cannot raze null db";
+    return false;
+  }
+
+  // Raze() cannot run in a transaction.
+  while (transaction_nesting_) {
+    RollbackTransaction();
+  }
+
+  bool result = Raze();
+
+  CloseInternal(true);
+
+  // Mark the database so that future API calls fail appropriately,
+  // but don't DCHECK (because after calling this function they are
+  // expected to fail).
+  poisoned_ = true;
+
+  return result;
 }
 
 bool Connection::BeginTransaction() {
@@ -324,7 +364,7 @@ bool Connection::BeginTransaction() {
 
 void Connection::RollbackTransaction() {
   if (!transaction_nesting_) {
-    DLOG(FATAL) << "Rolling back a nonexistent transaction";
+    DLOG_IF(FATAL, !poisoned_) << "Rolling back a nonexistent transaction";
     return;
   }
 
@@ -341,7 +381,7 @@ void Connection::RollbackTransaction() {
 
 bool Connection::CommitTransaction() {
   if (!transaction_nesting_) {
-    DLOG(FATAL) << "Rolling back a nonexistent transaction";
+    DLOG_IF(FATAL, !poisoned_) << "Rolling back a nonexistent transaction";
     return false;
   }
   transaction_nesting_--;
@@ -362,12 +402,19 @@ bool Connection::CommitTransaction() {
 
 int Connection::ExecuteAndReturnErrorCode(const char* sql) {
   AssertIOAllowed();
-  if (!db_)
-    return false;
+  if (!db_) {
+    DLOG_IF(FATAL, !poisoned_) << "Illegal use of connection without a db";
+    return SQLITE_ERROR;
+  }
   return sqlite3_exec(db_, sql, NULL, NULL, NULL);
 }
 
 bool Connection::Execute(const char* sql) {
+  if (!db_) {
+    DLOG_IF(FATAL, !poisoned_) << "Illegal use of connection without a db";
+    return false;
+  }
+
   int error = ExecuteAndReturnErrorCode(sql);
   if (error != SQLITE_OK)
     error = OnSqliteError(error, NULL);
@@ -381,8 +428,10 @@ bool Connection::Execute(const char* sql) {
 }
 
 bool Connection::ExecuteWithTimeout(const char* sql, base::TimeDelta timeout) {
-  if (!db_)
+  if (!db_) {
+    DLOG_IF(FATAL, !poisoned_) << "Illegal use of connection without a db";
     return false;
+  }
 
   ScopedBusyTimeout busy_timeout(db_);
   busy_timeout.SetTimeout(timeout);
@@ -417,8 +466,9 @@ scoped_refptr<Connection::StatementRef> Connection::GetUniqueStatement(
     const char* sql) {
   AssertIOAllowed();
 
+  // Return inactive statement.
   if (!db_)
-    return new StatementRef();  // Return inactive statement.
+    return new StatementRef(NULL, NULL, poisoned_);
 
   sqlite3_stmt* stmt = NULL;
   int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL);
@@ -428,28 +478,34 @@ scoped_refptr<Connection::StatementRef> Connection::GetUniqueStatement(
 
     // It could also be database corruption.
     OnSqliteError(rc, NULL);
-    return new StatementRef();
+    return new StatementRef(NULL, NULL, false);
   }
-  return new StatementRef(this, stmt);
+  return new StatementRef(this, stmt, true);
 }
 
 scoped_refptr<Connection::StatementRef> Connection::GetUntrackedStatement(
     const char* sql) const {
+  // Return inactive statement.
   if (!db_)
-    return new StatementRef();  // Return inactive statement.
+    return new StatementRef(NULL, NULL, poisoned_);
 
   sqlite3_stmt* stmt = NULL;
   int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL);
   if (rc != SQLITE_OK) {
     // This is evidence of a syntax error in the incoming SQL.
     DLOG(FATAL) << "SQL compile error " << GetErrorMessage();
-    return new StatementRef();
+    return new StatementRef(NULL, NULL, false);
   }
-  return new StatementRef(stmt);
+  return new StatementRef(NULL, stmt, true);
 }
 
 bool Connection::IsSQLValid(const char* sql) {
   AssertIOAllowed();
+  if (!db_) {
+    DLOG_IF(FATAL, !poisoned_) << "Illegal use of connection without a db";
+    return false;
+  }
+
   sqlite3_stmt* stmt = NULL;
   if (sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL) != SQLITE_OK)
     return false;
@@ -492,7 +548,7 @@ bool Connection::DoesColumnExist(const char* table_name,
 
 int64 Connection::GetLastInsertRowId() const {
   if (!db_) {
-    DLOG(FATAL) << "Illegal use of connection without a db";
+    DLOG_IF(FATAL, !poisoned_) << "Illegal use of connection without a db";
     return 0;
   }
   return sqlite3_last_insert_rowid(db_);
@@ -500,7 +556,7 @@ int64 Connection::GetLastInsertRowId() const {
 
 int Connection::GetLastChangeCount() const {
   if (!db_) {
-    DLOG(FATAL) << "Illegal use of connection without a db";
+    DLOG_IF(FATAL, !poisoned_) << "Illegal use of connection without a db";
     return 0;
   }
   return sqlite3_changes(db_);
@@ -536,6 +592,14 @@ bool Connection::OpenInternal(const std::string& file_name) {
     DLOG(FATAL) << "sql::Connection is already open.";
     return false;
   }
+
+  // If |poisoned_| is set, it means an error handler called
+  // RazeAndClose().  Until regular Close() is called, the caller
+  // should be treating the database as open, but is_open() currently
+  // only considers the sqlite3 handle's state.
+  // TODO(shess): Revise is_open() to consider poisoned_, and review
+  // to see if any non-testing code even depends on it.
+  DLOG_IF(FATAL, poisoned_) << "sql::Connection is already open.";
 
   int err = sqlite3_open(file_name.c_str(), &db_);
   if (err != SQLITE_OK) {
@@ -639,17 +703,6 @@ void Connection::StatementRefDeleted(StatementRef* ref) {
     DLOG(FATAL) << "Could not find statement";
   else
     open_statements_.erase(i);
-}
-
-void Connection::ClearCache() {
-  statement_cache_.clear();
-
-  // The cache clear will get most statements. There may be still be references
-  // to some statements that are held by others (including one-shot statements).
-  // This will deactivate them so they can't be used again.
-  for (StatementRefSet::iterator i = open_statements_.begin();
-       i != open_statements_.end(); ++i)
-    (*i)->Close();
 }
 
 int Connection::OnSqliteError(int err, sql::Statement *stmt) {

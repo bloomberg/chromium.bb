@@ -4,6 +4,7 @@
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -279,6 +280,111 @@ TEST_F(SQLConnectionTest, RazeLocked) {
   ASSERT_TRUE(db().Raze());
 }
 
+// Basic test of RazeAndClose() operation.
+TEST_F(SQLConnectionTest, RazeAndClose) {
+  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
+  const char* kPopulateSql = "INSERT INTO foo (value) VALUES (12)";
+
+  // Test that RazeAndClose() closes the database, and that the
+  // database is empty when re-opened.
+  ASSERT_TRUE(db().Execute(kCreateSql));
+  ASSERT_TRUE(db().Execute(kPopulateSql));
+  ASSERT_TRUE(db().RazeAndClose());
+  ASSERT_FALSE(db().is_open());
+  db().Close();
+  ASSERT_TRUE(db().Open(db_path()));
+  {
+    sql::Statement s(db().GetUniqueStatement("SELECT * FROM sqlite_master"));
+    ASSERT_FALSE(s.Step());
+  }
+
+  // Test that RazeAndClose() can break transactions.
+  ASSERT_TRUE(db().Execute(kCreateSql));
+  ASSERT_TRUE(db().Execute(kPopulateSql));
+  ASSERT_TRUE(db().BeginTransaction());
+  ASSERT_TRUE(db().RazeAndClose());
+  ASSERT_FALSE(db().is_open());
+  ASSERT_FALSE(db().CommitTransaction());
+  db().Close();
+  ASSERT_TRUE(db().Open(db_path()));
+  {
+    sql::Statement s(db().GetUniqueStatement("SELECT * FROM sqlite_master"));
+    ASSERT_FALSE(s.Step());
+  }
+}
+
+// Test that various operations fail without crashing after
+// RazeAndClose().
+TEST_F(SQLConnectionTest, RazeAndCloseDiagnostics) {
+  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
+  const char* kPopulateSql = "INSERT INTO foo (value) VALUES (12)";
+  const char* kSimpleSql = "SELECT 1";
+
+  ASSERT_TRUE(db().Execute(kCreateSql));
+  ASSERT_TRUE(db().Execute(kPopulateSql));
+
+  // Test baseline expectations.
+  db().Preload();
+  ASSERT_TRUE(db().DoesTableExist("foo"));
+  ASSERT_TRUE(db().IsSQLValid(kSimpleSql));
+  ASSERT_EQ(SQLITE_OK, db().ExecuteAndReturnErrorCode(kSimpleSql));
+  ASSERT_TRUE(db().Execute(kSimpleSql));
+  ASSERT_TRUE(db().is_open());
+  {
+    sql::Statement s(db().GetUniqueStatement(kSimpleSql));
+    ASSERT_TRUE(s.Step());
+  }
+  {
+    sql::Statement s(db().GetCachedStatement(SQL_FROM_HERE, kSimpleSql));
+    ASSERT_TRUE(s.Step());
+  }
+  ASSERT_TRUE(db().BeginTransaction());
+  ASSERT_TRUE(db().CommitTransaction());
+  ASSERT_TRUE(db().BeginTransaction());
+  db().RollbackTransaction();
+
+  ASSERT_TRUE(db().RazeAndClose());
+
+  // At this point, they should all fail, but not crash.
+  db().Preload();
+  ASSERT_FALSE(db().DoesTableExist("foo"));
+  ASSERT_FALSE(db().IsSQLValid(kSimpleSql));
+  ASSERT_EQ(SQLITE_ERROR, db().ExecuteAndReturnErrorCode(kSimpleSql));
+  ASSERT_FALSE(db().Execute(kSimpleSql));
+  ASSERT_FALSE(db().is_open());
+  {
+    sql::Statement s(db().GetUniqueStatement(kSimpleSql));
+    ASSERT_FALSE(s.Step());
+  }
+  {
+    sql::Statement s(db().GetCachedStatement(SQL_FROM_HERE, kSimpleSql));
+    ASSERT_FALSE(s.Step());
+  }
+  ASSERT_FALSE(db().BeginTransaction());
+  ASSERT_FALSE(db().CommitTransaction());
+  ASSERT_FALSE(db().BeginTransaction());
+  db().RollbackTransaction();
+
+  // Close normally to reset the poisoned flag.
+  db().Close();
+
+  // DEATH tests not supported on Android or iOS.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // Once the real Close() has been called, various calls enforce API
+  // usage by becoming fatal in debug mode.  Since DEATH tests are
+  // expensive, just test one of them.
+  if (DLOG_IS_ON(FATAL)) {
+    ASSERT_DEATH({
+        db().IsSQLValid(kSimpleSql);
+      }, "Illegal use of connection without a db");
+  }
+#endif
+}
+
+// TODO(shess): Spin up a background thread to hold other_db, to more
+// closely match real life.  That would also allow testing
+// RazeWithTimeout().
+
 #if defined(OS_ANDROID)
 TEST_F(SQLConnectionTest, SetTempDirForSQL) {
 
@@ -291,7 +397,3 @@ TEST_F(SQLConnectionTest, SetTempDirForSQL) {
   ASSERT_TRUE(meta_table.Init(&db(), 4, 4));
 }
 #endif
-
-// TODO(shess): Spin up a background thread to hold other_db, to more
-// closely match real life.  That would also allow testing
-// RazeWithTimeout().

@@ -1044,9 +1044,8 @@ void SQLitePersistentCookieStore::Backend::KillDatabase() {
   if (db_.get()) {
     // This Backend will now be in-memory only. In a future run we will recreate
     // the database. Hopefully things go better then!
-    bool success = db_->Raze();
+    bool success = db_->RazeAndClose();
     UMA_HISTOGRAM_BOOLEAN("Cookie.KillDatabaseResult", success);
-    db_->Close();
     meta_table_.Reset();
     db_.reset();
   }
