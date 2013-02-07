@@ -33,7 +33,8 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   enum EditingBehavior {
     EDITING_BEHAVIOR_MAC,
     EDITING_BEHAVIOR_WIN,
-    EDITING_BEHAVIOR_UNIX
+    EDITING_BEHAVIOR_UNIX,
+    EDITING_BEHAVIOR_ANDROID
   };
 
   // The ISO 15924 script code for undetermined script aka Common. It's the

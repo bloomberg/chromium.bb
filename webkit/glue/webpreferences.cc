@@ -132,6 +132,8 @@ WebPreferences::WebPreferences()
       editing_behavior(EDITING_BEHAVIOR_MAC),
 #elif defined(OS_WIN)
       editing_behavior(EDITING_BEHAVIOR_WIN),
+#elif defined(OS_ANDROID)
+      editing_behavior(EDITING_BEHAVIOR_ANDROID),
 #elif defined(OS_POSIX)
       editing_behavior(EDITING_BEHAVIOR_UNIX),
 #else
@@ -506,5 +508,8 @@ COMPILE_ASSERT_MATCHING_ENUMS(
     WebPreferences::EDITING_BEHAVIOR_WIN, WebSettings::EditingBehaviorWin);
 COMPILE_ASSERT_MATCHING_ENUMS(
     WebPreferences::EDITING_BEHAVIOR_UNIX, WebSettings::EditingBehaviorUnix);
+COMPILE_ASSERT_MATCHING_ENUMS(
+    WebPreferences::EDITING_BEHAVIOR_ANDROID,
+    WebSettings::EditingBehaviorAndroid);
 
 }  // namespace webkit_glue
