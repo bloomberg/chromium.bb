@@ -308,6 +308,12 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
     }
     case media::VideoCaptureCapability::kYUY2: {
       DCHECK(!chopped_width_ && !chopped_height_);
+      if (frame_info_.width * frame_info_.height * 2 != length) {
+        // If |length| of |data| does not match the expected width and height
+        // we can't convert the frame to I420. YUY2 is 2 bytes per pixel.
+        break;
+      }
+
       media::ConvertYUY2ToYUV(data, yplane, uplane, vplane, frame_info_.width,
                               frame_info_.height);
       break;
