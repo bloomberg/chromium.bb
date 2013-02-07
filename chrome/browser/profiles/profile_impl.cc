@@ -24,9 +24,6 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/background/background_mode_manager.h"
-#include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -232,34 +229,6 @@ std::string ExitTypeToSessionTypePrefValue(Profile::ExitType type) {
   }
   NOTREACHED();
   return std::string();
-}
-
-class BookmarkModelLoadedObserver : public BaseBookmarkModelObserver {
- public:
-  explicit BookmarkModelLoadedObserver(Profile* profile);
-
- private:
-  virtual void BookmarkModelChanged() OVERRIDE;
-  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
-
-  Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkModelLoadedObserver);
-};
-
-BookmarkModelLoadedObserver::BookmarkModelLoadedObserver(Profile* profile)
-    : profile_(profile) {
-}
-
-void BookmarkModelLoadedObserver::BookmarkModelChanged() {
-}
-
-void BookmarkModelLoadedObserver::Loaded(BookmarkModel* model,
-                                         bool ids_reassigned) {
-  // Causes lazy-load if sync is enabled.
-  ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
-  model->RemoveObserver(this);
-  delete this;
 }
 
 }  // namespace
@@ -477,8 +446,8 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
 #if !defined(OS_CHROMEOS)
   // Listen for bookmark model load, to bootstrap the sync service.
   // On CrOS sync service will be initialized after sign in.
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(this);
-  model->AddObserver(new BookmarkModelLoadedObserver(this));
+  registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
+                 content::Source<Profile>(this));
 #endif
 
   PrefService* local_state = g_browser_process->local_state();
@@ -955,6 +924,12 @@ void ProfileImpl::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
   switch (type) {
+    case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED:
+      // Causes lazy-load if sync is enabled.
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(this);
+      registrar_.Remove(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
+                        content::Source<Profile>(this));
+      break;
     case content::NOTIFICATION_ZOOM_LEVEL_CHANGED: {
       const std::string& host =
           *(content::Details<const std::string>(details).ptr());
