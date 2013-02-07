@@ -146,6 +146,8 @@ cr.define('cr.ui', function() {
     showMenu: function(shouldSetFocus) {
       this.hideMenu();
 
+      this.menu.updateCommands(this);
+
       var event = document.createEvent('UIEvents');
       event.initUIEvent('menushow', true, true, window, null);
 
