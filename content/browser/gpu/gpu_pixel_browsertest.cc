@@ -143,7 +143,8 @@ class GpuPixelBrowserTest : public ContentBrowserTest {
     }
 
     test_name_ = testing::UnitTest::GetInstance()->current_test_info()->name();
-    const char* test_status_prefixes[] = {"DISABLED_", "FLAKY_", "FAILS_"};
+    const char* test_status_prefixes[] = {
+        "DISABLED_", "FLAKY_", "FAILS_", "MANUAL_"};
     for (size_t i = 0; i < arraysize(test_status_prefixes); ++i) {
       ReplaceFirstSubstringAfterOffset(
           &test_name_, 0, test_status_prefixes[i], "");
