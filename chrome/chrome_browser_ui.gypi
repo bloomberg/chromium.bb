@@ -835,6 +835,8 @@
         'browser/ui/content_settings/content_setting_bubble_model.cc',
         'browser/ui/content_settings/content_setting_bubble_model.h',
         'browser/ui/content_settings/content_setting_bubble_model_delegate.h',
+        'browser/ui/content_settings/content_setting_changed_infobar_delegate.cc',
+        'browser/ui/content_settings/content_setting_changed_infobar_delegate.h',
         'browser/ui/content_settings/content_setting_image_model.cc',
         'browser/ui/content_settings/content_setting_image_model.h',
         'browser/ui/crypto_module_password_dialog.cc',

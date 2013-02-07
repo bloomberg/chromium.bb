@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
+#include "chrome/browser/ui/content_settings/content_setting_changed_infobar_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
@@ -30,6 +31,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -536,8 +538,13 @@ ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
 
 ContentSettingMediaStreamBubbleModel::~ContentSettingMediaStreamBubbleModel() {
   // Update the media settings if the radio button selection was changed.
-  if (selected_item_ != bubble_content().radio_group.default_item)
+  if (selected_item_ != bubble_content().radio_group.default_item) {
     UpdateSettings(radio_item_setting_[selected_item_]);
+    ContentSettingChangedInfoBarDelegate::Create(
+        InfoBarService::FromWebContents(web_contents()),
+        IDR_INFOBAR_MEDIA_STREAM_CAMERA,
+        IDS_MEDIASTREAM_SETTING_CHANGED_INFOBAR_MESSAGE);
+  }
 }
 
 void ContentSettingMediaStreamBubbleModel::SetTitle() {
