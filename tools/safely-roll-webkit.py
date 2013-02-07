@@ -43,7 +43,7 @@ def process_deps(path, new_rev):
 
 def main():
   tool_dir = os.path.dirname(os.path.abspath(__file__))
-  parser = optparse.OptionParser(usage='<new webkit rev>')
+  parser = optparse.OptionParser(usage='%prog [options] <new webkit rev>')
   parser.add_option('-v', '--verbose', action='count', default=0)
   parser.add_option('--commit', action='store_true', default=True,
                     help='(default) Put change in commit queue on upload.')
@@ -64,7 +64,8 @@ def main():
           [logging.WARNING, logging.INFO, logging.DEBUG][
             min(2, options.verbose)])
   if len(args) != 1:
-    parser.error('Need only one arg: new webkit revision to roll to.')
+    parser.print_help()
+    exit(0)
 
   root_dir = os.path.dirname(tool_dir)
   os.chdir(root_dir)
