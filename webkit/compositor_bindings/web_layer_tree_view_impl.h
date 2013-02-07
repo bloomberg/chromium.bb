@@ -59,6 +59,7 @@ public:
     virtual void renderingStats(WebRenderingStats&) const OVERRIDE;
     virtual void setShowFPSCounter(bool show);
     virtual void setShowPaintRects(bool show);
+    virtual void setShowDebugBorders(bool show);
     virtual void setContinuousPaintingEnabled(bool);
 
     // cc::LayerTreeHostClient implementation.

@@ -241,6 +241,12 @@ void RenderWidgetCompositor::setShowPaintRects(bool show) {
   layer_tree_host_->setDebugState(debug_state);
 }
 
+void RenderWidgetCompositor::setShowDebugBorders(bool show) {
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->debugState();
+  debug_state.showDebugBorders = show;
+  layer_tree_host_->setDebugState(debug_state);
+}
+
 void RenderWidgetCompositor::setContinuousPaintingEnabled(bool enabled) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->debugState();
   debug_state.continuousPainting = enabled;

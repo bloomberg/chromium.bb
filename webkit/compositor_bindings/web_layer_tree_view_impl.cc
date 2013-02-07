@@ -217,6 +217,13 @@ void WebLayerTreeViewImpl::setShowPaintRects(bool show)
     m_layerTreeHost->setDebugState(debugState);
 }
 
+void WebLayerTreeViewImpl::setShowDebugBorders(bool show)
+{
+    LayerTreeDebugState debugState = m_layerTreeHost->debugState();
+    debugState.showDebugBorders = show;
+    m_layerTreeHost->setDebugState(debugState);
+}
+
 void WebLayerTreeViewImpl::setContinuousPaintingEnabled(bool enabled)
 {
     LayerTreeDebugState debugState = m_layerTreeHost->debugState();
