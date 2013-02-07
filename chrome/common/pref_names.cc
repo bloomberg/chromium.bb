@@ -2190,10 +2190,6 @@ const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
 // kShelfAutoHideBehavior.
 const char kShelfPreferences[] = "shelf_preferences";
 
-const char kFlingMaxCancelToDownTimeInMs[] =
-    "gesture.fling_max_cancel_to_down_time_in_ms";
-const char kFlingMaxTapGapTimeInMs[] =
-    "gesture.fling_max_tap_gap_time_in_ms";
 const char kFlingVelocityCap[] = "gesture.fling_velocity_cap";
 const char kLongPressTimeInSeconds[] =
     "gesture.long_press_time_in_seconds";
@@ -2241,7 +2237,16 @@ const char kFlingAccelerationCurveCoefficient2[] =
     "gesture.fling_acceleration_curve_coefficient_2";
 const char kFlingAccelerationCurveCoefficient3[] =
     "gesture.fling_acceleration_curve_coefficient_3";
-
+const char kFlingCurveTouchpadAlpha[] = "flingcurve.touchpad_alpha";
+const char kFlingCurveTouchpadBeta[] = "flingcurve.touchpad_beta";
+const char kFlingCurveTouchpadGamma[] = "flingcurve.touchpad_gamma";
+const char kFlingCurveTouchscreenAlpha[] = "flingcurve.touchscreen_alpha";
+const char kFlingCurveTouchscreenBeta[] = "flingcurve.touchscreen_beta";
+const char kFlingCurveTouchscreenGamma[] = "flingcurve.touchscreen_gamma";
+const char kFlingMaxCancelToDownTimeInMs[] =
+    "gesture.fling_max_cancel_to_down_time_in_ms";
+const char kFlingMaxTapGapTimeInMs[] =
+    "gesture.fling_max_tap_gap_time_in_ms";
 const char kOverscrollHorizontalThresholdComplete[] =
     "overscroll.horizontal_threshold_complete";
 const char kOverscrollVerticalThresholdComplete[] =

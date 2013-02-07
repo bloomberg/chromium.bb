@@ -24,6 +24,7 @@ class GesturePrefsObserverFactoryAura : public ProfileKeyedServiceFactory {
   virtual ~GesturePrefsObserverFactoryAura();
 
   void RegisterOverscrollPrefs(PrefServiceSyncable* prefs);
+  void RegisterFlingCurveParameters(PrefServiceSyncable* prefs);
 
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(

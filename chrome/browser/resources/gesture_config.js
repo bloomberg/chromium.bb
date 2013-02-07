@@ -304,6 +304,50 @@ function OverscrollConfig() {
 }
 
 /**
+ * Returns a GeneralConfig for configuring flingcurve.* preferences.
+ * @return {object} A GeneralConfig object.
+ */
+function FlingConfig() {
+  var FLING_PREFIX = 'flingcurve.';
+
+  var FLING_FIELDS = [
+    {
+      key: 'touchscreen_alpha',
+      label: 'Touchscreen fling deacceleration coefficients',
+      units: 'alpha'
+    },
+    {
+      key: 'touchscreen_beta',
+      label: '',
+      units: 'beta'
+    },
+    {
+      key: 'touchscreen_gamma',
+      label: '',
+      units: 'gamma'
+    },
+    {
+      key: 'touchpad_alpha',
+      label: 'Touchpad fling deacceleration coefficients',
+      units: 'alpha'
+    },
+    {
+      key: 'touchpad_beta',
+      label: '',
+      units: 'beta'
+    },
+    {
+      key: 'touchpad_gamma',
+      label: '',
+      units: 'gamma'
+    },
+  ];
+
+  return new GeneralConfig(FLING_PREFIX, FLING_FIELDS);
+}
+
+
+/**
  * WebUI instance for configuring gesture.* and overscroll.* preference values
  * used by Chrome's gesture recognition system.
  */
@@ -319,9 +363,13 @@ var gesture_config = (function() {
     var o = OverscrollConfig();
     o.buildAll();
 
+    var f = FlingConfig();
+    f.buildAll();
+
     $('reset-button').onclick = function() {
       g.onReset();
       o.onReset();
+      f.onReset();
     };
   }
 

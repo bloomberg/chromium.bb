@@ -118,6 +118,19 @@ void UpdateFromSystemSettings(
   // and then convert to seconds.
   prefs->caret_blink_interval =
       views::NativeTextfieldViews::kCursorBlinkCycleMs / 2.0 / 1000;
+
+  prefs->touchpad_fling_profile[0] =
+      pref_service->GetDouble(prefs::kFlingCurveTouchpadAlpha);
+  prefs->touchpad_fling_profile[1] =
+      pref_service->GetDouble(prefs::kFlingCurveTouchpadBeta);
+  prefs->touchpad_fling_profile[2] =
+      pref_service->GetDouble(prefs::kFlingCurveTouchpadGamma);
+  prefs->touchscreen_fling_profile[0] =
+      pref_service->GetDouble(prefs::kFlingCurveTouchscreenAlpha);
+  prefs->touchscreen_fling_profile[1] =
+      pref_service->GetDouble(prefs::kFlingCurveTouchscreenBeta);
+  prefs->touchscreen_fling_profile[2] =
+      pref_service->GetDouble(prefs::kFlingCurveTouchscreenGamma);
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)

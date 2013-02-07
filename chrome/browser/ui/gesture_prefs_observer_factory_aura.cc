@@ -14,7 +14,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/overscroll_configuration.h"
+#include "content/public/common/renderer_preferences.h"
 #include "ui/base/gestures/gesture_configuration.h"
 
 using ui::GestureConfiguration;
@@ -56,8 +58,17 @@ class GesturePrefsObserver : public ProfileKeyedService {
   virtual void Shutdown() OVERRIDE;
 
  private:
+  // Notification callback invoked when browser-side preferences
+  // are updated and need to be pushed into ui::GesturePreferences.
   void Update();
 
+  // Notification callback invoked when the fling deacceleration
+  // gesture preferences are changed from chrome://gesture.
+  // Broadcasts the changes all renderers where they are used.
+  void Notify();
+
+  // Notification helper to push overscroll preferences into
+  // content.
   void UpdateOverscrollPrefs();
 
   PrefChangeRegistrar registrar_;
@@ -105,16 +116,37 @@ const char* kOverscrollPrefs[] = {
   prefs::kOverscrollVerticalResistThreshold,
 };
 
+const char* kFlingTouchpadPrefs[] = {
+  prefs::kFlingCurveTouchpadAlpha,
+  prefs::kFlingCurveTouchpadBeta,
+  prefs::kFlingCurveTouchpadGamma
+};
+
+const char* kFlingTouchscreenPrefs[] = {
+  prefs::kFlingCurveTouchscreenAlpha,
+  prefs::kFlingCurveTouchscreenBeta,
+  prefs::kFlingCurveTouchscreenGamma,
+};
+
 GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
     : prefs_(prefs) {
   registrar_.Init(prefs);
   registrar_.RemoveAll();
   base::Closure callback = base::Bind(&GesturePrefsObserver::Update,
                                       base::Unretained(this));
+
+  base::Closure notify_callback = base::Bind(&GesturePrefsObserver::Notify,
+                                             base::Unretained(this));
+
   for (size_t i = 0; i < arraysize(kPrefsToObserve); ++i)
     registrar_.Add(kPrefsToObserve[i], callback);
   for (size_t i = 0; i < arraysize(kOverscrollPrefs); ++i)
     registrar_.Add(kOverscrollPrefs[i], callback);
+
+  for (size_t i = 0; i < arraysize(kFlingTouchpadPrefs); ++i)
+    registrar_.Add(kFlingTouchpadPrefs[i], notify_callback);
+  for (size_t i = 0; i < arraysize(kFlingTouchscreenPrefs); ++i)
+    registrar_.Add(kFlingTouchscreenPrefs[i], notify_callback);
 }
 
 GesturePrefsObserver::~GesturePrefsObserver() {}
@@ -208,6 +240,15 @@ void GesturePrefsObserver::UpdateOverscrollPrefs() {
   }
 }
 
+void GesturePrefsObserver::Notify() {
+  // Must do a notify to distribute the changes to all renderers.
+  content::NotificationService* service =
+      content::NotificationService::current();
+  service->Notify(chrome::NOTIFICATION_BROWSER_FLING_CURVE_PARAMETERS_CHANGED,
+                  content::Source<GesturePrefsObserver>(this),
+                  content::NotificationService::NoDetails());
+}
+
 }  // namespace
 
 // static
@@ -238,6 +279,21 @@ void GesturePrefsObserverFactoryAura::RegisterOverscrollPrefs(
         content::GetOverscrollConfig(overscroll_prefs[i].config),
         PrefServiceSyncable::UNSYNCABLE_PREF);
   }
+}
+
+void GesturePrefsObserverFactoryAura::RegisterFlingCurveParameters(
+    PrefServiceSyncable* prefs) {
+  content::RendererPreferences def_prefs;
+
+  for (size_t i = 0; i < arraysize(kFlingTouchpadPrefs); i++)
+    prefs->RegisterDoublePref(kFlingTouchpadPrefs[i],
+                              def_prefs.touchpad_fling_profile[i],
+                              PrefServiceSyncable::UNSYNCABLE_PREF);
+
+  for (size_t i = 0; i < arraysize(kFlingTouchscreenPrefs); i++)
+    prefs->RegisterDoublePref(kFlingTouchscreenPrefs[i],
+                              def_prefs.touchscreen_fling_profile[i],
+                              PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 void GesturePrefsObserverFactoryAura::RegisterUserPrefs(
@@ -356,6 +412,7 @@ void GesturePrefsObserverFactoryAura::RegisterUserPrefs(
   prefs->ClearPref(kTouchScreenFlingAccelerationAdjustment);
 
   RegisterOverscrollPrefs(prefs);
+  RegisterFlingCurveParameters(prefs);
 }
 
 bool GesturePrefsObserverFactoryAura::ServiceIsCreatedWithProfile() const {
