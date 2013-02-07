@@ -6,6 +6,7 @@
 #include "cc/content_layer_client.h"
 #include "cc/picture.h"
 #include "cc/rendering_stats.h"
+#include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkTileGridPicture.h"
@@ -101,7 +102,8 @@ void Picture::Raster(
     gfx::Rect content_rect,
     float contents_scale) {
   TRACE_EVENT2("cc", "Picture::Raster",
-               "width", layer_rect_.width(), "height", layer_rect_.height());
+               "layer width", layer_rect_.width(),
+               "layer height", layer_rect_.height());
   DCHECK(picture_);
 
   canvas->save();
@@ -113,7 +115,16 @@ void Picture::Raster(
 }
 
 bool Picture::IsCheapInRect(const gfx::Rect& layer_rect) {
-  return false;
+  TRACE_EVENT0("cc", "Picture::IsCheapInRect");
+
+  SkBitmap emptyBitmap;
+  emptyBitmap.setConfig(SkBitmap::kNo_Config, layer_rect.width(),
+                        layer_rect.height());
+  skia::AnalysisDevice device(emptyBitmap);
+  skia::AnalysisCanvas canvas(&device);
+
+  canvas.drawPicture(*picture_);
+  return canvas.isCheap();
 }
 
 void Picture::GatherPixelRefs(const gfx::Rect& layer_rect,
