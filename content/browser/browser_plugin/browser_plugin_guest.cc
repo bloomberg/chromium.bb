@@ -568,7 +568,8 @@ void BrowserPluginGuest::OnTerminateGuest(int instance_id) {
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Terminate"));
   base::ProcessHandle process_handle =
       web_contents()->GetRenderProcessHost()->GetHandle();
-  base::KillProcess(process_handle, RESULT_CODE_KILLED, false);
+  if (process_handle)
+    base::KillProcess(process_handle, RESULT_CODE_KILLED, false);
 }
 
 void BrowserPluginGuest::OnUpdateRectACK(

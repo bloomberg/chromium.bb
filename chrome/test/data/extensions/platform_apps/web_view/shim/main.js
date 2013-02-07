@@ -220,6 +220,41 @@ onload = function() {
       });
       webview.setAttribute('src', 'data:text/html,trigger navigation');
       document.body.appendChild(webview);
+    },
+
+    // This test calls terminate() on guest after it has already been
+    // terminated. This makes sure we ignore the call gracefully.
+    function webViewTerminateAfterExitDoesntCrash() {
+      var webview = document.querySelector('webview');
+      webview.addEventListener('loadstart', function(evt) {
+        chrome.test.assertEq('loadstart', evt.type);
+      });
+
+      var loadstopSucceedsTest = false;
+      webview.addEventListener('loadstop', function(evt) {
+        chrome.test.assertEq('loadstop', evt.type);
+        if (loadstopSucceedsTest) {
+          chrome.test.succeed();
+          return;
+        }
+
+        webview.terminate();
+      });
+
+      webview.addEventListener('exit', function(evt) {
+        chrome.test.assertEq('exit', evt.type);
+        // Call terminate again.
+        webview.terminate();
+        // Load another page. The test would pass when loadstop is called on
+        // this second page. This would hopefully catch if call to
+        // webview.terminate() caused a browser crash.
+        setTimeout(function() {
+          loadstopSucceedsTest = true;
+          webview.setAttribute('src', 'data:text/html,test second page');
+        }, 0);
+      });
+
+      webview.setAttribute('src', 'data:text/html,test terminate() crash.');
     }
   ]);
 };
