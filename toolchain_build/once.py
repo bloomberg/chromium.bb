@@ -227,6 +227,7 @@ class Once(object):
     # these values, it just means that a superfluous build will be
     # done once to get the mapping from new input hash to preexisting
     # output hash into the cache.
+    assert len(sys.platform) != 0, len(platform.machine()) != 0
     items = [
         ('platform', sys.platform),
         ('machine', platform.machine()),
