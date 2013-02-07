@@ -1412,13 +1412,17 @@ DialogType.isModal = function(type) {
 
     var rootType = PathUtil.getRootType(path);
 
+    var iconDiv = this.document_.createElement('div');
+    iconDiv.className = 'volume-icon';
+    iconDiv.setAttribute('volume-type-icon', rootType);
+    if (rootType === RootType.REMOVABLE) {
+      iconDiv.setAttribute('volume-subtype',
+          this.volumeManager_.getDeviceType(path));
+    }
+    li.appendChild(iconDiv);
+
     var div = this.document_.createElement('div');
     div.className = 'root-label';
-
-    div.setAttribute('volume-type-icon', rootType);
-    if (rootType === RootType.REMOVABLE)
-      div.setAttribute('volume-subtype',
-          this.volumeManager_.getDeviceType(path));
 
     div.textContent = PathUtil.getRootLabel(path);
     li.appendChild(div);

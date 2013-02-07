@@ -255,10 +255,11 @@ li.root-item > .root-label {
   white-space: nowrap;
 }
 
-.root-label {
-  -webkit-padding-start: 38px;
-  background-position: left center;
+.volume-icon {
+  background-position: center center;
   background-repeat: no-repeat;
+  height: 24px;
+  width: 24px;
 }
 
 div.root-eject {
