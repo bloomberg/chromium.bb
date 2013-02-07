@@ -113,12 +113,30 @@ void MapperXGEAR(
 }
 
 
+void MapperDragonRiseGeneric(
+    const WebKit::WebGamepad& input,
+    WebKit::WebGamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[kButtonDpadUp] = AxisNegativeAsButton(input.axes[6]);
+  mapped->buttons[kButtonDpadDown] = AxisPositiveAsButton(input.axes[6]);
+  mapped->buttons[kButtonDpadLeft] = AxisNegativeAsButton(input.axes[5]);
+  mapped->buttons[kButtonDpadRight] = AxisPositiveAsButton(input.axes[5]);
+  mapped->axes[kAxisLeftStickX] = input.axes[0];
+  mapped->axes[kAxisLeftStickY] = input.axes[1];
+  mapped->axes[kAxisRightStickX] = input.axes[3];
+  mapped->axes[kAxisRightStickY] = input.axes[4];
+  mapped->buttonsLength = kNumButtons - 1; // no Meta on this device
+  mapped->axesLength = kNumAxes;
+}
+
+
 struct MappingData {
   const char* const vendor_id;
   const char* const product_id;
   GamepadStandardMappingFunction function;
 } AvailableMappings[] = {
   // http://www.linux-usb.org/usb.ids
+  { "0079", "0006", MapperDragonRiseGeneric }, // DragonRise Generic USB
   { "045e", "028e", MapperXInputStyleGamepad }, // Xbox 360 Controller
   { "045e", "028f", MapperXInputStyleGamepad }, // Xbox 360 Wireless Controller
   { "046d", "c21d", MapperXInputStyleGamepad }, // Logitech F310
