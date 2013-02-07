@@ -30,6 +30,8 @@ MediaGalleriesHandler::MediaGalleriesHandler() {
 }
 
 MediaGalleriesHandler::~MediaGalleriesHandler() {
+  if (select_file_dialog_.get())
+    select_file_dialog_->ListenerDestroyed();
 }
 
 void MediaGalleriesHandler::GetLocalizedValues(DictionaryValue* values) {
@@ -98,17 +100,18 @@ void MediaGalleriesHandler::OnGalleriesChanged() {
 }
 
 void MediaGalleriesHandler::HandleAddNewGallery(const base::ListValue* args) {
-  ui::SelectFileDialog* dialog = ui::SelectFileDialog::Create(
+  select_file_dialog_ = ui::SelectFileDialog::Create(
       this,
       new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
-  dialog->SelectFile(ui::SelectFileDialog::SELECT_FOLDER,
-                     string16(),  // TODO(estade): a name for the dialog?
-                     FilePath(),
-                     NULL, 0,
-                     FilePath::StringType(),
-                     web_ui()->GetWebContents()->GetView()->
-                         GetTopLevelNativeWindow(),
-                     NULL);
+  select_file_dialog_->SelectFile(
+      ui::SelectFileDialog::SELECT_FOLDER,
+      string16(),  // TODO(estade): a name for the dialog?
+      FilePath(),
+      NULL, 0,
+      FilePath::StringType(),
+      web_ui()->GetWebContents()->GetView()->
+          GetTopLevelNativeWindow(),
+      NULL);
 }
 
 void MediaGalleriesHandler::HandleForgetGallery(const base::ListValue* args) {

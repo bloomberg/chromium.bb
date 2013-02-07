@@ -89,9 +89,9 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
   // a dependency on chrome's extension system.)
   static void SetFactory(ui::SelectFileDialogFactory* factory);
 
-  // Creates a dialog box helper. This object is ref-counted, but the returned
-  // object will have no reference (refcount is 0). |policy| is an optional
-  // class that can prevent showing a dialog.
+  // Creates a dialog box helper. The returned object is ref-counted, starts
+  // with a ref-count of 0, and should be stored in a scoped_refptr<>.
+  // |policy| is an optional class that can prevent showing a dialog.
   static SelectFileDialog* Create(Listener* listener,
                                   ui::SelectFilePolicy* policy);
 

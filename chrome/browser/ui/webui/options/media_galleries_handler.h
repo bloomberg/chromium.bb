@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_MEDIA_GALLERIES_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_MEDIA_GALLERIES_HANDLER_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "content/public/browser/notification_observer.h"
@@ -40,6 +41,8 @@ class MediaGalleriesHandler : public OptionsPageUIHandler,
   void OnGalleriesChanged();
 
   PrefChangeRegistrar pref_change_registrar_;
+
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesHandler);
 };
