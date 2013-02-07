@@ -74,8 +74,10 @@ class MEDIA_EXPORT AudioOutputStream {
     // specific.
     virtual void OnError(AudioOutputStream* stream, int code) = 0;
 
-    // Will block until the client has written its audio data or 1.5 seconds
-    // have elapsed.
+    // Deprecated.  DO NOT USE.  Waits until data becomes available.  Used only
+    // by Windows' WaveOut clients which may be extremely laggy.  Will yield the
+    // current thread until the renderer client has written its audio data or
+    // 1.5 seconds have elapsed.
     virtual void WaitTillDataReady() {}
 
    protected:

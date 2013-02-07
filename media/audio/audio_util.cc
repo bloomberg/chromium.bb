@@ -200,8 +200,6 @@ size_t GetAudioHardwareBufferSize() {
   HRESULT hr = CoreAudioUtil::GetPreferredAudioParameters(eRender, eConsole,
                                                           &params);
   return FAILED(hr) ? kFallbackBufferSize : params.frames_per_buffer();
-#elif defined(OS_LINUX)
-  return 512;
 #else
   return 2048;
 #endif
