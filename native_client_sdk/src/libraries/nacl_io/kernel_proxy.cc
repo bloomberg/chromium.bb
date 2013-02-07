@@ -56,6 +56,11 @@ void KernelProxy::Init(PepperInterface* ppapi) {
   StringMap_t smap;
   mounts_["/"] = MountMem::Create<MountMem>(dev_++, smap, ppapi_);
   mounts_["/dev"] = MountDev::Create<MountDev>(dev_++, smap, ppapi_);
+
+  // Open the first three in order to get STDIN, STDOUT, STDERR
+  open("/dev/stdin", O_RDONLY);
+  open("/dev/stdout", O_WRONLY);
+  open("/dev/stderr", O_WRONLY);
 }
 
 int KernelProxy::open(const char *path, int oflags) {
@@ -113,20 +118,26 @@ int KernelProxy::dup(int oldfd) {
 }
 
 int KernelProxy::dup2(int oldfd, int newfd) {
+  // If it's the same file handle, just return
+  if (oldfd == newfd) return newfd;
+
   KernelHandle* old_handle = AcquireHandle(oldfd);
   if (NULL == old_handle) return -1;
 
-  if (oldfd == newfd) {
-    ReleaseHandle(old_handle);
-    return 0;
+  KernelHandle* new_handle = AcquireHandle(newfd);
+  if (NULL != new_handle) {
+    if (old_handle != new_handle) {
+      // Release the copy held by the descriptopr
+      ReleaseHandle(new_handle);
+      // Reassign the descriptor to the old handle
+      AssignFD(newfd, old_handle);
+    }
+
+    // Release this acquired copy
+    ReleaseHandle(new_handle);
   }
 
-  // Ignore the result, we don't care if newfd is valid or not.
-  close(newfd);
-
-  AssignFD(newfd, old_handle);
   ReleaseHandle(old_handle);
-
   return newfd;
 }
 

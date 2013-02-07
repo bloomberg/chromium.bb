@@ -43,9 +43,6 @@ EXTERN_C_END
 
 #define PPAPI_MAIN_DEFAULT_ARGS       \
   {                                   \
-    "pm_stdin", "/dev/null",          \
-    "pm_stdout", "/dev/console0",     \
-    "pm_stderr", "/dev/console3",     \
     NULL, NULL                        \
   }
 

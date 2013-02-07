@@ -21,6 +21,14 @@
 #  include <stdlib.h>
 #endif
 
+
+extern "C" {
+int _real_write(int fd, const void *buf, size_t count, size_t *nwrote);
+int _real_read(int fd, void *buf, size_t count, size_t *nread);
+int _real_fstat(int fd, struct stat *buf);
+};
+
+
 namespace {
 
 void ReleaseAndNullNode(MountNode** node) {
@@ -28,6 +36,19 @@ void ReleaseAndNullNode(MountNode** node) {
     (*node)->Release();
   *node = NULL;
 }
+
+
+class RealNode : public MountNode {
+ public:
+  RealNode(Mount* mount, int fd);
+
+  virtual int Read(size_t offs, void* buf, size_t count);
+  virtual int Write(size_t offs, const void* buf, size_t count);
+  virtual int GetStat(struct stat* stat);
+
+ protected:
+  int fd_;
+};
 
 class NullNode : public MountNode {
  public:
@@ -77,6 +98,41 @@ class UrandomNode : public MountNode {
   bool interface_ok_;
 #endif
 };
+
+RealNode::RealNode(Mount* mount, int fd)
+    : MountNode(mount),
+      fd_(fd) {
+  stat_.st_mode = S_IFCHR;
+}
+
+int RealNode::Read(size_t offs, void* buf, size_t count) {
+  size_t readcnt;
+  int err = _real_read(fd_, buf, count, &readcnt);
+  if (err) {
+    errno = err;
+    return -1;
+  }
+  return static_cast<int>(readcnt);
+}
+
+int RealNode::Write(size_t offs, const void* buf, size_t count) {
+  size_t writecnt;
+  int err = _real_write(fd_, buf, count, &writecnt);
+  if (err) {
+    errno = err;
+    return -1;
+  }
+  return static_cast<int>(writecnt);
+}
+
+int RealNode::GetStat(struct stat* stat) {
+  int err =  _real_fstat(fd_, stat);
+  if (err) {
+    errno = err;
+    return -1;
+  }
+  return 0;
+}
 
 NullNode::NullNode(Mount* mount)
     : MountNode(mount) {
@@ -266,10 +322,21 @@ bool MountDev::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
 
   tty_node_ = new TtyNode(this);
   root_->AddChild("/tty", tty_node_);
+
+  stdin_node_ = new RealNode(this, 0);
+  root_->AddChild("/stdin", stdin_node_);
+  stdout_node_ = new RealNode(this, 1);
+  root_->AddChild("/stdout", stdout_node_);
+  stderr_node_ = new RealNode(this, 2);
+  root_->AddChild("/stderr", stderr_node_);
+
   return true;
 }
 
 void MountDev::Destroy() {
+  ReleaseAndNullNode(&stdin_node_);
+  ReleaseAndNullNode(&stdout_node_);
+  ReleaseAndNullNode(&stderr_node_);
   ReleaseAndNullNode(&tty_node_);
   ReleaseAndNullNode(&console3_node_);
   ReleaseAndNullNode(&console2_node_);

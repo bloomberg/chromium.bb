@@ -229,6 +229,20 @@ int _write(int fd, const void* buf, size_t nbyte) {
   return ki_write(fd, buf, nbyte);
 }
 
+int _real_write(int fd, const void *buf, size_t count, size_t *nwrote) {
+  *nwrote = count;
+  return 0;
+}
+
+int _real_read(int fd, void *buf, size_t count, size_t *nread) {
+  *nread = count;
+  return 0;
+}
+
+int _real_fstat(int fd, struct stat *buf) {
+  return 0;
+}
+
 // Do nothing for Windows, we replace the library at link time.
 void kernel_wrap_init() {
 }

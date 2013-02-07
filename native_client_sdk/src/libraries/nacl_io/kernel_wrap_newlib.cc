@@ -67,7 +67,8 @@ int WRAP(dup)(int fd, int* newfd) {
 }
 
 int WRAP(dup2)(int fd, int newfd) {
-  return ki_dup2(fd, newfd);
+  newfd = ki_dup2(fd, newfd);
+  return (newfd < 0) ? errno : 0;
 }
 
 int WRAP(fstat)(int fd, struct stat *buf) {
@@ -163,6 +164,17 @@ int WRAP(write)(int fd, const void *buf, size_t count, size_t *nwrote) {
   return (signed_nwrote < 0) ? errno : 0;
 }
 
+int _real_write(int fd, const void *buf, size_t count, size_t *nwrote) {
+  return REAL(write)(fd, buf, count, nwrote);
+}
+
+int _real_read(int fd, void *buf, size_t count, size_t *nread) {
+  return REAL(read)(fd, buf, count, nread);
+}
+
+int _real_fstat(int fd, struct stat *buf) {
+  return REAL(fstat)(fd, buf);
+}
 
 void kernel_wrap_init() {
   static bool wrapped = false;

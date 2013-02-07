@@ -34,6 +34,9 @@ class MountDev : public Mount {
   MountNode* console2_node_;
   MountNode* console3_node_;
   MountNode* tty_node_;
+  MountNode* stderr_node_;
+  MountNode* stdin_node_;
+  MountNode* stdout_node_;
 
   friend class Mount;
 };

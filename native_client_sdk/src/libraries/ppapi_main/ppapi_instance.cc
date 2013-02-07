@@ -147,8 +147,8 @@ const char* PPAPIInstance::GetProperty(const char* key, const char* def) {
 }
 
 bool PPAPIInstance::ProcessProperties() {
-  const char* stdin_path = GetProperty("pm_stdio", "/dev/null");
-  const char* stdout_path = GetProperty("pm_stdout", "/dev/console1");
+  const char* stdin_path = GetProperty("pm_stdin", "/dev/stdin");
+  const char* stdout_path = GetProperty("pm_stdout", "/dev/stdout");
   const char* stderr_path = GetProperty("pm_stderr", "/dev/console3");
   const char* queue_size = GetProperty("pm_queue_size", "1024");
 
@@ -158,13 +158,19 @@ bool PPAPIInstance::ProcessProperties() {
   event_queue_.SetSize(queue_size_int);
 
   nacl_io_init_ppapi(PPAPI_GetInstanceId(), PPAPI_GetInterface);
+
   int fd0 = open(stdin_path, O_RDONLY);
+  dup2(fd0, 0);
+
   int fd1 = open(stdout_path, O_WRONLY);
+  dup2(fd1, 1);
+
   int fd2 = open(stderr_path, O_WRONLY);
+  dup2(fd2, 2);
+
   setvbuf(stderr, NULL, _IOLBF, 0);
   setvbuf(stdout, NULL, _IOLBF, 0);
-
-  return (fd0 == 0) && (fd1 == 1) && (fd2 == 2);
+  return true;
 }
 
 void PPAPIInstance::HandleMessage(const pp::Var& message) {}

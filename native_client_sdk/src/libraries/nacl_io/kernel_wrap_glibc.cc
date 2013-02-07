@@ -40,6 +40,23 @@ void stat_to_nacl_stat(const struct stat* buf, nacl_abi_stat* nacl_buf) {
   nacl_buf->nacl_abi_st_ctime = buf->st_ctime;
 }
 
+void nacl_stat_to_stat(const nacl_abi_stat* nacl_buf, struct stat* buf) {
+  memset(buf, 0, sizeof(struct stat));
+  buf->st_dev = nacl_buf->nacl_abi_st_dev;
+  buf->st_ino = nacl_buf->nacl_abi_st_ino;
+  buf->st_mode = nacl_buf->nacl_abi_st_mode;
+  buf->st_nlink = nacl_buf->nacl_abi_st_nlink;
+  buf->st_uid = nacl_buf->nacl_abi_st_uid;
+  buf->st_gid = nacl_buf->nacl_abi_st_gid;
+  buf->st_rdev = nacl_buf->nacl_abi_st_rdev;
+  buf->st_size = nacl_buf->nacl_abi_st_size ;
+  buf->st_blksize = nacl_buf->nacl_abi_st_blksize;
+  buf->st_blocks = nacl_buf->nacl_abi_st_blocks;
+  buf->st_atime = nacl_buf->nacl_abi_st_atime;
+  buf->st_mtime = nacl_buf->nacl_abi_st_mtime;
+  buf->st_ctime = nacl_buf->nacl_abi_st_ctime;
+}
+
 }  // namespace
 
 // From native_client/src/trusted/service_runtime/include/sys/dirent.h
@@ -220,8 +237,9 @@ int WRAP(read)(int fd, void *buf, size_t count, size_t *nread) {
   if (!ki_is_initialized())
     return REAL(read)(fd, buf, count, nread);
 
-  *nread = ki_read(fd, buf, count);
-  return (*nread < 0) ? errno : 0;
+  ssize_t signed_nread = ki_read(fd, buf, count);
+  *nread = static_cast<size_t>(signed_nread);
+  return (signed_nread < 0) ? errno : 0;
 }
 
 int remove(const char* path) NOTHROW {
@@ -267,8 +285,23 @@ int WRAP(write)(int fd, const void *buf, size_t count, size_t *nwrote) {
   if (!ki_is_initialized())
     return REAL(write)(fd, buf, count, nwrote);
 
-  *nwrote = ki_write(fd, buf, count);
-  return (*nwrote < 0) ? errno : 0;
+  ssize_t signed_nwrote = ki_write(fd, buf, count);
+  *nwrote = static_cast<size_t>(signed_nwrote);
+  return (signed_nwrote < 0) ? errno : 0;
+}
+
+int _real_write(int fd, const void *buf, size_t count, size_t *nwrote) {
+  return REAL(write)(fd, buf, count, nwrote);
+}
+
+int _real_read(int fd, void *buf, size_t count, size_t *nread) {
+  return REAL(read)(fd, buf, count, nread);
+}
+
+int _real_fstat(int fd, struct stat *buf) {
+  struct nacl_abi_stat st;
+  int ret = REAL(fstat)(fd, &st);
+
 }
 
 void kernel_wrap_init() {
