@@ -36,9 +36,10 @@ class SearchMetadataTest : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
+    fake_drive_service_.reset(new google_apis::FakeDriveService);
     file_system_.reset(new DriveFileSystem(profile_.get(),
                                            NULL,  // cache
-                                           new google_apis::FakeDriveService,
+                                           fake_drive_service_.get(),
                                            NULL,  // uploader
                                            NULL,  // webapps registry
                                            blocking_task_runner_));
@@ -54,6 +55,7 @@ class SearchMetadataTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<DriveFileSystem> file_system_;
 };
 

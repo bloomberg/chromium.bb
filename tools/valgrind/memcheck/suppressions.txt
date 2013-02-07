@@ -6536,9 +6536,3 @@
   fun:_ZN7content24NavigationControllerImpl17OnScreenshotTakenEibRK8SkBitmap
   fun:_ZN7content45NavigationControllerTest_PurgeScreenshot_Test8TestBodyEv
 }
-{
-  bug_174177
-  Memcheck:Leak
-  fun:_Znw*
-  fun:_ZN5drive18SearchMetadataTest5SetUpEv
-}

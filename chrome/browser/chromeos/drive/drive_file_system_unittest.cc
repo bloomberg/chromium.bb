@@ -202,8 +202,7 @@ class DriveFileSystemTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
 
-    // Allocate and keep a pointer to the mock, and inject it into the
-    // DriveFileSystem object, which will own the mock object.
+    // The fake object will be manually deleted in TearDown().
     fake_drive_service_ = new google_apis::FakeDriveService;
     fake_drive_service_->LoadResourceListForWapi(
         "gdata/root_feed.json");
