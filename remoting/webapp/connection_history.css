@@ -78,13 +78,13 @@ a.no-link {
 }
 
 .connection-history-summary.expanded .zippy {
-  background-image: url('disclosure_arrow_down.png');
+  background-image: url('disclosure_arrow_down.webp');
 }
 
 .zippy {
   width: 30px;
   height: 11px;
-  background-image: url('disclosure_arrow_right.png');
+  background-image: url('disclosure_arrow_right.webp');
   background-repeat: no-repeat;
   background-position: 10px 50%;
 }

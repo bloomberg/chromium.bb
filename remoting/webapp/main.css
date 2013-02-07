@@ -297,7 +297,7 @@ section {
 .host-list-empty-instructions {
   padding-__MSG_@@bidi_start_edge__: 36px;
   color: #666;
-  background-image: url('host_setup_instructions.png');
+  background-image: url('host_setup_instructions.webp');
   background-repeat: no-repeat;
   background-position: -3px -2px;
 }
@@ -336,7 +336,7 @@ section {
 }
 
 .error-state {
-  background-image: url('icon_warning.png');
+  background-image: url('icon_warning.webp');
   background-repeat: no-repeat;
   background-position: top __MSG_@@bidi_start_edge__;
   padding-__MSG_@@bidi_start_edge__: 30px;

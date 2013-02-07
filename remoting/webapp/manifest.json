@@ -10,9 +10,9 @@
     }
   },
   "icons": {
-    "128": "chromoting128.png",
-    "48": "chromoting48.png",
-    "16": "chromoting16.png"
+    "128": "chromoting128.webp",
+    "48": "chromoting48.webp",
+    "16": "chromoting16.webp"
   },
   "content_scripts": [
     {

@@ -72,7 +72,7 @@ remoting.HostTableEntry.prototype.create = function(host, onRename, onDelete) {
   tableRow.classList.add('section-row');
   // Create the host icon cell.
   var hostIcon = /** @type {HTMLElement} */ document.createElement('img');
-  hostIcon.src = 'icon_host.png';
+  hostIcon.src = 'icon_host.webp';
   hostIcon.classList.add('host-list-main-icon');
   tableRow.appendChild(hostIcon);
   // Create the host name cell.
@@ -84,7 +84,7 @@ remoting.HostTableEntry.prototype.create = function(host, onRename, onDelete) {
   var editButtonImg = /** @type {HTMLElement} */ document.createElement('img');
   editButtonImg.title = chrome.i18n.getMessage(
       /*i18n-content*/'TOOLTIP_RENAME');
-  editButtonImg.src = 'icon_pencil.png';
+  editButtonImg.src = 'icon_pencil.webp';
   editButton.tabIndex = 0;
   editButton.classList.add('clickable');
   editButton.classList.add('host-list-edit');
@@ -97,7 +97,7 @@ remoting.HostTableEntry.prototype.create = function(host, onRename, onDelete) {
       /** @type {HTMLElement} */ document.createElement('img');
   deleteButtonImg.title =
       chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_DELETE');
-  deleteButtonImg.src = 'icon_cross.png';
+  deleteButtonImg.src = 'icon_cross.webp';
   deleteButton.tabIndex = 0;
   deleteButton.classList.add('clickable');
   deleteButton.classList.add('host-list-edit');

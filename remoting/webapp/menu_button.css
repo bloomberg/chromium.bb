@@ -61,7 +61,7 @@
 }
 
 .menu-button li.selected {
-  background-image: url('tick.png');
+  background-image: url('tick.webp');
   background-position: left center;
   background-repeat: no-repeat;
 }
