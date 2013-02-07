@@ -681,10 +681,8 @@ def get_test_cases(cmd, cwd, whitelist, blacklist, index, shards, seed):
   return tests
 
 
-def LogResults(result_file, results):
-  """Write the results out to a file if one is given."""
-  if not result_file:
-    return
+def dump_results_as_json(result_file, results):
+  """Write the results out to a json file."""
   base_path = os.path.dirname(result_file)
   if base_path and not os.path.isdir(base_path):
     os.makedirs(base_path)
@@ -879,15 +877,19 @@ def run_test_cases(
       success.append(test_case)
     else:
       assert False, items
+  missing = list(set(test_cases) - set(success) - set(flaky) - set(fail))
 
   saved = {
     'test_cases': results,
+    'expected': len(test_cases),
     'success': success,
     'flaky': flaky,
     'fail': fail,
+    'missing': missing,
     'duration': duration,
   }
-  LogResults(result_file, saved)
+  if result_file:
+    dump_results_as_json(result_file, saved)
   sys.stdout.write('\n')
   if not results:
     return 1
@@ -911,7 +913,6 @@ def run_test_cases(
     ('Flaky', flaky),
     ('Fail', fail),
   ]
-  missing = set(test_cases) - set(success) - set(flaky) - set(fail)
   if missing:
     output.append(('Missing', missing))
   total_expected = len(test_cases)

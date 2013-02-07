@@ -117,7 +117,10 @@ class RunTestCases(unittest.TestCase):
       actual = json.load(f)
 
     self.assertEqual(
-        [u'duration', u'fail', u'flaky', u'success', u'test_cases'],
+        [
+          u'duration', u'expected', u'fail', u'flaky', u'missing', u'success',
+          u'test_cases',
+        ],
         sorted(actual))
 
     self.assertTrue(actual['duration'] > 0.0000001)
