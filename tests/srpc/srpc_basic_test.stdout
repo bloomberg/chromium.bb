@@ -1,93 +1,93 @@
-rpc call intiated bool:b:b
+rpc call initiated bool:b:b
 input 0:  b(0)
 rpc call complete bool:b:b
 output 0:  b(1)
 
-rpc call intiated bool:b:b
+rpc call initiated bool:b:b
 input 0:  b(1)
 rpc call complete bool:b:b
 output 0:  b(0)
 
-rpc call intiated double:d:d
+rpc call initiated double:d:d
 input 0:  d(1)
 rpc call complete double:d:d
 output 0:  d(-1)
 
-rpc call intiated nan::d
+rpc call initiated nan::d
 rpc call complete nan::d
 output 0:  d(NaN)
 
-rpc call intiated int:i:i
+rpc call initiated int:i:i
 input 0:  i(1)
 rpc call complete int:i:i
 output 0:  i(-1)
 
-rpc call intiated long:l:l
+rpc call initiated long:l:l
 input 0:  l(1)
 rpc call complete long:l:l
 output 0:  l(-1)
 
-rpc call intiated string:s:i
+rpc call initiated string:s:i
 input 0:  s("hello")
 rpc call complete string:s:i
 output 0:  i(5)
 
-rpc call intiated char_array:C:C
+rpc call initiated char_array:C:C
 input 0:  C(5,hello)
 rpc call complete char_array:C:C
 output 0:  C(5,olleh)
 
-rpc call intiated char_array:C:C
+rpc call initiated char_array:C:C
 input 0:  C(12,Hello,world.)
 rpc call complete char_array:C:C
 output 0:  C(12,.dlrow,olleH)
 
-rpc call intiated char_array:C:C
+rpc call initiated char_array:C:C
 input 0:  C(9,A\b\f\n\t\"\"\\\x7f)
 rpc call complete char_array:C:C
 output 0:  C(9,\x7f\\\"\"\t\n\f\bA)
 
-rpc call intiated char_array:C:C
+rpc call initiated char_array:C:C
 input 0:  C(7,\x88\x99\xaa\xbb\xcc\xdd\xee)
 rpc call complete char_array:C:C
 output 0:  C(7,\xee\xdd\xcc\xbb\xaa\x99\x88)
 
-rpc call intiated double_array:D:D
+rpc call initiated double_array:D:D
 input 0:  D(5,3.1,1.4,4.1,1.5,5.9)
 rpc call complete double_array:D:D
 output 0:  D(5,5.9,1.5,4.1,1.4,3.1)
 
-rpc call intiated int_array:I:I
+rpc call initiated int_array:I:I
 input 0:  I(5,1,2,3,4,5)
 rpc call complete int_array:I:I
 output 0:  I(5,5,4,3,2,1)
 
-rpc call intiated long_array:L:L
+rpc call initiated long_array:L:L
 input 0:  L(5,1,2,3,4,5)
 rpc call complete long_array:L:L
 output 0:  L(5,5,4,3,2,1)
 
-rpc call intiated null_method::
+rpc call initiated null_method::
 rpc call complete null_method::
 
-rpc call intiated stringret:i:s
+rpc call initiated stringret:i:s
 input 0:  i(0)
 rpc call complete stringret:i:s
 output 0:  s("Ich weiss nicht, was soll es bedeutenDass ich so traurig bin,Ein Maerchen aus uralten Zeiten,Das kommt mir nicht aus dem Sinn.Die Luft ist kuehl und es dunkelt,Und ruhig fliesst der Rhein;Der Gipfel des Berges funkelt,Im Abendsonnenschein.Die schoenste Jungfrau sitzetDort oben wunderbar,Ihr gold'nes Geschmeide blitzet,Sie kaemmt ihr goldenes Haar,Sie kaemmt es mit goldenem Kamme,Und singt ein Lied dabei;Das hat eine wundersame,Gewalt'ge Melodei.")
 
-rpc call intiated handle:h:
+rpc call initiated handle:h:
 input 0:  h(stderr)
 rpc call complete handle:h:
 
-rpc call intiated handleret::h
+rpc call initiated handleret::h
 rpc call complete handleret::h
 output 0:  h(imported_0)
 
-rpc call intiated invalid_handle:h:
+rpc call initiated invalid_handle:h:
 input 0:  h(invalid)
 rpc call complete invalid_handle:h:
 
-rpc call intiated invalid_handle_ret::h
+rpc call initiated invalid_handle_ret::h
 rpc call complete invalid_handle_ret::h
 output 0:  h(invalid)
 

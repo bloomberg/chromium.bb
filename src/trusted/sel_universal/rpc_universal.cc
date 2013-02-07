@@ -534,7 +534,7 @@ static bool HandleRpc(NaClCommandLoop* ncl, const vector<string>& args) {
   const string signature = BuildSignature(args[1], inv, outv);
 
   NaClSrpcArg* empty[] = {NULL};
-  printf("rpc call intiated %s\n", signature.c_str());
+  printf("rpc call initiated %s\n", signature.c_str());
   ncl->DumpArgsAndResults(inv, empty);
   fflush(stdout);
   fflush(stderr);

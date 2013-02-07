@@ -1,18 +1,18 @@
-rpc call intiated fib:iii:i
+rpc call initiated fib:iii:i
 input 0:  i(1)
 input 1:  i(1)
 input 2:  i(5)
 rpc call complete fib:iii:i
 output 0:  i(8)
 
-rpc call intiated fib:iii:i
+rpc call initiated fib:iii:i
 input 0:  i(2)
 input 1:  i(3)
 input 2:  i(10)
 rpc call complete fib:iii:i
 output 0:  i(233)
 
-rpc call intiated fib:iii:i
+rpc call initiated fib:iii:i
 input 0:  i(1)
 input 1:  i(1)
 input 2:  i(15)
