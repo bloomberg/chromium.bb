@@ -281,6 +281,7 @@ void WebUILoginView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   // Return the focus to the web contents.
   webui_login_->web_contents()->FocusThroughTabTraversal(reverse);
   GetWidget()->Activate();
+  webui_login_->web_contents()->Focus();
 }
 
 void WebUILoginView::Observe(int type,
