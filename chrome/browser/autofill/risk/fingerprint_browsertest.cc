@@ -14,6 +14,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebScreenInfo.h"
 #include "ui/gfx/rect.h"
 
 namespace autofill {
@@ -22,12 +24,16 @@ namespace risk {
 const int64 kGaiaId = GG_INT64_C(99194853094755497);
 const char kCharset[] = "UTF-8";
 const char kAcceptLanguages[] = "en-US,en";
+const int kScreenColorDepth = 53;
 
 class AutofillRiskFingerprintTest : public InProcessBrowserTest {
  public:
   AutofillRiskFingerprintTest()
       : kWindowBounds(2, 3, 5, 7),
         kContentBounds(11, 13, 17, 37),
+        kScreenBounds(0, 0, 101, 71),
+        kAvailableScreenBounds(0, 11, 101, 60),
+        kUnavailableScreenBounds(0, 0, 101, 11),
         message_loop_(MessageLoop::TYPE_UI) {}
 
   void GetFingerprintTestCallback(scoped_ptr<Fingerprint> fingerprint) {
@@ -49,6 +55,10 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
     ASSERT_TRUE(machine.has_screen_size());
     ASSERT_TRUE(machine.screen_size().has_width());
     ASSERT_TRUE(machine.screen_size().has_height());
+    ASSERT_TRUE(machine.has_screen_color_depth());
+    ASSERT_TRUE(machine.has_unavailable_screen_size());
+    ASSERT_TRUE(machine.unavailable_screen_size().has_width());
+    ASSERT_TRUE(machine.unavailable_screen_size().has_height());
     ASSERT_TRUE(machine.has_user_agent());
     ASSERT_TRUE(machine.has_cpu());
     ASSERT_TRUE(machine.cpu().has_vendor_name());
@@ -79,6 +89,11 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
     EXPECT_EQ("en-US", machine.requested_language(0));
     EXPECT_EQ("en", machine.requested_language(1));
     EXPECT_EQ(kCharset, machine.charset());
+    EXPECT_EQ(kScreenColorDepth, machine.screen_color_depth());
+    EXPECT_EQ(kUnavailableScreenBounds.width(),
+              machine.unavailable_screen_size().width());
+    EXPECT_EQ(kUnavailableScreenBounds.height(),
+              machine.unavailable_screen_size().height());
     EXPECT_EQ(kContentBounds.width(),
               transient_state.inner_window_size().width());
     EXPECT_EQ(kContentBounds.height(),
@@ -97,6 +112,9 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
  protected:
   const gfx::Rect kWindowBounds;
   const gfx::Rect kContentBounds;
+  const gfx::Rect kScreenBounds;
+  const gfx::Rect kAvailableScreenBounds;
+  const gfx::Rect kUnavailableScreenBounds;
   MessageLoop message_loop_;
 };
 
@@ -107,10 +125,15 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
   prefs.registry()->RegisterStringPref(prefs::kAcceptLanguages,
                                        kAcceptLanguages);
 
+  WebKit::WebScreenInfo screen_info;
+  screen_info.depth = kScreenColorDepth;
+  screen_info.rect = WebKit::WebRect(kScreenBounds);
+  screen_info.availableRect = WebKit::WebRect(kAvailableScreenBounds);
+
   // TODO(isherman): Investigating http://crbug.com/174296
   LOG(WARNING) << "Loading fingerprint.";
   GetFingerprint(
-      kGaiaId, kWindowBounds, kContentBounds, prefs,
+      kGaiaId, kWindowBounds, kContentBounds, screen_info, prefs,
       base::Bind(&AutofillRiskFingerprintTest::GetFingerprintTestCallback,
                  base::Unretained(this)));
 

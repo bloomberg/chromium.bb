@@ -25,9 +25,13 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/gpu_info.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebScreenInfo.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "webkit/plugins/webplugininfo.h"
+
+using WebKit::WebScreenInfo;
 
 namespace autofill {
 namespace risk {
@@ -66,9 +70,9 @@ std::string GetOperatingSystemVersion() {
       base::SysInfo::OperatingSystemVersion();
 }
 
-// Adds the list of |fonts| to the |fingerprint|.
+// Adds the list of |fonts| to the |machine|.
 void AddFontsToFingerprint(const base::ListValue& fonts,
-                           Fingerprint_MachineCharacteristics* fingerprint) {
+                           Fingerprint_MachineCharacteristics* machine) {
   for (base::ListValue::const_iterator it = fonts.begin();
        it != fonts.end(); ++it) {
     // Each item in the list is a two-element list such that the first element
@@ -81,17 +85,17 @@ void AddFontsToFingerprint(const base::ListValue& fonts,
     success = font_description->GetString(1, &font_name);
     DCHECK(success);
 
-    fingerprint->add_font(font_name);
+    machine->add_font(font_name);
   }
 }
 
-// Adds the list of |plugins| to the |fingerprint|.
+// Adds the list of |plugins| to the |machine|.
 void AddPluginsToFingerprint(const std::vector<webkit::WebPluginInfo>& plugins,
-                             Fingerprint_MachineCharacteristics* fingerprint) {
+                             Fingerprint_MachineCharacteristics* machine) {
   for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
        it != plugins.end(); ++it) {
     Fingerprint_MachineCharacteristics_Plugin* plugin =
-        fingerprint->add_plugin();
+        machine->add_plugin();
     plugin->set_name(UTF16ToUTF8(it->name));
     plugin->set_description(UTF16ToUTF8(it->desc));
     for (std::vector<webkit::WebPluginMimeType>::const_iterator mime_type =
@@ -103,47 +107,62 @@ void AddPluginsToFingerprint(const std::vector<webkit::WebPluginInfo>& plugins,
   }
 }
 
-// Adds the list of HTTP accept languages in |prefs| to the |fingerprint|.
+// Adds the list of HTTP accept languages in |prefs| to the |machine|.
 void AddAcceptLanguagesToFingerprint(
     const std::string& accept_languages_str,
-    Fingerprint_MachineCharacteristics* fingerprint) {
+    Fingerprint_MachineCharacteristics* machine) {
   std::vector<std::string> accept_languages;
   base::SplitString(accept_languages_str, ',', &accept_languages);
   for (std::vector<std::string>::const_iterator it = accept_languages.begin();
        it != accept_languages.end(); ++it) {
-    fingerprint->add_requested_language(*it);
+    machine->add_requested_language(*it);
   }
 }
 
-// Writes the number of screens and the primary display's screen size into the
-// |fingerprint|.
-void AddScreenInfoToFingerprint(
-    Fingerprint_MachineCharacteristics* fingerprint) {
+// Writes
+//   (a) the number of screens,
+//   (b) the primary display's screen size,
+//   (c) the screen's color depth, and
+//   (d) the size of the screen unavailable to web page content,
+//       i.e. the Taskbar size on Windows
+// into the |machine|.
+void AddScreenInfoToFingerprint(const WebScreenInfo& screen_info,
+                                Fingerprint_MachineCharacteristics* machine) {
   // TODO(scottmg): NativeScreen maybe wrong. http://crbug.com/133312
-  fingerprint->set_screen_count(
+  machine->set_screen_count(
       gfx::Screen::GetNativeScreen()->GetNumDisplays());
 
   gfx::Size screen_size =
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().GetSizeInPixel();
-  fingerprint->mutable_screen_size()->set_width(screen_size.width());
-  fingerprint->mutable_screen_size()->set_height(screen_size.height());
+  machine->mutable_screen_size()->set_width(screen_size.width());
+  machine->mutable_screen_size()->set_height(screen_size.height());
+
+  machine->set_screen_color_depth(screen_info.depth);
+
+  gfx::Rect screen_rect(screen_info.rect);
+  gfx::Rect available_rect(screen_info.availableRect);
+  gfx::Rect unavailable_rect = gfx::SubtractRects(screen_rect, available_rect);
+  machine->mutable_unavailable_screen_size()->set_width(
+      unavailable_rect.width());
+  machine->mutable_unavailable_screen_size()->set_height(
+      unavailable_rect.height());
 }
 
-// Writes info about the machine's CPU into the |fingerprint|.
-void AddCpuInfoToFingerprint(Fingerprint_MachineCharacteristics* fingerprint) {
+// Writes info about the machine's CPU into the |machine|.
+void AddCpuInfoToFingerprint(Fingerprint_MachineCharacteristics* machine) {
   base::CPU cpu;
-  fingerprint->mutable_cpu()->set_vendor_name(cpu.vendor_name());
-  fingerprint->mutable_cpu()->set_brand(cpu.cpu_brand());
+  machine->mutable_cpu()->set_vendor_name(cpu.vendor_name());
+  machine->mutable_cpu()->set_brand(cpu.cpu_brand());
 }
 
-// Writes info about the machine's GPU into the |fingerprint|.
-void AddGpuInfoToFingerprint(Fingerprint_MachineCharacteristics* fingerprint) {
+// Writes info about the machine's GPU into the |machine|.
+void AddGpuInfoToFingerprint(Fingerprint_MachineCharacteristics* machine) {
   const content::GPUInfo& gpu_info =
       content::GpuDataManager::GetInstance()->GetGPUInfo();
   DCHECK(gpu_info.finalized);
 
   Fingerprint_MachineCharacteristics_Graphics* graphics =
-      fingerprint->mutable_graphics_card();
+      machine->mutable_graphics_card();
   graphics->set_vendor_id(gpu_info.gpu.vendor_id);
   graphics->set_device_id(gpu_info.gpu.device_id);
   graphics->set_driver_version(gpu_info.driver_version);
@@ -164,6 +183,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
       int64 gaia_id,
       const gfx::Rect& window_bounds,
       const gfx::Rect& content_bounds,
+      const WebScreenInfo& screen_info,
       const PrefServiceBase& prefs,
       const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
@@ -194,6 +214,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   const int64 gaia_id_;
   const gfx::Rect window_bounds_;
   const gfx::Rect content_bounds_;
+  const WebScreenInfo screen_info_;
   const std::string charset_;
   const std::string accept_languages_;
 
@@ -212,12 +233,14 @@ FingerprintDataLoader::FingerprintDataLoader(
     int64 gaia_id,
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
+    const WebScreenInfo& screen_info,
     const PrefServiceBase& prefs,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback)
     : gpu_data_manager_(content::GpuDataManager::GetInstance()),
       gaia_id_(gaia_id),
       window_bounds_(window_bounds),
       content_bounds_(content_bounds),
+      screen_info_(screen_info),
       charset_(prefs.GetString(prefs::kDefaultCharset)),
       accept_languages_(prefs.GetString(prefs::kAcceptLanguages)),
       has_loaded_plugins_(false),
@@ -304,15 +327,10 @@ void FingerprintDataLoader::FillFingerprint() {
   AddFontsToFingerprint(*fonts_, machine);
   AddPluginsToFingerprint(plugins_, machine);
   AddAcceptLanguagesToFingerprint(accept_languages_, machine);
-  AddScreenInfoToFingerprint(machine);
+  AddScreenInfoToFingerprint(screen_info_, machine);
   AddCpuInfoToFingerprint(machine);
   AddGpuInfoToFingerprint(machine);
 
-  // TODO(isherman): Store the user's screen color depth by refactoring the code
-  // for RenderWidgetHostImpl::GetWebScreenInfo().
-  // TODO(isherman): Store the user's unavailable screen size, likewise by
-  // fetching the WebScreenInfo that RenderWidgetHostImpl::GetWebScreenInfo()
-  // provides.
   // TODO(isherman): Store the partition size of the hard drives?
 
   Fingerprint_TransientState* transient_state =
@@ -346,6 +364,7 @@ void GetFingerprint(
     int64 gaia_id,
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
+    const WebKit::WebScreenInfo& screen_info,
     const PrefServiceBase& prefs,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback) {
   // TODO(isherman): Add a DCHECK that the ToS have been accepted prior to
@@ -353,10 +372,15 @@ void GetFingerprint(
   // indication to the user as to what data will be collected.  Until then, this
   // code should not be called.
 
+  // TODO(isherman): In order to actually be able to pass in the WebScreenInfo
+  // that's used here, we'll need to expose RenderWidgetHostImpl's
+  // GetWebScreenInfo() as part of the public RenderWidgetHost interface.
+  // We can then access it via the dialog's WebContents pointer.
+
   // Begin loading all of the data that we need to load asynchronously.
   // This class is responsible for freeing its own memory.
-  new FingerprintDataLoader(gaia_id, window_bounds, content_bounds, prefs,
-                            callback);
+  new FingerprintDataLoader(gaia_id, window_bounds, content_bounds,
+                            screen_info, prefs, callback);
 }
 
 }  // namespace risk

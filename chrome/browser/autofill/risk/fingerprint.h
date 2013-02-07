@@ -15,6 +15,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace WebKit {
+struct WebScreenInfo;
+}
+
 namespace autofill {
 namespace risk {
 
@@ -31,6 +35,7 @@ void GetFingerprint(
     int64 gaia_id,
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
+    const WebKit::WebScreenInfo& screen_info,
     const PrefServiceBase& prefs,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
