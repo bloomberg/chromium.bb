@@ -770,12 +770,6 @@ void RenderText::ApplyCompositionAndSelectionStyles() {
     const ui::Range range(selection().GetMin(), selection().GetMax());
     colors_.ApplyValue(selection_color_, range);
   }
-  // Apply the selected text color to the cursor range in overtype mode.
-  if (!insert_mode_ && cursor_visible() && focused()) {
-    const size_t cursor = cursor_position();
-    const size_t next = IndexOfAdjacentGrapheme(cursor, CURSOR_FORWARD);
-    colors_.ApplyValue(selection_color_, ui::Range(cursor, next));
-  }
   composition_and_selection_styles_applied_ = true;
 }
 
@@ -962,9 +956,8 @@ void RenderText::DrawCursor(Canvas* canvas) {
   // Paint cursor. Replace cursor is drawn as rectangle for now.
   // TODO(msw): Draw a better cursor with a better indication of association.
   if (cursor_enabled() && cursor_visible() && focused()) {
-    const Rect& bounds = GetUpdatedCursorBounds();
-    DCHECK(bounds.width());
-    canvas->FillRect(bounds, cursor_color_);
+    canvas->FillRect(GetUpdatedCursorBounds(),
+        insert_mode_ ? cursor_color_ : selection_background_unfocused_color_);
   }
 }
 

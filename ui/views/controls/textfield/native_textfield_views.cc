@@ -1085,8 +1085,10 @@ bool NativeTextfieldViews::HandleKeyEvent(const ui::KeyEvent& key_event) {
         text_changed = true;
         break;
       case ui::VKEY_INSERT:
-        GetRenderText()->ToggleInsertMode();
-        cursor_changed = true;
+        if (control && !shift)
+          Copy();
+        else if (shift && !control)
+          cursor_changed = text_changed = Paste();
         break;
       default:
         break;

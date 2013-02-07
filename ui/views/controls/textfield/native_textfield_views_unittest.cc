@@ -1306,19 +1306,42 @@ TEST_F(NativeTextfieldViewsTest, UndoRedoTest) {
   EXPECT_STR_EQ("", textfield_->text());
   SendKeyEvent(ui::VKEY_Y, false, true);
   EXPECT_STR_EQ("", textfield_->text());
+}
 
-  // Insert
+TEST_F(NativeTextfieldViewsTest, CopyPasteShortcuts) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  // Ensure [Ctrl]+[c] copies and [Ctrl]+[v] pastes.
+  textfield_->SetText(ASCIIToUTF16("abc"));
+  textfield_->SelectAll(false);
+  SendKeyEvent(ui::VKEY_C, false, true);
+  EXPECT_STR_EQ("abc", string16(GetClipboardText()));
+  SendKeyEvent(ui::VKEY_HOME);
+  SendKeyEvent(ui::VKEY_V, false, true);
+  EXPECT_STR_EQ("abcabc", textfield_->text());
+
+  // Ensure [Ctrl]+[Insert] copies and [Shift]+[Insert] pastes.
   textfield_->SetText(ASCIIToUTF16("123"));
+  textfield_->SelectAll(false);
+  SendKeyEvent(ui::VKEY_INSERT, false, true);
+  EXPECT_STR_EQ("123", string16(GetClipboardText()));
+  SendKeyEvent(ui::VKEY_HOME);
+  SendKeyEvent(ui::VKEY_INSERT, true, false);
+  EXPECT_STR_EQ("123123", textfield_->text());
+  // Ensure [Ctrl]+[Shift]+[Insert] is a no-op.
+  textfield_->SelectAll(false);
+  SendKeyEvent(ui::VKEY_INSERT, true, true);
+  EXPECT_STR_EQ("123", string16(GetClipboardText()));
+  EXPECT_STR_EQ("123123", textfield_->text());
+}
+
+TEST_F(NativeTextfieldViewsTest, OvertypeMode) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  // Overtype mode should be disabled (no-op [Insert]).
+  textfield_->SetText(ASCIIToUTF16("2"));
   SendKeyEvent(ui::VKEY_HOME);
   SendKeyEvent(ui::VKEY_INSERT);
-  SendKeyEvent(ui::VKEY_A);
-  EXPECT_STR_EQ("a23", textfield_->text());
-  SendKeyEvent(ui::VKEY_B);
-  EXPECT_STR_EQ("ab3", textfield_->text());
-  SendKeyEvent(ui::VKEY_Z, false, true);
-  EXPECT_STR_EQ("123", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
-  EXPECT_STR_EQ("ab3", textfield_->text());
+  SendKeyEvent(ui::VKEY_1, false, false);
+  EXPECT_STR_EQ("12", textfield_->text());
 }
 
 TEST_F(NativeTextfieldViewsTest, TextCursorDisplayTest) {
