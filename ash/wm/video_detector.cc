@@ -104,7 +104,10 @@ void VideoDetector::MaybeNotifyObservers(aura::Window* window,
   if (!window->GetBoundsInRootWindow().Intersects(root_bounds))
     return;
 
-  bool is_fullscreen = wm::IsWindowFullscreen(window);
+  aura::Window* toplevel_window = wm::GetActivatableWindow(window);
+  bool is_fullscreen =
+      toplevel_window ? wm::IsWindowFullscreen(toplevel_window) : false;
+
   FOR_EACH_OBSERVER(VideoDetectorObserver,
                     observers_,
                     OnVideoDetected(is_fullscreen));
