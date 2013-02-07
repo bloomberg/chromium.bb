@@ -100,6 +100,7 @@ def _GetDataFilesForTestSuite(test_suite_basename):
         'net/data/cache_tests',
         'net/data/filter_unittests',
         'net/data/ftp',
+        'net/data/proxy_resolver_v8_tracing_unittest',
         'net/data/proxy_resolver_v8_unittest',
         'net/data/ssl/certificates',
         'net/data/url_request_unittest/',
