@@ -34,6 +34,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #endif
 #include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebImage.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
@@ -42,7 +43,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGlyphCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
