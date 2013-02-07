@@ -17,7 +17,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseException.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyRange.h"
 
-using base::ThreadLocalPointer;
 using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
 using WebKit::WebFrame;
@@ -25,9 +24,12 @@ using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBDatabaseCallbacks;
 using WebKit::WebIDBDatabaseError;
+using WebKit::WebIDBKey;
 using WebKit::WebIDBKeyRange;
 using WebKit::WebIDBMetadata;
+using WebKit::WebSerializedScriptValue;
 using WebKit::WebVector;
+using base::ThreadLocalPointer;
 using webkit_glue::WorkerTaskRunner;
 
 namespace content {
@@ -529,7 +531,7 @@ void IndexedDBDispatcher::OnSuccessIndexedDBKey(
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_response_id);
   if (!callbacks)
     return;
-  callbacks->onSuccess(key);
+  callbacks->onSuccess(WebIDBKey(key));
   pending_callbacks_.Remove(ipc_response_id);
 }
 
@@ -555,7 +557,7 @@ void IndexedDBDispatcher::OnSuccessSerializedScriptValue(
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_response_id);
   if (!callbacks)
     return;
-  callbacks->onSuccess(value);
+  callbacks->onSuccess(WebSerializedScriptValue(value));
   pending_callbacks_.Remove(ipc_response_id);
 }
 
@@ -568,7 +570,8 @@ void IndexedDBDispatcher::OnSuccessSerializedScriptValueWithKey(
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_response_id);
   if (!callbacks)
     return;
-  callbacks->onSuccess(value, primary_key, key_path);
+  callbacks->onSuccess(WebSerializedScriptValue(value),
+                       primary_key, key_path);
   pending_callbacks_.Remove(ipc_response_id);
 }
 
@@ -609,7 +612,8 @@ void IndexedDBDispatcher::OnSuccessOpenCursor(
   RendererWebIDBCursorImpl* cursor =
           new RendererWebIDBCursorImpl(ipc_object_id);
   cursors_[ipc_object_id] = cursor;
-  callbacks->onSuccess(cursor, key, primary_key, value);
+  callbacks->onSuccess(cursor, key, primary_key,
+                       WebSerializedScriptValue(value));
 
   pending_callbacks_.Remove(ipc_response_id);
 }
@@ -630,7 +634,8 @@ void IndexedDBDispatcher::OnSuccessCursorContinue(
   if (!callbacks)
     return;
 
-  callbacks->onSuccess(key, primary_key, value);
+  callbacks->onSuccess(key, primary_key,
+                       WebSerializedScriptValue(value));
 
   pending_callbacks_.Remove(ipc_response_id);
 }

@@ -13,6 +13,7 @@
 using WebKit::WebExceptionCode;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBKey;
+using WebKit::WebSerializedScriptValue;
 
 namespace content {
 
@@ -136,7 +137,8 @@ void RendererWebIDBCursorImpl::CachedContinue(
 
   pending_onsuccess_callbacks_++;
 
-  callbacks->onSuccess(key, primary_key, value);
+  callbacks->onSuccess(key, primary_key,
+                       WebSerializedScriptValue(value));
 }
 
 void RendererWebIDBCursorImpl::ResetPrefetchCache() {
