@@ -22,7 +22,10 @@
 
 namespace webkit_media {
 
-static scoped_refptr<webkit::ppapi::PluginInstance> CreatePluginInstance(
+// Returns the PluginInstance associated with the Helper Plugin.
+// If a non-NULL pointer is returned, the caller must call closeHelperPlugin()
+// when the Helper Plugin is no longer needed.
+static scoped_refptr<webkit::ppapi::PluginInstance> CreateHelperPlugin(
     const std::string& plugin_type,
     WebKit::WebMediaPlayerClient* web_media_player_client,
     WebKit::WebFrame* web_frame) {
@@ -41,6 +44,11 @@ static scoped_refptr<webkit::ppapi::PluginInstance> CreatePluginInstance(
   return ppapi_plugin->instance();
 }
 
+static void DestroyHelperPlugin(
+    WebKit::WebMediaPlayerClient* web_media_player_client) {
+  web_media_player_client->closeHelperPlugin();
+}
+
 ProxyDecryptor::ProxyDecryptor(
     WebKit::WebMediaPlayerClient* web_media_player_client,
     WebKit::WebFrame* web_frame,
@@ -50,6 +58,7 @@ ProxyDecryptor::ProxyDecryptor(
     const media::NeedKeyCB& need_key_cb)
     : web_media_player_client_(web_media_player_client),
       web_frame_(web_frame),
+      did_create_helper_plugin_(false),
       key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
       key_message_cb_(key_message_cb),
@@ -58,6 +67,16 @@ ProxyDecryptor::ProxyDecryptor(
 }
 
 ProxyDecryptor::~ProxyDecryptor() {
+  // Destroy the decryptor explicitly before destroying the plugin.
+  {
+    base::AutoLock auto_lock(lock_);
+    decryptor_.reset();
+  }
+
+  if (did_create_helper_plugin_)
+    DestroyHelperPlugin(web_media_player_client_);
+
+  web_media_player_client_ = NULL;  // We should be done using it now.
 }
 
 // TODO(xhwang): Support multiple decryptor notification request (e.g. from
@@ -144,8 +163,9 @@ scoped_ptr<media::Decryptor> ProxyDecryptor::CreatePpapiDecryptor(
   std::string plugin_type = GetPluginType(key_system);
   DCHECK(!plugin_type.empty());
   const scoped_refptr<webkit::ppapi::PluginInstance>& plugin_instance =
-    CreatePluginInstance(plugin_type, web_media_player_client_, web_frame_);
-  if (!plugin_instance) {
+      CreateHelperPlugin(plugin_type, web_media_player_client_, web_frame_);
+  did_create_helper_plugin_ = plugin_instance != NULL;
+  if (!did_create_helper_plugin_) {
     DVLOG(1) << "ProxyDecryptor: plugin instance creation failed.";
     return scoped_ptr<media::Decryptor>();
   }

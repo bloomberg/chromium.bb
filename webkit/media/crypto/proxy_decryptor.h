@@ -73,6 +73,7 @@ class ProxyDecryptor {
   // Needed to create the PpapiDecryptor.
   WebKit::WebMediaPlayerClient* web_media_player_client_;
   WebKit::WebFrame* web_frame_;
+  bool did_create_helper_plugin_;
 
   // Callbacks for firing key events.
   media::KeyAddedCB key_added_cb_;
