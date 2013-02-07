@@ -40,9 +40,6 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
                     const fileapi::SyncOperationCallback& callback));
   MOCK_METHOD0(GetLocalChangeProcessor, LocalChangeProcessor*());
   MOCK_METHOD1(IsConflicting, bool(const fileapi::FileSystemURL& url));
-  MOCK_METHOD2(GetConflictFiles,
-               void(const GURL& origin,
-                    const fileapi::SyncFileSetCallback& callback));
   MOCK_METHOD2(GetRemoteFileMetadata,
                void(const fileapi::FileSystemURL& url,
                     const fileapi::SyncFileMetadataCallback& callback));
@@ -59,10 +56,8 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
       RemoteServiceState state,
       const std::string& description);
 
-  // Sets a mock local change processor. The value is returned by
-  // the default action for GetLocalChangeProcessor.
   // Sets conflict file information.  The information is returned by
-  // the default action for GetConflictFiles and GetRemoteConflictFileInfo.
+  // the default action for GetRemoteConflictFileInfo.
   void add_conflict_file(const fileapi::FileSystemURL& url,
                          const fileapi::SyncFileMetadata& metadata) {
     conflict_file_urls_[url.origin()].insert(url);
@@ -90,9 +85,6 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   void ProcessRemoteChangeStub(
       RemoteChangeProcessor* processor,
       const fileapi::SyncOperationCallback& callback);
-  void GetConflictFilesStub(
-      const GURL& origin,
-      const fileapi::SyncFileSetCallback& callback);
   void GetRemoteFileMetadataStub(
       const fileapi::FileSystemURL& url,
       const fileapi::SyncFileMetadataCallback& callback);

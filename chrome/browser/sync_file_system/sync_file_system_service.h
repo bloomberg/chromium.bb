@@ -51,19 +51,6 @@ class SyncFileSystemService
       const GURL& app_origin,
       const fileapi::SyncStatusCallback& callback);
 
-  // Returns a list (set) of files that are conflicting.
-  void GetConflictFiles(
-      const GURL& app_origin,
-      const std::string& service_name,
-      const fileapi::SyncFileSetCallback& callback);
-
-  // Returns metadata info for a conflicting file |url|.
-  void GetConflictFileInfo(
-      const GURL& app_origin,
-      const std::string& service_name,
-      const fileapi::FileSystemURL& url,
-      const fileapi::ConflictFileInfoCallback& callback);
-
   // Returns the file |url|'s sync status.
   void GetFileSyncStatus(
       const fileapi::FileSystemURL& url,
@@ -164,10 +151,6 @@ class SyncFileSystemService
 
   // Indicates if sync is currently enabled or not.
   bool sync_enabled_;
-
-  // Origins that have been successfully initialized via
-  // InitializeForApp.
-  std::set<GURL> initialized_app_origins_;
 
   ObserverList<SyncEventObserver> observers_;
 

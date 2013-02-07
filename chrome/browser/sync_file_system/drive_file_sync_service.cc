@@ -482,14 +482,6 @@ bool DriveFileSyncService::IsConflicting(const fileapi::FileSystemURL& url) {
   return metadata.conflicted();
 }
 
-void DriveFileSyncService::GetConflictFiles(
-    const GURL& origin,
-    const fileapi::SyncFileSetCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(fileapi::SYNC_STATUS_FAILED,
-               fileapi::FileSystemURLSet());
-}
-
 void DriveFileSyncService::GetRemoteFileMetadata(
     const fileapi::FileSystemURL& url,
     const fileapi::SyncFileMetadataCallback& callback) {

@@ -179,67 +179,10 @@ void SyncFileSystemService::InitializeForApp(
 
   DVLOG(1) << "InitializeForApp: " << app_origin.spec();
 
-  if (initialized_app_origins_.find(app_origin) !=
-      initialized_app_origins_.end()) {
-    DVLOG(1) << "The app is already initialized: " << app_origin.spec();
-    callback.Run(fileapi::SYNC_STATUS_OK);
-    return;
-  }
-
   local_file_service_->MaybeInitializeFileSystemContext(
       app_origin, service_name, file_system_context,
       base::Bind(&SyncFileSystemService::DidInitializeFileSystem,
                  AsWeakPtr(), app_origin, callback));
-}
-
-void SyncFileSystemService::GetConflictFiles(
-    const GURL& app_origin,
-    const std::string& service_name,
-    const fileapi::SyncFileSetCallback& callback) {
-  DCHECK(remote_file_service_);
-  DCHECK(app_origin == app_origin.GetOrigin());
-
-  if (!ContainsKey(initialized_app_origins_, app_origin)) {
-    callback.Run(fileapi::SYNC_STATUS_NOT_INITIALIZED,
-                 fileapi::FileSystemURLSet());
-    return;
-  }
-
-  remote_file_service_->GetConflictFiles(
-      app_origin, base::Bind(&VerifyFileSystemURLSetCallback,
-                             AsWeakPtr(), app_origin, service_name, callback));
-}
-
-void SyncFileSystemService::GetConflictFileInfo(
-    const GURL& app_origin,
-    const std::string& service_name,
-    const FileSystemURL& url,
-    const ConflictFileInfoCallback& callback) {
-  DCHECK(local_file_service_);
-  DCHECK(remote_file_service_);
-  DCHECK(app_origin == app_origin.GetOrigin());
-
-  if (!ContainsKey(initialized_app_origins_, app_origin)) {
-    callback.Run(fileapi::SYNC_STATUS_NOT_INITIALIZED,
-                 fileapi::ConflictFileInfo());
-    return;
-  }
-
-  // Call DidGetConflictFileInfo when both remote and local service's
-  // GetFileMetadata calls are done.
-  SyncFileMetadata* remote_metadata = new SyncFileMetadata;
-  SyncFileMetadata* local_metadata = new SyncFileMetadata;
-  SyncStatusCallback completion_callback =
-      base::Bind(&SyncFileSystemService::DidGetConflictFileInfo,
-                 AsWeakPtr(), callback, url,
-                 base::Owned(local_metadata),
-                 base::Owned(remote_metadata));
-  scoped_refptr<SharedCallbackRunner> callback_runner(
-      new SharedCallbackRunner(completion_callback));
-  local_file_service_->GetLocalFileMetadata(
-      url, callback_runner->CreateAssignAndRunCallback(local_metadata));
-  remote_file_service_->GetRemoteFileMetadata(
-      url, callback_runner->CreateAssignAndRunCallback(remote_metadata));
 }
 
 void SyncFileSystemService::GetFileSyncStatus(
@@ -247,15 +190,6 @@ void SyncFileSystemService::GetFileSyncStatus(
     const fileapi::SyncFileStatusCallback& callback) {
   DCHECK(local_file_service_);
   DCHECK(remote_file_service_);
-
-  if (!ContainsKey(initialized_app_origins_, url.origin())) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback,
-                   fileapi::SYNC_STATUS_NOT_INITIALIZED,
-                   fileapi::SYNC_FILE_STATUS_UNKNOWN));
-    return;
-  }
 
   if (remote_file_service_->IsConflicting(url)) {
     base::MessageLoopProxy::current()->PostTask(
@@ -358,9 +292,6 @@ void SyncFileSystemService::DidRegisterOrigin(
     const fileapi::SyncStatusCallback& callback,
     fileapi::SyncStatusCode status) {
   DVLOG(1) << "DidRegisterOrigin: " << app_origin.spec() << " " << status;
-
-  if (status == fileapi::SYNC_STATUS_OK)
-    initialized_app_origins_.insert(app_origin);
 
   callback.Run(status);
 }
@@ -560,7 +491,6 @@ void SyncFileSystemService::Observe(
     remote_file_service_->UnregisterOriginForTrackingChanges(
         app_origin, base::Bind(&DidHandleOriginForExtensionEvent,
                                type, app_origin));
-    initialized_app_origins_.erase(app_origin);
     local_file_service_->SetOriginEnabled(app_origin, false);
   } else if (chrome::NOTIFICATION_EXTENSION_LOADED == type) {
     std::string extension_id =
