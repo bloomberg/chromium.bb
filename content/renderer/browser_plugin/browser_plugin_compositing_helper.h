@@ -31,6 +31,7 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
  public:
   BrowserPluginCompositingHelper(WebKit::WebPluginContainer* container,
                                  BrowserPluginManager* manager,
+                                 int instance_id,
                                  int host_routing_id);
   void EnableCompositing(bool);
   void OnContainerDestroy();
@@ -49,7 +50,7 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
                        int gpu_route_id,
                        int gpu_host_id,
                        unsigned sync_point);
-
+  int instance_id_;
   int host_routing_id_;
   int last_gpu_route_id_;
   int last_gpu_host_id_;

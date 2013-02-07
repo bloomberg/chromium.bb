@@ -170,6 +170,13 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   // within an embedder.
   int instance_id() const { return instance_id_; }
 
+  // Allow the embedder to call this for unhandled messages when
+  // BrowserPluginGuest is already destroyed.
+  static void AcknowledgeBufferPresent(int route_id,
+                                       int gpu_host_id,
+                                       const std::string& mailbox_name,
+                                       uint32 sync_point);
+
  private:
   friend class TestBrowserPluginGuest;
 
@@ -247,6 +254,13 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   void OnSetVisibility(int instance_id, bool visible);
   // Stop loading the guest. Overriden in tests.
   virtual void OnStop(int instance_id);
+  // Message from embedder acknowledging last HW buffer.
+  void OnSwapBuffersACK(int instance_id,
+                        int route_id,
+                        int gpu_host_id,
+                        const std::string& mailbox_name,
+                        uint32 sync_point);
+
   void OnTerminateGuest(int instance_id);
   void OnUpdateRectACK(
       int instance_id,

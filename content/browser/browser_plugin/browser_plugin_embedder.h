@@ -126,10 +126,11 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
                                   int request_id,
                                   const gfx::Point& position);
   void OnPluginDestroyed(int instance_id);
-  void OnSwapBuffersACK(int route_id,
-                        int gpu_host_id,
-                        const std::string& mailbox_name,
-                        uint32 sync_point);
+  void OnUnhandledSwapBuffersACK(int instance_id,
+                                 int route_id,
+                                 int gpu_host_id,
+                                 const std::string& mailbox_name,
+                                 uint32 sync_point);
 
   // Static factory instance (always NULL for non-test).
   static BrowserPluginHostFactory* factory_;

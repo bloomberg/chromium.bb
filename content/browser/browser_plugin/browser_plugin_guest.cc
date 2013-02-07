@@ -18,6 +18,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/drag_messages.h"
 #include "content/common/view_messages.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
@@ -69,6 +70,8 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_BuffersSwappedACK,
+                        OnSwapBuffersACK)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_DragStatusUpdate,
                         OnDragStatusUpdate)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Go, OnGo)
@@ -562,6 +565,35 @@ void BrowserPluginGuest::OnSetVisibility(int instance_id, bool visible) {
 
 void BrowserPluginGuest::OnStop(int instance_id) {
   web_contents()->Stop();
+}
+
+void BrowserPluginGuest::AcknowledgeBufferPresent(
+    int route_id,
+    int gpu_host_id,
+    const std::string& mailbox_name,
+    uint32 sync_point) {
+  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  ack_params.mailbox_name = mailbox_name;
+  ack_params.sync_point = sync_point;
+  RenderWidgetHostImpl::AcknowledgeBufferPresent(route_id,
+                                                 gpu_host_id,
+                                                 ack_params);
+}
+
+void BrowserPluginGuest::OnSwapBuffersACK(int instance_id,
+                                          int route_id,
+                                          int gpu_host_id,
+                                          const std::string& mailbox_name,
+                                          uint32 sync_point) {
+  AcknowledgeBufferPresent(route_id, gpu_host_id, mailbox_name, sync_point);
+
+// This is only relevant on MACOSX and WIN when threaded compositing
+// is not enabled. In threaded mode, above ACK is sufficient.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  RenderWidgetHostImpl* render_widget_host =
+        RenderWidgetHostImpl::From(web_contents()->GetRenderViewHost());
+  render_widget_host->AcknowledgeSwapBuffersToRenderer();
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 }
 
 void BrowserPluginGuest::OnTerminateGuest(int instance_id) {

@@ -110,6 +110,7 @@ void BrowserPluginManagerImpl::OnUnhandledSwap(const IPC::Message& message,
   // Issue is tracked in crbug.com/170745.
   Send(new BrowserPluginHostMsg_BuffersSwappedACK(
       message.routing_id(),
+      instance_id,
       gpu_route_id,
       gpu_host_id,
       mailbox_name,

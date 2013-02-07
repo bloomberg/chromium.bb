@@ -873,6 +873,7 @@ void BrowserPlugin::EnableCompositing(bool enable) {
       compositing_helper_ = new BrowserPluginCompositingHelper(
           container_,
           browser_plugin_manager(),
+          instance_id_,
           render_view_routing_id_);
     }
   } else {

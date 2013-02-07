@@ -20,8 +20,10 @@ namespace content {
 BrowserPluginCompositingHelper::BrowserPluginCompositingHelper(
     WebKit::WebPluginContainer* container,
     BrowserPluginManager* manager,
+    int instance_id,
     int host_routing_id)
-    : host_routing_id_(host_routing_id),
+    : instance_id_(instance_id),
+      host_routing_id_(host_routing_id),
       last_gpu_route_id_(0),
       last_gpu_host_id_(0),
       last_mailbox_valid_(false),
@@ -106,6 +108,7 @@ void BrowserPluginCompositingHelper::MailboxReleased(
       browser_plugin_manager_->Send(
           new BrowserPluginHostMsg_BuffersSwappedACK(
               host_routing_id_,
+              instance_id_,
               gpu_route_id,
               gpu_host_id,
               mailbox_name,
@@ -127,6 +130,7 @@ void BrowserPluginCompositingHelper::MailboxReleased(
   browser_plugin_manager_->Send(
       new BrowserPluginHostMsg_BuffersSwappedACK(
           host_routing_id_,
+          instance_id_,
           gpu_route_id,
           gpu_host_id,
           mailbox_name,

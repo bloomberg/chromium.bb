@@ -249,7 +249,7 @@ bool BrowserPluginEmbedder::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginDestroyed,
                         OnPluginDestroyed)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_BuffersSwappedACK,
-                        OnSwapBuffersACK)
+                        OnUnhandledSwapBuffersACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -305,6 +305,7 @@ void BrowserPluginEmbedder::WebContentsVisibilityChanged(bool visible) {
 bool BrowserPluginEmbedder::ShouldForwardToBrowserPluginGuest(
     const IPC::Message& message) {
   switch (message.type()) {
+    case BrowserPluginHostMsg_BuffersSwappedACK::ID:
     case BrowserPluginHostMsg_DragStatusUpdate::ID:
     case BrowserPluginHostMsg_Go::ID:
     case BrowserPluginHostMsg_HandleInputEvent::ID:
@@ -359,16 +360,18 @@ void BrowserPluginEmbedder::OnPluginDestroyed(int instance_id) {
   DestroyGuestByInstanceID(instance_id);
 }
 
-void BrowserPluginEmbedder::OnSwapBuffersACK(int route_id,
-                                             int gpu_host_id,
-                                             const std::string& mailbox_name,
-                                             uint32 sync_point) {
-  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  ack_params.mailbox_name = mailbox_name;
-  ack_params.sync_point = sync_point;
-  RenderWidgetHostImpl::AcknowledgeBufferPresent(route_id,
-                                                 gpu_host_id,
-                                                 ack_params);
+// We only get here during teardown if we have one last buffer pending,
+// otherwise the ACK is handled by the guest.
+void BrowserPluginEmbedder::OnUnhandledSwapBuffersACK(
+    int instance_id,
+    int route_id,
+    int gpu_host_id,
+    const std::string& mailbox_name,
+    uint32 sync_point) {
+  BrowserPluginGuest::AcknowledgeBufferPresent(route_id,
+                                               gpu_host_id,
+                                               mailbox_name,
+                                               sync_point);
 }
 
 }  // namespace content

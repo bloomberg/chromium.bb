@@ -199,7 +199,8 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_NavigateGuest,
 // Acknowledge that we presented a HW buffer and provide a sync point
 // to specify the location in the command stream when the compositor
 // is no longer using it.
-IPC_MESSAGE_ROUTED4(BrowserPluginHostMsg_BuffersSwappedACK,
+IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_BuffersSwappedACK,
+                    int /* instance_id */,
                     int /* route_id */,
                     int /* gpu_host_id */,
                     std::string /* mailbox_name */,
