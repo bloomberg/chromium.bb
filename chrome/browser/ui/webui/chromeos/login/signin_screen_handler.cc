@@ -580,6 +580,8 @@ void SigninScreenHandler::UpdateStateInternal(
 
     if (delegate_ && !delegate_->IsShowUsers() &&
         (error_screen_actor_->state() ==
+         ErrorScreenActor::STATE_PROXY_ERROR ||
+         error_screen_actor_->state() ==
          ErrorScreenActor::STATE_CAPTIVE_PORTAL_ERROR ||
          error_screen_actor_->state() ==
          ErrorScreenActor::STATE_OFFLINE_ERROR)) {
