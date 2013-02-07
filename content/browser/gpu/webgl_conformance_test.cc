@@ -61,6 +61,10 @@ class WebGLConformanceTest : public ContentBrowserTest {
     if (expectation != GPUTestExpectationsParser::kGpuTestPass) {
       LOG(WARNING) << "Test " << test_name << " is bypassed";
       return;
+    } else {
+#if defined(OS_WIN)
+      return;
+#endif
     }
 
     DOMMessageQueue message_queue;
