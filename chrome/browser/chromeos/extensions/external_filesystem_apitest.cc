@@ -338,4 +338,10 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, ContentSearch) {
       kComponentFlags)) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, MetadataSearch) {
+  EXPECT_TRUE(RunExtensionSubtest("filebrowser_component",
+                                  "metadata_search.html",
+                                  kComponentFlags)) << message_;
+}
+
 }  // namespace

@@ -1040,6 +1040,43 @@
           }
         ]
       },
+{
+        "name": "searchDriveMetadata",
+        "type": "function",
+        "description": "Performs drive metadata search.",
+        "parameters": [
+          {
+            "name": "searchQuery",
+            "type": "string",
+            "description": "Search query."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "results",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "entry": {
+                      "type": "object",
+                      "isInstanceOf": "Entry",
+                      "description": "A dictionary object which represents a Drive file. This will be converted into a kind of FileEntry object. See file_browser_handler_custom_bindings.cc for details. For filesystem API's Entry interface, see <a href='http://www.w3.org/TR/file-system-api/#the-entry-interface'>The Entry interface</a>."
+                    },
+                    "highlightedBaseName": {
+                      "type": "string",
+                      "description": "The base name of a Drive file that matched the search query. The matched sub strings are highlighted with <b> element. Meta characters are escaped like &lt;."
+                    }
+                  },
+                  "description": "Entry and Drive-related properties representing a search result."
+                }
+              }
+            ]
+          }
+        ]
+      },
       {
         "name": "clearDriveCache",
         "description": "Clear all Drive local caches.",

@@ -42,4 +42,22 @@ chromeHidden.registerCustomHook('fileBrowserPrivate', function(bindingsAPI) {
       request.callback(response.results, response.nextFeed);
     request.callback = null;
   });
+
+  apiFunctions.setCustomCallback('searchDriveMetadata',
+                                 function(name, request, response) {
+    if (response && !response.error) {
+      for (var i = 0; i < response.length; i++) {
+        response[i].entry =
+            GetExternalFileEntry(response[i].entry);
+      }
+    }
+
+    // So |request.callback| doesn't break if response is not defined.
+    if (!response)
+      response = {};
+
+    if (request.callback)
+      request.callback(response);
+    request.callback = null;
+  });
 });

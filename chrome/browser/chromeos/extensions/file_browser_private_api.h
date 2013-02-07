@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 #include "chrome/browser/chromeos/extensions/zip_file_creator.h"
 #include "chrome/browser/extensions/extension_function.h"
@@ -769,6 +770,38 @@ class SearchDriveFunction : public AsyncExtensionFunction {
   std::string query_;
   std::string next_feed_;
   bool shared_with_me_;
+  // Information about remote file system we will need to create file entries
+  // to represent search results.
+  std::string file_system_name_;
+  GURL file_system_url_;
+};
+
+// Similar to SearchDriveFunction but this one is used for searching drive
+// metadata which is stored locally.
+class SearchDriveMetadataFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.searchDriveMetadata",
+                             FILEBROWSERPRIVATE_SEARCHDRIVEMETADATA)
+
+  SearchDriveMetadataFunction();
+
+ protected:
+  virtual ~SearchDriveMetadataFunction();
+
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // Callback fo OpenFileSystem called from RunImpl.
+  void OnFileSystemOpened(base::PlatformFileError result,
+                          const std::string& file_system_name,
+                          const GURL& file_system_url);
+  // Callback for LocalSearch().
+  void OnSearchMetadata(
+      drive::DriveFileError error,
+      scoped_ptr<drive::MetadataSearchResultVector> results);
+
+  // Query for which the search is being performed.
+  std::string query_;
   // Information about remote file system we will need to create file entries
   // to represent search results.
   std::string file_system_name_;

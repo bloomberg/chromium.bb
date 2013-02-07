@@ -57,7 +57,7 @@
             }
          },
          "gd$lastViewed": {
-            "$t": "2011-11-02T04:37:38.469Z"
+            "$t": "2012-01-01T00:00:00.000Z"
          },
          "gd$quotaBytesUsed": {
             "$t": "0"
@@ -139,6 +139,9 @@
             "name": {
                "$t": "tester"
             }
+         },
+         "gd$lastViewed": {
+            "$t": "2012-01-02T00:00:00.000Z"
          },
          "gd$quotaBytesUsed": {
             "$t": "892721"

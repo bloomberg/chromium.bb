@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/chromeos/extensions/file_browser_handler.h"
 #include "chrome/browser/chromeos/extensions/file_browser_private_api_factory.h"
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
@@ -638,6 +639,7 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<GetPreferencesFunction>();
   registry->RegisterFunction<SetPreferencesFunction>();
   registry->RegisterFunction<SearchDriveFunction>();
+  registry->RegisterFunction<SearchDriveMetadataFunction>();
   registry->RegisterFunction<ClearDriveCacheFunction>();
   registry->RegisterFunction<ReloadDriveFunction>();
   registry->RegisterFunction<GetDriveConnectionStateFunction>();
@@ -3058,6 +3060,87 @@ void SearchDriveFunction::OnSearch(
   result->SetString("nextFeed", next_feed.spec());
 
   SetResult(result);
+  SendResponse(true);
+}
+
+SearchDriveMetadataFunction::SearchDriveMetadataFunction() {}
+
+SearchDriveMetadataFunction::~SearchDriveMetadataFunction() {}
+
+bool SearchDriveMetadataFunction::RunImpl() {
+  if (!args_->GetString(0, &query_))
+    return false;
+
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  BrowserContext::GetStoragePartition(profile(), site_instance)->
+      GetFileSystemContext()->OpenFileSystem(
+          source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal, false,
+          base::Bind(&SearchDriveMetadataFunction::OnFileSystemOpened, this));
+  return true;
+}
+
+void SearchDriveMetadataFunction::OnFileSystemOpened(
+    base::PlatformFileError result,
+    const std::string& file_system_name,
+    const GURL& file_system_url) {
+  if (result != base::PLATFORM_FILE_OK) {
+    SendResponse(false);
+    return;
+  }
+
+  file_system_name_ = file_system_name;
+  file_system_url_ = file_system_url;
+
+  drive::DriveSystemService* system_service =
+      drive::DriveSystemServiceFactory::GetForProfile(profile_);
+  // |system_service| is NULL if Drive is disabled.
+  if (!system_service || !system_service->file_system()) {
+    SendResponse(false);
+    return;
+  }
+
+  const int kAtMostNumMatches = 5;
+  drive::SearchMetadata(
+      system_service->file_system(),
+      query_,
+      kAtMostNumMatches,
+      base::Bind(&SearchDriveMetadataFunction::OnSearchMetadata, this));
+}
+
+void SearchDriveMetadataFunction::OnSearchMetadata(
+    drive::DriveFileError error,
+    scoped_ptr<drive::MetadataSearchResultVector> results) {
+  if (error != drive::DRIVE_FILE_OK) {
+    SendResponse(false);
+    return;
+  }
+
+  DCHECK(results.get());
+
+  base::ListValue* results_list = new ListValue();
+
+  // Convert Drive files to something File API stack can understand.  See
+  // file_browser_handler_custom_bindings.cc and
+  // file_browser_private_custom_bindings.js for how this is magically
+  // converted to a FileEntry.
+  for (size_t i = 0; i < results->size(); ++i) {
+    DictionaryValue* result_dict = new DictionaryValue();
+
+    // FileEntry fields.
+    DictionaryValue* entry = new DictionaryValue();
+    entry->SetString("fileSystemName", file_system_name_);
+    entry->SetString("fileSystemRoot", file_system_url_.spec());
+    entry->SetString("fileFullPath", "/" + results->at(i).path.value());
+    entry->SetBoolean("fileIsDirectory",
+                      results->at(i).entry_proto.file_info().is_directory());
+
+    result_dict->Set("entry", entry);
+    result_dict->SetString("highlightedBaseName",
+                           results->at(i).highlighted_base_name);
+    results_list->Append(result_dict);
+  }
+
+  SetResult(results_list);
   SendResponse(true);
 }
 

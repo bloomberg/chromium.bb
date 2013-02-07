@@ -2,76 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function errorCallback(messagePrefix, error) {
-  var msg = '';
-  if (!error.code) {
-    msg = error.message;
-  } else {
-    switch (error.code) {
-      case FileError.QUOTA_EXCEEDED_ERR:
-        msg = 'QUOTA_EXCEEDED_ERR';
-        break;
-      case FileError.NOT_FOUND_ERR:
-        msg = 'NOT_FOUND_ERR';
-        break;
-      case FileError.SECURITY_ERR:
-        msg = 'SECURITY_ERR';
-        break;
-      case FileError.INVALID_MODIFICATION_ERR:
-        msg = 'INVALID_MODIFICATION_ERR';
-        break;
-      case FileError.INVALID_STATE_ERR:
-        msg = 'INVALID_STATE_ERR';
-        break;
-      default:
-        msg = 'Unknown Error';
-        break;
-    }
-  }
-  chrome.test.fail(messagePrefix + msg);
-}
-
-// Verify that we are able to create file snapshot.
-function verifyFileAccessible(entry, successCallback, errorCallback) {
-  chrome.test.assertTrue(!!entry.file, "Should have file function.");
-  entry.file(function(file) { successCallback(); },
-             errorCallback.bind(null, 'Error reading result file.'));
-}
-
-function verifyDirectoryAccessible(entry,
-                                   expectedNumChildren,
-                                   successCallback,
-                                   errorCallback) {
-  chrome.test.assertTrue(!!entry.createReader);
-  var reader = entry.createReader();
-  var children = [];
-
-  function onDirectoryRead() {
-    chrome.test.assertEq(expectedNumChildren, children.length);
-    successCallback();
-  }
-
-  function readNext() {
-    reader.readEntries(
-        function(results) {
-          if (results.length == 0) {
-            onDirectoryRead();
-            return;
-          }
-          children.push(results);
-          readNext();
-        },
-        errorCallback.bind(null, 'Error reading directory.'));
-  }
-
-  readNext();
-}
-
 function verifySearchResult(entries,
                             nextFeed,
                             expectedResult,
                             expectedNextFeed) {
-  chrome.test.assertTrue(!!entries);
+  chrome.test.assertTrue(typeof(entries) != "undefined");
   chrome.test.assertEq(1, entries.length);
   chrome.test.assertEq(expectedResult, entries[0].entry.fullPath);
   chrome.test.assertEq(expectedNextFeed, nextFeed);
@@ -81,7 +16,7 @@ chrome.test.runTests([
   function loadFileSystem() {
   chrome.fileBrowserPrivate.requestLocalFileSystem(
       function (fs) {
-        chrome.test.assertTrue(!!fs);
+        chrome.test.assertTrue(typeof(fs) != "undefined");
         fs.root.getDirectory('drive', {create: false}, chrome.test.succeed,
             errorCallback.bind(null, 'Unable to get drive root '));
       });
