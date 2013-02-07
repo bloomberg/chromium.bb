@@ -962,7 +962,11 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
         return false;
       break;
     case ui::ET_MOUSE_PRESSED:
-      if (!mouse_pressed_handler_)
+      // Don't set the mouse pressed handler for non client mouse down events.
+      // These are only sent by Windows and are not always followed with non
+      // client mouse up events which causes subsequent mouse events to be
+      // sent to the wrong target.
+      if (!(event->flags() & ui::EF_IS_NON_CLIENT) && !mouse_pressed_handler_)
         mouse_pressed_handler_ = target;
       mouse_button_flags_ = event->flags() & kMouseButtonFlagMask;
       Env::GetInstance()->set_mouse_button_flags(mouse_button_flags_);

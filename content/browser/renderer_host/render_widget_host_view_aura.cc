@@ -141,6 +141,7 @@ bool CanRendererHandleEvent(const ui::MouseEvent* event) {
     case WM_XBUTTONDOWN:
     case WM_XBUTTONUP:
     case WM_XBUTTONDBLCLK:
+    case WM_NCMOUSELEAVE:
     case WM_NCMOUSEMOVE:
     case WM_NCXBUTTONDOWN:
     case WM_NCXBUTTONUP:
