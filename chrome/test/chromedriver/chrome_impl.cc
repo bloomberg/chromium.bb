@@ -112,40 +112,6 @@ ChromeImpl::ChromeImpl(URLRequestContextGetter* context_getter,
 
 ChromeImpl::~ChromeImpl() {}
 
-Status ChromeImpl::Init() {
-  base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(20);
-  std::list<std::string> debugger_urls;
-  while (base::Time::Now() < deadline) {
-    FetchPagesInfo(context_getter_, port_, &debugger_urls);
-    if (debugger_urls.empty())
-      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
-    else
-      break;
-  }
-  if (debugger_urls.empty())
-    return Status(kUnknownError, "unable to discover open pages");
-  client_.reset(new DevToolsClientImpl(
-      socket_factory_, debugger_urls.front()));
-  dom_tracker_.reset(new DomTracker(client_.get()));
-  Status status = dom_tracker_->Init();
-  if (status.IsError())
-    return status;
-  status = frame_tracker_->Init(client_.get());
-  if (status.IsError())
-    return status;
-  status = navigation_tracker_->Init(client_.get());
-  if (status.IsError())
-    return status;
-  client_->AddListener(dom_tracker_.get());
-  client_->AddListener(frame_tracker_.get());
-  client_->AddListener(navigation_tracker_.get());
-  return Status(kOk);
-}
-
-int ChromeImpl::GetPort() {
-  return port_;
-}
-
 Status ChromeImpl::Load(const std::string& url) {
   base::DictionaryValue params;
   params.SetString("url", url);
@@ -260,6 +226,40 @@ Status ChromeImpl::GetMainFrame(std::string* out_frame) {
   if (!result->GetString("frameTree.frame.id", out_frame))
     return Status(kUnknownError, "missing 'frameTree.frame.id' in response");
   return Status(kOk);
+}
+
+Status ChromeImpl::Init() {
+  base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(20);
+  std::list<std::string> debugger_urls;
+  while (base::Time::Now() < deadline) {
+    FetchPagesInfo(context_getter_, port_, &debugger_urls);
+    if (debugger_urls.empty())
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+    else
+      break;
+  }
+  if (debugger_urls.empty())
+    return Status(kUnknownError, "unable to discover open pages");
+  client_.reset(new DevToolsClientImpl(
+      socket_factory_, debugger_urls.front()));
+  dom_tracker_.reset(new DomTracker(client_.get()));
+  Status status = dom_tracker_->Init();
+  if (status.IsError())
+    return status;
+  status = frame_tracker_->Init(client_.get());
+  if (status.IsError())
+    return status;
+  status = navigation_tracker_->Init(client_.get());
+  if (status.IsError())
+    return status;
+  client_->AddListener(dom_tracker_.get());
+  client_->AddListener(frame_tracker_.get());
+  client_->AddListener(navigation_tracker_.get());
+  return Status(kOk);
+}
+
+int ChromeImpl::GetPort() const {
+  return port_;
 }
 
 namespace internal {

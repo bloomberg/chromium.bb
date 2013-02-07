@@ -48,8 +48,10 @@ Status ChromeDesktopImpl::Launch(const FilePath& chrome_exe,
     return Status(kUnknownError, "chrome failed to start");
 
   Status status = Init();
-  if (status.IsError())
+  if (status.IsError()) {
+    Quit();
     return status;
+  }
   return Status(kOk);
 }
 

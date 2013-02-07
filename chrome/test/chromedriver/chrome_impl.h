@@ -56,8 +56,8 @@ class ChromeImpl : public Chrome {
   virtual Status GetMainFrame(std::string* out_frame) OVERRIDE;
 
  protected:
-  virtual Status Init();
-  virtual int GetPort();
+  Status Init();
+  int GetPort() const;
 
  private:
   scoped_refptr<URLRequestContextGetter> context_getter_;
