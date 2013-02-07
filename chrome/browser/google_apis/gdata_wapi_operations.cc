@@ -44,21 +44,21 @@ namespace google_apis {
 
 //============================ Structs ===========================
 
-ResumeUploadResponse::ResumeUploadResponse()
+UploadRangeResponse::UploadRangeResponse()
     : code(HTTP_SUCCESS),
       start_position_received(0),
       end_position_received(0) {
 }
 
-ResumeUploadResponse::ResumeUploadResponse(GDataErrorCode code,
-                                           int64 start_position_received,
-                                           int64 end_position_received)
+UploadRangeResponse::UploadRangeResponse(GDataErrorCode code,
+                                         int64 start_position_received,
+                                         int64 end_position_received)
     : code(code),
       start_position_received(start_position_received),
       end_position_received(end_position_received) {
 }
 
-ResumeUploadResponse::~ResumeUploadResponse() {
+UploadRangeResponse::~UploadRangeResponse() {
 }
 
 InitiateUploadParams::InitiateUploadParams(
@@ -605,7 +605,7 @@ bool InitiateUploadOperation::GetContentData(std::string* upload_content_type,
 ResumeUploadOperation::ResumeUploadOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
-    const ResumeUploadCallback& callback,
+    const UploadRangeCallback& callback,
     const ResumeUploadParams& params)
   : UrlFetchOperationBase(registry,
                           url_request_context_getter,
@@ -655,9 +655,9 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
              << "], range_parsed=" << start_position_received
              << "," << end_position_received;
 
-    callback_.Run(ResumeUploadResponse(code,
-                                       start_position_received,
-                                       end_position_received),
+    callback_.Run(UploadRangeResponse(code,
+                                      start_position_received,
+                                      end_position_received),
                   scoped_ptr<ResourceEntry>());
 
     OnProcessURLFetchResultsComplete(true);
@@ -694,7 +694,7 @@ void ResumeUploadOperation::OnDataParsed(GDataErrorCode code,
   if (!entry.get())
     LOG(WARNING) << "Invalid entry received on upload.";
 
-  callback_.Run(ResumeUploadResponse(code, -1, -1), entry.Pass());
+  callback_.Run(UploadRangeResponse(code, -1, -1), entry.Pass());
   OnProcessURLFetchResultsComplete(last_chunk_completed_);
 }
 
@@ -710,8 +710,7 @@ void ResumeUploadOperation::NotifySuccessToOperationRegistry() {
 }
 
 void ResumeUploadOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
-  scoped_ptr<ResourceEntry> entry;
-  callback_.Run(ResumeUploadResponse(code, 0, 0), entry.Pass());
+  callback_.Run(UploadRangeResponse(code, 0, 0), scoped_ptr<ResourceEntry>());
 }
 
 URLFetcher::RequestType ResumeUploadOperation::GetRequestType() const {

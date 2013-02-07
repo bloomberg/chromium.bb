@@ -85,7 +85,13 @@ class MockDriveService : public DriveServiceInterface {
           const InitiateUploadCallback& callback));
   MOCK_METHOD2(ResumeUpload,
       void(const ResumeUploadParams& upload_file_info,
-          const ResumeUploadCallback& callback));
+          const UploadRangeCallback& callback));
+  MOCK_METHOD5(GetUploadStatus,
+      void(UploadMode upload_mode,
+          const FilePath& drive_file_path,
+          const GURL& upload_url,
+          int64 content_length,
+           const UploadRangeCallback& callback));
   MOCK_METHOD3(AuthorizeApp,
       void(const GURL& edit_url,
           const std::string& app_id,

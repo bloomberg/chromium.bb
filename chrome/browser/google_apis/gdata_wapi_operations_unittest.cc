@@ -47,10 +47,10 @@ void CopyResultFromInitiateUploadCallbackAndQuit(
 }
 
 // Copies the result from ResumeUploadCallback and quit the message loop.
-void CopyResultFromResumeUploadCallbackAndQuit(
-    ResumeUploadResponse* out_response,
+void CopyResultFromUploadRangeCallbackAndQuit(
+    UploadRangeResponse* out_response,
     scoped_ptr<ResourceEntry>* out_new_entry,
-    const ResumeUploadResponse& response,
+    const UploadRangeResponse& response,
     scoped_ptr<ResourceEntry> new_entry) {
   *out_response = response;
   *out_new_entry = new_entry.Pass();
@@ -828,13 +828,13 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
       upload_url,
       FilePath::FromUTF8Unsafe("drive/newfile.txt"));
 
-  ResumeUploadResponse response;
+  UploadRangeResponse response;
   scoped_ptr<ResourceEntry> new_entry;
 
   ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
       &operation_registry_,
       request_context_getter_.get(),
-      base::Bind(&CopyResultFromResumeUploadCallbackAndQuit,
+      base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
                  &response,
                  &new_entry),
       resume_params);
@@ -943,13 +943,13 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
         upload_url,
         FilePath::FromUTF8Unsafe("drive/newfile.txt"));
 
-    ResumeUploadResponse response;
+    UploadRangeResponse response;
     scoped_ptr<ResourceEntry> new_entry;
 
     ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
         &operation_registry_,
         request_context_getter_.get(),
-        base::Bind(&CopyResultFromResumeUploadCallbackAndQuit,
+        base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
                    &response,
                    &new_entry),
         resume_params);
@@ -1057,13 +1057,13 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
       upload_url,
       FilePath::FromUTF8Unsafe("drive/newfile.txt"));
 
-  ResumeUploadResponse response;
+  UploadRangeResponse response;
   scoped_ptr<ResourceEntry> new_entry;
 
   ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
       &operation_registry_,
       request_context_getter_.get(),
-      base::Bind(&CopyResultFromResumeUploadCallbackAndQuit,
+      base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
                  &response,
                  &new_entry),
       resume_params);
@@ -1154,13 +1154,13 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
       upload_url,
       FilePath::FromUTF8Unsafe("drive/existingfile.txt"));
 
-  ResumeUploadResponse response;
+  UploadRangeResponse response;
   scoped_ptr<ResourceEntry> new_entry;
 
   ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
       &operation_registry_,
       request_context_getter_.get(),
-      base::Bind(&CopyResultFromResumeUploadCallbackAndQuit,
+      base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
                  &response,
                  &new_entry),
       resume_params);
@@ -1253,13 +1253,13 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
       upload_url,
       FilePath::FromUTF8Unsafe("drive/existingfile.txt"));
 
-  ResumeUploadResponse response;
+  UploadRangeResponse response;
   scoped_ptr<ResourceEntry> new_entry;
 
   ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
       &operation_registry_,
       request_context_getter_.get(),
-      base::Bind(&CopyResultFromResumeUploadCallbackAndQuit,
+      base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
                  &response,
                  &new_entry),
       resume_params);

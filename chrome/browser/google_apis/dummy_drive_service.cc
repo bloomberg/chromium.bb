@@ -97,7 +97,14 @@ void DummyDriveService::InitiateUpload(const InitiateUploadParams& params,
 }
 
 void DummyDriveService::ResumeUpload(const ResumeUploadParams& params,
-                                     const ResumeUploadCallback& callback) {}
+                                     const UploadRangeCallback& callback) {}
+
+void DummyDriveService::GetUploadStatus(
+    UploadMode upload_mode,
+    const FilePath& drive_file_path,
+    const GURL& upload_url,
+    int64 content_length,
+    const UploadRangeCallback& callback) {}
 
 void DummyDriveService::AuthorizeApp(const GURL& edit_url,
                                      const std::string& app_id,

@@ -94,7 +94,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
 
   // Handles a request for uploading a chunk of bytes.
   virtual void ResumeUpload(const ResumeUploadParams& params,
-                            const ResumeUploadCallback& callback) OVERRIDE {
+                            const UploadRangeCallback& callback) OVERRIDE {
     const int64 expected_size = expected_upload_content_.size();
 
     // The upload range should start from the current first unreceived byte.
@@ -125,10 +125,10 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
     received_bytes_ = params.end_position;
 
     // Callback with response.
-    ResumeUploadResponse response;
+    UploadRangeResponse response;
     scoped_ptr<ResourceEntry> entry;
     if (received_bytes_ == params.content_length) {
-      response = ResumeUploadResponse(
+      response = UploadRangeResponse(
           params.upload_mode == UPLOAD_NEW_FILE ? HTTP_CREATED : HTTP_SUCCESS,
           -1, -1);
 
@@ -136,7 +136,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
       dict.Set("id.$t", new base::StringValue(kTestDummyId));
       entry = ResourceEntry::CreateFrom(dict);
     } else {
-      response = ResumeUploadResponse(HTTP_RESUME_INCOMPLETE, 0,
+      response = UploadRangeResponse(HTTP_RESUME_INCOMPLETE, 0,
                                       params.end_position);
     }
     // ResumeUpload is an asynchronous function, so don't callback directly.
@@ -160,7 +160,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
 
   // Should not be used.
   virtual void ResumeUpload(const ResumeUploadParams& params,
-                            const ResumeUploadCallback& callback) OVERRIDE {
+                            const UploadRangeCallback& callback) OVERRIDE {
     NOTREACHED();
   }
 };
@@ -176,10 +176,10 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
 
   // Returns error.
   virtual void ResumeUpload(const ResumeUploadParams& params,
-                            const ResumeUploadCallback& callback) OVERRIDE {
+                            const UploadRangeCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback,
-                   ResumeUploadResponse(GDATA_NO_CONNECTION, -1, -1),
+                   UploadRangeResponse(GDATA_NO_CONNECTION, -1, -1),
                    base::Passed(scoped_ptr<ResourceEntry>())));
   }
 };

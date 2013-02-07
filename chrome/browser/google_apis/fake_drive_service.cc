@@ -778,7 +778,17 @@ void FakeDriveService::InitiateUpload(
 }
 
 void FakeDriveService::ResumeUpload(const ResumeUploadParams& params,
-                                    const ResumeUploadCallback& callback) {
+                                    const UploadRangeCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+}
+
+void FakeDriveService::GetUploadStatus(
+    UploadMode upload_mode,
+    const FilePath& drive_file_path,
+    const GURL& upload_url,
+    int64 content_length,
+    const UploadRangeCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 }

@@ -343,14 +343,14 @@ void DriveUploader::ReadCompletionCallback(
                          info_ptr->buf,
                          info_ptr->upload_location,
                          info_ptr->drive_path),
-      base::Bind(&DriveUploader::OnResumeUploadResponseReceived,
+      base::Bind(&DriveUploader::OnUploadRangeResponseReceived,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&upload_file_info)));
 }
 
-void DriveUploader::OnResumeUploadResponseReceived(
+void DriveUploader::OnUploadRangeResponseReceived(
     scoped_ptr<UploadFileInfo> upload_file_info,
-    const ResumeUploadResponse& response,
+    const UploadRangeResponse& response,
     scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

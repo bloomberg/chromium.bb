@@ -428,14 +428,13 @@ class InitiateUploadOperation : public UrlFetchOperationBase {
 
 //============================ ResumeUploadOperation ===========================
 
-// Struct for response to ResumeUpload.
-// TODO(satorux): Should return the next upload URL. crbug.com/163555
-struct ResumeUploadResponse {
-  ResumeUploadResponse();
-  ResumeUploadResponse(GDataErrorCode code,
-                       int64 start_position_received,
-                       int64 end_position_received);
-  ~ResumeUploadResponse();
+// Struct for response to ResumeUpload and GetUploadStatus.
+struct UploadRangeResponse {
+  UploadRangeResponse();
+  UploadRangeResponse(GDataErrorCode code,
+                      int64 start_position_received,
+                      int64 end_position_received);
+  ~UploadRangeResponse();
 
   GDataErrorCode code;
   // The values of "Range" header returned from the server. The values are
@@ -476,10 +475,11 @@ struct ResumeUploadParams {
   const FilePath drive_file_path;
 };
 
-// Callback type for DocumentServiceInterface::ResumeUpload.
+// Callback type for DocumentServiceInterface::ResumeUpload and
+// DocumentServiceInterface::GetUploadStatus.
 typedef base::Callback<void(
-    const ResumeUploadResponse& response,
-    scoped_ptr<ResourceEntry> new_entry)> ResumeUploadCallback;
+    const UploadRangeResponse& response,
+    scoped_ptr<ResourceEntry> new_entry)> UploadRangeCallback;
 
 // This class performs the operation for resuming the upload of a file.
 // More specifically, this operation uploads a chunk of data carried in |buf|
@@ -498,7 +498,7 @@ class ResumeUploadOperation : public UrlFetchOperationBase {
   ResumeUploadOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
-      const ResumeUploadCallback& callback,
+      const UploadRangeCallback& callback,
       const ResumeUploadParams& params);
   virtual ~ResumeUploadOperation();
 
@@ -522,7 +522,7 @@ class ResumeUploadOperation : public UrlFetchOperationBase {
   // Called when ParseJson() is completed.
   void OnDataParsed(GDataErrorCode code, scoped_ptr<base::Value> value);
 
-  const ResumeUploadCallback callback_;
+  const UploadRangeCallback callback_;
   const ResumeUploadParams params_;
   bool last_chunk_completed_;
 

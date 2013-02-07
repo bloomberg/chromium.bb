@@ -458,11 +458,24 @@ void DriveAPIService::InitiateUpload(
 
 void DriveAPIService::ResumeUpload(
     const ResumeUploadParams& params,
-    const ResumeUploadCallback& callback) {
+    const UploadRangeCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   // TODO(kochi): Implement this.
+  NOTREACHED();
+}
+
+void DriveAPIService::GetUploadStatus(
+    UploadMode upload_mode,
+    const FilePath& drive_file_path,
+    const GURL& upload_url,
+    int64 content_length,
+    const UploadRangeCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
   NOTREACHED();
 }
 

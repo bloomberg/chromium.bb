@@ -427,7 +427,7 @@ void GDataWapiService::InitiateUpload(
 }
 
 void GDataWapiService::ResumeUpload(const ResumeUploadParams& params,
-                                    const ResumeUploadCallback& callback) {
+                                    const UploadRangeCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -436,6 +436,19 @@ void GDataWapiService::ResumeUpload(const ResumeUploadParams& params,
                                 url_request_context_getter_,
                                 callback,
                                 params));
+}
+
+void GDataWapiService::GetUploadStatus(
+    UploadMode upload_mode,
+    const FilePath& drive_file_path,
+    const GURL& upload_url,
+    int64 content_length,
+    const UploadRangeCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTREACHED();
 }
 
 void GDataWapiService::AuthorizeApp(const GURL& edit_url,

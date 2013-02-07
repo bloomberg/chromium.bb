@@ -23,7 +23,7 @@ class FilePath;
 
 namespace google_apis {
 class DriveServiceInterface;
-struct ResumeUploadResponse;
+struct UploadRangeResponse;
 
 // Callback to be invoked once the upload has completed.
 typedef base::Callback<void(DriveUploadError error,
@@ -129,9 +129,9 @@ class DriveUploader : public DriveUploaderInterface {
                     int bytes_to_send);
 
   // DriveService callback for ResumeUpload.
-  void OnResumeUploadResponseReceived(
+  void OnUploadRangeResponseReceived(
       scoped_ptr<UploadFileInfo> upload_file_info,
-      const ResumeUploadResponse& response,
+      const UploadRangeResponse& response,
       scoped_ptr<ResourceEntry> entry);
 
   // Handle failed uploads.

@@ -240,7 +240,18 @@ class DriveServiceInterface {
   // Resumes uploading of a document/file on the calling thread.
   // |callback| must not be null.
   virtual void ResumeUpload(const ResumeUploadParams& params,
-                            const ResumeUploadCallback& callback) = 0;
+                            const UploadRangeCallback& callback) = 0;
+
+  // Gets the current status of the uploading to |upload_url| from the server.
+  // |upload_mode|, |drive_file_path| and |content_length| should be set to
+  // the same value which is used for ResumeUpload.
+  // |callback| must not be null.
+  virtual void GetUploadStatus(
+      UploadMode upload_mode,
+      const FilePath& drive_file_path,
+      const GURL& upload_url,
+      int64 content_length,
+      const UploadRangeCallback& callback) = 0;
 
   // Authorizes a Drive app with the id |app_id| to open the given file.
   // Upon completion, invokes |callback| with the link to open the file with

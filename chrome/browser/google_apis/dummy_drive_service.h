@@ -73,7 +73,13 @@ class DummyDriveService : public DriveServiceInterface {
   virtual void InitiateUpload(const InitiateUploadParams& params,
                               const InitiateUploadCallback& callback) OVERRIDE;
   virtual void ResumeUpload(const ResumeUploadParams& params,
-                            const ResumeUploadCallback& callback) OVERRIDE;
+                            const UploadRangeCallback& callback) OVERRIDE;
+  virtual void GetUploadStatus(
+      UploadMode upload_mode,
+      const FilePath& drive_file_path,
+      const GURL& upload_url,
+      int64 content_length,
+      const UploadRangeCallback& callback) OVERRIDE;
   virtual void AuthorizeApp(const GURL& edit_url,
                             const std::string& app_id,
                             const AuthorizeAppCallback& callback) OVERRIDE;
