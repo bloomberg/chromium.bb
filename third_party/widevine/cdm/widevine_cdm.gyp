@@ -45,7 +45,7 @@
   # anything to be done in this file (instead of a higher-level .gyp file).
   'targets': [
     {
-      'target_name': 'widevinecdmplugin',
+      'target_name': 'widevinecdmadapter',
       'type': 'none',
       'conditions': [
         [ 'branding == "Chrome"', {

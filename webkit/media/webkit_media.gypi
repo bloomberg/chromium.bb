@@ -192,7 +192,7 @@
       ],
     },
     {
-      'target_name': 'clearkeycdmplugin',
+      'target_name': 'clearkeycdmadapter',
       'type': 'none',
       'dependencies': [
         '<(DEPTH)/ppapi/ppapi.gyp:ppapi_cpp',
@@ -230,7 +230,7 @@
             ]},
           'copies': [
             {
-              'destination': '<(PRODUCT_DIR)/clearkeycdmplugin.plugin/Contents/MacOS/',
+              'destination': '<(PRODUCT_DIR)/clearkeycdmadapter.plugin/Contents/MacOS/',
               'files': [
                 '<(PRODUCT_DIR)/libclearkeycdm.dylib',
                 '<(PRODUCT_DIR)/ffmpegsumo.so'

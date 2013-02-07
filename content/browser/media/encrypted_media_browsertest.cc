@@ -22,11 +22,11 @@
 
 // Platform-specific filename relative to the chrome executable.
 #if defined(OS_WIN)
-static const wchar_t kLibraryName[] = L"clearkeycdmplugin.dll";
+static const wchar_t kLibraryName[] = L"clearkeycdmadapter.dll";
 #elif defined(OS_MACOSX)
-static const char kLibraryName[] = "clearkeycdmplugin.plugin";
+static const char kLibraryName[] = "clearkeycdmadapter.plugin";
 #elif defined(OS_POSIX)
-static const char kLibraryName[] = "libclearkeycdmplugin.so";
+static const char kLibraryName[] = "libclearkeycdmadapter.so";
 #endif
 
 // Available key systems.

@@ -678,7 +678,7 @@
             '../ui/snapshot/snapshot.gyp:snapshot',
             '../ui/ui.gyp:shell_dialogs',
             '../ui/ui.gyp:ui',
-            '../webkit/support/webkit_support.gyp:clearkeycdmplugin',
+            '../webkit/support/webkit_support.gyp:clearkeycdmadapter',
             '../webkit/support/webkit_support.gyp:glue',
             '<(webkit_src_dir)/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner_resources',
           ],

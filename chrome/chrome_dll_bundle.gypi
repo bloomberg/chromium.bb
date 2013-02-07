@@ -81,7 +81,7 @@
     # dependency here. flash_player.gyp will copy the Flash bundle
     # into PRODUCT_DIR.
     '../third_party/adobe/flash/flash_player.gyp:flapper_binaries',
-    '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmplugin',
+    '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
     'chrome_resources.gyp:packed_extra_resources',
     'chrome_resources.gyp:packed_resources',
   ],
