@@ -243,8 +243,8 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
         // PluginProcessHost to destroy the intermediate HWNDs.
         cur_parent = ReparentWindow(window, parent);
         ::ShowWindow(window, SW_SHOW);  // Window was created hidden.
-      } else {
-        CHECK(IsPluginWrapperWindow(cur_parent));
+      } else if (!IsPluginWrapperWindow(cur_parent)) {
+        continue;  // Race if plugin process is shutting down.
       }
 
       // We move the intermediate parent window which doesn't result in cross-
