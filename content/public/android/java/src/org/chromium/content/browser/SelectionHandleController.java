@@ -12,9 +12,11 @@ import android.view.View;
  */
 abstract class SelectionHandleController implements CursorController {
 
-    // The following constants match the ones in base/i18n/rtl.h.
-    private static final int TEXT_DIRECTION_RTL = 1;
-    private static final int TEXT_DIRECTION_LTR = 2;
+    // The following constants match the ones in
+    // third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h
+    private static final int TEXT_DIRECTION_DEFAULT = 0;
+    private static final int TEXT_DIRECTION_LTR = 1;
+    private static final int TEXT_DIRECTION_RTL = 2;
 
     /** The cursor controller images, lazily created when shown. */
     private HandleView mStartHandle, mEndHandle;
@@ -164,11 +166,11 @@ abstract class SelectionHandleController implements CursorController {
     private void createHandlesIfNeeded(int startDir, int endDir) {
         if (mStartHandle == null) {
             mStartHandle = new HandleView(this,
-                startDir == TEXT_DIRECTION_LTR ? HandleView.LEFT : HandleView.RIGHT, mParent);
+                startDir == TEXT_DIRECTION_RTL ? HandleView.RIGHT : HandleView.LEFT, mParent);
         }
         if (mEndHandle == null) {
             mEndHandle = new HandleView(this,
-                endDir == TEXT_DIRECTION_LTR ? HandleView.RIGHT : HandleView.LEFT, mParent);
+                endDir == TEXT_DIRECTION_RTL ? HandleView.LEFT : HandleView.RIGHT, mParent);
         }
     }
 
