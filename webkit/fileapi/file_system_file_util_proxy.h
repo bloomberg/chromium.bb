@@ -81,7 +81,7 @@ class FileSystemFileUtilProxy {
       const StatusCallback& callback);
 
   // Copies a file from local disk to the given filesystem destination.
-  // Primarily used for the Syncable filesystem type (e.g. GDrive).
+  // Primarily used for the Syncable filesystem type (e.g. Drive).
   static bool CopyInForeignFile(
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,

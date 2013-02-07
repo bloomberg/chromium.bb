@@ -116,8 +116,7 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
     // Specifies whether there will be a filter added for all files (i.e. *.*).
     bool include_all_files;
 
-    // Specifies whether the caller can support files/folders that are on
-    // GDrive.
+    // Specifies whether the caller can support files/folders that are on Drive.
     bool support_gdata;
   };
 

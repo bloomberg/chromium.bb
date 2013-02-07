@@ -624,7 +624,7 @@ button#detail-view:not([disabled]) {
 }
 
 /* Drive space warning banner. */
-.gdrive-space-warning {
+.drive-space-warning {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-transition: height 70ms linear;
@@ -640,15 +640,15 @@ button#detail-view:not([disabled]) {
   position: relative;
 }
 
-.gdrive-space-warning[hidden] {
+.drive-space-warning[hidden] {
   border-top-width: 0;
   height: 0;
 }
 
-.gdrive-space-warning .gdrive-icon {
+.drive-space-warning .drive-icon {
   background-image: -webkit-image-set(
-    url('../images/files/ui/gdrive_logo.png') 1x,
-    url('../images/files/ui/2x/gdrive_logo.png') 2x);
+    url('../images/files/ui/drive_logo.png') 1x,
+    url('../images/files/ui/2x/drive_logo.png') 2x);
   background-position: center;
   background-repeat: no-repeat;
   background-size: 25px 22px;
@@ -656,7 +656,7 @@ button#detail-view:not([disabled]) {
   width: 50px;
 }
 
-.gdrive-space-warning .gdrive-text {
+.drive-space-warning .drive-text {
   margin-right: 11px;
 }
 
@@ -1562,7 +1562,7 @@ body:not([ctrl-pressing]) [required_attr='ctrl-pressing'] {
   top: 28px;  /* Leave room for the file list header. */
 }
 
-.dialog-container:not([gdrive-welcome='page']) #no-search-results[show] {
+.dialog-container:not([drive-welcome='page']) #no-search-results[show] {
   display: block;
 }
 
@@ -1636,7 +1636,7 @@ button:focus {
   width: auto;
 }
 
-.gdrive-welcome-wrapper {
-  /* gdrive_welcome.css will override it once loaded. */
+.drive-welcome-wrapper {
+  /* drive_welcome.css will override it once loaded. */
   display: none;
 }

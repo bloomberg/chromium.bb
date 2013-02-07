@@ -518,7 +518,7 @@ MetadataCache.prototype.mergeProperties_ = function(url, data) {
  */
 MetadataCache.prototype.refreshDirectory = function(url) {
   // Skip if the current directory is now being refreshed.
-  if (this.directoriesWithStaleMetadata_[url] || !FileType.isOnGDrive(url))
+  if (this.directoriesWithStaleMetadata_[url] || !FileType.isOnDrive(url))
     return;
 
   this.directoriesWithStaleMetadata_[url] = true;
@@ -530,7 +530,7 @@ MetadataCache.prototype.refreshDirectory = function(url) {
  * @param {string} fileURL File URL.
  */
 MetadataCache.prototype.refreshFileMetadata = function(fileURL) {
-  if (!FileType.isOnGDrive(fileURL))
+  if (!FileType.isOnDrive(fileURL))
     return;
   // TODO(kaznacheev) This does not really work with Drive search.
   var url = fileURL.substr(0, fileURL.lastIndexOf('/'));
@@ -683,7 +683,7 @@ DriveProvider.prototype = {
  * @return {boolean} Whether this provider supports the url.
  */
 DriveProvider.prototype.supportsUrl = function(url) {
-  return FileType.isOnGDrive(url);
+  return FileType.isOnDrive(url);
 };
 
 /**

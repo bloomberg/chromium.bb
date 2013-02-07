@@ -3,21 +3,21 @@
  * found in the LICENSE file. */
 
 /* Google Drive welcome banners.*/
-.gdrive-welcome-wrapper {
+.drive-welcome-wrapper {
   /* This image looks good in high DPI as is. */
   background-image: url(chrome://resources/images/clouds.png);
   background-repeat: repeat-x;
   color: #333;
 }
 
-.gdrive-welcome-icon {
+.drive-welcome-icon {
   background-image: -webkit-image-set(
-    url('../images/files/ui/gdrive_logo.png') 1x,
-    url('../images/files/ui/2x/gdrive_logo.png') 2x);
+    url('../images/files/ui/drive_logo.png') 1x,
+    url('../images/files/ui/2x/drive_logo.png') 2x);
   background-repeat: no-repeat;
 }
 
-.gdrive-welcome-links {
+.drive-welcome-links {
   -webkit-box-orient: horizontal;
   display: -webkit-box;
 }
@@ -69,7 +69,7 @@
 }
 
 /* Header welcome banner. */
-.gdrive-welcome.header {
+.drive-welcome.header {
   -webkit-box-flex: 0;
   -webkit-transition: height 180ms ease, visibility 0 linear 180ms;
   height: 100px;
@@ -77,12 +77,12 @@
   position: relative;
 }
 
-.dialog-container:not([gdrive-welcome='header']) .gdrive-welcome.header {
+.dialog-container:not([drive-welcome='header']) .drive-welcome.header {
   height: 0;
   visibility: hidden;
 }
 
-.gdrive-welcome.header .gdrive-welcome-wrapper {
+.drive-welcome.header .drive-welcome-wrapper {
   -webkit-box-orient: horizontal;
   background-size: 308px 100px;
   border-top: 1px solid #d4d4d4;
@@ -94,34 +94,34 @@
   top: 0;
 }
 
-.gdrive-welcome.header .gdrive-welcome-icon {
+.drive-welcome.header .drive-welcome-icon {
   background-position: center 18px;
   background-size: 51px 44px;
   width: 120px;
 }
 
-.gdrive-welcome.header .gdrive-welcome-message {
+.drive-welcome.header .drive-welcome-message {
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
   display: -webkit-box;
 }
 
-.gdrive-welcome.header .gdrive-welcome-title {
+.drive-welcome.header .drive-welcome-title {
   font-size: 140%;
   margin-bottom: 4px;
   margin-top: 14px;
 }
 
-.gdrive-welcome.header .gdrive-welcome-text {
+.drive-welcome.header .drive-welcome-text {
   margin-bottom: 6px;
 }
 
-.gdrive-welcome.header .gdrive-welcome-dismiss {
+.drive-welcome.header .drive-welcome-dismiss {
   display: none;
 }
 
 /* Full page welcome banner. */
-.gdrive-welcome.page {
+.drive-welcome.page {
   bottom: 0;
   left: 0;
   position: absolute;
@@ -129,15 +129,15 @@
   top: 28px;  /* Leave room for the file list header. */
 }
 
-.dialog-container:not([gdrive-welcome='page']) .gdrive-welcome.page {
+.dialog-container:not([drive-welcome='page']) .drive-welcome.page {
   display: none;
 }
 
-.gdrive-welcome.page .cr-dialog-close {
+.drive-welcome.page .cr-dialog-close {
   display: none;
 }
 
-.gdrive-welcome.page .gdrive-welcome-wrapper {
+.drive-welcome.page .drive-welcome-wrapper {
   -webkit-box-align: center;
   -webkit-box-orient: vertical;
   background-position: 0 50px;
@@ -152,7 +152,7 @@
   top: 0;
 }
 
-.gdrive-welcome.page .gdrive-welcome-icon {
+.drive-welcome.page .drive-welcome-icon {
   background-position: center center;
   height: 240px;
   left: 0;
@@ -161,30 +161,30 @@
   width: 100%;
 }
 
-.gdrive-welcome.page .gdrive-welcome-message {
+.drive-welcome.page .drive-welcome-message {
   margin-left: 10px;
   margin-right: 10px;
   max-width: 525px;
 }
 
-.gdrive-welcome.page .gdrive-welcome-title {
+.drive-welcome.page .drive-welcome-title {
   font-size: 133%;
   margin-bottom: 30px;
   text-align: center;
 }
 
-.gdrive-welcome.page .gdrive-welcome-text {
+.drive-welcome.page .drive-welcome-text {
   margin-bottom: 24px;
 }
 
-.gdrive-welcome.page .gdrive-welcome-dismiss {
+.drive-welcome.page .drive-welcome-dismiss {
   margin-left: 20px;
 }
 
-body:not([type='full-page']) .gdrive-welcome.page .gdrive-welcome-wrapper {
+body:not([type='full-page']) .drive-welcome.page .drive-welcome-wrapper {
   background-position: 0 0;
 }
 
-body:not([type='full-page']) .gdrive-welcome.page .gdrive-welcome-icon {
+body:not([type='full-page']) .drive-welcome.page .drive-welcome-icon {
   height: 200px;
 }

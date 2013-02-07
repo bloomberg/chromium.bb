@@ -149,23 +149,23 @@ FileType.getTypeString = function(file) {
 /**
  * Pattern for urls pointing to Google Drive files.
  */
-FileType.GDRIVE_URL_PATTERN =
+FileType.DRIVE_URL_PATTERN =
     new RegExp('^filesystem:[^/]*://[^/]*/[^/]*/drive/(.*)');
 
 /**
  * Pattern for file paths pointing to Google Drive files.
  */
-FileType.GDRIVE_PATH_PATTERN =
+FileType.DRIVE_PATH_PATTERN =
     new RegExp('^/drive/');
 
 /**
  * @param {string|Entry} file The url string or entry.
  * @return {boolean} Whether this provider supports the url.
  */
-FileType.isOnGDrive = function(file) {
+FileType.isOnDrive = function(file) {
   return typeof file == 'string' ?
-      FileType.GDRIVE_URL_PATTERN.test(file) :
-      FileType.GDRIVE_PATH_PATTERN.test(file.fullPath);
+      FileType.DRIVE_URL_PATTERN.test(file) :
+      FileType.DRIVE_PATH_PATTERN.test(file.fullPath);
 };
 
 

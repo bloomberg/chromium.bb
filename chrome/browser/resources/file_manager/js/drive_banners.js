@@ -57,7 +57,7 @@ var WELCOME_HEADER_COUNTER_KEY = 'driveWelcomeHeaderCounter';
 // If the warning was dismissed before, this key stores the quota value
 // (as of the moment of dismissal).
 // If the warning was never dismissed or was reset this key stores 0.
-var WARNING_DISMISSED_KEY = 'gdriveSpaceWarningDismissed';
+var WARNING_DISMISSED_KEY = 'driveSpaceWarningDismissed';
 
 /**
  * Maximum times Drive Welcome banner could have shown.
@@ -137,32 +137,32 @@ FileListBannerController.prototype.onStorageChange_ = function(changes,
 FileListBannerController.prototype.showBanner_ = function(type, messageId) {
   this.showDriveWelcome_(type);
 
-  var container = this.document_.querySelector('.gdrive-welcome.' + type);
+  var container = this.document_.querySelector('.drive-welcome.' + type);
   if (container.firstElementChild)
     return;  // Do not re-create.
 
-  if (!this.document_.querySelector('link[gdrive-welcome-style]')) {
+  if (!this.document_.querySelector('link[drive-welcome-style]')) {
     var style = this.document_.createElement('link');
     style.rel = 'stylesheet';
-    style.href = 'css/gdrive_welcome.css';
-    style.setAttribute('gdrive-welcome-style', '');
+    style.href = 'css/drive_welcome.css';
+    style.setAttribute('drive-welcome-style', '');
     this.document_.head.appendChild(style);
   }
 
-  var wrapper = util.createChild(container, 'gdrive-welcome-wrapper');
-  util.createChild(wrapper, 'gdrive-welcome-icon');
+  var wrapper = util.createChild(container, 'drive-welcome-wrapper');
+  util.createChild(wrapper, 'drive-welcome-icon');
 
   var close = util.createChild(wrapper, 'cr-dialog-close');
   close.addEventListener('click', this.closeBanner_.bind(this));
 
-  var message = util.createChild(wrapper, 'gdrive-welcome-message');
+  var message = util.createChild(wrapper, 'drive-welcome-message');
 
-  var title = util.createChild(message, 'gdrive-welcome-title');
+  var title = util.createChild(message, 'drive-welcome-title');
 
-  var text = util.createChild(message, 'gdrive-welcome-text');
+  var text = util.createChild(message, 'drive-welcome-text');
   text.innerHTML = str(messageId);
 
-  var links = util.createChild(message, 'gdrive-welcome-links');
+  var links = util.createChild(message, 'drive-welcome-links');
 
   var more;
   if (this.newWelcome_) {
@@ -185,7 +185,7 @@ FileListBannerController.prototype.showBanner_ = function(type, messageId) {
   else
     dismiss = util.createChild(links, 'plain-link');
 
-  dismiss.classList.add('gdrive-welcome-dismiss');
+  dismiss.classList.add('drive-welcome-dismiss');
   dismiss.textContent = str('DRIVE_WELCOME_DISMISS');
   dismiss.addEventListener('click', this.closeBanner_.bind(this));
 
@@ -223,7 +223,7 @@ FileListBannerController.prototype.maybeShowBanner_ = function() {
     }, 2000));
   } else if (this.welcomeHeaderCounter_ < WELCOME_HEADER_COUNTER_LIMIT) {
     // We do not want to increment the counter when the user navigates
-    // between different directories on GDrive, but we increment the counter
+    // between different directories on Drive, but we increment the counter
     // once anyway to prevent the full page banner from showing.
      if (!this.previousDirWasOnDrive_ || this.welcomeHeaderCounter_ == 0) {
        var self = this;
@@ -245,9 +245,9 @@ FileListBannerController.prototype.maybeShowBanner_ = function() {
  *     warning.
  * @private
  */
-FileListBannerController.prototype.showLowGDriveSpaceWarning_ =
+FileListBannerController.prototype.showLowDriveSpaceWarning_ =
       function(show, sizeStats) {
-  var box = this.document_.querySelector('.gdrive-space-warning');
+  var box = this.document_.querySelector('.drive-space-warning');
 
   // Avoid showing two banners.
   // TODO(kaznacheev): Unify the low space warning and the promo header.
@@ -273,11 +273,11 @@ FileListBannerController.prototype.showLowGDriveSpaceWarning_ =
   box.textContent = '';
   if (show) {
     var icon = this.document_.createElement('div');
-    icon.className = 'gdrive-icon';
+    icon.className = 'drive-icon';
     box.appendChild(icon);
 
     var text = this.document_.createElement('div');
-    text.className = 'gdrive-text';
+    text.className = 'drive-text';
     text.textContent = strf('DRIVE_SPACE_AVAILABLE_LONG',
         util.bytesToString(sizeStats.remainingSizeKB * 1024));
     box.appendChild(text);
@@ -347,7 +347,7 @@ FileListBannerController.prototype.checkFreeSpace_ = function(currentPath) {
           if (root == RootDirectory.DOWNLOADS)
             self.showLowDownloadsSpaceWarning_(lowDiskSpace);
           else
-            self.showLowGDriveSpaceWarning_(lowDiskSpace, sizeStats);
+            self.showLowDriveSpaceWarning_(lowDiskSpace, sizeStats);
 
           // If disk space is low, check it more often. User can delete files
           // manually and we should not bother her with warning in this case.
@@ -359,7 +359,7 @@ FileListBannerController.prototype.checkFreeSpace_ = function(currentPath) {
   var root = PathUtil.getRootPath(currentPath);
   if (root === RootDirectory.DOWNLOADS) {
     scheduleCheck(500, root, 0.2);
-    this.showLowGDriveSpaceWarning_(false);
+    this.showLowDriveSpaceWarning_(false);
   } else if (root === RootDirectory.DRIVE) {
     scheduleCheck(500, root, 0.1);
     this.showLowDownloadsSpaceWarning_(false);
@@ -367,7 +367,7 @@ FileListBannerController.prototype.checkFreeSpace_ = function(currentPath) {
     scheduleCheck(0);
 
     this.showLowDownloadsSpaceWarning_(false);
-    this.showLowGDriveSpaceWarning_(false);
+    this.showLowDriveSpaceWarning_(false);
   }
 };
 
@@ -417,8 +417,8 @@ FileListBannerController.prototype.isOnDrive = function() {
  */
 FileListBannerController.prototype.showDriveWelcome_ = function(type) {
   var container = this.document_.querySelector('.dialog-container');
-  if (container.getAttribute('gdrive-welcome') != type) {
-    container.setAttribute('gdrive-welcome', type);
+  if (container.getAttribute('drive-welcome') != type) {
+    container.setAttribute('drive-welcome', type);
     this.requestRelayout_(200);  // Resize only after the animation is done.
   }
 };

@@ -529,7 +529,7 @@ DialogType.isModal = function(type) {
     cr.ui.contextMenuHandler.setContextMenu(this.table_.querySelector('.list'),
         this.fileContextMenu_);
     cr.ui.contextMenuHandler.setContextMenu(
-        this.document_.querySelector('.gdrive-welcome.page'),
+        this.document_.querySelector('.drive-welcome.page'),
         this.fileContextMenu_);
 
     this.rootsContextMenu_ =
@@ -1034,7 +1034,7 @@ DialogType.isModal = function(type) {
   FileManager.prototype.onCopyProgress_ = function(event) {
     if (event.reason === 'ERROR' &&
         event.error.reason === 'FILESYSTEM_ERROR' &&
-        event.error.data.toGDrive &&
+        event.error.data.toDrive &&
         event.error.data.code == FileError.QUOTA_EXCEEDED_ERR) {
       this.alert.showHtml(
           strf('DRIVE_SERVER_OUT_OF_SPACE_HEADER'),

@@ -77,7 +77,7 @@ FileTasks.prototype.processTasks_ = function(tasks) {
   var id = util.platform.getAppId();
   var is_on_drive = false;
   for (var index = 0; index < this.urls_.length; ++index) {
-    if (FileType.isOnGDrive(this.urls_[index])) {
+    if (FileType.isOnDrive(this.urls_[index])) {
       is_on_drive = true;
       break;
     }

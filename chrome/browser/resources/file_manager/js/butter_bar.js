@@ -290,7 +290,7 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
         this.showError_(strf(this.transferType_() +
                              '_TARGET_EXISTS_ERROR', name));
       } else if (event.error.reason === 'FILESYSTEM_ERROR') {
-        if (event.error.data.toGDrive &&
+        if (event.error.data.toDrive &&
             event.error.data.code === FileError.QUOTA_EXCEEDED_ERR) {
           // The alert will be shown in FileManager.onCopyProgress_.
           this.hide_();

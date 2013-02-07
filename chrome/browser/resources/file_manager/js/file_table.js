@@ -606,7 +606,7 @@ filelist.decorateSelectionCheckbox = function(input, entry, list) {
  */
 filelist.decorateListItem = function(li, entry, metadataCache) {
   li.classList.add(entry.isDirectory ? 'directory' : 'file');
-  if (FileType.isOnGDrive(entry)) {
+  if (FileType.isOnDrive(entry)) {
     var driveProps = metadataCache.getCached(entry, 'drive');
     if (driveProps)
       filelist.updateListItemDriveProps(li, driveProps);

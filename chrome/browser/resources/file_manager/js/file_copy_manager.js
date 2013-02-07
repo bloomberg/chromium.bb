@@ -419,7 +419,7 @@ FileCopyManager.prototype.maybeCancel_ = function() {
  * Convert string in clipboard to entries and kick off pasting.
  * @param {Object} clipboard Clipboard contents.
  * @param {string} targetPath Target path.
- * @param {boolean} targetOnDrive If target is on GDrive.
+ * @param {boolean} targetOnDrive If target is on Drive.
  */
 FileCopyManager.prototype.paste = function(clipboard, targetPath,
                                            targetOnDrive) {
@@ -502,7 +502,7 @@ FileCopyManager.prototype.paste = function(clipboard, targetPath,
  *
  * @param {DirectoryEntry} sourceEntry An entry from the source.
  * @param {DirectoryEntry} targetDirEntry Directory entry for the target.
- * @param {boolean} targetOnDrive If target is on GDrive.
+ * @param {boolean} targetOnDrive If target is on Drive.
  * @return {boolean} Whether source and target dir are on the same root.
  */
 FileCopyManager.prototype.isOnSameRoot = function(sourceEntry,
@@ -518,8 +518,8 @@ FileCopyManager.prototype.isOnSameRoot = function(sourceEntry,
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @param {Array.<Entry>} entries Entries to copy.
  * @param {boolean} deleteAfterCopy In case of move.
- * @param {boolean} sourceOnDrive Source directory on GDrive.
- * @param {boolean} targetOnDrive Target directory on GDrive.
+ * @param {boolean} sourceOnDrive Source directory on Drive.
+ * @param {boolean} targetOnDrive Target directory on Drive.
  * @return {FileCopyManager.Task} Copy task.
  */
 FileCopyManager.prototype.queueCopy = function(sourceDirEntry,
@@ -919,7 +919,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
         if (chrome.runtime.lastError) {
           onFailTransfer({
             code: chrome.runtime.lastError.message,
-            toGDrive: task.targetOnDrive,
+            toDrive: task.targetOnDrive,
             sourceFileUrl: sourceFileUrl
           });
         } else {
@@ -1156,7 +1156,7 @@ FileCopyManager.prototype.deleteEntries = function(entries, callback) {
 /**
  * Creates a zip file for the selection of files.
  * @param {Entry} dirEntry the directory containing the selection.
- * @param {boolean} isOnDrive If directory is on GDrive.
+ * @param {boolean} isOnDrive If directory is on Drive.
  * @param {Array.<Entry>} selectionEntries the selected entries.
  */
 FileCopyManager.prototype.zipSelection = function(dirEntry, isOnDrive,

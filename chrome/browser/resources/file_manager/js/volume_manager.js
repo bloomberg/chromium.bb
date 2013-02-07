@@ -225,7 +225,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
 };
 
 /**
- * First access to GDrive takes time (to fetch data from the cloud).
+ * First access to Drive takes time (to fetch data from the cloud).
  * We want to change state to MOUNTED (likely from MOUNTING) when the
  * drive ready to operate.
  *

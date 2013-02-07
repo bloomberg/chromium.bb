@@ -116,10 +116,10 @@ FileGrid.decorateThumbnailBox = function(
 
   var metadataTypes = 'thumbnail|filesystem';
 
-  if (FileType.isOnGDrive(imageUrl)) {
+  if (FileType.isOnDrive(imageUrl)) {
     metadataTypes += '|drive';
   } else {
-    // TODO(dgozman): If we ask for 'media' for a GDrive file we fall into an
+    // TODO(dgozman): If we ask for 'media' for a Drive file we fall into an
     // infinite loop.
     metadataTypes += '|media';
   }
