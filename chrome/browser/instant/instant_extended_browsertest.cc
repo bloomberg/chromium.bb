@@ -17,6 +17,22 @@ class InstantExtendedTest : public InstantTestBase {
     instant_url_ = https_test_server_.
         GetURL("files/instant_extended.html?strk=1&");
   }
+
+  std::string GetOmniboxText() {
+    return UTF16ToUTF8(omnibox()->GetText());
+  }
+
+  void SendDownArrow() {
+    omnibox()->model()->OnUpOrDownKeyPressed(1);
+    // Wait for JavaScript to run the key handler by executing a blank script.
+    EXPECT_TRUE(ExecuteScript(std::string()));
+  }
+
+  void SendUpArrow() {
+    omnibox()->model()->OnUpOrDownKeyPressed(-1);
+    // Wait for JavaScript to run the key handler by executing a blank script.
+    EXPECT_TRUE(ExecuteScript(std::string()));
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ExtendedModeIsOn) {
@@ -132,4 +148,23 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponFocusLostCommit) {
 
   // Suggestion should be cleared at this point.
   EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+}
+
+// This test simulates a search provider using the InstantExtended API to
+// navigate through the suggested results and back to the original user query.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateSuggestionsWithArrowKeys) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  SetOmniboxTextAndWaitForInstantToShow("hello");
+  EXPECT_EQ("hello", GetOmniboxText());
+
+  SendDownArrow();
+  EXPECT_EQ("result 1", GetOmniboxText());
+  SendDownArrow();
+  EXPECT_EQ("result 2", GetOmniboxText());
+  SendUpArrow();
+  EXPECT_EQ("result 1", GetOmniboxText());
+  SendUpArrow();
+  EXPECT_EQ("hello", GetOmniboxText());
 }

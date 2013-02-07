@@ -1250,6 +1250,11 @@ bool OmniboxEditModel::DoInstant(const AutocompleteMatch& match) {
   if (!instant || in_revert_)
     return false;
 
+  // Don't call Update() if the change is a result of a
+  // INSTANT_COMPLETE_REPLACE instant suggestion.
+  if (has_temporary_text_ && is_temporary_text_set_by_instant_)
+    return false;
+
   // The two pieces of text we want to send Instant, viz., what the user has
   // typed, and the full omnibox text including any inline autocompletion.
   string16 user_text = has_temporary_text_ ?
