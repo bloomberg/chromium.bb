@@ -37,7 +37,7 @@ class TestChangeProcessor : public syncer::SyncChangeProcessor {
   // Store a copy of all the changes passed in so we can examine them later.
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) {
+      const syncer::SyncChangeList& change_list) OVERRIDE {
     // change_map_.erase(change_map_.begin(), change_map_.end());
     for (syncer::SyncChangeList::const_iterator iter = change_list.begin();
         iter != change_list.end(); ++iter) {
@@ -100,7 +100,7 @@ class AppNotificationManagerSyncTest : public testing::Test {
         sync_processor_delegate_(new SyncChangeProcessorDelegate(
             sync_processor_.get())) {}
 
-  ~AppNotificationManagerSyncTest() {
+  virtual ~AppNotificationManagerSyncTest() {
     model_ = NULL;
   }
 

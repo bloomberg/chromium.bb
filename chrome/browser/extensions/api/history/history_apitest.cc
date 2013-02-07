@@ -19,7 +19,7 @@ namespace extensions {
 
 class HistoryApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpInProcessBrowserTestFixture() {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
     host_resolver()->AddRule("www.a.com", "127.0.0.1");
@@ -28,7 +28,7 @@ class HistoryApiTest : public ExtensionApiTest {
     ASSERT_TRUE(StartTestServer());
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }

@@ -133,7 +133,7 @@ class TestDelegate : public AppNotifyChannelSetup::Delegate,
 class TestUI : public AppNotifyChannelUI {
  public:
   TestUI() : delegate_(NULL) {}
-  ~TestUI() {}
+  virtual ~TestUI() {}
 
   // AppNotifyChannelUI.
   virtual void PromptSyncSetup(Delegate* delegate) OVERRIDE {

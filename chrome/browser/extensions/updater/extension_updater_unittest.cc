@@ -371,7 +371,7 @@ class ServiceForDownloadTests : public MockService {
     fake_crx_installers_[id] = crx_installer;
   }
 
-  bool UpdateExtension(
+  virtual bool UpdateExtension(
       const std::string& id,
       const FilePath& extension_path,
       const GURL& download_url,

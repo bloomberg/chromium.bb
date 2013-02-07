@@ -723,7 +723,8 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
   explicit CreateBookmarkBucketMapper(Profile* profile) : profile_(profile) {}
   // TODO(tim): This should share code with BookmarksCreateFunction::RunImpl,
   // but I can't figure out a good way to do that with all the macros.
-  virtual void GetBucketsForArgs(const ListValue* args, BucketList* buckets) {
+  virtual void GetBucketsForArgs(const ListValue* args,
+                                 BucketList* buckets) OVERRIDE {
     const DictionaryValue* json;
     if (!args->GetDictionary(0, &json))
       return;
@@ -761,7 +762,8 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
 class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
  public:
   explicit RemoveBookmarksBucketMapper(Profile* profile) : profile_(profile) {}
-  virtual void GetBucketsForArgs(const ListValue* args, BucketList* buckets) {
+  virtual void GetBucketsForArgs(const ListValue* args,
+                                 BucketList* buckets) OVERRIDE {
     typedef std::list<int64> IdList;
     IdList ids;
     bool invalid_id = false;

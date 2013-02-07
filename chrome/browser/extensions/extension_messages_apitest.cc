@@ -46,7 +46,7 @@ class MessageSender : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     extensions::EventRouter* event_router =
         extensions::ExtensionSystem::Get(
             content::Source<Profile>(source).ptr())->event_router();
@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingEventURL) {
 
 // Tests connecting from a panel to its extension.
 class PanelMessagingTest : public ExtensionApiTest {
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePanels);
   }

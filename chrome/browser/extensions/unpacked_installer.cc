@@ -35,7 +35,7 @@ class SimpleExtensionLoadPrompt : public ExtensionInstallPrompt::Delegate {
   SimpleExtensionLoadPrompt(Profile* profile,
                             base::WeakPtr<ExtensionService> extension_service,
                             const Extension* extension);
-  ~SimpleExtensionLoadPrompt();
+  virtual ~SimpleExtensionLoadPrompt();
 
   void ShowPrompt();
 

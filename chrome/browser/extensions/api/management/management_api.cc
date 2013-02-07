@@ -299,7 +299,7 @@ class SafeManifestJSONParser : public UtilityProcessHostClient {
     host->Send(new ChromeUtilityMsg_ParseJSON(manifest_));
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(SafeManifestJSONParser, message)
       IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseJSON_Succeeded,
@@ -345,7 +345,7 @@ class SafeManifestJSONParser : public UtilityProcessHostClient {
   }
 
  private:
-  ~SafeManifestJSONParser() {}
+  virtual ~SafeManifestJSONParser() {}
 
   // The client who we'll report results back to.
   ManagementGetPermissionWarningsByManifestFunction* client_;

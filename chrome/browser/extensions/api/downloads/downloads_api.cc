@@ -243,7 +243,7 @@ class DownloadFileIconExtractorImpl : public DownloadFileIconExtractor {
  public:
   DownloadFileIconExtractorImpl() {}
 
-  ~DownloadFileIconExtractorImpl() {}
+  virtual ~DownloadFileIconExtractorImpl() {}
 
   virtual bool ExtractIconURLForPath(const FilePath& path,
                                      IconLoader::IconSize icon_size,

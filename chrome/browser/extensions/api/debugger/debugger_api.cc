@@ -100,7 +100,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
                               const std::string& extension_name,
                               int tab_id);
 
-  ~ExtensionDevToolsClientHost();
+  virtual ~ExtensionDevToolsClientHost();
 
   bool MatchesContentsAndExtensionId(WebContents* web_contents,
                                      const std::string& extension_id);
@@ -123,7 +123,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   WebContents* web_contents_;
   std::string extension_id_;

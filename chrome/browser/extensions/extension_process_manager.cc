@@ -75,14 +75,14 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
       Browser* browser,
       chrome::ViewType view_type) OVERRIDE;
   virtual void CreateBackgroundHost(const Extension* extension,
-                                    const GURL& url);
-  virtual SiteInstance* GetSiteInstanceForURL(const GURL& url);
+                                    const GURL& url) OVERRIDE;
+  virtual SiteInstance* GetSiteInstanceForURL(const GURL& url) OVERRIDE;
 
  private:
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Returns true if the extension is allowed to run in incognito mode.
   bool IsIncognitoEnabled(const Extension* extension);

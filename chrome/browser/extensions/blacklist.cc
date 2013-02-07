@@ -99,7 +99,8 @@ class SafeBrowsingClientImpl
     AddRef();  // Balanced in OnCheckExtensionsResult
   }
 
-  void OnCheckExtensionsResult(const std::set<std::string>& hits) {
+  virtual void OnCheckExtensionsResult(
+      const std::set<std::string>& hits) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     callback_message_loop_->PostTask(FROM_HERE, base::Bind(callback_, hits));
     Release();  // Balanced in StartCheck.

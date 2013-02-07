@@ -41,7 +41,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     db_thread_.Start();
   }
 
-  ~ActivityLogTest() {
+  virtual ~ActivityLogTest() {
     base::WaitableEvent done(false, false);
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));

@@ -71,13 +71,14 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
  protected:
   // These two functions implement pure virtual methods of
   // RenderViewContextMenu.
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          ui::Accelerator* accelerator) {
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE {
     // None of our commands have accelerators, so always return false.
     return false;
   }
-  virtual void PlatformInit() {}
-  virtual void PlatformCancel() {}
+  virtual void PlatformInit() OVERRIDE {}
+  virtual void PlatformCancel() OVERRIDE {}
 };
 
 }  // namespace
@@ -527,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Enabled) {
 
 class ExtensionContextMenuBrowserLazyTest :
     public ExtensionContextMenuBrowserTest {
-  void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionContextMenuBrowserTest::SetUpCommandLine(command_line);
     // Set shorter delays to prevent test timeouts.
     command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "0");

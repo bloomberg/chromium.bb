@@ -29,7 +29,7 @@ namespace extensions {
 
 class RequirementsCheckerBrowserTest : public ExtensionBrowserTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // In linux, we need to launch GPU process to decide if WebGL is allowed.
     // Run it on top of osmesa to avoid bot driver issues.
 #if defined(OS_LINUX)

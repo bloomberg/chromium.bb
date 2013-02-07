@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowArgumentsOverflow) {
 }
 
 class WindowOpenPanelDisabledTest : public ExtensionApiTest {
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // TODO(jennb): Re-enable when panels are enabled by default.
     // command_line->AppendSwitch(switches::kDisablePanels);
@@ -202,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelDisabledTest,
 }
 
 class WindowOpenPanelTest : public ExtensionApiTest {
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePanels);
   }

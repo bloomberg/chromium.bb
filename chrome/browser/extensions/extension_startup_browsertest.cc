@@ -44,7 +44,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
  protected:
   // InProcessBrowserTest
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     if (!enable_extensions_)
       command_line->AppendSwitch(switches::kDisableExtensions);
 
@@ -56,7 +56,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     }
   }
 
-  virtual bool SetUpUserDataDirectory() {
+  virtual bool SetUpUserDataDirectory() OVERRIDE {
     FilePath profile_dir;
     PathService::Get(chrome::DIR_USER_DATA, &profile_dir);
     profile_dir = profile_dir.AppendASCII(TestingProfile::kTestUserProfileDir);

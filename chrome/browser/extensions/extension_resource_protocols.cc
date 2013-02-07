@@ -24,7 +24,7 @@ class ExtensionResourcesJob : public net::URLRequestFileJob {
   virtual void Start() OVERRIDE;
 
  protected:
-  ~ExtensionResourcesJob() {}
+  virtual ~ExtensionResourcesJob() {}
 
   void ResolvePath();
   void ResolvePathDone();

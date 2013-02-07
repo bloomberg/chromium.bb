@@ -180,7 +180,7 @@ class NotificationListener : public content::NotificationObserver {
           this, types[i], content::NotificationService::AllSources());
     }
   }
-  ~NotificationListener() {}
+  virtual ~NotificationListener() {}
 
   bool started() { return started_; }
 
@@ -197,7 +197,7 @@ class NotificationListener : public content::NotificationObserver {
   // Implements content::NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSION_UPDATING_STARTED: {
         EXPECT_FALSE(started_);

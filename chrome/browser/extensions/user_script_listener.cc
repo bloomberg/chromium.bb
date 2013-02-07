@@ -37,7 +37,7 @@ class UserScriptListener::Throttle
   }
 
   // ResourceThrottle implementation:
-  virtual void WillStartRequest(bool* defer) {
+  virtual void WillStartRequest(bool* defer) OVERRIDE {
     // Only defer requests if Resume has not yet been called.
     if (should_defer_) {
       *defer = true;

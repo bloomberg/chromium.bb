@@ -157,7 +157,7 @@ class GetAuthTokenFunctionTest : public ExtensionBrowserTest {
     SCOPES = 2
   };
 
-  ~GetAuthTokenFunctionTest() {}
+  virtual ~GetAuthTokenFunctionTest() {}
 
   // Helper to create an extension with specific OAuth2Info fields set.
   // |fields_to_set| should be computed by using fields of Oauth2Fields enum.

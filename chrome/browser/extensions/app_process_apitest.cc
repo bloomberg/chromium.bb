@@ -50,7 +50,7 @@ class AppApiTest : public ExtensionApiTest {
   }
 
   // Pass flags to make testing apps easier.
-  void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisablePopupBlocking);
@@ -124,7 +124,7 @@ class AppApiTest : public ExtensionApiTest {
 // Omits the disable-popup-blocking flag so we can cover that case.
 class BlockedAppApiTest : public AppApiTest {
  protected:
-  void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAllowHTTPBackgroundPage);

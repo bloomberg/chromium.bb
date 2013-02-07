@@ -111,7 +111,7 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
     return net::ERR_IO_PENDING;
   }
 
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) {
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE {
     *info = response_info_;
   }
 
@@ -177,7 +177,7 @@ class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
     return net::OK;
   }
 
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) {
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE {
     *info = response_info_;
   }
 

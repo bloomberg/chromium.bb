@@ -43,16 +43,16 @@ class ThrottleController : public base::SupportsUserData::Data,
   }
 
   // ResourceController implementation:
-  virtual void Resume() {
+  virtual void Resume() OVERRIDE {
     request_->Start();
   }
-  virtual void Cancel() {
+  virtual void Cancel() OVERRIDE {
     NOTREACHED();
   }
-  virtual void CancelAndIgnore() {
+  virtual void CancelAndIgnore() OVERRIDE {
     NOTREACHED();
   }
-  virtual void CancelWithError(int error_code) {
+  virtual void CancelWithError(int error_code) OVERRIDE {
     NOTREACHED();
   }
 
@@ -73,7 +73,7 @@ class SimpleTestJob : public net::URLRequestTestJob {
                                kTestData,
                                true) {}
  private:
-  ~SimpleTestJob() {}
+  virtual ~SimpleTestJob() {}
 };
 
 // Yoinked from extension_manifest_unittest.cc.
@@ -130,7 +130,7 @@ class UserScriptListenerTest : public ExtensionServiceTestBase {
             new SimpleTestJobProtocolHandler()));
   }
 
-  ~UserScriptListenerTest() {
+  virtual ~UserScriptListenerTest() {
     net::URLRequestFilter::GetInstance()->RemoveHostnameHandler("http",
                                                                 "google.com");
     net::URLRequestFilter::GetInstance()->RemoveHostnameHandler("http",

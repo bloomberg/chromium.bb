@@ -31,7 +31,7 @@ class MockCpuInfoProviderImpl : public CpuInfoProvider {
   }
 
  private:
-  ~MockCpuInfoProviderImpl() {}
+  virtual ~MockCpuInfoProviderImpl() {}
 
   virtual bool QueryCpuTimePerProcessor(std::vector<CpuTime>* times) OVERRIDE {
     DCHECK(times);
@@ -59,7 +59,7 @@ class MockCpuInfoProviderImpl : public CpuInfoProvider {
 class SystemInfoCpuApiTest: public ExtensionApiTest {
  public:
   SystemInfoCpuApiTest() {}
-  ~SystemInfoCpuApiTest() {}
+  virtual ~SystemInfoCpuApiTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);

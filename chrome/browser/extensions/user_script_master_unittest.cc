@@ -66,7 +66,7 @@ class UserScriptMasterTest : public testing::Test,
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     DCHECK(type == chrome::NOTIFICATION_USER_SCRIPTS_UPDATED);
 
     shared_memory_ = content::Details<base::SharedMemory>(details).ptr();

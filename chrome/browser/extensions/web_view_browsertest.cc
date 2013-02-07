@@ -24,7 +24,7 @@ using prerender::PrerenderLinkManagerFactory;
 
 class WebViewTest : public extensions::PlatformAppBrowserTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
 #if !defined(OS_MACOSX)
     CHECK(test_launcher_utils::OverrideGLImplementation(

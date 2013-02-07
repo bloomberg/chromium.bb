@@ -46,14 +46,14 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
 class SystemInfoDisplayApiTest: public ExtensionApiTest {
  public:
   SystemInfoDisplayApiTest() {}
-  ~SystemInfoDisplayApiTest() {}
+  virtual ~SystemInfoDisplayApiTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
   }

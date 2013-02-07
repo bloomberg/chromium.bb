@@ -158,8 +158,9 @@ class DownloadsEventsListener : public content::NotificationObserver {
   typedef ExtensionDownloadsEventRouter::DownloadsNotificationSource
     DownloadsNotificationSource;
 
-  void Observe(int type, const content::NotificationSource& source,
-               const content::NotificationDetails& details) {
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT:
         {

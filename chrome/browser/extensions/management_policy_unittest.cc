@@ -12,7 +12,7 @@ using extensions::Extension;
 
 class ManagementPolicyTest : public testing::Test {
  public:
-  void SetUp() {
+  virtual void SetUp() {
     allow_all_.SetProhibitedActions(TestProvider::ALLOW_ALL);
     no_modify_status_.SetProhibitedActions(
         TestProvider::PROHIBIT_MODIFY_STATUS);

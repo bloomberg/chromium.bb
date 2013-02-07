@@ -60,7 +60,7 @@ class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
   virtual ~TestWebRequestRulesRegistry() {}
 
   virtual base::Time GetExtensionInstallationTime(
-      const std::string& extension_id) const {
+      const std::string& extension_id) const OVERRIDE {
     if (extension_id == kExtensionId)
       return base::Time() + base::TimeDelta::FromDays(1);
     else if (extension_id == kExtensionId2)
@@ -69,7 +69,7 @@ class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
       return base::Time();
   }
 
-  virtual void ClearCacheOnNavigation() {
+  virtual void ClearCacheOnNavigation() OVERRIDE {
     ++num_clear_cache_calls_;
   }
 

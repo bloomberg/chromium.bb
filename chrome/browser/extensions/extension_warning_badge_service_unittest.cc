@@ -38,7 +38,8 @@ class TestExtensionWarningBadgeService : public ExtensionWarningBadgeService {
         warning_service_(warning_service) {}
   virtual ~TestExtensionWarningBadgeService() {}
 
-  virtual const std::set<ExtensionWarning>& GetCurrentWarnings() const {
+  virtual const std::set<ExtensionWarning>&
+  GetCurrentWarnings() const OVERRIDE {
     return warning_service_->warnings();
   }
 

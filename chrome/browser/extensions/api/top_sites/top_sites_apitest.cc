@@ -22,7 +22,7 @@ class TopSitesExtensionTest : public InProcessBrowserTest {
   TopSitesExtensionTest() : top_sites_inited_(false), waiting_(false) {
   }
 
-  void SetUpOnMainThread() {
+  virtual void SetUpOnMainThread() OVERRIDE {
     history::TopSites* top_sites = browser()->profile()->GetTopSites();
 
     // This may return async or sync. If sync, top_sites_inited_ will be true

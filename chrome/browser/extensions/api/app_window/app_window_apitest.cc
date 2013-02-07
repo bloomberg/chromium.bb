@@ -33,11 +33,11 @@ class TestShellWindowRegistryObserver
   }
 
   // Overridden from ShellWindowRegistry::Observer:
-  virtual void OnShellWindowAdded(ShellWindow* shell_window) {}
-  virtual void OnShellWindowIconChanged(ShellWindow* shell_window) {
+  virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE {}
+  virtual void OnShellWindowIconChanged(ShellWindow* shell_window) OVERRIDE {
     ++icon_updates_;
   }
-  virtual void OnShellWindowRemoved(ShellWindow* shell_window) {
+  virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE {
   }
 
   int icon_updates() { return icon_updates_; }

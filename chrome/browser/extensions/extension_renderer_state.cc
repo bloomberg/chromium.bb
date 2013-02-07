@@ -35,13 +35,13 @@ class ExtensionRendererState::TabObserver
     : public content::NotificationObserver {
  public:
   TabObserver();
-  ~TabObserver();
+  virtual ~TabObserver();
 
  private:
   // content::NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   content::NotificationRegistrar registrar_;
 };

@@ -21,7 +21,7 @@ class MockExternalLoader : public ExternalLoader {
  public:
   MockExternalLoader() {}
 
-  void StartLoading() {}
+  virtual void StartLoading() OVERRIDE {}
  private:
   virtual ~MockExternalLoader() {}
 };

@@ -62,7 +62,7 @@ class OAuth2GrantRecorder : public OAuth2MintTokenFlow::Delegate,
   }
 
   // content::NotificationObserver:
-  void Observe(int type,
+  virtual void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) OVERRIDE {
     DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_DESTROYED);

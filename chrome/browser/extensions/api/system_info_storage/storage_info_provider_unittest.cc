@@ -115,7 +115,7 @@ class TestStorageInfoProvider : public StorageInfoProvider {
                              StorageUnitInfo* info) OVERRIDE;
 
   // Called each time CheckWatchedStoragesOnBlockingPool is finished.
-  void OnCheckWatchedStoragesFinishedForTesting();
+  virtual void OnCheckWatchedStoragesFinishedForTesting() OVERRIDE;
 
   // The testing data maintained on the blocking pool.
   std::vector<TestUnitInfo> testing_data_;

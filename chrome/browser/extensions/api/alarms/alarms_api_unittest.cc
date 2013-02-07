@@ -34,7 +34,7 @@ class AlarmDelegate : public AlarmManager::Delegate {
  public:
   virtual ~AlarmDelegate() {}
   virtual void OnAlarm(const std::string& extension_id,
-                       const Alarm& alarm) {
+                       const Alarm& alarm) OVERRIDE {
     alarms_seen.push_back(alarm.js_alarm->name);
     MessageLoop::current()->Quit();
   }

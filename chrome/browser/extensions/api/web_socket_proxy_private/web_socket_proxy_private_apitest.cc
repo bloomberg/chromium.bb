@@ -8,7 +8,7 @@
 namespace extensions {
 
 class ExtensionWebSocketProxyPrivateApiTest : public ExtensionApiTest {
-  void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kWhitelistedExtensionID, "mknjjldhaihcdajjbihghhiehamnpcak");

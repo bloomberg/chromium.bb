@@ -318,7 +318,7 @@ class MockProviderVisitor
                                             const FilePath& path,
                                             Manifest::Location unused,
                                             int creation_flags,
-                                            bool mark_acknowledged) {
+                                            bool mark_acknowledged) OVERRIDE {
     EXPECT_EQ(expected_creation_flags_, creation_flags);
 
     ++ids_found_;
@@ -358,7 +358,7 @@ class MockProviderVisitor
 
   virtual bool OnExternalExtensionUpdateUrlFound(
       const std::string& id, const GURL& update_url,
-      Manifest::Location location) {
+      Manifest::Location location) OVERRIDE {
     ++ids_found_;
     DictionaryValue* pref;
     // This tests is to make sure that the provider only notifies us of the
@@ -385,7 +385,7 @@ class MockProviderVisitor
   }
 
   virtual void OnExternalProviderReady(
-      const extensions::ExternalProviderInterface* provider) {
+      const extensions::ExternalProviderInterface* provider) OVERRIDE {
     EXPECT_EQ(provider, provider_.get());
     EXPECT_TRUE(provider->IsReady());
   }
@@ -562,7 +562,7 @@ class ExtensionServiceTest
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSION_LOADED: {
         const Extension* extension =
@@ -1063,9 +1063,9 @@ class PackExtensionTestClient : public extensions::PackExtensionJob::Client {
   PackExtensionTestClient(const FilePath& expected_crx_path,
                           const FilePath& expected_private_key_path);
   virtual void OnPackSuccess(const FilePath& crx_path,
-                             const FilePath& private_key_path);
+                             const FilePath& private_key_path) OVERRIDE;
   virtual void OnPackFailure(const std::string& error_message,
-                             ExtensionCreator::ErrorType type);
+                             ExtensionCreator::ErrorType type) OVERRIDE;
 
  private:
   const FilePath expected_crx_path_;
@@ -4527,7 +4527,7 @@ class ExtensionsReadyRecorder : public content::NotificationObserver {
  private:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSIONS_READY:
         ready_ = true;
@@ -5566,7 +5566,7 @@ TEST_F(ExtensionServiceTest, InstallWhitelistedExtension) {
 // are provided.
 class ExtensionSourcePriorityTest : public ExtensionServiceTest {
  public:
-  void SetUp() {
+  virtual void SetUp() {
     ExtensionServiceTest::SetUp();
 
     // All tests use a single extension.  Put the id and path in member vars

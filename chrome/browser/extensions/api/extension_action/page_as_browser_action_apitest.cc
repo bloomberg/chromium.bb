@@ -33,7 +33,7 @@ class PageAsBrowserActionApiTest : public ExtensionApiTest {
   PageAsBrowserActionApiTest() {}
   virtual ~PageAsBrowserActionApiTest() {}
 
-  void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kScriptBadges, "1");
   }

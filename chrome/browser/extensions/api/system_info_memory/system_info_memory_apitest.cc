@@ -24,13 +24,13 @@ class MockMemoryInfoProviderImpl : public MemoryInfoProvider {
     return true;
   }
  private:
-  ~MockMemoryInfoProviderImpl() {}
+  virtual ~MockMemoryInfoProviderImpl() {}
 };
 
 class SystemInfoMemoryApiTest: public ExtensionApiTest {
  public:
   SystemInfoMemoryApiTest() {}
-  ~SystemInfoMemoryApiTest() {}
+  virtual ~SystemInfoMemoryApiTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);

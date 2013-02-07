@@ -65,7 +65,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
   }
 
  protected:
-  virtual void SetUpOnMainThread() {
+  virtual void SetUpOnMainThread() OVERRIDE {
     called_with_details_.reset(new BrowsingDataRemover::NotificationDetails());
     registrar_.Add(this, chrome::NOTIFICATION_BROWSING_DATA_REMOVED,
                    content::Source<Profile>(browser()->profile()));

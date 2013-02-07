@@ -534,10 +534,10 @@ class ExtensionSortingEnsureValidOrdinals
     : public extensions::ExtensionPrefsPrepopulatedTest {
  public :
   ExtensionSortingEnsureValidOrdinals() {}
-  ~ExtensionSortingEnsureValidOrdinals() {}
+  virtual ~ExtensionSortingEnsureValidOrdinals() {}
 
-  virtual void Initialize() {}
-  virtual void Verify() {
+  virtual void Initialize() OVERRIDE {}
+  virtual void Verify() OVERRIDE {
     ExtensionSorting* extension_sorting = prefs()->extension_sorting();
 
     // Give ext1 invalid ordinals and then check that EnsureValidOrdinals fixes
@@ -895,7 +895,7 @@ class ExtensionSortingDefaultOrdinalOverriddenByUserValue
   }
 
  protected:
-  virtual void SetupUserOrdinals() {
+  virtual void SetupUserOrdinals() OVERRIDE {
     user_page_ordinal_ = default_page_ordinal_.CreateAfter();
     user_app_launch_ordinal_ = default_app_launch_ordinal_.CreateBefore();
 
@@ -931,7 +931,7 @@ class ExtensionSortingDefaultOrdinalNoCollision
   }
 
  protected:
-  virtual void SetupUserOrdinals() {
+  virtual void SetupUserOrdinals() OVERRIDE {
     other_app_ = prefs_.AddApp("other_app");
     // Creates a collision.
     ExtensionSorting* extension_sorting = prefs()->extension_sorting();

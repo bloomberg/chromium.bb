@@ -59,7 +59,7 @@ class LoadedIncognitoObserver : public content::NotificationObserver {
   virtual void Observe(
       int type,
       const content::NotificationSource& source,
-      const content::NotificationDetails& details) {
+      const content::NotificationDetails& details) OVERRIDE {
     original_complete_.reset(new LazyBackgroundObserver(profile_));
     incognito_complete_.reset(
         new LazyBackgroundObserver(profile_->GetOffTheRecordProfile()));
@@ -75,7 +75,7 @@ class LoadedIncognitoObserver : public content::NotificationObserver {
 
 class LazyBackgroundPageApiTest : public ExtensionApiTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
     // Set shorter delays to prevent test timeouts.

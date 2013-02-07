@@ -118,11 +118,11 @@ class IdentityPrefTransformer : public PrefTransformerInterface {
  public:
   virtual Value* ExtensionToBrowserPref(const Value* extension_pref,
                                         std::string* error,
-                                        bool* bad_message) {
+                                        bool* bad_message) OVERRIDE {
     return extension_pref->DeepCopy();
   }
 
-  virtual Value* BrowserToExtensionPref(const Value* browser_pref) {
+  virtual Value* BrowserToExtensionPref(const Value* browser_pref) OVERRIDE {
     return browser_pref->DeepCopy();
   }
 };
@@ -131,11 +131,11 @@ class InvertBooleanTransformer : public PrefTransformerInterface {
  public:
   virtual Value* ExtensionToBrowserPref(const Value* extension_pref,
                                         std::string* error,
-                                        bool* bad_message) {
+                                        bool* bad_message) OVERRIDE {
     return InvertBooleanValue(extension_pref);
   }
 
-  virtual Value* BrowserToExtensionPref(const Value* browser_pref) {
+  virtual Value* BrowserToExtensionPref(const Value* browser_pref) OVERRIDE {
     return InvertBooleanValue(browser_pref);
   }
 

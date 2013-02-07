@@ -32,14 +32,14 @@ class ExtensionFromWebAppTest
 
  private:
   // InProcessBrowserTest
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kEnableCrxlessWebApps);
   }
 
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     if (type == chrome::NOTIFICATION_EXTENSION_INSTALLED) {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();

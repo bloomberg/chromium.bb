@@ -37,7 +37,7 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
       : current_channel_(VersionInfo::CHANNEL_UNKNOWN) {
   }
 
-  void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     mock_remote_service_ = new ::testing::NiceMock<MockRemoteFileSyncService>;
     SyncFileSystemServiceFactory::GetInstance()->set_mock_remote_file_service(
         scoped_ptr<RemoteFileSyncService>(mock_remote_service_));
@@ -49,7 +49,7 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
     quota::QuotaManager::kSyncableStorageDefaultHostQuota = 123456789;
   }
 
-  void TearDownInProcessBrowserTestFixture() {
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
     quota::QuotaManager::kSyncableStorageDefaultHostQuota = real_default_quota_;
   }
 

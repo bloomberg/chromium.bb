@@ -65,7 +65,7 @@ class RulesRegistryStorageDelegate::Inner
   friend class base::RefCountedThreadSafe<Inner>;
   friend class RulesRegistryStorageDelegate;
 
-  ~Inner();
+  virtual ~Inner();
 
   // Initialization of the storage delegate if it is used in the context of
   // an incognito profile.

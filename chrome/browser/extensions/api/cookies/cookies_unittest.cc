@@ -37,21 +37,21 @@ struct DomainMatchCase {
 class OtrTestingProfile : public TestingProfile {
  public:
   OtrTestingProfile() : linked_profile_(NULL) {}
-  virtual Profile* GetOriginalProfile() {
+  virtual Profile* GetOriginalProfile() OVERRIDE {
     if (IsOffTheRecord())
       return linked_profile_;
     else
       return this;
   }
 
-  virtual Profile* GetOffTheRecordProfile() {
+  virtual Profile* GetOffTheRecordProfile() OVERRIDE {
     if (IsOffTheRecord())
       return this;
     else
       return linked_profile_;
   }
 
-  virtual bool HasOffTheRecordProfile() {
+  virtual bool HasOffTheRecordProfile() OVERRIDE {
     return (!IsOffTheRecord() && linked_profile_);
   }
 

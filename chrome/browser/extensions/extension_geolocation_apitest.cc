@@ -11,7 +11,7 @@ class GeolocationApiTest : public ExtensionApiTest {
   }
 
   // InProcessBrowserTest
-  virtual void SetUpOnMainThread() {
+  virtual void SetUpOnMainThread() OVERRIDE {
     ui_test_utils::OverrideGeolocation(0, 0);
   }
 };

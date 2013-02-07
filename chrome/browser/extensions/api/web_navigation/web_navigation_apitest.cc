@@ -57,9 +57,9 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   virtual ~TestRenderViewContextMenu() {}
 
  private:
-  virtual void PlatformInit() {}
-  virtual void PlatformCancel() {}
-  virtual bool GetAcceleratorForCommandId(int, ui::Accelerator*) {
+  virtual void PlatformInit() OVERRIDE {}
+  virtual void PlatformCancel() OVERRIDE {}
+  virtual bool GetAcceleratorForCommandId(int, ui::Accelerator*) OVERRIDE {
     return false;
   }
 
@@ -131,7 +131,7 @@ class TestNavigationListener
     }
 
     // content::ResourceThrottle implementation.
-    virtual void WillStartRequest(bool* defer) {
+    virtual void WillStartRequest(bool* defer) OVERRIDE {
       *defer = true;
     }
   };

@@ -35,19 +35,21 @@ class ExtensionToolbarModelTest : public ExtensionBrowserTest,
     model_->AddObserver(this);
   }
 
-  virtual void CleanUpOnMainThread() {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     model_->RemoveObserver(this);
   }
 
-  virtual void BrowserActionAdded(const Extension* extension, int index) {
+  virtual void BrowserActionAdded(const Extension* extension,
+                                  int index) OVERRIDE {
     inserted_count_++;
   }
 
-  virtual void BrowserActionRemoved(const Extension* extension) {
+  virtual void BrowserActionRemoved(const Extension* extension) OVERRIDE {
     removed_count_++;
   }
 
-  virtual void BrowserActionMoved(const Extension* extension, int index) {
+  virtual void BrowserActionMoved(const Extension* extension,
+                                  int index) OVERRIDE {
     moved_count_++;
   }
 

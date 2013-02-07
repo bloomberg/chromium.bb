@@ -46,18 +46,19 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
   void set_record_oauth2_grant(bool record) { record_oauth2_grant_ = record; }
 
   // Overriding some of the ExtensionInstallUI API.
-  void ConfirmInstall(Delegate* delegate,
-                      const Extension* extension,
-                      const ShowDialogCallback& show_dialog_callback) {
+  virtual void ConfirmInstall(
+      Delegate* delegate,
+      const Extension* extension,
+      const ShowDialogCallback& show_dialog_callback) OVERRIDE {
     confirmation_requested_ = true;
     delegate->InstallUIProceed();
   }
-  void OnInstallSuccess(const Extension* extension,
-                        SkBitmap* icon) {
+  virtual void OnInstallSuccess(const Extension* extension,
+                                SkBitmap* icon) OVERRIDE {
     extension_ = extension;
     MessageLoopForUI::current()->Quit();
   }
-  void OnInstallFailure(const CrxInstallerError& error) {
+  virtual void OnInstallFailure(const CrxInstallerError& error) OVERRIDE {
     error_ = error.message();
     MessageLoopForUI::current()->Quit();
   }

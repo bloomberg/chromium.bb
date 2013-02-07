@@ -68,7 +68,7 @@ class UsbApiTest : public ExtensionApiTest {
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
 
-  void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() OVERRIDE {
     mock_device_ = new MockUsbDevice();
     extensions::UsbFindDevicesFunction::SetDeviceForTest(mock_device_.get());
   }

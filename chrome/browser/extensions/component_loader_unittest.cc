@@ -79,7 +79,7 @@ class ComponentLoaderTest : public testing::Test {
       component_loader_(&extension_service_, &prefs_, &local_state_) {
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     extension_path_ =
         GetBasePath().AppendASCII("good")
                      .AppendASCII("Extensions")

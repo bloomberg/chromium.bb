@@ -69,10 +69,10 @@ class TestProcessStrategy : public ProcessStrategy {
   explicit TestProcessStrategy(std::vector<FilePath>* temp_files)
       : command_line_(CommandLine::NO_PROGRAM), temp_files_(temp_files) {}
 
-  ~TestProcessStrategy() {}
+  virtual ~TestProcessStrategy() {}
 
   // Pump the blocking pool queue, since this is needed during test.
-  void PumpBlockingPool() OVERRIDE {
+  virtual void PumpBlockingPool() OVERRIDE {
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
   }
 
@@ -86,8 +86,8 @@ class TestProcessStrategy : public ProcessStrategy {
   //      visited.  If there are any "bad" URLS, don't visit these, but
   //      create a ".errors" file listing them.
   // 2. If record-stats, then create a mock stats file.
-  void RunProcess(const CommandLine& command_line,
-                  std::vector<std::string>* errors) OVERRIDE {
+  virtual void RunProcess(const CommandLine& command_line,
+                          std::vector<std::string>* errors) OVERRIDE {
     command_line_ = command_line;
     visited_urls_.clear();
 
@@ -195,7 +195,7 @@ class RecordApiTest : public InProcessBrowserTest {
   // Override SetUpCommandline to specify a dummy user_data_dir, which
   // should be replaced.  Clear record-mode, playback-mode, visit-urls,
   // record-stats, and load-extension.
-  void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     std::vector<std::string> remove_switches;
 
     remove_switches.push_back(switches::kUserDataDir);

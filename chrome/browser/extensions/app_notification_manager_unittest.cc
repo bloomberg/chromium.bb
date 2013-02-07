@@ -29,7 +29,7 @@ class AppNotificationManagerTest : public testing::Test {
       : ui_thread_(BrowserThread::UI, &ui_loop_),
         file_thread_(BrowserThread::FILE) {}
 
-  ~AppNotificationManagerTest() {}
+  virtual ~AppNotificationManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));

@@ -42,12 +42,12 @@ class SocketApiTest : public ExtensionApiTest {
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
 
-  void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() OVERRIDE {
     extensions::HostResolverWrapper::GetInstance()->SetHostResolverForTesting(
         resolver_creator_->CreateMockHostResolver());
   }
 
-  void CleanUpOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     extensions::HostResolverWrapper::GetInstance()->
         SetHostResolverForTesting(NULL);
     resolver_creator_->DeleteMockHostResolver();

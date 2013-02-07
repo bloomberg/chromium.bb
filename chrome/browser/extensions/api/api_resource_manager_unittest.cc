@@ -32,7 +32,7 @@ class FakeApiResource : public ApiResource {
  public:
   FakeApiResource(const std::string& owner_extension_id) :
       ApiResource(owner_extension_id) {}
-  ~FakeApiResource() {}
+  virtual ~FakeApiResource() {}
 };
 
 TEST_F(ApiResourceManagerUnitTest, TwoAppsCannotShareResources) {

@@ -44,7 +44,7 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
   WebstoreInstallListener()
       : received_failure_(false), received_success_(false), waiting_(false) {}
 
-  void OnExtensionInstallSuccess(const std::string& id) OVERRIDE {
+  virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE {
     received_success_ = true;
     id_ = id;
 
@@ -54,7 +54,7 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
     }
   }
 
-  void OnExtensionInstallFailure(
+  virtual void OnExtensionInstallFailure(
       const std::string& id,
       const std::string& error,
       WebstoreInstaller::FailureReason reason) OVERRIDE {
@@ -91,7 +91,7 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
 // A base class for tests below.
 class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kAppsGalleryURL,
@@ -100,7 +100,7 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
         switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
   }
 
-  void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     // Start up the test server and get us ready for calling the install
     // API functions.
     host_resolver()->AddRule("www.example.com", "127.0.0.1");
@@ -156,7 +156,7 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
 class ExtensionWebstorePrivateBundleTest
     : public ExtensionWebstorePrivateApiTest {
  public:
-  void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ExtensionWebstorePrivateApiTest::SetUpInProcessBrowserTestFixture();
 
     // The test server needs to have already started, so setup the switch here
@@ -166,7 +166,7 @@ class ExtensionWebstorePrivateBundleTest
         GetTestServerURL("bundle/%s.crx").spec());
   }
 
-  void TearDownInProcessBrowserTestFixture() OVERRIDE {
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
     ExtensionWebstorePrivateApiTest::TearDownInProcessBrowserTestFixture();
     for (size_t i = 0; i < test_crx_.size(); ++i)
       ASSERT_TRUE(file_util::Delete(test_crx_[i], false));
@@ -224,7 +224,7 @@ class ExtensionWebstorePrivateBundleTest
 
 class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // In linux, we need to launch GPU process to decide if WebGL is allowed.
     // Run it on top of osmesa to avoid bot driver issues.
 #if defined(OS_LINUX)

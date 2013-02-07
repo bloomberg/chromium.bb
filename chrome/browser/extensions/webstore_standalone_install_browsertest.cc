@@ -203,7 +203,7 @@ class WebstoreStandaloneInstallUnpackFailureTest
         switches::kAppsGalleryUpdateURL, crx_url.spec());
   }
 
-  void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     WebstoreStandaloneInstallTest::SetUpInProcessBrowserTestFixture();
     ExtensionInstallUI::DisableFailureUIForTests();
   }
