@@ -56,6 +56,10 @@ class AwContents : public FindHelper::Listener,
   // Returns the AwContents instance associated with |web_contents|, or NULL.
   static AwContents* FromWebContents(content::WebContents* web_contents);
 
+  // Returns the AwContents instance associated with with the given
+  // render_process_id and render_view_id, or NULL.
+  static AwContents* FromID(int render_process_id, int render_view_id);
+
   AwContents(JNIEnv* env,
              jobject obj,
              jobject web_contents_delegate);

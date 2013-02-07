@@ -36,6 +36,7 @@
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
 #include "jni/AwContents_jni.h"
@@ -159,6 +160,18 @@ class AwContentsUserData : public base::SupportsUserData::Data {
 // static
 AwContents* AwContents::FromWebContents(WebContents* web_contents) {
   return AwContentsUserData::GetContents(web_contents);
+}
+
+// static
+AwContents* AwContents::FromID(int render_process_id, int render_view_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  const content::RenderViewHost* rvh =
+      content::RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!rvh) return NULL;
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderViewHost(rvh);
+  if (!web_contents) return NULL;
+  return FromWebContents(web_contents);
 }
 
 AwContents::AwContents(JNIEnv* env,
