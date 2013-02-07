@@ -286,8 +286,8 @@ TEST_F(AlsaPcmOutputStreamTest, LatencyFloor) {
 
   // Test that having more packets ends up with a latency based on packet size.
   const int kOverMinLatencyPacketSize = kPacketFramesInMinLatency + 1;
-  int64 expected_micros = 2 * AlsaPcmOutputStream::FramesToMicros(
-      kOverMinLatencyPacketSize, kTestSampleRate);
+  int64 expected_micros = AlsaPcmOutputStream::FramesToTimeDelta(
+      kOverMinLatencyPacketSize * 2, kTestSampleRate).InMicroseconds();
 
   EXPECT_CALL(mock_alsa_wrapper_, PcmOpen(_, _, _, _))
       .WillOnce(DoAll(SetArgumentPointee<0>(kFakeHandle), Return(0)));
@@ -315,9 +315,8 @@ TEST_F(AlsaPcmOutputStreamTest, LatencyFloor) {
 }
 
 TEST_F(AlsaPcmOutputStreamTest, OpenClose) {
-  int64 expected_micros = 2 *
-      AlsaPcmOutputStream::FramesToMicros(kTestPacketSize / kTestBytesPerFrame,
-                                          kTestSampleRate);
+  int64 expected_micros = AlsaPcmOutputStream::FramesToTimeDelta(
+      2 * kTestFramesPerPacket, kTestSampleRate).InMicroseconds();
 
   // Open() call opens the playback device, sets the parameters, posts a task
   // with the resulting configuration data, and transitions the object state to

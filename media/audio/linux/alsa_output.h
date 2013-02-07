@@ -125,8 +125,7 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   void ScheduleNextWrite(bool source_exhausted);
 
   // Utility functions for talking with the ALSA API.
-  static uint32 FramesToMicros(uint32 frames, uint32 sample_rate);
-  static uint32 FramesToMillis(uint32 frames, uint32 sample_rate);
+  static base::TimeDelta FramesToTimeDelta(int frames, double sample_rate);
   std::string FindDeviceForChannels(uint32 channels);
   snd_pcm_sframes_t GetAvailableFrames();
   snd_pcm_sframes_t GetCurrentDelay();
@@ -173,8 +172,7 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   // Device configuration data. Populated after OpenTask() completes.
   std::string device_name_;
   uint32 packet_size_;
-  uint32 micros_per_packet_;
-  uint32 latency_micros_;
+  base::TimeDelta latency_;
   uint32 bytes_per_output_frame_;
   uint32 alsa_buffer_frames_;
 
@@ -209,8 +207,6 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   float volume_;  // Volume level from 0.0 to 1.0.
 
   AudioSourceCallback* source_callback_;
-
-  base::Time last_fill_time_;  // Time for the last OnMoreData() callback.
 
   // Container for retrieving data from AudioSourceCallback::OnMoreData().
   scoped_ptr<AudioBus> audio_bus_;
