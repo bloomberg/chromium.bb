@@ -1172,7 +1172,7 @@ _arm_release.add_config('arm-tegra2_kaen-release',
 
 _arm_release.add_config('daisy-release',
   boards=['daisy'],
-  useflags=official['useflags'] + ['widevine_cdm'],
+  useflags=official['useflags'] + ['widevine_cdm', 'netflix-helper'],
   hw_tests=['bvt'],
   hw_tests_num=4,
   critical_for_chrome=True,
@@ -1180,7 +1180,7 @@ _arm_release.add_config('daisy-release',
 
 _arm_release.add_config('spring-release',
   boards=['daisy_spring'],
-  useflags=official['useflags'] + ['widevine_cdm'],
+  useflags=official['useflags'] + ['widevine_cdm', 'netflix-helper'],
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
