@@ -818,6 +818,8 @@ void DriveFileSyncService::UpdateServiceState() {
     // Errors which could make the service temporarily unavailable.
     case fileapi::SYNC_STATUS_RETRY:
     case fileapi::SYNC_STATUS_NETWORK_ERROR:
+    case fileapi::SYNC_STATUS_ABORT:
+    case fileapi::SYNC_STATUS_FAILED:
       state_ = REMOTE_SERVICE_TEMPORARY_UNAVAILABLE;
       break;
 
@@ -825,8 +827,6 @@ void DriveFileSyncService::UpdateServiceState() {
     case fileapi::SYNC_DATABASE_ERROR_CORRUPTION:
     case fileapi::SYNC_DATABASE_ERROR_IO_ERROR:
     case fileapi::SYNC_DATABASE_ERROR_FAILED:
-    case fileapi::SYNC_STATUS_ABORT:
-    case fileapi::SYNC_STATUS_FAILED:
       state_ = REMOTE_SERVICE_DISABLED;
       break;
 
@@ -839,7 +839,8 @@ void DriveFileSyncService::UpdateServiceState() {
     // above three cases.
     default:
       NOTREACHED();
-      state_ = REMOTE_SERVICE_DISABLED;
+      LOG(WARNING) << "Unexpected status returned: " << last_operation_status_;
+      state_ = REMOTE_SERVICE_TEMPORARY_UNAVAILABLE;
       break;
   }
 }
@@ -1928,9 +1929,6 @@ void DriveFileSyncService::SchedulePolling() {
       state_ != REMOTE_SERVICE_TEMPORARY_UNAVAILABLE)
     return;
 
-  if (state_ == REMOTE_SERVICE_TEMPORARY_UNAVAILABLE)
-    UpdatePollingDelay(kMaximumPollingDelaySeconds);
-
   DVLOG(1) << "Polling scheduled"
            << " (delay:" << polling_delay_seconds_ << "s)";
 
@@ -1944,6 +1942,15 @@ void DriveFileSyncService::UpdatePollingDelay(int64 new_delay_sec) {
   // polling_delay_seconds_ made negative to disable polling for testing.
   if (polling_delay_seconds_ < 0)
     return;
+
+  if (state_ == REMOTE_SERVICE_TEMPORARY_UNAVAILABLE) {
+    // If the service state is TEMPORARY_UNAVAILABLE, poll the service
+    // with a modest duration (but more frequently than
+    // kPollingDelaySecondsWithNotification) so that we have a mild chance
+    // to recover the state.
+    polling_delay_seconds_ = kMaximumPollingDelaySeconds;
+    return;
+  }
 
   if (push_notification_enabled_) {
     polling_delay_seconds_ = kPollingDelaySecondsWithNotification;
