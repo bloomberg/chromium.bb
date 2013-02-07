@@ -417,7 +417,8 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
           pb.texture_id(), decoder_texture_target_, pb.size(), visible_rect,
           natural_size, timestamp,
           base::Bind(&Factories::ReadPixels, factories_, pb.texture_id(),
-                     decoder_texture_target_, pb.size()),
+                     decoder_texture_target_,
+                     gfx::Size(visible_rect.width(), visible_rect.height())),
           base::Bind(&GpuVideoDecoder::ReusePictureBuffer, this,
                      picture.picture_buffer_id())));
 
