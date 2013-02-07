@@ -32,6 +32,8 @@ class OverscanCalibrator : public ui::LayerDelegate {
   // Updates the insets and redraw the visual feedback.
   void UpdateInsets(const gfx::Insets& insets);
 
+  const gfx::Insets& insets() const { return insets_; }
+
  private:
   // ui::LayerDelegate overrides:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;

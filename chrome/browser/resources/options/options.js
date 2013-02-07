@@ -181,6 +181,8 @@ function load() {
     OptionsPage.registerOverlay(DisplayOptions.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('display-options')]);
+    OptionsPage.registerOverlay(DisplayOverscan.getInstance(),
+                                DisplayOptions.getInstance());
     OptionsPage.registerOverlay(KeyboardOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('keyboard-settings-button')]);

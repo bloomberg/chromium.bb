@@ -69,6 +69,7 @@
 #include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/display_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/display_overscan_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/internet_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/keyboard_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/language_chewing_handler.h"
@@ -278,6 +279,8 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
                           new chromeos::options::BluetoothOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::DisplayOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new chromeos::options::DisplayOverscanHandler());
   AddOptionsPageUIHandler(localized_strings, new InternetOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::LanguageChewingHandler());

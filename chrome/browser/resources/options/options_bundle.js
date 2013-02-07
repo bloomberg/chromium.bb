@@ -29,12 +29,14 @@
   <include src="chromeos/accounts_user_list.js"></include>
   <include src="chromeos/accounts_user_name_edit.js"></include>
   <include src="chromeos/display_options.js"></include>
+  <include src="chromeos/display_overscan.js"></include>
   <include src="chromeos/keyboard_overlay.js"></include>
   <include src="chromeos/pointer_overlay.js"></include>
   var AccountsOptions = options.AccountsOptions;
   var ChangePictureOptions = options.ChangePictureOptions;
   var DetailsInternetPage = options.internet.DetailsInternetPage;
   var DisplayOptions = options.DisplayOptions;
+  var DisplayOverscan = options.DisplayOverscan;
   var BluetoothOptions = options.BluetoothOptions;
   var BluetoothPairing = options.BluetoothPairing;
   var KeyboardOverlay = options.KeyboardOverlay;

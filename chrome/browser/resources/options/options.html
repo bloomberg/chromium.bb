@@ -45,6 +45,7 @@
   <link rel="stylesheet" href="chromeos/bluetooth.css">
   <link rel="stylesheet" href="chromeos/change_picture_options.css">
   <link rel="stylesheet" href="chromeos/display_options.css">
+  <link rel="stylesheet" href="chromeos/display_overscan.css">
   <link rel="stylesheet" href="chromeos/internet_detail.css">
   <link rel="stylesheet" href="chromeos/pointer_overlay.css">
   <link rel="stylesheet" href="factory_reset_overlay.css">
@@ -134,6 +135,7 @@
   </if>
   <include src="media_galleries_manager_overlay.html">
   <if expr="pp_ifdef('chromeos')">
+    <include src="chromeos/display_overscan.html">
     <include src="chromeos/internet_detail.html">
     <include src="chromeos/preferred_networks.html">
     <include src="chromeos/language_chewing_options.html">

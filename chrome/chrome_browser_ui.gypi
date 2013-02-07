@@ -2024,6 +2024,8 @@
         'browser/ui/webui/options/chromeos/cros_language_options_handler.h',
         'browser/ui/webui/options/chromeos/display_options_handler.cc',
         'browser/ui/webui/options/chromeos/display_options_handler.h',
+        'browser/ui/webui/options/chromeos/display_overscan_handler.cc',
+        'browser/ui/webui/options/chromeos/display_overscan_handler.h',
         'browser/ui/webui/options/chromeos/internet_options_handler.cc',
         'browser/ui/webui/options/chromeos/internet_options_handler.h',
         'browser/ui/webui/options/chromeos/keyboard_handler.cc',

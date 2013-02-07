@@ -14,6 +14,52 @@
 #include "ui/gfx/canvas.h"
 
 namespace chromeos {
+namespace {
+
+// The opacity for the grey out borders.
+const float kBorderOpacity = 0.5;
+
+// The opacity for the arrows of the overscan calibration.
+const float kArrowOpacity = 0.8;
+
+// The height in pixel for the arrows to show the overscan calibration.
+const int kCalibrationArrowHeight = 50;
+
+// The gap between the boundary and calibration arrows.
+const int kArrowGapWidth = 20;
+
+// Draw the arrow for the overscan calibration to |canvas|.
+void DrawTriangle(int x_offset,
+                  int y_offset,
+                  double rotation_degree,
+                  gfx::Canvas* canvas) {
+  // Draw triangular arrows.
+  SkPaint content_paint;
+  content_paint.setStyle(SkPaint::kFill_Style);
+  content_paint.setColor(SkColorSetA(SK_ColorBLACK, kuint8max * kArrowOpacity));
+  SkPaint border_paint;
+  border_paint.setStyle(SkPaint::kStroke_Style);
+  border_paint.setColor(SkColorSetA(SK_ColorWHITE, kuint8max * kArrowOpacity));
+
+  SkPath base_path;
+  base_path.moveTo(0, SkIntToScalar(-kCalibrationArrowHeight));
+  base_path.lineTo(SkIntToScalar(-kCalibrationArrowHeight), 0);
+  base_path.lineTo(SkIntToScalar(kCalibrationArrowHeight), 0);
+  base_path.close();
+
+  SkPath path;
+  gfx::Transform rotate_transform;
+  rotate_transform.Rotate(rotation_degree);
+  gfx::Transform move_transform;
+  move_transform.Translate(x_offset, y_offset);
+  rotate_transform.ConcatTransform(move_transform);
+  base_path.transform(rotate_transform.matrix(), &path);
+
+  canvas->DrawPath(path, content_paint);
+  canvas->DrawPath(path, border_paint);
+}
+
+}  // namespace
 
 OverscanCalibrator::OverscanCalibrator(
     const gfx::Display& target_display, const gfx::Insets& initial_insets)
@@ -53,17 +99,29 @@ void OverscanCalibrator::Commit() {
 }
 
 void OverscanCalibrator::UpdateInsets(const gfx::Insets& insets) {
-  insets_ = insets;
+  insets_.Set(std::max(insets.top(), 0),
+              std::max(insets.left(), 0),
+              std::max(insets.bottom(), 0),
+              std::max(insets.right(), 0));
   calibration_layer_->SchedulePaint(calibration_layer_->bounds());
 }
 
 void OverscanCalibrator::OnPaintLayer(gfx::Canvas* canvas) {
-  static const SkColor transparent = SkColorSetARGB(0, 0, 0, 0);
+  static const SkColor kTransparent = SkColorSetARGB(0, 0, 0, 0);
   gfx::Rect full_bounds = calibration_layer_->bounds();
   gfx::Rect inner_bounds = full_bounds;
   inner_bounds.Inset(insets_);
   canvas->FillRect(full_bounds, SK_ColorBLACK);
-  canvas->FillRect(inner_bounds, transparent, SkXfermode::kClear_Mode);
+  canvas->FillRect(inner_bounds, kTransparent, SkXfermode::kClear_Mode);
+
+  gfx::Point center = inner_bounds.CenterPoint();
+  int vertical_offset = inner_bounds.height() / 2 - kArrowGapWidth;
+  int horizontal_offset = inner_bounds.width() / 2 - kArrowGapWidth;
+
+  DrawTriangle(center.x(), center.y() + vertical_offset, 0, canvas);
+  DrawTriangle(center.x(), center.y() - vertical_offset, 180, canvas);
+  DrawTriangle(center.x() - horizontal_offset, center.y(), 90, canvas);
+  DrawTriangle(center.x() + horizontal_offset, center.y(), -90, canvas);
 }
 
 void OverscanCalibrator::OnDeviceScaleFactorChanged(

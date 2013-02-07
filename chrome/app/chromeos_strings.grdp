@@ -787,11 +787,23 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_CALIBRATING_OVERSCAN" desc="Label to start calibrating the overscan preference.">
     TV alignment
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_FINISH_CALIBRATING_OVERSCAN" desc="Label to finish calibrating the overscan preference.">
-    Finish alignment
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OVERSCAN_TAB_TITLE" desc="Title for the display overscan calibration tab.">
+    TV alignment
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_CLEAR_CALIBRATING_OVERSCAN" desc="Label to clear the current overscan preference.">
-    Clear
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OVERSCAN_SHRINK_EXPAND" desc="Lable to describe the overscan calibration operation, to shrink or expand the region.">
+    Shrink/Expand
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OVERSCAN_MOVE" desc="Lable to describe the overscan calibration operation, to move the region.">
+    Move
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OVERSCAN_RESET_BUTTON_LABEL" desc="Button label to reset the display overscan settings.">
+    Reset
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OVERSCAN_OK_BUTTON_LABEL" desc="Button label to finish the display overscan settings.">
+    OK
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OVERSCAN_CANCEL_BUTTON_LABEL" desc="Button label to cancel the display overscan settings.">
+    Cancel
   </message>
   <message name="IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT" desc="In the settings tab, the text of the keyboard layout label.">
     Keyboard layout:

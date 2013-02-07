@@ -102,35 +102,3 @@ html[dir=rtl] #selected-display-data-container {
 .display-options-button {
   width: 120px;
 }
-
-#display-overscan-calibration-arrow-container {
-  background: transparent;
-  border: none;
-  position: absolute;
-  z-index: 3;
-}
-
-/* The small arrows to denote the overscan calibration mode.  The triangular
- * arrows are achieved by css border. */
-.display-overscan-calibration-arrow {
-  border: 10px solid transparent;
-  height: 0;
-  position: absolute;
-  width: 0;
-}
-
-.display-overscan-arrow-to-top {
-  border-bottom-color: rgb(64, 64, 64);
-}
-
-.display-overscan-arrow-to-left {
-  border-right-color: rgb(64, 64, 64);
-}
-
-.display-overscan-arrow-to-bottom {
-  border-top-color: rgb(64, 64, 64);
-}
-
-.display-overscan-arrow-to-right {
-  border-left-color: rgb(64, 64, 64);
-}
