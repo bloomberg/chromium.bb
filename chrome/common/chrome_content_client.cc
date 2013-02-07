@@ -99,7 +99,7 @@ const char kRemotingViewerPluginDescription[] =
     "shared with you. To use this plugin you must first install the "
     "<a href=\"https://chrome.google.com/remotedesktop\">"
     "Chrome Remote Desktop</a> webapp.";
-const FilePath::CharType kRemotingViewerPluginPath[] =
+const base::FilePath::CharType kRemotingViewerPluginPath[] =
     FILE_PATH_LITERAL("internal-remoting-viewer");
 // Use a consistent MIME-type regardless of branding.
 const char kRemotingViewerPluginMimeType[] =
@@ -126,7 +126,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   // So the first time through test if the file is available and then skip the
   // check on subsequent calls if yes.
   static bool skip_pdf_file_check = false;
-  FilePath path;
+  base::FilePath path;
   if (PathService::Get(chrome::FILE_PDF_PLUGIN, &path)) {
     if (skip_pdf_file_check || file_util::PathExists(path)) {
       content::PepperPluginInfo pdf;
@@ -237,7 +237,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   info.is_out_of_process = true;
   info.name = kRemotingViewerPluginName;
   info.description = kRemotingViewerPluginDescription;
-  info.path = FilePath(kRemotingViewerPluginPath);
+  info.path = base::FilePath(kRemotingViewerPluginPath);
   webkit::WebPluginMimeType remoting_mime_type(
       kRemotingViewerPluginMimeType,
       kRemotingViewerPluginMimeExtension,
@@ -253,7 +253,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
 #endif
 }
 
-content::PepperPluginInfo CreatePepperFlashInfo(const FilePath& path,
+content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path,
                                                 const std::string& version) {
   content::PepperPluginInfo plugin;
 
@@ -309,7 +309,7 @@ void AddPepperFlashFromCommandLine(
           switches::kPpapiFlashVersion);
 
   plugins->push_back(
-      CreatePepperFlashInfo(FilePath(flash_path), flash_version));
+      CreatePepperFlashInfo(base::FilePath(flash_path), flash_version));
 }
 
 bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
@@ -332,7 +332,7 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
     return false;
 #endif  // ARCH_CPU_X86
 
-  FilePath flash_path;
+  base::FilePath flash_path;
   if (!PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &flash_path))
     return false;
 

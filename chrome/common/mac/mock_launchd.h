@@ -21,12 +21,12 @@ class MessageLoop;
 // http://crbug.com/76923
 class MockLaunchd : public Launchd {
  public:
-  static bool MakeABundle(const FilePath& dst,
+  static bool MakeABundle(const base::FilePath& dst,
                           const std::string& name,
-                          FilePath* bundle_root,
-                          FilePath* executable);
+                          base::FilePath* bundle_root,
+                          base::FilePath* executable);
 
-  MockLaunchd(const FilePath& file, MessageLoop* loop,
+  MockLaunchd(const base::FilePath& file, MessageLoop* loop,
               bool create_socket, bool as_service);
   virtual ~MockLaunchd();
 
@@ -60,7 +60,7 @@ class MockLaunchd : public Launchd {
   bool delete_called() const { return delete_called_; }
 
  private:
-  FilePath file_;
+  base::FilePath file_;
   std::string pipe_name_;
   MessageLoop* message_loop_;
   scoped_ptr<MultiProcessLock> running_lock_;

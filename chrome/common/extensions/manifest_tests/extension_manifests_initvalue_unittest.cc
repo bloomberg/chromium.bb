@@ -88,7 +88,7 @@ TEST_F(InitValueManifestTest, InitFromValueValid) {
   scoped_refptr<extensions::Extension> extension(LoadAndExpectSuccess(
       "init_valid_minimal.json"));
 
-  FilePath path;
+  base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions");
 

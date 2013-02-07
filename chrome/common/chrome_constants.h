@@ -15,16 +15,16 @@ extern const char kChromeVersion[];
 
 extern const char kChromeVersionEnvVar[];
 
-extern const FilePath::CharType kBrowserProcessExecutableName[];
-extern const FilePath::CharType kHelperProcessExecutableName[];
-extern const FilePath::CharType kBrowserProcessExecutablePath[];
-extern const FilePath::CharType kHelperProcessExecutablePath[];
-extern const FilePath::CharType kBrowserProcessExecutableNameChromium[];
-extern const FilePath::CharType kHelperProcessExecutableNameChromium[];
-extern const FilePath::CharType kBrowserProcessExecutablePathChromium[];
-extern const FilePath::CharType kHelperProcessExecutablePathChromium[];
+extern const base::FilePath::CharType kBrowserProcessExecutableName[];
+extern const base::FilePath::CharType kHelperProcessExecutableName[];
+extern const base::FilePath::CharType kBrowserProcessExecutablePath[];
+extern const base::FilePath::CharType kHelperProcessExecutablePath[];
+extern const base::FilePath::CharType kBrowserProcessExecutableNameChromium[];
+extern const base::FilePath::CharType kHelperProcessExecutableNameChromium[];
+extern const base::FilePath::CharType kBrowserProcessExecutablePathChromium[];
+extern const base::FilePath::CharType kHelperProcessExecutablePathChromium[];
 #if defined(OS_MACOSX)
-extern const FilePath::CharType kFrameworkName[];
+extern const base::FilePath::CharType kFrameworkName[];
 
 // The helper .app bundle name and executable name may have one of these
 // suffixes to identify specific features, or it may have no suffix at all.
@@ -34,10 +34,10 @@ extern const FilePath::CharType kFrameworkName[];
 // Chromium Helper.app/Contents/MacOS/Chromium Helper,
 // Chromium Helper EN.app/Contents/MacOS/Chromium Helper EN, and
 // Chromium Helper MF.app/Contents/MacOS/Chromium Helper MF.
-extern const FilePath::CharType* const kHelperFlavorSuffixes[];
+extern const base::FilePath::CharType* const kHelperFlavorSuffixes[];
 #endif  // OS_MACOSX
 #if defined(OS_WIN)
-extern const FilePath::CharType kMetroDriverDll[];
+extern const base::FilePath::CharType kMetroDriverDll[];
 extern const wchar_t kStatusTrayWindowClass[];
 #endif  // defined(OS_WIN)
 extern const wchar_t kMessageWindowClass[];
@@ -47,54 +47,54 @@ extern const char    kInitialProfile[];
 extern const char    kMultiProfileDirPrefix[];
 extern const wchar_t kBrowserResourcesDll[];
 extern const wchar_t kNaClAppName[];
-extern const FilePath::CharType kExtensionFileExtension[];
-extern const FilePath::CharType kExtensionKeyFileExtension[];
+extern const base::FilePath::CharType kExtensionFileExtension[];
+extern const base::FilePath::CharType kExtensionKeyFileExtension[];
 
 // filenames
 #if defined(OS_ANDROID)
-extern const FilePath::CharType kAndroidCacheFilename[];
+extern const base::FilePath::CharType kAndroidCacheFilename[];
 #endif
-extern const FilePath::CharType kArchivedHistoryFilename[];
-extern const FilePath::CharType kBookmarksFileName[];
-extern const FilePath::CharType kCacheDirname[];
-extern const FilePath::CharType kCookieFilename[];
-extern const FilePath::CharType kCRLSetFilename[];
-extern const FilePath::CharType kCustomDictionaryFileName[];
-extern const FilePath::CharType kExtensionActivityLogFilename[];
-extern const FilePath::CharType kExtensionsCookieFilename[];
-extern const FilePath::CharType kFaviconsFilename[];
-extern const FilePath::CharType kFirstRunSentinel[];
-extern const FilePath::CharType kHistoryFilename[];
-extern const FilePath::CharType kJumpListIconDirname[];
-extern const FilePath::CharType kLocalStateFilename[];
-extern const FilePath::CharType kLoginDataFileName[];
-extern const FilePath::CharType kManagedModePolicyFilename[];
-extern const FilePath::CharType kMediaCacheDirname[];
-extern const FilePath::CharType kNewTabThumbnailsFilename[];
-extern const FilePath::CharType kOBCertFilename[];
-extern const FilePath::CharType kPreferencesFilename[];
-extern const FilePath::CharType kReadmeFilename[];
-extern const FilePath::CharType kSafeBrowsingBaseFilename[];
-extern const FilePath::CharType kServiceStateFileName[];
-extern const FilePath::CharType kShortcutsDatabaseName[];
-extern const FilePath::CharType kSingletonCookieFilename[];
-extern const FilePath::CharType kSingletonLockFilename[];
-extern const FilePath::CharType kSingletonSocketFilename[];
-extern const FilePath::CharType kSyncCredentialsFilename[];
-extern const FilePath::CharType kThemePackFilename[];
-extern const FilePath::CharType kThumbnailsFilename[];
-extern const FilePath::CharType kTopSitesFilename[];
-extern const FilePath::CharType kWebAppDirname[];
-extern const FilePath::CharType kWebDataFilename[];
+extern const base::FilePath::CharType kArchivedHistoryFilename[];
+extern const base::FilePath::CharType kBookmarksFileName[];
+extern const base::FilePath::CharType kCacheDirname[];
+extern const base::FilePath::CharType kCookieFilename[];
+extern const base::FilePath::CharType kCRLSetFilename[];
+extern const base::FilePath::CharType kCustomDictionaryFileName[];
+extern const base::FilePath::CharType kExtensionActivityLogFilename[];
+extern const base::FilePath::CharType kExtensionsCookieFilename[];
+extern const base::FilePath::CharType kFaviconsFilename[];
+extern const base::FilePath::CharType kFirstRunSentinel[];
+extern const base::FilePath::CharType kHistoryFilename[];
+extern const base::FilePath::CharType kJumpListIconDirname[];
+extern const base::FilePath::CharType kLocalStateFilename[];
+extern const base::FilePath::CharType kLoginDataFileName[];
+extern const base::FilePath::CharType kManagedModePolicyFilename[];
+extern const base::FilePath::CharType kMediaCacheDirname[];
+extern const base::FilePath::CharType kNewTabThumbnailsFilename[];
+extern const base::FilePath::CharType kOBCertFilename[];
+extern const base::FilePath::CharType kPreferencesFilename[];
+extern const base::FilePath::CharType kReadmeFilename[];
+extern const base::FilePath::CharType kSafeBrowsingBaseFilename[];
+extern const base::FilePath::CharType kServiceStateFileName[];
+extern const base::FilePath::CharType kShortcutsDatabaseName[];
+extern const base::FilePath::CharType kSingletonCookieFilename[];
+extern const base::FilePath::CharType kSingletonLockFilename[];
+extern const base::FilePath::CharType kSingletonSocketFilename[];
+extern const base::FilePath::CharType kSyncCredentialsFilename[];
+extern const base::FilePath::CharType kThemePackFilename[];
+extern const base::FilePath::CharType kThumbnailsFilename[];
+extern const base::FilePath::CharType kTopSitesFilename[];
+extern const base::FilePath::CharType kWebAppDirname[];
+extern const base::FilePath::CharType kWebDataFilename[];
 
 // File name of the Pepper Flash plugin on different platforms.
-extern const FilePath::CharType kPepperFlashPluginFilename[];
+extern const base::FilePath::CharType kPepperFlashPluginFilename[];
 
 // directory names
 extern const wchar_t kUserDataDirname[];
 
 #if defined(OS_CHROMEOS)
-extern const FilePath::CharType kDriveCacheDirname[];
+extern const base::FilePath::CharType kDriveCacheDirname[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const bool kRecordModeEnabled;

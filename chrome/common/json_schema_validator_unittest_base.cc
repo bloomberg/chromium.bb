@@ -26,7 +26,7 @@ namespace {
 #define TEST_SOURCE base::StringPrintf("%s:%i", __FILE__, __LINE__)
 
 Value* LoadValue(const std::string& filename) {
-  FilePath path;
+  base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("json_schema_validator").AppendASCII(filename);
   EXPECT_TRUE(file_util::PathExists(path));

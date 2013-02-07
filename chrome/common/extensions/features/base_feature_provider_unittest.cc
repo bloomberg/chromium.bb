@@ -38,7 +38,7 @@ TEST(BaseFeatureProvider, ManifestFeatures) {
 
   std::string error;
   scoped_refptr<const Extension> extension(Extension::Create(
-      FilePath(), Manifest::INTERNAL, manifest, Extension::NO_FLAGS,
+      base::FilePath(), Manifest::INTERNAL, manifest, Extension::NO_FLAGS,
       &error));
 
   ASSERT_TRUE(extension.get());
@@ -80,7 +80,7 @@ TEST(BaseFeatureProvider, PermissionFeatures) {
 
   std::string error;
   scoped_refptr<const Extension> extension(Extension::Create(
-      FilePath(), Manifest::INTERNAL, manifest, Extension::NO_FLAGS,
+      base::FilePath(), Manifest::INTERNAL, manifest, Extension::NO_FLAGS,
       &error));
 
   ASSERT_TRUE(extension.get());

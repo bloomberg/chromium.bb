@@ -51,18 +51,19 @@ TEST_F(ExtensionFileUtilTest, InstallUninstallGarbageCollect) {
   // Create a source extension.
   std::string extension_id("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   std::string version("1.0");
-  FilePath src = temp.path().AppendASCII(extension_id);
+  base::FilePath src = temp.path().AppendASCII(extension_id);
   ASSERT_TRUE(file_util::CreateDirectory(src));
 
   // Create a extensions tree.
-  FilePath all_extensions = temp.path().AppendASCII("extensions");
+  base::FilePath all_extensions = temp.path().AppendASCII("extensions");
   ASSERT_TRUE(file_util::CreateDirectory(all_extensions));
 
   // Install in empty directory. Should create parent directories as needed.
-  FilePath version_1 = extension_file_util::InstallExtension(src,
-                                                             extension_id,
-                                                             version,
-                                                             all_extensions);
+  base::FilePath version_1 = extension_file_util::InstallExtension(
+      src,
+      extension_id,
+      version,
+      all_extensions);
   ASSERT_EQ(version_1.value(),
             all_extensions.AppendASCII(extension_id).AppendASCII("1.0_0")
                 .value());
@@ -73,10 +74,11 @@ TEST_F(ExtensionFileUtilTest, InstallUninstallGarbageCollect) {
 
   // Install again. Should create a new one with different name.
   ASSERT_TRUE(file_util::CreateDirectory(src));
-  FilePath version_2 = extension_file_util::InstallExtension(src,
-                                                             extension_id,
-                                                             version,
-                                                             all_extensions);
+  base::FilePath version_2 = extension_file_util::InstallExtension(
+      src,
+      extension_id,
+      version,
+      all_extensions);
   ASSERT_EQ(version_2.value(),
             all_extensions.AppendASCII(extension_id).AppendASCII("1.0_1")
                 .value());
@@ -87,21 +89,22 @@ TEST_F(ExtensionFileUtilTest, InstallUninstallGarbageCollect) {
 
   // Install yet again. Should create a new one with a different name.
   ASSERT_TRUE(file_util::CreateDirectory(src));
-  FilePath version_3 = extension_file_util::InstallExtension(src,
-                                                             extension_id,
-                                                             version,
-                                                             all_extensions);
+  base::FilePath version_3 = extension_file_util::InstallExtension(
+      src,
+      extension_id,
+      version,
+      all_extensions);
   ASSERT_EQ(version_3.value(),
             all_extensions.AppendASCII(extension_id).AppendASCII("1.0_2")
                 .value());
   ASSERT_TRUE(file_util::DirectoryExists(version_3));
 
   // Collect garbage. Should remove first one.
-  std::multimap<std::string, FilePath> extension_paths;
+  std::multimap<std::string, base::FilePath> extension_paths;
   extension_paths.insert(std::make_pair(extension_id,
-      FilePath().AppendASCII(extension_id).Append(version_2.BaseName())));
+      base::FilePath().AppendASCII(extension_id).Append(version_2.BaseName())));
   extension_paths.insert(std::make_pair(extension_id,
-      FilePath().AppendASCII(extension_id).Append(version_3.BaseName())));
+      base::FilePath().AppendASCII(extension_id).Append(version_3.BaseName())));
   extension_file_util::GarbageCollectExtensions(all_extensions,
                                                 extension_paths);
   ASSERT_FALSE(file_util::DirectoryExists(version_1));
@@ -116,7 +119,7 @@ TEST_F(ExtensionFileUtilTest, InstallUninstallGarbageCollect) {
 }
 
 TEST_F(ExtensionFileUtilTest, LoadExtensionWithValidLocales) {
-  FilePath install_dir;
+  base::FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
       .AppendASCII("good")
@@ -132,7 +135,7 @@ TEST_F(ExtensionFileUtilTest, LoadExtensionWithValidLocales) {
 }
 
 TEST_F(ExtensionFileUtilTest, LoadExtensionWithoutLocalesFolder) {
-  FilePath install_dir;
+  base::FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
       .AppendASCII("good")
@@ -156,7 +159,7 @@ TEST_F(ExtensionFileUtilTest, CheckIllegalFilenamesNoUnderscores) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  FilePath src_path = temp.path().AppendASCII("some_dir");
+  base::FilePath src_path = temp.path().AppendASCII("some_dir");
   ASSERT_TRUE(file_util::CreateDirectory(src_path));
 
   std::string data = "{ \"name\": { \"message\": \"foobar\" } }";
@@ -176,7 +179,7 @@ TEST_F(ExtensionFileUtilTest, CheckIllegalFilenamesOnlyReserved) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  FilePath src_path = temp.path().Append(Extension::kLocaleFolder);
+  base::FilePath src_path = temp.path().Append(Extension::kLocaleFolder);
   ASSERT_TRUE(file_util::CreateDirectory(src_path));
 
   std::string error;
@@ -193,7 +196,7 @@ TEST_F(ExtensionFileUtilTest, CheckIllegalFilenamesReservedAndIllegal) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  FilePath src_path = temp.path().Append(Extension::kLocaleFolder);
+  base::FilePath src_path = temp.path().Append(Extension::kLocaleFolder);
   ASSERT_TRUE(file_util::CreateDirectory(src_path));
 
   src_path = temp.path().AppendASCII("_some_dir");
@@ -206,7 +209,7 @@ TEST_F(ExtensionFileUtilTest, CheckIllegalFilenamesReservedAndIllegal) {
 
 TEST_F(ExtensionFileUtilTest,
        LoadExtensionGivesHelpfullErrorOnMissingManifest) {
-  FilePath install_dir;
+  base::FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
       .AppendASCII("bad")
@@ -223,7 +226,7 @@ TEST_F(ExtensionFileUtilTest,
 }
 
 TEST_F(ExtensionFileUtilTest, LoadExtensionGivesHelpfullErrorOnBadManifest) {
-  FilePath install_dir;
+  base::FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
       .AppendASCII("bad")
@@ -241,7 +244,7 @@ TEST_F(ExtensionFileUtilTest, LoadExtensionGivesHelpfullErrorOnBadManifest) {
 }
 
 TEST_F(ExtensionFileUtilTest, FailLoadingNonUTF8Scripts) {
-  FilePath install_dir;
+  base::FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
       .AppendASCII("bad")
@@ -287,12 +290,13 @@ TEST_F(ExtensionFileUtilTest, ExtensionURLToRelativeFilePath) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     GURL url(test_cases[i].url);
 #if defined(OS_POSIX)
-    FilePath expected_path(test_cases[i].expected_relative_path);
+    base::FilePath expected_path(test_cases[i].expected_relative_path);
 #elif defined(OS_WIN)
-    FilePath expected_path(UTF8ToWide(test_cases[i].expected_relative_path));
+    base::FilePath expected_path(
+        UTF8ToWide(test_cases[i].expected_relative_path));
 #endif
 
-    FilePath actual_path =
+    base::FilePath actual_path =
         extension_file_util::ExtensionURLToRelativeFilePath(url);
     EXPECT_FALSE(actual_path.IsAbsolute()) <<
       " For the path " << actual_path.value();
@@ -303,16 +307,16 @@ TEST_F(ExtensionFileUtilTest, ExtensionURLToRelativeFilePath) {
 
 TEST_F(ExtensionFileUtilTest, ExtensionResourceURLToFilePath) {
   // Setup filesystem for testing.
-  FilePath root_path;
+  base::FilePath root_path;
   ASSERT_TRUE(file_util::CreateNewTempDirectory(
         FILE_PATH_LITERAL(""), &root_path));
   ASSERT_TRUE(file_util::AbsolutePath(&root_path));
 
-  FilePath api_path = root_path.Append(FILE_PATH_LITERAL("apiname"));
+  base::FilePath api_path = root_path.Append(FILE_PATH_LITERAL("apiname"));
   ASSERT_TRUE(file_util::CreateDirectory(api_path));
 
   const char data[] = "Test Data";
-  FilePath resource_path = api_path.Append(FILE_PATH_LITERAL("test.js"));
+  base::FilePath resource_path = api_path.Append(FILE_PATH_LITERAL("test.js"));
   ASSERT_TRUE(file_util::WriteFile(resource_path, data, sizeof(data)));
   resource_path = api_path.Append(FILE_PATH_LITERAL("escape spaces.js"));
   ASSERT_TRUE(file_util::WriteFile(resource_path, data, sizeof(data)));
@@ -325,7 +329,7 @@ TEST_F(ExtensionFileUtilTest, ExtensionResourceURLToFilePath) {
 #define URL_PREFIX "chrome-extension-resource://"
   struct TestCase {
     const char* url;
-    const FilePath::CharType* expected_path;
+    const base::FilePath::CharType* expected_path;
   } test_cases[] = {
     { URL_PREFIX "apiname/test.js",
       FILE_PATH_LITERAL("test.js") },
@@ -354,11 +358,11 @@ TEST_F(ExtensionFileUtilTest, ExtensionResourceURLToFilePath) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     GURL url(test_cases[i].url);
-    FilePath expected_path;
+    base::FilePath expected_path;
     if (test_cases[i].expected_path)
       expected_path = root_path.Append(FILE_PATH_LITERAL("apiname")).Append(
           test_cases[i].expected_path);
-    FilePath actual_path =
+    base::FilePath actual_path =
         extension_file_util::ExtensionResourceURLToFilePath(url, root_path);
     EXPECT_EQ(expected_path.value(), actual_path.value()) <<
       " For the path " << url;
@@ -369,7 +373,7 @@ TEST_F(ExtensionFileUtilTest, ExtensionResourceURLToFilePath) {
 
 static scoped_refptr<Extension> LoadExtensionManifest(
     DictionaryValue* manifest,
-    const FilePath& manifest_dir,
+    const base::FilePath& manifest_dir,
     Manifest::Location location,
     int extra_flags,
     std::string* error) {
@@ -380,7 +384,7 @@ static scoped_refptr<Extension> LoadExtensionManifest(
 
 static scoped_refptr<Extension> LoadExtensionManifest(
     const std::string& manifest_value,
-    const FilePath& manifest_dir,
+    const base::FilePath& manifest_dir,
     Manifest::Location location,
     int extra_flags,
     std::string* error) {
@@ -406,8 +410,8 @@ TEST_F(ExtensionFileUtilTest, ValidateThemeUTF8) {
 
   // "aeo" with accents. Use http://0xcc.net/jsescape/ to decode them.
   std::string non_ascii_file = "\xC3\xA0\xC3\xA8\xC3\xB2.png";
-  FilePath non_ascii_path = temp.path().Append(FilePath::FromUTF8Unsafe(
-      non_ascii_file));
+  base::FilePath non_ascii_path =
+      temp.path().Append(base::FilePath::FromUTF8Unsafe(non_ascii_file));
   file_util::WriteFile(non_ascii_path, "", 0);
 
   std::string kManifest =
@@ -500,7 +504,7 @@ TEST_F(ExtensionFileUtilTest, FindPrivateKeyFiles) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  FilePath src_path = temp.path().AppendASCII("some_dir");
+  base::FilePath src_path = temp.path().AppendASCII("some_dir");
   ASSERT_TRUE(file_util::CreateDirectory(src_path));
 
   ASSERT_TRUE(file_util::WriteFile(src_path.AppendASCII("a_key.pem"),
@@ -513,7 +517,7 @@ TEST_F(ExtensionFileUtilTest, FindPrivateKeyFiles) {
   // Shouldn't find a key that isn't parsable.
   ASSERT_TRUE(file_util::WriteFile(src_path.AppendASCII("unparsable_key.pem"),
                                    private_key, arraysize(private_key) - 30));
-  std::vector<FilePath> private_keys =
+  std::vector<base::FilePath> private_keys =
       extension_file_util::FindPrivateKeyFiles(temp.path());
   EXPECT_EQ(2U, private_keys.size());
   EXPECT_THAT(private_keys,
@@ -526,7 +530,7 @@ TEST_F(ExtensionFileUtilTest, WarnOnPrivateKey) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  FilePath ext_path = temp.path().AppendASCII("ext_root");
+  base::FilePath ext_path = temp.path().AppendASCII("ext_root");
   ASSERT_TRUE(file_util::CreateDirectory(ext_path));
 
   const char manifest[] =
@@ -566,11 +570,11 @@ TEST_F(ExtensionFileUtilTest, WarnOnPrivateKey) {
 }
 
 TEST_F(ExtensionFileUtilTest, CheckZeroLengthImageFile) {
-  FilePath install_dir;
+  base::FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
 
   // Try to install an extension with a zero-length icon file.
-  FilePath ext_dir = install_dir.AppendASCII("extensions")
+  base::FilePath ext_dir = install_dir.AppendASCII("extensions")
       .AppendASCII("bad")
       .AppendASCII("Extensions")
       .AppendASCII("ffffffffffffffffffffffffffffffff");

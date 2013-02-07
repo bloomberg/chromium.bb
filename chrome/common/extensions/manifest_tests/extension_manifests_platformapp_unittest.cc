@@ -121,7 +121,7 @@ TEST_F(ExtensionManifestTest, CertainApisRequirePlatformApps) {
 
     // Each of these files lives in the scoped temp directory, so it will be
     // cleaned up at test teardown.
-    FilePath file_path = temp_dir.path().AppendASCII(api_name);
+    base::FilePath file_path = temp_dir.path().AppendASCII(api_name);
     JSONFileValueSerializer serializer(file_path);
     serializer.Serialize(*(manifest.get()));
   }
@@ -129,7 +129,7 @@ TEST_F(ExtensionManifestTest, CertainApisRequirePlatformApps) {
   // First try to load without any flags. This should fail for every API.
   for (size_t i = 0; i < arraysize(kPlatformAppExperimentalApis); ++i) {
     const char* api_name = kPlatformAppExperimentalApis[i];
-    FilePath file_path = temp_dir.path().AppendASCII(api_name);
+    base::FilePath file_path = temp_dir.path().AppendASCII(api_name);
     LoadAndExpectError(file_path.MaybeAsASCII().c_str(),
                        errors::kExperimentalFlagRequired);
   }
@@ -139,7 +139,7 @@ TEST_F(ExtensionManifestTest, CertainApisRequirePlatformApps) {
       switches::kEnableExperimentalExtensionApis);
   for (size_t i = 0; i < arraysize(kPlatformAppExperimentalApis); ++i) {
     const char* api_name = kPlatformAppExperimentalApis[i];
-    FilePath file_path = temp_dir.path().AppendASCII(api_name);
+    base::FilePath file_path = temp_dir.path().AppendASCII(api_name);
     LoadAndExpectSuccess(file_path.MaybeAsASCII().c_str());
   }
 }

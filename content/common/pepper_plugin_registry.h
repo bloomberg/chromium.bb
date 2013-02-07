@@ -55,13 +55,14 @@ class PepperPluginRegistry
   // both preloaded in-process or currently active (non crashed) out-of-process
   // plugins matching the given name. Returns NULL if the plugin hasn't been
   // loaded.
-  webkit::ppapi::PluginModule* GetLiveModule(const FilePath& path);
+  webkit::ppapi::PluginModule* GetLiveModule(const base::FilePath& path);
 
   // Notifies the registry that a new non-preloaded module has been created.
   // This is normally called for out-of-process plugins. Once this is called,
   // the module is available to be returned by GetModule(). The module will
   // automatically unregister itself by calling PluginModuleDestroyed().
-  void AddLiveModule(const FilePath& path, webkit::ppapi::PluginModule* module);
+  void AddLiveModule(const base::FilePath& path,
+                     webkit::ppapi::PluginModule* module);
 
   // ModuleLifetime implementation.
   virtual void PluginModuleDead(
@@ -75,7 +76,8 @@ class PepperPluginRegistry
 
   // Plugins that have been preloaded so they can be executed in-process in
   // the renderer (the sandbox prevents on-demand loading).
-  typedef std::map<FilePath, scoped_refptr<webkit::ppapi::PluginModule> >
+  typedef std::map<base::FilePath,
+                   scoped_refptr<webkit::ppapi::PluginModule> >
       OwningModuleMap;
   OwningModuleMap preloaded_modules_;
 
@@ -85,7 +87,8 @@ class PepperPluginRegistry
   // non-crashed modules. If an out-of-process module crashes, it may
   // continue as long as there are WebKit references to it, but it will not
   // appear in this list.
-  typedef std::map<FilePath, webkit::ppapi::PluginModule*> NonOwningModuleMap;
+  typedef std::map<base::FilePath, webkit::ppapi::PluginModule*>
+      NonOwningModuleMap;
   NonOwningModuleMap live_modules_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginRegistry);

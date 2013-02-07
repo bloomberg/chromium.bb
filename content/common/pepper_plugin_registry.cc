@@ -53,9 +53,9 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
     // This means we can't provide plugins from non-ASCII paths, but
     // since this switch is only for development I don't think that's
     // too awful.
-    plugin.path = FilePath(ASCIIToUTF16(name_parts[0]));
+    plugin.path = base::FilePath(ASCIIToUTF16(name_parts[0]));
 #else
-    plugin.path = FilePath(name_parts[0]);
+    plugin.path = base::FilePath(name_parts[0]);
 #endif
     if (name_parts.size() > 1)
       plugin.name = name_parts[1];
@@ -112,7 +112,7 @@ bool MakePepperPluginInfo(const webkit::WebPluginInfo& webplugin_info,
   pepper_info->is_sandboxed = webplugin_info.type !=
       webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED;
 
-  pepper_info->path = FilePath(webplugin_info.path);
+  pepper_info->path = base::FilePath(webplugin_info.path);
   pepper_info->name = UTF16ToASCII(webplugin_info.name);
   pepper_info->description = UTF16ToASCII(webplugin_info.desc);
   pepper_info->version = UTF16ToASCII(webplugin_info.version);
@@ -175,14 +175,14 @@ const PepperPluginInfo* PepperPluginRegistry::GetInfoForPlugin(
 }
 
 webkit::ppapi::PluginModule* PepperPluginRegistry::GetLiveModule(
-    const FilePath& path) {
+    const base::FilePath& path) {
   NonOwningModuleMap::iterator it = live_modules_.find(path);
   if (it == live_modules_.end())
     return NULL;
   return it->second;
 }
 
-void PepperPluginRegistry::AddLiveModule(const FilePath& path,
+void PepperPluginRegistry::AddLiveModule(const base::FilePath& path,
                                          webkit::ppapi::PluginModule* module) {
   DCHECK(live_modules_.find(path) == live_modules_.end());
   live_modules_[path] = module;

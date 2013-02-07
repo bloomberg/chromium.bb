@@ -285,7 +285,7 @@ void FileSystemDispatcher::OnDidSucceed(int request_id) {
 
 void FileSystemDispatcher::OnDidReadMetadata(
     int request_id, const base::PlatformFileInfo& file_info,
-    const FilePath& platform_path) {
+    const base::FilePath& platform_path) {
   fileapi::FileSystemCallbackDispatcher* dispatcher =
       dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);

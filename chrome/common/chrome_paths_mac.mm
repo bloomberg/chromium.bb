@@ -23,7 +23,7 @@
 namespace {
 
 #if !defined(OS_IOS)
-const FilePath* g_override_versioned_directory = NULL;
+const base::FilePath* g_override_versioned_directory = NULL;
 
 // Return a retained (NOT autoreleased) NSBundle* as the internal
 // implementation of chrome::OuterAppBundle(), which should be the only
@@ -42,8 +42,8 @@ NSBundle* OuterAppBundleInternal() {
   }
 
   // From C.app/Contents/Versions/1.2.3.4, go up three steps to get to C.app.
-  FilePath versioned_dir = chrome::GetVersionedDirectory();
-  FilePath outer_app_dir = versioned_dir.DirName().DirName().DirName();
+  base::FilePath versioned_dir = chrome::GetVersionedDirectory();
+  base::FilePath outer_app_dir = versioned_dir.DirName().DirName().DirName();
   const char* outer_app_dir_c = outer_app_dir.value().c_str();
   NSString* outer_app_dir_ns = [NSString stringWithUTF8String:outer_app_dir_c];
 
@@ -100,7 +100,7 @@ std::string ProductDirName() {
 
 namespace chrome {
 
-bool GetDefaultUserDataDirectory(FilePath* result) {
+bool GetDefaultUserDataDirectory(base::FilePath* result) {
   bool success = false;
   if (result && PathService::Get(base::DIR_APP_DATA, result)) {
     *result = result->Append(ProductDirName());
@@ -109,11 +109,12 @@ bool GetDefaultUserDataDirectory(FilePath* result) {
   return success;
 }
 
-bool GetUserDocumentsDirectory(FilePath* result) {
+bool GetUserDocumentsDirectory(base::FilePath* result) {
   return base::mac::GetUserDirectory(NSDocumentDirectory, result);
 }
 
-void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result) {
+void GetUserCacheDirectory(const base::FilePath& profile_dir,
+                           base::FilePath* result) {
   // If the profile directory is under ~/Library/Application Support,
   // use a suitable cache directory under ~/Library/Caches.  For
   // example, a profile directory of ~/Library/Application
@@ -123,10 +124,10 @@ void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result) {
   // Default value in cases where any of the following fails.
   *result = profile_dir;
 
-  FilePath app_data_dir;
+  base::FilePath app_data_dir;
   if (!PathService::Get(base::DIR_APP_DATA, &app_data_dir))
     return;
-  FilePath cache_dir;
+  base::FilePath cache_dir;
   if (!PathService::Get(base::DIR_CACHE, &cache_dir))
     return;
   if (!app_data_dir.AppendRelativePath(profile_dir, &cache_dir))
@@ -135,30 +136,30 @@ void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result) {
   *result = cache_dir;
 }
 
-bool GetUserDownloadsDirectory(FilePath* result) {
+bool GetUserDownloadsDirectory(base::FilePath* result) {
   return base::mac::GetUserDirectory(NSDownloadsDirectory, result);
 }
 
-bool GetUserMusicDirectory(FilePath* result) {
+bool GetUserMusicDirectory(base::FilePath* result) {
   return base::mac::GetUserDirectory(NSMusicDirectory, result);
 }
 
-bool GetUserPicturesDirectory(FilePath* result) {
+bool GetUserPicturesDirectory(base::FilePath* result) {
   return base::mac::GetUserDirectory(NSPicturesDirectory, result);
 }
 
-bool GetUserVideosDirectory(FilePath* result) {
+bool GetUserVideosDirectory(base::FilePath* result) {
   return base::mac::GetUserDirectory(NSMoviesDirectory, result);
 }
 
 #if !defined(OS_IOS)
 
-FilePath GetVersionedDirectory() {
+base::FilePath GetVersionedDirectory() {
   if (g_override_versioned_directory)
     return *g_override_versioned_directory;
 
   // Start out with the path to the running executable.
-  FilePath path;
+  base::FilePath path;
   PathService::Get(base::FILE_EXE, &path);
 
   // One step up to MacOS, another to Contents.
@@ -179,14 +180,14 @@ FilePath GetVersionedDirectory() {
   return path;
 }
 
-void SetOverrideVersionedDirectory(const FilePath* path) {
+void SetOverrideVersionedDirectory(const base::FilePath* path) {
   if (path != g_override_versioned_directory) {
     delete g_override_versioned_directory;
     g_override_versioned_directory = path;
   }
 }
 
-FilePath GetFrameworkBundlePath() {
+base::FilePath GetFrameworkBundlePath() {
   // It's tempting to use +[NSBundle bundleWithIdentifier:], but it's really
   // slow (about 30ms on 10.5 and 10.6), despite Apple's documentation stating
   // that it may be more efficient than +bundleForClass:.  +bundleForClass:
@@ -202,11 +203,11 @@ FilePath GetFrameworkBundlePath() {
   return GetVersionedDirectory().Append(kFrameworkName);
 }
 
-bool GetLocalLibraryDirectory(FilePath* result) {
+bool GetLocalLibraryDirectory(base::FilePath* result) {
   return base::mac::GetLocalDirectory(NSLibraryDirectory, result);
 }
 
-bool GetGlobalApplicationSupportDirectory(FilePath* result) {
+bool GetGlobalApplicationSupportDirectory(base::FilePath* result) {
   return base::mac::GetLocalDirectory(NSApplicationSupportDirectory, result);
 }
 

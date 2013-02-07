@@ -39,7 +39,7 @@ std::string GetServiceProcessAutoRunKey() {
 // Returns the name of the autotun reg value that we used to use for older
 // versions of Chrome.
 std::string GetObsoleteServiceProcessAutoRunKey() {
-  FilePath user_data_dir;
+  base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   std::string scoped_name = WideToUTF8(user_data_dir.value());
   std::replace(scoped_name.begin(), scoped_name.end(), '\\', '!');

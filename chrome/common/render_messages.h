@@ -520,7 +520,7 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_OpenAboutPlugins)
 
 // Tells the browser that there was an error loading a plug-in.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_CouldNotLoadPlugin,
-                    FilePath /* plugin_path */)
+                    base::FilePath /* plugin_path */)
 
 // Tells the browser that we blocked a plug-in because NPAPI is not supported.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_NPAPINotSupported,

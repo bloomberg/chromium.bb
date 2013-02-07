@@ -279,9 +279,9 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
   }
 
   const MockLaunchd* mock_launchd() const { return mock_launchd_.get(); }
-  const FilePath& executable_path() const { return executable_path_; }
-  const FilePath& bundle_path() const { return bundle_path_; }
-  const FilePath& GetTempDirPath() const { return temp_dir_.path(); }
+  const base::FilePath& executable_path() const { return executable_path_; }
+  const base::FilePath& bundle_path() const { return bundle_path_; }
+  const base::FilePath& GetTempDirPath() const { return temp_dir_.path(); }
 
   base::MessageLoopProxy* GetIOMessageLoopProxy() {
     return io_thread_.message_loop_proxy().get();
@@ -292,38 +292,38 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
   base::ScopedTempDir temp_dir_;
   MessageLoopForUI loop_;
   base::Thread io_thread_;
-  FilePath executable_path_, bundle_path_;
+  base::FilePath executable_path_, bundle_path_;
   scoped_ptr<MockLaunchd> mock_launchd_;
   scoped_ptr<Launchd::ScopedInstance> scoped_launchd_instance_;
   ServiceProcessState service_process_state_;
 };
 
-void DeleteFunc(const FilePath& file) {
+void DeleteFunc(const base::FilePath& file) {
   EXPECT_TRUE(file_util::Delete(file, true));
 }
 
-void MoveFunc(const FilePath& from, const FilePath& to) {
+void MoveFunc(const base::FilePath& from, const base::FilePath& to) {
   EXPECT_TRUE(file_util::Move(from, to));
 }
 
-void ChangeAttr(const FilePath& from, int mode) {
+void ChangeAttr(const base::FilePath& from, int mode) {
   EXPECT_EQ(chmod(from.value().c_str(), mode), 0);
 }
 
 class ScopedAttributesRestorer {
  public:
-  ScopedAttributesRestorer(const FilePath& path, int mode)
+  ScopedAttributesRestorer(const base::FilePath& path, int mode)
       : path_(path), mode_(mode) {
   }
   ~ScopedAttributesRestorer() {
     ChangeAttr(path_, mode_);
   }
  private:
-  FilePath path_;
+  base::FilePath path_;
   int mode_;
 };
 
-void TrashFunc(const FilePath& src) {
+void TrashFunc(const base::FilePath& src) {
   FSRef path_ref;
   FSRef new_path_ref;
   EXPECT_TRUE(base::mac::FSRefFromPath(src.value(), &path_ref));
@@ -342,7 +342,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, VerifyLaunchD) {
   // This test is designed to make sure that launchd is working.
   // http://crbug/75518
 
-  CommandLine cl(FilePath("/bin/launchctl"));
+  CommandLine cl(base::FilePath("/bin/launchctl"));
   cl.AppendArg("list");
   cl.AppendArg("com.apple.launchctl.Aqua");
 
@@ -372,7 +372,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, DeleteBundle) {
 }
 
 TEST_F(ServiceProcessStateFileManipulationTest, MoveBundle) {
-  FilePath new_loc = GetTempDirPath().AppendASCII("MoveBundle");
+  base::FilePath new_loc = GetTempDirPath().AppendASCII("MoveBundle");
   GetIOMessageLoopProxy()->PostTask(
       FROM_HERE,
       base::Bind(&MoveFunc, bundle_path(), new_loc));
@@ -382,7 +382,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, MoveBundle) {
 }
 
 TEST_F(ServiceProcessStateFileManipulationTest, MoveFile) {
-  FilePath new_loc = GetTempDirPath().AppendASCII("MoveFile");
+  base::FilePath new_loc = GetTempDirPath().AppendASCII("MoveFile");
   GetIOMessageLoopProxy()->PostTask(
       FROM_HERE,
       base::Bind(&MoveFunc, executable_path(), new_loc));
@@ -401,7 +401,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, TrashBundle) {
   ASSERT_TRUE(mock_launchd()->remove_called());
   ASSERT_TRUE(mock_launchd()->delete_called());
   std::string path(base::mac::PathFromFSRef(bundle_ref));
-  FilePath file_path(path);
+  base::FilePath file_path(path);
   ASSERT_TRUE(file_util::Delete(file_path, true));
 }
 

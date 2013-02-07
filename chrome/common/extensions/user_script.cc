@@ -33,8 +33,8 @@ bool UserScript::IsURLUserScript(const GURL& url,
       mime_type != "text/html";
 }
 
-UserScript::File::File(const FilePath& extension_root,
-                       const FilePath& relative_path,
+UserScript::File::File(const base::FilePath& extension_root,
+                       const base::FilePath& relative_path,
                        const GURL& url)
     : extension_root_(extension_root),
       relative_path_(relative_path),

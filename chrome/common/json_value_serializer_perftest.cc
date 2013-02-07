@@ -26,7 +26,7 @@ class JSONValueSerializerTests : public testing::Test {
 
     // Load test cases
     for (size_t i = 0; i < arraysize(kTestFilenames); ++i) {
-      FilePath filename;
+      base::FilePath filename;
       EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &filename));
       filename = filename.AppendASCII(kTestFilenames[i]);
 

@@ -13,13 +13,13 @@
 using content::H264Parser;
 using content::H264NALU;
 
-const FilePath::CharType* test_stream_filename =
+const base::FilePath::CharType* test_stream_filename =
     FILE_PATH_LITERAL("content/common/gpu/testdata/test-25fps.h264");
 // Number of NALUs in the stream to be parsed.
 int num_nalus = 759;
 
 TEST(H264ParserTest, StreamFileParsing) {
-  FilePath fp(test_stream_filename);
+  base::FilePath fp(test_stream_filename);
   file_util::MemoryMappedFile stream;
   CHECK(stream.Initialize(fp)) << "Couldn't open stream file: "
                                << test_stream_filename;

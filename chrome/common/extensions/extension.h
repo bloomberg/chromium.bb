@@ -121,7 +121,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // An NPAPI plugin included in the extension.
   struct PluginInfo {
-    FilePath path;  // Path to the plugin.
+    base::FilePath path;  // Path to the plugin.
     bool is_public;  // False if only this extension can load this plugin.
   };
 
@@ -179,7 +179,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     WAS_INSTALLED_BY_DEFAULT = 1 << 7,
   };
 
-  static scoped_refptr<Extension> Create(const FilePath& path,
+  static scoped_refptr<Extension> Create(const base::FilePath& path,
                                          Manifest::Location location,
                                          const base::DictionaryValue& value,
                                          int flags,
@@ -187,7 +187,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // In a few special circumstances, we want to create an Extension and give it
   // an explicit id. Most consumers should just use the other Create() method.
-  static scoped_refptr<Extension> Create(const FilePath& path,
+  static scoped_refptr<Extension> Create(const base::FilePath& path,
       Manifest::Location location,
       const base::DictionaryValue& value,
       int flags,
@@ -205,13 +205,13 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   static const int kValidHostPermissionSchemes;
 
   // The name of the manifest inside an extension.
-  static const FilePath::CharType kManifestFilename[];
+  static const base::FilePath::CharType kManifestFilename[];
 
   // The name of locale folder inside an extension.
-  static const FilePath::CharType kLocaleFolder[];
+  static const base::FilePath::CharType kLocaleFolder[];
 
   // The name of the messages file inside an extension.
-  static const FilePath::CharType kMessagesFilename[];
+  static const base::FilePath::CharType kMessagesFilename[];
 
 #if defined(OS_WIN)
   static const char kExtensionRegistryPath[];
@@ -228,10 +228,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Generate an ID for an extension in the given path.
   // Used while developing extensions, before they have a key.
-  static std::string GenerateIdForPath(const FilePath& file_name);
+  static std::string GenerateIdForPath(const base::FilePath& file_name);
 
   // Returns true if the specified file is an extension.
-  static bool IsExtension(const FilePath& file_name);
+  static bool IsExtension(const base::FilePath& file_name);
 
   // Fills the |info| dictionary with basic information about the extension.
   // |enabled| is injected for easier testing.
@@ -269,7 +269,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   ExtensionResource GetResource(const std::string& relative_path) const;
 
   // As above, but with |relative_path| following the file system's encoding.
-  ExtensionResource GetResource(const FilePath& relative_path) const;
+  ExtensionResource GetResource(const base::FilePath& relative_path) const;
 
   // |input| is expected to be the text of an rsa public or private key. It
   // tolerates the presence or absence of bracking header/footer like this:
@@ -312,7 +312,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // result. In the browser process, this will DCHECK if not called on the
   // file thread. To easily load extension images on the UI thread, see
   // ImageLoadingTracker.
-  static void DecodeIconFromPath(const FilePath& icon_path,
+  static void DecodeIconFromPath(const base::FilePath& icon_path,
                                  int icon_size,
                                  scoped_ptr<SkBitmap>* result);
 
@@ -392,7 +392,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Returns a list of paths (relative to the extension dir) for images that
   // the browser might load (like themes and page action icons).
-  std::set<FilePath> GetBrowserImages() const;
+  std::set<base::FilePath> GetBrowserImages() const;
 
   // Get an extension icon as a resource or URL.
   ExtensionResource GetIconResource(
@@ -495,7 +495,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Accessors:
 
   const Requirements& requirements() const { return requirements_; }
-  const FilePath& path() const { return path_; }
+  const base::FilePath& path() const { return path_; }
   const GURL& url() const { return extension_url_; }
   Manifest::Location location() const;
   const std::string& id() const;
@@ -608,7 +608,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // We keep a cache of images loaded from extension resources based on their
   // path and a string representation of a size that may have been used to
   // scale it (or the empty string if the image is at its original size).
-  typedef std::pair<FilePath, std::string> ImageCacheKey;
+  typedef std::pair<base::FilePath, std::string> ImageCacheKey;
   typedef std::map<ImageCacheKey, SkBitmap> ImageCache;
 
   class RuntimeData {
@@ -640,19 +640,20 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Chooses the extension ID for an extension based on a variety of criteria.
   // The chosen ID will be set in |manifest|.
   static bool InitExtensionID(extensions::Manifest* manifest,
-                              const FilePath& path,
+                              const base::FilePath& path,
                               const std::string& explicit_id,
                               int creation_flags,
                               string16* error);
 
   // Normalize the path for use by the extension. On Windows, this will make
   // sure the drive letter is uppercase.
-  static FilePath MaybeNormalizePath(const FilePath& path);
+  static base::FilePath MaybeNormalizePath(const base::FilePath& path);
 
   // Returns true if this extension id is from a trusted provider.
   static bool IsTrustedId(const std::string& id);
 
-  Extension(const FilePath& path, scoped_ptr<extensions::Manifest> manifest);
+  Extension(const base::FilePath& path,
+            scoped_ptr<extensions::Manifest> manifest);
   virtual ~Extension();
 
   // Initialize the extension from a parsed manifest.
@@ -807,7 +808,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   Requirements requirements_;
 
   // The absolute path to the directory the extension is stored in.
-  FilePath path_;
+  base::FilePath path_;
 
   // If true, a separate process will be used for the extension in incognito
   // mode.
@@ -906,7 +907,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   scoped_ptr<base::DictionaryValue> theme_display_properties_;
 
   // A file containing a list of sites for Managed Mode.
-  FilePath content_pack_site_list_;
+  base::FilePath content_pack_site_list_;
 
   // The manifest from which this extension was created.
   scoped_ptr<Manifest> manifest_;
@@ -977,13 +978,13 @@ typedef std::vector<std::string> ExtensionIdList;
 struct ExtensionInfo {
   ExtensionInfo(const base::DictionaryValue* manifest,
                 const std::string& id,
-                const FilePath& path,
+                const base::FilePath& path,
                 Manifest::Location location);
   ~ExtensionInfo();
 
   scoped_ptr<base::DictionaryValue> extension_manifest;
   std::string extension_id;
-  FilePath extension_path;
+  base::FilePath extension_path;
   Manifest::Location extension_location;
 
  private:

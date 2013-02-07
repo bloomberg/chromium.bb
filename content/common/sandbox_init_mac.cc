@@ -12,7 +12,7 @@
 
 namespace content {
 
-bool InitializeSandbox(int sandbox_type, const FilePath& allowed_dir) {
+bool InitializeSandbox(int sandbox_type, const base::FilePath& allowed_dir) {
   // Warm up APIs before turning on the sandbox.
   Sandbox::SandboxWarmup(sandbox_type);
 
@@ -24,12 +24,12 @@ bool InitializeSandbox(int sandbox_type, const FilePath& allowed_dir) {
 // false if the current process type doesn't need to be sandboxed or if the
 // sandbox was disabled from the command line.
 bool GetSandboxTypeFromCommandLine(int* sandbox_type,
-                                   FilePath* allowed_dir) {
+                                   base::FilePath* allowed_dir) {
   DCHECK(sandbox_type);
   DCHECK(allowed_dir);
 
   *sandbox_type = -1;
-  *allowed_dir = FilePath();  // Empty by default.
+  *allowed_dir = base::FilePath();  // Empty by default.
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kNoSandbox))
@@ -78,7 +78,7 @@ bool GetSandboxTypeFromCommandLine(int* sandbox_type,
 
 bool InitializeSandbox() {
   int sandbox_type = 0;
-  FilePath allowed_dir;
+  base::FilePath allowed_dir;
   if (!GetSandboxTypeFromCommandLine(&sandbox_type, &allowed_dir))
     return true;
   return InitializeSandbox(sandbox_type, allowed_dir);

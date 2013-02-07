@@ -31,7 +31,7 @@ namespace {
 scoped_refptr<Extension> LoadManifest(const std::string& dir,
                                       const std::string& test_file,
                                       int extra_flags) {
-  FilePath path;
+  base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions")
              .AppendASCII(dir)

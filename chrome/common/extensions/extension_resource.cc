@@ -12,8 +12,8 @@ ExtensionResource::ExtensionResource() : follow_symlinks_anywhere_(false) {
 }
 
 ExtensionResource::ExtensionResource(const std::string& extension_id,
-                                     const FilePath& extension_root,
-                                     const FilePath& relative_path)
+                                     const base::FilePath& extension_root,
+                                     const base::FilePath& relative_path)
     : extension_id_(extension_id),
       extension_root_(extension_root),
       relative_path_(relative_path),
@@ -26,7 +26,7 @@ void ExtensionResource::set_follow_symlinks_anywhere() {
   follow_symlinks_anywhere_ = true;
 }
 
-const FilePath& ExtensionResource::GetFilePath() const {
+const base::FilePath& ExtensionResource::GetFilePath() const {
   if (extension_root_.empty() || relative_path_.empty()) {
     DCHECK(full_resource_path_.empty());
     return full_resource_path_;
@@ -44,34 +44,34 @@ const FilePath& ExtensionResource::GetFilePath() const {
 }
 
 // static
-FilePath ExtensionResource::GetFilePath(
-    const FilePath& extension_root,
-    const FilePath& relative_path,
+base::FilePath ExtensionResource::GetFilePath(
+    const base::FilePath& extension_root,
+    const base::FilePath& relative_path,
     SymlinkPolicy symlink_policy) {
   // We need to resolve the parent references in the extension_root
   // path on its own because IsParent doesn't like parent references.
-  FilePath clean_extension_root(extension_root);
+  base::FilePath clean_extension_root(extension_root);
   if (!file_util::AbsolutePath(&clean_extension_root))
-    return FilePath();
+    return base::FilePath();
 
-  FilePath full_path = clean_extension_root.Append(relative_path);
+  base::FilePath full_path = clean_extension_root.Append(relative_path);
 
   // If we are allowing the file to be a symlink outside of the root, then the
   // path before resolving the symlink must still be within it.
   if (symlink_policy == FOLLOW_SYMLINKS_ANYWHERE) {
-    std::vector<FilePath::StringType> components;
+    std::vector<base::FilePath::StringType> components;
     relative_path.GetComponents(&components);
     int depth = 0;
 
-    for (std::vector<FilePath::StringType>::const_iterator
+    for (std::vector<base::FilePath::StringType>::const_iterator
          i = components.begin(); i != components.end(); i++) {
-      if (*i == FilePath::kParentDirectory) {
+      if (*i == base::FilePath::kParentDirectory) {
         depth--;
-      } else if (*i != FilePath::kCurrentDirectory) {
+      } else if (*i != base::FilePath::kCurrentDirectory) {
         depth++;
       }
       if (depth < 0) {
-        return FilePath();
+        return base::FilePath();
       }
     }
   }
@@ -90,17 +90,17 @@ FilePath ExtensionResource::GetFilePath(
     return full_path;
   }
 
-  return FilePath();
+  return base::FilePath();
 }
 
 // Unit-testing helpers.
-FilePath::StringType ExtensionResource::NormalizeSeperators(
-    const FilePath::StringType& path) const {
+base::FilePath::StringType ExtensionResource::NormalizeSeperators(
+    const base::FilePath::StringType& path) const {
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
-  FilePath::StringType win_path = path;
+  base::FilePath::StringType win_path = path;
   for (size_t i = 0; i < win_path.length(); i++) {
-    if (FilePath::IsSeparator(win_path[i]))
-      win_path[i] = FilePath::kSeparators[0];
+    if (base::FilePath::IsSeparator(win_path[i]))
+      win_path[i] = base::FilePath::kSeparators[0];
   }
   return win_path;
 #else
@@ -108,7 +108,8 @@ FilePath::StringType ExtensionResource::NormalizeSeperators(
 #endif  // FILE_PATH_USES_WIN_SEPARATORS
 }
 
-bool ExtensionResource::ComparePathWithDefault(const FilePath& path) const {
+bool ExtensionResource::ComparePathWithDefault(
+    const base::FilePath& path) const {
   // Make sure we have a cached value to test against...
   if (full_resource_path_.empty())
     GetFilePath();

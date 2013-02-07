@@ -31,7 +31,8 @@ REGISTER_SANDBOX_TEST_CASE(FontLoadingTestCase);
 // Load raw font data into shared memory object.
 bool FontLoadingTestCase::BeforeSandboxInit() {
   std::string font_data;
-  if (!file_util::ReadFileToString(FilePath(test_data_.c_str()), &font_data)) {
+  if (!file_util::ReadFileToString(base::FilePath(test_data_.c_str()),
+                                   &font_data)) {
     LOG(ERROR) << "Failed to read font data from file (" << test_data_ << ")";
     return false;
   }
@@ -102,7 +103,7 @@ bool FontLoadingTestCase::SandboxedTest() {
 }
 
 TEST_F(MacSandboxTest, FontLoadingTest) {
-  FilePath temp_file_path;
+  base::FilePath temp_file_path;
   FILE* temp_file = file_util::CreateAndOpenTemporaryFile(&temp_file_path);
   ASSERT_TRUE(temp_file);
   file_util::ScopedFILE temp_file_closer(temp_file);

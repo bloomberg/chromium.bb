@@ -106,11 +106,11 @@ NOINLINE void FatalStringQuoteException(const std::string& str) {
 }  // namespace
 
 // static
-NSString* Sandbox::AllowMetadataForPath(const FilePath& allowed_path) {
+NSString* Sandbox::AllowMetadataForPath(const base::FilePath& allowed_path) {
   // Collect a list of all parent directories.
-  FilePath last_path = allowed_path;
-  std::vector<FilePath> subpaths;
-  for (FilePath path = allowed_path;
+  base::FilePath last_path = allowed_path;
+  std::vector<base::FilePath> subpaths;
+  for (base::FilePath path = allowed_path;
        path.value() != last_path.value();
        path = path.DirName()) {
     subpaths.push_back(path);
@@ -119,7 +119,7 @@ NSString* Sandbox::AllowMetadataForPath(const FilePath& allowed_path) {
 
   // Iterate through all parents and allow stat() on them explicitly.
   NSString* sandbox_command = @"(allow file-read-metadata ";
-  for (std::vector<FilePath>::reverse_iterator i = subpaths.rbegin();
+  for (std::vector<base::FilePath>::reverse_iterator i = subpaths.rbegin();
        i != subpaths.rend();
        ++i) {
     std::string subdir_escaped;
@@ -311,7 +311,7 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
 
 // static
 NSString* Sandbox::BuildAllowDirectoryAccessSandboxString(
-    const FilePath& allowed_dir,
+    const base::FilePath& allowed_dir,
     SandboxVariableSubstitions* substitutions) {
   // A whitelist is used to determine which directories can be statted
   // This means that in the case of an /a/b/c/d/ directory, we may be able to
@@ -326,7 +326,7 @@ NSString* Sandbox::BuildAllowDirectoryAccessSandboxString(
   // needed so the caller doesn't need to worry about things like /var
   // being a link to /private/var (like in the paths CreateNewTempDirectory()
   // returns).
-  FilePath allowed_dir_canonical = GetCanonicalSandboxPath(allowed_dir);
+  base::FilePath allowed_dir_canonical = GetCanonicalSandboxPath(allowed_dir);
 
   NSString* sandbox_command = AllowMetadataForPath(allowed_dir_canonical);
   sandbox_command = [sandbox_command
@@ -474,7 +474,7 @@ bool Sandbox::PostProcessSandboxProfile(
 
 // static
 bool Sandbox::EnableSandbox(int sandbox_type,
-                            const FilePath& allowed_dir) {
+                            const base::FilePath& allowed_dir) {
   // Sanity - currently only SANDBOX_TYPE_UTILITY supports a directory being
   // passed in.
   if (sandbox_type < SANDBOX_TYPE_AFTER_LAST_TYPE &&
@@ -529,7 +529,8 @@ bool Sandbox::EnableSandbox(int sandbox_type,
   // (see renderer.sb for details).
   std::string home_dir = [NSHomeDirectory() fileSystemRepresentation];
 
-  FilePath home_dir_canonical = GetCanonicalSandboxPath(FilePath(home_dir));
+  base::FilePath home_dir_canonical =
+      GetCanonicalSandboxPath(base::FilePath(home_dir));
 
   substitutions["USER_HOMEDIR_AS_LITERAL"] =
       SandboxSubstring(home_dir_canonical.value(),
@@ -546,7 +547,7 @@ bool Sandbox::EnableSandbox(int sandbox_type,
   // contains LC_RPATH load commands. The components build uses those.
   // See http://crbug.com/127465
   if (base::mac::IsOSSnowLeopard()) {
-    FilePath bundle_executable = base::mac::NSStringToFilePath(
+    base::FilePath bundle_executable = base::mac::NSStringToFilePath(
         [base::mac::MainBundle() executablePath]);
     NSString* sandbox_command = AllowMetadataForPath(
         GetCanonicalSandboxPath(bundle_executable));
@@ -576,7 +577,7 @@ bool Sandbox::EnableSandbox(int sandbox_type,
 }
 
 // static
-FilePath Sandbox::GetCanonicalSandboxPath(const FilePath& path) {
+base::FilePath Sandbox::GetCanonicalSandboxPath(const base::FilePath& path) {
   int fd = HANDLE_EINTR(open(path.value().c_str(), O_RDONLY));
   if (fd < 0) {
     DPLOG(FATAL) << "GetCanonicalSandboxPath() failed for: "
@@ -585,14 +586,14 @@ FilePath Sandbox::GetCanonicalSandboxPath(const FilePath& path) {
   }
   file_util::ScopedFD file_closer(&fd);
 
-  FilePath::CharType canonical_path[MAXPATHLEN];
+  base::FilePath::CharType canonical_path[MAXPATHLEN];
   if (HANDLE_EINTR(fcntl(fd, F_GETPATH, canonical_path)) != 0) {
     DPLOG(FATAL) << "GetCanonicalSandboxPath() failed for: "
                  << path.value();
     return path;
   }
 
-  return FilePath(canonical_path);
+  return base::FilePath(canonical_path);
 }
 
 }  // namespace content

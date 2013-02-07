@@ -15,12 +15,12 @@
 
 // Sent to query MIME information.
 IPC_SYNC_MESSAGE_CONTROL1_1(MimeRegistryMsg_GetMimeTypeFromExtension,
-                            FilePath::StringType /* extension */,
+                            base::FilePath::StringType /* extension */,
                             std::string /* mime_type */)
 IPC_SYNC_MESSAGE_CONTROL1_1(MimeRegistryMsg_GetMimeTypeFromFile,
-                            FilePath /* file_path */,
+                            base::FilePath /* file_path */,
                             std::string /* mime_type */)
 IPC_SYNC_MESSAGE_CONTROL1_1(MimeRegistryMsg_GetPreferredExtensionForMimeType,
                             std::string /* mime_type */,
-                            FilePath::StringType /* extension */)
+                            base::FilePath::StringType /* extension */)
 

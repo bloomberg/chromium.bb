@@ -135,7 +135,8 @@ TEST_F(ExtensionSimpleFeatureTest, Context) {
 
   std::string error;
   scoped_refptr<const Extension> extension(Extension::Create(
-      FilePath(), Manifest::INTERNAL, manifest, Extension::NO_FLAGS, &error));
+      base::FilePath(), Manifest::INTERNAL, manifest, Extension::NO_FLAGS,
+      &error));
   EXPECT_EQ("", error);
   ASSERT_TRUE(extension.get());
 

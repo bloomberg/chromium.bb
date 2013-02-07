@@ -47,7 +47,7 @@ NSString* GetServiceProcessLaunchDLabel() {
   scoped_nsobject<NSString> name(
       base::mac::CFToNSCast(CopyServiceProcessLaunchDName()));
   NSString *label = [name stringByAppendingString:@".service_process"];
-  FilePath user_data_dir;
+  base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   std::string user_data_dir_path = user_data_dir.value();
   NSString *ns_path = base::SysUTF8ToNSString(user_data_dir_path);
@@ -79,8 +79,8 @@ class ExecFilePathWatcherCallback {
   ExecFilePathWatcherCallback() {}
   ~ExecFilePathWatcherCallback() {}
 
-  bool Init(const FilePath& path);
-  void NotifyPathChanged(const FilePath& path, bool error);
+  bool Init(const base::FilePath& path);
+  void NotifyPathChanged(const base::FilePath& path, bool error);
 
  private:
   FSRef executable_fsref_;
@@ -318,7 +318,8 @@ bool ServiceProcessState::StateData::WatchExecutable() {
     return false;
   }
 
-  FilePath executable_path = FilePath([exe_path fileSystemRepresentation]);
+  base::FilePath executable_path =
+      base::FilePath([exe_path fileSystemRepresentation]);
   scoped_ptr<ExecFilePathWatcherCallback> callback(
       new ExecFilePathWatcherCallback);
   if (!callback->Init(executable_path)) {
@@ -336,11 +337,11 @@ bool ServiceProcessState::StateData::WatchExecutable() {
   return true;
 }
 
-bool ExecFilePathWatcherCallback::Init(const FilePath& path) {
+bool ExecFilePathWatcherCallback::Init(const base::FilePath& path) {
   return base::mac::FSRefFromPath(path.value(), &executable_fsref_);
 }
 
-void ExecFilePathWatcherCallback::NotifyPathChanged(const FilePath& path,
+void ExecFilePathWatcherCallback::NotifyPathChanged(const base::FilePath& path,
                                                     bool error) {
   if (error) {
     NOTREACHED();  // TODO(darin): Do something smarter?

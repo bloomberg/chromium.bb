@@ -18,7 +18,7 @@
 namespace {
 
 DictionaryValue* LoadDefinitionFile(const std::string& name) {
-  FilePath path;
+  base::FilePath path;
   if (!PathService::Get(chrome::DIR_TEST_DATA, &path)) {
     ADD_FAILURE() << "Could not get test data dir.";
     return NULL;

@@ -27,7 +27,7 @@ class ExtensionBuilder {
   scoped_refptr<Extension> Build();
 
   // Defaults to FilePath().
-  ExtensionBuilder& SetPath(const FilePath& path);
+  ExtensionBuilder& SetPath(const base::FilePath& path);
 
   // Defaults to Manifest::LOAD.
   ExtensionBuilder& SetLocation(Manifest::Location location);
@@ -43,7 +43,7 @@ class ExtensionBuilder {
   ExtensionBuilder& SetID(const std::string& id);
 
  private:
-  FilePath path_;
+  base::FilePath path_;
   Manifest::Location location_;
   scoped_ptr<base::DictionaryValue> manifest_;
   int flags_;

@@ -38,25 +38,25 @@ namespace {
 // path for feature "NP" would be
 // ".../Chromium Helper NP.app/Contents/MacOS/Chromium Helper NP". The new
 // path is returned.
-FilePath TransformPathForFeature(const FilePath& path,
+base::FilePath TransformPathForFeature(const base::FilePath& path,
                                  const std::string& feature) {
   std::string basename = path.BaseName().value();
 
-  FilePath macos_path = path.DirName();
+  base::FilePath macos_path = path.DirName();
   const char kMacOSName[] = "MacOS";
   DCHECK_EQ(kMacOSName, macos_path.BaseName().value());
 
-  FilePath contents_path = macos_path.DirName();
+  base::FilePath contents_path = macos_path.DirName();
   const char kContentsName[] = "Contents";
   DCHECK_EQ(kContentsName, contents_path.BaseName().value());
 
-  FilePath helper_app_path = contents_path.DirName();
+  base::FilePath helper_app_path = contents_path.DirName();
   const char kAppExtension[] = ".app";
   std::string basename_app = basename;
   basename_app.append(kAppExtension);
   DCHECK_EQ(basename_app, helper_app_path.BaseName().value());
 
-  FilePath root_path = helper_app_path.DirName();
+  base::FilePath root_path = helper_app_path.DirName();
 
   std::string new_basename = basename;
   new_basename.append(1, ' ');
@@ -64,7 +64,7 @@ FilePath TransformPathForFeature(const FilePath& path,
   std::string new_basename_app = new_basename;
   new_basename_app.append(kAppExtension);
 
-  FilePath new_path = root_path.Append(new_basename_app)
+  base::FilePath new_path = root_path.Append(new_basename_app)
                                .Append(kContentsName)
                                .Append(kMacOSName)
                                .Append(new_basename);
@@ -85,8 +85,8 @@ ChildProcessHost* ChildProcessHost::Create(ChildProcessHostDelegate* delegate) {
 }
 
 // static
-FilePath ChildProcessHost::GetChildPath(int flags) {
-  FilePath child_path;
+base::FilePath ChildProcessHost::GetChildPath(int flags) {
+  base::FilePath child_path;
 
   child_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
       switches::kBrowserSubprocessPath);
@@ -98,7 +98,7 @@ FilePath ChildProcessHost::GetChildPath(int flags) {
   // Valgrind executable, which then crashes. However, it's almost safe to
   // assume that the updates won't happen while testing with Valgrind tools.
   if (child_path.empty() && flags & CHILD_ALLOW_SELF && !RunningOnValgrind())
-    child_path = FilePath(base::kProcSelfExe);
+    child_path = base::FilePath(base::kProcSelfExe);
 #endif
 
   // On most platforms, the child executable is the same as the current

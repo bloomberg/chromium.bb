@@ -81,7 +81,7 @@ bool ParamTraits<webkit_base::DataElement>::Read(
       break;
     }
     case webkit_base::DataElement::TYPE_FILE: {
-      FilePath file_path;
+      base::FilePath file_path;
       uint64 offset, length;
       base::Time expected_modification_time;
       if (!ReadParam(m, iter, &file_path))

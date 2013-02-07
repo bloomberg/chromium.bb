@@ -76,13 +76,13 @@ namespace {
 // - |profile| is the media::VideoCodecProfile set during Initialization.
 // An empty value for a numeric field means "ignore".
 #if defined(OS_MACOSX)
-const FilePath::CharType* test_video_data =
+const base::FilePath::CharType* test_video_data =
     FILE_PATH_LITERAL("test-25fps_high.h264:1280:720:250:252:50:100:4");
 #else
 // TODO(fischman): figure out how to support multiple test videos per run (needs
 // to refactor where ParseTestVideoData is called).  For now just make it easy
 // to replace which file is used by commenting/uncommenting these lines:
-const FilePath::CharType* test_video_data =
+const base::FilePath::CharType* test_video_data =
     // FILE_PATH_LITERAL("test-25fps.vp8:320:240:250:250:50:175:11");
     FILE_PATH_LITERAL("test-25fps.h264:320:240:250:258:50:175:1");
 #endif
@@ -90,15 +90,15 @@ const FilePath::CharType* test_video_data =
 // Parse |data| into its constituent parts and set the various output fields
 // accordingly.  CHECK-fails on unexpected or missing required data.
 // Unspecified optional fields are set to -1.
-void ParseTestVideoData(FilePath::StringType data,
-                        FilePath::StringType* file_name,
+void ParseTestVideoData(base::FilePath::StringType data,
+                        base::FilePath::StringType* file_name,
                         int* width, int* height,
                         int* num_frames,
                         int* num_fragments,
                         int* min_fps_render,
                         int* min_fps_no_render,
                         int* profile) {
-  std::vector<FilePath::StringType> elements;
+  std::vector<base::FilePath::StringType> elements;
   base::SplitString(data, ':', &elements);
   CHECK_GE(elements.size(), 1U) << data;
   CHECK_LE(elements.size(), 8U) << data;
@@ -694,7 +694,7 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   const int reset_after_frame_num = GetParam().e;
   const int delete_decoder_state = GetParam().f;
 
-  FilePath::StringType test_video_file;
+  base::FilePath::StringType test_video_file;
   int frame_width, frame_height;
   int num_frames, num_fragments, min_fps_render, min_fps_no_render, profile;
   ParseTestVideoData(test_video_data, &test_video_file, &frame_width,
@@ -717,8 +717,9 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
 
   // Read in the video data.
   std::string data_str;
-  CHECK(file_util::ReadFileToString(FilePath(test_video_file), &data_str))
-      << "test_video_file: " << FilePath(test_video_file).MaybeAsASCII();
+  CHECK(file_util::ReadFileToString(base::FilePath(test_video_file),
+                                    &data_str))
+      << "test_video_file: " << base::FilePath(test_video_file).MaybeAsASCII();
 
   // Initialize the rendering helper.
   base::Thread rendering_thread("GLRenderingVDAClientThread");

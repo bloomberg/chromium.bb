@@ -41,7 +41,7 @@ class ExtensionURLInfo {
 // Only one extension can be in the set with a given ID.
 class ExtensionSet {
  public:
-  typedef std::pair<FilePath, std::string> ExtensionPathAndDefaultLocale;
+  typedef std::pair<base::FilePath, std::string> ExtensionPathAndDefaultLocale;
   typedef std::map<std::string, scoped_refptr<const extensions::Extension> >
       ExtensionMap;
 

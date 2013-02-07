@@ -29,9 +29,9 @@ void ExtensionManifestTest::SetUp() {
 DictionaryValue* ExtensionManifestTest::LoadManifestFile(
     const std::string& filename,
     std::string* error) {
-  FilePath filename_path(FilePath::FromUTF8Unsafe(filename));
-  FilePath extension_path;
-  FilePath manifest_path;
+  base::FilePath filename_path(base::FilePath::FromUTF8Unsafe(filename));
+  base::FilePath extension_path;
+  base::FilePath manifest_path;
 
   if (filename_path.IsAbsolute()) {
     extension_path = filename_path.DirName();
@@ -98,7 +98,7 @@ scoped_refptr<Extension> ExtensionManifestTest::LoadExtension(
   DictionaryValue* value = manifest.GetManifest(error);
   if (!value)
     return NULL;
-  FilePath path;
+  base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions").AppendASCII("manifest_tests");
   return Extension::Create(path.DirName(), location, *value, flags, error);

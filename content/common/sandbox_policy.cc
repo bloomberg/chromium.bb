@@ -123,7 +123,7 @@ const wchar_t* const kTroublesomeGpuDlls[] = {
 bool AddDirectory(int path, const wchar_t* sub_dir, bool children,
                   sandbox::TargetPolicy::Semantics access,
                   sandbox::TargetPolicy* policy) {
-  FilePath directory;
+  base::FilePath directory;
   if (!PathService::Get(path, &directory))
     return false;
 
@@ -181,7 +181,7 @@ bool IsExpandedModuleName(HMODULE module, const wchar_t* module_name) {
   }
   if (!::GetLongPathName(path, path, arraysize(path)))
     return false;
-  FilePath fname(path);
+  base::FilePath fname(path);
   return (fname.BaseName().value() == module_name);
 }
 
@@ -341,7 +341,7 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
 
   // Add the policy for debug message only in debug
 #ifndef NDEBUG
-  FilePath app_dir;
+  base::FilePath app_dir;
   if (!PathService::Get(base::DIR_MODULE, &app_dir))
     return false;
 
@@ -352,7 +352,7 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
   if (long_path_return_value == 0 || long_path_return_value >= MAX_PATH)
     return false;
 
-  FilePath debug_message(long_path_buf);
+  base::FilePath debug_message(long_path_buf);
   debug_message = debug_message.AppendASCII("debug_message.exe");
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_PROCESS,
                            sandbox::TargetPolicy::PROCESS_MIN_EXEC,
@@ -653,7 +653,7 @@ bool InitTargetServices(sandbox::TargetServices* target_services) {
 }
 
 base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
-                                           const FilePath& exposed_dir) {
+                                           const base::FilePath& exposed_dir) {
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   ProcessType type;
   std::string type_str = cmd_line->GetSwitchValueASCII(switches::kProcessType);
@@ -810,7 +810,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     if (result != sandbox::SBOX_ALL_OK)
       return 0;
 
-    FilePath exposed_files = exposed_dir.AppendASCII("*");
+    base::FilePath exposed_files = exposed_dir.AppendASCII("*");
     result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
                              sandbox::TargetPolicy::FILES_ALLOW_ANY,
                              exposed_files.value().c_str());

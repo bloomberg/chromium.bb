@@ -156,14 +156,15 @@ LoggingDestination DetermineLogMode(const CommandLine& command_line) {
 
 #if defined(OS_CHROMEOS)
 namespace {
-FilePath SetUpSymlinkIfNeeded(const FilePath& symlink_path, bool new_log) {
+base::FilePath SetUpSymlinkIfNeeded(const base::FilePath& symlink_path,
+                                    bool new_log) {
   DCHECK(!symlink_path.empty());
 
   // If not starting a new log, then just log through the existing
   // symlink, but if the symlink doesn't exist, create it.  If
   // starting a new log, then delete the old symlink and make a new
   // one to a fresh log file.
-  FilePath target_path;
+  base::FilePath target_path;
   bool symlink_exists = file_util::PathExists(symlink_path);
   if (new_log || !symlink_exists) {
     target_path = GenerateTimestampedName(symlink_path, base::Time::Now());
@@ -184,8 +185,8 @@ FilePath SetUpSymlinkIfNeeded(const FilePath& symlink_path, bool new_log) {
   return target_path;
 }
 
-void RemoveSymlinkAndLog(const FilePath& link_path,
-                         const FilePath& target_path) {
+void RemoveSymlinkAndLog(const base::FilePath& link_path,
+                         const base::FilePath& target_path) {
   if (::unlink(link_path.value().c_str()) == -1)
     DPLOG(WARNING) << "Unable to unlink symlink " << link_path.value();
   if (::unlink(target_path.value().c_str()) == -1)
@@ -194,16 +195,16 @@ void RemoveSymlinkAndLog(const FilePath& link_path,
 
 }  // anonymous namespace
 
-FilePath GetSessionLogFile(const CommandLine& command_line) {
-  FilePath log_dir;
+base::FilePath GetSessionLogFile(const CommandLine& command_line) {
+  base::FilePath log_dir;
   std::string log_dir_str;
   scoped_ptr<base::Environment> env(base::Environment::Create());
   if (env->GetVar(env_vars::kSessionLogDir, &log_dir_str) &&
       !log_dir_str.empty()) {
-    log_dir = FilePath(log_dir_str);
+    log_dir = base::FilePath(log_dir_str);
   } else {
     PathService::Get(chrome::DIR_USER_DATA, &log_dir);
-    FilePath login_profile =
+    base::FilePath login_profile =
         command_line.GetSwitchValuePath(switches::kLoginProfile);
     log_dir = log_dir.Append(login_profile);
   }
@@ -216,13 +217,13 @@ void RedirectChromeLogging(const CommandLine& command_line) {
 
   // Redirect logs to the session log directory, if set.  Otherwise
   // defaults to the profile dir.
-  FilePath log_path = GetSessionLogFile(command_line);
+  base::FilePath log_path = GetSessionLogFile(command_line);
 
   // Creating symlink causes us to do blocking IO on UI thread.
   // Temporarily allow it until we fix http://crbug.com/61143
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   // Always force a new symlink when redirecting.
-  FilePath target_path = SetUpSymlinkIfNeeded(log_path, true);
+  base::FilePath target_path = SetUpSymlinkIfNeeded(log_path, true);
 
   logging::DcheckState dcheck_state =
       command_line.HasSwitch(switches::kEnableDCHECK) ?
@@ -252,9 +253,9 @@ void InitChromeLogging(const CommandLine& command_line,
 
   LoggingDestination logging_dest = DetermineLogMode(command_line);
   LogLockingState log_locking_state = LOCK_LOG_FILE;
-  FilePath log_path;
+  base::FilePath log_path;
 #if defined(OS_CHROMEOS)
-  FilePath target_path;
+  base::FilePath target_path;
 #endif
 
   // Don't resolve the log path unless we need to. Otherwise we leave an open
@@ -377,19 +378,19 @@ void CleanupChromeLogging() {
   chrome_logging_redirected_ = false;
 }
 
-FilePath GetLogFileName() {
+base::FilePath GetLogFileName() {
   std::string filename;
   scoped_ptr<base::Environment> env(base::Environment::Create());
   if (env->GetVar(env_vars::kLogFileName, &filename) && !filename.empty()) {
 #if defined(OS_WIN)
-    return FilePath(UTF8ToWide(filename));
+    return base::FilePath(UTF8ToWide(filename));
 #elif defined(OS_POSIX)
-    return FilePath(filename);
+    return base::FilePath(filename);
 #endif
   }
 
-  const FilePath log_filename(FILE_PATH_LITERAL("chrome_debug.log"));
-  FilePath log_path;
+  const base::FilePath log_filename(FILE_PATH_LITERAL("chrome_debug.log"));
+  base::FilePath log_path;
 
   if (PathService::Get(chrome::DIR_LOGS, &log_path)) {
     log_path = log_path.Append(log_filename);
@@ -432,8 +433,8 @@ size_t GetFatalAssertions(AssertionList* assertions) {
   return assertion_count;
 }
 
-FilePath GenerateTimestampedName(const FilePath& base_path,
-                                 base::Time timestamp) {
+base::FilePath GenerateTimestampedName(const base::FilePath& base_path,
+                                       base::Time timestamp) {
   base::Time::Exploded time_deets;
   timestamp.LocalExplode(&time_deets);
   std::string suffix = base::StringPrintf("_%02d%02d%02d-%02d%02d%02d",

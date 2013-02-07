@@ -14,7 +14,7 @@
 
 namespace app_mode {
 
-bool FindBundleById(NSString* bundle_id, FilePath* out_bundle) {
+bool FindBundleById(NSString* bundle_id, base::FilePath* out_bundle) {
   NSWorkspace* ws = [NSWorkspace sharedWorkspace];
   NSString *bundlePath = [ws absolutePathForAppBundleWithIdentifier:bundle_id];
   if (!bundlePath)
@@ -24,10 +24,10 @@ bool FindBundleById(NSString* bundle_id, FilePath* out_bundle) {
   return true;
 }
 
-bool GetChromeBundleInfo(const FilePath& chrome_bundle,
+bool GetChromeBundleInfo(const base::FilePath& chrome_bundle,
                          string16* raw_version_str,
-                         FilePath* version_path,
-                         FilePath* framework_shlib_path) {
+                         base::FilePath* version_path,
+                         base::FilePath* framework_shlib_path) {
   using base::mac::ObjCCast;
 
   NSString* cr_bundle_path = base::mac::FilePathToNSString(chrome_bundle);

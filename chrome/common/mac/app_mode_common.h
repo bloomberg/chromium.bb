@@ -76,15 +76,15 @@ struct ChromeAppModeInfo {
   char** argv;  // Required: v1.0
 
   // Versioned path to the browser which is being loaded.
-  FilePath chrome_versioned_path;  // Required: v1.0
+  base::FilePath chrome_versioned_path;  // Required: v1.0
 
   // Path to Chrome app bundle.
-  FilePath chrome_outer_bundle_path;  // Required: v1.0
+  base::FilePath chrome_outer_bundle_path;  // Required: v1.0
 
   // Information about the App Mode shortcut:
 
   // Path to the App Mode Loader application bundle that launched the process.
-  FilePath app_mode_bundle_path;  // Optional: v1.0
+  base::FilePath app_mode_bundle_path;  // Optional: v1.0
 
   // Short ID string, preferably derived from |app_mode_short_name|. Should be
   // safe for the file system.
@@ -97,10 +97,10 @@ struct ChromeAppModeInfo {
   std::string app_mode_url;  // Required: v1.0
 
   // Path to the app's user data directory.
-  FilePath user_data_dir;
+  base::FilePath user_data_dir;
 
   // Directory of the profile associated with the app.
-  FilePath profile_dir;
+  base::FilePath profile_dir;
 };
 
 }  // namespace app_mode

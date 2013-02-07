@@ -31,7 +31,7 @@ IPC_MESSAGE_CONTROL0(UtilityMsg_BatchMode_Finished)
 // Tells the utility process to load each plugin in the order specified by the
 // vector. It will respond after each load with the WebPluginInfo.
 IPC_MESSAGE_CONTROL1(UtilityMsg_LoadPlugins,
-                     std::vector<FilePath> /* plugin paths */)
+                     std::vector<base::FilePath> /* plugin paths */)
 #endif
 
 //------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ IPC_MESSAGE_CONTROL1(UtilityMsg_LoadPlugins,
 // keep the canonical list in sync.
 IPC_SYNC_MESSAGE_CONTROL2_0(UtilityHostMsg_LoadPluginFailed,
                             uint32_t /* index in the vector */,
-                            FilePath /* path of plugin */)
+                            base::FilePath /* path of plugin */)
 
 // Notifies the browser that a plugin in the vector sent by it has been loaded.
 IPC_SYNC_MESSAGE_CONTROL2_0(UtilityHostMsg_LoadedPlugin,

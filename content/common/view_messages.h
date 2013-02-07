@@ -1127,7 +1127,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_RunFileChooserResponse,
 // Provides the results of directory enumeration.
 IPC_MESSAGE_ROUTED2(ViewMsg_EnumerateDirectoryResponse,
                     int /* request_id */,
-                    std::vector<FilePath> /* files_in_directory */)
+                    std::vector<base::FilePath> /* files_in_directory */)
 
 // When a renderer sends a ViewHostMsg_Focus to the browser process,
 // the browser has the option of sending a ViewMsg_CantFocus back to
@@ -1403,8 +1403,8 @@ IPC_MESSAGE_ROUTED1(ViewMsg_GetAllSavableResourceLinksForCurrentPage,
 // which contain all resource links that have local copy.
 IPC_MESSAGE_ROUTED3(ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
                     std::vector<GURL> /* urls that have local copy */,
-                    std::vector<FilePath> /* paths of local copy */,
-                    FilePath /* local directory path */)
+                    std::vector<base::FilePath> /* paths of local copy */,
+                    base::FilePath /* local directory path */)
 
 // Tells the render side that a ViewHostMsg_LockMouse message has been
 // processed. |succeeded| indicates whether the mouse has been successfully
@@ -1881,7 +1881,7 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_GetWindowSnapshot,
 //
 // On error an empty string and null handles are returned.
 IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_OpenChannelToPepperPlugin,
-                            FilePath /* path */,
+                            base::FilePath /* path */,
                             IPC::ChannelHandle /* handle to channel */,
                             base::ProcessId /* plugin_pid */,
                             int /* plugin_child_id */)
@@ -1922,7 +1922,7 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_DidDeleteOutOfProcessPepperInstance,
 IPC_MESSAGE_CONTROL3(ViewHostMsg_OpenChannelToPpapiBroker,
                      int /* routing_id */,
                      int /* request_id */,
-                     FilePath /* path */)
+                     base::FilePath /* path */)
 
 // A renderer sends this to the browser process when it wants to access a PPAPI
 // broker. In contrast to ViewHostMsg_OpenChannelToPpapiBroker, this is called
@@ -1931,7 +1931,7 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_OpenChannelToPpapiBroker,
 IPC_MESSAGE_ROUTED3(ViewHostMsg_RequestPpapiBrokerPermission,
                     int /* request_id */,
                     GURL /* document_url */,
-                    FilePath /* plugin_path */)
+                    base::FilePath /* plugin_path */)
 
 #if defined(USE_X11)
 // A renderer sends this when it needs a browser-side widget for
@@ -1991,7 +1991,7 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_RunFileChooser,
 // ViewMsg_EnumerateDirectoryResponse message.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_EnumerateDirectory,
                     int /* request_id */,
-                    FilePath /* file_path */)
+                    base::FilePath /* file_path */)
 
 // Tells the browser to move the focus to the next (previous if reverse is
 // true) focusable element.
@@ -2032,7 +2032,7 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_AddMessageToConsole,
 // usage other than displaying it in a prompt to the user is very likely to be
 // wrong.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_CrashedPlugin,
-                    FilePath /* plugin_path */,
+                    base::FilePath /* plugin_path */,
                     base::ProcessId /* plugin_pid */)
 
 // Displays a box to confirm that the user wants to navigate away from the
@@ -2187,7 +2187,7 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_SwapCompositorFrameAck,
 // Opens a file asynchronously. The response returns a file descriptor
 // and an error code from base/platform_file.h.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_AsyncOpenFile,
-                    FilePath /* file path */,
+                    base::FilePath /* file path */,
                     int /* flags */,
                     int /* message_id */)
 
@@ -2295,7 +2295,7 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DomOperationResponse,
 // option of killing the plugin.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_PepperPluginHung,
                     int /* plugin_child_id */,
-                    FilePath /* path */,
+                    base::FilePath /* path */,
                     bool /* is_hung */)
 
 // Screen was rotated. Dispatched to the onorientationchange javascript API.

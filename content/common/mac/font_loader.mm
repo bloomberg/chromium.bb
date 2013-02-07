@@ -103,7 +103,8 @@ void FontLoader::LoadFont(const FontDescriptor& font,
     DLOG(ERROR) << "Failed to find font file for " << font_name;
     return;
   }
-  FilePath font_path = FilePath(base::mac::PathFromFSRef(font_fsref));
+  base::FilePath font_path =
+      base::FilePath(base::mac::PathFromFSRef(font_fsref));
 
   // Load file into shared memory buffer.
   int64 font_file_size_64 = -1;

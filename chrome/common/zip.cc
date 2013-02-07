@@ -23,7 +23,7 @@
 
 namespace {
 
-bool AddFileToZip(zipFile zip_file, const FilePath& src_dir) {
+bool AddFileToZip(zipFile zip_file, const base::FilePath& src_dir) {
   net::FileStream stream(NULL);
   int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
   if (stream.OpenSync(src_dir, flags) != 0) {
@@ -48,8 +48,8 @@ bool AddFileToZip(zipFile zip_file, const FilePath& src_dir) {
   return true;
 }
 
-bool AddEntryToZip(zipFile zip_file, const FilePath& path,
-                   const FilePath& root_path) {
+bool AddEntryToZip(zipFile zip_file, const base::FilePath& path,
+                   const base::FilePath& root_path) {
   std::string str_path =
       path.AsUTF8Unsafe().substr(root_path.value().length() + 1);
 #if defined(OS_WIN)
@@ -82,11 +82,11 @@ bool AddEntryToZip(zipFile zip_file, const FilePath& path,
   return success;
 }
 
-bool ExcludeNoFilesFilter(const FilePath& file_path) {
+bool ExcludeNoFilesFilter(const base::FilePath& file_path) {
   return true;
 }
 
-bool ExcludeHiddenFilesFilter(const FilePath& file_path) {
+bool ExcludeHiddenFilesFilter(const base::FilePath& file_path) {
   return file_path.BaseName().value()[0] != '.';
 }
 
@@ -94,7 +94,7 @@ bool ExcludeHiddenFilesFilter(const FilePath& file_path) {
 
 namespace zip {
 
-bool Unzip(const FilePath& src_file, const FilePath& dest_dir) {
+bool Unzip(const base::FilePath& src_file, const base::FilePath& dest_dir) {
   ZipReader reader;
   if (!reader.Open(src_file)) {
     DLOG(WARNING) << "Failed to open " << src_file.value();
@@ -123,7 +123,8 @@ bool Unzip(const FilePath& src_file, const FilePath& dest_dir) {
   return true;
 }
 
-bool ZipWithFilterCallback(const FilePath& src_dir, const FilePath& dest_file,
+bool ZipWithFilterCallback(const base::FilePath& src_dir,
+                           const base::FilePath& dest_file,
                            const FilterCallback& filter_cb) {
   DCHECK(file_util::DirectoryExists(src_dir));
 
@@ -139,7 +140,7 @@ bool ZipWithFilterCallback(const FilePath& src_dir, const FilePath& dest_file,
   file_util::FileEnumerator file_enumerator(src_dir, true /* recursive */,
       file_util::FileEnumerator::FILES |
       file_util::FileEnumerator::DIRECTORIES);
-  for (FilePath path = file_enumerator.Next(); !path.value().empty();
+  for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
     if (!filter_cb.Run(path)) {
       continue;
@@ -159,7 +160,7 @@ bool ZipWithFilterCallback(const FilePath& src_dir, const FilePath& dest_file,
   return success;
 }
 
-bool Zip(const FilePath& src_dir, const FilePath& dest_file,
+bool Zip(const base::FilePath& src_dir, const base::FilePath& dest_file,
          bool include_hidden_files) {
   if (include_hidden_files) {
     return ZipWithFilterCallback(
@@ -171,8 +172,8 @@ bool Zip(const FilePath& src_dir, const FilePath& dest_file,
 }
 
 #if defined(OS_POSIX)
-bool ZipFiles(const FilePath& src_dir,
-              const std::vector<FilePath>& src_relative_paths,
+bool ZipFiles(const base::FilePath& src_dir,
+              const std::vector<base::FilePath>& src_relative_paths,
               int dest_fd) {
   DCHECK(file_util::DirectoryExists(src_dir));
   zipFile zip_file = internal::OpenFdForZipping(dest_fd, APPEND_STATUS_CREATE);
@@ -183,9 +184,10 @@ bool ZipFiles(const FilePath& src_dir,
   }
 
   bool success = true;
-  for (std::vector<FilePath>::const_iterator iter = src_relative_paths.begin();
+  for (std::vector<base::FilePath>::const_iterator iter =
+           src_relative_paths.begin();
       iter != src_relative_paths.end(); ++iter) {
-    const FilePath& path = src_dir.Append(*iter);
+    const base::FilePath& path = src_dir.Append(*iter);
     if (!AddEntryToZip(zip_file, path, src_dir)) {
       // TODO(hshi): clean up the partial zip file when error occurs.
       success = false;

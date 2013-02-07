@@ -164,7 +164,7 @@ TEST_F(ManifestHandlerTest, FailingHandlers) {
   // Succeeds when "a" is not recognized.
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
-      FilePath(),
+      base::FilePath(),
       Manifest::INVALID_LOCATION,
       *manifest_a,
       Extension::NO_FLAGS,
@@ -178,7 +178,7 @@ TEST_F(ManifestHandlerTest, FailingHandlers) {
           "A", std::vector<std::string>(), &watcher)));
 
   extension = Extension::Create(
-      FilePath(),
+      base::FilePath(),
       Manifest::INVALID_LOCATION,
       *manifest_a,
       Extension::NO_FLAGS,

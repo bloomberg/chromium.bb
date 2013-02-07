@@ -210,7 +210,7 @@ bool LinuxSandbox::IsSingleThreaded() const {
   // Possibly racy, but it's ok because this is more of a debug check to catch
   // new threaded situations arising during development.
   int num_threads = file_util::CountFilesCreatedAfter(
-      FilePath("/proc/self/task"),
+      base::FilePath("/proc/self/task"),
       base::Time::UnixEpoch());
 
   // We pass the test if we don't know ( == 0), because the setuid sandbox

@@ -145,7 +145,7 @@ TEST(ExtensionAPI, IsPrivilegedFeatures) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
-    FilePath manifest_path;
+    base::FilePath manifest_path;
     PathService::Get(chrome::DIR_TEST_DATA, &manifest_path);
     manifest_path = manifest_path.AppendASCII("extensions")
         .AppendASCII("extension_api_unittest")
@@ -208,7 +208,7 @@ scoped_refptr<Extension> CreateExtensionWithPermissions(
 
   std::string error;
   scoped_refptr<Extension> extension(Extension::Create(
-      FilePath(), Manifest::LOAD, manifest, Extension::NO_FLAGS, &error));
+      base::FilePath(), Manifest::LOAD, manifest, Extension::NO_FLAGS, &error));
   CHECK(extension.get());
   CHECK(error.empty());
 
@@ -429,7 +429,7 @@ static void GetDictionaryFromList(const DictionaryValue* schema,
 }
 
 TEST(ExtensionAPI, TypesHaveNamespace) {
-  FilePath manifest_path;
+  base::FilePath manifest_path;
   PathService::Get(chrome::DIR_TEST_DATA, &manifest_path);
   manifest_path = manifest_path.AppendASCII("extensions")
       .AppendASCII("extension_api_unittest")

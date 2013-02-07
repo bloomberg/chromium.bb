@@ -10,40 +10,41 @@
 
 namespace chrome {
 
-void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result) {
+void GetUserCacheDirectory(const base::FilePath& profile_dir,
+                           base::FilePath* result) {
   if (!PathService::Get(base::DIR_CACHE, result))
     *result = profile_dir;
 }
 
-bool GetDefaultUserDataDirectory(FilePath* result) {
+bool GetDefaultUserDataDirectory(base::FilePath* result) {
   return PathService::Get(base::DIR_ANDROID_APP_DATA, result);
 }
 
-bool GetUserDocumentsDirectory(FilePath* result) {
+bool GetUserDocumentsDirectory(base::FilePath* result) {
   if (!GetDefaultUserDataDirectory(result))
     return false;
   *result = result->Append("Documents");
   return true;
 }
 
-bool GetUserDownloadsDirectory(FilePath* result) {
+bool GetUserDownloadsDirectory(base::FilePath* result) {
   if (!GetDefaultUserDataDirectory(result))
     return false;
   *result = result->Append("Downloads");
   return true;
 }
 
-bool GetUserMusicDirectory(FilePath* result) {
+bool GetUserMusicDirectory(base::FilePath* result) {
   NOTIMPLEMENTED();
   return false;
 }
 
-bool GetUserPicturesDirectory(FilePath* result) {
+bool GetUserPicturesDirectory(base::FilePath* result) {
   NOTIMPLEMENTED();
   return false;
 }
 
-bool GetUserVideosDirectory(FilePath* result) {
+bool GetUserVideosDirectory(base::FilePath* result) {
   NOTIMPLEMENTED();
   return false;
 }

@@ -55,7 +55,7 @@ IPC_STRUCT_TRAITS_END()
 // Tell the utility process to unpack the given extension file in its
 // directory and verify that it is valid.
 IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_UnpackExtension,
-                     FilePath /* extension_filename */,
+                     base::FilePath /* extension_filename */,
                      std::string /* extension_id */,
                      int /* Manifest::Location */,
                      int /* InitFromValue flags */)
@@ -81,7 +81,7 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_DecodeImageBase64,
 // Tell the utility process to render the given PDF into a metafile.
 IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_RenderPDFPagesToMetafile,
                      base::PlatformFile,       // PDF file
-                     FilePath,                 // Location for output metafile
+                     base::FilePath,           // Location for output metafile
                      printing::PdfRenderSettings,  // PDF render settitngs
                      std::vector<printing::PageRange>)
 
@@ -104,8 +104,8 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
 #if defined(OS_CHROMEOS)
 // Tell the utility process to create a zip file on the given list of files.
 IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_CreateZipFile,
-                     FilePath /* src_dir */,
-                     std::vector<FilePath> /* src_relative_paths */,
+                     base::FilePath /* src_dir */,
+                     std::vector<base::FilePath> /* src_relative_paths */,
                      base::FileDescriptor /* dest_fd */)
 #endif  // defined(OS_CHROMEOS)
 

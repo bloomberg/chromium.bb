@@ -27,16 +27,16 @@ const char kVideosDir[] = "Videos";
 // Generic function for GetUser{Music,Pictures,Video}Directory.
 bool GetUserMediaDirectory(const std::string& xdg_name,
                            const std::string& fallback_name,
-                           FilePath* result) {
+                           base::FilePath* result) {
 #if defined(OS_CHROMEOS)
   // No local media directories on CrOS.
   return false;
 #else
   *result = GetXDGUserDirectory(xdg_name.c_str(), fallback_name.c_str());
 
-  FilePath home = file_util::GetHomeDir();
+  base::FilePath home = file_util::GetHomeDir();
   if (*result != home) {
-    FilePath desktop;
+    base::FilePath desktop;
     if (!PathService::Get(base::DIR_USER_DESKTOP, &desktop))
       return false;
     if (*result != desktop) {
@@ -56,9 +56,9 @@ bool GetUserMediaDirectory(const std::string& xdg_name,
 // systems is we use ~/.config/chromium/ for Chromium and
 // ~/.config/google-chrome/ for official builds.
 // (This also helps us sidestep issues with other apps grabbing ~/.chromium .)
-bool GetDefaultUserDataDirectory(FilePath* result) {
+bool GetDefaultUserDataDirectory(base::FilePath* result) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  FilePath config_dir(GetXDGDirectory(env.get(),
+  base::FilePath config_dir(GetXDGDirectory(env.get(),
                                       kXdgConfigHomeEnvVar,
                                       kDotConfigDir));
 #if defined(GOOGLE_CHROME_BUILD)
@@ -69,7 +69,8 @@ bool GetDefaultUserDataDirectory(FilePath* result) {
   return true;
 }
 
-void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result) {
+void GetUserCacheDirectory(const base::FilePath& profile_dir,
+                           base::FilePath* result) {
   // See http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
   // for a spec on where cache files go.  Our rule is:
   // - if the user-data-dir in the standard place,
@@ -83,10 +84,10 @@ void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result) {
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
-  FilePath cache_dir;
+  base::FilePath cache_dir;
   if (!PathService::Get(base::DIR_CACHE, &cache_dir))
     return;
-  FilePath config_dir(GetXDGDirectory(env.get(),
+  base::FilePath config_dir(GetXDGDirectory(env.get(),
                                       kXdgConfigHomeEnvVar,
                                       kDotConfigDir));
 
@@ -96,9 +97,9 @@ void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result) {
   *result = cache_dir;
 }
 
-bool GetChromeFrameUserDataDirectory(FilePath* result) {
+bool GetChromeFrameUserDataDirectory(base::FilePath* result) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  FilePath config_dir(GetXDGDirectory(env.get(),
+  base::FilePath config_dir(GetXDGDirectory(env.get(),
                                       kXdgConfigHomeEnvVar,
                                       kDotConfigDir));
 #if defined(GOOGLE_CHROME_BUILD)
@@ -109,37 +110,37 @@ bool GetChromeFrameUserDataDirectory(FilePath* result) {
   return true;
 }
 
-bool GetUserDocumentsDirectory(FilePath* result) {
+bool GetUserDocumentsDirectory(base::FilePath* result) {
   *result = GetXDGUserDirectory("DOCUMENTS", "Documents");
   return true;
 }
 
-bool GetUserDownloadsDirectorySafe(FilePath* result) {
-  FilePath home = file_util::GetHomeDir();
+bool GetUserDownloadsDirectorySafe(base::FilePath* result) {
+  base::FilePath home = file_util::GetHomeDir();
   *result = home.Append(kDownloadsDir);
   return true;
 }
 
-bool GetUserDownloadsDirectory(FilePath* result) {
+bool GetUserDownloadsDirectory(base::FilePath* result) {
   *result = base::nix::GetXDGUserDirectory("DOWNLOAD", kDownloadsDir);
   return true;
 }
 
 // We respect the user's preferred pictures location, unless it is
 // ~ or their desktop directory, in which case we default to ~/Music.
-bool GetUserMusicDirectory(FilePath* result) {
+bool GetUserMusicDirectory(base::FilePath* result) {
   return GetUserMediaDirectory("MUSIC", kMusicDir, result);
 }
 
 // We respect the user's preferred pictures location, unless it is
 // ~ or their desktop directory, in which case we default to ~/Pictures.
-bool GetUserPicturesDirectory(FilePath* result) {
+bool GetUserPicturesDirectory(base::FilePath* result) {
   return GetUserMediaDirectory("PICTURES", kPicturesDir, result);
 }
 
 // We respect the user's preferred pictures location, unless it is
 // ~ or their desktop directory, in which case we default to ~/Videos.
-bool GetUserVideosDirectory(FilePath* result) {
+bool GetUserVideosDirectory(base::FilePath* result) {
   return GetUserMediaDirectory("VIDEOS", kVideosDir, result);
 }
 

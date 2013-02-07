@@ -40,7 +40,7 @@ public:
   }
 
   void SetupUnpacker(const std::string& crx_name) {
-    FilePath original_path;
+    base::FilePath original_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &original_path));
     original_path = original_path.AppendASCII("extensions")
         .AppendASCII("unpacker")
@@ -51,7 +51,7 @@ public:
     // a temp folder to play in.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    FilePath crx_path = temp_dir_.path().AppendASCII(crx_name);
+    base::FilePath crx_path = temp_dir_.path().AppendASCII(crx_name);
     ASSERT_TRUE(file_util::CopyFile(original_path, crx_path)) <<
         "Original path " << original_path.value() <<
         ", Crx path " << crx_path.value();
@@ -214,7 +214,8 @@ TEST_F(UnpackerTest, MAYBE_NoL10n) {
 TEST_F(UnpackerTest, MAYBE_UnzipDirectoryError) {
   const char* kExpected = "Could not create directory for unzipping: ";
   SetupUnpacker("good_package.crx");
-  FilePath path = temp_dir_.path().AppendASCII(filenames::kTempExtensionName);
+  base::FilePath path =
+      temp_dir_.path().AppendASCII(filenames::kTempExtensionName);
   ASSERT_TRUE(file_util::WriteFile(path, "foo", 3));
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(StartsWith(unpacker_->error_message(),

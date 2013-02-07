@@ -26,7 +26,7 @@ class ZipTest : public PlatformTest {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     test_dir_ = temp_dir_.path();
 
-    FilePath zip_path(test_dir_);
+    base::FilePath zip_path(test_dir_);
     zip_contents_.insert(zip_path.AppendASCII("foo.txt"));
     zip_path = zip_path.AppendASCII("foo");
     zip_contents_.insert(zip_path);
@@ -38,7 +38,7 @@ class ZipTest : public PlatformTest {
     zip_contents_.insert(zip_path.AppendASCII(".hidden"));
 
     // Include a subset of files in |zip_file_list_| to test ZipFiles().
-    zip_file_list_.push_back(FilePath(FILE_PATH_LITERAL("foo.txt")));
+    zip_file_list_.push_back(base::FilePath(FILE_PATH_LITERAL("foo.txt")));
     zip_file_list_.push_back(FilePath(FILE_PATH_LITERAL("foo/bar/quux.txt")));
     zip_file_list_.push_back(FilePath(FILE_PATH_LITERAL("foo/bar/.hidden")));
   }

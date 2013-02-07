@@ -48,8 +48,8 @@ void SetProcessTitleFromCommandLine(const char** main_argv) {
   // show up as "exe" in process listings. Read the symlink /proc/self/exe and
   // use the path it points at for our process title. Note that this is only for
   // display purposes and has no TOCTTOU security implications.
-  FilePath target;
-  FilePath self_exe(base::kProcSelfExe);
+  base::FilePath target;
+  base::FilePath self_exe(base::kProcSelfExe);
   if (file_util::ReadSymbolicLink(self_exe, &target)) {
     have_argv0 = true;
     title = target.value();
@@ -63,7 +63,7 @@ void SetProcessTitleFromCommandLine(const char** main_argv) {
     // any errors if the kernel does not support it at runtime though. When
     // available, this lets us set the short process name that shows when the
     // full command line is not being displayed in most process listings.
-    prctl(PR_SET_NAME, FilePath(title).BaseName().value().c_str());
+    prctl(PR_SET_NAME, base::FilePath(title).BaseName().value().c_str());
 #endif  // defined(PR_SET_NAME)
   }
 #endif  // defined(OS_LINUX)

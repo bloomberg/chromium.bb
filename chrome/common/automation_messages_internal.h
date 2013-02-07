@@ -220,7 +220,7 @@ IPC_MESSAGE_CONTROL1(AutomationMsg_DEPRECATED_SetFilteredInet,
 // Gets the directory that downloads will occur in for the active profile.
 IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_DownloadDirectory,
                             int /* tab_handle */,
-                            FilePath /* directory */)
+                            base::FilePath /* directory */)
 
 // Opens a new browser window.
 // TODO(sky): remove this and replace with OpenNewBrowserWindowOfType.

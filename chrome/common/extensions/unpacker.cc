@@ -40,7 +40,7 @@ namespace {
 // A limit to stop us passing dangerously large canvases to the browser.
 const int kMaxImageCanvas = 4096 * 4096;
 
-SkBitmap DecodeImage(const FilePath& path) {
+SkBitmap DecodeImage(const base::FilePath& path) {
   // Read the file from disk.
   std::string file_contents;
   if (!file_util::PathExists(path) ||
@@ -59,11 +59,12 @@ SkBitmap DecodeImage(const FilePath& path) {
   return bitmap;
 }
 
-bool PathContainsParentDirectory(const FilePath& path) {
-  const FilePath::StringType kSeparators(FilePath::kSeparators);
-  const FilePath::StringType kParentDirectory(FilePath::kParentDirectory);
-  const size_t npos = FilePath::StringType::npos;
-  const FilePath::StringType& value = path.value();
+bool PathContainsParentDirectory(const base::FilePath& path) {
+  const base::FilePath::StringType kSeparators(base::FilePath::kSeparators);
+  const base::FilePath::StringType kParentDirectory(
+      base::FilePath::kParentDirectory);
+  const size_t npos = base::FilePath::StringType::npos;
+  const base::FilePath::StringType& value = path.value();
 
   for (size_t i = 0; i < value.length(); ) {
     i = value.find(kParentDirectory, i);
@@ -83,7 +84,7 @@ bool PathContainsParentDirectory(const FilePath& path) {
 
 namespace extensions {
 
-Unpacker::Unpacker(const FilePath& extension_path,
+Unpacker::Unpacker(const base::FilePath& extension_path,
                    const std::string& extension_id,
                    Manifest::Location location,
                    int creation_flags)
@@ -97,7 +98,7 @@ Unpacker::~Unpacker() {
 }
 
 DictionaryValue* Unpacker::ReadManifest() {
-  FilePath manifest_path =
+  base::FilePath manifest_path =
       temp_install_dir_.Append(Extension::kManifestFilename);
   if (!file_util::PathExists(manifest_path)) {
     SetError(errors::kInvalidManifest);
@@ -121,7 +122,7 @@ DictionaryValue* Unpacker::ReadManifest() {
 }
 
 bool Unpacker::ReadAllMessageCatalogs(const std::string& default_locale) {
-  FilePath locales_path =
+  base::FilePath locales_path =
     temp_install_dir_.Append(Extension::kLocaleFolder);
 
   // Not all folders under _locales have to be valid locales.
@@ -131,13 +132,13 @@ bool Unpacker::ReadAllMessageCatalogs(const std::string& default_locale) {
 
   std::set<std::string> all_locales;
   extension_l10n_util::GetAllLocales(&all_locales);
-  FilePath locale_path;
+  base::FilePath locale_path;
   while (!(locale_path = locales.Next()).empty()) {
     if (extension_l10n_util::ShouldSkipValidation(locales_path, locale_path,
                                                   all_locales))
       continue;
 
-    FilePath messages_path =
+    base::FilePath messages_path =
       locale_path.Append(Extension::kMessagesFilename);
 
     if (!ReadMessageCatalog(messages_path))
@@ -195,8 +196,8 @@ bool Unpacker::Run() {
   extension->AddInstallWarnings(warnings);
 
   // Decode any images that the browser needs to display.
-  std::set<FilePath> image_paths = extension->GetBrowserImages();
-  for (std::set<FilePath>::iterator it = image_paths.begin();
+  std::set<base::FilePath> image_paths = extension->GetBrowserImages();
+  for (std::set<base::FilePath>::iterator it = image_paths.begin();
        it != image_paths.end(); ++it) {
     if (!AddDecodedImage(*it))
       return false;  // Error was already reported.
@@ -216,7 +217,7 @@ bool Unpacker::DumpImagesToFile() {
   IPC::Message pickle;  // We use a Message so we can use WriteParam.
   IPC::WriteParam(&pickle, decoded_images_);
 
-  FilePath path = extension_path_.DirName().AppendASCII(
+  base::FilePath path = extension_path_.DirName().AppendASCII(
       filenames::kDecodedImagesFilename);
   if (!file_util::WriteFile(path, static_cast<const char*>(pickle.data()),
                             pickle.size())) {
@@ -231,7 +232,7 @@ bool Unpacker::DumpMessageCatalogsToFile() {
   IPC::Message pickle;
   IPC::WriteParam(&pickle, *parsed_catalogs_.get());
 
-  FilePath path = extension_path_.DirName().AppendASCII(
+  base::FilePath path = extension_path_.DirName().AppendASCII(
       filenames::kDecodedMessageCatalogsFilename);
   if (!file_util::WriteFile(path, static_cast<const char*>(pickle.data()),
                             pickle.size())) {
@@ -243,9 +244,10 @@ bool Unpacker::DumpMessageCatalogsToFile() {
 }
 
 // static
-bool Unpacker::ReadImagesFromFile(const FilePath& extension_path,
+bool Unpacker::ReadImagesFromFile(const base::FilePath& extension_path,
                                   DecodedImages* images) {
-  FilePath path = extension_path.AppendASCII(filenames::kDecodedImagesFilename);
+  base::FilePath path =
+      extension_path.AppendASCII(filenames::kDecodedImagesFilename);
   std::string file_str;
   if (!file_util::ReadFileToString(path, &file_str))
     return false;
@@ -256,9 +258,9 @@ bool Unpacker::ReadImagesFromFile(const FilePath& extension_path,
 }
 
 // static
-bool Unpacker::ReadMessageCatalogsFromFile(const FilePath& extension_path,
+bool Unpacker::ReadMessageCatalogsFromFile(const base::FilePath& extension_path,
                                            DictionaryValue* catalogs) {
-  FilePath path = extension_path.AppendASCII(
+  base::FilePath path = extension_path.AppendASCII(
       filenames::kDecodedMessageCatalogsFilename);
   std::string file_str;
   if (!file_util::ReadFileToString(path, &file_str))
@@ -269,7 +271,7 @@ bool Unpacker::ReadMessageCatalogsFromFile(const FilePath& extension_path,
   return IPC::ReadParam(&pickle, &iter, catalogs);
 }
 
-bool Unpacker::AddDecodedImage(const FilePath& path) {
+bool Unpacker::AddDecodedImage(const base::FilePath& path) {
   // Make sure it's not referencing a file outside the extension's subdir.
   if (path.IsAbsolute() || PathContainsParentDirectory(path)) {
     SetUTF16Error(
@@ -294,7 +296,7 @@ bool Unpacker::AddDecodedImage(const FilePath& path) {
   return true;
 }
 
-bool Unpacker::ReadMessageCatalog(const FilePath& message_path) {
+bool Unpacker::ReadMessageCatalog(const base::FilePath& message_path) {
   std::string error;
   JSONFileValueSerializer serializer(message_path);
   scoped_ptr<DictionaryValue> root(
@@ -313,7 +315,7 @@ bool Unpacker::ReadMessageCatalog(const FilePath& message_path) {
     return false;
   }
 
-  FilePath relative_path;
+  base::FilePath relative_path;
   // message_path was created from temp_install_dir. This should never fail.
   if (!temp_install_dir_.AppendRelativePath(message_path, &relative_path)) {
     NOTREACHED();

@@ -27,7 +27,7 @@ namespace zip {
 // function in zip.h, but not true for user-supplied random zip files.
 ZipReader::EntryInfo::EntryInfo(const std::string& file_name_in_zip,
                                 const unz_file_info& raw_file_info)
-    : file_path_(FilePath::FromUTF8Unsafe(file_name_in_zip)),
+    : file_path_(base::FilePath::FromUTF8Unsafe(file_name_in_zip)),
       is_directory_(false) {
   original_size_ = raw_file_info.uncompressed_size;
 
@@ -77,7 +77,7 @@ ZipReader::~ZipReader() {
   Close();
 }
 
-bool ZipReader::Open(const FilePath& zip_file_path) {
+bool ZipReader::Open(const base::FilePath& zip_file_path) {
   DCHECK(!zip_file_);
 
   // Use of "Unsafe" function does not look good, but there is no way to do
@@ -168,7 +168,7 @@ bool ZipReader::OpenCurrentEntryInZip() {
   return true;
 }
 
-bool ZipReader::LocateAndOpenEntry(const FilePath& path_in_zip) {
+bool ZipReader::LocateAndOpenEntry(const base::FilePath& path_in_zip) {
   DCHECK(zip_file_);
 
   current_entry_info_.reset();
@@ -185,7 +185,7 @@ bool ZipReader::LocateAndOpenEntry(const FilePath& path_in_zip) {
 }
 
 bool ZipReader::ExtractCurrentEntryToFilePath(
-    const FilePath& output_file_path) {
+    const base::FilePath& output_file_path) {
   DCHECK(zip_file_);
 
   // If this is a directory, just create it and return.
@@ -198,7 +198,7 @@ bool ZipReader::ExtractCurrentEntryToFilePath(
 
   // We can't rely on parent directory entries being specified in the
   // zip, so we make sure they are created.
-  FilePath output_dir_path = output_file_path.DirName();
+  base::FilePath output_dir_path = output_file_path.DirName();
   if (!file_util::CreateDirectory(output_dir_path))
     return false;
 
@@ -234,10 +234,10 @@ bool ZipReader::ExtractCurrentEntryToFilePath(
 }
 
 bool ZipReader::ExtractCurrentEntryIntoDirectory(
-    const FilePath& output_directory_path) {
+    const base::FilePath& output_directory_path) {
   DCHECK(current_entry_info_.get());
 
-  FilePath output_file_path = output_directory_path.Append(
+  base::FilePath output_file_path = output_directory_path.Append(
       current_entry_info()->file_path());
   return ExtractCurrentEntryToFilePath(output_file_path);
 }

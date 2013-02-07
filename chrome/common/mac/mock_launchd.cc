@@ -28,15 +28,15 @@ static const size_t kMaxPipeNameLength =
     sizeof(throwaway_sockaddr_un->sun_path);
 
 // static
-bool MockLaunchd::MakeABundle(const FilePath& dst,
+bool MockLaunchd::MakeABundle(const base::FilePath& dst,
                               const std::string& name,
-                              FilePath* bundle_root,
-                              FilePath* executable) {
+                              base::FilePath* bundle_root,
+                              base::FilePath* executable) {
   *bundle_root = dst.Append(name + std::string(".app"));
-  FilePath contents = bundle_root->AppendASCII("Contents");
-  FilePath mac_os = contents.AppendASCII("MacOS");
+  base::FilePath contents = bundle_root->AppendASCII("Contents");
+  base::FilePath mac_os = contents.AppendASCII("MacOS");
   *executable = mac_os.Append(name);
-  FilePath info_plist = contents.Append("Info.plist");
+  base::FilePath info_plist = contents.Append("Info.plist");
 
   if (!file_util::CreateDirectory(mac_os)) {
     return false;
@@ -93,7 +93,7 @@ bool MockLaunchd::MakeABundle(const FilePath& dst,
   return bundle.get();
 }
 
-MockLaunchd::MockLaunchd(const FilePath& file, MessageLoop* loop,
+MockLaunchd::MockLaunchd(const base::FilePath& file, MessageLoop* loop,
                          bool create_socket, bool as_service)
     : file_(file),
       message_loop_(loop),
@@ -105,7 +105,7 @@ MockLaunchd::MockLaunchd(const FilePath& file, MessageLoop* loop,
       write_called_(false),
       delete_called_(false) {
   std::string pipe_suffix("_SOCKET");
-  FilePath socket_path = file_;
+  base::FilePath socket_path = file_;
   while (socket_path.value().length() + pipe_suffix.length() >
          kMaxPipeNameLength - 2) {
     socket_path = socket_path.DirName();

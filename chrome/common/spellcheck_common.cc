@@ -88,8 +88,8 @@ std::string GetSpellCheckLanguageRegion(const std::string& input_language) {
   return input_language;
 }
 
-FilePath GetVersionedFileName(const std::string& input_language,
-                              const FilePath& dict_dir) {
+base::FilePath GetVersionedFileName(const std::string& input_language,
+                                    const base::FilePath& dict_dir) {
   // The default dictionary version is 3-0. This version indicates that the bdic
   // file contains a checksum.
   static const char kDefaultVersionString[] = "-3-0";

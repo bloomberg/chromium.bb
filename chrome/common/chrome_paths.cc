@@ -28,7 +28,7 @@
 namespace {
 
 // File name of the internal Flash plugin on different platforms.
-const FilePath::CharType kInternalFlashPluginFileName[] =
+const base::FilePath::CharType kInternalFlashPluginFileName[] =
 #if defined(OS_MACOSX)
     FILE_PATH_LITERAL("Flash Player Plugin for Chrome.plugin");
 #elif defined(OS_WIN)
@@ -38,11 +38,11 @@ const FilePath::CharType kInternalFlashPluginFileName[] =
 #endif
 
 // The Pepper Flash plugins are in a directory with this name.
-const FilePath::CharType kPepperFlashBaseDirectory[] =
+const base::FilePath::CharType kPepperFlashBaseDirectory[] =
     FILE_PATH_LITERAL("PepperFlash");
 
 // File name of the internal PDF plugin on different platforms.
-const FilePath::CharType kInternalPDFPluginFileName[] =
+const base::FilePath::CharType kInternalPDFPluginFileName[] =
 #if defined(OS_WIN)
     FILE_PATH_LITERAL("pdf.dll");
 #elif defined(OS_MACOSX)
@@ -52,7 +52,7 @@ const FilePath::CharType kInternalPDFPluginFileName[] =
 #endif
 
 // File name of the internal NaCl plugin on different platforms.
-const FilePath::CharType kInternalNaClPluginFileName[] =
+const base::FilePath::CharType kInternalNaClPluginFileName[] =
 #if defined(OS_WIN)
     FILE_PATH_LITERAL("ppGoogleNaClPluginChrome.dll");
 #elif defined(OS_MACOSX)
@@ -64,19 +64,19 @@ const FilePath::CharType kInternalNaClPluginFileName[] =
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 // File name of the nacl_helper and nacl_helper_bootstrap, Linux only.
-const FilePath::CharType kInternalNaClHelperFileName[] =
+const base::FilePath::CharType kInternalNaClHelperFileName[] =
     FILE_PATH_LITERAL("nacl_helper");
-const FilePath::CharType kInternalNaClHelperBootstrapFileName[] =
+const base::FilePath::CharType kInternalNaClHelperBootstrapFileName[] =
     FILE_PATH_LITERAL("nacl_helper_bootstrap");
 #endif
 
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 
-const FilePath::CharType kO3DPluginFileName[] =
+const base::FilePath::CharType kO3DPluginFileName[] =
     FILE_PATH_LITERAL("pepper/libppo3dautoplugin.so");
 
-const FilePath::CharType kGTalkPluginFileName[] =
+const base::FilePath::CharType kGTalkPluginFileName[] =
     FILE_PATH_LITERAL("pepper/libppgoogletalk.so");
 
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -106,7 +106,7 @@ const char kDefaultAppOrderFileName[] =
 namespace chrome {
 
 // Gets the path for internal plugins.
-bool GetInternalPluginsDirectory(FilePath* result) {
+bool GetInternalPluginsDirectory(base::FilePath* result) {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // If called from Chrome, get internal plugins from a subdirectory of the
   // framework.
@@ -123,7 +123,7 @@ bool GetInternalPluginsDirectory(FilePath* result) {
   return PathService::Get(base::DIR_MODULE, result);
 }
 
-bool PathProvider(int key, FilePath* result) {
+bool PathProvider(int key, base::FilePath* result) {
   // Some keys are just aliases...
   switch (key) {
     case chrome::DIR_APP:
@@ -159,7 +159,7 @@ bool PathProvider(int key, FilePath* result) {
   // This flag can be set to true for the cases where we want to create it.
   bool create_dir = false;
 
-  FilePath cur;
+  base::FilePath cur;
   switch (key) {
     case chrome::DIR_USER_DATA:
       if (!GetDefaultUserDataDirectory(&cur)) {
@@ -207,7 +207,7 @@ bool PathProvider(int key, FilePath* result) {
     case chrome::DIR_CRASH_DUMPS:
 #if defined(OS_CHROMEOS)
       // ChromeOS uses a separate directory. See http://crosbug.com/25089
-      cur = FilePath("/var/log/chrome");
+      cur = base::FilePath("/var/log/chrome");
 #elif defined(OS_ANDROID)
       if (!base::android::GetCacheDirectory(&cur))
         return false;
@@ -398,7 +398,7 @@ bool PathProvider(int key, FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("wallpaper_thumbnails"));
       break;
     case chrome::FILE_DEFAULT_APP_ORDER:
-      cur = FilePath(FILE_PATH_LITERAL(kDefaultAppOrderFileName));
+      cur = base::FilePath(FILE_PATH_LITERAL(kDefaultAppOrderFileName));
       break;
 #endif
     // The following are only valid in the development environment, and
@@ -432,9 +432,9 @@ bool PathProvider(int key, FilePath* result) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
     case chrome::DIR_POLICY_FILES: {
 #if defined(GOOGLE_CHROME_BUILD)
-      cur = FilePath(FILE_PATH_LITERAL("/etc/opt/chrome/policies"));
+      cur = base::FilePath(FILE_PATH_LITERAL("/etc/opt/chrome/policies"));
 #else
-      cur = FilePath(FILE_PATH_LITERAL("/etc/chromium/policies"));
+      cur = base::FilePath(FILE_PATH_LITERAL("/etc/chromium/policies"));
 #endif
       break;
     }
@@ -463,7 +463,7 @@ bool PathProvider(int key, FilePath* result) {
 #endif
 #if defined(OS_LINUX)
     case chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS: {
-      cur = FilePath(FILE_PATH_LITERAL(kFilepathSinglePrefExtensions));
+      cur = base::FilePath(FILE_PATH_LITERAL(kFilepathSinglePrefExtensions));
       break;
     }
 #endif

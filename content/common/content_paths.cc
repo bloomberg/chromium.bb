@@ -10,12 +10,12 @@
 
 namespace content {
 
-bool PathProvider(int key, FilePath* result) {
+bool PathProvider(int key, base::FilePath* result) {
   switch (key) {
     case CHILD_PROCESS_EXE:
       return PathService::Get(base::FILE_EXE, result);
     case DIR_TEST_DATA: {
-      FilePath cur;
+      base::FilePath cur;
       if (!PathService::Get(base::DIR_SOURCE_ROOT, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("content"));
@@ -38,7 +38,7 @@ bool PathProvider(int key, FilePath* result) {
 #endif
     }
     case DIR_LAYOUT_TESTS: {
-      FilePath cur;
+      base::FilePath cur;
       if (!PathService::Get(DIR_TEST_DATA, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("layout_tests"));

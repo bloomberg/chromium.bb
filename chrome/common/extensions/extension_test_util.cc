@@ -26,8 +26,8 @@ scoped_refptr<Extension> CreateExtensionWithID(std::string id) {
   values.SetString(extension_manifest_keys::kName, "test");
   values.SetString(extension_manifest_keys::kVersion, "0.1");
   std::string error;
-  return Extension::Create(FilePath(), extensions::Manifest::INTERNAL, values,
-                           Extension::NO_FLAGS, id, &error);
+  return Extension::Create(base::FilePath(), extensions::Manifest::INTERNAL,
+                           values, Extension::NO_FLAGS, id, &error);
 }
 
 }  // namespace extension_test_util

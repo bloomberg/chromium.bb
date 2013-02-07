@@ -55,13 +55,14 @@ class UserScript {
   // Holds actual script file info.
   class File {
    public:
-    File(const FilePath& extension_root, const FilePath& relative_path,
+    File(const base::FilePath& extension_root,
+         const base::FilePath& relative_path,
          const GURL& url);
     File();
     ~File();
 
-    const FilePath& extension_root() const { return extension_root_; }
-    const FilePath& relative_path() const { return relative_path_; }
+    const base::FilePath& extension_root() const { return extension_root_; }
+    const base::FilePath& relative_path() const { return relative_path_; }
 
     const GURL& url() const { return url_; }
     void set_url(const GURL& url) { url_ = url; }
@@ -89,8 +90,8 @@ class UserScript {
    private:
     // Where the script file lives on the disk. We keep the path split so that
     // it can be localized at will.
-    FilePath extension_root_;
-    FilePath relative_path_;
+    base::FilePath extension_root_;
+    base::FilePath relative_path_;
 
     // The url to this scipt file.
     GURL url_;

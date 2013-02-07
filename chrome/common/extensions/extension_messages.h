@@ -167,7 +167,7 @@ struct ExtensionMsg_Loaded_Params {
 
   // The path the extension was loaded from. This is used in the renderer only
   // to generate the extension ID for extensions that are loaded unpacked.
-  FilePath path;
+  base::FilePath path;
 
   // The extension's active permissions.
   extensions::APIPermissionSet apis;

@@ -38,7 +38,8 @@ void WebFileSystemCallbackDispatcher::DidSucceed() {
 }
 
 void WebFileSystemCallbackDispatcher::DidReadMetadata(
-    const base::PlatformFileInfo& file_info, const FilePath& platform_path) {
+    const base::PlatformFileInfo& file_info,
+    const base::FilePath& platform_path) {
   WebFileInfo web_file_info;
   webkit_glue::PlatformFileInfoToWebFileInfo(file_info, &web_file_info);
   web_file_info.platformPath = webkit_base::FilePathToWebString(platform_path);

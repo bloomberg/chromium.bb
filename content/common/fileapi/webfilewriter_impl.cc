@@ -24,7 +24,8 @@ class WebFileWriterImpl::CallbackDispatcher
   virtual ~CallbackDispatcher() {
   }
 
-  virtual void DidReadMetadata(const base::PlatformFileInfo&, const FilePath&) {
+  virtual void DidReadMetadata(const base::PlatformFileInfo&,
+                               const base::FilePath&) {
     NOTREACHED();
   }
   virtual void DidReadDirectory(

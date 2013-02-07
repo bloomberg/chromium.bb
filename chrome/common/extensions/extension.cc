@@ -222,11 +222,11 @@ scoped_ptr<ActionInfo> LoadExtensionActionInfoHelper(
 
 }  // namespace
 
-const FilePath::CharType Extension::kManifestFilename[] =
+const base::FilePath::CharType Extension::kManifestFilename[] =
     FILE_PATH_LITERAL("manifest.json");
-const FilePath::CharType Extension::kLocaleFolder[] =
+const base::FilePath::CharType Extension::kLocaleFolder[] =
     FILE_PATH_LITERAL("_locales");
-const FilePath::CharType Extension::kMessagesFilename[] =
+const base::FilePath::CharType Extension::kMessagesFilename[] =
     FILE_PATH_LITERAL("messages.json");
 
 #if defined(OS_WIN)
@@ -261,7 +261,7 @@ Extension::Requirements::~Requirements() {}
 //
 
 // static
-scoped_refptr<Extension> Extension::Create(const FilePath& path,
+scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
                                            Manifest::Location location,
                                            const DictionaryValue& value,
                                            int flags,
@@ -274,7 +274,7 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
                            utf8_error);
 }
 
-scoped_refptr<Extension> Extension::Create(const FilePath& path,
+scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
                                            Manifest::Location location,
                                            const DictionaryValue& value,
                                            int flags,
@@ -329,17 +329,17 @@ bool Extension::IdIsValid(const std::string& id) {
 }
 
 // static
-std::string Extension::GenerateIdForPath(const FilePath& path) {
-  FilePath new_path = Extension::MaybeNormalizePath(path);
+std::string Extension::GenerateIdForPath(const base::FilePath& path) {
+  base::FilePath new_path = Extension::MaybeNormalizePath(path);
   std::string path_bytes =
       std::string(reinterpret_cast<const char*>(new_path.value().data()),
-                  new_path.value().size() * sizeof(FilePath::CharType));
+                  new_path.value().size() * sizeof(base::FilePath::CharType));
   std::string id;
   return GenerateId(path_bytes, &id) ? id : "";
 }
 
 // static
-bool Extension::IsExtension(const FilePath& file_name) {
+bool Extension::IsExtension(const base::FilePath& file_name) {
   return file_name.MatchesExtension(chrome::kExtensionFileExtension);
 }
 
@@ -408,9 +408,9 @@ ExtensionResource Extension::GetResource(
   if (!new_path.empty() && new_path.at(0) == '/')
     new_path.erase(0, 1);
 #if defined(OS_POSIX)
-  FilePath relative_file_path(new_path);
+  base::FilePath relative_file_path(new_path);
 #elif defined(OS_WIN)
-  FilePath relative_file_path(UTF8ToWide(new_path));
+  base::FilePath relative_file_path(UTF8ToWide(new_path));
 #endif
   ExtensionResource r(id(), path(), relative_file_path);
   if ((creation_flags() & Extension::FOLLOW_SYMLINKS_ANYWHERE)) {
@@ -420,7 +420,7 @@ ExtensionResource Extension::GetResource(
 }
 
 ExtensionResource Extension::GetResource(
-    const FilePath& relative_file_path) const {
+    const base::FilePath& relative_file_path) const {
   ExtensionResource r(id(), path(), relative_file_path);
   if ((creation_flags() & Extension::FOLLOW_SYMLINKS_ANYWHERE)) {
     r.set_follow_symlinks_anywhere();
@@ -528,7 +528,7 @@ void Extension::DecodeIcon(const Extension* extension,
 }
 
 // static
-void Extension::DecodeIconFromPath(const FilePath& icon_path,
+void Extension::DecodeIconFromPath(const base::FilePath& icon_path,
                                    int icon_size,
                                    scoped_ptr<SkBitmap>* result) {
   if (icon_path.empty())
@@ -806,15 +806,16 @@ bool Extension::ShowConfigureContextMenus() const {
   return location() != Manifest::COMPONENT;
 }
 
-std::set<FilePath> Extension::GetBrowserImages() const {
-  std::set<FilePath> image_paths;
+std::set<base::FilePath> Extension::GetBrowserImages() const {
+  std::set<base::FilePath> image_paths;
   // TODO(viettrungluu): These |FilePath::FromWStringHack(UTF8ToWide())|
   // indicate that we're doing something wrong.
 
   // Extension icons.
   for (ExtensionIconSet::IconMap::const_iterator iter = icons().map().begin();
        iter != icons().map().end(); ++iter) {
-    image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(iter->second)));
+    image_paths.insert(
+        base::FilePath::FromWStringHack(UTF8ToWide(iter->second)));
   }
 
   // Theme images.
@@ -824,7 +825,7 @@ std::set<FilePath> Extension::GetBrowserImages() const {
          it.Advance()) {
       std::string val;
       if (it.value().GetAsString(&val))
-        image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(val)));
+        image_paths.insert(base::FilePath::FromWStringHack(UTF8ToWide(val)));
     }
   }
 
@@ -833,7 +834,8 @@ std::set<FilePath> Extension::GetBrowserImages() const {
              page_action_info()->default_icon.map().begin();
          iter != page_action_info()->default_icon.map().end();
          ++iter) {
-       image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(iter->second)));
+      image_paths.insert(
+          base::FilePath::FromWStringHack(UTF8ToWide(iter->second)));
     }
   }
 
@@ -843,7 +845,8 @@ std::set<FilePath> Extension::GetBrowserImages() const {
              browser_action->default_icon.map().begin();
          iter != browser_action->default_icon.map().end();
          ++iter) {
-       image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(iter->second)));
+      image_paths.insert(
+          base::FilePath::FromWStringHack(UTF8ToWide(iter->second)));
     }
   }
 
@@ -872,7 +875,7 @@ void Extension::SetCachedImage(const ExtensionResource& source,
                                const gfx::Size& original_size) const {
   DCHECK(source.extension_root() == path());  // The resource must come from
                                               // this extension.
-  const FilePath& path = source.relative_path();
+  const base::FilePath& path = source.relative_path();
   gfx::Size actual_size(image.width(), image.height());
   std::string location;
   if (actual_size != original_size)
@@ -1268,7 +1271,7 @@ void Extension::RuntimeData::ClearTabSpecificPermissions(int tab_id) {
 
 // static
 bool Extension::InitExtensionID(extensions::Manifest* manifest,
-                                const FilePath& path,
+                                const base::FilePath& path,
                                 const std::string& explicit_id,
                                 int creation_flags,
                                 string16* error) {
@@ -1309,7 +1312,7 @@ bool Extension::InitExtensionID(extensions::Manifest* manifest,
 }
 
 // static
-FilePath Extension::MaybeNormalizePath(const FilePath& path) {
+base::FilePath Extension::MaybeNormalizePath(const base::FilePath& path) {
 #if defined(OS_WIN)
   // Normalize any drive letter to upper-case. We do this for consistency with
   // net_utils::FilePathToFileURL(), which does the same thing, to make string
@@ -1319,7 +1322,7 @@ FilePath Extension::MaybeNormalizePath(const FilePath& path) {
       path_str[1] == ':')
     path_str[0] += ('A' - 'a');
 
-  return FilePath(path_str);
+  return base::FilePath(path_str);
 #else
   return path;
 #endif
@@ -1348,13 +1351,13 @@ bool Extension::LoadManagedModeSites(
   if (!content_pack_value->HasKey(keys::kContentPackSites))
     return true;
 
-  FilePath::StringType site_list_str;
+  base::FilePath::StringType site_list_str;
   if (!content_pack_value->GetString(keys::kContentPackSites, &site_list_str)) {
     *error = ASCIIToUTF16(errors::kInvalidContentPackSites);
     return false;
   }
 
-  content_pack_site_list_ = FilePath(site_list_str);
+  content_pack_site_list_ = base::FilePath(site_list_str);
 
   return true;
 }
@@ -1372,7 +1375,7 @@ bool Extension::IsTrustedId(const std::string& id) {
   return id == std::string("nckgahadagoaajjgafhacjanaoiihapd");
 }
 
-Extension::Extension(const FilePath& path,
+Extension::Extension(const base::FilePath& path,
                      scoped_ptr<extensions::Manifest> manifest)
     : manifest_version_(0),
       incognito_split_mode_(false),
@@ -1957,7 +1960,8 @@ bool Extension::LoadPlugins(string16* error) {
     }
 #endif  // defined(OS_WIN).
     plugins_.push_back(PluginInfo());
-    plugins_.back().path = path().Append(FilePath::FromUTF8Unsafe(path_str));
+    plugins_.back().path = path().Append(
+        base::FilePath::FromUTF8Unsafe(path_str));
     plugins_.back().is_public = is_public;
   }
   return true;
@@ -2557,7 +2561,7 @@ bool Extension::LoadThemeDisplayProperties(const DictionaryValue* theme_value,
 }
 SkBitmap* Extension::GetCachedImageImpl(const ExtensionResource& source,
                                         const gfx::Size& max_size) const {
-  const FilePath& path = source.relative_path();
+  const base::FilePath& path = source.relative_path();
 
   // Look for exact size match.
   ImageCache::iterator i = image_cache_.find(
@@ -2973,7 +2977,7 @@ bool Extension::CheckConflictingFeatures(std::string* utf8_error) const {
 
 ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,
                              const std::string& id,
-                             const FilePath& path,
+                             const base::FilePath& path,
                              Manifest::Location location)
     : extension_id(id),
       extension_path(path),

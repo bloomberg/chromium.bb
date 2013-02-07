@@ -247,7 +247,7 @@ void NPObjectStub::OnSetProperty(const NPIdentifier_Param& name,
   if (IsPluginProcess()) {
     if (npobject_->_class->setProperty) {
 #if defined(OS_WIN)
-      static FilePath plugin_path =
+      static base::FilePath plugin_path =
           CommandLine::ForCurrentProcess()->GetSwitchValuePath(
               switches::kPluginPath);
       static std::wstring filename = StringToLowerASCII(

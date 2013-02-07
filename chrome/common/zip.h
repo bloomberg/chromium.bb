@@ -15,14 +15,15 @@ namespace zip {
 // of src_dir will be at the root level of the created zip. For each file in
 // src_dir, include it only if the callback |filter_cb| returns true. Otherwise
 // omit it.
-typedef base::Callback<bool(const FilePath&)> FilterCallback;
-bool ZipWithFilterCallback(const FilePath& src_dir, const FilePath& dest_file,
+typedef base::Callback<bool(const base::FilePath&)> FilterCallback;
+bool ZipWithFilterCallback(const base::FilePath& src_dir,
+                           const base::FilePath& dest_file,
                            const FilterCallback& filter_cb);
 
 // Convenience method for callers who don't need to set up the filter callback.
 // If |include_hidden_files| is true, files starting with "." are included.
 // Otherwise they are omitted.
-bool Zip(const FilePath& src_dir, const FilePath& dest_file,
+bool Zip(const base::FilePath& src_dir, const base::FilePath& dest_file,
          bool include_hidden_files);
 
 #if defined(OS_POSIX)
@@ -30,13 +31,13 @@ bool Zip(const FilePath& src_dir, const FilePath& dest_file,
 // descriptor |dest_fd|. The paths listed in |src_relative_paths| are relative
 // to the |src_dir| and will be used as the file names in the created zip file.
 // All source paths must be under |src_dir| in the file system hierarchy.
-bool ZipFiles(const FilePath& src_dir,
-              const std::vector<FilePath>& src_relative_paths,
+bool ZipFiles(const base::FilePath& src_dir,
+              const std::vector<base::FilePath>& src_relative_paths,
               int dest_fd);
 #endif  // defined(OS_POSIX)
 
 // Unzip the contents of zip_file into dest_dir.
-bool Unzip(const FilePath& zip_file, const FilePath& dest_dir);
+bool Unzip(const base::FilePath& zip_file, const base::FilePath& dest_dir);
 
 }  // namespace zip
 
