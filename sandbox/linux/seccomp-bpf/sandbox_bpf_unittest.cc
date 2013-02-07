@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <pthread.h>
+#include <sched.h>
 #include <sys/syscall.h>
 #include <sys/utsname.h>
 
@@ -986,5 +988,58 @@ BPF_DEATH_TEST(SandboxBpf, EqualityWithNegative64bitArguments,
   BPF_ASSERT(SandboxSyscall(__NR_uname, 0xFFFFFFFF00000000ll) == -1);
 }
 #endif
+
+intptr_t PthreadTrapHandler(const struct arch_seccomp_data& args, void *aux) {
+  printf("Clone() was called with unexpected arguments\n"
+         "  nr: %d\n"
+         "  0: 0x%llX\n"
+         "  1: 0x%llX\n"
+         "  2: 0x%llX\n"
+         "  3: 0x%llX\n"
+         "  4: 0x%llX\n"
+         "  5: 0x%llX\n",
+         args.nr,
+         (long long)args.args[0],  (long long)args.args[1],
+         (long long)args.args[2],  (long long)args.args[2],
+         (long long)args.args[4],  (long long)args.args[5]);
+  return -EPERM;
+}
+
+ErrorCode PthreadPolicy(int sysno, void *aux) {
+  if (!Sandbox::IsValidSyscallNumber(sysno)) {
+    // FIXME: we should really not have to do that in a trivial policy
+    return ErrorCode(ENOSYS);
+  } else if (sysno == __NR_clone) {
+    // We have seen two different valid combinations of flags. Glibc
+    // uses the more modern flags, sets the TLS from the call to clone(), and
+    // uses futexes to monitor threads. Android's C run-time library, doesn't
+    // do any of this, but it sets the obsolete (and no-op) CLONE_DETACHED.
+    return Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                         CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|
+                         CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|
+                         CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID,
+                         ErrorCode(ErrorCode::ERR_ALLOWED),
+           Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                         CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|
+                         CLONE_THREAD|CLONE_SYSVSEM|CLONE_DETACHED,
+                         ErrorCode(ErrorCode::ERR_ALLOWED),
+                         Sandbox::Trap(PthreadTrapHandler, aux)));
+  } else {
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  }
+}
+
+static void *ThreadFnc(void *arg) {
+  ++*reinterpret_cast<int *>(arg);
+  return NULL;
+}
+
+BPF_TEST(SandboxBpf, Pthread, PthreadPolicy) {
+  pthread_t thread;
+  int thread_ran = 0;
+  BPF_ASSERT(!pthread_create(&thread, NULL, ThreadFnc, &thread_ran));
+  BPF_ASSERT(!pthread_join(thread, NULL));
+  BPF_ASSERT(thread_ran);
+}
 
 } // namespace
