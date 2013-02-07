@@ -686,42 +686,6 @@ std::string GetLanguageListString(
   return language_list_str;
 }
 
-// Test Language Code synonyms.
-TEST_F(TranslateManagerTest, LanguageCodeSynonyms) {
-  // The current set of synonyms are {"nb", "no"}, {"he", "iw"}, {"jw", "jv"}.
-
-  std::vector<std::string> language_list;
-  // Add some values around ht potential synonyms.
-  language_list.push_back("fr");
-  language_list.push_back("nb");
-  language_list.push_back("en");
-  TranslateManager::SetSupportedLanguages(GetLanguageListString(language_list));
-
-  EXPECT_TRUE(TranslateManager::IsSupportedLanguage("no"));
-  EXPECT_TRUE(TranslateManager::IsSupportedLanguage("nb"));
-
-  EXPECT_FALSE(TranslateManager::IsSupportedLanguage("he"));
-  EXPECT_FALSE(TranslateManager::IsSupportedLanguage("iw"));
-  EXPECT_FALSE(TranslateManager::IsSupportedLanguage("jw"));
-  EXPECT_FALSE(TranslateManager::IsSupportedLanguage("jv"));
-
-  language_list.push_back("iw");
-  TranslateManager::SetSupportedLanguages(GetLanguageListString(language_list));
-  EXPECT_TRUE(TranslateManager::IsSupportedLanguage("he"));
-  EXPECT_TRUE(TranslateManager::IsSupportedLanguage("iw"));
-
-  language_list.clear();
-  language_list.push_back("jw");
-  TranslateManager::SetSupportedLanguages(GetLanguageListString(language_list));
-  EXPECT_TRUE(TranslateManager::IsSupportedLanguage("jw"));
-  EXPECT_TRUE(TranslateManager::IsSupportedLanguage("jv"));
-
-  EXPECT_FALSE(TranslateManager::IsSupportedLanguage("no"));
-  EXPECT_FALSE(TranslateManager::IsSupportedLanguage("nb"));
-  EXPECT_FALSE(TranslateManager::IsSupportedLanguage("he"));
-  EXPECT_FALSE(TranslateManager::IsSupportedLanguage("iw"));
-}
-
 // Tests auto-translate on page.
 TEST_F(TranslateManagerTest, AutoTranslateOnNavigate) {
   // Simulate navigating to a page and getting its language.

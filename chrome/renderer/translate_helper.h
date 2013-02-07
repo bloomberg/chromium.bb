@@ -28,6 +28,9 @@ class TranslateHelper : public content::RenderViewObserver {
   void PageCaptured(const string16& contents);
 
  protected:
+  // Convert language code to the one used in server supporting list.
+  static void ConvertLanguageCodeSynonym(std::string* code);
+
   // The following methods are protected so they can be overridden in
   // unit-tests.
   void OnTranslatePage(int page_id,

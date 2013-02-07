@@ -33,20 +33,38 @@ using WebKit::WebScriptSource;
 using WebKit::WebString;
 using WebKit::WebView;
 
+namespace {
+
 // The delay in milliseconds that we'll wait before checking to see if the
 // translate library injected in the page is ready.
-static const int kTranslateInitCheckDelayMs = 150;
+const int kTranslateInitCheckDelayMs = 150;
 
 // The maximum number of times we'll check to see if the translate library
 // injected in the page is ready.
-static const int kMaxTranslateInitCheckAttempts = 5;
+const int kMaxTranslateInitCheckAttempts = 5;
 
 // The delay we wait in milliseconds before checking whether the translation has
 // finished.
-static const int kTranslateStatusCheckDelayMs = 400;
+const int kTranslateStatusCheckDelayMs = 400;
 
 // Language name passed to the Translate element for it to detect the language.
-static const char* const kAutoDetectionLanguage = "auto";
+const char* const kAutoDetectionLanguage = "auto";
+
+// Language code synonyms. Some languages have changed codes over the years
+// and sometimes the older codes are used, so we must see them as synonyms.
+struct LanguageCodeSynonym {
+  const char* const to;  // code used in supporting list
+  const char* const from;  // synonym code
+};
+
+const LanguageCodeSynonym kLanguageCodeSynonyms[] = {
+  {"no", "nb"},
+  {"iw", "he"},
+  {"jw", "jv"},
+  {"tl", "fil"},
+};
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, public:
@@ -109,6 +127,8 @@ void TranslateHelper::PageCaptured(const string16& contents) {
   if (language.empty())
     return;
 #endif  // defined(ENABLE_LANGUAGE_DETECTION)
+
+  ConvertLanguageCodeSynonym(&language);
 
   Send(new ChromeViewHostMsg_TranslateLanguageDetermined(
       routing_id(), language, IsPageTranslatable(&document)));
@@ -174,6 +194,17 @@ std::string TranslateHelper::DetermineTextLanguage(const string16& text) {
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, protected:
 //
+// static
+void TranslateHelper::ConvertLanguageCodeSynonym(std::string* code) {
+  // Apply liner search here because number of items in the list is just four.
+  for (size_t i = 0; i < arraysize(kLanguageCodeSynonyms); ++i) {
+    if (code->compare(kLanguageCodeSynonyms[i].from) == 0) {
+      *code = std::string(kLanguageCodeSynonyms[i].to);
+      break;
+    }
+  }
+}
+
 bool TranslateHelper::IsTranslateLibAvailable() {
   bool lib_available = false;
   if (!ExecuteScriptAndGetBoolResult(
@@ -241,7 +272,6 @@ bool TranslateHelper::DontDelayTasks() {
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, private:
 //
-
 bool TranslateHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TranslateHelper, message)

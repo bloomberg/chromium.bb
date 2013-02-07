@@ -29,6 +29,10 @@ class TestTranslateHelper : public TranslateHelper {
     OnTranslatePage(page_id, translate_script, source_lang, target_lang);
   }
 
+  void ConvertLanguageCodeSynonym(std::string* code) {
+    TranslateHelper::ConvertLanguageCodeSynonym(code);
+  }
+
   MOCK_METHOD0(IsTranslateLibAvailable, bool());
   MOCK_METHOD0(IsTranslateLibReady, bool());
   MOCK_METHOD0(HasTranslationFinished, bool());
@@ -303,6 +307,27 @@ TEST_F(TranslateHelperTest, MultipleDifferentTranslations) {
   EXPECT_EQ(TranslateErrors::NONE, error);
 }
 
+// Tests that synonym language code is converted to one used in supporting list.
+TEST_F(TranslateHelperTest, LanguageCodeSynonyms) {
+  std::string language;
+
+  language = std::string("nb");
+  translate_helper_->ConvertLanguageCodeSynonym(&language);
+  EXPECT_EQ(0, language.compare("no"));
+
+  language = std::string("he");
+  translate_helper_->ConvertLanguageCodeSynonym(&language);
+  EXPECT_EQ(0, language.compare("iw"));
+
+  language = std::string("jv");
+  translate_helper_->ConvertLanguageCodeSynonym(&language);
+  EXPECT_EQ(0, language.compare("jw"));
+
+  language = std::string("fil");
+  translate_helper_->ConvertLanguageCodeSynonym(&language);
+  EXPECT_EQ(0, language.compare("tl"));
+}
+
 // Tests that we send the right translate language message for a page and that
 // we respect the "no translate" meta-tag.
 TEST_F(ChromeRenderViewTest, TranslatablePage) {
@@ -446,4 +471,3 @@ TEST_F(ChromeRenderViewTest, BackToTranslatablePage) {
   EXPECT_EQ("zh", params.a);
   render_thread_->sink().ClearMessages();
 }
-
