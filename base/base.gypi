@@ -723,7 +723,7 @@
               ['exclude', '^files/file_path_watcher_stub\\.cc$'],
               ['exclude', '^base_paths_posix\\.cc$'],
               ['exclude', '^native_library_posix\\.cc$'],
-              ['exclude', '^sys_string_conversions_posix\\.cc$'],
+              ['exclude', '^strings/sys_string_conversions_posix\\.cc$'],
             ],
           }],
           ['<(os_bsd)==1 and >(nacl_untrusted_build)==0', {
