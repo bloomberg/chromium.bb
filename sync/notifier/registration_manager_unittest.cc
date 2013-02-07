@@ -35,7 +35,7 @@ class FakeRegistrationManager : public RegistrationManager {
   }
 
  protected:
-  virtual double GetJitter() {
+  virtual double GetJitter() OVERRIDE {
     return jitter_;
   }
 
@@ -64,25 +64,27 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
 
   // invalidation::InvalidationClient implementation.
 
-  virtual void Start() {}
-  virtual void Stop() {}
-  virtual void Acknowledge(const invalidation::AckHandle& handle) {}
+  virtual void Start() OVERRIDE {}
+  virtual void Stop() OVERRIDE {}
+  virtual void Acknowledge(const invalidation::AckHandle& handle) OVERRIDE {}
 
-  virtual void Register(const invalidation::ObjectId& oid) {
+  virtual void Register(const invalidation::ObjectId& oid) OVERRIDE {
     EXPECT_FALSE(ContainsKey(registered_ids_, oid));
     registered_ids_.insert(oid);
   }
 
-  virtual void Register(const std::vector<invalidation::ObjectId>& oids) {
+  virtual void Register(
+      const std::vector<invalidation::ObjectId>& oids) OVERRIDE {
     // Unused for now.
   }
 
-  virtual void Unregister(const invalidation::ObjectId& oid) {
+  virtual void Unregister(const invalidation::ObjectId& oid) OVERRIDE {
     EXPECT_TRUE(ContainsKey(registered_ids_, oid));
     registered_ids_.erase(oid);
   }
 
-  virtual void Unregister(const std::vector<invalidation::ObjectId>& oids) {
+  virtual void Unregister(
+      const std::vector<invalidation::ObjectId>& oids) OVERRIDE {
     // Unused for now.
   }
 

@@ -2103,7 +2103,7 @@ class StressTransactionsDelegate : public base::PlatformThread::Delegate {
   const int thread_number_;
 
   // PlatformThread::Delegate methods:
-  virtual void ThreadMain() {
+  virtual void ThreadMain() OVERRIDE {
     int entry_count = 0;
     std::string path_name;
 

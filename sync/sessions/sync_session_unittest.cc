@@ -101,7 +101,7 @@ class SyncSessionTest : public testing::Test,
     FailControllerInvocationIfDisabled("OnShouldStopSyncingPermanently");
   }
   virtual void OnSyncProtocolError(
-      const sessions::SyncSessionSnapshot& snapshot) {
+      const sessions::SyncSessionSnapshot& snapshot) OVERRIDE {
     FailControllerInvocationIfDisabled("SyncProtocolError");
   }
 

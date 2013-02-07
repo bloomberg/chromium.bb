@@ -49,7 +49,7 @@ class NonBlockingInvalidator::Core
   friend class
       base::RefCountedThreadSafe<NonBlockingInvalidator::Core>;
   // Called on parent or I/O thread.
-  ~Core();
+  virtual ~Core();
 
   // The variables below should be used only on the I/O thread.
   const WeakHandle<InvalidationHandler> delegate_observer_;

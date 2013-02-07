@@ -123,7 +123,7 @@ class ShuntedHttpBridge : public HttpBridge {
               baseline_context_getter, "user agent")),
         test_(test), never_finishes_(never_finishes) { }
  protected:
-  virtual void MakeAsynchronousPost() {
+  virtual void MakeAsynchronousPost() OVERRIDE {
     ASSERT_TRUE(MessageLoop::current() == test_->GetIOThreadLoop());
     if (never_finishes_)
       return;
@@ -134,7 +134,7 @@ class ShuntedHttpBridge : public HttpBridge {
         base::Bind(&ShuntedHttpBridge::CallOnURLFetchComplete, this));
   }
  private:
-  ~ShuntedHttpBridge() {}
+  virtual ~ShuntedHttpBridge() {}
 
   void CallOnURLFetchComplete() {
     ASSERT_TRUE(MessageLoop::current() == test_->GetIOThreadLoop());

@@ -159,7 +159,7 @@ class FakeDelegate : public SyncInvalidationListener::Delegate {
     }
   }
 
-  virtual void OnInvalidatorStateChange(InvalidatorState state) {
+  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE {
     state_ = state;
   }
 

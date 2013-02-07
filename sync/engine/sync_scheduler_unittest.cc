@@ -876,14 +876,14 @@ TEST_F(SyncSchedulerTest, ConfigurationMode) {
 }
 
 class BackoffTriggersSyncSchedulerTest : public SyncSchedulerTest {
-  void SetUp() {
+  virtual void SetUp() {
     SyncSchedulerTest::SetUp();
     UseMockDelayProvider();
     EXPECT_CALL(*delay(), GetDelay(_))
         .WillRepeatedly(Return(TimeDelta::FromMilliseconds(1)));
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     StopSyncScheduler();
     SyncSchedulerTest::TearDown();
   }
