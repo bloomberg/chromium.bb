@@ -46,6 +46,14 @@ namespace {
 void StartSandboxWithPolicy(Sandbox::EvaluateSyscall syscall_policy,
                             BrokerProcess* broker_process);
 
+inline bool RunningOnASAN() {
+#if defined(ADDRESS_SANITIZER)
+  return true;
+#else
+  return false;
+#endif
+}
+
 inline bool IsChromeOS() {
 #if defined(OS_CHROMEOS)
   return true;
@@ -1282,14 +1290,19 @@ ErrorCode GpuBrokerProcessPolicy(int sysno, void*) {
 }
 
 // Allow clone for threads, crash if anything else is attempted.
+// Don't restrict on ASAN.
 ErrorCode RestrictCloneToThreads() {
   // Glibc's pthread.
-  return Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                       CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
-                       CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS |
-                       CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID,
-                       ErrorCode(ErrorCode::ERR_ALLOWED),
-                       Sandbox::Trap(ReportCloneFailure, NULL));
+  if (!RunningOnASAN()) {
+    return Sandbox::Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+        CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
+        CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS |
+        CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID,
+        ErrorCode(ErrorCode::ERR_ALLOWED),
+        Sandbox::Trap(ReportCloneFailure, NULL));
+  } else {
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  }
 }
 
 ErrorCode RestrictPrctl() {
