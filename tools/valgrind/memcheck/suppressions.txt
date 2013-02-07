@@ -3483,19 +3483,6 @@
    fun:_ZN3net13CookieMonster17CookieMonsterTask14InvokeCallbackEN4base8CallbackIFvvEEE
 }
 {
-   bug_96103
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIN3net11ProxyServerEE8allocateEjPKv
-   fun:_ZNSt12_Vector_baseIN3net11ProxyServerESaIS1_EE11_M_allocateEj
-   fun:_ZNSt12_Vector_baseIN3net11ProxyServerESaIS1_EEC2EjRKS2_
-   fun:_ZNSt6vectorIN3net11ProxyServerESaIS1_EEC1ERKS3_
-   fun:_ZN3net9ProxyListC1ERKS0_
-   fun:_ZN3net9ProxyInfoC1ERKS0_
-   fun:_ZN3net21HttpStreamFactoryImpl7Request18OnSpdySessionReadyEPNS0_3JobE13scoped_refptrINS_11SpdySessionEEb
-   fun:_ZN3net21HttpStreamFactoryImpl3Job26OnSpdySessionReadyCallbackEv
-}
-{
    bug_96365
    Memcheck:Leak
    fun:_Znw*
