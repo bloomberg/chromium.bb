@@ -40,9 +40,16 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, ChromeInternalLoadsNTP) {
   ASSERT_FALSE(empty_inner_html);
 }
 
+#if defined(OS_WIN)
+// Flaky on Windows (http://crbug.com/174819)
+#define MAYBE_LoadNTPInExistingProcess DISABLED_LoadNTPInExistingProcess
+#else
+#define MAYBE_LoadNTPInExistingProcess LoadNTPInExistingProcess
+#endif
+
 // Ensure loading a NTP with an existing SiteInstance in a reused process
 // doesn't cause us to kill the process.  See http://crbug.com/104258.
-IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, LoadNTPInExistingProcess) {
+IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, MAYBE_LoadNTPInExistingProcess) {
   // Set max renderers to 1 to force running out of processes.
   content::RenderProcessHost::SetMaxRendererProcessCount(1);
 
