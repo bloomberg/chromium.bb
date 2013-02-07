@@ -10,6 +10,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+DownloadRequestInfoBarDelegate::FakeCreateCallback*
+  DownloadRequestInfoBarDelegate::callback_ = NULL;
+
 DownloadRequestInfoBarDelegate::~DownloadRequestInfoBarDelegate() {
   if (host_)
     host_->Cancel();
@@ -19,8 +22,29 @@ DownloadRequestInfoBarDelegate::~DownloadRequestInfoBarDelegate() {
 void DownloadRequestInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host) {
-  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new DownloadRequestInfoBarDelegate(infobar_service, host)));
+  if (DownloadRequestInfoBarDelegate::callback_ &&
+      !DownloadRequestInfoBarDelegate::callback_->is_null()) {
+    DownloadRequestInfoBarDelegate::callback_->Run(infobar_service, host);
+  } else if (!infobar_service) {
+    // |web_contents| may not have a InfoBarService if it's actually a
+    // WebContents like those used for extension popups/bubbles and hosted apps
+    // etc.
+    // TODO(benjhayden): If this is an automatic download from an extension,
+    // it would be convenient for the extension author if we send a message to
+    // the extension's DevTools console (as we do for CSP) about how
+    // extensions should use chrome.downloads.download() (requires the
+    // "downloads" permission) to automatically download >1 files.
+    host->Cancel();
+  } else {
+    infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+        new DownloadRequestInfoBarDelegate(infobar_service, host)));
+  }
+}
+
+// static
+void DownloadRequestInfoBarDelegate::SetCallbackForTesting(
+    FakeCreateCallback* callback) {
+  DownloadRequestInfoBarDelegate::callback_ = callback;
 }
 
 DownloadRequestInfoBarDelegate::DownloadRequestInfoBarDelegate(

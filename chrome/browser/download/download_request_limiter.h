@@ -108,6 +108,9 @@ class DownloadRequestLimiter
     // may result in invoking Remove on DownloadRequestLimiter.
     virtual void DidGetUserGesture() OVERRIDE;
 
+    virtual void AboutToNavigateRenderView(
+        content::RenderViewHost* render_view_host) OVERRIDE;
+
     // Asks the user if they really want to allow the download.
     // See description above CanDownloadOnIOThread for details on lifetime of
     // callback.
@@ -188,16 +191,6 @@ class DownloadRequestLimiter
 
   ~DownloadRequestLimiter();
 
-  // For unit tests. If non-null this is used instead of creating a dialog.
-  class TestingDelegate {
-   public:
-    virtual bool ShouldAllowDownload() = 0;
-
-   protected:
-    virtual ~TestingDelegate() {}
-  };
-  static void SetTestingDelegate(TestingDelegate* delegate);
-
   // Gets the download state for the specified controller. If the
   // TabDownloadState does not exist and |create| is true, one is created.
   // See TabDownloadState's constructor description for details on the two
@@ -240,8 +233,6 @@ class DownloadRequestLimiter
   // the TabDownloadState is removed and deleted (by way of Remove).
   typedef std::map<content::WebContents*, TabDownloadState*> StateMap;
   StateMap state_map_;
-
-  static TestingDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadRequestLimiter);
 };

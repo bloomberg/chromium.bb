@@ -79,6 +79,32 @@ void DownloadRequestLimiter::TabDownloadState::DidGetUserGesture() {
   }
 }
 
+void DownloadRequestLimiter::TabDownloadState::AboutToNavigateRenderView(
+    content::RenderViewHost* render_view_host) {
+  switch (status_) {
+    case ALLOW_ONE_DOWNLOAD:
+    case PROMPT_BEFORE_DOWNLOAD:
+      // When the user reloads the page without responding to the infobar, they
+      // are expecting DownloadRequestLimiter to behave as if they had just
+      // initially navigated to this page. See http://crbug.com/171372
+      NotifyCallbacks(false);
+      host_->Remove(this);
+      // WARNING: We've been deleted.
+      break;
+    case DOWNLOADS_NOT_ALLOWED:
+    case ALLOW_ALL_DOWNLOADS:
+      // Don't drop this information. The user has explicitly said that they
+      // do/don't want downloads from this host.  If they accidentally Accepted
+      // or Canceled, tough luck, they don't get another chance. They can copy
+      // the URL into a new tab, which will make a new DownloadRequestLimiter.
+      // See also the initial_page_host_ logic in Observe() for
+      // NOTIFICATION_NAV_ENTRY_PENDING.
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
 void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
     WebContents* web_contents,
     const DownloadRequestLimiter::Callback& callback) {
@@ -87,27 +113,8 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
   if (is_showing_prompt())
     return;  // Already showing prompt.
 
-  if (DownloadRequestLimiter::delegate_) {
-    NotifyCallbacks(DownloadRequestLimiter::delegate_->ShouldAllowDownload());
-    return;
-  }
-
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  if (!infobar_service) {
-    // |web_contents| may not have a InfoBarService if it's actually a
-    // WebContents like those used for extension popups/bubbles and hosted apps
-    // etc.
-    // TODO(benjhayden): If this is an automatic download from an extension,
-    // it would be convenient for the extension author if we send a message to
-    // the extension's DevTools console (as we do for CSP) about how
-    // extensions should use chrome.downloads.download() (requires the
-    // "downloads" permission) to automatically download >1 files.
-    Cancel();
-    return;
-  }
-  DownloadRequestInfoBarDelegate::Create(infobar_service,
-                                         factory_.GetWeakPtr());
+  DownloadRequestInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents), factory_.GetWeakPtr());
 }
 
 void DownloadRequestLimiter::TabDownloadState::Cancel() {
@@ -232,11 +239,6 @@ void DownloadRequestLimiter::CanDownloadOnIOThread(
                  request_method, callback));
 }
 
-// static
-void DownloadRequestLimiter::SetTestingDelegate(TestingDelegate* delegate) {
-  delegate_ = delegate;
-}
-
 DownloadRequestLimiter::TabDownloadState*
 DownloadRequestLimiter::GetDownloadState(
     WebContents* web_contents,
@@ -348,7 +350,3 @@ void DownloadRequestLimiter::Remove(TabDownloadState* state) {
   state_map_.erase(state->web_contents());
   delete state;
 }
-
-// static
-DownloadRequestLimiter::TestingDelegate* DownloadRequestLimiter::delegate_ =
-    NULL;
