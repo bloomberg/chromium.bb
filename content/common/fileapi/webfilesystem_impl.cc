@@ -8,9 +8,9 @@
 #include "content/common/fileapi/file_system_dispatcher.h"
 #include "content/common/fileapi/webfilesystem_callback_dispatcher.h"
 #include "content/common/fileapi/webfilewriter_impl.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "webkit/glue/webkit_glue.h"
 
