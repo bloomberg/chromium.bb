@@ -153,14 +153,19 @@ cr.define('login', function() {
     },
 
     /**
+     * Prepares error screen to show guest signin link.
+     * @private
+     */
+    allowGuestSignin_: function(allowed) {
+      this.classList[allowed ? 'add' : 'remove']('allow-guest-signin');
+    },
+
+    /**
      * Prepares error screen to show offline login link.
      * @private
      */
     allowOfflineLogin_: function(allowed) {
-      if (allowed)
-        this.classList.add('allow-offline-login');
-      else
-        this.classList.remove('allow-offline-login');
+      this.classList[allowed ? 'add' : 'remove']('allow-offline-login');
     },
   };
 
@@ -184,6 +189,14 @@ cr.define('login', function() {
    */
   ErrorMessageScreen.showOfflineError = function() {
     $('error-message').showOfflineError_();
+  };
+
+  /**
+    * Prepares error screen to show guest signin link.
+    * @param {boolean} allowed True if signin link should be visible.
+    */
+  ErrorMessageScreen.allowGuestSignin = function(allowed) {
+    $('error-message').allowGuestSignin_(allowed);
   };
 
   /**

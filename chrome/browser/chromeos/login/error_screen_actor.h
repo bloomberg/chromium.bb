@@ -65,6 +65,7 @@ class ErrorScreenActor {
   virtual void ShowProxyError() = 0;
   virtual void ShowCaptivePortalError(const std::string& network) = 0;
   virtual void ShowOfflineError() = 0;
+  virtual void AllowGuestSignin(bool allowed) = 0;
   virtual void AllowOfflineLogin(bool allowed) = 0;
 
  protected:

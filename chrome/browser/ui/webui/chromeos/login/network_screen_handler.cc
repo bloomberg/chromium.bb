@@ -77,7 +77,8 @@ void NetworkScreenHandler::ShowError(const string16& message) {
 }
 
 void NetworkScreenHandler::ClearErrors() {
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.clearErrors");
+  if (page_is_ready())
+    web_ui()->CallJavascriptFunction("cr.ui.Oobe.clearErrors");
 }
 
 void NetworkScreenHandler::ShowConnectingStatus(

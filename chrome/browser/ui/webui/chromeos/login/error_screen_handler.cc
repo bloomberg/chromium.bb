@@ -95,6 +95,12 @@ void ErrorScreenHandler::ShowOfflineError() {
   state_ = STATE_OFFLINE_ERROR;
 }
 
+void ErrorScreenHandler::AllowGuestSignin(bool allowed) {
+  base::FundamentalValue allowed_value(allowed);
+  web_ui()->CallJavascriptFunction("login.ErrorMessageScreen.allowGuestSignin",
+                                   allowed_value);
+}
+
 void ErrorScreenHandler::AllowOfflineLogin(bool allowed) {
   base::FundamentalValue allowed_value(allowed);
   web_ui()->CallJavascriptFunction("login.ErrorMessageScreen.allowOfflineLogin",

@@ -334,6 +334,12 @@ class SigninScreenHandler
   // screen.
   bool IsSigninScreenHiddenByError() const;
 
+  // Returns true if guest signin is allowed.
+  bool IsGuestSigninAllowed() const;
+
+  // Returns true if offline login is allowed.
+  bool IsOfflineLoginAllowed() const;
+
   UIState ui_state_;
 
   // A delegate that glues this handler with backend LoginDisplay.

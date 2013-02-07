@@ -149,6 +149,13 @@ bool IsSigninScreen(const OobeUI::Screen screen) {
       screen == OobeUI::SCREEN_ACCOUNT_PICKER;
 }
 
+// Returns true if |state| is related to the sign-in screen errors.
+bool IsSigninScreenError(ErrorScreenActor::State state) {
+  return state == ErrorScreenActor::STATE_PROXY_ERROR ||
+      state == ErrorScreenActor::STATE_CAPTIVE_PORTAL_ERROR ||
+      state == ErrorScreenActor::STATE_OFFLINE_ERROR;
+}
+
 // Returns a pointer to a Network instance by service path or NULL if
 // network can not be found.
 Network* FindNetworkByPath(const std::string& service_path) {
@@ -578,17 +585,13 @@ void SigninScreenHandler::UpdateStateInternal(
       error_screen_actor_->ShowOfflineError();
     }
 
-    if (delegate_ && !delegate_->IsShowUsers() &&
-        (error_screen_actor_->state() ==
-         ErrorScreenActor::STATE_PROXY_ERROR ||
-         error_screen_actor_->state() ==
-         ErrorScreenActor::STATE_CAPTIVE_PORTAL_ERROR ||
-         error_screen_actor_->state() ==
-         ErrorScreenActor::STATE_OFFLINE_ERROR)) {
-      error_screen_actor_->AllowOfflineLogin(true);
-    } else {
-      error_screen_actor_->AllowOfflineLogin(false);
-    }
+    bool guest_signin_allowed = IsGuestSigninAllowed() &&
+        IsSigninScreenError(error_screen_actor_->state());
+    error_screen_actor_->AllowGuestSignin(guest_signin_allowed);
+
+    bool offline_login_allowed = IsOfflineLoginAllowed() &&
+        IsSigninScreenError(error_screen_actor_->state());
+    error_screen_actor_->AllowOfflineLogin(offline_login_allowed);
 
     if (GetCurrentScreen() != OobeUI::SCREEN_ERROR_MESSAGE) {
       DictionaryValue params;
@@ -1659,6 +1662,26 @@ bool SigninScreenHandler::IsGaiaLogin() const {
 bool SigninScreenHandler::IsSigninScreenHiddenByError() const {
   return (GetCurrentScreen() == OobeUI::SCREEN_ERROR_MESSAGE) &&
       (IsSigninScreen(error_screen_actor_->parent_screen()));
+}
+
+bool SigninScreenHandler::IsGuestSigninAllowed() const {
+  CrosSettings* cros_settings = CrosSettings::Get();
+  if (!cros_settings)
+    return false;
+  bool allow_guest;
+  cros_settings->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
+  return allow_guest;
+}
+
+bool SigninScreenHandler::IsOfflineLoginAllowed() const {
+  CrosSettings* cros_settings = CrosSettings::Get();
+  if (!cros_settings)
+    return false;
+
+  // Offline login is allowed only when user pods are hidden.
+  bool show_pods;
+  cros_settings->GetBoolean(kAccountsPrefShowUserNamesOnSignIn, &show_pods);
+  return !show_pods;
 }
 
 }  // namespace chromeos

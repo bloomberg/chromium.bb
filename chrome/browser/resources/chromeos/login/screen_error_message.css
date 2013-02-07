@@ -35,6 +35,7 @@ html[oobe=new] #error-message {
 .show-with-offline-message,
 .show-with-captive-portal,
 .show-with-proxy-error,
+.guest-signin,
 .offline-login {
   display: none;
 }
@@ -42,6 +43,7 @@ html[oobe=new] #error-message {
 .show-offline-message .show-with-offline-message,
 .show-captive-portal .show-with-captive-portal,
 .show-proxy-error .show-with-proxy-error,
+.allow-guest-signin .guest-signin,
 .allow-offline-login .offline-login {
   display: block;
 }
