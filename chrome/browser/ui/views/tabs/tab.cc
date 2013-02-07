@@ -950,7 +950,7 @@ void Tab::OnMouseCaptureLost() {
 }
 
 void Tab::OnMouseEntered(const ui::MouseEvent& event) {
-  hover_controller_.Show();
+  hover_controller_.Show(views::GlowHoverController::SUBTLE);
 }
 
 void Tab::OnMouseMoved(const ui::MouseEvent& event) {
