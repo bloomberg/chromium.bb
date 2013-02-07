@@ -319,6 +319,9 @@ const char kEnableGestureTapHighlight[]    = "enable-gesture-tap-highlight";
 // Enables the GPU benchmarking extension
 const char kEnableGpuBenchmarking[]         = "enable-gpu-benchmarking";
 
+// Enables the memory benchmarking extension
+const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
+
 // Force logging to be enabled.  Logging is disabled by default in release
 // builds.
 const char kEnableLogging[]                 = "enable-logging";

@@ -109,6 +109,7 @@ CONTENT_EXPORT extern const char kDisableFullScreen[];
 CONTENT_EXPORT extern const char kEnableTextServicesFramework[];
 extern const char kEnableGestureTapHighlight[];
 extern const char kEnableGpuBenchmarking[];
+extern const char kEnableMemoryBenchmarking[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kDisableMediaSource[];
 extern const char kDisableWebMediaPlayerMS[];

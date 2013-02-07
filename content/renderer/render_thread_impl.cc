@@ -63,6 +63,7 @@
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
+#include "content/renderer/memory_benchmarking_extension.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_process_impl.h"
@@ -356,6 +357,9 @@ void RenderThreadImpl::Init() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableGpuBenchmarking))
       RegisterExtension(GpuBenchmarkingExtension::Get());
+
+  if (command_line.HasSwitch(switches::kEnableMemoryBenchmarking))
+    RegisterExtension(MemoryBenchmarkingExtension::Get());
 
   context_lost_cb_.reset(new GpuVDAContextLostCallback());
 

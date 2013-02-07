@@ -153,6 +153,8 @@
     'renderer/media/video_capture_message_filter.h',
     'renderer/media/webmediaplayer_proxy_impl_android.cc',
     'renderer/media/webmediaplayer_proxy_impl_android.h',
+    'renderer/memory_benchmarking_extension.cc',
+    'renderer/memory_benchmarking_extension.h',
     'renderer/mhtml_generator.cc',
     'renderer/mhtml_generator.h',
     'renderer/mouse_lock_dispatcher.cc',
