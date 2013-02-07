@@ -161,6 +161,8 @@ bool PPAPIInstance::ProcessProperties() {
   int fd0 = open(stdin_path, O_RDONLY);
   int fd1 = open(stdout_path, O_WRONLY);
   int fd2 = open(stderr_path, O_WRONLY);
+  setvbuf(stderr, NULL, _IOLBF, 0);
+  setvbuf(stdout, NULL, _IOLBF, 0);
 
   return (fd0 == 0) && (fd1 == 1) && (fd2 == 2);
 }
