@@ -619,7 +619,8 @@ void DriveFileSyncClient::DidUploadNewFile(
     const UploadFileCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
-  if (error != google_apis::HTTP_CREATED) {
+  if (error != google_apis::HTTE_SUCCESS &&
+      error != google_apis::HTTP_CREATED) {
     DVLOG(2) << "Error on uploading new file: " << error;
     callback.Run(error, std::string(), std::string());
     return;
