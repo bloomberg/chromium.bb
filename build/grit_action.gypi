@@ -17,20 +17,25 @@
   'variables': {
     'grit_cmd': ['python', '<(DEPTH)/tools/grit/grit.py'],
     'grit_resource_ids%': '<(DEPTH)/tools/gritsettings/resource_ids',
+    # This makes it possible to add more defines in specific targets,
+    # instead of build/common.gypi .
+    'grit_additional_defines%': [],
   },
   'inputs': [
-    '<!@pymod_do_main(grit_info <@(grit_defines) --inputs <(grit_grd_file) '
-        '-f "<(grit_resource_ids)")',
+    '<!@pymod_do_main(grit_info <@(grit_defines) <@(grit_additional_defines) '
+        '--inputs <(grit_grd_file) -f "<(grit_resource_ids)")',
   ],
   'outputs': [
-    '<!@pymod_do_main(grit_info <@(grit_defines) --outputs \'<(grit_out_dir)\' '
+    '<!@pymod_do_main(grit_info <@(grit_defines) <@(grit_additional_defines) '
+        '--outputs \'<(grit_out_dir)\' '
         '<(grit_grd_file) -f "<(grit_resource_ids)")',
   ],
   'action': ['<@(grit_cmd)',
              '-i', '<(grit_grd_file)', 'build',
              '-f', '<(grit_resource_ids)',
              '-o', '<(grit_out_dir)',
-             '<@(grit_defines)' ],
+             '<@(grit_defines)',
+             '<@(grit_additional_defines)' ],
   'msvs_cygwin_shell': 0,
   'message': 'Generating resources from <(grit_grd_file)',
 }
