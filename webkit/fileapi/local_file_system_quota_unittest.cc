@@ -16,9 +16,9 @@
 #include "base/platform_file.h"
 #include "base/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/async_file_test_helper.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/file_util_helper.h"
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/quota/quota_manager.h"
@@ -58,9 +58,6 @@ class LocalFileSystemQuotaTest
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  void OnGetUsageAndQuota(
-      quota::QuotaStatusCode status, int64 usage, int64 quota);
-
  protected:
   FileSystemFileUtil* file_util() {
     return test_helper_.file_util();
@@ -93,27 +90,23 @@ class LocalFileSystemQuotaTest
   }
 
   void GetUsageAndQuotaFromQuotaManager() {
-    quota_manager_->GetUsageAndQuota(
-        test_helper_.origin(), test_helper_.storage_type(),
-        base::Bind(&LocalFileSystemQuotaTest::OnGetUsageAndQuota,
-                   weak_factory_.GetWeakPtr()));
+    quota_status_ = AsyncFileTestHelper::GetUsageAndQuota(
+            quota_manager_, test_helper_.origin(), test_helper_.type(),
+            &usage_, &quota_);
     MessageLoop::current()->RunUntilIdle();
   }
 
   bool FileExists(const base::FilePath& virtual_path) {
     FileSystemURL url = test_helper_.CreateURL(virtual_path);
-    base::PlatformFileInfo file_info;
-    base::FilePath platform_path;
-    scoped_ptr<FileSystemOperationContext> context(NewContext());
-    base::PlatformFileError error = file_util()->GetFileInfo(
-        context.get(), url, &file_info, &platform_path);
-    return error == base::PLATFORM_FILE_OK;
+    return AsyncFileTestHelper::FileExists(
+        test_helper_.file_system_context(), url,
+        AsyncFileTestHelper::kDontCheckSize);
   }
 
   bool DirectoryExists(const base::FilePath& virtual_path) {
-    FileSystemURL path = test_helper_.CreateURL(virtual_path);
-    scoped_ptr<FileSystemOperationContext> context(NewContext());
-    return FileUtilHelper::DirectoryExists(context.get(), file_util(), path);
+    FileSystemURL url = test_helper_.CreateURL(virtual_path);
+    return AsyncFileTestHelper::DirectoryExists(
+        test_helper_.file_system_context(), url);
   }
 
   base::FilePath CreateUniqueFileInDir(const base::FilePath& virtual_dir_path) {
@@ -208,13 +201,6 @@ void LocalFileSystemQuotaTest::TearDown() {
 
 LocalFileSystemOperation* LocalFileSystemQuotaTest::operation() {
   return test_helper_.NewOperation();
-}
-
-void LocalFileSystemQuotaTest::OnGetUsageAndQuota(
-    quota::QuotaStatusCode status, int64 usage, int64 quota) {
-  quota_status_ = status;
-  usage_ = usage;
-  quota_ = quota;
 }
 
 void LocalFileSystemQuotaTest::PrepareFileSet(const base::FilePath& virtual_path) {

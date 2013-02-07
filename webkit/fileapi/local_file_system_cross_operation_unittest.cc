@@ -11,15 +11,15 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/async_file_test_helper.h"
 #include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/test_file_set.h"
 #include "webkit/quota/mock_quota_manager.h"
@@ -28,60 +28,7 @@
 
 namespace fileapi {
 
-namespace {
-
-const int64 kDontCheckSize = -1;
 typedef FileSystemOperation::FileEntryList FileEntryList;
-
-void AssignAndQuit(base::RunLoop* run_loop,
-                   base::PlatformFileError* result_out,
-                   base::PlatformFileError result) {
-  *result_out = result;
-  run_loop->Quit();
-}
-
-base::Callback<void(base::PlatformFileError)>
-AssignAndQuitCallback(base::RunLoop* run_loop,
-                      base::PlatformFileError* result) {
-  return base::Bind(&AssignAndQuit, run_loop, base::Unretained(result));
-}
-
-void GetMetadataCallback(base::RunLoop* run_loop,
-                         base::PlatformFileError* result_out,
-                         base::PlatformFileInfo* file_info_out,
-                         base::PlatformFileError result,
-                         const base::PlatformFileInfo& file_info,
-                         const base::FilePath& /* platform_path */) {
-  *result_out = result;
-  *file_info_out = file_info;
-  run_loop->Quit();
-}
-
-void ReadDirectoryCallback(base::RunLoop* run_loop,
-                           base::PlatformFileError* result_out,
-                           FileEntryList* entries_out,
-                           base::PlatformFileError result,
-                           const FileEntryList& entries,
-                           bool has_more) {
-  *result_out = result;
-  *entries_out = entries;
-  if (result != base::PLATFORM_FILE_OK || !has_more)
-    run_loop->Quit();
-}
-
-void DidGetUsageAndQuota(quota::QuotaStatusCode* status_out,
-                         int64* usage_out,
-                         int64* quota_out,
-                         quota::QuotaStatusCode status,
-                         int64 usage,
-                         int64 quota) {
-  if (status_out)
-    *status_out = status;
-  if (usage_out)
-    *usage_out = usage;
-  if (quota_out)
-    *quota_out = quota;
-}
 
 class CrossOperationTestHelper {
  public:
@@ -165,26 +112,12 @@ class CrossOperationTestHelper {
 
   base::PlatformFileError Copy(const FileSystemURL& src,
                                const FileSystemURL& dest) {
-    FileSystemOperation* operation =
-        file_system_context_->CreateFileSystemOperation(dest, NULL);
-    EXPECT_TRUE(operation != NULL);
-    base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
-    base::RunLoop run_loop;
-    operation->Copy(src, dest, AssignAndQuitCallback(&run_loop, &result));
-    run_loop.Run();
-    return result;
+    return AsyncFileTestHelper::Copy(file_system_context_, src, dest);
   }
 
   base::PlatformFileError Move(const FileSystemURL& src,
                                const FileSystemURL& dest) {
-    FileSystemOperation* operation =
-        file_system_context_->CreateFileSystemOperation(dest, NULL);
-    EXPECT_TRUE(operation != NULL);
-    base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
-    base::RunLoop run_loop;
-    operation->Move(src, dest, AssignAndQuitCallback(&run_loop, &result));
-    run_loop.Run();
-    return result;
+    return AsyncFileTestHelper::Move(file_system_context_, src, dest);
   }
 
   base::PlatformFileError SetUpTestCaseFiles(
@@ -243,101 +176,41 @@ class CrossOperationTestHelper {
 
   base::PlatformFileError ReadDirectory(const FileSystemURL& url,
                                         FileEntryList* entries) {
-    entries->clear();
-    base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
-    FileSystemOperation* operation =
-        file_system_context_->CreateFileSystemOperation(url, NULL);
-    EXPECT_TRUE(operation != NULL);
-    base::RunLoop run_loop;
-    operation->ReadDirectory(
-        url, base::Bind(&ReadDirectoryCallback, &run_loop, &result, entries));
-    run_loop.Run();
-    return result;
+    return AsyncFileTestHelper::ReadDirectory(
+        file_system_context_, url, entries);
   }
 
   base::PlatformFileError CreateDirectory(const FileSystemURL& url) {
-    FileSystemOperation* operation =
-        file_system_context_->CreateFileSystemOperation(url, NULL);
-    EXPECT_TRUE(operation != NULL);
-    base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
-    base::RunLoop run_loop;
-    operation->CreateDirectory(url,
-                               false /* exclusive */,
-                               false /* recursive */,
-                               AssignAndQuitCallback(&run_loop, &result));
-    run_loop.Run();
-    return result;
+    return AsyncFileTestHelper::CreateDirectory(
+        file_system_context_, url);
   }
 
   base::PlatformFileError CreateFile(const FileSystemURL& url, size_t size) {
-    base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
-    {
-      FileSystemOperation* operation =
-          file_system_context_->CreateFileSystemOperation(url, NULL);
-      EXPECT_TRUE(operation != NULL);
-      base::RunLoop run_loop;
-      operation->CreateFile(url, false /* exclusive */,
-                            AssignAndQuitCallback(&run_loop, &result));
-      run_loop.Run();
-    }
+    base::PlatformFileError result =
+        AsyncFileTestHelper::CreateFile(file_system_context_, url);
     if (result != base::PLATFORM_FILE_OK)
       return result;
-
-    {
-      FileSystemOperation* operation =
-          file_system_context_->CreateFileSystemOperation(url, NULL);
-      EXPECT_TRUE(operation != NULL);
-      base::RunLoop run_loop;
-      operation->Truncate(url, size,
-                          AssignAndQuitCallback(&run_loop, &result));
-      run_loop.Run();
-    }
-    return result;
+    return AsyncFileTestHelper::TruncateFile(file_system_context_, url, size);
   }
 
   bool FileExists(const FileSystemURL& url, int64 expected_size) {
-    base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
-    base::PlatformFileInfo file_info;
-    base::RunLoop run_loop;
-    FileSystemOperation* operation =
-        file_system_context_->CreateFileSystemOperation(url, NULL);
-    EXPECT_TRUE(operation != NULL);
-    operation->GetMetadata(url, base::Bind(&GetMetadataCallback,
-                                           &run_loop, &result, &file_info));
-    run_loop.Run();
-    if (result != base::PLATFORM_FILE_OK || file_info.is_directory)
-      return false;
-    return expected_size == kDontCheckSize || file_info.size == expected_size;
+    return AsyncFileTestHelper::FileExists(
+        file_system_context_, url, expected_size);
   }
 
   bool DirectoryExists(const FileSystemURL& url) {
-    base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
-    base::PlatformFileInfo file_info;
-    base::RunLoop run_loop;
-    FileSystemOperation* operation =
-        file_system_context_->CreateFileSystemOperation(url, NULL);
-    EXPECT_TRUE(operation != NULL);
-    operation->GetMetadata(url, base::Bind(&GetMetadataCallback,
-                                           &run_loop, &result, &file_info));
-    run_loop.Run();
-    return (result == base::PLATFORM_FILE_OK) && file_info.is_directory;
+    return AsyncFileTestHelper::DirectoryExists(file_system_context_, url);
   }
-
-  GURL origin() const { return origin_; }
-  FileSystemType src_type() const { return src_type_; }
-  FileSystemType dest_type() const { return dest_type_; }
 
  private:
   void GetUsageAndQuota(FileSystemType type, int64* usage, int64* quota) {
-    quota::QuotaStatusCode status = quota::kQuotaStatusUnknown;
-    quota_manager_->GetUsageAndQuota(
-        origin_,
-        FileSystemTypeToQuotaStorageType(type),
-        base::Bind(&DidGetUsageAndQuota, &status, usage, quota));
-    MessageLoop::current()->RunUntilIdle();
+    quota::QuotaStatusCode status =
+        AsyncFileTestHelper::GetUsageAndQuota(
+            quota_manager_, origin_, type, usage, quota);
     ASSERT_EQ(quota::kQuotaStatusOk, status);
   }
 
+ private:
   base::ScopedTempDir base_;
 
   const GURL origin_;
@@ -351,8 +224,6 @@ class CrossOperationTestHelper {
 
   DISALLOW_COPY_AND_ASSIGN(CrossOperationTestHelper);
 };
-
-}  // namespace
 
 TEST(LocalFileSystemCrossOperationTest, CopySingleFile) {
   CrossOperationTestHelper helper(GURL("http://foo"),
@@ -402,7 +273,7 @@ TEST(LocalFileSystemCrossOperationTest, MoveSingleFile) {
   ASSERT_EQ(base::PLATFORM_FILE_OK, helper.Move(src, dest));
 
   // Verify.
-  ASSERT_FALSE(helper.FileExists(src, kDontCheckSize));
+  ASSERT_FALSE(helper.FileExists(src, AsyncFileTestHelper::kDontCheckSize));
   ASSERT_TRUE(helper.FileExists(dest, 10));
 
   int64 src_new_usage = helper.GetSourceUsage();

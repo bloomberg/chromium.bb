@@ -14,12 +14,12 @@
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/async_file_test_helper.h"
 #include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
-#include "webkit/fileapi/file_util_helper.h"
 #include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/mock_file_change_observer.h"
 #include "webkit/fileapi/mock_file_system_options.h"
@@ -209,11 +209,10 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   void GetUsageFromQuotaManager() {
-    quota_manager_->GetUsageAndQuota(
-      origin(), test_helper_.storage_type(),
-      base::Bind(&ObfuscatedFileUtilTest::OnGetUsage,
-                 weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunUntilIdle();
+    int64 quota = -1;
+    quota_status_ = AsyncFileTestHelper::GetUsageAndQuota(
+      quota_manager_, origin(), test_helper_.type(),
+      &usage_, &quota);
     EXPECT_EQ(quota::kQuotaStatusOk, quota_status_);
   }
 
@@ -241,8 +240,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   bool DirectoryExists(const FileSystemURL& url) {
-    scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
-    return FileUtilHelper::DirectoryExists(context.get(), ofu(), url);
+    return AsyncFileTestHelper::DirectoryExists(file_system_context(), url);
   }
 
   int64 usage() const { return usage_; }
@@ -257,12 +255,6 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
   FileSystemURL CreateURL(const base::FilePath& path) {
     return test_helper_.CreateURL(path);
-  }
-
-  void OnGetUsage(quota::QuotaStatusCode status, int64 usage, int64 unused) {
-    EXPECT_EQ(quota::kQuotaStatusOk, status);
-    quota_status_ = status;
-    usage_ = usage;
   }
 
   void CheckFileAndCloseHandle(
@@ -393,11 +385,10 @@ class ObfuscatedFileUtilTest : public testing::Test {
       std::set<base::FilePath::StringType>* files,
       std::set<base::FilePath::StringType>* directories) {
     scoped_ptr<FileSystemOperationContext> context;
-    context.reset(NewContext(NULL));
     std::vector<base::FileUtilProxy::Entry> entries;
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-              FileUtilHelper::ReadDirectory(
-                  context.get(), ofu(), root_url, &entries));
+              AsyncFileTestHelper::ReadDirectory(
+                  file_system_context(), root_url, &entries));
     EXPECT_EQ(0UL, entries.size());
 
     files->clear();
@@ -440,8 +431,8 @@ class ObfuscatedFileUtilTest : public testing::Test {
     std::vector<base::FileUtilProxy::Entry> entries;
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-              FileUtilHelper::ReadDirectory(
-                  context.get(), ofu(), root_url, &entries));
+              AsyncFileTestHelper::ReadDirectory(
+                  file_system_context(), root_url, &entries));
     std::vector<base::FileUtilProxy::Entry>::iterator entry_iter;
     EXPECT_EQ(files.size() + directories.size(), entries.size());
     EXPECT_TRUE(change_observer()->HasNoChange());
@@ -633,6 +624,10 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
   const LocalFileSystemTestOriginHelper& test_helper() const {
     return test_helper_;
+  }
+
+  FileSystemContext* file_system_context() {
+    return test_helper_.file_system_context();
   }
 
  private:
@@ -1078,11 +1073,10 @@ TEST_F(ObfuscatedFileUtilTest, TestReadDirectoryOnFile) {
       ofu()->EnsureFileExists(context.get(), url, &created));
   ASSERT_TRUE(created);
 
-  context.reset(NewContext(NULL));
   std::vector<base::FileUtilProxy::Entry> entries;
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY,
-            FileUtilHelper::ReadDirectory(
-                context.get(), ofu(), url, &entries));
+            AsyncFileTestHelper::ReadDirectory(
+                file_system_context(), url, &entries));
 
   EXPECT_TRUE(ofu()->IsDirectoryEmpty(context.get(), url));
 }
@@ -1396,18 +1390,17 @@ TEST_F(ObfuscatedFileUtilTest, TestEnumerator) {
   FileSystemURL dest_url = CreateURLFromUTF8("destination dir");
 
   EXPECT_FALSE(DirectoryExists(dest_url));
-  context.reset(NewContext(NULL));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            test_helper().SameFileUtilCopy(context.get(), src_url, dest_url));
+            AsyncFileTestHelper::Copy(
+                test_helper().file_system_context(), src_url, dest_url));
 
   ValidateTestDirectory(dest_url, files, directories);
   EXPECT_TRUE(DirectoryExists(src_url));
   EXPECT_TRUE(DirectoryExists(dest_url));
-  context.reset(NewContext(NULL));
   recursive = true;
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            FileUtilHelper::Delete(context.get(), ofu(),
-                                   dest_url, recursive));
+            AsyncFileTestHelper::Remove(
+                file_system_context(), dest_url, recursive));
   EXPECT_FALSE(DirectoryExists(dest_url));
 }
 
@@ -1636,24 +1629,21 @@ TEST_F(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
     EXPECT_TRUE(created);
   }
 
-  context.reset(NewContext(NULL));
   std::vector<base::FileUtilProxy::Entry> entries;
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            FileUtilHelper::ReadDirectory(
-                context.get(), ofu(), empty_path, &entries));
+            AsyncFileTestHelper::ReadDirectory(
+                file_system_context(), empty_path, &entries));
   EXPECT_EQ(3u, entries.size());
 
-  context.reset(NewContext(NULL));
   base::FilePath local_path;
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             ofu()->GetLocalFilePath(context.get(), kPath[0], &local_path));
   EXPECT_TRUE(file_util::Delete(local_path, false));
 
-  context.reset(NewContext(NULL));
   entries.clear();
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            FileUtilHelper::ReadDirectory(
-                context.get(), ofu(), empty_path, &entries));
+            AsyncFileTestHelper::ReadDirectory(
+                file_system_context(), empty_path, &entries));
   EXPECT_EQ(ARRAYSIZE_UNSAFE(kPath) - 1, entries.size());
 }
 
@@ -2169,12 +2159,8 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnRemove) {
   ASSERT_EQ(1140, ComputeTotalFileSize());
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            FileUtilHelper::Delete(
-                AllowUsageIncrease(-PathCost(dir) -
-                                   PathCost(dfile1) -
-                                   PathCost(dfile2) -
-                                   1020 - 120)->context(),
-                ofu(), dir, true));
+            AsyncFileTestHelper::Remove(
+                file_system_context(), dir, true /* recursive */));
   ASSERT_EQ(0, ComputeTotalFileSize());
 }
 

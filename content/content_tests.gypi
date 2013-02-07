@@ -421,6 +421,8 @@
         '../webkit/dom_storage/dom_storage_database_unittest.cc',
         '../webkit/dom_storage/dom_storage_map_unittest.cc',
         '../webkit/dom_storage/session_storage_database_unittest.cc',
+        '../webkit/fileapi/async_file_test_helper.cc',
+        '../webkit/fileapi/async_file_test_helper.h',
         '../webkit/fileapi/external_mount_points_unittest.cc',
         '../webkit/fileapi/file_system_context_unittest.cc',
         '../webkit/fileapi/file_system_database_test_helper.cc',
