@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 
 namespace base {
 namespace mac {

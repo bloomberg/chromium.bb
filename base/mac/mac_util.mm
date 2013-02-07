@@ -22,7 +22,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/string_piece.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 
 namespace base {
 namespace mac {

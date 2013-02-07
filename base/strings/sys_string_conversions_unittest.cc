@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/string_piece.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_locale.h"
 #include "base/utf_string_conversions.h"
-#include "base/sys_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #ifdef WCHAR_T_IS_UTF32
@@ -18,8 +17,9 @@ static const std::wstring kSysWideOldItalicLetterA = L"\x10300";
 static const std::wstring kSysWideOldItalicLetterA = L"\xd800\xdf00";
 #endif
 
+namespace base {
+
 TEST(SysStrings, SysWideToUTF8) {
-  using base::SysWideToUTF8;
   EXPECT_EQ("Hello, world", SysWideToUTF8(L"Hello, world"));
   EXPECT_EQ("\xe4\xbd\xa0\xe5\xa5\xbd", SysWideToUTF8(L"\x4f60\x597d"));
 
@@ -48,7 +48,6 @@ TEST(SysStrings, SysWideToUTF8) {
 }
 
 TEST(SysStrings, SysUTF8ToWide) {
-  using base::SysUTF8ToWide;
   EXPECT_EQ(L"Hello, world", SysUTF8ToWide("Hello, world"));
   EXPECT_EQ(L"\x4f60\x597d", SysUTF8ToWide("\xe4\xbd\xa0\xe5\xa5\xbd"));
   // >16 bits
@@ -76,8 +75,7 @@ TEST(SysStrings, SysUTF8ToWide) {
 #if defined(OS_LINUX)  // Tests depend on setting a specific Linux locale.
 
 TEST(SysStrings, SysWideToNativeMB) {
-  using base::SysWideToNativeMB;
-  base::ScopedLocale locale("en_US.utf-8");
+  ScopedLocale locale("en_US.utf-8");
   EXPECT_EQ("Hello, world", SysWideToNativeMB(L"Hello, world"));
   EXPECT_EQ("\xe4\xbd\xa0\xe5\xa5\xbd", SysWideToNativeMB(L"\x4f60\x597d"));
 
@@ -107,8 +105,7 @@ TEST(SysStrings, SysWideToNativeMB) {
 
 // We assume the test is running in a UTF8 locale.
 TEST(SysStrings, SysNativeMBToWide) {
-  using base::SysNativeMBToWide;
-  base::ScopedLocale locale("en_US.utf-8");
+  ScopedLocale locale("en_US.utf-8");
   EXPECT_EQ(L"Hello, world", SysNativeMBToWide("Hello, world"));
   EXPECT_EQ(L"\x4f60\x597d", SysNativeMBToWide("\xe4\xbd\xa0\xe5\xa5\xbd"));
   // >16 bits
@@ -162,10 +159,10 @@ static const wchar_t* const kConvertRoundtripCases[] = {
 
 
 TEST(SysStrings, SysNativeMBAndWide) {
-  base::ScopedLocale locale("en_US.utf-8");
+  ScopedLocale locale("en_US.utf-8");
   for (size_t i = 0; i < arraysize(kConvertRoundtripCases); ++i) {
     std::wstring wide = kConvertRoundtripCases[i];
-    std::wstring trip = base::SysNativeMBToWide(base::SysWideToNativeMB(wide));
+    std::wstring trip = SysNativeMBToWide(SysWideToNativeMB(wide));
     EXPECT_EQ(wide.size(), trip.size());
     EXPECT_EQ(wide, trip);
   }
@@ -173,16 +170,18 @@ TEST(SysStrings, SysNativeMBAndWide) {
   // We assume our test is running in UTF-8, so double check through ICU.
   for (size_t i = 0; i < arraysize(kConvertRoundtripCases); ++i) {
     std::wstring wide = kConvertRoundtripCases[i];
-    std::wstring trip = base::SysNativeMBToWide(WideToUTF8(wide));
+    std::wstring trip = SysNativeMBToWide(WideToUTF8(wide));
     EXPECT_EQ(wide.size(), trip.size());
     EXPECT_EQ(wide, trip);
   }
 
   for (size_t i = 0; i < arraysize(kConvertRoundtripCases); ++i) {
     std::wstring wide = kConvertRoundtripCases[i];
-    std::wstring trip = UTF8ToWide(base::SysWideToNativeMB(wide));
+    std::wstring trip = UTF8ToWide(SysWideToNativeMB(wide));
     EXPECT_EQ(wide.size(), trip.size());
     EXPECT_EQ(wide, trip);
   }
 }
 #endif  // OS_LINUX
+
+}  // namespace base

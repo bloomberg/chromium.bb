@@ -6,7 +6,7 @@
 
 #include "base/ios/device_util.h"
 #include "base/ios/ios_util.h"
-#include "base/sys_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
