@@ -571,8 +571,11 @@ FileSelectionHandler.prototype.showPreviewThumbnails_ = function(selection) {
  */
 FileSelectionHandler.prototype.renderThumbnail_ = function(entry, callback) {
   var thumbnail = this.fileManager_.document_.createElement('div');
-  FileGrid.decorateThumbnailBox(thumbnail, entry,
-      this.fileManager_.metadataCache_, true, callback);
+  FileGrid.decorateThumbnailBox(thumbnail,
+                                entry,
+                                this.fileManager_.metadataCache_,
+                                ThumbnailLoader.FillMode.FILL,
+                                callback);
   return thumbnail;
 };
 

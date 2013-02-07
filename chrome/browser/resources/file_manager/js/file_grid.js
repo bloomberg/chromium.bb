@@ -51,7 +51,7 @@ FileGrid.prototype.updateListItemsMetadata = function(type, props) {
       continue;
 
     FileGrid.decorateThumbnailBox(box, entry, this.metadataCache_,
-                                  false /* fit, not fill */);
+                                  ThumbnailLoader.FillMode.FIT);
   }
 };
 
