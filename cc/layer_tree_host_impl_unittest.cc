@@ -1448,6 +1448,9 @@ TEST_P(LayerTreeHostImplTest, scrollChildBeyondLimit)
 
 TEST_P(LayerTreeHostImplTest, scrollWithoutBubbling)
 {
+    if (!m_hostImpl->settings().pageScalePinchZoomEnabled)
+        return;
+
     // Scroll a child layer beyond its maximum scroll range and make sure the
     // the scroll doesn't bubble up to the parent layer.
     gfx::Size surfaceSize(10, 10);
@@ -1513,6 +1516,25 @@ TEST_P(LayerTreeHostImplTest, scrollWithoutBubbling)
 
         // The child should not have scrolled.
         expectContains(*scrollInfo.get(), child->id(), gfx::Vector2d(0, -3));
+
+
+        // Scrolling should be adjusted from viewport space.
+        m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(2, 2, 2);
+        m_hostImpl->activeTree()->SetPageScaleDelta(1);
+        gfx::Transform scaleTransform;
+        scaleTransform.Scale(2, 2);
+        m_hostImpl->activeTree()->RootLayer()->setImplTransform(scaleTransform);
+
+        scrollDelta = gfx::Vector2d(0, -2);
+        EXPECT_EQ(InputHandlerClient::ScrollStarted, m_hostImpl->scrollBegin(gfx::Point(1, 1), InputHandlerClient::NonBubblingGesture));
+        EXPECT_EQ(grandChild, m_hostImpl->currentlyScrollingLayer());
+        m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
+        m_hostImpl->scrollEnd();
+
+        scrollInfo = m_hostImpl->processScrollDeltas();
+
+        // Should have scrolled by half the amount in layer space (5 - 2/2)
+        expectContains(*scrollInfo.get(), grandChild->id(), gfx::Vector2d(0, 4));
     }
 }
 
