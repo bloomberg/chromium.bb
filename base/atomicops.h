@@ -47,7 +47,7 @@ typedef int32 Atomic32;
 #ifdef ARCH_CPU_64_BITS
 // We need to be able to go between Atomic64 and AtomicWord implicitly.  This
 // means Atomic64 and AtomicWord should be the same type on 64-bit.
-#if defined(OS_NACL)
+#if defined(__ILP32__) || defined(OS_NACL)
 // NaCl's intptr_t is not actually 64-bits on 64-bit!
 // http://code.google.com/p/nativeclient/issues/detail?id=1162
 typedef int64_t Atomic64;
