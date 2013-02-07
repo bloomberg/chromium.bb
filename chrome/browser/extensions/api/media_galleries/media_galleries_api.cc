@@ -229,6 +229,11 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
 
 void MediaGalleriesGetMediaFileSystemsFunction::GetMediaFileSystemsForExtension(
     const chrome::MediaFileSystemsCallback& cb) {
+  if (!render_view_host()) {
+    cb.Run(std::vector<MediaFileSystemInfo>());
+    return;
+  }
+
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
   registry->GetMediaFileSystemsForExtension(
