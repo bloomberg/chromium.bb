@@ -227,12 +227,6 @@
         # SkGraphics::Init().
         'SK_ALLOW_STATIC_GLOBAL_INITIALIZERS=0',
 
-        'SK_IGNORE_1XN_BITMAP_OPT',
-        'SK_IGNORE_CLIP_BUG_FIX',
-        'SK_IGNORE_CONVEX_QUAD_OPT',
-        'SK_IGNORE_SETLINE_FIX',
-
-        'SK_IGNORE_GRADIENT_DITHER_FIX',
 
         # Disable this check because it is too strict for some Chromium-specific
         # subclasses of SkPixelRef. See bug: crbug.com/171776.
