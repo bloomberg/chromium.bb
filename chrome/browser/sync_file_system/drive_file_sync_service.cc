@@ -1187,7 +1187,7 @@ void DriveFileSyncService::DidUploadNewFileForLocalSync(
     google_apis::GDataErrorCode error,
     const std::string& resource_id,
     const std::string& file_md5) {
-  if (error == google_apis::HTTP_SUCCESS) {
+  if (error == google_apis::HTTP_CREATED) {
     DriveMetadata metadata;
     metadata.set_resource_id(resource_id);
     metadata.set_md5_checksum(file_md5);

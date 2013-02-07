@@ -85,12 +85,18 @@ class DriveFileSyncClient
   // sync.  Upon completion, invokes |callback|.
   // If the directory does not exist on the server this also creates
   // the directory.
+  //
+  // Returns HTTP_SUCCESS if the directory already exists.
+  // Returns HTTP_CREATED if the directory was not found and created.
   void GetDriveDirectoryForSyncRoot(const ResourceIdCallback& callback);
 
   // Fetches Resource ID of the directory for the |origin|.
   // Upon completion, invokes |callback|.
   // If the directory does not exist on the server this also creates
   // the directory.
+  //
+  // Returns HTTP_SUCCESS if the directory already exists.
+  // Returns HTTP_CREATED if the directory was not found and created.
   void GetDriveDirectoryForOrigin(const std::string& sync_root_resource_id,
                                   const GURL& origin,
                                   const ResourceIdCallback& callback);
@@ -139,7 +145,8 @@ class DriveFileSyncClient
 
   // Uploads the new file |local_file_path| with specified |title| into the
   // directory identified by |directory_resource_id|.
-  // Upon completion, invokes |callback|.
+  // Upon completion, invokes |callback| and returns HTTP_CREATED if the file
+  // is created.
   void UploadNewFile(const std::string& directory_resource_id,
                      const FilePath& local_file_path,
                      const std::string& title,
@@ -150,6 +157,7 @@ class DriveFileSyncClient
   // updated on Drive. If |remote_file_md5| is different from the actual value,
   // cancels the upload and invokes |callback| with
   // GDataErrorCode::HTTP_CONFLICT immediately.
+  // Returns HTTP_SUCCESS if the file uploaded successfully.
   void UploadExistingFile(const std::string& resource_id,
                           const std::string& remote_file_md5,
                           const FilePath& local_file_path,

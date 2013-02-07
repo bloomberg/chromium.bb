@@ -250,7 +250,6 @@ void DriveFileSyncClient::DidCreateDirectory(
     return;
   }
   DVLOG(2) << "Created Drive directory.";
-  error = google_apis::HTTP_CREATED;
 
   DCHECK(entry);
   // Check if any other client creates a directory with same title.
