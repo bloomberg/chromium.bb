@@ -1266,13 +1266,6 @@ const Experiment kExperiments[] = {
     kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableTouchDragDrop)
   },
-  {
-    "disable-cloud-policy-on-signin",
-    IDS_FLAGS_DISABLE_DESKTOP_CLOUD_POLICY_NAME,
-    IDS_FLAGS_DISABLE_DESKTOP_CLOUD_POLICY_DESCRIPTION,
-    kOsWin | kOsMac | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kDisableCloudPolicyOnSignin)
-  },
 #if defined(ENABLE_MESSAGE_CENTER)
   {
     "enable-rich-notifications",
