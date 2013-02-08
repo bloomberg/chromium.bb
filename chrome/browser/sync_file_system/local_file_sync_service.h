@@ -55,7 +55,8 @@ class LocalFileSyncService
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  typedef base::Callback<void(bool has_pending_changes)>
+  typedef base::Callback<void(fileapi::SyncStatusCode status,
+                              bool has_pending_changes)>
       HasPendingLocalChangeCallback;
 
   explicit LocalFileSyncService(Profile* profile);

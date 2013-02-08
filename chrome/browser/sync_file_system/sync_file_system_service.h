@@ -106,6 +106,7 @@ class SyncFileSystemService
                              const fileapi::FileSystemURL& url);
 
   void DidGetLocalChangeStatus(const fileapi::SyncFileStatusCallback& callback,
+                               fileapi::SyncStatusCode status,
                                bool has_pending_local_changes);
 
   void OnSyncEnabledForRemoteSync();

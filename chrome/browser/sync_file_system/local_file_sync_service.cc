@@ -168,7 +168,14 @@ void LocalFileSyncService::ProcessLocalChange(
 void LocalFileSyncService::HasPendingLocalChanges(
     const fileapi::FileSystemURL& url,
     const HasPendingLocalChangeCallback& callback) {
-  DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
+  if (!ContainsKey(origin_to_contexts_, url.origin())) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   fileapi::SYNC_FILE_ERROR_INVALID_URL,
+                   false));
+    return;
+  }
   sync_context_->HasPendingLocalChanges(
       origin_to_contexts_[url.origin()], url, callback);
 }

@@ -191,6 +191,16 @@ void SyncFileSystemService::GetFileSyncStatus(
   DCHECK(local_file_service_);
   DCHECK(remote_file_service_);
 
+  // It's possible to get an invalid FileEntry.
+  if (!url.is_valid()) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   fileapi::SYNC_FILE_ERROR_INVALID_URL,
+                   fileapi::SYNC_FILE_STATUS_UNKNOWN));
+    return;
+  }
+
   if (remote_file_service_->IsConflicting(url)) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
@@ -410,9 +420,10 @@ void SyncFileSystemService::DidProcessLocalChange(
 
 void SyncFileSystemService::DidGetLocalChangeStatus(
     const fileapi::SyncFileStatusCallback& callback,
+    fileapi::SyncStatusCode status,
     bool has_pending_local_changes) {
   callback.Run(
-      fileapi::SYNC_STATUS_OK,
+      status,
       has_pending_local_changes ? fileapi::SYNC_FILE_STATUS_HAS_PENDING_CHANGES
                                 : fileapi::SYNC_FILE_STATUS_SYNCED);
 }

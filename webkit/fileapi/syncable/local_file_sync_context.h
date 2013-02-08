@@ -51,7 +51,8 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
                               const LocalFileSyncInfo& sync_file_info)>
       LocalFileSyncInfoCallback;
 
-  typedef base::Callback<void(bool has_pending_changes)>
+  typedef base::Callback<void(fileapi::SyncStatusCode status,
+                              bool has_pending_changes)>
       HasPendingLocalChangeCallback;
 
   LocalFileSyncContext(base::SingleThreadTaskRunner* ui_task_runner,

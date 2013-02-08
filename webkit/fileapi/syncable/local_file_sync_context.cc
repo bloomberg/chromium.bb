@@ -288,7 +288,10 @@ void LocalFileSyncContext::HasPendingLocalChanges(
   file_system_context->change_tracker()->GetChangesForURL(url, &changes);
 
   // Fire the callback on UI thread.
-  ui_task_runner_->PostTask(FROM_HERE, base::Bind(callback, !changes.empty()));
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::Bind(callback,
+                                       SYNC_STATUS_OK,
+                                       !changes.empty()));
 }
 
 void LocalFileSyncContext::AddOriginChangeObserver(
