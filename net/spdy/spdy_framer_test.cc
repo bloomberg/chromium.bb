@@ -40,7 +40,7 @@ class MockVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD3(OnControlFrameHeaderData, bool(SpdyStreamId stream_id,
                                               const char* header_data,
                                               size_t len));
-  MOCK_METHOD2(OnCredentialFrameData, bool(const char* header_data,
+  MOCK_METHOD2(OnCredentialFrameData, bool(const char* credential_data,
                                            size_t len));
   MOCK_METHOD1(OnDataFrameHeader, void(const SpdyDataFrame* frame));
   MOCK_METHOD4(OnStreamFrameData, void(SpdyStreamId stream_id,
@@ -175,8 +175,8 @@ class SpdyFramerTestUtil {
       return true;
     }
 
-    virtual bool OnCredentialFrameData(const char* header_data,
-                                       size_t len) OVERRIDE {
+    virtual bool OnCredentialFrameData(const char* /*credential_data*/,
+                                       size_t /*len*/) OVERRIDE {
       LOG(FATAL) << "Unexpected CREDENTIAL Frame";
       return false;
     }

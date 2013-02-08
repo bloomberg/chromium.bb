@@ -170,7 +170,7 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // When this function returns true the visitor indicates that it accepted
   // all of the data. Returning false indicates that that an unrecoverable
   // error has occurred, such as bad header data or resource exhaustion.
-  virtual bool OnCredentialFrameData(const char* header_data,
+  virtual bool OnCredentialFrameData(const char* credential_data,
                                      size_t len) = 0;
 
   // Called when a data frame header is received. The frame's data
