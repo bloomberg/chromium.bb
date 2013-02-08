@@ -79,7 +79,11 @@ class CloudPolicyClientTest : public testing::Test {
     em::PolicyFetchRequest* policy_fetch_request =
         policy_request_.mutable_policy_request()->add_request();
     policy_fetch_request->set_policy_type(dm_protocol::kChromeUserPolicyType);
+#if defined(OS_CHROMEOS)
     policy_fetch_request->set_signature_type(em::PolicyFetchRequest::SHA1_RSA);
+#else
+    policy_fetch_request->set_signature_type(em::PolicyFetchRequest::NONE);
+#endif
     policy_response_.mutable_policy_response()->add_response()->set_policy_data(
         CreatePolicyData("fake-policy-data"));
 

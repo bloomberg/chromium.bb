@@ -135,8 +135,13 @@ void CloudPolicyClient::FetchPolicy() {
     if (!it->second.empty())
       fetch_request->set_settings_entity_id(it->second);
 
-    // All policy types ask for a signed policy blob.
+#if defined(OS_CHROMEOS)
+    // All policy types on ChromeOS ask for a signed policy blob.
     fetch_request->set_signature_type(em::PolicyFetchRequest::SHA1_RSA);
+#else
+    // Don't request signed blobs for desktop policy.
+    fetch_request->set_signature_type(em::PolicyFetchRequest::NONE);
+#endif
     if (public_key_version_valid_)
       fetch_request->set_public_key_version(public_key_version_);
 
