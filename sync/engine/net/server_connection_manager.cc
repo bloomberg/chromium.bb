@@ -222,6 +222,20 @@ void ServerConnectionManager::OnConnectionDestroyed(Connection* connection) {
   active_connection_ = NULL;
 }
 
+void ServerConnectionManager::OnInvalidationCredentialsRejected() {
+  InvalidateAndClearAuthToken();
+  server_status_ = HttpResponse::SYNC_AUTH_ERROR;
+}
+
+void ServerConnectionManager::InvalidateAndClearAuthToken() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // Copy over the token to previous invalid token.
+  if (!auth_token_.empty()) {
+    previously_invalidated_token.assign(auth_token_);
+    auth_token_ = std::string();
+  }
+}
+
 void ServerConnectionManager::NotifyStatusChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(ServerConnectionEventListener, listeners_,

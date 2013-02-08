@@ -199,7 +199,13 @@ void SyncSchedulerImpl::OnCredentialsUpdated() {
   // back to SYNC_AUTH_ERROR at the end of the sync cycle. The
   // referenced bug explores the option of removing gettime calls
   // altogethere
-  if (HttpResponse::SYNC_AUTH_ERROR == connection_code_) {
+  // TODO(rogerta): this code no longer checks |connection_code_|.  It uses
+  // ServerConnectionManager::server_status() instead.  This is to resolve a
+  // missing notitification during re-auth.  |connection_code_| is a duplicate
+  // value and should probably be removed, see comment in the function
+  // SyncSchedulerImpl::FinishSyncSessionJob() below.
+  if (HttpResponse::SYNC_AUTH_ERROR ==
+      session_context_->connection_manager()->server_status()) {
     OnServerConnectionErrorFixed();
   }
 }

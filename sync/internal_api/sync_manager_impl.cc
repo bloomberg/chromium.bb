@@ -1219,7 +1219,7 @@ void SyncManagerImpl::OnInvalidatorStateChange(InvalidatorState state) {
   if (invalidator_state_ == syncer::INVALIDATION_CREDENTIALS_REJECTED) {
     // If the invalidator's credentials were rejected, that means that
     // our sync credentials are also bad, so invalidate those.
-    connection_manager_->InvalidateAndClearAuthToken();
+    connection_manager_->OnInvalidationCredentialsRejected();
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                       OnConnectionStatusChange(CONNECTION_AUTH_ERROR));
   }

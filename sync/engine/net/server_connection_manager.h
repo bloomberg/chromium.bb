@@ -235,14 +235,12 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager {
     return false;
   }
 
-  void InvalidateAndClearAuthToken() {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    // Copy over the token to previous invalid token.
-    if (!auth_token_.empty()) {
-      previously_invalidated_token.assign(auth_token_);
-      auth_token_ = std::string();
-    }
-  }
+  // Our out-of-band invalidations channel can encounter auth errors,
+  // and when it does so it tells us via this method to prevent making more
+  // requests with known-bad tokens. This will put the
+  // ServerConnectionManager in an auth error state as if it received an
+  // HTTP 401 from sync servers.
+  void OnInvalidationCredentialsRejected();
 
   bool HasInvalidAuthToken() {
     return auth_token_.empty();
@@ -269,6 +267,11 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager {
                                 const std::string& path,
                                 const std::string& auth_token,
                                 ScopedServerStatusWatcher* watcher);
+
+  // An internal helper to clear our auth_token_ and cache the old version
+  // in |previously_invalidated_token_| to shelter us from retrying with a
+  // known bad token.
+  void InvalidateAndClearAuthToken();
 
   // Helper to check terminated flags and build a Connection object, installing
   // it as the |active_connection_|.  If this ServerConnectionManager has been
