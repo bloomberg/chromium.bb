@@ -55,6 +55,8 @@
             '_CRT_NONSTDC_NO_DEPRECATE',
             '_SCL_SECURE_NO_DEPRECATE',
           ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
         }],
         ['OS=="mac"', {
           'mac_bundle': 1,
@@ -174,6 +176,8 @@
           ],
         }],
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],          
     },
     {
       'target_name': 'ppapi_example_skeleton',
