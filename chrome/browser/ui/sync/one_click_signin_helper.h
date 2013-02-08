@@ -34,7 +34,8 @@ class URLRequest;
 class OneClickSigninHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<OneClickSigninHelper>,
-      public SigninTracker::Observer {
+      public SigninTracker::Observer,
+      public ProfileSyncServiceObserver {
  public:
   // Represents user's decision about sign in process.
   enum AutoAccept {
@@ -116,6 +117,8 @@ class OneClickSigninHelper
   friend class content::WebContentsUserData<OneClickSigninHelper>;
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest,
                            ShowInfoBarUIThreadIncognito);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest,
+                           SigninFromWebstoreWithConfigSyncfirst);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest, CanOfferOnIOThread);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
                            CanOfferOnIOThreadIncognito);
@@ -188,6 +191,9 @@ class OneClickSigninHelper
   virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void SigninSuccess() OVERRIDE;
 
+  // ProfileSyncServiceObserver.
+  virtual void OnStateChanged() OVERRIDE;
+
   // Information about the account that has just logged in.
   std::string session_index_;
   std::string email_;
@@ -195,8 +201,9 @@ class OneClickSigninHelper
   AutoAccept auto_accept_;
   SyncPromoUI::Source source_;
   GURL continue_url_;
+  // Redirect URL after sync setup is complete.
+  GURL redirect_url_;
   std::string error_message_;
-
   scoped_ptr<SigninTracker> signin_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninHelper);

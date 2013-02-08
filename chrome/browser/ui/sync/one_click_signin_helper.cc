@@ -374,6 +374,15 @@ OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents)
 }
 
 OneClickSigninHelper::~OneClickSigninHelper() {
+  content::WebContents* contents = web_contents();
+  if (contents) {
+    Profile* profile =
+        Profile::FromBrowserContext(contents->GetBrowserContext());
+    ProfileSyncService* sync_service =
+        ProfileSyncServiceFactory::GetForProfile(profile);
+    if (sync_service && sync_service->HasObserver(this))
+      sync_service->RemoveObserver(this);
+  }
 }
 
 // static
@@ -713,14 +722,8 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
     return;
   }
 
-  if (continue_url.is_valid()) {
-    // When Gaia finally redirects to the continue URL, Gaia will add some
-    // extra query parameters.  So ignore the parameters when checking to see
-    // if the user has continued.
-    GURL::Replacements replacements;
-    replacements.ClearQuery();
-    helper->continue_url_ = continue_url.ReplaceComponents(replacements);
-  }
+  if (continue_url.is_valid())
+    helper->continue_url_ = continue_url;
 }
 
 void OneClickSigninHelper::RedirectToNTP() {
@@ -831,10 +834,14 @@ void OneClickSigninHelper::DidStopLoading(
     // the continue URL go by.
     if (auto_accept_ == AUTO_ACCEPT_EXPLICIT) {
       DCHECK(source_ != SyncPromoUI::SOURCE_UNKNOWN);
+
+     // When Gaia finally redirects to the continue URL, Gaia will add some
+     // extra query parameters.  So ignore the parameters when checking to see
+     // if the user has continued.
       GURL::Replacements replacements;
       replacements.ClearQuery();
-      const bool continue_url_match =
-          url.ReplaceComponents(replacements) == continue_url_;
+      const bool continue_url_match = (url.ReplaceComponents(replacements) ==
+          continue_url_.ReplaceComponents(replacements));
       if (!continue_url_match) {
         VLOG(1) << "OneClickSigninHelper::DidStopLoading: invalid url='"
                 << url.spec()
@@ -911,6 +918,17 @@ void OneClickSigninHelper::DidStopLoading(
         contents->GetController().LoadURL(
             GURL("about:blank"), content::Referrer(),
             content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+        if (SyncPromoUI::GetSourceForSyncPromoURL(continue_url_) ==
+            SyncPromoUI::SOURCE_WEBSTORE_INSTALL) {
+          redirect_url_ = continue_url_;
+
+          Profile* profile =
+              Profile::FromBrowserContext(contents->GetBrowserContext());
+          ProfileSyncService* sync_service =
+              ProfileSyncServiceFactory::GetForProfile(profile);
+          if (sync_service)
+            sync_service->AddObserver(this);
+        }
       }
       break;
     case AUTO_ACCEPT_REJECTED_FOR_PROFILE:
@@ -938,6 +956,34 @@ void OneClickSigninHelper::DidStopLoading(
 }
 
 void OneClickSigninHelper::GaiaCredentialsValid() {
+}
+
+void OneClickSigninHelper::OnStateChanged() {
+  // No redirect url after sync setup is set, thus no need to watch for sync
+  // state changes.
+  if (redirect_url_.is_empty())
+    return;
+
+  content::WebContents* contents = web_contents();
+  Profile* profile =
+      Profile::FromBrowserContext(contents->GetBrowserContext());
+  ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
+
+  // Sync setup not completed yet.
+  if (sync_service->FirstSetupInProgress())
+    return;
+
+  if (sync_service->sync_initialized()) {
+    contents->GetController().LoadURL(redirect_url_,
+                                      content::Referrer(),
+                                      content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                      std::string());
+  }
+
+  // Clear the redirect URL.
+  redirect_url_ = GURL();
+  sync_service->RemoveObserver(this);
 }
 
 void OneClickSigninHelper::SigninFailed(const GoogleServiceAuthError& error) {

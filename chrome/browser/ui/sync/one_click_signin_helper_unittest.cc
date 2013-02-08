@@ -27,6 +27,8 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/password_form.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
@@ -34,6 +36,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::Return;
 
 namespace {
@@ -555,6 +558,54 @@ TEST_F(OneClickSigninHelperTest, ShowInfoBarUIThreadIncognito) {
       "session_index", "email", OneClickSigninHelper::AUTO_ACCEPT_ACCEPTED,
       SyncPromoUI::SOURCE_UNKNOWN, GURL(), process()->GetID(),
       rvh()->GetRoutingID());
+}
+
+// If Chrome signin is triggered from a webstore install, and user chooses to
+// config sync, then Chrome should redirect immidiately to sync settings page,
+// and upon successful setup, redirect back to webstore.
+TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
+  CreateSigninManager(false, "");
+  EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
+        WillRepeatedly(Return(true));
+
+  ProfileSyncServiceMock* sync_service = static_cast<ProfileSyncServiceMock*>(
+        ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile_,
+            ProfileSyncServiceMock::BuildMockProfileSyncService));
+  sync_service->Initialize();
+  EXPECT_CALL(*sync_service, SetSetupInProgress(true));
+  EXPECT_CALL(*sync_service, AddObserver(_)).Times(AtLeast(1));
+  EXPECT_CALL(*sync_service, FirstSetupInProgress()).WillOnce(Return(false));
+  EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*sync_service, RemoveObserver(_)).Times(AtLeast(1));
+
+  content::WebContents* contents = web_contents();
+
+  OneClickSigninHelper::CreateForWebContents(contents);
+  OneClickSigninHelper* helper =
+      OneClickSigninHelper::FromWebContents(contents);
+
+  GURL continueUrl("https://chrome.google.com/webstore?source=5");
+  OneClickSigninHelper::ShowInfoBarUIThread(
+      "session_index", "user@gmail.com",
+      OneClickSigninHelper::AUTO_ACCEPT_EXPLICIT,
+      SyncPromoUI::SOURCE_WEBSTORE_INSTALL,
+      continueUrl, process()->GetID(), rvh()->GetRoutingID());
+
+  content::PasswordForm password_form;
+  password_form.origin = GURL("https://accounts.google.com");
+  password_form.signon_realm = "https://accounts.google.com";
+  password_form.password_value = UTF8ToUTF16("password");
+  helper->OnFormSubmitted(password_form);
+
+  NavigateAndCommit(GURL("https://chrome.google.com/webstore?source=3"));
+  helper->DidStopLoading(rvh());
+
+  EXPECT_EQ(GURL(chrome::kAboutBlankURL), contents->GetURL());
+
+  helper->OnStateChanged();
+  EXPECT_EQ(GURL(continueUrl), contents->GetURL());
+  EXPECT_EQ("user@gmail.com", signin_manager_->GetAuthenticatedUsername());
 }
 
 // I/O thread tests
