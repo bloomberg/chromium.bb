@@ -889,6 +889,12 @@ For Google Chrome, processes used to display diagnostics information (such as th
       <message name="IDS_APP_LIST_OPT_IN_TEXT" desc="Text to appear in the prompt to use the Chrome app list.">
         Use the Chrome App Launcher to launch your apps.
       </message>
+      <message name="IDS_APP_LIST_SIGNIN_HEADING" desc="Heading for when the launcher needs to sign in.">
+        Sign in to Chrome
+      </message>
+      <message name="IDS_APP_LIST_SIGNIN_TEXT" desc="Text for when the launcher needs to sign in.">
+        You need to be signed into Chrome to use apps. This allows Chrome to sync your apps, bookmarks, history, passwords and other settings across devices.
+      </message>
     </messages>
   </release>
 </grit>

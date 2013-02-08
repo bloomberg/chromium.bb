@@ -85,8 +85,6 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
-            '../../content/content.gyp:content_browser',
-            '../views/controls/webview/webview.gyp:webview',
             '../views/views.gyp:views',
           ],
         }, {  # toolkit_views==0
@@ -136,7 +134,6 @@
       'conditions': [
         ['toolkit_views==1', {
           'dependencies': [
-            '../../content/content.gyp:content_browser',
             '../views/views.gyp:views',
             '../views/views.gyp:views_test_support',
           ],

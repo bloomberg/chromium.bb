@@ -965,6 +965,12 @@ For Chromium, processes used to display diagnostics information (such as this "a
       <message name="IDS_APP_LIST_OPT_IN_TEXT" desc="Text to appear in the prompt to use the Chrome app list.">
         Use the Chromium App Launcher to launch your apps.
       </message>
+      <message name="IDS_APP_LIST_SIGNIN_HEADING" desc="Heading for when the launcher needs to sign in.">
+        Sign in to Chromium
+      </message>
+      <message name="IDS_APP_LIST_SIGNIN_TEXT" desc="Text for when the launcher needs to sign in.">
+        You need to be signed into Chromium to use apps. This allows Chromium to sync your apps, bookmarks, history, passwords and other settings across devices.
+      </message>
     </messages>
   </release>
 </grit>

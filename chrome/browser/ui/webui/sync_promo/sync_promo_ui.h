@@ -21,6 +21,7 @@ class SyncPromoUI : public content::WebUIController {
     SOURCE_SETTINGS,
     SOURCE_EXTENSION_INSTALL_BUBBLE,
     SOURCE_WEBSTORE_INSTALL,
+    SOURCE_APP_LAUNCHER,
     SOURCE_UNKNOWN, // This must be last.
   };
 

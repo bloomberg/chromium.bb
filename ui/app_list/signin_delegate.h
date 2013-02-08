@@ -7,12 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
+#include "base/string16.h"
 #include "ui/app_list/app_list_export.h"
-
-namespace content {
-class BrowserContext;
-class WebContents;
-}
 
 namespace app_list {
 
@@ -24,7 +20,11 @@ class APP_LIST_EXPORT SigninDelegate {
   virtual ~SigninDelegate();
 
   virtual bool NeedSignin() = 0;
-  virtual content::WebContents* PrepareForSignin() = 0;
+  virtual void ShowSignin() = 0;
+
+  virtual string16 GetSigninHeading() = 0;
+  virtual string16 GetSigninText() = 0;
+  virtual string16 GetSigninButtonText() = 0;
 
   void AddObserver(SigninDelegateObserver* observer);
   void RemoveObserver(SigninDelegateObserver* observer);

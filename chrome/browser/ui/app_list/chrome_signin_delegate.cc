@@ -5,32 +5,18 @@
 #include "chrome/browser/ui/app_list/chrome_signin_delegate.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/site_instance.h"
-#include "content/public/browser/web_contents.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #include "ui/app_list/signin_delegate_observer.h"
-
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
-#include "chrome/browser/ui/sync/one_click_signin_helper.h"
-#endif
-
-using content::WebContents;
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
-
-ProfileSyncService* GetSyncService(Profile* profile) {
-  return ProfileSyncServiceFactory::GetForProfile(profile);
-}
-
-LoginUIService* GetLoginUIService(Profile* profile) {
-  return LoginUIServiceFactory::GetForProfile(profile);
-}
 
 SigninManager* GetSigninManager(Profile* profile) {
   return SigninManagerFactory::GetForProfile(profile);
@@ -55,87 +41,37 @@ bool ChromeSigninDelegate::NeedSignin()  {
 #endif
 }
 
-WebContents* ChromeSigninDelegate::PrepareForSignin() {
-  DCHECK(!IsActiveSignin());
-
-  if (!GetLoginUIService(profile_))
-    return NULL;
+void ChromeSigninDelegate::ShowSignin() {
+  DCHECK(profile_);
 
   signin_tracker_.reset(new SigninTracker(profile_, this));
 
-  if (GetLoginUIService(profile_)->current_login_ui())
-    GetLoginUIService(profile_)->current_login_ui()->CloseUI();
-
-  GetLoginUIService(profile_)->SetLoginUI(this);
-
-  if (!GetSyncService(profile_))
-    return NULL;
-
-  GetSyncService(profile_)->UnsuppressAndStart();
-
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
-  GURL url("https://accounts.google.com/ServiceLogin?service=chromiumsync&"
-           "sarp=1&rm=hide&continue=https://www.google.com/intl/en-US/"
-           "chrome/blank.html?source=2");
-
-  WebContents::CreateParams params =  WebContents::CreateParams(
-      profile_, content::SiteInstance::CreateForURL(profile_, url));
-  WebContents* web_contents = WebContents::Create(params);
-  if (OneClickSigninHelper::CanOffer(
-      web_contents, OneClickSigninHelper::CAN_OFFER_FOR_ALL, "", NULL)) {
-    OneClickSigninHelper::CreateForWebContents(web_contents);
-  }
-
-  web_contents->GetController().LoadURL(
-      url, content::Referrer(), content::PAGE_TRANSITION_LINK,
-      std::string());
-  return web_contents;
-#else
-  NOTREACHED();
-  return NULL;
-#endif
+  Browser* browser = FindOrCreateTabbedBrowser(profile_,
+                                               chrome::GetActiveDesktop());
+  chrome::ShowBrowserSignin(browser, SyncPromoUI::SOURCE_APP_LAUNCHER);
 }
 
-ChromeSigninDelegate::~ChromeSigninDelegate() {
-  FinishSignin();
+string16 ChromeSigninDelegate::GetSigninHeading() {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetLocalizedString(IDS_APP_LIST_SIGNIN_HEADING);
 }
 
-bool ChromeSigninDelegate::IsActiveSignin() {
-  if (!GetLoginUIService(profile_))
-    return false;
-
-  return GetLoginUIService(profile_)->current_login_ui() == this;
+string16 ChromeSigninDelegate::GetSigninText() {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetLocalizedString(IDS_APP_LIST_SIGNIN_TEXT);
 }
 
-void ChromeSigninDelegate::FinishSignin() {
-  if (!IsActiveSignin())
-    return;
-
-  GetLoginUIService(profile_)->LoginUIClosed(this);
+string16 ChromeSigninDelegate::GetSigninButtonText() {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetLocalizedString(IDS_APP_LIST_SIGNIN_BUTTON);
 }
 
-void ChromeSigninDelegate::FocusUI() {
-  // The launcher gets hidden if it is not focused, so if it is visible it
-  // is focused. Hence, nothing to do here.
-}
+void ChromeSigninDelegate::GaiaCredentialsValid() {}
 
-void ChromeSigninDelegate::CloseUI() {
-  // TODO: remove tab contents helper
-  // This can't happen, as the launcher keeps focus, but do something sensible
-  // nonetheless.
-  FinishSignin();
-}
+ChromeSigninDelegate::~ChromeSigninDelegate() {}
 
-void ChromeSigninDelegate::GaiaCredentialsValid() {
-}
-
-void ChromeSigninDelegate::SigninFailed(const GoogleServiceAuthError& error) {
-}
+void ChromeSigninDelegate::SigninFailed(const GoogleServiceAuthError& error) {}
 
 void ChromeSigninDelegate::SigninSuccess() {
-  if (!IsActiveSignin())
-    return;
-
-  FinishSignin();
   NotifySigninSuccess();
 }

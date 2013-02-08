@@ -8,15 +8,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
-
-namespace content {
-class WebContents;
-}
-
-namespace views {
-class WebView;
-}
 
 namespace app_list {
 
@@ -24,17 +17,19 @@ class SigninDelegate;
 
 // The SigninView is shown in the app list when the user needs to sign in.
 // It just shows a webview, which is prepared for signin by the signin delegate.
-class SigninView : public views::View {
+class SigninView : public views::View,
+                   public views::ButtonListener {
  public:
-  SigninView(SigninDelegate* delegate);
+  SigninView(SigninDelegate* delegate, int width);
   virtual ~SigninView();
 
   // Show the signin UI and begins the signin process.
   void BeginSignin();
 
  private:
-  scoped_ptr<content::WebContents> web_contents_;
-  views::WebView* web_view_;
+  // views::ButtonListener overrides:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
 
   SigninDelegate* delegate_;
 

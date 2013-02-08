@@ -8,13 +8,11 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/signin/signin_tracker.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "ui/app_list/signin_delegate.h"
 
 class Profile;
 
 class ChromeSigninDelegate : public app_list::SigninDelegate,
-                             public LoginUIService::LoginUI,
                              public SigninTracker::Observer {
  public:
   explicit ChromeSigninDelegate(Profile* profile);
@@ -27,11 +25,10 @@ class ChromeSigninDelegate : public app_list::SigninDelegate,
 
   // Overridden from app_list::SigninDelegate:
   virtual bool NeedSignin() OVERRIDE;
-  virtual content::WebContents* PrepareForSignin() OVERRIDE;
-
-  // Overridden from LoginUIService::LoginUI:
-  virtual void FocusUI() OVERRIDE;
-  virtual void CloseUI() OVERRIDE;
+  virtual void ShowSignin() OVERRIDE;
+  virtual string16 GetSigninHeading() OVERRIDE;
+  virtual string16 GetSigninText() OVERRIDE;
+  virtual string16 GetSigninButtonText() OVERRIDE;
 
   // Overridden from SigninTracker::Observer:
   virtual void GaiaCredentialsValid() OVERRIDE;

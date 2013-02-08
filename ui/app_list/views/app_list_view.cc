@@ -71,7 +71,9 @@ void AppListView::InitAsBubble(
   app_list_main_view_->layer()->SetMasksToBounds(true);
 #endif
 
-  signin_view_ = new SigninView(GetSigninDelegate());
+  signin_view_ = new SigninView(
+      GetSigninDelegate(),
+      app_list_main_view_->GetPreferredSize().width());
   AddChildView(signin_view_);
 
   set_anchor_view(anchor);
@@ -195,9 +197,9 @@ void AppListView::OnWidgetVisibilityChanged(views::Widget* widget,
   if (widget != GetWidget())
     return;
 
+  // Whether we need to signin or not may have changed since last time we were
+  // shown.
   Layout();
-  if (visible && GetSigninDelegate() && GetSigninDelegate()->NeedSignin())
-    signin_view_->BeginSignin();
 }
 
 void AppListView::OnSigninSuccess() {
