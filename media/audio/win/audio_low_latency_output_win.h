@@ -162,6 +162,12 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // DelegateSimpleThread::Delegate implementation.
   virtual void Run() OVERRIDE;
 
+  // Core part of the thread loop which controls the actual rendering.
+  // Checks available amount of space in the endpoint buffer and reads
+  // data from the client to fill up the buffer without causing audio
+  // glitches.
+  void RenderAudioFromSource(IAudioClock* audio_clock, UINT64 device_frequency);
+
   // Issues the OnError() callback to the |sink_|.
   void HandleError(HRESULT err);
 
