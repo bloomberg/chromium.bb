@@ -13,7 +13,6 @@
 #include "chrome/common/extensions/api/sync_file_system.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/syncable/sync_operation_result.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 using sync_file_system::SyncEventObserver;
@@ -34,26 +33,54 @@ api::sync_file_system::ServiceStatus SyncServiceStateEnumToExtensionEnum(
     case SyncEventObserver::SYNC_SERVICE_DISABLED:
       return api::sync_file_system::SERVICE_STATUS_DISABLED;
   }
-  NOTREACHED();
+  NOTREACHED() << "Invalid state: " << state;
   return api::sync_file_system::SERVICE_STATUS_NONE;
 }
 
-api::sync_file_system::SyncAction SyncOperationResultToExtensionEnum(
-    fileapi::SyncOperationResult operation_result) {
-  switch (operation_result) {
-    case fileapi::SYNC_OPERATION_ADDED:
+api::sync_file_system::FileStatus SyncFileStatusToExtensionEnum(
+    fileapi::SyncFileStatus status) {
+  switch (status) {
+    case fileapi::SYNC_FILE_STATUS_SYNCED:
+      return api::sync_file_system::FILE_STATUS_SYNCED;
+    case fileapi::SYNC_FILE_STATUS_HAS_PENDING_CHANGES:
+      return api::sync_file_system::FILE_STATUS_PENDING;
+    case fileapi::SYNC_FILE_STATUS_CONFLICTING:
+      return api::sync_file_system::FILE_STATUS_CONFLICTING;
+    case fileapi::SYNC_FILE_STATUS_UNKNOWN:
+      return api::sync_file_system::FILE_STATUS_NONE;
+  }
+  NOTREACHED() << "Invalid status: " << status;
+  return api::sync_file_system::FILE_STATUS_NONE;
+}
+
+api::sync_file_system::SyncAction SyncActionToExtensionEnum(
+    fileapi::SyncAction action) {
+  switch (action) {
+    case fileapi::SYNC_ACTION_ADDED:
       return api::sync_file_system::SYNC_ACTION_ADDED;
-    case fileapi::SYNC_OPERATION_UPDATED:
+    case fileapi::SYNC_ACTION_UPDATED:
       return api::sync_file_system::SYNC_ACTION_UPDATED;
-    case fileapi::SYNC_OPERATION_DELETED:
+    case fileapi::SYNC_ACTION_DELETED:
       return api::sync_file_system::SYNC_ACTION_DELETED;
-    case fileapi::SYNC_OPERATION_NONE:
-      return api::sync_file_system::SYNC_ACTION_NONE;
-    case fileapi::SYNC_OPERATION_CONFLICTED:
+    case fileapi::SYNC_ACTION_NONE:
       return api::sync_file_system::SYNC_ACTION_NONE;
   }
-  NOTREACHED();
+  NOTREACHED() << "Invalid action: " << action;
   return api::sync_file_system::SYNC_ACTION_NONE;
+}
+
+api::sync_file_system::SyncDirection SyncDirectionToExtensionEnum(
+    sync_file_system::SyncDirection direction) {
+  switch (direction) {
+    case sync_file_system::SYNC_DIRECTION_LOCAL_TO_REMOTE:
+      return api::sync_file_system::SYNC_DIRECTION_LOCAL_TO_REMOTE;
+    case sync_file_system::SYNC_DIRECTION_REMOTE_TO_LOCAL:
+      return api::sync_file_system::SYNC_DIRECTION_REMOTE_TO_LOCAL;
+    case sync_file_system::SYNC_DIRECTION_NONE:
+      return api::sync_file_system::SYNC_DIRECTION_NONE;
+  }
+  NOTREACHED() << "Invalid direction: " << direction;
+  return api::sync_file_system::SYNC_DIRECTION_NONE;
 }
 
 }  // namespace
@@ -109,7 +136,9 @@ void ExtensionSyncEventObserver::OnSyncStateUpdated(
 
 void ExtensionSyncEventObserver::OnFileSynced(
     const fileapi::FileSystemURL& url,
-    fileapi::SyncOperationResult result) {
+    fileapi::SyncFileStatus status,
+    fileapi::SyncAction action,
+    sync_file_system::SyncDirection direction) {
   // Get all values needed to build FileEntry in custom_bindings args massager.
   std::string mount_type = fileapi::GetFileSystemTypeString(url.mount_type());
   std::string file_system_name = fileapi::GetFileSystemName(url.origin(),
@@ -127,15 +156,11 @@ void ExtensionSyncEventObserver::OnFileSynced(
 
   // Status, SyncAction and any optional notes to go here.
   api::sync_file_system::FileStatus status_enum =
-      (result == fileapi::SYNC_OPERATION_CONFLICTED) ?
-          api::sync_file_system::FILE_STATUS_CONFLICTING :
-          api::sync_file_system::FILE_STATUS_SYNCED;
+      SyncFileStatusToExtensionEnum(status);
   api::sync_file_system::SyncAction action_enum =
-      SyncOperationResultToExtensionEnum(result);
-  // TODO(Kinuko): Remove this when the extra direction param has been added to
-  // the function signature of OnFileSynced().
+      SyncActionToExtensionEnum(action);
   api::sync_file_system::SyncDirection direction_enum =
-      api::sync_file_system::SYNC_DIRECTION_REMOTE_TO_LOCAL;
+      SyncDirectionToExtensionEnum(direction);
   params->AppendString(api::sync_file_system::ToString(status_enum));
   params->AppendString(api::sync_file_system::ToString(action_enum));
   params->AppendString(api::sync_file_system::ToString(direction_enum));

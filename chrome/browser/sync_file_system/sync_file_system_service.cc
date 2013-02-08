@@ -26,7 +26,6 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
-#include "webkit/fileapi/syncable/sync_operation_result.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
 using content::BrowserThread;
@@ -506,11 +505,9 @@ void SyncFileSystemService::OnFileStatusChanged(
     SyncDirection direction,
     fileapi::SyncFileStatus sync_status,
     fileapi::SyncAction action_taken) {
-  // TODO(kinuko,calvinlo): Update this line.
   FOR_EACH_OBSERVER(
       SyncEventObserver, observers_,
-      OnFileSynced(url,
-                   static_cast<fileapi::SyncOperationResult>(action_taken)));
+      OnFileSynced(url, sync_status, action_taken, direction));
 }
 
 void SyncFileSystemService::UpdateSyncEnabledStatus(

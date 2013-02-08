@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "webkit/fileapi/syncable/sync_operation_result.h"
+#include "chrome/browser/sync_file_system/file_status_observer.h"
 
 class GURL;
 
@@ -19,8 +19,6 @@ namespace sync_file_system {
 
 class SyncEventObserver {
  public:
-  typedef fileapi::SyncOperationResult SyncOperationResult;
-
   SyncEventObserver() {}
   virtual ~SyncEventObserver() {}
 
@@ -52,7 +50,9 @@ class SyncEventObserver {
   // Reports the file |url| was updated and resulted in |result|
   // by the sync file system backend.
   virtual void OnFileSynced(const fileapi::FileSystemURL& url,
-                            fileapi::SyncOperationResult result) = 0;
+                            fileapi::SyncFileStatus status,
+                            fileapi::SyncAction action,
+                            SyncDirection direction) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncEventObserver);
