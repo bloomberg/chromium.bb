@@ -645,6 +645,71 @@
     }],  # 'enable_remoting_host==1'
 
     ['OS!="win" and enable_remoting_host==1', {
+      'conditions': [
+        ['OS=="linux" and branding=="Chrome" and chromeos==0', {
+          'variables': {
+            'deb_cmd': 'host/installer/linux/build-deb.sh',
+            'deb_filename': 'host/installer/<!(["<(deb_cmd)", "-p", "-s", "<(DEPTH)"])',
+          },
+          'targets': [
+            {
+              # Store the installer package(s) into a zip file so there is a
+              # consistent filename to reference for build archiving (i.e. in
+              # FILES.cfg). This also avoids possible conflicts with "wildcard"
+              # package handling in other build/signing scripts.
+              'target_name': 'remoting_me2me_host_archive',
+              'type': 'none',
+              'dependencies': [
+                'remoting_me2me_host_deb_installer',
+              ],
+              'actions': [
+                {
+                  #'variables': {
+                  #  'deb_cmd': 'host/installer/linux/build-deb.sh',
+                  #},
+                  'action_name': 'build_linux_installer_zip',
+                  'inputs': [
+                    '<(deb_filename)',
+                  ],
+                  'outputs': [
+                    '<(PRODUCT_DIR)/remoting-me2me-host-<(OS).zip',
+                  ],
+                  'action': [ 'zip', '-j', '-0', '<@(_outputs)', '<@(_inputs)' ],
+                },
+              ],
+            },
+            {
+              'target_name': 'remoting_me2me_host_deb_installer',
+              'type': 'none',
+              'dependencies': [
+                'remoting_me2me_host',
+                'remoting_start_host',
+              ],
+              'actions': [
+                {
+                  'action_name': 'build_debian_package',
+                  'inputs': [
+                    '<(deb_cmd)',
+                    'host/installer/linux/Makefile',
+                    'host/installer/linux/debian/chrome-remote-desktop.init',
+                    'host/installer/linux/debian/chrome-remote-desktop.pam',
+                    'host/installer/linux/debian/compat',
+                    'host/installer/linux/debian/control',
+                    'host/installer/linux/debian/copyright',
+                    'host/installer/linux/debian/postinst',
+                    'host/installer/linux/debian/preinst',
+                    'host/installer/linux/debian/rules',
+                  ],
+                  'outputs': [
+                    '<(deb_filename)',
+                  ],
+                  'action': [ '<(deb_cmd)', '-s', '<(DEPTH)' ],
+                },
+              ],
+            },
+          ],
+        }],
+      ],
       'targets': [
         {
           'target_name': 'remoting_me2me_host',
