@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDERER_ACCESSIBILITY_H_
-#define CONTENT_RENDERER_RENDERER_ACCESSIBILITY_H_
+#ifndef CONTENT_RENDERER_ACCESSIBILITY_RENDERER_ACCESSIBILITY_H_
+#define CONTENT_RENDERER_ACCESSIBILITY_RENDERER_ACCESSIBILITY_H_
 
 #include "content/common/accessibility_messages.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -80,4 +80,4 @@ class RendererAccessibility : public RenderViewObserver {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_RENDERER_ACCESSIBILITY_H_
+#endif  // CONTENT_RENDERER_ACCESSIBILITY_RENDERER_ACCESSIBILITY_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/renderer_accessibility_focus_only.h"
+#include "content/renderer/accessibility/renderer_accessibility_focus_only.h"
 
 #include "content/common/accessibility_node_data.h"
 #include "content/renderer/render_view_impl.h"

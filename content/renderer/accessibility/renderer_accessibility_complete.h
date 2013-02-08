@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDERER_ACCESSIBILITY_COMPLETE_H_
-#define CONTENT_RENDERER_RENDERER_ACCESSIBILITY_COMPLETE_H_
+#ifndef CONTENT_RENDERER_ACCESSIBILITY_RENDERER_ACCESSIBILITY_COMPLETE_H_
+#define CONTENT_RENDERER_ACCESSIBILITY_RENDERER_ACCESSIBILITY_COMPLETE_H_
 
 #include <vector>
 
@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/accessibility_node_data.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "content/renderer/renderer_accessibility.h"
+#include "content/renderer/accessibility/renderer_accessibility.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityNotification.h"
 
 namespace WebKit {
@@ -135,6 +135,6 @@ class RendererAccessibilityComplete : public RendererAccessibility {
   DISALLOW_COPY_AND_ASSIGN(RendererAccessibilityComplete);
 };
 
-#endif  // CONTENT_RENDERER_RENDERER_ACCESSIBILITY_COMPLETE_H_
+#endif  // CONTENT_RENDERER_ACCESSIBILITY_RENDERER_ACCESSIBILITY_COMPLETE_H_
 
 }  // namespace content

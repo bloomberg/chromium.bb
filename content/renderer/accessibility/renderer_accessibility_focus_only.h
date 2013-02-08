@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDERER_ACCESSIBILITY_FOCUS_ONLY_H_
-#define CONTENT_RENDERER_RENDERER_ACCESSIBILITY_FOCUS_ONLY_H_
+#ifndef CONTENT_RENDERER_ACCESSIBILITY_RENDERER_ACCESSIBILITY_FOCUS_ONLY_H_
+#define CONTENT_RENDERER_ACCESSIBILITY_RENDERER_ACCESSIBILITY_FOCUS_ONLY_H_
 
-#include "content/renderer/renderer_accessibility.h"
+#include "content/renderer/accessibility/renderer_accessibility.h"
 
 namespace content {
 
@@ -72,4 +72,4 @@ class RendererAccessibilityFocusOnly : public RendererAccessibility {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_RENDERER_ACCESSIBILITY_FOCUS_ONLY_H_
+#endif  // CONTENT_RENDERER_ACCESSIBILITY_RENDERER_ACCESSIBILITY_FOCUS_ONLY_H_

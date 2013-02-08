@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_ACCESSIBILITY_NODE_SERIALIZER_H_
-#define CONTENT_RENDERER_ACCESSIBILITY_NODE_SERIALIZER_H_
+#ifndef CONTENT_RENDERER_ACCESSIBILITY_ACCESSIBILITY_NODE_SERIALIZER_H_
+#define CONTENT_RENDERER_ACCESSIBILITY_ACCESSIBILITY_NODE_SERIALIZER_H_
 
 #include "content/common/accessibility_node_data.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
@@ -17,4 +17,4 @@ void SerializeAccessibilityNode(
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_ACCESSIBILITY_NODE_SERIALIZER_H_
+#endif  // CONTENT_RENDERER_ACCESSIBILITY_ACCESSIBILITY_NODE_SERIALIZER_H_

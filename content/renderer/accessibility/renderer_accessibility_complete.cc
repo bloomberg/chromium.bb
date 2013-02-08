@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/renderer_accessibility_complete.h"
+#include "content/renderer/accessibility/renderer_accessibility_complete.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "content/renderer/accessibility_node_serializer.h"
+#include "content/renderer/accessibility/accessibility_node_serializer.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
