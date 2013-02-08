@@ -109,6 +109,7 @@ class InputDialogContainer {
         if (dialogType == sTextInputTypeDate) {
             mDialog = new DatePickerDialog(mContext, new DateListener(dialogType),
                     time.year, time.month, time.monthDay);
+            mDialog.setTitle(mContext.getText(R.string.date_picker_dialog_title));
         } else if (dialogType == sTextInputTypeTime) {
             mDialog = new TimePickerDialog(mContext, new TimeListener(dialogType),
                     time.hour, time.minute, DateFormat.is24HourFormat(mContext));

@@ -21,6 +21,8 @@
     <string name="date_picker_dialog_set">Set</string>
     <!-- Label for 'clear' button in date picker dialog, used to replace the contents of a field with the empty string [CHAR-LIMIT=12] -->
     <string name="date_picker_dialog_clear">Clear</string>
+    <!-- Title for the date picker dialog, which can be used to choose a date. [CHAR-LIMIT=32] -->
+    <string name="date_picker_dialog_title">Set date</string>
     <!-- Title for the date/time picker dialog, which can be used to choose a date and time. [CHAR-LIMIT=32] -->
     <string name="date_time_picker_dialog_title">Set date and time</string>
     <!-- Title for the month picker dialog, which can be used to choose a month. [CHAR-LIMIT=32] -->
@@ -47,4 +49,5 @@
     <string name="media_player_error_button">OK</string>
     <!-- NO DESCRIPTION [CHAR-LIMIT=16] -->
     <string name="media_player_loading_video">Loading video</string>
+    
 </resources>
