@@ -20,7 +20,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/common/cancelable_request.h"
-#include "chrome/browser/history/history_service.h"
+#include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "chrome/browser/history/scored_history_match.h"

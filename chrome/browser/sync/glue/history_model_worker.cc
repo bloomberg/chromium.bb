@@ -7,7 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/history/history_service.h"
+#include "chrome/browser/history/history_db_task.h"
 #include "content/public/browser/browser_thread.h"
 
 using base::WaitableEvent;
@@ -15,7 +15,7 @@ using content::BrowserThread;
 
 namespace browser_sync {
 
-class WorkerTask : public HistoryDBTask {
+class WorkerTask : public history::HistoryDBTask {
  public:
   WorkerTask(
       const syncer::WorkCallback& work,

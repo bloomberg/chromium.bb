@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
+#include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_marshaling.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service_factory.h"

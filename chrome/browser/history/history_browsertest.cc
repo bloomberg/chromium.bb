@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -38,7 +39,7 @@ namespace {
 
 // A task to be scheduled on the history backend thread.
 // Notifies the main thread after all history backend thread tasks have run.
-class WaitForHistoryTask : public HistoryDBTask {
+class WaitForHistoryTask : public history::HistoryDBTask {
  public:
   WaitForHistoryTask() {}
 
@@ -86,7 +87,7 @@ class HistoryBrowserTest : public InProcessBrowserTest {
 
   void WaitForHistoryBackendToRun() {
     CancelableRequestConsumerTSimple<int> request_consumer;
-    scoped_refptr<HistoryDBTask> task(new WaitForHistoryTask());
+    scoped_refptr<history::HistoryDBTask> task(new WaitForHistoryTask());
     HistoryService* history =
         HistoryServiceFactory::GetForProfile(GetProfile(),
                                              Profile::EXPLICIT_ACCESS);

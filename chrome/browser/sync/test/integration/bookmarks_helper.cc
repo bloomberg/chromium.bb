@@ -19,6 +19,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/favicon_util.h"
+#include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -39,7 +40,7 @@ namespace {
 
 // History task which runs all pending tasks on the history thread and
 // signals when the tasks have completed.
-class HistoryEmptyTask : public HistoryDBTask {
+class HistoryEmptyTask : public history::HistoryDBTask {
  public:
   explicit HistoryEmptyTask(base::WaitableEvent* done) : done_(done) {}
 

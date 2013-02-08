@@ -16,6 +16,7 @@
 #include "base/metrics/histogram.h"
 #include "base/timer.h"
 #include "chrome/browser/history/history_database.h"
+#include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
@@ -38,7 +39,7 @@ namespace {
 static const size_t kURLHashSize = 5;
 
 // Task to lookup the URL for a given URLID.
-class GetURLForURLIDTask : public HistoryDBTask {
+class GetURLForURLIDTask : public history::HistoryDBTask {
  public:
   GetURLForURLIDTask(URLID url_id, base::Callback<void(const GURL&)> callback)
       : url_id_(url_id),
@@ -79,7 +80,7 @@ class GetURLForURLIDTask : public HistoryDBTask {
 };
 
 // Task to load history from the visit database on startup.
-class GetVisitHistoryTask : public HistoryDBTask {
+class GetVisitHistoryTask : public history::HistoryDBTask {
  public:
   GetVisitHistoryTask(PrerenderLocalPredictor* local_predictor,
                       int max_visits)

@@ -16,6 +16,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_backend.h"
+#include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -93,7 +94,7 @@ class HistoryBackendMock : public HistoryBackend {
 class HistoryServiceMock : public HistoryService {
  public:
   explicit HistoryServiceMock(Profile* profile) : HistoryService(profile) {}
-  MOCK_METHOD2(ScheduleDBTask, void(HistoryDBTask*,
+  MOCK_METHOD2(ScheduleDBTask, void(history::HistoryDBTask*,
                                     CancelableRequestConsumerBase*));
 
  private:
@@ -119,14 +120,14 @@ class TestTypedUrlModelAssociator : public TypedUrlModelAssociator {
 };
 
 void RunOnDBThreadCallback(HistoryBackend* backend,
-                           HistoryDBTask* task) {
+                           history::HistoryDBTask* task) {
   task->RunOnDBThread(backend, NULL);
 }
 
 ACTION_P2(RunTaskOnDBThread, thread, backend) {
   // ScheduleDBTask takes ownership of its task argument, so we
   // should, too.
-  scoped_refptr<HistoryDBTask> task(arg0);
+  scoped_refptr<history::HistoryDBTask> task(arg0);
   thread->message_loop()->PostTask(
       FROM_HERE, base::Bind(&RunOnDBThreadCallback, base::Unretained(backend),
                             task));

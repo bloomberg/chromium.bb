@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_backend.h"
+#include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
@@ -21,7 +22,7 @@ using sync_datatype_helper::test;
 
 namespace {
 
-class FlushHistoryDBQueueTask : public HistoryDBTask {
+class FlushHistoryDBQueueTask : public history::HistoryDBTask {
  public:
   explicit FlushHistoryDBQueueTask(base::WaitableEvent* event)
       : wait_event_(event) {}
@@ -39,7 +40,7 @@ class FlushHistoryDBQueueTask : public HistoryDBTask {
   base::WaitableEvent* wait_event_;
 };
 
-class GetTypedUrlsTask : public HistoryDBTask {
+class GetTypedUrlsTask : public history::HistoryDBTask {
  public:
   GetTypedUrlsTask(history::URLRows* rows, base::WaitableEvent* event)
       : rows_(rows), wait_event_(event) {}
@@ -61,7 +62,7 @@ class GetTypedUrlsTask : public HistoryDBTask {
   base::WaitableEvent* wait_event_;
 };
 
-class GetUrlTask : public HistoryDBTask {
+class GetUrlTask : public history::HistoryDBTask {
  public:
   GetUrlTask(const GURL& url,
              history::URLRow* row,
@@ -88,7 +89,7 @@ class GetUrlTask : public HistoryDBTask {
   bool* found_;
 };
 
-class GetVisitsTask : public HistoryDBTask {
+class GetVisitsTask : public history::HistoryDBTask {
  public:
   GetVisitsTask(history::URLID id,
                 history::VisitVector* visits,
@@ -113,7 +114,7 @@ class GetVisitsTask : public HistoryDBTask {
   base::WaitableEvent* wait_event_;
 };
 
-class RemoveVisitsTask : public HistoryDBTask {
+class RemoveVisitsTask : public history::HistoryDBTask {
  public:
   RemoveVisitsTask(const history::VisitVector& visits,
                    base::WaitableEvent* event)

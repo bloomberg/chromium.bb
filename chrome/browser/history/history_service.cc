@@ -433,11 +433,11 @@ void HistoryService::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
                     urls);
 }
 
-void HistoryService::ScheduleDBTask(HistoryDBTask* task,
+void HistoryService::ScheduleDBTask(history::HistoryDBTask* task,
                                     CancelableRequestConsumerBase* consumer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   history::HistoryDBTaskRequest* request = new history::HistoryDBTaskRequest(
-      base::Bind(&HistoryDBTask::DoneRunOnMainThread, task));
+      base::Bind(&history::HistoryDBTask::DoneRunOnMainThread, task));
   request->value = task;  // The value is the task to execute.
   Schedule(PRIORITY_UI, &HistoryBackend::ProcessDBTask, consumer, request);
 }

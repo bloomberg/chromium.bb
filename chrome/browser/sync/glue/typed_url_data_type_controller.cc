@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -27,7 +28,7 @@ namespace {
 // The history service exposes a special non-standard task API which calls back
 // once a task has been dispatched, so we have to build a special wrapper around
 // the tasks we want to run.
-class RunTaskOnHistoryThread : public HistoryDBTask {
+class RunTaskOnHistoryThread : public history::HistoryDBTask {
  public:
   explicit RunTaskOnHistoryThread(const base::Closure& task,
                                   TypedUrlDataTypeController* dtc)
