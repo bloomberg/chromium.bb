@@ -175,7 +175,8 @@ Visit.prototype.getResultDOM = function(propertyBag) {
  * @private
  */
 Visit.prototype.getDomainFromURL_ = function(url) {
-  var domain = url.replace(/^.+:\/\//, '').match(/[^/]+/);
+  // TODO(sergiu): Extract the domain from the C++ side and send it here.
+  var domain = url.replace(/^.+?:\/\//, '').match(/[^/]+/);
   return domain ? domain[0] : '';
 };
 
@@ -406,8 +407,8 @@ HistoryModel.prototype.addResults = function(info, results) {
   this.queryStartTime = info.queryStartTime;
   this.queryEndTime = info.queryEndTime;
 
-  // If the results are not for the current search term there's nothing more
-  // to do.
+  // If the results are not for the current search term then there is nothing
+  // more to do.
   if (info.term != this.searchText_)
     return;
 
@@ -847,9 +848,9 @@ HistoryView.prototype.setVisitRendered_ = function(visit) {
 };
 
 /**
- * This function generates and adds the grouped visits DOM for a certain
- * domain. This includes the clickable arrow and domain name and the visit
- * entries for that domain.
+ * Generates and adds the grouped visits DOM for a certain domain. This
+ * includes the clickable arrow and domain name and the visit entries for
+ * that domain.
  * @param {Element} results DOM object to which to add the elements.
  * @param {string} domain Current domain name.
  * @param {Array} domainVisits Array of visits for this domain.
@@ -871,7 +872,9 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
   var numberOfVisits = createElementWithClassName('span', 'number-visits');
   numberOfVisits.textContent = loadTimeData.getStringF('numbervisits',
                                                        domainVisits.length);
-  siteDomain.textContent = domain;
+  var domainElement = document.createElement('span');
+  domainElement.textContent = domain;
+  siteDomain.appendChild(domainElement);
   siteDomain.appendChild(numberOfVisits);
   siteResults.appendChild(siteDomainWrapper);
   var resultsList = siteResults.appendChild(
@@ -949,9 +952,8 @@ HistoryView.prototype.groupVisitsByDomain_ = function(visits, results) {
   };
   domains.sort(sortByVisits);
 
-  for (var i = 0, domain; domain = domains[i]; i++) {
+  for (var i = 0, domain; domain = domains[i]; i++)
     this.getGroupedVisitsDOM_(results, domain, visitsByDomain[domain]);
-  }
 };
 
 /**

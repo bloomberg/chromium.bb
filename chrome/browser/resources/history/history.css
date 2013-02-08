@@ -7,6 +7,10 @@ body:not(.uber-frame) {
   margin: 0 8px 0 8px;
 }
 
+html[dir=rtl] body.uber-frame > .page {
+  -webkit-margin-end: 0;
+}
+
 #editing-controls,
 #loading-spinner {
   margin-top: 16px;
@@ -46,17 +50,24 @@ body:not(.uber-frame) {
   -webkit-margin-end: 0;
 }
 
+html[dir=rtl] #range-today,
+html[dir=rtl] #range-previous,
+html[dir=rtl] #range-next {
+  float: left;
+}
+
 #display-filter-controls {
   float: right;
 }
 
 #display-filter-controls label {
-  padding-left: 6px;
+  -webkit-margin-start: 6px;
 }
 
 #display-filter-controls label:not(:last-child) {
-  border-right: 1px solid rgb(151, 156, 160);
-  padding-right: 6px;
+  -webkit-border-end: 1px solid rgb(151, 156, 160);
+  -webkit-margin-start: 0;
+  padding: 0 6px 0 6px;
 }
 
 #results-display {
@@ -114,7 +125,8 @@ body:not(.uber-frame) {
   cursor: pointer;
 }
 
-html[dir=rtl] .entry-box {
+html[dir=rtl] .entry-box,
+html[dir=rtl] .site-domain-wrapper {
   float: right; /* To make the box shrink to fit its content. */
 }
 
@@ -138,6 +150,10 @@ html[dir=rtl] .entry-box {
 
 .month-results {
   -webkit-padding-start: 0;
+}
+
+html[dir='rtl'] .site-results {
+  clear: both;
 }
 
 h2.timeframe {
@@ -167,8 +183,21 @@ h2.timeframe {
   display: none;
 }
 
+
+html[dir='rtl'] .number-visits {
+  /* This element contains parentheses, which without the unicode-bidi: embed
+   * directive would show up incorrectly (e.g. '(www.google.com (5'). Using
+   * 'embed' makes the engine set the text in the parentheses as LTR even
+   * when the layout is set to RTL, which makes using -webkit-*-start
+   * impossible. So use margins and dir='rtl'.
+   */
+  direction: rtl;
+  unicode-bidi: embed;
+}
+
 .number-visits {
   color: rgb(151, 156, 160);
+  margin-left: 0.3em;
 }
 
 .drop-down {
@@ -195,7 +224,8 @@ h2.timeframe {
   border-color: rgb(48, 57, 66);
 }
 
-html[dir='rtl'] .entry .title {
+html[dir='rtl'] .entry .title,
+html[dir='rtl'] .site-domain {
   /* Put the favicon on the right. */
   background-position-x: right;
 }
@@ -267,7 +297,7 @@ html[dir='rtl'] .entry .title {
 
 .site-domain-arrow {
   -webkit-transition: -webkit-transform 300ms linear;
-  color: #8F8F8F;
+  color: rgb(143, 143, 143);
   height: 21px;
   margin-right: 2px;
   text-align: center;
@@ -280,6 +310,14 @@ html[dir='rtl'] .entry .title {
 
 .site-domain-arrow.expand {
   -webkit-transform: rotate(90deg);
+}
+
+html[dir='rtl'] .site-domain-arrow.collapse {
+  -webkit-transform: rotate(90deg);
+}
+
+html[dir='rtl'] .site-domain-arrow.expand {
+  -webkit-transform: rotate(180deg);
 }
 
 .entry .starred {
