@@ -1215,6 +1215,19 @@ class VMTestStage(BoardSpecificBuilderStage):
     super(VMTestStage, self).__init__(options, build_config, board)
     self._archive_stage = archive_stage
 
+  def PrintBuildbotLink(self, download_url, filename):
+    """Print a link to an artifact in Google Storage.
+
+    Args:
+      download_url: The directory this file can be downloaded from.
+      filename: The filename of the uploaded file.
+    """
+    url = '%s/%s' % (download_url.rstrip('/'), filename)
+    text = filename
+    if filename.endswith('.dmp.txt'):
+      text = 'crash: %s' % filename
+    cros_build_lib.PrintBuildbotLink(text, url)
+
   def _ArchiveTestResults(self, test_results_dir):
     """Archives test results to Google Storage."""
     test_tarball = commands.ArchiveTestResults(
@@ -1230,10 +1243,12 @@ class VMTestStage(BoardSpecificBuilderStage):
     filenames.append(commands.ArchiveFile(test_tarball, archive_path))
 
     cros_build_lib.Info('Uploading artifacts to Google Storage...')
+    download_url = self._archive_stage.GetDownloadUrl()
     for filename in filenames:
       try:
         commands.UploadArchivedFile(archive_path, upload_url, filename,
                                     self._archive_stage.debug, update_list=True)
+        self.PrintBuildbotLink(download_url, filename)
       except cros_build_lib.RunCommandError as e:
         # Treat gsutil flake as a warning if it's the only problem.
         self._HandleExceptionAsWarning(e)
@@ -1241,7 +1256,6 @@ class VMTestStage(BoardSpecificBuilderStage):
   def _PerformStage(self):
     # These directories are used later to archive test artifacts.
     test_results_dir = commands.CreateTestRoot(self._build_root)
-
     try:
       commands.RunTestSuite(self._build_root,
                             self._current_board,
