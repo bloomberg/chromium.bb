@@ -162,6 +162,11 @@ bool WebViewPlugin::acceptsInputEvents() {
 
 bool WebViewPlugin::handleInputEvent(const WebInputEvent& event,
                                      WebCursorInfo& cursor) {
+  // For tap events, don't handle them. They will be converted to
+  // mouse events later and passed to here.
+  if (event.type == WebInputEvent::GestureTap)
+    return false;
+
   if (event.type == WebInputEvent::ContextMenu) {
     if (delegate_) {
       const WebMouseEvent& mouse_event =
@@ -173,6 +178,7 @@ bool WebViewPlugin::handleInputEvent(const WebInputEvent& event,
   current_cursor_ = cursor;
   bool handled = web_view_->handleInputEvent(event);
   cursor = current_cursor_;
+
   return handled;
 }
 
