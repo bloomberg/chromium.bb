@@ -1424,11 +1424,20 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSite(
   SiteProcessMap* map =
       GetSiteProcessMapForBrowserContext(browser_context);
 
-  // See if we have an existing process for this site.  If not, the caller
-  // should create a new process and register it.
+  // See if we have an existing process with appropriate bindings for this site.
+  // If not, the caller should create a new process and register it.
   std::string site = SiteInstance::GetSiteForURL(browser_context, url)
       .possibly_invalid_spec();
-  return map->FindProcess(site);
+  RenderProcessHost* host = map->FindProcess(site);
+  if (host && !IsSuitableHost(host, browser_context, url)) {
+    // The registered process does not have an appropriate set of bindings for
+    // the url.  Remove it from the map so we can register a better one.
+    RecordAction(UserMetricsAction("BindingsMismatch_GetProcessHostPerSite"));
+    map->RemoveProcess(host);
+    host = NULL;
+  }
+
+  return host;
 }
 
 void RenderProcessHostImpl::RegisterProcessHostForSite(
@@ -1439,12 +1448,13 @@ void RenderProcessHostImpl::RegisterProcessHostForSite(
   SiteProcessMap* map =
       GetSiteProcessMapForBrowserContext(browser_context);
 
-  // TODO(creis): Determine if it's better to allow registration of
-  // empty sites or not.  For now, group anything from which we can't parse
-  // a site into the same process, when using --process-per-site.
+  // Only register valid, non-empty sites.  Empty or invalid sites will not
+  // use process-per-site mode.  We cannot check whether the process has
+  // appropriate bindings here, because the bindings have not yet been granted.
   std::string site = SiteInstance::GetSiteForURL(browser_context, url)
       .possibly_invalid_spec();
-  map->RegisterProcess(site, process);
+  if (!site.empty())
+    map->RegisterProcess(site, process);
 }
 
 void RenderProcessHostImpl::ProcessDied(bool already_dead) {

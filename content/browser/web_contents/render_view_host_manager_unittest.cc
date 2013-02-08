@@ -129,12 +129,15 @@ class RenderViewHostManagerTest
 // different SiteInstances, BrowsingInstances, and RenderProcessHosts. This is
 // a regression test for bug 9364.
 TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
+  set_should_create_webui(true);
   BrowserThreadImpl ui_thread(BrowserThread::UI, MessageLoop::current());
   const GURL kChromeUrl("chrome://foo");
   const GURL kDestUrl("http://www.google.com/");
 
-  // Navigate our first tab to the chrome url and then to the destination.
+  // Navigate our first tab to the chrome url and then to the destination,
+  // ensuring we grant bindings to the chrome URL.
   NavigateActiveAndCommit(kChromeUrl);
+  EXPECT_TRUE(active_rvh()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
   NavigateActiveAndCommit(kDestUrl);
 
   // Make a second tab.

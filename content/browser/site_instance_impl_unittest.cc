@@ -699,4 +699,66 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURLInSitePerProcess) {
   DrainMessageLoops();
 }
 
+// Test that we do not reuse a process in process-per-site mode if it has the
+// wrong bindings for its URL.  http://crbug.com/174059.
+TEST_F(SiteInstanceTest, ProcessPerSiteWithWrongBindings) {
+  scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
+  scoped_ptr<RenderProcessHost> host;
+  scoped_ptr<RenderProcessHost> host2;
+  scoped_refptr<SiteInstanceImpl> instance(static_cast<SiteInstanceImpl*>(
+      SiteInstance::Create(browser_context.get())));
+
+  EXPECT_FALSE(instance->HasSite());
+  EXPECT_TRUE(instance->GetSiteURL().is_empty());
+
+  // Simulate navigating to a WebUI URL in a process that does not have WebUI
+  // bindings.  This already requires bypassing security checks.
+  const GURL webui_url("chrome://settings");
+  instance->SetSite(webui_url);
+  EXPECT_TRUE(instance->HasSite());
+
+  // The call to GetProcess actually creates a new real process.
+  host.reset(instance->GetProcess());
+  EXPECT_TRUE(host.get() != NULL);
+  EXPECT_TRUE(instance->HasProcess());
+
+  // Without bindings, this should look like the wrong process.
+  EXPECT_TRUE(instance->HasWrongProcessForURL(webui_url));
+
+  // WebUI uses process-per-site, so another instance would normally use the
+  // same process.  Make sure it doesn't use the same process if the bindings
+  // are missing.
+  scoped_refptr<SiteInstanceImpl> instance2(
+      static_cast<SiteInstanceImpl*>(
+          SiteInstance::Create(browser_context.get())));
+  instance2->SetSite(webui_url);
+  host2.reset(instance2->GetProcess());
+  EXPECT_TRUE(host2.get() != NULL);
+  EXPECT_TRUE(instance2->HasProcess());
+  EXPECT_NE(host.get(), host2.get());
+
+  DrainMessageLoops();
+}
+
+// Test that we do not register processes with empty sites for process-per-site
+// mode.
+TEST_F(SiteInstanceTest, NoProcessPerSiteForEmptySite) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kProcessPerSite);
+  scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
+  scoped_ptr<RenderProcessHost> host;
+  scoped_refptr<SiteInstanceImpl> instance(static_cast<SiteInstanceImpl*>(
+      SiteInstance::Create(browser_context.get())));
+
+  instance->SetSite(GURL());
+  EXPECT_TRUE(instance->HasSite());
+  EXPECT_TRUE(instance->GetSiteURL().is_empty());
+  host.reset(instance->GetProcess());
+
+  EXPECT_FALSE(RenderProcessHostImpl::GetProcessHostForSite(
+      browser_context.get(), GURL()));
+
+  DrainMessageLoops();
+}
+
 }  // namespace content
