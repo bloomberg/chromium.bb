@@ -769,10 +769,6 @@ class SpdySynReplyControlFrame : public SpdyControlFrame {
     return ntohl(block()->stream_id_) & kStreamIdMask;
   }
 
-  void set_stream_id(SpdyStreamId id) {
-    mutable_block()->stream_id_ = htonl(id & kStreamIdMask);
-  }
-
   int header_block_len() const {
     size_t header_block_len = length() - (size() - SpdyFrame::kHeaderSize);
     // SPDY 2 had 2 bytes of unused space preceeding the header block.
@@ -816,10 +812,6 @@ class SpdyRstStreamControlFrame : public SpdyControlFrame {
     return ntohl(block()->stream_id_) & kStreamIdMask;
   }
 
-  void set_stream_id(SpdyStreamId id) {
-    mutable_block()->stream_id_ = htonl(id & kStreamIdMask);
-  }
-
   SpdyStatusCodes status() const {
     SpdyStatusCodes status =
         static_cast<SpdyStatusCodes>(ntohl(block()->status_));
@@ -854,10 +846,6 @@ class SpdySettingsControlFrame : public SpdyControlFrame {
 
   uint32 num_entries() const {
     return ntohl(block()->num_entries_);
-  }
-
-  void set_num_entries(int val) {
-    mutable_block()->num_entries_ = htonl(val);
   }
 
   int header_block_len() const {
@@ -950,10 +938,6 @@ class SpdyGoAwayControlFrame : public SpdyControlFrame {
     }
   }
 
-  void set_last_accepted_stream_id(SpdyStreamId id) {
-    mutable_block()->last_accepted_stream_id_ = htonl(id & kStreamIdMask);
-  }
-
   static size_t size() { return sizeof(SpdyGoAwayControlFrameBlock); }
 
  private:
@@ -977,10 +961,6 @@ class SpdyHeadersControlFrame : public SpdyControlFrame {
     return ntohl(block()->stream_id_) & kStreamIdMask;
   }
 
-  void set_stream_id(SpdyStreamId id) {
-    mutable_block()->stream_id_ = htonl(id & kStreamIdMask);
-  }
-
   // The number of bytes in the header block beyond the frame header length.
   int header_block_len() const {
     size_t header_block_len = length() - (size() - SpdyFrame::kHeaderSize);
@@ -989,15 +969,6 @@ class SpdyHeadersControlFrame : public SpdyControlFrame {
       header_block_len -= 2;
     }
     return header_block_len;
-  }
-
-  const char* header_block() const {
-    const char* header_block = reinterpret_cast<const char*>(block()) + size();
-    // SPDY 2 had 2 bytes of unused space preceeding the header block.
-    if (version() < 3) {
-      header_block += 2;
-    }
-    return header_block;
   }
 
   // Returns the size of the SpdyHeadersControlFrameBlock structure.
@@ -1023,10 +994,6 @@ class SpdyWindowUpdateControlFrame : public SpdyControlFrame {
 
   SpdyStreamId stream_id() const {
     return ntohl(block()->stream_id_) & kStreamIdMask;
-  }
-
-  void set_stream_id(SpdyStreamId id) {
-    mutable_block()->stream_id_ = htonl(id & kStreamIdMask);
   }
 
   uint32 delta_window_size() const {

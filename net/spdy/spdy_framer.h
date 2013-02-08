@@ -329,10 +329,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Check the state of the framer.
   SpdyError error_code() const { return error_code_; }
   SpdyState state() const { return state_; }
-
-  bool MessageFullyRead() const {
-    return state_ == SPDY_DONE || state_ == SPDY_AUTO_RESET;
-  }
   bool HasError() const { return state_ == SPDY_ERROR; }
 
   // Given a buffer containing a decompressed header block in SPDY

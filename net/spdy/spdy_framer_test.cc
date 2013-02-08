@@ -327,7 +327,6 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
       fin_frame_count_(0),
       fin_flag_count_(0),
       zero_length_data_frame_count_(0),
-      header_blocks_count_(0),
       control_frame_header_data_count_(0),
       zero_length_control_frame_header_data_count_(0),
       data_frame_count_(0),
@@ -552,7 +551,6 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   int fin_frame_count_;  // The count of RST_STREAM type frames received.
   int fin_flag_count_;  // The count of frames with the FIN flag set.
   int zero_length_data_frame_count_;  // The count of zero-length data frames.
-  int header_blocks_count_;
   int control_frame_header_data_count_;  // The count of chunks received.
   // The count of zero-length control frame header data chunks received.
   int zero_length_control_frame_header_data_count_;
