@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/alias.h"
 #include "base/file_version_info.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
@@ -183,8 +182,7 @@ bool IsContentsBackgroundPrinted(WebContents* web_contents) {
 ////////////////////////////////////////////////////////////////////////////////
 TaskManagerRendererResource::TaskManagerRendererResource(
     base::ProcessHandle process, content::RenderViewHost* render_view_host)
-    : content::RenderViewHostObserver(render_view_host),
-      process_(process),
+    : process_(process),
       render_view_host_(render_view_host),
       pending_stats_update_(false),
       fps_(0.0f),
@@ -203,18 +201,6 @@ TaskManagerRendererResource::~TaskManagerRendererResource() {
 }
 
 void TaskManagerRendererResource::Refresh() {
-  if (!render_view_host()) {
-    // Store information about where this TaskManagerRendererResource was
-    // created and where the RenderViewHost was destroyed on the stack to help
-    // debugging where we forgot to delete this resource.
-    base::debug::StackTrace creation_stack = creation_stack_;
-    base::debug::Alias(&creation_stack);
-    CHECK(destruction_stack_);
-    base::debug::StackTrace destruction_stack = *destruction_stack_;
-    base::debug::Alias(&destruction_stack);
-    CHECK(false);
-  }
-
   if (!pending_stats_update_) {
     render_view_host_->Send(new ChromeViewMsg_GetCacheResourceStats);
     pending_stats_update_ = true;
@@ -303,11 +289,6 @@ void TaskManagerRendererResource::Inspect() const {
 
 bool TaskManagerRendererResource::SupportNetworkUsage() const {
   return true;
-}
-
-void TaskManagerRendererResource::RenderViewHostDestroyed(
-    content::RenderViewHost* render_view_host) {
-  destruction_stack_.reset(new base::debug::StackTrace());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
