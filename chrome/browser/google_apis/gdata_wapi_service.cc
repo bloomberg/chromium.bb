@@ -419,11 +419,32 @@ void GDataWapiService::InitiateUpload(
     return;
   }
 
-  runner_->StartOperationWithRetry(
-      new InitiateUploadOperation(operation_registry(),
-                                  url_request_context_getter_,
-                                  callback,
-                                  params));
+  // TODO(hidehiko): Remove this if-statement by splitting the InitiateUpload
+  // method into two InitiateUploadNewFile and InitiateUploadExistingFile.
+  if (params.upload_mode == UPLOAD_NEW_FILE) {
+    runner_->StartOperationWithRetry(
+        new InitiateUploadNewFileOperation(
+            operation_registry(),
+            url_request_context_getter_,
+            callback,
+            params.drive_file_path,
+            params.content_type,
+            params.content_length,
+            params.upload_location,  // Here, upload_location has parent's URL.
+            params.title));
+  } else {
+    DCHECK_EQ(params.upload_mode, UPLOAD_EXISTING_FILE);
+    runner_->StartOperationWithRetry(
+        new InitiateUploadExistingFileOperation(
+            operation_registry(),
+            url_request_context_getter_,
+            callback,
+            params.drive_file_path,
+            params.content_type,
+            params.content_length,
+            params.upload_location,  // Here, upload_location has file's URL.
+            params.etag));
+  }
 }
 
 void GDataWapiService::ResumeUpload(const ResumeUploadParams& params,

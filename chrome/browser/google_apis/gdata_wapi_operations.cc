@@ -27,13 +27,10 @@ const char kIfMatchAllHeader[] = "If-Match: *";
 const char kIfMatchHeaderPrefix[] = "If-Match: ";
 
 const char kUploadContentRange[] = "Content-Range: bytes ";
-const char kUploadContentType[] = "X-Upload-Content-Type: ";
-const char kUploadContentLength[] = "X-Upload-Content-Length: ";
 
 const char kFeedField[] = "feed";
 
 // Templates for file uploading.
-const char kUploadResponseLocation[] = "location";
 const char kUploadResponseRange[] = "range";
 
 // Returns If-Match header string for |etag|.
@@ -63,26 +60,6 @@ UploadRangeResponse::UploadRangeResponse(GDataErrorCode code,
 }
 
 UploadRangeResponse::~UploadRangeResponse() {
-}
-
-InitiateUploadParams::InitiateUploadParams(
-    UploadMode upload_mode,
-    const std::string& title,
-    const std::string& content_type,
-    int64 content_length,
-    const GURL& upload_location,
-    const FilePath& drive_file_path,
-    const std::string& etag)
-    : upload_mode(upload_mode),
-      title(title),
-      content_type(content_type),
-      content_length(content_length),
-      upload_location(upload_location),
-      drive_file_path(drive_file_path),
-      etag(etag) {
-}
-
-InitiateUploadParams::~InitiateUploadParams() {
 }
 
 ResumeUploadParams::ResumeUploadParams(
@@ -489,94 +466,41 @@ RemoveResourceFromDirectoryOperation::GetExtraRequestHeaders() const {
   return headers;
 }
 
-//=========================== InitiateUploadOperation ==========================
+//======================= InitiateUploadNewFileOperation =======================
 
-InitiateUploadOperation::InitiateUploadOperation(
+InitiateUploadNewFileOperation::InitiateUploadNewFileOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
     const InitiateUploadCallback& callback,
-    const InitiateUploadParams& params)
-    : UrlFetchOperationBase(registry,
-                            url_request_context_getter,
-                            OPERATION_UPLOAD,
-                            params.drive_file_path),
-      callback_(callback),
-      params_(params) {
-  DCHECK(!callback_.is_null());
+    const FilePath& drive_file_path,
+    const std::string& content_type,
+    int64 content_length,
+    const GURL& parent_upload_url,
+    const std::string& title)
+    : InitiateUploadOperationBase(registry,
+                                  url_request_context_getter,
+                                  callback,
+                                  drive_file_path,
+                                  content_type,
+                                  content_length),
+      parent_upload_url_(parent_upload_url),
+      title_(title) {
 }
 
-InitiateUploadOperation::~InitiateUploadOperation() {}
+InitiateUploadNewFileOperation::~InitiateUploadNewFileOperation() {}
 
-GURL InitiateUploadOperation::GetURL() const {
-  return GDataWapiUrlGenerator::AddInitiateUploadUrlParams(
-      params_.upload_location);
+GURL InitiateUploadNewFileOperation::GetURL() const {
+  return GDataWapiUrlGenerator::AddInitiateUploadUrlParams(parent_upload_url_);
 }
 
-void InitiateUploadOperation::ProcessURLFetchResults(
-    const URLFetcher* source) {
-  GDataErrorCode code = GetErrorCode(source);
-
-  std::string upload_location;
-  if (code == HTTP_SUCCESS) {
-    // Retrieve value of the first "Location" header.
-    source->GetResponseHeaders()->EnumerateHeader(NULL,
-                                                  kUploadResponseLocation,
-                                                  &upload_location);
-  }
-  VLOG(1) << "Got response for [" << params_.title
-          << "]: code=" << code
-          << ", location=[" << upload_location << "]";
-
-  callback_.Run(code, GURL(upload_location));
-  OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
+net::URLFetcher::RequestType
+InitiateUploadNewFileOperation::GetRequestType() const {
+  return net::URLFetcher::POST;
 }
 
-void InitiateUploadOperation::NotifySuccessToOperationRegistry() {
-  NotifySuspend();
-}
-
-void InitiateUploadOperation::RunCallbackOnPrematureFailure(
-    GDataErrorCode code) {
-  callback_.Run(code, GURL());
-}
-
-URLFetcher::RequestType InitiateUploadOperation::GetRequestType() const {
-  if (params_.upload_mode == UPLOAD_NEW_FILE)
-    return URLFetcher::POST;
-
-  DCHECK_EQ(UPLOAD_EXISTING_FILE, params_.upload_mode);
-  return URLFetcher::PUT;
-}
-
-std::vector<std::string>
-InitiateUploadOperation::GetExtraRequestHeaders() const {
-  std::vector<std::string> headers;
-  if (!params_.content_type.empty())
-    headers.push_back(kUploadContentType + params_.content_type);
-
-  headers.push_back(
-      kUploadContentLength + base::Int64ToString(params_.content_length));
-
-  if (params_.upload_mode == UPLOAD_EXISTING_FILE) {
-    headers.push_back(GenerateIfMatchHeader(params_.etag));
-  }
-
-  return headers;
-}
-
-bool InitiateUploadOperation::GetContentData(std::string* upload_content_type,
-                                             std::string* upload_content) {
-  if (params_.upload_mode == UPLOAD_EXISTING_FILE) {
-    // When uploading an existing file, the body is empty as we don't modify
-    // the metadata.
-    *upload_content = "";
-    // Even though the body is empty, Content-Type should be set to
-    // "text/plain". Otherwise, the server won't accept.
-    *upload_content_type = "text/plain";
-    return true;
-  }
-
-  DCHECK_EQ(UPLOAD_NEW_FILE, params_.upload_mode);
+bool InitiateUploadNewFileOperation::GetContentData(
+    std::string* upload_content_type,
+    std::string* upload_content) {
   upload_content_type->assign("application/atom+xml");
   XmlWriter xml_writer;
   xml_writer.StartWriting();
@@ -584,13 +508,65 @@ bool InitiateUploadOperation::GetContentData(std::string* upload_content_type,
   xml_writer.AddAttribute("xmlns", "http://www.w3.org/2005/Atom");
   xml_writer.AddAttribute("xmlns:docs",
                           "http://schemas.google.com/docs/2007");
-  xml_writer.WriteElement("title", params_.title);
+  xml_writer.WriteElement("title", title_);
   xml_writer.EndElement();  // Ends "entry" element.
   xml_writer.StopWriting();
   upload_content->assign(xml_writer.GetWrittenString());
-  DVLOG(1) << "Upload data: " << *upload_content_type << ", ["
+  DVLOG(1) << "InitiateUploadNewFile: " << *upload_content_type << ", ["
            << *upload_content << "]";
   return true;
+}
+
+//===================== InitiateUploadExistingFileOperation ====================
+
+InitiateUploadExistingFileOperation::InitiateUploadExistingFileOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const InitiateUploadCallback& callback,
+    const FilePath& drive_file_path,
+    const std::string& content_type,
+    int64 content_length,
+    const GURL& upload_url,
+    const std::string& etag)
+    : InitiateUploadOperationBase(registry,
+                                  url_request_context_getter,
+                                  callback,
+                                  drive_file_path,
+                                  content_type,
+                                  content_length),
+      upload_url_(upload_url),
+      etag_(etag) {
+}
+
+InitiateUploadExistingFileOperation::~InitiateUploadExistingFileOperation() {}
+
+GURL InitiateUploadExistingFileOperation::GetURL() const {
+  return GDataWapiUrlGenerator::AddInitiateUploadUrlParams(upload_url_);
+}
+
+net::URLFetcher::RequestType
+InitiateUploadExistingFileOperation::GetRequestType() const {
+  return net::URLFetcher::PUT;
+}
+
+bool InitiateUploadExistingFileOperation::GetContentData(
+    std::string* upload_content_type,
+    std::string* upload_content) {
+  // According to the document there is no need to send the content-type.
+  // However, the server would return 500 server error without the
+  // content-type.
+  // As its workaround, send "text/plain" content-type here.
+  *upload_content_type = "text/plain";
+  *upload_content = "";
+  return true;
+}
+
+std::vector<std::string>
+InitiateUploadExistingFileOperation::GetExtraRequestHeaders() const {
+  std::vector<std::string> headers(
+      InitiateUploadOperationBase::GetExtraRequestHeaders());
+  headers.push_back(GenerateIfMatchHeader(etag_));
+  return headers;
 }
 
 //========================== UploadRangeOperationBase ==========================

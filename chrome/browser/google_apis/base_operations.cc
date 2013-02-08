@@ -29,6 +29,11 @@ const char kGDataVersionHeader[] = "GData-Version: 3.0";
 // Maximum number of attempts for re-authentication per operation.
 const int kMaxReAuthenticateAttemptsPerOperation = 1;
 
+// Template for initiate upload of both GData WAPI and Drive API v2.
+const char kUploadContentType[] = "X-Upload-Content-Type: ";
+const char kUploadContentLength[] = "X-Upload-Content-Length: ";
+const char kUploadResponseLocation[] = "location";
+
 // Parse JSON string to base::Value object.
 scoped_ptr<base::Value> ParseJsonOnBlockingPool(const std::string& json) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -270,7 +275,6 @@ UrlFetchOperationBase::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-
 //============================ EntryActionOperation ============================
 
 EntryActionOperation::EntryActionOperation(
@@ -366,6 +370,87 @@ void GetDataOperation::RunCallbackOnSuccess(GDataErrorCode fetch_error_code,
                                             scoped_ptr<base::Value> value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   callback_.Run(fetch_error_code, value.Pass());
+}
+
+//========================= InitiateUploadOperationBase ========================
+
+InitiateUploadParams::InitiateUploadParams(
+    UploadMode upload_mode,
+    const std::string& title,
+    const std::string& content_type,
+    int64 content_length,
+    const GURL& upload_location,
+    const FilePath& drive_file_path,
+    const std::string& etag)
+    : upload_mode(upload_mode),
+      title(title),
+      content_type(content_type),
+      content_length(content_length),
+      upload_location(upload_location),
+      drive_file_path(drive_file_path),
+      etag(etag) {
+}
+
+InitiateUploadParams::~InitiateUploadParams() {
+}
+
+InitiateUploadOperationBase::InitiateUploadOperationBase(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const InitiateUploadCallback& callback,
+    const FilePath& drive_file_path,
+    const std::string& content_type,
+    int64 content_length)
+    : UrlFetchOperationBase(registry,
+                            url_request_context_getter,
+                            OPERATION_UPLOAD,
+                            drive_file_path),
+      callback_(callback),
+      drive_file_path_(drive_file_path),
+      content_type_(content_type),
+      content_length_(content_length) {
+  DCHECK(!callback_.is_null());
+  DCHECK(!content_type_.empty());
+  DCHECK_GE(content_length_, 0);
+}
+
+InitiateUploadOperationBase::~InitiateUploadOperationBase() {}
+
+void InitiateUploadOperationBase::ProcessURLFetchResults(
+    const URLFetcher* source) {
+  GDataErrorCode code = GetErrorCode(source);
+
+  std::string upload_location;
+  if (code == HTTP_SUCCESS) {
+    // Retrieve value of the first "Location" header.
+    source->GetResponseHeaders()->EnumerateHeader(NULL,
+                                                  kUploadResponseLocation,
+                                                  &upload_location);
+  }
+  VLOG(1) << "Got response for [" << drive_file_path_.value()
+          << "]: code=" << code
+          << ", location=[" << upload_location << "]";
+
+  callback_.Run(code, GURL(upload_location));
+  OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
+}
+
+void InitiateUploadOperationBase::NotifySuccessToOperationRegistry() {
+  NotifySuspend();
+}
+
+void InitiateUploadOperationBase::RunCallbackOnPrematureFailure(
+    GDataErrorCode code) {
+  callback_.Run(code, GURL());
+}
+
+std::vector<std::string>
+InitiateUploadOperationBase::GetExtraRequestHeaders() const {
+  std::vector<std::string> headers;
+  headers.push_back(kUploadContentType + content_type_);
+  headers.push_back(
+      kUploadContentLength + base::Int64ToString(content_length_));
+  return headers;
 }
 
 //============================ DownloadFileOperation ===========================

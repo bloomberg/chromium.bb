@@ -766,30 +766,27 @@ TEST_F(GDataWapiOperationsTest, RemoveResourceFromDirectoryOperation) {
   EXPECT_FALSE(http_request_.has_content);
 }
 
-// This test exercises InitiateUploadOperation and ResumeUploadOperation for
-// a scenario of uploading a new file.
+// This test exercises InitiateUploadNewFileOperation and
+// ResumeUploadOperation for a scenario of uploading a new file.
 TEST_F(GDataWapiOperationsTest, UploadNewFile) {
   const std::string kUploadContent = "hello";
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   GURL upload_url;
 
   // 1) Get the upload URL for uploading a new file.
-  InitiateUploadParams initiate_params(
-      UPLOAD_NEW_FILE,
-      "New file",
-      "text/plain",
-      kUploadContent.size(),
-      test_server_.GetURL("/feeds/upload/create-session/default/private/full"),
-      FilePath::FromUTF8Unsafe("drive/newfile.txt"),
-      "" /* etag */);
-
-  InitiateUploadOperation* initiate_operation = new InitiateUploadOperation(
-      &operation_registry_,
-      request_context_getter_.get(),
-      base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
-                 &result_code,
-                 &upload_url),
-      initiate_params);
+  InitiateUploadNewFileOperation* initiate_operation =
+      new InitiateUploadNewFileOperation(
+          &operation_registry_,
+          request_context_getter_.get(),
+          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+                     &result_code,
+                     &upload_url),
+          FilePath::FromUTF8Unsafe("drive/newfile.txt"),
+          "text/plain",
+          kUploadContent.size(),
+          test_server_.GetURL(
+              "/feeds/upload/create-session/default/private/full"),
+          "New file");
 
   initiate_operation->Start(
       kTestGDataAuthToken, kTestUserAgent,
@@ -864,9 +861,9 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
   EXPECT_EQ(-1, response.end_position_received);
 }
 
-// This test exercises InitiateUploadOperation and ResumeUploadOperation for
-// a scenario of uploading a new *large* file, which requires multiple requests
-// of ResumeUploadOperation.
+// This test exercises InitiateUploadNewFileOperation and ResumeUploadOperation
+// for a scenario of uploading a new *large* file, which requires multiple
+// requests of ResumeUploadOperation.
 TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
   const size_t kMaxNumBytes = 10;
   // This is big enough to cause multiple requests of ResumeUploadOperation
@@ -876,22 +873,19 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
   GURL upload_url;
 
   // 1) Get the upload URL for uploading a new file.
-  InitiateUploadParams initiate_params(
-      UPLOAD_NEW_FILE,
-      "New file",
-      "text/plain",
-      kUploadContent.size(),
-      test_server_.GetURL("/feeds/upload/create-session/default/private/full"),
-      FilePath::FromUTF8Unsafe("drive/newfile.txt"),
-      "" /* etag */);
-
-  InitiateUploadOperation* initiate_operation = new InitiateUploadOperation(
-      &operation_registry_,
-      request_context_getter_.get(),
-      base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
-                 &result_code,
-                 &upload_url),
-      initiate_params);
+  InitiateUploadNewFileOperation* initiate_operation =
+      new InitiateUploadNewFileOperation(
+          &operation_registry_,
+          request_context_getter_.get(),
+          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+                     &result_code,
+                     &upload_url),
+          FilePath::FromUTF8Unsafe("drive/newfile.txt"),
+          "text/plain",
+          kUploadContent.size(),
+          test_server_.GetURL(
+              "/feeds/upload/create-session/default/private/full"),
+          "New file");
 
   initiate_operation->Start(
       kTestGDataAuthToken, kTestUserAgent,
@@ -992,8 +986,8 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
   EXPECT_EQ(kUploadContent.size(), num_bytes_consumed);
 }
 
-// This test exercises InitiateUploadOperation and ResumeUploadOperation for
-// a scenario of uploading a new *empty* file.
+// This test exercises InitiateUploadNewFileOperation and ResumeUploadOperation
+// for a scenario of uploading a new *empty* file.
 //
 // The test is almost identical to UploadNewFile. The only difference is the
 // expectation for the Content-Range header.
@@ -1003,22 +997,19 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
   GURL upload_url;
 
   // 1) Get the upload URL for uploading a new file.
-  InitiateUploadParams initiate_params(
-      UPLOAD_NEW_FILE,
-      "New file",
-      "text/plain",
-      kUploadContent.size(),
-      test_server_.GetURL("/feeds/upload/create-session/default/private/full"),
-      FilePath::FromUTF8Unsafe("drive/newfile.txt"),
-      "" /* etag */);
-
-  InitiateUploadOperation* initiate_operation = new InitiateUploadOperation(
-      &operation_registry_,
-      request_context_getter_.get(),
-      base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
-                 &result_code,
-                 &upload_url),
-      initiate_params);
+  InitiateUploadNewFileOperation* initiate_operation =
+      new InitiateUploadNewFileOperation(
+          &operation_registry_,
+          request_context_getter_.get(),
+          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+                     &result_code,
+                     &upload_url),
+          FilePath::FromUTF8Unsafe("drive/newfile.txt"),
+          "text/plain",
+          kUploadContent.size(),
+          test_server_.GetURL(
+              "/feeds/upload/create-session/default/private/full"),
+          "New file");
 
   initiate_operation->Start(
       kTestGDataAuthToken, kTestUserAgent,
@@ -1091,31 +1082,27 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
   EXPECT_EQ(-1, response.end_position_received);
 }
 
-// This test exercises InitiateUploadOperation and ResumeUploadOperation for
-// a scenario of updating an existing file.
+// This test exercises InitiateUploadExistingFileOperation and
+// ResumeUploadOperation for a scenario of updating an existing file.
 TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
   const std::string kUploadContent = "hello";
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   GURL upload_url;
 
   // 1) Get the upload URL for uploading an existing file.
-  InitiateUploadParams initiate_params(
-      UPLOAD_EXISTING_FILE,
-      "Existing file",
-      "text/plain",
-      kUploadContent.size(),
-      test_server_.GetURL(
-          "/feeds/upload/create-session/default/private/full/file:foo"),
-      FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
-      "" /* etag */);
-
-  InitiateUploadOperation* initiate_operation = new InitiateUploadOperation(
-      &operation_registry_,
-      request_context_getter_.get(),
-      base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
-                 &result_code,
-                 &upload_url),
-      initiate_params);
+  InitiateUploadExistingFileOperation* initiate_operation =
+      new InitiateUploadExistingFileOperation(
+          &operation_registry_,
+          request_context_getter_.get(),
+          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+                     &result_code,
+                     &upload_url),
+          FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
+          "text/plain",
+          kUploadContent.size(),
+          test_server_.GetURL(
+              "/feeds/upload/create-session/default/private/full/file:foo"),
+          "" /* etag */);
 
   initiate_operation->Start(
       kTestGDataAuthToken, kTestUserAgent,
@@ -1190,31 +1177,27 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
   EXPECT_EQ(-1, response.end_position_received);
 }
 
-// This test exercises InitiateUploadOperation and ResumeUploadOperation for
-// a scenario of updating an existing file.
+// This test exercises InitiateUploadExistingFileOperation and
+// ResumeUploadOperation for a scenario of updating an existing file.
 TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
   const std::string kUploadContent = "hello";
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   GURL upload_url;
 
   // 1) Get the upload URL for uploading an existing file.
-  InitiateUploadParams initiate_params(
-      UPLOAD_EXISTING_FILE,
-      "Existing file",
-      "text/plain",
-      kUploadContent.size(),
-      test_server_.GetURL(
-          "/feeds/upload/create-session/default/private/full/file:foo"),
-      FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
-      kTestETag);
-
-  InitiateUploadOperation* initiate_operation = new InitiateUploadOperation(
-      &operation_registry_,
-      request_context_getter_.get(),
-      base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
-                 &result_code,
-                 &upload_url),
-      initiate_params);
+  InitiateUploadExistingFileOperation* initiate_operation =
+      new InitiateUploadExistingFileOperation(
+          &operation_registry_,
+          request_context_getter_.get(),
+          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+                     &result_code,
+                     &upload_url),
+          FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
+          "text/plain",
+          kUploadContent.size(),
+          test_server_.GetURL(
+              "/feeds/upload/create-session/default/private/full/file:foo"),
+          kTestETag);
 
   initiate_operation->Start(
       kTestGDataAuthToken, kTestUserAgent,
@@ -1289,31 +1272,27 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
   EXPECT_EQ(-1, response.end_position_received);
 }
 
-// This test exercises InitiateUploadOperation for a scenario of confliction on
-// updating an existing file.
+// This test exercises InitiateUploadExistingFileOperation for a scenario of
+// confliction on updating an existing file.
 TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETagConflict) {
   const std::string kUploadContent = "hello";
   const std::string kWrongETag = "wrong_etag";
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   GURL upload_url;
 
-  InitiateUploadParams initiate_params(
-      UPLOAD_EXISTING_FILE,
-      "Existing file",
-      "text/plain",
-      kUploadContent.size(),
-      test_server_.GetURL(
-          "/feeds/upload/create-session/default/private/full/file:foo"),
-      FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
-      kWrongETag);
-
-  InitiateUploadOperation* initiate_operation = new InitiateUploadOperation(
-      &operation_registry_,
-      request_context_getter_.get(),
-      base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
-                 &result_code,
-                 &upload_url),
-      initiate_params);
+  InitiateUploadExistingFileOperation* initiate_operation =
+      new InitiateUploadExistingFileOperation(
+          &operation_registry_,
+          request_context_getter_.get(),
+          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+                     &result_code,
+                     &upload_url),
+          FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
+          "text/plain",
+          kUploadContent.size(),
+          test_server_.GetURL(
+              "/feeds/upload/create-session/default/private/full/file:foo"),
+          kWrongETag);
 
   initiate_operation->Start(
       kTestGDataAuthToken, kTestUserAgent,

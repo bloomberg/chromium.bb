@@ -345,84 +345,79 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
   DISALLOW_COPY_AND_ASSIGN(RemoveResourceFromDirectoryOperation);
 };
 
-//=========================== InitiateUploadOperation ==========================
+//======================= InitiateUploadNewFileOperation =======================
 
-// Struct for passing params needed for DriveServiceInterface::InitiateUpload()
-// calls.
-//
-// When uploading a new file (UPLOAD_NEW_FILE):
-// - |title| should be set.
-// - |upload_location| should be the upload_url() of the parent directory.
-//   (resumable-create-media URL)
-// - |etag| is ignored.
-//
-// When updating an existing file (UPLOAD_EXISTING_FILE):
-// - |title| should be empty
-// - |upload_location| should be the upload_url() of the existing file.
-//   (resumable-edit-media URL)
-// - If |etag| should be empty or should match the etag() of the destination
-//   file.
-struct InitiateUploadParams {
-  InitiateUploadParams(UploadMode upload_mode,
-                       const std::string& title,
-                       const std::string& content_type,
-                       int64 content_length,
-                       const GURL& upload_location,
-                       const FilePath& drive_file_path,
-                       const std::string& etag);
-  ~InitiateUploadParams();
-
-  const UploadMode upload_mode;
-  const std::string title;
-  const std::string content_type;
-  const int64 content_length;
-  const GURL upload_location;
-  const FilePath drive_file_path;
-  const std::string etag;
-};
-
-// Callback type for DocumentServiceInterface::InitiateUpload.
-typedef base::Callback<void(GDataErrorCode error,
-                            const GURL& upload_url)> InitiateUploadCallback;
-
-// This class performs the operation for initiating the upload of a file.
-// |callback| will be called with the obtained upload URL. The URL will be
-// used with ResumeUploadOperation to upload the content to the server.
-//
-// Here's the flow of uploading:
-// 1) Get the upload URL with InitiateUploadOperation.
-// 2) Upload the first 512KB (see kUploadChunkSize in drive_uploader.cc)
-//    of the target file to the upload URL
-// 3) If there is more data to upload, go to 2).
-//
-class InitiateUploadOperation : public UrlFetchOperationBase {
+// This class performs the operation for initiating the upload of a new file.
+// TODO(hidehiko): Replace |parent_upload_url| by |parent_resource_id|.
+class InitiateUploadNewFileOperation : public InitiateUploadOperationBase {
  public:
-  // |callback| will be called with the upload URL, where upload data is
-  // uploaded to with ResumeUploadOperation.
-  // |callback| must not be null.
-  InitiateUploadOperation(
+  // |title| should be set.
+  // |parent_upload_url| should be the upload_url() of the parent directory.
+  //   (resumable-create-media URL)
+  // See also the comments of InitiateUploadOperationBase for more details
+  // about the other parameters.
+  InitiateUploadNewFileOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const InitiateUploadCallback& callback,
-      const InitiateUploadParams& params);
-  virtual ~InitiateUploadOperation();
+      const FilePath& drive_file_path,
+      const std::string& content_type,
+      int64 content_length,
+      const GURL& parent_upload_url,
+      const std::string& title);
+  virtual ~InitiateUploadNewFileOperation();
 
  protected:
   // UrlFetchOperationBase overrides.
   virtual GURL GetURL() const OVERRIDE;
-  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-  virtual void NotifySuccessToOperationRegistry() OVERRIDE;
-  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+
+ private:
+  const GURL parent_upload_url_;
+  const std::string title_;
+
+  DISALLOW_COPY_AND_ASSIGN(InitiateUploadNewFileOperation);
+};
+
+//==================== InitiateUploadExistingFileOperation =====================
+
+// This class performs the operation for initiating the upload of an existing
+// file.
+// TODO(hidehiko): Replace |upload_url| by |resource_id|.
+class InitiateUploadExistingFileOperation
+    : public InitiateUploadOperationBase {
+ public:
+  // |upload_url| should be the upload_url() of the file
+  //    (resumable-create-media URL)
+  // |etag| should be set if it is available to detect the upload confliction.
+  // See also the comments of InitiateUploadOperationBase for more details
+  // about the other parameters.
+  InitiateUploadExistingFileOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const InitiateUploadCallback& callback,
+      const FilePath& drive_file_path,
+      const std::string& content_type,
+      int64 content_length,
+      const GURL& upload_url,
+      const std::string& etag);
+  virtual ~InitiateUploadExistingFileOperation();
+
+ protected:
+  // UrlFetchOperationBase overrides.
+  virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
 
  private:
-  const InitiateUploadCallback callback_;
-  const InitiateUploadParams params_;
+  const GURL upload_url_;
+  const std::string etag_;
 
-  DISALLOW_COPY_AND_ASSIGN(InitiateUploadOperation);
+  DISALLOW_COPY_AND_ASSIGN(InitiateUploadExistingFileOperation);
 };
 
 //========================== UploadRangeOperationBase ==========================
