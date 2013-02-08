@@ -52,8 +52,10 @@ class WebGLInfobarTest : public InProcessBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) {
     // GPU tests require gpu acceleration.
-    // We do not care which GL backend is used.
-    command_line->AppendSwitchASCII(switches::kUseGL, "any");
+#if !defined(OS_MACOSX)
+    command_line->AppendSwitchASCII(
+        switches::kUseGL, gfx::kGLImplementationOSMesaName);
+#endif
   }
   virtual void SetUpInProcessBrowserTestFixture() {
     FilePath test_dir;
