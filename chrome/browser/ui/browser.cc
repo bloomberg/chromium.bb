@@ -381,8 +381,6 @@ Browser::Browser(const CreateParams& params)
       new chrome::search::SearchDelegate(search_model_.get(),
                                          toolbar_model_.get()));
 
-  registrar_.Add(this, content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -759,6 +757,14 @@ void Browser::WindowFullscreenStateChanged() {
   fullscreen_controller_->WindowFullscreenStateChanged();
   command_controller_->FullscreenStateChanged();
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN);
+}
+
+void Browser::VisibleSSLStateChanged(content::WebContents* web_contents) {
+  // When the current tab's SSL state changes, we need to update the URL
+  // bar to reflect the new state.
+  DCHECK(web_contents);
+  if (tab_strip_model_->GetActiveWebContents() == web_contents)
+    UpdateToolbar(false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1828,19 +1834,6 @@ void Browser::Observe(int type,
                       const content::NotificationSource& source,
                       const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED:
-      // When the current tab's SSL state changes, we need to update the URL
-      // bar to reflect the new state. Note that it's possible for the selected
-      // tab contents to be NULL. This is because we listen for all sources
-      // (NavigationControllers) for convenience, so the notification could
-      // actually be for a different window while we're doing asynchronous
-      // closing of this one.
-      if (tab_strip_model_->GetActiveWebContents() &&
-          &tab_strip_model_->GetActiveWebContents()->GetController() ==
-          content::Source<NavigationController>(source).ptr())
-        UpdateToolbar(false);
-      break;
-
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       if (window()->GetLocationBar())
         window()->GetLocationBar()->UpdatePageActions();

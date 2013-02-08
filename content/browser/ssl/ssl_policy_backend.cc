@@ -18,7 +18,7 @@ SSLPolicyBackend::SSLPolicyBackend(NavigationControllerImpl* controller)
 
 void SSLPolicyBackend::HostRanInsecureContent(const std::string& host, int id) {
   ssl_host_state_->HostRanInsecureContent(host, id);
-  SSLManager::NotifySSLInternalStateChanged(controller_);
+  SSLManager::NotifySSLInternalStateChanged(controller_->GetBrowserContext());
 }
 
 bool SSLPolicyBackend::DidHostRunInsecureContent(const std::string& host,

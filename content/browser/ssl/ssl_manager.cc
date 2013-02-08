@@ -4,7 +4,10 @@
 
 #include "content/browser/ssl/ssl_manager.h"
 
+#include <set>
+
 #include "base/bind.h"
+#include "base/supports_user_data.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -14,6 +17,7 @@
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/ssl_status_serialization.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/load_from_memory_cache_details.h"
 #include "content/public/browser/navigation_details.h"
@@ -24,6 +28,25 @@
 #include "net/url_request/url_request.h"
 
 namespace content {
+
+namespace {
+
+const char kSSLManagerKeyName[] = "content_ssl_manager";
+
+class SSLManagerSet : public base::SupportsUserData::Data {
+ public:
+  SSLManagerSet() {
+  }
+
+  std::set<SSLManager*>& get() { return set_; }
+
+ private:
+  std::set<SSLManager*> set_;
+
+  DISALLOW_COPY_AND_ASSIGN(SSLManagerSet);
+};
+
+}  // namespace
 
 // static
 void SSLManager::OnSSLCertificateError(
@@ -61,12 +84,15 @@ void SSLManager::OnSSLCertificateError(
 }
 
 // static
-void SSLManager::NotifySSLInternalStateChanged(
-    NavigationControllerImpl* controller) {
-  NotificationService::current()->Notify(
-      NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
-      Source<BrowserContext>(controller->GetBrowserContext()),
-      NotificationService::NoDetails());
+void SSLManager::NotifySSLInternalStateChanged(BrowserContext* context) {
+  SSLManagerSet* managers = static_cast<SSLManagerSet*>(
+      context->GetUserData(kSSLManagerKeyName));
+
+  for (std::set<SSLManager*>::iterator i = managers->get().begin();
+       i != managers->get().end(); ++i) {
+    (*i)->UpdateEntry(NavigationEntryImpl::FromNavigationEntry(
+                          (*i)->controller()->GetActiveEntry()));
+  }
 }
 
 SSLManager::SSLManager(NavigationControllerImpl* controller)
@@ -85,13 +111,20 @@ SSLManager::SSLManager(NavigationControllerImpl* controller)
   registrar_.Add(
       this, NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
       Source<NavigationController>(controller_));
-  registrar_.Add(
-      this, NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
-      Source<BrowserContext>(
-          controller_->GetBrowserContext()));
+
+  SSLManagerSet* managers = static_cast<SSLManagerSet*>(
+      controller_->GetBrowserContext()->GetUserData(kSSLManagerKeyName));
+  if (!managers) {
+    managers = new SSLManagerSet;
+    controller_->GetBrowserContext()->SetUserData(kSSLManagerKeyName, managers);
+  }
+  managers->get().insert(this);
 }
 
 SSLManager::~SSLManager() {
+  SSLManagerSet* managers = static_cast<SSLManagerSet*>(
+      controller_->GetBrowserContext()->GetUserData(kSSLManagerKeyName));
+  managers->get().erase(this);
 }
 
 void SSLManager::DidCommitProvisionalLoad(
@@ -128,10 +161,16 @@ void SSLManager::DidCommitProvisionalLoad(
   UpdateEntry(entry);
 }
 
+void SSLManager::DidDisplayInsecureContent() {
+  UpdateEntry(
+      NavigationEntryImpl::FromNavigationEntry(controller_->GetActiveEntry()));
+}
+
 void SSLManager::DidRunInsecureContent(const std::string& security_origin) {
-  policy()->DidRunInsecureContent(
-      NavigationEntryImpl::FromNavigationEntry(controller_->GetActiveEntry()),
-      security_origin);
+  NavigationEntryImpl* navigation_entry =
+      NavigationEntryImpl::FromNavigationEntry(controller_->GetActiveEntry());
+  policy()->DidRunInsecureContent(navigation_entry, security_origin);
+  UpdateEntry(navigation_entry);
 }
 
 void SSLManager::Observe(int type,
@@ -150,9 +189,6 @@ void SSLManager::Observe(int type,
     case NOTIFICATION_LOAD_FROM_MEMORY_CACHE:
       DidLoadFromMemoryCache(
           Details<LoadFromMemoryCacheDetails>(details).ptr());
-      break;
-    case NOTIFICATION_SSL_INTERNAL_STATE_CHANGED:
-      DidChangeSSLInternalState();
       break;
     default:
       NOTREACHED() << "The SSLManager received an unexpected notification.";
@@ -198,11 +234,6 @@ void SSLManager::DidReceiveResourceRedirect(ResourceRedirectDetails* details) {
   //               HTTP request to https://attacker.com/payload.js.
 }
 
-void SSLManager::DidChangeSSLInternalState() {
-  UpdateEntry(
-      NavigationEntryImpl::FromNavigationEntry(controller_->GetActiveEntry()));
-}
-
 void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
   // We don't always have a navigation entry to update, for example in the
   // case of the Web Inspector.
@@ -213,12 +244,8 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
 
   policy()->UpdateEntry(entry, controller_->web_contents());
 
-  if (!entry->GetSSL().Equals(original_ssl_status)) {
-    NotificationService::current()->Notify(
-        NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
-        Source<NavigationController>(controller_),
-        NotificationService::NoDetails());
-  }
+  if (!entry->GetSSL().Equals(original_ssl_status))
+    controller_->web_contents()->DidChangeVisibleSSLState();
 }
 
 }  // namespace content
