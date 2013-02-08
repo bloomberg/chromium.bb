@@ -17,6 +17,7 @@
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
+#include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 
@@ -178,6 +179,7 @@ int main(int argc, const char *argv[]) {
   NaClLogModuleInit();
   NaClTimeInit();
   NaClInitGlobals();
+  NaClTlsInit();
   NaClSignalHandlerInit();
 
   /* Add this one first, we should never call it */

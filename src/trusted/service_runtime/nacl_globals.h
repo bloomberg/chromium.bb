@@ -12,6 +12,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_GLOBALS_H__
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 
@@ -57,6 +58,7 @@ void NaClInitGlobals(void);
 
 static INLINE struct NaClAppThread *NaClAppThreadGetFromIndex(
     uint32_t thread_index) {
+  DCHECK(thread_index < NACL_THREAD_MAX);
   return NaClAppThreadFromThreadContext(nacl_user[thread_index]);
 }
 
