@@ -225,8 +225,8 @@ class SpdyFramerDebugVisitorInterface {
   virtual ~SpdyFramerDebugVisitorInterface() {}
 
   // Called after compressing header blocks.
-  // Provides decompressed and compressed sizes.
-  virtual void OnCompressedHeaderBlock(size_t decompressed_len,
+  // Provides uncompressed and compressed sizes.
+  virtual void OnCompressedHeaderBlock(size_t uncompressed_len,
                                        size_t compressed_len) {}
 };
 

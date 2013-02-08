@@ -331,7 +331,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
       control_frame_header_data_count_(0),
       zero_length_control_frame_header_data_count_(0),
       data_frame_count_(0),
-      last_decompressed_size_(0),
+      last_uncompressed_size_(0),
       last_compressed_size_(0),
       header_buffer_(new char[kDefaultHeaderBufferSize]),
       header_buffer_length_(0),
@@ -478,9 +478,9 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     return true;
   }
 
-  virtual void OnCompressedHeaderBlock(size_t decompressed_size,
+  virtual void OnCompressedHeaderBlock(size_t uncompressed_size,
                                        size_t compressed_size) OVERRIDE {
-    last_decompressed_size_ = decompressed_size;
+    last_uncompressed_size_ = uncompressed_size;
     last_compressed_size_ = compressed_size;
   }
 
@@ -551,7 +551,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   // The count of zero-length control frame header data chunks received.
   int zero_length_control_frame_header_data_count_;
   int data_frame_count_;
-  size_t last_decompressed_size_;
+  size_t last_uncompressed_size_;
   size_t last_compressed_size_;
 
   // Header block streaming state:
@@ -927,14 +927,14 @@ TEST_P(SpdyFramerTest, BasicCompression) {
                              true,  // compress
                              &headers));
   if (IsSpdy2()) {
-    EXPECT_EQ(139u, visitor.last_decompressed_size_);
+    EXPECT_EQ(139u, visitor.last_uncompressed_size_);
 #if defined(USE_SYSTEM_ZLIB)
     EXPECT_EQ(93u, visitor.last_compressed_size_);
 #else  // !defined(USE_SYSTEM_ZLIB)
     EXPECT_EQ(135u, visitor.last_compressed_size_);
 #endif  // !defined(USE_SYSTEM_ZLIB)
   } else {
-    EXPECT_EQ(165u, visitor.last_decompressed_size_);
+    EXPECT_EQ(165u, visitor.last_uncompressed_size_);
 #if defined(USE_SYSTEM_ZLIB)
     EXPECT_EQ(72u, visitor.last_compressed_size_);
 #else  // !defined(USE_SYSTEM_ZLIB)
