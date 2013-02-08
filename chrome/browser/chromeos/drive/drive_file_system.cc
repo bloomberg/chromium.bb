@@ -26,7 +26,6 @@
 #include "chrome/browser/google_apis/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
-#include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -256,8 +255,7 @@ DriveFileSystem::DriveFileSystem(
       scheduler_(new DriveScheduler(profile, drive_service, uploader)),
       polling_interval_sec_(kFastPollingIntervalInSec),
       push_notification_enabled_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(ui_weak_ptr_factory_(this)),
-      ui_weak_ptr_(ui_weak_ptr_factory_.GetWeakPtr()) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -267,9 +265,9 @@ void DriveFileSystem::Reload() {
 
   feed_loader_->ReloadFromServerIfNeeded(
       base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  base::Bind(&DriveFileSystem::OnUpdateChecked,
-                            ui_weak_ptr_)));
+                            weak_ptr_factory_.GetWeakPtr())));
 }
 
 void DriveFileSystem::Initialize() {
@@ -311,7 +309,8 @@ void DriveFileSystem::CheckForUpdates() {
 
   if (resource_metadata_->loaded() && !feed_loader_->refreshing()) {
     feed_loader_->ReloadFromServerIfNeeded(
-        base::Bind(&DriveFileSystem::OnUpdateChecked, ui_weak_ptr_));
+        base::Bind(&DriveFileSystem::OnUpdateChecked,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -352,7 +351,7 @@ void DriveFileSystem::StartInitialFeedFetch() {
     new OperationReadinessObserver(
         drive_service_,
         base::Bind(&DriveFileSystem::LoadFeedIfNeeded,
-                   ui_weak_ptr_,
+                   weak_ptr_factory_.GetWeakPtr(),
                    base::Bind(&EmptyFileOperationCallback)));
   }
 }
@@ -364,7 +363,7 @@ void DriveFileSystem::StartPolling() {
   update_timer_.Start(FROM_HERE,
                       base::TimeDelta::FromSeconds(polling_interval_sec_),
                       base::Bind(&DriveFileSystem::CheckForUpdates,
-                                 ui_weak_ptr_));
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveFileSystem::StopPolling() {
@@ -389,27 +388,13 @@ void DriveFileSystem::SetPushNotificationEnabled(bool enabled) {
 void DriveFileSystem::GetEntryInfoByResourceId(
     const std::string& resource_id,
     const GetEntryInfoWithFilePathCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!callback.is_null());
-
-  google_apis::RunTaskOnUIThread(
-      base::Bind(&DriveFileSystem::GetEntryInfoByResourceIdOnUIThread,
-                 ui_weak_ptr_,
-                 resource_id,
-                 google_apis::CreateRelayCallback(callback)));
-}
-
-void DriveFileSystem::GetEntryInfoByResourceIdOnUIThread(
-    const std::string& resource_id,
-    const GetEntryInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   resource_metadata_->GetEntryInfoByResourceId(
       resource_id,
       base::Bind(&DriveFileSystem::GetEntryInfoByResourceIdAfterGetEntry,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
@@ -459,7 +444,7 @@ void DriveFileSystem::LoadFeedIfNeeded(const FileOperationCallback& callback) {
 
   // Load root feed from the disk cache.
   feed_loader_->LoadFromCache(base::Bind(&DriveFileSystem::OnFeedCacheLoaded,
-                                         ui_weak_ptr_,
+                                         weak_ptr_factory_.GetWeakPtr(),
                                          callback));
 }
 
@@ -486,89 +471,28 @@ void DriveFileSystem::TransferFileFromLocalToRemote(
 void DriveFileSystem::Copy(const FilePath& src_file_path,
                            const FilePath& dest_file_path,
                            const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-
-  google_apis::RunTaskOnUIThread(
-      base::Bind(&DriveFileSystem::CopyOnUIThread,
-                 ui_weak_ptr_,
-                 src_file_path,
-                 dest_file_path,
-                 google_apis::CreateRelayCallback(callback)));
-}
-
-void DriveFileSystem::CopyOnUIThread(const FilePath& src_file_path,
-                                     const FilePath& dest_file_path,
-                                     const FileOperationCallback& callback) {
   drive_operations_.Copy(src_file_path, dest_file_path, callback);
 }
 
 void DriveFileSystem::Move(const FilePath& src_file_path,
                            const FilePath& dest_file_path,
                            const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-
-  google_apis::RunTaskOnUIThread(
-      base::Bind(&DriveFileSystem::MoveOnUIThread,
-                 ui_weak_ptr_,
-                 src_file_path,
-                 dest_file_path,
-                 google_apis::CreateRelayCallback(callback)));
-}
-
-void DriveFileSystem::MoveOnUIThread(const FilePath& src_file_path,
-                                     const FilePath& dest_file_path,
-                                     const FileOperationCallback& callback) {
   drive_operations_.Move(src_file_path, dest_file_path, callback);
 }
 
 void DriveFileSystem::Remove(const FilePath& file_path,
     bool is_recursive,
     const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!callback.is_null());
-
-  google_apis::RunTaskOnUIThread(
-      base::Bind(&DriveFileSystem::RemoveOnUIThread,
-                 ui_weak_ptr_,
-                 file_path,
-                 is_recursive,
-                 google_apis::CreateRelayCallback(callback)));
-}
-
-void DriveFileSystem::RemoveOnUIThread(
-    const FilePath& file_path,
-    bool is_recursive,
-    const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-
   drive_operations_.Remove(file_path, is_recursive, callback);
 }
 
 void DriveFileSystem::CreateDirectory(
-    const FilePath& directory_path,
-    bool is_exclusive,
-    bool is_recursive,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!callback.is_null());
-
-  google_apis::RunTaskOnUIThread(
-      base::Bind(&DriveFileSystem::CreateDirectoryOnUIThread,
-                 ui_weak_ptr_,
-                 directory_path,
-                 is_exclusive,
-                 is_recursive,
-                 google_apis::CreateRelayCallback(callback)));
-}
-
-void DriveFileSystem::CreateDirectoryOnUIThread(
     const FilePath& directory_path,
     bool is_exclusive,
     bool is_recursive,
@@ -583,22 +507,6 @@ void DriveFileSystem::CreateDirectoryOnUIThread(
 void DriveFileSystem::CreateFile(const FilePath& file_path,
                                  bool is_exclusive,
                                  const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!callback.is_null());
-
-  google_apis::RunTaskOnUIThread(
-      base::Bind(&DriveFileSystem::CreateFileOnUIThread,
-                 ui_weak_ptr_,
-                 file_path,
-                 is_exclusive,
-                 google_apis::CreateRelayCallback(callback)));
-}
-
-void DriveFileSystem::CreateFileOnUIThread(
-    const FilePath& file_path,
-    bool is_exclusive,
-    const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -606,7 +514,7 @@ void DriveFileSystem::CreateFileOnUIThread(
   resource_metadata_->GetEntryInfoByPath(
       file_path,
       base::Bind(&DriveFileSystem::OnGetEntryInfoForCreateFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  is_exclusive,
                  callback));
@@ -655,26 +563,13 @@ void DriveFileSystem::OnGetEntryInfoForCreateFile(
 
 void DriveFileSystem::GetFileByPath(const FilePath& file_path,
                                     const GetFileCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!callback.is_null());
-
-  google_apis::RunTaskOnUIThread(
-      base::Bind(&DriveFileSystem::GetFileByPathOnUIThread,
-                 ui_weak_ptr_,
-                 file_path,
-                 google_apis::CreateRelayCallback(callback)));
-}
-
-void DriveFileSystem::GetFileByPathOnUIThread(const FilePath& file_path,
-                                              const GetFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   resource_metadata_->GetEntryInfoByPath(
       file_path,
       base::Bind(&DriveFileSystem::OnGetEntryInfoCompleteForGetFileByPath,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  callback));
 }
@@ -751,7 +646,7 @@ void DriveFileSystem::GetResolvedFileByPath(
                   entry_proto->file_specific_info().file_md5(),
                   base::Bind(
                       &DriveFileSystem::OnGetFileFromCache,
-                      ui_weak_ptr_,
+                      weak_ptr_factory_.GetWeakPtr(),
                       GetFileFromCacheParams(
                           file_path,
                           local_tmp_path,
@@ -766,27 +661,13 @@ void DriveFileSystem::GetFileByResourceId(
     const std::string& resource_id,
     const GetFileCallback& get_file_callback,
     const google_apis::GetContentCallback& get_content_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  google_apis::RunTaskOnUIThread(
-      base::Bind(&DriveFileSystem::GetFileByResourceIdOnUIThread,
-                 ui_weak_ptr_,
-                 resource_id,
-                 google_apis::CreateRelayCallback(get_file_callback),
-                 google_apis::CreateRelayCallback(get_content_callback)));
-}
-
-void DriveFileSystem::GetFileByResourceIdOnUIThread(
-    const std::string& resource_id,
-    const GetFileCallback& get_file_callback,
-    const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!get_file_callback.is_null());
 
   resource_metadata_->GetEntryInfoByResourceId(
       resource_id,
       base::Bind(&DriveFileSystem::GetFileByResourceIdAfterGetEntry,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  get_file_callback,
                  get_content_callback));
 }
@@ -846,7 +727,7 @@ void DriveFileSystem::OnGetFileFromCache(
   scheduler_->GetResourceEntry(
       params.resource_id,
       base::Bind(&DriveFileSystem::OnGetResourceEntry,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  params));
 }
 
@@ -887,7 +768,7 @@ void DriveFileSystem::OnGetResourceEntry(
   resource_metadata_->RefreshEntry(
       ConvertResourceEntryToDriveEntryProto(*entry),
       base::Bind(&DriveFileSystem::CheckForSpaceBeforeDownload,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  params,
                  file_size,
                  download_url));
@@ -914,7 +795,7 @@ void DriveFileSystem::CheckForSpaceBeforeDownload(
   cache_->FreeDiskSpaceIfNeededFor(
       file_size,
       base::Bind(&DriveFileSystem::StartDownloadFileIfEnoughSpace,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  params,
                  download_url,
                  params.cache_file_path));
@@ -943,38 +824,24 @@ void DriveFileSystem::StartDownloadFileIfEnoughSpace(
       params.local_tmp_path,
       download_url,
       base::Bind(&DriveFileSystem::OnFileDownloaded,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  params),
       params.get_content_callback);
 }
 
 void DriveFileSystem::GetEntryInfoByPath(const FilePath& file_path,
                                          const GetEntryInfoCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!callback.is_null());
-
-  google_apis::RunTaskOnUIThread(
-      base::Bind(&DriveFileSystem::GetEntryInfoByPathOnUIThread,
-                 ui_weak_ptr_,
-                 file_path,
-                 google_apis::CreateRelayCallback(callback)));
-}
-
-void DriveFileSystem::GetEntryInfoByPathOnUIThread(
-    const FilePath& file_path,
-    const GetEntryInfoCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   LoadFeedIfNeeded(
-      base::Bind(&DriveFileSystem::GetEntryInfoByPathOnUIThreadAfterLoad,
-                 ui_weak_ptr_,
+      base::Bind(&DriveFileSystem::GetEntryInfoByPathAfterLoad,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  callback));
 }
 
-void DriveFileSystem::GetEntryInfoByPathOnUIThreadAfterLoad(
+void DriveFileSystem::GetEntryInfoByPathAfterLoad(
     const FilePath& file_path,
     const GetEntryInfoCallback& callback,
     DriveFileError error) {
@@ -988,12 +855,12 @@ void DriveFileSystem::GetEntryInfoByPathOnUIThreadAfterLoad(
 
   resource_metadata_->GetEntryInfoByPath(
       file_path,
-      base::Bind(&DriveFileSystem::GetEntryInfoByPathOnUIThreadAfterGetEntry,
-                 ui_weak_ptr_,
+      base::Bind(&DriveFileSystem::GetEntryInfoByPathAfterGetEntry,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
-void DriveFileSystem::GetEntryInfoByPathOnUIThreadAfterGetEntry(
+void DriveFileSystem::GetEntryInfoByPathAfterGetEntry(
     const GetEntryInfoCallback& callback,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
@@ -1012,31 +879,16 @@ void DriveFileSystem::GetEntryInfoByPathOnUIThreadAfterGetEntry(
 void DriveFileSystem::ReadDirectoryByPath(
     const FilePath& directory_path,
     const ReadDirectoryWithSettingCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!callback.is_null());
-
-  google_apis::RunTaskOnUIThread(
-      base::Bind(&DriveFileSystem::ReadDirectoryByPathOnUIThread,
-                 ui_weak_ptr_,
-                 directory_path,
-                 google_apis::CreateRelayCallback(callback)));
-}
-
-void DriveFileSystem::ReadDirectoryByPathOnUIThread(
-    const FilePath& directory_path,
-    const ReadDirectoryWithSettingCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  LoadFeedIfNeeded(
-      base::Bind(&DriveFileSystem::ReadDirectoryByPathOnUIThreadAfterLoad,
-                 ui_weak_ptr_,
-                 directory_path,
-                 callback));
+  LoadFeedIfNeeded(base::Bind(&DriveFileSystem::ReadDirectoryByPathAfterLoad,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              directory_path,
+                              callback));
 }
 
-void DriveFileSystem::ReadDirectoryByPathOnUIThreadAfterLoad(
+void DriveFileSystem::ReadDirectoryByPathAfterLoad(
     const FilePath& directory_path,
     const ReadDirectoryWithSettingCallback& callback,
     DriveFileError error) {
@@ -1052,12 +904,12 @@ void DriveFileSystem::ReadDirectoryByPathOnUIThreadAfterLoad(
 
   resource_metadata_->ReadDirectoryByPath(
       directory_path,
-      base::Bind(&DriveFileSystem::ReadDirectoryByPathOnUIThreadAfterRead,
-                 ui_weak_ptr_,
+      base::Bind(&DriveFileSystem::ReadDirectoryByPathAfterRead,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
-void DriveFileSystem::ReadDirectoryByPathOnUIThreadAfterRead(
+void DriveFileSystem::ReadDirectoryByPathAfterRead(
     const ReadDirectoryWithSettingCallback& callback,
     DriveFileError error,
     scoped_ptr<DriveEntryProtoVector> entries) {
@@ -1076,28 +928,17 @@ void DriveFileSystem::ReadDirectoryByPathOnUIThreadAfterRead(
 }
 
 void DriveFileSystem::RequestDirectoryRefresh(const FilePath& directory_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  google_apis::RunTaskOnUIThread(
-      base::Bind(&DriveFileSystem::RequestDirectoryRefreshOnUIThread,
-                 ui_weak_ptr_,
-                 directory_path));
-}
-
-void DriveFileSystem::RequestDirectoryRefreshOnUIThread(
-    const FilePath& directory_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Make sure the destination directory exists.
   resource_metadata_->GetEntryInfoByPath(
       directory_path,
-      base::Bind(
-          &DriveFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo,
-          ui_weak_ptr_,
-          directory_path));
+      base::Bind(&DriveFileSystem::RequestDirectoryRefreshAfterGetEntryInfo,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 directory_path));
 }
 
-void DriveFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
+void DriveFileSystem::RequestDirectoryRefreshAfterGetEntryInfo(
     const FilePath& directory_path,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
@@ -1112,7 +953,7 @@ void DriveFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
   feed_loader_->LoadDirectoryFromServer(
       entry_proto->resource_id(),
       base::Bind(&DriveFileSystem::OnRequestDirectoryRefresh,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  entry_proto->resource_id(),
                  directory_path));
 }
@@ -1136,24 +977,10 @@ void DriveFileSystem::OnRequestDirectoryRefresh(
       directory_resource_id,
       feed_processor.entry_proto_map(),
       base::Bind(&DriveFileSystem::OnDirectoryChangeFileMoveCallback,
-                 ui_weak_ptr_));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveFileSystem::UpdateFileByResourceId(
-    const std::string& resource_id,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!callback.is_null());
-
-  google_apis::RunTaskOnUIThread(
-      base::Bind(&DriveFileSystem::UpdateFileByResourceIdOnUIThread,
-                 ui_weak_ptr_,
-                 resource_id,
-                 google_apis::CreateRelayCallback(callback)));
-}
-
-void DriveFileSystem::UpdateFileByResourceIdOnUIThread(
     const std::string& resource_id,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1164,22 +991,12 @@ void DriveFileSystem::UpdateFileByResourceIdOnUIThread(
 
 void DriveFileSystem::GetAvailableSpace(
     const GetAvailableSpaceCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  google_apis::RunTaskOnUIThread(
-      base::Bind(&DriveFileSystem::GetAvailableSpaceOnUIThread,
-                 ui_weak_ptr_,
-                 google_apis::CreateRelayCallback(callback)));
-}
-
-void DriveFileSystem::GetAvailableSpaceOnUIThread(
-    const GetAvailableSpaceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   scheduler_->GetAccountMetadata(
       base::Bind(&DriveFileSystem::OnGetAccountMetadata,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
@@ -1250,7 +1067,7 @@ void DriveFileSystem::OnSearch(
 
     const GetEntryInfoWithFilePathCallback entry_info_callback =
         base::Bind(&DriveFileSystem::AddToSearchResults,
-                   ui_weak_ptr_,
+                   weak_ptr_factory_.GetWeakPtr(),
                    results,
                    should_run_callback,
                    callback);
@@ -1301,24 +1118,6 @@ void DriveFileSystem::Search(const std::string& search_query,
                              bool shared_with_me,
                              const GURL& next_feed,
                              const SearchCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!callback.is_null());
-
-  google_apis::RunTaskOnUIThread(
-      base::Bind(&DriveFileSystem::SearchAsyncOnUIThread,
-                 ui_weak_ptr_,
-                 search_query,
-                 shared_with_me,
-                 next_feed,
-                 google_apis::CreateRelayCallback(callback)));
-}
-
-void DriveFileSystem::SearchAsyncOnUIThread(
-    const std::string& search_query,
-    bool shared_with_me,
-    const GURL& next_feed,
-    const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -1327,7 +1126,7 @@ void DriveFileSystem::SearchAsyncOnUIThread(
       shared_with_me,
       next_feed,
       base::Bind(&DriveFileSystem::OnSearch,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  shared_with_me,
                  callback));
 }
@@ -1378,7 +1177,7 @@ void DriveFileSystem::OnFileDownloaded(
     cache_->GetCacheEntry(params.resource_id,
                           params.md5,
                           base::Bind(&DriveFileSystem::UnpinIfPinned,
-                                     ui_weak_ptr_,
+                                     weak_ptr_factory_.GetWeakPtr(),
                                      params.resource_id,
                                      params.md5));
   }
@@ -1394,7 +1193,7 @@ void DriveFileSystem::OnFileDownloaded(
   cache_->FreeDiskSpaceIfNeededFor(
       0,
       base::Bind(&DriveFileSystem::OnFileDownloadedAndSpaceChecked,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  params,
                  status,
                  downloaded_file_path));
@@ -1486,7 +1285,7 @@ void DriveFileSystem::OnFeedCacheLoaded(const FileOperationCallback& callback,
     // If cache cannot be loaded, try to load from server directly.
     feed_loader_->ReloadFromServerIfNeeded(
         base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
-                   ui_weak_ptr_,
+                   weak_ptr_factory_.GetWeakPtr(),
                    callback));
     return;
   }
@@ -1532,7 +1331,7 @@ void DriveFileSystem::AddUploadedFile(
       directory_path,
       entry.Pass(),
       base::Bind(&DriveFileSystem::AddUploadedFileToCache,
-                 ui_weak_ptr_, params));
+                 weak_ptr_factory_.GetWeakPtr(), params));
 }
 
 void DriveFileSystem::AddUploadedFileToCache(
@@ -1612,19 +1411,6 @@ void DriveFileSystem::InitializePreferenceObserver() {
 
 void DriveFileSystem::OpenFile(const FilePath& file_path,
                                const OpenFileCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!callback.is_null());
-
-  google_apis::RunTaskOnUIThread(
-      base::Bind(&DriveFileSystem::OpenFileOnUIThread,
-                 ui_weak_ptr_,
-                 file_path,
-                 google_apis::CreateRelayCallback(callback)));
-}
-
-void DriveFileSystem::OpenFileOnUIThread(const FilePath& file_path,
-                                         const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -1644,10 +1430,10 @@ void DriveFileSystem::OpenFileOnUIThread(const FilePath& file_path,
   resource_metadata_->GetEntryInfoByPath(
       file_path,
       base::Bind(&DriveFileSystem::OnGetEntryInfoCompleteForOpenFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  base::Bind(&DriveFileSystem::OnOpenFileFinished,
-                            ui_weak_ptr_,
+                            weak_ptr_factory_.GetWeakPtr(),
                             file_path,
                             callback)));
 }
@@ -1683,7 +1469,7 @@ void DriveFileSystem::OnGetEntryInfoCompleteForOpenFile(
   GetResolvedFileByPath(
       file_path,
       base::Bind(&DriveFileSystem::OnGetFileCompleteForOpenFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  GetFileCompleteForOpenParams(
                      callback,
                      entry_proto_ptr->resource_id(),
@@ -1706,14 +1492,14 @@ void DriveFileSystem::OnGetFileCompleteForOpenFile(
     return;
   }
 
-  // OpenFileOnUIThread ensures that the file is a regular file.
+  // OpenFile ensures that the file is a regular file.
   DCHECK_EQ(REGULAR_FILE, file_type);
 
   cache_->MarkDirty(
       params.resource_id,
       params.md5,
       base::Bind(&DriveFileSystem::OnMarkDirtyInCacheCompleteForOpenFile,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  params));
 }
 
@@ -1749,20 +1535,6 @@ void DriveFileSystem::OnOpenFileFinished(const FilePath& file_path,
 
 void DriveFileSystem::CloseFile(const FilePath& file_path,
                                 const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!callback.is_null());
-
-  google_apis::RunTaskOnUIThread(
-      base::Bind(&DriveFileSystem::CloseFileOnUIThread,
-                 ui_weak_ptr_,
-                 file_path,
-                 google_apis::CreateRelayCallback(callback)));
-}
-
-void DriveFileSystem::CloseFileOnUIThread(
-    const FilePath& file_path,
-    const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -1777,16 +1549,16 @@ void DriveFileSystem::CloseFileOnUIThread(
   // Step 1 of CloseFile: Get resource_id and md5 for |file_path|.
   resource_metadata_->GetEntryInfoByPath(
       file_path,
-      base::Bind(&DriveFileSystem::CloseFileOnUIThreadAfterGetEntryInfo,
-                 ui_weak_ptr_,
+      base::Bind(&DriveFileSystem::CloseFileAfterGetEntryInfo,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_path,
-                 base::Bind(&DriveFileSystem::CloseFileOnUIThreadFinalize,
-                            ui_weak_ptr_,
+                 base::Bind(&DriveFileSystem::CloseFileFinalize,
+                            weak_ptr_factory_.GetWeakPtr(),
                             file_path,
                             callback)));
 }
 
-void DriveFileSystem::CloseFileOnUIThreadAfterGetEntryInfo(
+void DriveFileSystem::CloseFileAfterGetEntryInfo(
     const FilePath& file_path,
     const FileOperationCallback& callback,
     DriveFileError error,
@@ -1813,10 +1585,9 @@ void DriveFileSystem::CloseFileOnUIThreadAfterGetEntryInfo(
                       callback);
 }
 
-void DriveFileSystem::CloseFileOnUIThreadFinalize(
-    const FilePath& file_path,
-    const FileOperationCallback& callback,
-    DriveFileError result) {
+void DriveFileSystem::CloseFileFinalize(const FilePath& file_path,
+                                        const FileOperationCallback& callback,
+                                        DriveFileError result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -1852,7 +1623,9 @@ void DriveFileSystem::CheckLocalModificationAndRun(
       md5,
       base::Bind(
           &DriveFileSystem::CheckLocalModificationAndRunAfterGetCacheEntry,
-          ui_weak_ptr_, base::Passed(&entry_proto), callback));
+          weak_ptr_factory_.GetWeakPtr(),
+          base::Passed(&entry_proto),
+          callback));
 }
 
 void DriveFileSystem::CheckLocalModificationAndRunAfterGetCacheEntry(
@@ -1877,7 +1650,9 @@ void DriveFileSystem::CheckLocalModificationAndRunAfterGetCacheEntry(
       md5,
       base::Bind(
           &DriveFileSystem::CheckLocalModificationAndRunAfterGetCacheFile,
-          ui_weak_ptr_, base::Passed(&entry_proto), callback));
+          weak_ptr_factory_.GetWeakPtr(),
+          base::Passed(&entry_proto),
+          callback));
 }
 
 void DriveFileSystem::CheckLocalModificationAndRunAfterGetCacheFile(
@@ -1903,7 +1678,7 @@ void DriveFileSystem::CheckLocalModificationAndRunAfterGetCacheFile(
                  local_cache_path,
                  base::Unretained(file_info)),
       base::Bind(&DriveFileSystem::CheckLocalModificationAndRunAfterGetFileInfo,
-                 ui_weak_ptr_,
+                 weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&entry_proto),
                  callback,
                  base::Owned(file_info)));
