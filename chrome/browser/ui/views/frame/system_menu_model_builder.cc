@@ -25,26 +25,16 @@ SystemMenuModelBuilder::~SystemMenuModelBuilder() {
 }
 
 void SystemMenuModelBuilder::Init() {
-  bool needs_trailing_separator = false;
-  ui::SimpleMenuModel* model = CreateMenuModel(&needs_trailing_separator);
+  ui::SimpleMenuModel* model = new ui::SimpleMenuModel(&menu_delegate_);
   menu_model_.reset(model);
   BuildMenu(model);
-  if (needs_trailing_separator)
-    model->AddSeparator(ui::NORMAL_SEPARATOR);
-}
-
-ui::SimpleMenuModel* SystemMenuModelBuilder::CreateMenuModel(
-    bool* needs_trailing_separator) {
 #if defined(OS_WIN)
   // On Windows with HOST_DESKTOP_TYPE_NATIVE we put the menu items in the
   // system menu (not at the end). Doing this necessitates adding a trailing
   // separator.
-  *needs_trailing_separator =
-      (browser()->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_NATIVE);
-#else
-  *needs_trailing_separator = false;
+  if (browser()->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_NATIVE)
+    model->AddSeparator(ui::NORMAL_SEPARATOR);
 #endif
-  return new ui::SimpleMenuModel(&menu_delegate_);
 }
 
 void SystemMenuModelBuilder::BuildMenu(ui::SimpleMenuModel* model) {

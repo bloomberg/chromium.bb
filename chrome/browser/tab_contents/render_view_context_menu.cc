@@ -541,10 +541,7 @@ void RenderViewContextMenu::AppendPlatformAppItems() {
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDebugPackedApps)) {
     // Add a separator if there are any items already in the menu.
-    if (menu_model_.GetItemCount() &&
-        menu_model_.GetTypeAt(menu_model_.GetItemCount() - 1) !=
-            ui::MenuModel::TYPE_SEPARATOR)
-      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP,
                                     IDS_CONTENT_CONTEXT_RELOAD_PACKAGED_APP);
@@ -648,8 +645,7 @@ void RenderViewContextMenu::AppendDeveloperItems() {
 
   // In the DevTools popup menu, "developer items" is normally the only
   // section, so omit the separator there.
-  if (menu_model_.GetItemCount() > 0)
-    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_INSPECTELEMENT,
                                   IDS_CONTENT_CONTEXT_INSPECTELEMENT);
 }
@@ -745,8 +741,7 @@ void RenderViewContextMenu::AppendPluginItems() {
   }
 
   if (params_.media_flags & WebContextMenuData::MediaCanRotate) {
-    if (menu_model_.GetItemCount() > 0)
-      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_ROTATECW,
                                     IDS_CONTENT_CONTEXT_ROTATECW);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_ROTATECCW,

@@ -124,7 +124,7 @@ void LauncherContextMenu::Init() {
         int index = 0;
         extension_items_->AppendExtensionItems(
             app_id, string16(), &index);
-        AddSeparatorIfNecessary(ui::NORMAL_SEPARATOR);
+        AddSeparator(ui::NORMAL_SEPARATOR);
       }
     }
   }

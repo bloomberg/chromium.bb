@@ -49,8 +49,9 @@ void LauncherApplicationMenuItemModel::Build() {
       SetIcon(GetIndexOfCommandId(i), item->icon());
     // The first item is most likely the application name which should get
     // separated from the rest.
-    if (!i && launcher_items_.size() > 1)
+    if (i == 0)
       AddSeparator(ui::NORMAL_SEPARATOR);
   }
+  RemoveTrailingSeparators();
 }
 

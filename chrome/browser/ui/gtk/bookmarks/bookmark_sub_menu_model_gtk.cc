@@ -176,19 +176,15 @@ void BookmarkSubMenuModel::MenuWillShow() {
     PopulateMenu();
   }
   bookmark_end_ = GetItemCount();
+
   // We want only one separator after the top-level bookmarks and before the
-  // other node and/or mobile node. Keep track of whether we've added it yet.
-  bool added_separator = false;
-  if (model()->other_node()->GetTotalNodeCount() > 1) {
-    AddSeparator(ui::NORMAL_SEPARATOR);
-    added_separator = true;
+  // other node and/or mobile node.
+  AddSeparator(ui::NORMAL_SEPARATOR);
+  if (model()->other_node()->GetTotalNodeCount() > 1)
     AddSubMenuForNode(model()->other_node());
-  }
-  if (model()->mobile_node()->GetTotalNodeCount() > 1) {
-    if (!added_separator)
-      AddSeparator(ui::NORMAL_SEPARATOR);
+  if (model()->mobile_node()->GetTotalNodeCount() > 1)
     AddSubMenuForNode(model()->mobile_node());
-  }
+  RemoveTrailingSeparators();
 }
 
 void BookmarkSubMenuModel::MenuClosed() {

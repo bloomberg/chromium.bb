@@ -734,12 +734,14 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
     DCHECK(profile_cache_->GetNumberOfProfiles() == size_t(1) ||
            keep_alive_for_test_);
     background_mode_data_.begin()->second->BuildProfileMenu(menu, NULL);
-    menu->AddSeparator(ui::NORMAL_SEPARATOR);
   }
+
+  menu->AddSeparator(ui::NORMAL_SEPARATOR);
   menu->AddCheckItemWithStringId(
       IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND,
       IDS_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND);
   menu->AddItemWithStringId(IDC_EXIT, IDS_EXIT);
+
   context_menu_ = menu;
   status_icon_->SetContextMenu(menu);
 }

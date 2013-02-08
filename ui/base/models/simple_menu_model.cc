@@ -81,18 +81,6 @@ void SimpleMenuModel::AddItemWithStringId(int command_id, int string_id) {
   AddItem(command_id, l10n_util::GetStringUTF16(string_id));
 }
 
-void SimpleMenuModel::AddSeparator(MenuSeparatorType separator_type) {
-#if !defined(USE_AURA)
-  if (separator_type != NORMAL_SEPARATOR) {
-    NOTIMPLEMENTED();
-  }
-#endif
-  DCHECK(items_.empty() || items_.back().type != TYPE_SEPARATOR);
-  Item item = { kSeparatorId, string16(), gfx::Image(), TYPE_SEPARATOR,
-                -1, NULL, NULL , separator_type };
-  AppendItem(item);
-}
-
 void SimpleMenuModel::AddCheckItem(int command_id, const string16& label) {
   Item item = { command_id, label, gfx::Image(), TYPE_CHECK, -1, NULL,
                 NULL, NORMAL_SEPARATOR };
@@ -115,10 +103,30 @@ void SimpleMenuModel::AddRadioItemWithStringId(int command_id, int string_id,
   AddRadioItem(command_id, l10n_util::GetStringUTF16(string_id), group_id);
 }
 
-void SimpleMenuModel::AddSeparatorIfNecessary(MenuSeparatorType separator_type)
+void SimpleMenuModel::AddSeparator(MenuSeparatorType separator_type)
 {
-  if (!items_.empty() && items_.back().type != TYPE_SEPARATOR)
-    AddSeparator(separator_type);
+  if (items_.empty()) {
+    if (separator_type == NORMAL_SEPARATOR) {
+      return;
+    }
+    DCHECK_EQ(SPACING_SEPARATOR, separator_type);
+  } else if (items_.back().type == TYPE_SEPARATOR) {
+    DCHECK_EQ(NORMAL_SEPARATOR, separator_type);
+    DCHECK_EQ(NORMAL_SEPARATOR, items_.back().separator_type);
+    return;
+  }
+#if !defined(USE_AURA)
+  if (separator_type != NORMAL_SEPARATOR)
+    NOTIMPLEMENTED();
+#endif
+  Item item = { kSeparatorId, string16(), gfx::Image(), TYPE_SEPARATOR,
+                -1, NULL, NULL , separator_type };
+  AppendItem(item);
+}
+
+void SimpleMenuModel::RemoveTrailingSeparators() {
+  while (!items_.empty() && items_.back().type == TYPE_SEPARATOR)
+    items_.pop_back();
 }
 
 void SimpleMenuModel::AddButtonItem(int command_id,

@@ -34,11 +34,6 @@ class SystemMenuModelBuilder {
  private:
   Browser* browser() { return menu_delegate_.browser(); }
 
-  // Creates and returns the MenuModel. This does not populate the menu.
-  // |needs_trailing_separator| is set to true if the menu needs a separator
-  // after all items have been added.
-  ui::SimpleMenuModel* CreateMenuModel(bool* needs_trailing_separator);
-
   // Populates |model| with the appropriate contents.
   void BuildMenu(ui::SimpleMenuModel* model);
   void BuildSystemMenuForBrowserWindow(ui::SimpleMenuModel* model);

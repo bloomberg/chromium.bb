@@ -61,14 +61,10 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
 
   // Build the menu items by populating the model.
   void Build();
-  void BuildLastClosed();
   void BuildDevices();
   void BuildForeignTabItem(
       const std::string& session_tag,
-      const SessionTab& tab,
-      const std::string& session_name,
-      browser_sync::SyncedSession::DeviceType device_type,
-      bool need_separator);
+      const SessionTab& tab);
   void AddDeviceFavicon(int index_in_menu,
                         browser_sync::SyncedSession::DeviceType device_type);
   void AddTabFavicon(int model_index, int command_id, const GURL& url);

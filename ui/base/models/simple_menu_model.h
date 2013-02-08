@@ -74,14 +74,21 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   // Methods for adding items to the model.
   void AddItem(int command_id, const string16& label);
   void AddItemWithStringId(int command_id, int string_id);
-  void AddSeparator(MenuSeparatorType separator_type);
   void AddCheckItem(int command_id, const string16& label);
   void AddCheckItemWithStringId(int command_id, int string_id);
   void AddRadioItem(int command_id, const string16& label, int group_id);
   void AddRadioItemWithStringId(int command_id, int string_id, int group_id);
 
-  // Adds a separator if the menu is empty, or the last item is not a separator.
-  void AddSeparatorIfNecessary(MenuSeparatorType separator_type);
+  // Adds a separator of the specified type to the model.
+  // - Adding a separator after another separator is always invalid if they
+  //   differ in type, but silently ignored if they are both NORMAL.
+  // - Adding a separator to an empty model is invalid, unless they are NORMAL
+  //   or SPACING. NORMAL separators are silently ignored if the model is empty.
+  void AddSeparator(MenuSeparatorType separator_type);
+
+  // Removes separators until the model's last entry is not a separator, or the
+  // model is empty.
+  void RemoveTrailingSeparators();
 
   // These three methods take pointers to various sub-models. These models
   // should be owned by the same owner of this SimpleMenuModel.

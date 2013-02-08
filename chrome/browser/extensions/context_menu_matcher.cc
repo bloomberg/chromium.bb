@@ -52,9 +52,7 @@ void ContextMenuMatcher::AppendExtensionItems(const std::string& extension_id,
 
   // If this is the first extension-provided menu item, and there are other
   // items in the menu, and the last item is not a separator add a separator.
-  if (*index == 0 && menu_model_->GetItemCount() &&
-      menu_model_->GetTypeAt(menu_model_->GetItemCount() - 1) !=
-          ui::MenuModel::TYPE_SEPARATOR)
+  if (*index == 0 && menu_model_->GetItemCount())
     menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
 
   // Extensions (other than platform apps) are only allowed one top-level slot
@@ -192,15 +190,12 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
         radio_group_id++;
 
         // Auto-append a separator if needed.
-        if (last_type != MenuItem::SEPARATOR)
-          menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+        menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
       }
 
       menu_model->AddRadioItem(menu_id, title, radio_group_id);
     } else if (item->type() == MenuItem::SEPARATOR) {
-      if (i != items.begin() && last_type != MenuItem::SEPARATOR) {
-        menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-      }
+      menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
     }
     last_type = item->type();
   }
