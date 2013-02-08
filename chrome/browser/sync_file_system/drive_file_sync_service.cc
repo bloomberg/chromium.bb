@@ -110,6 +110,8 @@ class DriveFileSyncService::TaskToken {
     location_ = location;
     task_type_ = TASK_TYPE_NONE;
     description_.clear();
+    if (!completion_callback_.is_null())
+      completion_callback_.Run();
     completion_callback_.Reset();
   }
 
@@ -1785,6 +1787,12 @@ bool DriveFileSyncService::GetPendingChangeForFileSystemURL(
 void DriveFileSyncService::FetchChangesForIncrementalSync() {
   scoped_ptr<TaskToken> token(GetToken(FROM_HERE, TASK_TYPE_DRIVE,
                                        "Fetching remote change list"));
+  // If we got |token| successfully, |is_fetching_changes_| should be false.
+  // |is_fetching_changes_| is true only when the FetchChanges sequence is
+  // running or is in |pending_queue_|. In both case, the token is owned by
+  // the FetchChanges sequence.
+  DCHECK(!token || !is_fetching_changes_);
+
   if (!sync_enabled_ ||
       is_fetching_changes_ ||
       !pending_batch_sync_origins_.empty() ||
