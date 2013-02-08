@@ -7,8 +7,7 @@
 // requests data from the buffer via FillBuffer(). The owner also sets the
 // playback rate, and the AudioRendererAlgorithm will stretch or compress the
 // buffered audio as necessary to match the playback rate when fulfilling
-// FillBuffer() requests. AudioRendererAlgorithm can request more data to be
-// buffered via a read callback passed in during initialization.
+// FillBuffer() requests.
 //
 // This class is *not* thread-safe. Calls to enqueue and retrieve data must be
 // locked if called from multiple threads.
@@ -22,8 +21,8 @@
 #ifndef MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_H_
 #define MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_H_
 
-#include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/seekable_buffer.h"
 
@@ -37,11 +36,7 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   ~AudioRendererAlgorithm();
 
   // Initializes this object with information about the audio stream.
-  // |request_read_cb| is called to request more data from the client, requests
-  // that are fulfilled through calls to EnqueueBuffer().
-  void Initialize(float initial_playback_rate,
-                  const AudioParameters& params,
-                  const base::Closure& request_read_cb);
+  void Initialize(float initial_playback_rate, const AudioParameters& params);
 
   // Tries to fill |requested_frames| frames into |dest| with possibly scaled
   // data from our |audio_buffer_|. Data is scaled based on the playback rate,
@@ -67,10 +62,6 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   float playback_rate() const { return playback_rate_; }
   void SetPlaybackRate(float new_rate);
 
-  // Returns whether the algorithm has enough data at the current playback rate
-  // such that it can write data on the next call to FillBuffer().
-  bool CanFillBuffer();
-
   // Returns true if |audio_buffer_| is at or exceeds capacity.
   bool IsQueueFull();
 
@@ -81,7 +72,7 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   void IncreaseQueueCapacity();
 
   // Returns the number of bytes left in |audio_buffer_|, which may be larger
-  // than QueueCapacity() in the event that a read callback delivered more data
+  // than QueueCapacity() in the event that EnqueueBuffer() delivered more data
   // than |audio_buffer_| was intending to hold.
   int bytes_buffered() { return audio_buffer_.forward_bytes(); }
 
@@ -156,9 +147,6 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Used by algorithm to scale output.
   float playback_rate_;
 
-  // Used to request more data.
-  base::Closure request_read_cb_;
-
   // Buffered audio data.
   SeekableBuffer audio_buffer_;
 
@@ -178,8 +166,6 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
 
   // True if the audio should be muted.
   bool muted_;
-
-  bool needs_more_data_;
 
   // Temporary buffer to hold crossfade data.
   scoped_array<uint8> crossfade_buffer_;

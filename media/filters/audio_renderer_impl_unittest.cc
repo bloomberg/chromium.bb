@@ -496,15 +496,7 @@ TEST_F(AudioRendererImplTest, Underflow_EndOfStream) {
   EXPECT_TRUE(ConsumeBufferedData(kDataSize, &muted));
   EXPECT_FALSE(muted);
 
-  // Deliver another end of stream buffer and attempt to read to make sure
-  // we're truly at the end of stream.
-  //
-  // TODO(scherkus): fix AudioRendererImpl and AudioRendererAlgorithmBase to
-  // stop reading after receiving an end of stream buffer. It should have also
-  // fired the ended callback http://crbug.com/106641
-  WaitForPendingRead();
-  DeliverEndOfStream();
-
+  // Attempt to read to make sure we're truly at the end of stream.
   AdvanceTime(time_until_ended);
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, &muted));
   EXPECT_FALSE(muted);

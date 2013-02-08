@@ -133,12 +133,13 @@ class MEDIA_EXPORT AudioRendererImpl
                      int audio_delay_milliseconds) OVERRIDE;
   virtual void OnRenderError() OVERRIDE;
 
-  // Helper method that schedules an asynchronous read from the decoder as long
+  // Helper methods that schedule an asynchronous read from the decoder as long
   // as there isn't a pending read.
   //
   // Must be called on |message_loop_|.
   void AttemptRead();
   void AttemptRead_Locked();
+  bool CanRead_Locked();
 
   // Returns true if the data in the buffer is all before
   // |preroll_timestamp_|. This can only return true while

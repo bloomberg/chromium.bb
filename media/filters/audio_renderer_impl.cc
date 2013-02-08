@@ -168,10 +168,10 @@ void AudioRendererImpl::Preroll(base::TimeDelta time,
     preroll_aborted_ = false;
 
     splicer_->Reset();
-
-    // |algorithm_| will request more reads.
     algorithm_->FlushBuffers();
     earliest_end_time_ = now_cb_.Run();
+
+    AttemptRead_Locked();
   }
 
   // Pause and flush the stream when we preroll to a new location.
@@ -291,8 +291,7 @@ void AudioRendererImpl::OnDecoderSelected(
   // We're all good! Continue initializing the rest of the audio renderer based
   // on the decoder format.
   algorithm_.reset(new AudioRendererAlgorithm());
-  algorithm_->Initialize(0, audio_parameters_, BindToCurrentLoop(
-      base::Bind(&AudioRendererImpl::AttemptRead, weak_this_)));
+  algorithm_->Initialize(0, audio_parameters_);
 
   state_ = kPaused;
 
@@ -364,7 +363,7 @@ void AudioRendererImpl::DecodedAudioReady(
   while (splicer_->HasNextBuffer())
     need_another_buffer = HandleSplicerBuffer(splicer_->GetNextBuffer());
 
-  if (!need_another_buffer)
+  if (!need_another_buffer && !CanRead_Locked())
     return;
 
   AttemptRead_Locked();
@@ -424,11 +423,31 @@ void AudioRendererImpl::AttemptRead_Locked() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   lock_.AssertAcquired();
 
-  if (pending_read_ || state_ == kPaused)
+  if (!CanRead_Locked())
     return;
 
   pending_read_ = true;
   decoder_->Read(base::Bind(&AudioRendererImpl::DecodedAudioReady, weak_this_));
+}
+
+bool AudioRendererImpl::CanRead_Locked() {
+  lock_.AssertAcquired();
+
+  switch (state_) {
+    case kUninitialized:
+    case kPaused:
+    case kStopped:
+      return false;
+
+    case kPrerolling:
+    case kPlaying:
+    case kUnderflow:
+    case kRebuffering:
+      break;
+  }
+
+  return !pending_read_ && !received_end_of_stream_ &&
+      !algorithm_->IsQueueFull();
 }
 
 void AudioRendererImpl::SetPlaybackRate(float playback_rate) {
@@ -530,22 +549,29 @@ uint32 AudioRendererImpl::FillBuffer(uint8* dest,
     //   2) We have NOT received an end of stream buffer
     //   3) We are in the kPlaying state
     //
-    // Otherwise fill the buffer with whatever data we can send to the device.
-    if (!algorithm_->CanFillBuffer() && received_end_of_stream_ &&
-        !rendered_end_of_stream_ && now_cb_.Run() >= earliest_end_time_) {
-      rendered_end_of_stream_ = true;
-      ended_cb_.Run();
-    } else if (!algorithm_->CanFillBuffer() && !received_end_of_stream_ &&
-               state_ == kPlaying && !underflow_disabled_) {
-      state_ = kUnderflow;
-      underflow_cb = underflow_cb_;
-    } else if (algorithm_->CanFillBuffer()) {
-      frames_written = algorithm_->FillBuffer(dest, requested_frames);
-      DCHECK_GT(frames_written, 0u);
-    } else {
-      // We can't write any data this cycle. For example, we may have
-      // sent all available data to the audio device while not reaching
-      // |earliest_end_time_|.
+    // Otherwise the buffer has data we can send to the device.
+    frames_written = algorithm_->FillBuffer(dest, requested_frames);
+    if (frames_written == 0) {
+      base::Time now = now_cb_.Run();
+
+      if (received_end_of_stream_ && !rendered_end_of_stream_ &&
+          now >= earliest_end_time_) {
+        rendered_end_of_stream_ = true;
+        ended_cb_.Run();
+      } else if (!received_end_of_stream_ && state_ == kPlaying &&
+                 !underflow_disabled_) {
+        state_ = kUnderflow;
+        underflow_cb = underflow_cb_;
+      } else {
+        // We can't write any data this cycle. For example, we may have
+        // sent all available data to the audio device while not reaching
+        // |earliest_end_time_|.
+      }
+    }
+
+    if (CanRead_Locked()) {
+      message_loop_->PostTask(FROM_HERE, base::Bind(
+          &AudioRendererImpl::AttemptRead, weak_this_));
     }
 
     // The |audio_time_buffered_| is the ending timestamp of the last frame

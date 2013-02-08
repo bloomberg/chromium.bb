@@ -44,20 +44,21 @@ class AudioRendererAlgorithmTest : public testing::Test {
         media::AudioParameters::AUDIO_PCM_LINEAR, channel_layout,
         samples_per_second, bits_per_channel, kFrames);
 
-    algorithm_.Initialize(1, params, base::Bind(
-        &AudioRendererAlgorithmTest::EnqueueData, base::Unretained(this)));
-    EnqueueData();
+    algorithm_.Initialize(1, params);
+    FillAlgorithmQueue();
   }
 
-  void EnqueueData() {
-    scoped_array<uint8> audio_data(new uint8[kRawDataSize]);
-    CHECK_EQ(kRawDataSize % algorithm_.bytes_per_channel(), 0u);
-    CHECK_EQ(kRawDataSize % algorithm_.bytes_per_frame(), 0u);
-    // The value of the data is meaningless; we just want non-zero data to
-    // differentiate it from muted data.
-    memset(audio_data.get(), 1, kRawDataSize);
-    algorithm_.EnqueueBuffer(new DataBuffer(audio_data.Pass(), kRawDataSize));
-    bytes_enqueued_ += kRawDataSize;
+  void FillAlgorithmQueue() {
+    while (!algorithm_.IsQueueFull()) {
+      scoped_array<uint8> audio_data(new uint8[kRawDataSize]);
+      CHECK_EQ(kRawDataSize % algorithm_.bytes_per_channel(), 0u);
+      CHECK_EQ(kRawDataSize % algorithm_.bytes_per_frame(), 0u);
+      // The value of the data is meaningless; we just want non-zero data to
+      // differentiate it from muted data.
+      memset(audio_data.get(), 1, kRawDataSize);
+      algorithm_.EnqueueBuffer(new DataBuffer(audio_data.Pass(), kRawDataSize));
+      bytes_enqueued_ += kRawDataSize;
+    }
   }
 
   void CheckFakeData(uint8* audio_data, int frames_written) {
@@ -114,6 +115,8 @@ class AudioRendererAlgorithmTest : public testing::Test {
       ASSERT_GT(frames_written, 0);
       CheckFakeData(buffer.get(), frames_written);
       frames_remaining -= frames_written;
+
+      FillAlgorithmQueue();
     }
 
     int bytes_requested = total_frames_requested * algorithm_.bytes_per_frame();
