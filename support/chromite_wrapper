@@ -29,15 +29,21 @@ import sys
 # fallback code- any/all new scripts symlinked to this script *must* exist
 # in chromite/bin/ .
 
-def _FindRoot(path):
-  """Find the root of a repo checkout"""
+def _FindChromite(path):
+  """Find the chromite dir in a repo or gclient checkout."""
   path = os.path.abspath(path)
+  # Depending on the checkout type (whether repo chromeos or gclient chrome)
+  # Chromite lives in a different location.
+  roots = (
+    ('.repo', 'chromite/.git'),
+    ('.gclient', 'src/third_party/chromite/.git'),
+  )
+
   while path != '/':
-    # Look for the chromite repository itself- it's always been at the root
-    # of a repo checkout.
-    if all(os.path.exists(os.path.join(path, x))
-           for x in ['.repo', 'chromite/.git']):
-      return path
+    for root, chromite_git_dir in roots:
+      if all(os.path.exists(os.path.join(path, x))
+             for x in [root, chromite_git_dir]):
+        return os.path.dirname(os.path.join(path, chromite_git_dir))
     path = os.path.dirname(path)
   return None
 
@@ -54,12 +60,12 @@ and retry.  If you need to setup a Chromium OS source tree, see
 
 
 def main():
-  root = _FindRoot(os.getcwd())
+  chromite_dir = _FindChromite(os.getcwd())
   target = os.path.basename(sys.argv[0])
-  if root is None:
+  if chromite_dir is None:
     return _MissingErrorOut(target)
-  
-  path = os.path.join(root, 'chromite/bin', target)
+
+  path = os.path.join(chromite_dir, 'bin', target)
   try:
     os.execv(path, [path] + sys.argv[1:])
   except EnvironmentError, e:
@@ -70,14 +76,14 @@ def main():
   # an old (pre 6be2efcf5bb575b03862113eec097c44d8d7f93e) revision of
   # chromite.  Fallback to trying to import it; this code works at least as
   # far back as branch 0.11.241.B; likely further.
-  
+
   if target == 'cbuildbot':
     target = 'chromite.buildbot.cbuildbot'
   else:
     target = 'chromite.bin.%s' % (target,)
 
   # Adjust the path importation so we can import our our target.
-  sys.path.insert(0, root)
+  sys.path.insert(0, os.path.dirname(chromite_dir))
 
   try:
     module = __import__(target, fromlist=['main'])
