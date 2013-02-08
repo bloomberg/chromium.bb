@@ -1454,7 +1454,6 @@
         'test/data/webui/print_preview.js',
         'test/data/webui/sandboxstatus_browsertest.js',
         'test/gpu/gpu_feature_browsertest.cc',
-        'test/gpu/webgl_infobar_browsertest.cc',
         'test/ppapi/ppapi_browsertest.cc',
         'test/security_tests/sandbox_browsertest.cc',
         # TODO(craig): Rename this and run from base_unittests when the test
@@ -2417,6 +2416,7 @@
       ],
       'sources': [
         'test/gpu/gpu_feature_browsertest.cc',
+        'test/gpu/webgl_infobar_browsertest.cc',
       ],
     },
     {
