@@ -92,8 +92,8 @@ class DriveSystemService : public ProfileKeyedService,
       const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
  private:
-  // Used to destroy DriveCache with scoped_ptr_malloc_free.
-  struct ScopedPtrMallocDestroyCache {
+  // Used to destroy DriveCache with scoped_ptr.
+  struct DriveCacheDeleter {
    public:
     void operator()(DriveCache* cache) const;
   };
@@ -131,7 +131,7 @@ class DriveSystemService : public ProfileKeyedService,
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<EventLogger> event_logger_;
-  scoped_ptr_malloc<DriveCache, ScopedPtrMallocDestroyCache> cache_;
+  scoped_ptr<DriveCache, DriveCacheDeleter> cache_;
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
   scoped_ptr<google_apis::DriveUploader> uploader_;
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;

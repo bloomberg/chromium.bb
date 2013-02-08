@@ -96,7 +96,7 @@ std::string GetDriveUserAgent() {
 
 }  // namespace
 
-void DriveSystemService::ScopedPtrMallocDestroyCache::operator()(
+void DriveSystemService::DriveCacheDeleter::operator()(
     DriveCache* cache) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (cache)
