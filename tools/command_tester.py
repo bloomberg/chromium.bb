@@ -201,12 +201,14 @@ win64_exit_via_ntdll_patch = [
     MungeWindowsErrorExit(STATUS_PRIVILEGED_INSTRUCTION)]
 
 
-# Mac OS X returns SIGBUS in most of the cases where Linux returns
-# SIGSEGV, except for actual x86 segmentation violations.
+# 32-bit processes on Mac OS X return SIGBUS in most of the cases where Linux
+# returns SIGSEGV, except for actual x86 segmentation violations. 64-bit
+# processes on Mac OS X behave differently.
 status_map = {
     'trusted_sigabrt' : {
         'linux2': [-6], # SIGABRT
-        'darwin': [-6], # SIGABRT
+        'mac32': [-6], # SIGABRT
+        'mac64': [-6], # SIGABRT
         # On Windows, NaClAbort() exits using the HLT instruction.
         'win32': [MungeWindowsErrorExit(STATUS_PRIVILEGED_INSTRUCTION)],
         'win64': [MungeWindowsErrorExit(STATUS_PRIVILEGED_INSTRUCTION)],
@@ -216,41 +218,48 @@ status_map = {
         # code coverage is enabled.
         # This is not used on Windows.
         'linux2': [IndirectSignal(6)], # SIGABRT
-        'darwin': [IndirectSignal(6)], # SIGABRT
+        'mac32': [IndirectSignal(6)], # SIGABRT
+        'mac64': [IndirectSignal(6)], # SIGABRT
         },
     'sigpipe': {
         # This is not used on Windows because Windows does not have an
         # equivalent of SIGPIPE.
         'linux2': [-13], # SIGPIPE
-        'darwin': [-13], # SIGPIPE
+        'mac32': [-13], # SIGPIPE
+        'mac64': [-13], # SIGPIPE
         },
     'untrusted_sigill' : {
         'linux2': [-11], # SIGSEGV
-        'darwin': [-11], # SIGSEGV
+        'mac32': [-11], # SIGSEGV
+        'mac64': [-11], # SIGSEGV
         'win32':  win32_untrusted_crash_exit,
         'win64':  win64_exit_via_ntdll_patch,
         },
     'untrusted_segfault': {
         'linux2': [-11], # SIGSEGV
-        'darwin': [-10], # SIGBUS
+        'mac32': [-10], # SIGBUS
+        'mac64': [-10], # SIGBUS
         'win32':  win32_untrusted_crash_exit,
         'win64':  win64_exit_via_ntdll_patch,
         },
     'untrusted_sigsegv_or_equivalent': {
         'linux2': [-11], # SIGSEGV
-        'darwin': [-11], # SIGSEGV
+        'mac32': [-11], # SIGSEGV
+        'mac64': [-10], # SIGBUS
         'win32':  win32_untrusted_crash_exit,
         'win64':  win64_exit_via_ntdll_patch,
         },
     'trusted_segfault': {
         'linux2': [-11], # SIGSEGV
-        'darwin': [-10], # SIGBUS
+        'mac32': [-10], # SIGBUS
+        'mac64': [-11], # SIGSEGV
         'win32':  [MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION)],
         'win64':  [MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION)],
         },
     'trusted_sigsegv_or_equivalent': {
         'linux2': [-11], # SIGSEGV
-        'darwin': [-11], # SIGSEGV
+        'mac32': [-11], # SIGSEGV
+        'mac64': [-11], # SIGSEGV
         'win32':  [],
         'win64':  [],
         },
@@ -266,7 +275,8 @@ status_map = {
     # inside the SIGSEGV handler.
     'unwritable_exception_stack': {
         'linux2': [-11], # SIGSEGV
-        'darwin': [-10], # SIGBUS
+        'mac32': [-10], # SIGBUS
+        'mac64': [-10], # SIGBUS
         'win32':  win32_untrusted_crash_exit,
         'win64':  win64_exit_via_ntdll_patch,
         },
@@ -297,6 +307,9 @@ def ProcessOptions(argv):
 
   if (sys.platform == 'win32') and (GlobalSettings['subarch'] == '64'):
     GlobalPlatform = 'win64'
+  elif (sys.platform == 'darwin'):
+    # mac32, mac64
+    GlobalPlatform = 'mac' + GlobalSettings['subarch']
   else:
     GlobalPlatform = sys.platform
 
