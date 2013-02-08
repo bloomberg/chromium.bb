@@ -222,9 +222,13 @@ FileSystemURL CrossOperationDelegate::CreateDestURL(
   DCHECK_EQ(src_root_.type(), src_url.type());
   DCHECK_EQ(src_root_.origin(), src_url.origin());
 
-  base::FilePath path = dest_root_.path();
-  src_root_.path().AppendRelativePath(src_url.path(), &path);
-  return dest_root_.WithPath(path);
+  base::FilePath relative = dest_root_.virtual_path();
+  src_root_.virtual_path().AppendRelativePath(src_url.virtual_path(),
+                                              &relative);
+  return file_system_context()->CreateCrackedFileSystemURL(
+      dest_root_.origin(),
+      dest_root_.mount_type(),
+      relative);
 }
 
 LocalFileSystemOperation* CrossOperationDelegate::NewDestOperation(

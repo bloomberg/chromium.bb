@@ -23,8 +23,10 @@ namespace fileapi {
 //
 // Example: For a URL 'filesystem:http://foo.com/temporary/foo/bar':
 //   origin() returns 'http://foo.com',
-//   type() and mount_type() return kFileSystemTypeTemporary,
+//   type() returns kFileSystemTypeTemporary,
 //   path() returns 'foo/bar',
+//   virtual_path() returns the same value as path()
+//   mount_type() returns the same value as type()
 //
 // All other accessors return empty or invalid value.
 //
@@ -49,11 +51,15 @@ namespace fileapi {
 //   origin() returns 'http://bar.com',
 //   type() returns the kFileSystemTypeFoo,
 //   path() returns '/media/removable/foo/bar',
-//
-// Additionally, following accessors would return valid values:
-//   filesystem_id() returns 'mount_name', and
 //   virtual_path() returns 'mount_name/foo/bar',
 //   mount_type() returns kFileSystemTypeExternal.
+//
+// Note that in either case virtual_path() always returns the path part after
+// 'type' part in the original URL, and mount_type() always returns the 'type'
+// part in the original URL.
+//
+// Additionally, following accessors would return valid values:
+//   filesystem_id() returns 'mount_name'.
 //
 // It is imposible to directly create a valid FileSystemURL instance (except by
 // using CreatedForTest methods, which should not be used in production code).
@@ -76,8 +82,8 @@ class WEBKIT_STORAGE_EXPORT FileSystemURL {
   // Should be used only in tests.
   static FileSystemURL CreateForTest(const GURL& url);
   static FileSystemURL CreateForTest(const GURL& origin,
-                                     FileSystemType type,
-                                     const base::FilePath& path);
+                                     FileSystemType mount_type,
+                                     const base::FilePath& virtual_path);
 
   // Returns true if this instance represents a valid FileSystem URL.
   bool is_valid() const { return is_valid_; }
@@ -105,13 +111,15 @@ class WEBKIT_STORAGE_EXPORT FileSystemURL {
 
   std::string DebugString() const;
 
-  // Returns a new FileSystemURL with the given path.
+  // DEPRECATED: Returns a new FileSystemURL with the given path.
   // This creates a new FileSystemURL, copies all fields of this instance
   // to that one, resets the path_ to the given |path| and resets the
   // virtual_path to *empty*.
   // Note that the resulting FileSystemURL loses original URL information
   // if it was a cracked filesystem; i.e. virtual_path and mount_type will
   // be set to empty values.
+  //
+  // TODO(kinuko): deprecate this. http://crbug.com/174576
   FileSystemURL WithPath(const base::FilePath& path) const;
 
   // Returns true if this URL is a strict parent of the |child|.
@@ -130,12 +138,12 @@ class WEBKIT_STORAGE_EXPORT FileSystemURL {
 
   explicit FileSystemURL(const GURL& filesystem_url);
   FileSystemURL(const GURL& origin,
-                FileSystemType type,
-                const base::FilePath& internal_path);
+                FileSystemType mount_type,
+                const base::FilePath& virtual_path);
   // Creates a cracked FileSystemURL.
   FileSystemURL(const GURL& origin,
-                FileSystemType original_type,
-                const base::FilePath& original_path,
+                FileSystemType mount_type,
+                const base::FilePath& virtual_path,
                 const std::string& filesystem_id,
                 FileSystemType cracked_type,
                 const base::FilePath& cracked_path);

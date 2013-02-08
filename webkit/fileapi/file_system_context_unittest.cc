@@ -226,7 +226,6 @@ TEST_F(FileSystemContextTest, CrackFileSystemURL) {
     FileSystemType expect_mount_type;
     FileSystemType expect_type;
     const base::FilePath::CharType* expect_path;
-    bool expect_virtual_path_empty;
     std::string expect_filesystem_id;
   };
 
@@ -235,41 +234,40 @@ TEST_F(FileSystemContextTest, CrackFileSystemURL) {
       {
         "pers_mount", "persistent", true /* is_valid */,
         kFileSystemTypePersistent, kFileSystemTypePersistent,
-        FPL("pers_mount/root/file"), true /* virtual path empty */,
+        FPL("pers_mount/root/file"),
         std::string()  /* filesystem id */
       },
       {
         "temp_mount", "temporary", true /* is_valid */,
         kFileSystemTypeTemporary, kFileSystemTypeTemporary,
-        FPL("temp_mount/root/file"), true /* virtual path empty */,
+        FPL("temp_mount/root/file"),
         std::string()  /* filesystem id */
       },
       // Should be cracked by isolated mount points:
       {
         kIsolatedFileSystemID, "isolated", true /* is_valid */,
         kFileSystemTypeIsolated, kFileSystemTypeNativeLocal,
-        DRIVE FPL("/test/isolated/root/file"), false /* virtual path empty */,
+        DRIVE FPL("/test/isolated/root/file"),
         kIsolatedFileSystemID
       },
       // Should be cracked by system mount points:
       {
         "system", "external", true /* is_valid */,
         kFileSystemTypeExternal, kFileSystemTypeDrive,
-        DRIVE FPL("/test/sys/root/file"), false /* virtual path empty */,
+        DRIVE FPL("/test/sys/root/file"),
         "system"
       },
       {
         kIsolatedFileSystemID, "external", true /* is_valid */,
         kFileSystemTypeExternal, kFileSystemTypeRestrictedNativeLocal,
         DRIVE FPL("/test/system/isolated/root/file"),
-        false /* virtual path empty */,
         kIsolatedFileSystemID
       },
       // Should be cracked by FileSystemContext's ExternalMountPoints.
       {
         "ext", "external", true /* is_valid */,
         kFileSystemTypeExternal, kFileSystemTypeNativeLocal,
-        DRIVE FPL("/test/local/ext/root/file"), false /* virtual path empty */,
+        DRIVE FPL("/test/local/ext/root/file"),
         "ext"
       },
       // Test for invalid filesystem url (made invalid by adding invalid
@@ -277,14 +275,14 @@ TEST_F(FileSystemContextTest, CrackFileSystemURL) {
       {
         "sytem", "external", false /* is_valid */,
         // The rest of values will be ignored.
-        kFileSystemTypeUnknown, kFileSystemTypeUnknown, FPL(""), true,
+        kFileSystemTypeUnknown, kFileSystemTypeUnknown, FPL(""),
         std::string()
       },
       // Test for URL with non-existing filesystem id.
       {
         "invalid", "external", false /* is_valid */,
         // The rest of values will be ignored.
-        kFileSystemTypeUnknown, kFileSystemTypeUnknown, FPL(""), true,
+        kFileSystemTypeUnknown, kFileSystemTypeUnknown, FPL(""),
         std::string()
       },
   };
@@ -310,8 +308,7 @@ TEST_F(FileSystemContextTest, CrackFileSystemURL) {
         kTestCases[i].expect_mount_type,
         kTestCases[i].expect_type,
         base::FilePath(kTestCases[i].expect_path).NormalizePathSeparators(),
-        kTestCases[i].expect_virtual_path_empty ?
-            base::FilePath() : virtual_path.NormalizePathSeparators(),
+        virtual_path.NormalizePathSeparators(),
         kTestCases[i].expect_filesystem_id);
   }
 
@@ -326,4 +323,3 @@ TEST_F(FileSystemContextTest, CrackFileSystemURL) {
 }  // namespace
 
 }  // namespace fileapi
-

@@ -194,7 +194,10 @@ class CrossOperationTestHelper {
     base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
     for (size_t i = 0; i < test_case_size; ++i) {
       const test::TestCaseRecord& test_case = test_cases[i];
-      FileSystemURL url = root.WithPath(root.path().Append(test_case.path));
+      FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
+          root.origin(),
+          root.mount_type(),
+          root.virtual_path().Append(test_case.path));
       if (test_case.is_directory)
         result = CreateDirectory(url);
       else
@@ -223,9 +226,12 @@ class CrossOperationTestHelper {
       directories.pop();
       ASSERT_EQ(base::PLATFORM_FILE_OK, ReadDirectory(dir, &entries));
       for (size_t i = 0; i < entries.size(); ++i) {
-        FileSystemURL url = dir.WithPath(dir.path().Append(entries[i].name));
+        FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
+            dir.origin(),
+            dir.mount_type(),
+            dir.virtual_path().Append(entries[i].name));
         FilePath relative;
-        root.path().AppendRelativePath(url.path(), &relative);
+        root.virtual_path().AppendRelativePath(url.virtual_path(), &relative);
         relative = relative.NormalizePathSeparators();
         ASSERT_TRUE(ContainsKey(test_case_map, relative));
         if (entries[i].is_directory) {

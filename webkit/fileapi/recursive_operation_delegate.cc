@@ -59,6 +59,11 @@ FileSystemContext* RecursiveOperationDelegate::file_system_context() {
   return original_operation_->file_system_context();
 }
 
+const FileSystemContext* RecursiveOperationDelegate::file_system_context()
+    const {
+  return original_operation_->file_system_context();
+}
+
 void RecursiveOperationDelegate::ProcessNextDirectory() {
   DCHECK(pending_files_.empty());
   if (inflight_operations_ > 0)
@@ -138,7 +143,10 @@ void RecursiveOperationDelegate::DidReadDirectory(
     return;
   }
   for (size_t i = 0; i < entries.size(); i++) {
-    FileSystemURL url = parent.WithPath(parent.path().Append(entries[i].name));
+    FileSystemURL url = file_system_context()->CreateCrackedFileSystemURL(
+        parent.origin(),
+        parent.mount_type(),
+        parent.virtual_path().Append(entries[i].name));
     if (entries[i].is_directory)
       pending_directories_.push(url);
     else

@@ -72,6 +72,7 @@ class RecursiveOperationDelegate
                                          base::PlatformFileError* error);
 
   FileSystemContext* file_system_context();
+  const FileSystemContext* file_system_context() const;
 
  private:
   void ProcessNextDirectory();
