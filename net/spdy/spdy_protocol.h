@@ -143,6 +143,8 @@
 
 namespace net {
 
+const int32 kSpdyVersion3 = 3;
+
 // Initial window size for a Spdy stream
 const int32 kSpdyStreamInitialWindowSize = 64 * 1024;  // 64 KBytes
 
