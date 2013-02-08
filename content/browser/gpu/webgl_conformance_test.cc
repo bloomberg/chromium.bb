@@ -47,8 +47,10 @@ class WebGLConformanceTest : public ContentBrowserTest {
     ASSERT_TRUE(bot_config_.IsValid())
         << "Invalid bot configuration";
 
+#if !defined(OS_WIN)
     ASSERT_TRUE(test_expectations_.LoadTestExpectations(
         GPUTestExpectationsParser::kWebGLConformanceTest));
+#endif
   }
 
   void RunTest(const std::string& url) {
@@ -56,15 +58,14 @@ class WebGLConformanceTest : public ContentBrowserTest {
         testing::UnitTest::GetInstance()->current_test_info()->name();
     if (StartsWithASCII(test_name, "MANUAL_", true))
       test_name = test_name.substr(strlen("MANUAL_"));
+#if defined(OS_WIN)
+    return;
+#endif
     int32 expectation =
         test_expectations_.GetTestExpectation(test_name, bot_config_);
     if (expectation != GPUTestExpectationsParser::kGpuTestPass) {
       LOG(WARNING) << "Test " << test_name << " is bypassed";
       return;
-    } else {
-#if defined(OS_WIN)
-      return;
-#endif
     }
 
     DOMMessageQueue message_queue;
