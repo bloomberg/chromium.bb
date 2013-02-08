@@ -48,36 +48,15 @@
 #
 # START OVERRIDES HERE
 
-crbug.com/165935 fast/forms/button-generated-content.html [ ImageOnlyFailure ]
-crbug.com/165935 fast/forms/button-inner-block-reuse.html [ ImageOnlyFailure ]
 
 crbug.com/170082 platform/chromium/virtual/gpu/fast/canvas/canvas-imageSmoothingEnabled-patterns.html [ ImageOnlyFailure ]
 
-# gpu-based oval drawing has improved this image
-crbug.com/171664 platform/chromium/virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
-
-# the roll to r7483 caused these minor image differences, the root cause was changes to Skia's sorting 
-# algorithm
-crbug.com/173368 svg/batik/text/smallFonts.svg [ ImageOnlyFailure ]
-crbug.com/173368 svg/batik/text/textDecoration.svg [ ImageOnlyFailure ]
-crbug.com/173368 svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
-crbug.com/173368 svg/text/selection-styles.xhtml [ ImageOnlyFailure ]
-
-# in r7552 (https://codereview.appspot.com/7273048/) Skia's sorting 
-# algorithm was changed (again). This caused some imperceptible changes in
-# some of the Japanese font layout tests
-crbug.com/174338 [ Linux SnowLeopard Lion ] fast/repaint/japanese-rl-selection-clear.html [ ImageOnlyFailure ]
-crbug.com/174338 [ Linux ] fast/repaint/japanese-rl-selection-repaint-in-regions.html [ ImageOnlyFailure ]
-crbug.com/174338 [ Linux SnowLeopard Lion ] fast/repaint/japanese-rl-selection-repaint.html [ ImageOnlyFailure ]
-crbug.com/174338 [ Linux SnowLeopard MountainLion Lion ] fast/text/justify-ideograph-vertical.html [ ImageOnlyFailure ]
-crbug.com/174338 fast/writing-mode/border-vertical-lr.html [ ImageOnlyFailure ]
-crbug.com/174338 fast/writing-mode/japanese-lr-selection.html [ ImageOnlyFailure ]
-crbug.com/174338 fast/writing-mode/japanese-lr-text.html [ ImageOnlyFailure ]
-crbug.com/174338 fast/writing-mode/japanese-rl-selection.html [ ImageOnlyFailure ]
-crbug.com/174338 fast/writing-mode/japanese-rl-text.html [ ImageOnlyFailure ]
-crbug.com/174338 svg/custom/shapes-supporting-markers.svg [ ImageOnlyFailure ]
-
 # Needs rebaseline due to minor pixel differences.
 webkit.org/b/104289 css3/filters/effect-reference-ordering-hw.html [ ImageOnlyFailure ]
+
+# These images were fixed in r7653 (https://codereview.appspot.com/7310059) 
+# which fixed a gradient bug.
+crbug.com/175123 svg/dynamic-updates/SVGLinearGradientElement-dom-y1-attr.html [ ImageOnlyFailure ]
+crbug.com/175123 svg/dynamic-updates/SVGLinearGradientElement-svgdom-y1-prop.html [ ImageOnlyFailure ]
 
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
