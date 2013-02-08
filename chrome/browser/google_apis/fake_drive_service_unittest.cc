@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/google_apis/gdata_wapi_operations.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -18,6 +19,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace google_apis {
+
+namespace {
 
 class FakeDriveServiceTest : public testing::Test {
  protected:
@@ -1035,5 +1038,318 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_Offline) {
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(resource_entry);
 }
+
+TEST_F(FakeDriveServiceTest, InitiateUpload_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_location;
+  fake_service_.InitiateUpload(
+      InitiateUploadParams(
+          UPLOAD_NEW_FILE,
+          "new file.foo",
+          "test/foo",
+          13,
+          GURL("https://1_folder_resumable_create_media_link"),
+          FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
+          "etag_ignored"),
+      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
+                 &error,
+                 &upload_location));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_TRUE(upload_location.is_empty());
+}
+
+TEST_F(FakeDriveServiceTest, InitiateUpload_NotFound) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_location;
+  fake_service_.InitiateUpload(
+      InitiateUploadParams(
+          UPLOAD_NEW_FILE,
+          "new file.foo",
+          "test/foo",
+          13,
+          GURL("https://non_existent"),
+          FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
+          "etag_ignored"),
+      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
+                 &error,
+                 &upload_location));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_NOT_FOUND, error);
+  EXPECT_TRUE(upload_location.is_empty());
+}
+
+TEST_F(FakeDriveServiceTest, InitiateUpload_NewFile) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_location;
+  fake_service_.InitiateUpload(
+      InitiateUploadParams(
+          UPLOAD_NEW_FILE,
+          "new file.foo",
+          "test/foo",
+          13,
+          GURL("https://1_folder_resumable_create_media_link"),
+          FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
+          "etag_ignored"),
+      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
+                 &error,
+                 &upload_location));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_FALSE(upload_location.is_empty());
+  EXPECT_NE(GURL("https://1_folder_resumable_create_media_link"),
+            upload_location);
+}
+
+TEST_F(FakeDriveServiceTest, InitiateUpload_WrongETag) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_location;
+  fake_service_.InitiateUpload(
+      InitiateUploadParams(
+          UPLOAD_EXISTING_FILE,
+          "name_ignored",
+          "text/plain",
+          13,
+          GURL("https://2_file_link_resumable_create_media"),
+          FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
+          "invalid_etag"),
+      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
+                 &error,
+                 &upload_location));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_PRECONDITION, error);
+  EXPECT_TRUE(upload_location.is_empty());
+}
+
+TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_location;
+  fake_service_.InitiateUpload(
+      InitiateUploadParams(
+          UPLOAD_EXISTING_FILE,
+          "name_ignored",
+          "text/plain",
+          13,
+          GURL("https://2_file_link_resumable_create_media"),
+          FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
+          "\"HhMOFgxXHit7ImBr\""),
+      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
+                 &error,
+                 &upload_location));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(GURL("https://2_file_link_resumable_create_media"),
+            upload_location);
+}
+
+TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_location;
+  fake_service_.InitiateUpload(
+      InitiateUploadParams(
+          UPLOAD_NEW_FILE,
+          "new file.foo",
+          "test/foo",
+          15,
+          GURL("https://1_folder_resumable_create_media_link"),
+          FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
+          "etag_ignored"),
+      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
+                 &error,
+                 &upload_location));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_FALSE(upload_location.is_empty());
+  EXPECT_NE(GURL("https://1_folder_resumable_create_media_link"),
+            upload_location);
+
+  fake_service_.set_offline(true);
+
+  UploadRangeResponse response;
+  scoped_ptr<ResourceEntry> entry;
+  fake_service_.ResumeUpload(
+      ResumeUploadParams(UPLOAD_NEW_FILE,
+                         0, 13, 15, "test/foo",
+                         scoped_refptr<net::IOBuffer>(),
+                         upload_location,
+                         FilePath(FILE_PATH_LITERAL(
+                             "drive/Directory 1/new file.foo"))),
+      base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
+                 &response, &entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, response.code);
+  EXPECT_FALSE(entry.get());
+}
+
+TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_location;
+  fake_service_.InitiateUpload(
+      InitiateUploadParams(
+          UPLOAD_NEW_FILE,
+          "new file.foo",
+          "test/foo",
+          15,
+          GURL("https://1_folder_resumable_create_media_link"),
+          FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
+          "etag_ignored"),
+      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
+                 &error,
+                 &upload_location));
+  message_loop_.RunUntilIdle();
+
+  ASSERT_EQ(HTTP_SUCCESS, error);
+
+  UploadRangeResponse response;
+  scoped_ptr<ResourceEntry> entry;
+  fake_service_.ResumeUpload(
+      ResumeUploadParams(UPLOAD_NEW_FILE,
+                         0, 13, 15, "test/foo",
+                         scoped_refptr<net::IOBuffer>(),
+                         GURL("https://foo.com/"),
+                         FilePath(FILE_PATH_LITERAL(
+                             "drive/Directory 1/new file.foo"))),
+      base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
+                 &response, &entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_NOT_FOUND, response.code);
+  EXPECT_FALSE(entry.get());
+}
+
+TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_location;
+  fake_service_.InitiateUpload(
+      InitiateUploadParams(
+          UPLOAD_EXISTING_FILE,
+          "name_ignored",
+          "text/plain",
+          15,
+          GURL("https://2_file_link_resumable_create_media"),
+          FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
+          "\"HhMOFgxXHit7ImBr\""),
+      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
+                 &error,
+                 &upload_location));
+  message_loop_.RunUntilIdle();
+
+  ASSERT_EQ(HTTP_SUCCESS, error);
+
+  UploadRangeResponse response;
+  scoped_ptr<ResourceEntry> entry;
+  fake_service_.ResumeUpload(
+      ResumeUploadParams(UPLOAD_EXISTING_FILE,
+                         0, 13, 15, "text/plain",
+                         scoped_refptr<net::IOBuffer>(),
+                         upload_location,
+                         FilePath(FILE_PATH_LITERAL(
+                             "drive/File 1.txt"))),
+      base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
+                 &response, &entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
+  EXPECT_FALSE(entry.get());
+
+  fake_service_.ResumeUpload(
+      ResumeUploadParams(UPLOAD_EXISTING_FILE,
+                         14, 15, 15, "text/plain",
+                         scoped_refptr<net::IOBuffer>(),
+                         upload_location,
+                         FilePath(FILE_PATH_LITERAL(
+                             "drive/File 1.txt"))),
+      base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
+                 &response, &entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, response.code);
+  EXPECT_TRUE(entry.get());
+  EXPECT_EQ(15L, entry->file_size());
+  EXPECT_TRUE(Exists(entry->resource_id()));
+}
+
+TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_location;
+  fake_service_.InitiateUpload(
+      InitiateUploadParams(
+          UPLOAD_NEW_FILE,
+          "new file.foo",
+          "test/foo",
+          15,
+          GURL("https://1_folder_resumable_create_media_link"),
+          FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
+          "etag_ignored"),
+      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
+                 &error,
+                 &upload_location));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_FALSE(upload_location.is_empty());
+  EXPECT_NE(GURL("https://1_folder_resumable_create_media_link"),
+            upload_location);
+
+  UploadRangeResponse response;
+  scoped_ptr<ResourceEntry> entry;
+  fake_service_.ResumeUpload(
+      ResumeUploadParams(UPLOAD_NEW_FILE,
+                         0, 13, 15, "test/foo",
+                         scoped_refptr<net::IOBuffer>(),
+                         upload_location,
+                         FilePath(FILE_PATH_LITERAL(
+                             "drive/Directory 1/new file.foo"))),
+      base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
+                 &response, &entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
+  EXPECT_FALSE(entry.get());
+
+  fake_service_.ResumeUpload(
+      ResumeUploadParams(UPLOAD_NEW_FILE,
+                         14, 15, 15, "test/foo",
+                         scoped_refptr<net::IOBuffer>(),
+                         upload_location,
+                         FilePath(FILE_PATH_LITERAL(
+                             "drive/Directory 1/new file.foo"))),
+      base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
+                 &response, &entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_CREATED, response.code);
+  EXPECT_TRUE(entry.get());
+  EXPECT_EQ(15L, entry->file_size());
+  EXPECT_TRUE(Exists(entry->resource_id()));
+}
+
+}  // namespace
 
 }  // namespace google_apis

@@ -73,7 +73,7 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://1_folder_resumable_create_media_link",
+            "href": "https://sub_sub_folder_resumable_create_media_link",
             "rel": "http://schemas.google.com/g/2005#resumable-create-media",
             "type": "application/atom+xml"
          }, {
@@ -249,7 +249,7 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://file_link_resumable_edit_media",
+            "href": "https://subdirectory_file_1_link_resumable_edit_media",
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {
@@ -417,7 +417,7 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://1_folder_resumable_create_media_link",
+            "href": "https://slash_dir_folder_resumable_create_media_link",
             "rel": "http://schemas.google.com/g/2005#resumable-create-media",
             "type": "application/atom+xml"
          }, {
@@ -505,8 +505,12 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://file_link_resumable_edit_media",
+            "href": "https://2_file_link_resumable_edit_media",
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
+            "type": "application/atom+xml"
+         }, {
+            "href": "https://2_file_link_resumable_create_media",
+            "rel": "http://schemas.google.com/g/2005#resumable-create-media",
             "type": "application/atom+xml"
          }, {
             "href": "https://file1_link_self/file:2_file_resource_id",
@@ -597,7 +601,7 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://file_link_resumable_edit_media",
+            "href": "https://slash_file_link_resumable_edit_media",
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {
@@ -689,7 +693,7 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://file_link_resumable_edit_media",
+            "href": "https://3_file_link_resumable_edit_media",
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {
@@ -781,7 +785,7 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://file_link_resumable_edit_media",
+            "href": "https://4_file_link_resumable_edit_media",
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {
@@ -945,7 +949,7 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://1_folder_resumable_create_media_link",
+            "href": "https://sub_dir_folder_2_resumable_create_media_link",
             "rel": "http://schemas.google.com/g/2005#resumable-create-media",
             "type": "application/atom+xml"
          }, {
@@ -1037,7 +1041,7 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://file_link_resumable_edit_media",
+            "href": "https://slash_subdir_file_link_resumable_edit_media",
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {

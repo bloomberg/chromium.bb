@@ -23,6 +23,7 @@ class AccountMetadataFeed;
 class AuthenticatedOperationInterface;
 class ResourceEntry;
 class ResourceList;
+struct UploadRangeResponse;
 
 namespace test_server {
 struct HttpRequest;
@@ -112,6 +113,20 @@ void CopyResultsFromDownloadActionCallback(
     base::FilePath* temp_file_out,
     GDataErrorCode error_in,
     const base::FilePath& temp_file_in);
+
+// Copies the results from InitiateUploadCallback.
+void CopyResultsFromInitiateUploadCallback(
+    GDataErrorCode* error_out,
+    GURL* url_out,
+    GDataErrorCode error_in,
+    const GURL& url_in);
+
+// Copies the results from ResumeUploadCallback.
+void CopyResultsFromUploadRangeCallback(
+    UploadRangeResponse* response_out,
+    scoped_ptr<ResourceEntry>* entry_out,
+    const UploadRangeResponse& response_in,
+    scoped_ptr<ResourceEntry> entry_in);
 
 // Returns a HttpResponse created from the given file path.
 scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(

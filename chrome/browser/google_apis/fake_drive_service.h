@@ -142,6 +142,10 @@ class FakeDriveService : public DriveServiceInterface {
   // not found.
   base::DictionaryValue* FindEntryByContentUrl(const GURL& content_url);
 
+  // Returns a pointer to the entry that matches |upload_url|, or NULL if
+  // not found.
+  base::DictionaryValue* FindEntryByUploadUrl(const GURL& upload_url);
+
   // Returns a new resource ID, which looks like "resource_id_<num>" where
   // <num> is a monotonically increasing number starting from 1.
   std::string GetNewResourceId();

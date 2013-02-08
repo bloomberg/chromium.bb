@@ -14,6 +14,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/google_apis/gdata_wapi_operations.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_server/http_request.h"
 #include "chrome/browser/google_apis/test_server/http_response.h"
@@ -165,6 +166,24 @@ void CopyResultsFromDownloadActionCallback(
     const FilePath& temp_file_in) {
   *error_out = error_in;
   *temp_file_out = temp_file_in;
+}
+
+void CopyResultsFromInitiateUploadCallback(
+    GDataErrorCode* error_out,
+    GURL* url_out,
+    GDataErrorCode error_in,
+    const GURL& url_in) {
+  *error_out = error_in;
+  *url_out = url_in;
+}
+
+void CopyResultsFromUploadRangeCallback(
+    UploadRangeResponse* response_out,
+    scoped_ptr<ResourceEntry>* entry_out,
+    const UploadRangeResponse& response_in,
+    scoped_ptr<ResourceEntry> entry_in) {
+  *response_out = response_in;
+  *entry_out = entry_in.Pass();
 }
 
 // Returns a HttpResponse created from the given file path.

@@ -25,6 +25,11 @@ using content::BrowserThread;
 
 namespace google_apis {
 namespace {
+
+// Rel property of upload link in the entries dictionary value.
+const char kUploadUrlRel[] =
+    "http://schemas.google.com/g/2005#resumable-create-media";
+
 // Returns true if a resource entry matches with the search query.
 // Supports queries consist of following format.
 // - Phrases quoted by double/single quotes
@@ -777,12 +782,112 @@ void FakeDriveService::InitiateUpload(
     const InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-}
 
-void FakeDriveService::ResumeUpload(const ResumeUploadParams& params,
-                                    const UploadRangeCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
+  if (offline_) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, GDATA_NO_CONNECTION, GURL()));
+    return;
+  }
+
+  DictionaryValue* entry = FindEntryByUploadUrl(params.upload_location);
+  if (!entry) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, HTTP_NOT_FOUND, GURL()));
+    return;
+  }
+
+  if (params.upload_mode == UPLOAD_EXISTING_FILE) {
+    std::string etag;
+    entry->GetString("gd$etag", &etag);
+    if (params.etag != etag) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback, HTTP_PRECONDITION, GURL()));
+      return;
+    }
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, HTTP_SUCCESS, params.upload_location));
+    return;
+  }
+
+  // If the title was set, the upload_location is the location of the parent
+  // directory of the file that will be uploaded. The file does not yet exist
+  // and it must be created. Its title will be the passed title param.
+  std::string parent_resource_id;
+  entry->GetString("gd$resourceId.$t", &parent_resource_id);
+
+  std::string resource_id = GetNewResourceId();
+  GURL upload_url = GURL("https://xxx/upload/" + resource_id);
+
+  scoped_ptr<base::DictionaryValue> new_entry(new base::DictionaryValue);
+  // Set the resource ID and the title
+  new_entry->SetString("gd$resourceId.$t", resource_id);
+  new_entry->SetString("title.$t", params.title);
+  new_entry->SetString("docs$filename", params.title);
+  new_entry->SetString("docs$size", "0");
+  new_entry->SetString("docs$md5Checksum.$t",
+                       "3b4385ebefec6e743574c76bbd0575de");
+
+  // Add "category" which sets the resource type to file.
+  base::ListValue* categories = new base::ListValue;
+  base::DictionaryValue* category = new base::DictionaryValue;
+  category->SetString("label", "test/foo");
+  category->SetString("scheme", "http://schemas.google.com/g/2005#kind");
+  category->SetString("term", "http://schemas.google.com/docs/2007#file");
+  categories->Append(category);
+  new_entry->Set("category", categories);
+
+  // Add "content" which sets the content URL.
+  base::DictionaryValue* content = new base::DictionaryValue;
+  content->SetString("src", "https://xxx/content/" + resource_id);
+  content->SetString("type", params.content_type);
+  new_entry->Set("content", content);
+
+  // Add "link" which sets the parent URL, the edit URL and the upload URL.
+  base::ListValue* links = new base::ListValue;
+  if (parent_resource_id != GetRootResourceId()) {
+    base::DictionaryValue* parent_link = new base::DictionaryValue;
+    parent_link->SetString("href", GetFakeLinkUrl(parent_resource_id).spec());
+    parent_link->SetString("rel",
+                           "http://schemas.google.com/docs/2007#parent");
+    links->Append(parent_link);
+  }
+
+  base::DictionaryValue* edit_link = new base::DictionaryValue;
+  edit_link->SetString("href", "https://xxx/edit/" + resource_id);
+  edit_link->SetString("rel", "edit");
+  links->Append(edit_link);
+
+  base::DictionaryValue* upload_link = new base::DictionaryValue;
+  upload_link->SetString("href", upload_url.spec());
+  upload_link->SetString("rel", kUploadUrlRel);
+  links->Append(upload_link);
+  new_entry->Set("link", links);
+
+  AddNewChangestamp(new_entry.get());
+
+  base::DictionaryValue* resource_list_dict = NULL;
+  base::ListValue* entries = NULL;
+  if (!resource_list_value_->GetAsDictionary(&resource_list_dict)) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, HTTP_NOT_FOUND, GURL()));
+    return;
+  }
+
+  // If there are no entries, prepare an empty entry to add.
+  if (!resource_list_dict->HasKey("entry"))
+    resource_list_dict->Set("entry", new ListValue);
+
+  if (resource_list_dict->GetList("entry", &entries))
+    entries->Append(new_entry.release());
+
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, HTTP_SUCCESS, upload_url));
 }
 
 void FakeDriveService::GetUploadStatus(
@@ -793,6 +898,65 @@ void FakeDriveService::GetUploadStatus(
     const UploadRangeCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+}
+
+void FakeDriveService::ResumeUpload(const ResumeUploadParams& params,
+                                    const UploadRangeCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<ResourceEntry> result_entry;
+
+  if (offline_) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   UploadRangeResponse(GDATA_NO_CONNECTION,
+                                       params.start_position,
+                                       params.end_position),
+                   base::Passed(&result_entry)));
+    return;
+  }
+
+  DictionaryValue* entry = NULL;
+  entry = FindEntryByUploadUrl(params.upload_location);
+  if (!entry) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   UploadRangeResponse(HTTP_NOT_FOUND,
+                                       params.start_position,
+                                       params.end_position),
+                   base::Passed(&result_entry)));
+    return;
+  }
+
+  entry->SetString("docs$size.$t", base::Int64ToString(params.end_position));
+
+  if (params.content_length != params.end_position) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   UploadRangeResponse(HTTP_RESUME_INCOMPLETE,
+                                       params.start_position,
+                                       params.end_position),
+                    base::Passed(&result_entry)));
+    return;
+  }
+
+  result_entry = ResourceEntry::CreateFrom(*entry).Pass();
+
+  GDataErrorCode return_code = HTTP_SUCCESS;
+  if (params.upload_mode == UPLOAD_NEW_FILE)
+    return_code = HTTP_CREATED;
+
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback,
+                 UploadRangeResponse(return_code,
+                                     params.start_position,
+                                     params.end_position),
+                 base::Passed(&result_entry)));
 }
 
 void FakeDriveService::AuthorizeApp(const GURL& edit_url,
@@ -841,6 +1005,42 @@ base::DictionaryValue* FakeDriveService::FindEntryByContentUrl(
           entry->GetString("content.src", &current_content_url) &&
           content_url == GURL(current_content_url)) {
         return entry;
+      }
+    }
+  }
+
+  return NULL;
+}
+
+base::DictionaryValue* FakeDriveService::FindEntryByUploadUrl(
+    const GURL& upload_url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  base::DictionaryValue* resource_list_dict = NULL;
+  base::ListValue* entries = NULL;
+  // Go through entries and return the one that matches |upload_url|.
+  if (resource_list_value_->GetAsDictionary(&resource_list_dict) &&
+      resource_list_dict->GetList("entry", &entries)) {
+    for (size_t i = 0; i < entries->GetSize(); ++i) {
+      base::DictionaryValue* entry = NULL;
+      base::ListValue* links = NULL;
+      if (entries->GetDictionary(i, &entry) &&
+          entry->GetList("link", &links) &&
+          links) {
+        for (size_t link_index = 0;
+            link_index < links->GetSize();
+            ++link_index) {
+          base::DictionaryValue* link = NULL;
+          std::string rel;
+          std::string found_upload_url;
+          if (links->GetDictionary(link_index, &link) &&
+              link && link->GetString("rel", &rel) &&
+              rel == kUploadUrlRel &&
+              link->GetString("href", &found_upload_url) &&
+              GURL(found_upload_url) == upload_url) {
+            return entry;
+          }
+        }
       }
     }
   }
