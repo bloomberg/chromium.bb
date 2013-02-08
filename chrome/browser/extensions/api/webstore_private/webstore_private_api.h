@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 class ProfileSyncService;
 

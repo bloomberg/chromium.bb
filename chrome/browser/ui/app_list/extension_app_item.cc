@@ -176,6 +176,8 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
   return item->contexts().Contains(extensions::MenuItem::LAUNCHER);
 }
 
+const color_utils::HSL shift = {-1, 0, 0.6};
+
 }  // namespace
 
 ExtensionAppItem::ExtensionAppItem(Profile* profile,
@@ -188,7 +190,9 @@ ExtensionAppItem::ExtensionAppItem(Profile* profile,
       extension_id_(extension_id),
       controller_(controller),
       extension_name_(extension_name),
-      installing_icon_(installing_icon) {
+      installing_icon_(
+          gfx::ImageSkiaOperations::CreateHSLShiftedImage(installing_icon,
+                                                          shift)) {
   Reload();
   GetExtensionSorting(profile_)->EnsureValidOrdinals(extension_id_,
                                                      syncer::StringOrdinal());
