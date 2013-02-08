@@ -102,10 +102,6 @@
           {
             "title": "Access Hardware Devices",
             "fileName": "app_hardware.html"
-          },
-          {
-            "title": "Connect Apps with Web Intents",
-            "fileName": "app_intents.html"
           }
         ]
       },

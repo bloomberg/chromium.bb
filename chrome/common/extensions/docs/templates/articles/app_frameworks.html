@@ -273,10 +273,6 @@ Pros:
 <ul>
 	<li>Moves persistence layer even higher up the stack where it can be easily changed.</li>
 	<li>Doesn’t pollute lower level controllers like a DatePickerController with the need to know about persistence.</li>
-	<li>Aligns nicely with an ‘Intent’ model.
-		Each AppController corresponds to an intent, like “ChoosePhoto”, or “SendMessage”.
-		The Intent contains a reference to the model data needed (Customer#123) and
-		the type of CRUD operation (load, save, delete, and so on).</li>
 </ul>
 
 <p>

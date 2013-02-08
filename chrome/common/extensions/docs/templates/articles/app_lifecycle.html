@@ -131,21 +131,14 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
 <p>
 Depending on how your app is launched,
-you may need to include launch data
+you may need to handle launch data
 in your event page.
 By default, there is no launch data
 when the app is started by the app launcher.
-For apps that provide intents,
-you need to include the
-<code>launchData.intent</code> parameter.
-</p>
-
-<p>
-Web intents can be launched by other apps invoking their intent, 
-or by the runtime when apps are launched to view or edit files,
-for example from the operating system file explorer.
-To find out how to launch an app with web intents,
-see <a href="app_intents.html#launching">Launching an App with a File</a>.
+For apps that have file handlers,
+you need to handle the
+<code>launchData.items</code> parameter to allow
+them to be launched with files.
 </p>
 
 <h2 id="runtime">Listening for app runtime events</h2>
