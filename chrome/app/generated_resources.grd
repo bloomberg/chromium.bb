@@ -8608,10 +8608,10 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Protected content
         </message>
         <message name="IDS_PROTECTED_CONTENT_INFO" desc="Text that is displayed on the Protected Content tab of the Content Settings dialog. This text explains that enabling protected content may require using a uniquely identifiable machine identifier.">
-          Machine identifiers may be used to uniquely identify you for the purposes of authorizing access to protected content.
+          Some content services use machine identifiers to uniquely identify you for the purposes of authorizing access to protected content.
         </message>
         <message name="IDS_PROTECTED_CONTENT_ENABLE" desc="The label of the checkbox for enabling protected content.">
-          Run protected content (computer restart may be required)
+          Allow identifiers for protected content (computer restart may be required)
         </message>
       </if>
       <message name="IDS_PPAPI_BROKER_TAB_LABEL" desc="Label for PPAPI broker tab on Content Settings dialog">
