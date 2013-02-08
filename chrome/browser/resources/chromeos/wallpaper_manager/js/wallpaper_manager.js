@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -201,6 +201,7 @@ function WallpaperManager(dialogDom) {
       self.downloadedListMap_ = null;
       $('wallpaper-grid').classList.remove('image-picker-offline');
     });
+    $('close').addEventListener('click', function() {window.close()});
     this.document_.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
 
@@ -289,6 +290,7 @@ function WallpaperManager(dialogDom) {
                                                   function() {
         if (chrome.runtime.lastError == undefined) {
           self.currentWallpaper_ = wallpaperURL;
+          self.setActiveThumb(selectedItem);
           return;
         }
 
@@ -309,6 +311,7 @@ function WallpaperManager(dialogDom) {
                                                  wallpaperURL,
                                                  self.onFinished_.bind(self));
             self.currentWallpaper_ = wallpaperURL;
+            self.setActiveThumb(selectedItem);
           } else {
             self.butterBar_.showError_(str('downloadFailed'),
                                        {help_url: LEARN_MORE_URL});
@@ -333,12 +336,28 @@ function WallpaperManager(dialogDom) {
       $('author-name').textContent = selectedItem.author;
       $('author-website').textContent = $('author-website').href =
           selectedItem.authorWebsite;
+      chrome.wallpaperPrivate.getThumbnail(selectedItem.baseURL,
+                                           function(data) {
+        var img = $('attribute-image');
+        if (data) {
+          var blob = new Blob([new Int8Array(data)], {'type' : 'image\/png'});
+          img.src = window.URL.createObjectURL(blob);
+          img.addEventListener('load', function(e) {
+            window.URL.revokeObjectURL(this.src);
+          });
+        } else {
+          img.src = '';
+        }
+      });
       $('wallpaper-attribute').hidden = false;
+      $('attribute-image').hidden = false;
       return;
     }
     $('wallpaper-attribute').hidden = true;
+    $('attribute-image').hidden = true;
     $('author-name').textContent = '';
     $('author-website').textContent = $('author-website').href = '';
+    $('attribute-image').src = '';
   };
 
   /**
@@ -491,6 +510,9 @@ function WallpaperManager(dialogDom) {
     if (selectedIndex == -1)
       return;
     var selectedListItem = categoriesList.getListItemByIndex(selectedIndex);
+    var bar = $('bar');
+    bar.style.left = selectedListItem.offsetLeft + 'px';
+    bar.style.width = selectedListItem.offsetWidth + 'px';
 
     if (selectedListItem.custom) {
       this.showCustomContainer_(true);
@@ -526,7 +548,27 @@ function WallpaperManager(dialogDom) {
       }
       this.wallpaperGrid_.dataModel = wallpapersDataModel;
       this.wallpaperGrid_.selectedItem = selectedItem;
+      this.setActiveThumb(selectedItem);
     }
+  };
+
+  /**
+   * Shows a checkmark on the active thumbnail and clears previous active one if
+   * any. Note if wallpaper was not set successfully, checkmark should not show
+   * on that thumbnail.
+   * @param {{baseURL: string, dynamicURL: string, layout: string,
+   *          author: string, authorWebsite: string, availableOffline: boolean}}
+   *     activeItem the wallpaper item to active (show checkmark).
+   */
+  WallpaperManager.prototype.setActiveThumb = function(activeItem) {
+    var activeThumb = $('wallpaper-grid').getListItem(activeItem);
+    if (!activeThumb)
+      return;
+    // Clears previous checkmark.
+    var previousActiveThumb = $('wallpaper-grid').querySelector('[active]');
+    if (previousActiveThumb)
+      previousActiveThumb.active = false;
+    activeThumb.active = true;
   };
 
 })();

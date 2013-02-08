@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,11 +33,16 @@ cr.define('wallpapers', function() {
       GridItem.prototype.decorate.call(this);
       // Removes garbage created by GridItem.
       this.innerText = '';
+      cr.defineProperty(this, 'active', cr.PropertyKind.BOOL_ATTR);
+      this.active = false;
       var imageEl = cr.doc.createElement('img');
       imageEl.classList.add('thumbnail');
       cr.defineProperty(imageEl, 'offline', cr.PropertyKind.BOOL_ATTR);
       imageEl.offline = this.dataItem.availableOffline;
       this.appendChild(imageEl);
+      var checkMark = cr.doc.createElement('div');
+      checkMark.classList.add('check');
+      this.appendChild(checkMark);
       var self = this;
       chrome.wallpaperPrivate.getThumbnail(this.dataItem.baseURL,
                                            function(data) {

@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <!--
 ------
-Copyright (c) 2012 The Chromium Authors. All rights reserved.
+Copyright (c) 2013 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
@@ -39,17 +39,22 @@ found in the LICENSE file.
                    .style.fontSize:webFontSize">
   <div class="dialog-container">
     <div class="dialog-topbar">
-      <list id="categories-list"></list>
+      <div id="navstrip">
+        <list id="categories-list"></list>
+        <div id="bar"></div>
+      </div>
+      <div class="spacer"></div>
+      <img id="close" src="images/ui/close-white.png">
     </div>
     <div class="dialog-main">
       <div id="category-container">
         <grid id="wallpaper-grid" class="image-picker"></grid>
         <div class="bottom-bar">
+          <img id="attribute-image" hidden>
           <div id="wallpaper-attribute" hidden>
             <div>
               <label>
-                <span i18n-content="authorLabel"></span>
-                <strong id="author-name"></strong>
+                <span id="author-name"></span>
               </label>
             </div>
             <div>

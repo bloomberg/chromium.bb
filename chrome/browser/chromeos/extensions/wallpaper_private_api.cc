@@ -183,7 +183,6 @@ bool WallpaperStringsFunction::RunImpl() {
   SET_STRING("webFontFamily", IDS_WEB_FONT_FAMILY);
   SET_STRING("webFontSize", IDS_WEB_FONT_SIZE);
   SET_STRING("searchTextLabel", IDS_WALLPAPER_MANAGER_SEARCH_TEXT_LABEL);
-  SET_STRING("authorLabel", IDS_WALLPAPER_MANAGER_AUTHOR_LABEL);
   SET_STRING("customCategoryLabel",
              IDS_WALLPAPER_MANAGER_CUSTOM_CATEGORY_LABEL);
   SET_STRING("selectCustomLabel",

@@ -12584,9 +12584,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_WALLPAPER_MANAGER_SEARCH_TEXT_LABEL" desc="Search text field label.">
         Search backgrounds
       </message>
-      <message name="IDS_WALLPAPER_MANAGER_AUTHOR_LABEL" desc="Wallpaper author label.">
-        By
-      </message>
       <message name="IDS_WALLPAPER_MANAGER_CUSTOM_CATEGORY_LABEL" desc="Wallpaper category label.">
         Custom
       </message>
