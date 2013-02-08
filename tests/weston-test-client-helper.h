@@ -111,4 +111,10 @@ move_client(struct client *client, int x, int y);
 	assert(wl_display_roundtrip((c)->wl_display) >= 0); \
 } while (0)
 
+struct wl_callback *
+frame_callback_set(struct wl_surface *surface, int *done);
+
+void
+frame_callback_wait(struct client *client, int *done);
+
 #endif

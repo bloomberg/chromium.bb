@@ -41,8 +41,7 @@ surface_contains(struct surface *surface, int x, int y)
 }
 
 static void
-move_client_frame_handler(void *data, 
-			  struct wl_callback *callback, uint32_t time)
+frame_callback_handler(void *data, struct wl_callback *callback, uint32_t time)
 {
 	int *done = data;
 
@@ -52,14 +51,33 @@ move_client_frame_handler(void *data,
 }
 
 static const struct wl_callback_listener frame_listener = {
-	move_client_frame_handler
+	frame_callback_handler
 };
+
+struct wl_callback *
+frame_callback_set(struct wl_surface *surface, int *done)
+{
+	struct wl_callback *callback;
+
+	*done = 0;
+	callback = wl_surface_frame(surface);
+	wl_callback_add_listener(callback, &frame_listener, done);
+
+	return callback;
+}
+
+void
+frame_callback_wait(struct client *client, int *done)
+{
+	while (!*done) {
+		assert(wl_display_dispatch(client->wl_display) >= 0);
+	}
+}
 
 void
 move_client(struct client *client, int x, int y)
 {
 	struct surface *surface = client->surface;
-	struct wl_callback *callback;
 	int done;
 
 	client->surface->x = x;
@@ -69,14 +87,11 @@ move_client(struct client *client, int x, int y)
 	wl_surface_damage(surface->wl_surface, 0, 0, surface->width,
 			  surface->height);
 
-	callback = wl_surface_frame(surface->wl_surface);
-	done = 0;
-	wl_callback_add_listener(callback, &frame_listener, &done);
+	frame_callback_set(surface->wl_surface, &done);
 
 	wl_surface_commit(surface->wl_surface);
 
-	while (!done)
-		wl_display_dispatch(client->wl_display);
+	frame_callback_wait(client, &done);
 }
 
 static void
