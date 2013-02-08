@@ -121,6 +121,9 @@ class WebMediaPlayerAndroid
   // Method inherited from DestructionObserver.
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
+  // Detach the player from its manager.
+  void Detach();
+
  protected:
   // Construct a WebMediaPlayerAndroid object with reference to the
   // client, manager and stream texture factory.

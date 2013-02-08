@@ -34,7 +34,8 @@ WebMediaPlayerImplAndroid::WebMediaPlayerImplAndroid(
 }
 
 WebMediaPlayerImplAndroid::~WebMediaPlayerImplAndroid() {
-  Destroy();
+  if (proxy_)
+    proxy_->DestroyPlayer(player_id());
 }
 
 void WebMediaPlayerImplAndroid::enterFullscreen() {
@@ -125,7 +126,6 @@ void WebMediaPlayerImplAndroid::OnMediaPlayerPause() {
 }
 
 void WebMediaPlayerImplAndroid::Destroy() {
-  proxy_->DestroyPlayer(player_id());
   proxy_ = NULL;
 }
 

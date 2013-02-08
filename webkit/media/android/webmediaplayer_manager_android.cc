@@ -14,6 +14,12 @@ WebMediaPlayerManagerAndroid::WebMediaPlayerManagerAndroid()
 }
 
 WebMediaPlayerManagerAndroid::~WebMediaPlayerManagerAndroid() {
+  std::map<int32, WebMediaPlayerAndroid*>::iterator player_it;
+  for (player_it = media_players_.begin();
+      player_it != media_players_.end(); ++player_it) {
+    WebMediaPlayerAndroid* player = player_it->second;
+    player->Detach();
+  }
 }
 
 int WebMediaPlayerManagerAndroid::RegisterMediaPlayer(
