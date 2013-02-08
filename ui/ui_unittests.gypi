@@ -190,6 +190,8 @@
               '-loleacc.lib',
             ],
           },
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
         }],
         ['OS == "linux"', {
           'sources': [
