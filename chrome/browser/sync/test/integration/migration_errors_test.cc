@@ -77,8 +77,9 @@ class MigrationTest : public SyncTest {
     // ProfileSyncService must already have been created before we can call
     // GetPreferredDataTypes().
     DCHECK(GetClient(0)->IsSyncAlreadySetup());
-    const syncer::ModelTypeSet preferred_data_types =
+    syncer::ModelTypeSet preferred_data_types =
         GetClient(0)->service()->GetPreferredDataTypes();
+    preferred_data_types.RemoveAll(syncer::ProxyTypes());
     // Make sure all clients have the same preferred data types.
     for (int i = 1; i < num_clients(); ++i) {
       const syncer::ModelTypeSet other_preferred_data_types =

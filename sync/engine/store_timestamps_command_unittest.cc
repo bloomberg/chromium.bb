@@ -71,7 +71,7 @@ TEST_F(StoreTimestampsCommandTest, ProcessNewProgressMarkers) {
   EXPECT_EQ("token2", GetProgessMarkerToken(HISTORY_DELETE_DIRECTIVES));
 
   ModelTypeSet non_forward_progress_types =
-      Difference(ModelTypeSet::All(), forward_progress_types);
+      Difference(ProtocolTypes(), forward_progress_types);
   for (ModelTypeSet::Iterator it = non_forward_progress_types.First();
        it.Good(); it.Inc()) {
     EXPECT_TRUE(GetProgessMarkerToken(it.Get()).empty());

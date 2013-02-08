@@ -194,6 +194,7 @@ base::WeakPtr<DataTypeDebugInfoListener> DebugInfoEventListener::GetWeakPtr() {
 void DebugInfoEventListener::OnDataTypeAssociationComplete(
     const DataTypeAssociationStats& association_stats) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(ProtocolTypes().Has(association_stats.model_type));
   sync_pb::DebugEventInfo association_event;
   sync_pb::DatatypeAssociationStats* datatype_stats =
       association_event.mutable_datatype_association_stats();

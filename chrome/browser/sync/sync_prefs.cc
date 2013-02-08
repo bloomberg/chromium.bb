@@ -69,6 +69,10 @@ void SyncPrefs::RegisterUserPrefs(PrefServiceSyncable* prefs) {
 
   syncer::ModelTypeSet user_types = syncer::UserTypes();
 
+  // Include proxy types as well, as they can be individually selected,
+  // although they don't have sync representations.
+  user_types.PutAll(syncer::ProxyTypes());
+
   // Treat bookmarks specially.
   RegisterDataTypePreferredPref(prefs, syncer::BOOKMARKS, true);
   user_types.Remove(syncer::BOOKMARKS);

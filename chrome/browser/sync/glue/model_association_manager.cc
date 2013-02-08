@@ -334,7 +334,8 @@ void ModelAssociationManager::TypeStartCallback(
   // occurred.
   if ((DataTypeController::IsSuccessfulResult(start_result) ||
        start_result == DataTypeController::ASSOCIATION_FAILED) &&
-      debug_info_listener_.IsInitialized()) {
+      debug_info_listener_.IsInitialized() &&
+      syncer::ProtocolTypes().Has(local_merge_result.model_type())) {
     syncer::DataTypeAssociationStats stats =
         BuildAssociationStatsFromMergeResults(local_merge_result,
                                               syncer_merge_result);

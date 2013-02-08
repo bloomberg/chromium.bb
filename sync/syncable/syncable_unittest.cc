@@ -1225,8 +1225,10 @@ TEST_F(SyncableDirectoryTest, TestCaseChangeRename) {
 // GetServerModelType return the right value.
 TEST_F(SyncableDirectoryTest, GetModelType) {
   TestIdFactory id_factory;
-  for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
-    ModelType datatype = ModelTypeFromInt(i);
+  ModelTypeSet protocol_types = ProtocolTypes();
+  for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
+       iter.Inc()) {
+    ModelType datatype = iter.Get();
     SCOPED_TRACE(testing::Message("Testing model type ") << datatype);
     switch (datatype) {
       case UNSPECIFIED:

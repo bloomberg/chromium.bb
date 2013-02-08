@@ -77,6 +77,8 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
       session->source().types;
   for (ModelTypeSet::Iterator it = enabled_types.First();
        it.Good(); it.Inc()) {
+    if (ProxyTypes().Has(it.Get()))
+      continue;
     sync_pb::DataTypeProgressMarker* progress_marker =
         get_updates->add_from_progress_marker();
     dir->GetDownloadProgress(it.Get(), progress_marker);

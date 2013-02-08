@@ -405,8 +405,10 @@ void MockConnectionManager::ProcessGetUpdates(
 
   // Verify that the GetUpdates filter sent by the Syncer matches the test
   // expectation.
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    ModelType model_type = ModelTypeFromInt(i);
+  ModelTypeSet protocol_types = ProtocolTypes();
+  for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
+       iter.Inc()) {
+    ModelType model_type = iter.Get();
     sync_pb::DataTypeProgressMarker const* progress_marker =
         GetProgressMarkerForType(gu.from_progress_marker(), model_type);
     EXPECT_EQ(expected_filter_.Has(model_type), (progress_marker != NULL))

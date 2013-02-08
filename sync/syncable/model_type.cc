@@ -27,6 +27,10 @@ namespace syncer {
 
 void AddDefaultFieldValue(ModelType datatype,
                           sync_pb::EntitySpecifics* specifics) {
+  if (!ProtocolTypes().Has(datatype)) {
+    NOTREACHED() << "Only protocol types have field values.";
+    return;
+  }
   switch (datatype) {
     case BOOKMARKS:
       specifics->mutable_bookmark();
@@ -97,15 +101,20 @@ void AddDefaultFieldValue(ModelType datatype,
 }
 
 ModelType GetModelTypeFromSpecificsFieldNumber(int field_number) {
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    ModelType model_type = ModelTypeFromInt(i);
-    if (GetSpecificsFieldNumberFromModelType(model_type) == field_number)
-      return model_type;
+  ModelTypeSet protocol_types = ProtocolTypes();
+  for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
+       iter.Inc()) {
+    if (GetSpecificsFieldNumberFromModelType(iter.Get()) == field_number)
+      return iter.Get();
   }
   return UNSPECIFIED;
 }
 
 int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
+  if (!ProtocolTypes().Has(model_type)) {
+    NOTREACHED() << "Only protocol types have field values.";
+    return 0;
+  }
   switch (model_type) {
     case BOOKMARKS:
       return sync_pb::EntitySpecifics::kBookmarkFieldNumber;
@@ -285,8 +294,17 @@ bool ShouldMaintainPosition(ModelType model_type) {
   return model_type == BOOKMARKS;
 }
 
+ModelTypeSet ProtocolTypes() {
+  ModelTypeSet set = ModelTypeSet::All();
+  set.RemoveAll(ProxyTypes());
+  return set;
+}
+
 ModelTypeSet UserTypes() {
   ModelTypeSet set;
+  // TODO(sync): We should be able to build the actual enumset's internal
+  // bitset value here at compile time, rather than performing an iteration
+  // every time.
   for (int i = FIRST_USER_MODEL_TYPE; i <= LAST_USER_MODEL_TYPE; ++i) {
     set.Put(ModelTypeFromInt(i));
   }
@@ -299,11 +317,18 @@ ModelTypeSet EncryptableUserTypes() {
   encryptable_user_types.Remove(HISTORY_DELETE_DIRECTIVES);
   // Synced notifications are not encrypted since the server must see changes.
   encryptable_user_types.Remove(SYNCED_NOTIFICATIONS);
+  // Proxy types have no sync representation and are therefore not encrypted.
+  // Note however that proxy types map to one or more protocol types, which
+  // may or may not be encrypted themselves.
+  encryptable_user_types.RemoveAll(ProxyTypes());
   return encryptable_user_types;
 }
 
 ModelTypeSet ControlTypes() {
   ModelTypeSet set;
+  // TODO(sync): We should be able to build the actual enumset's internal
+  // bitset value here at compile time, rather than performing an iteration
+  // every time.
   for (int i = FIRST_CONTROL_MODEL_TYPE; i <= LAST_CONTROL_MODEL_TYPE; ++i) {
     set.Put(ModelTypeFromInt(i));
   }
@@ -311,6 +336,12 @@ ModelTypeSet ControlTypes() {
   // TODO(albertb): Re-enable this when the server supports it.
   set.Remove(PRIORITY_PREFERENCES);
 
+  return set;
+}
+
+ModelTypeSet ProxyTypes() {
+  ModelTypeSet set;
+  // TODO(zea): add a TABS type here.
   return set;
 }
 
@@ -482,6 +513,8 @@ ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value) {
 
 // TODO(zea): remove all hardcoded tags in model associators and have them use
 // this instead.
+// NOTE: Proxy types should return empty strings (so that we don't NOTREACHED
+// in tests when we verify they have no root node).
 std::string ModelTypeToRootTag(ModelType type) {
   switch (type) {
     case BOOKMARKS:
@@ -534,7 +567,8 @@ std::string ModelTypeToRootTag(ModelType type) {
 }
 
 // TODO(akalin): Figure out a better way to do these mappings.
-
+// Note: Do not include proxy types in this list. They should never receive
+// or trigger notifications.
 namespace {
 const char kBookmarkNotificationType[] = "BOOKMARK";
 const char kPreferenceNotificationType[] = "PREFERENCE";

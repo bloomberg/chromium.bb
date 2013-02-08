@@ -143,12 +143,22 @@ SYNC_EXPORT ModelType GetModelTypeFromSpecifics(
 // value (sibling ordering) for this item.
 bool ShouldMaintainPosition(ModelType model_type);
 
+// Protocol types are those types that have actual protocol buffer
+// representations. This distinguishes them from Proxy types, which have no
+// protocol representation and are never sent to the server.
+SYNC_EXPORT ModelTypeSet ProtocolTypes();
+
 // These are the user-selectable data types.  Note that some of these share a
 // preference flag, so not all of them are individually user-selectable.
 SYNC_EXPORT ModelTypeSet UserTypes();
 
 // This is the subset of UserTypes() that can be encrypted.
 SYNC_EXPORT_PRIVATE ModelTypeSet EncryptableUserTypes();
+
+// Proxy types are placeholder types for handling implicitly enabling real
+// types. They do not exist at the server, and are simply used for
+// UI/Configuration logic.
+SYNC_EXPORT ModelTypeSet ProxyTypes();
 
 // Returns a list of all control types.
 //

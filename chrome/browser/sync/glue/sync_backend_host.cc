@@ -689,6 +689,7 @@ void SyncBackendHost::ConfigureDataTypes(
       GetDataTypesInState(ENABLED, config_state_map),
       syncer::Union(GetDataTypesInState(DISABLED, config_state_map),
                     GetDataTypesInState(FAILED, config_state_map)));
+  types_to_download.RemoveAll(syncer::ProxyTypes());
   if (!types_to_download.Empty())
     types_to_download.Put(syncer::NIGORI);
 
@@ -1386,7 +1387,8 @@ void SyncBackendHost::Core::DoFinishConfigureDataTypes(
   // Update the enabled types for the bridge and sync manager.
   syncer::ModelSafeRoutingInfo routing_info;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
-  const syncer::ModelTypeSet enabled_types = GetRoutingInfoTypes(routing_info);
+  syncer::ModelTypeSet enabled_types = GetRoutingInfoTypes(routing_info);
+  enabled_types.RemoveAll(syncer::ProxyTypes());
   sync_manager_->UpdateEnabledTypes(enabled_types);
 
   const syncer::ModelTypeSet failed_configuration_types =

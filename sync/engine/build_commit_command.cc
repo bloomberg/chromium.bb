@@ -103,6 +103,8 @@ void BuildCommitCommand::AddClientConfigParamsToMessage(
   sync_pb::ClientConfigParams* config_params = message->mutable_config_params();
   for (std::map<ModelType, ModelSafeGroup>::const_iterator iter =
           routing_info.begin(); iter != routing_info.end(); ++iter) {
+    if (ProxyTypes().Has(iter->first))
+      continue;
     int field_number = GetSpecificsFieldNumberFromModelType(iter->first);
     config_params->mutable_enabled_type_ids()->Add(field_number);
   }

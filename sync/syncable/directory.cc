@@ -81,9 +81,11 @@ void Directory::InitKernelForTest(
 
 Directory::PersistedKernelInfo::PersistedKernelInfo()
     : next_id(0) {
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    reset_download_progress(ModelTypeFromInt(i));
-    transaction_version[i] = 0;
+  ModelTypeSet protocol_types = ProtocolTypes();
+  for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
+       iter.Inc()) {
+    reset_download_progress(iter.Get());
+    transaction_version[iter.Get()] = 0;
   }
 }
 
@@ -563,6 +565,8 @@ bool Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
 
 bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet types,
                                        ModelTypeSet types_to_journal) {
+  types.RemoveAll(ProxyTypes());
+
   if (types.Empty())
     return true;
 
@@ -702,9 +706,9 @@ void Directory::IncrementTransactionVersion(ModelType type) {
 
 ModelTypeSet Directory::InitialSyncEndedTypes() {
   syncable::ReadTransaction trans(FROM_HERE, this);
-  const ModelTypeSet all_types = ModelTypeSet::All();
+  ModelTypeSet protocol_types = ProtocolTypes();
   ModelTypeSet initial_sync_ended_types;
-  for (ModelTypeSet::Iterator i = all_types.First(); i.Good(); i.Inc()) {
+  for (ModelTypeSet::Iterator i = protocol_types.First(); i.Good(); i.Inc()) {
     if (InitialSyncEndedForType(&trans, i.Get())) {
       initial_sync_ended_types.Put(i.Get());
     }

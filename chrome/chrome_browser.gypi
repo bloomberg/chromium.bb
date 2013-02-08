@@ -1989,6 +1989,8 @@
         'browser/sync/glue/password_model_associator.h',
         'browser/sync/glue/password_model_worker.cc',
         'browser/sync/glue/password_model_worker.h',
+        'browser/sync/glue/proxy_data_type_controller.cc',
+        'browser/sync/glue/proxy_data_type_controller.h',
         'browser/sync/glue/search_engine_data_type_controller.cc',
         'browser/sync/glue/search_engine_data_type_controller.h',
         'browser/sync/glue/session_change_processor.cc',

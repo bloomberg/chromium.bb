@@ -262,14 +262,17 @@ bool DirectoryBackingStore::SaveChanges(
             "INTO models (model_id, progress_marker, transaction_version) "
             "VALUES (?, ?, ?)"));
 
-    for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    ModelTypeSet protocol_types = ProtocolTypes();
+    for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
+         iter.Inc()) {
+      ModelType type = iter.Get();
       // We persist not ModelType but rather a protobuf-derived ID.
-      string model_id = ModelTypeEnumToModelId(ModelTypeFromInt(i));
+      string model_id = ModelTypeEnumToModelId(type);
       string progress_marker;
-      info.download_progress[i].SerializeToString(&progress_marker);
+      info.download_progress[type].SerializeToString(&progress_marker);
       s2.BindBlob(0, model_id.data(), model_id.length());
       s2.BindBlob(1, progress_marker.data(), progress_marker.length());
-      s2.BindInt64(2, info.transaction_version[i]);
+      s2.BindInt64(2, info.transaction_version[type]);
       if (!s2.Run())
         return false;
       DCHECK_EQ(db_->GetLastChangeCount(), 1);
