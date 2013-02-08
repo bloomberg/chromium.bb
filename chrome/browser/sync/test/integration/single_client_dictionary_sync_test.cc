@@ -11,10 +11,6 @@ class SingleClientDictionarySyncTest : public SyncTest {
   SingleClientDictionarySyncTest() : SyncTest(SINGLE_CLIENT) {}
   virtual ~SingleClientDictionarySyncTest() {}
 
-  virtual void AddOptionalTypesToCommandLine(CommandLine* cl) OVERRIDE {
-    dictionary_helper::EnableDictionarySync(cl);
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientDictionarySyncTest);
 };

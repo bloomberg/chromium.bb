@@ -1283,13 +1283,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kHistoryEnableFullHistorySync)
   },
   {
-    "enable-sync-dictionary",
-    IDS_FLAGS_ENABLE_SYNC_DICTIONARY_NAME,
-    IDS_FLAGS_ENABLE_SYNC_DICTIONARY_DESCRIPTION,
-    kOsWin | kOsCrOS | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kEnableSyncDictionary)
-  },
-  {
     "enable-usermedia-screen-capture",
     IDS_FLAGS_ENABLE_SCREEN_CAPTURE_NAME,
     IDS_FLAGS_ENABLE_SCREEN_CAPTURE_DESCRIPTION,

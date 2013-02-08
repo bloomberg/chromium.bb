@@ -2233,6 +2233,16 @@
           # The sync_integration_tests do not run on mac without this flag.
           # Search for comments about "xcode_settings" elsewhere in this file.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
+          # Dictionary sync is disabled on Mac.
+          'sources!': [
+            'browser/sync/test/integration/dictionary_helper.cc',
+            'browser/sync/test/integration/dictionary_helper.h',
+            'browser/sync/test/integration/dictionary_load_observer.cc',
+            'browser/sync/test/integration/dictionary_load_observer.h',
+            'browser/sync/test/integration/multiple_client_dictionary_sync_test.cc',
+            'browser/sync/test/integration/single_client_dictionary_sync_test.cc',
+            'browser/sync/test/integration/two_client_dictionary_sync_test.cc',
+          ],
         }],
         ['OS=="win"', {
           'sources': [
@@ -2358,6 +2368,14 @@
           # The sync_performance_tests do not run on mac without this flag.
           # Search for comments about "xcode_settings" elsewhere in this file.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
+          # Dictionary sync is disabled on Mac.
+          'sources!': [
+            'browser/sync/test/integration/dictionary_helper.cc',
+            'browser/sync/test/integration/dictionary_helper.h',
+            'browser/sync/test/integration/dictionary_load_observer.cc',
+            'browser/sync/test/integration/dictionary_load_observer.h',
+            'browser/sync/test/integration/performance/dictionary_sync_perf_test.cc',
+          ],
         }],
         ['OS=="win"', {
           'sources': [

@@ -39,6 +39,9 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
     datatypes.push_back(syncer::AUTOFILL);
     datatypes.push_back(syncer::AUTOFILL_PROFILE);
     datatypes.push_back(syncer::BOOKMARKS);
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
+    datatypes.push_back(syncer::DICTIONARY);
+#endif
     datatypes.push_back(syncer::EXTENSIONS);
     datatypes.push_back(syncer::EXTENSION_SETTINGS);
     datatypes.push_back(syncer::PASSWORDS);

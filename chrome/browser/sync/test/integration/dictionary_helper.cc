@@ -90,11 +90,6 @@ bool HaveWordMatches(const std::string& word) {
 }  // namespace
 
 
-void EnableDictionarySync(CommandLine* cl) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableSyncDictionary);
-}
-
 void LoadDictionaries() {
   for (int i = 0; i < sync_datatype_helper::test()->num_clients(); ++i)
     LoadDictionary(GetDictionary(i));

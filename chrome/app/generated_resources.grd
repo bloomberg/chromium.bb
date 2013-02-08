@@ -7144,12 +7144,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_RICH_NOTIFICATIONS_DESCRIPTION" desc="Description for the flag to enable rich notifications.">
         Enable rich templated notifications. Both HTML5 notifications and app notifications will be shown through new Notification Center.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SYNC_DICTIONARY_NAME" desc="Name of about:flags option to turn on dictionary sync.">
-        Enable dictionary sync
-      </message>
-      <message name="IDS_FLAGS_ENABLE_SYNC_DICTIONARY_DESCRIPTION" desc="Description of about:flags option to turn on dictionary sync.">
-        Enabling syncing the custom spelling dictionary. To view data, visit chrome://settings/editDictionary.
-      </message>
       <message name="IDS_FLAGS_ENABLE_SCREEN_CAPTURE_NAME" desc="Name of the flag to enable screen capture support.">
         Enable screen capture support in getUserMedia().
       </message>

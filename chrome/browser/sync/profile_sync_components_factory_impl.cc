@@ -237,12 +237,13 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
             syncer::HISTORY_DELETE_DIRECTIVES, this, profile_, pss));
   }
 
-  // Dictionary sync is disabled by default.  Register only if explicitly
-  // enabled.
-  if (command_line_->HasSwitch(switches::kEnableSyncDictionary)) {
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
+  // Dictionary sync is enabled by default.
+  if (!command_line_->HasSwitch(switches::kDisableSyncDictionary)) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(syncer::DICTIONARY, this, profile_, pss));
   }
+#endif
 }
 
 DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(

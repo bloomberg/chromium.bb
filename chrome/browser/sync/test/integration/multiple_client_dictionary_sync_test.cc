@@ -13,10 +13,6 @@ class MultipleClientDictionarySyncTest : public SyncTest {
   MultipleClientDictionarySyncTest() : SyncTest(MULTIPLE_CLIENT) {}
   virtual ~MultipleClientDictionarySyncTest() {}
 
-  virtual void AddOptionalTypesToCommandLine(CommandLine* cl) OVERRIDE {
-    dictionary_helper::EnableDictionarySync(cl);
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MultipleClientDictionarySyncTest);
 };

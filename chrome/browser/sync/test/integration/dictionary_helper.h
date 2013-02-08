@@ -13,9 +13,6 @@ class SpellcheckCustomDictionary;
 
 namespace dictionary_helper {
 
-// Enable dictionary sync.
-void EnableDictionarySync(CommandLine* cl);
-
 // Synchronously loads the dictionaries across all profiles. Also loads the
 // dictionary for the verifier if DisableVerifier() hasn't been called. Returns
 // only after the dictionaries have finished to load.

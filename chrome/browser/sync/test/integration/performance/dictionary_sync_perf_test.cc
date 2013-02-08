@@ -14,10 +14,6 @@ class DictionarySyncPerfTest : public SyncTest {
   DictionarySyncPerfTest() : SyncTest(TWO_CLIENT) {}
   virtual ~DictionarySyncPerfTest() {}
 
-  virtual void AddOptionalTypesToCommandLine(CommandLine* cl) OVERRIDE {
-    dictionary_helper::EnableDictionarySync(cl);
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(DictionarySyncPerfTest);
 };
