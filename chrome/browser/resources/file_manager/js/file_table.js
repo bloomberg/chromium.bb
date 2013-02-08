@@ -658,9 +658,13 @@ filelist.renderFileNameLabel = function(doc, entry) {
  */
 filelist.updateListItemDriveProps = function(li, driveProps) {
   if (li.classList.contains('file')) {
-    if (!driveProps.availableOffline)
+    if (driveProps.availableOffline)
+      li.classList.remove('dim-offline');
+    else
       li.classList.add('dim-offline');
-    if (!driveProps.availableWhenMetered)
+    if (driveProps.availableWhenMetered)
+      li.classList.remove('dim-metered');
+    else
       li.classList.add('dim-metered');
   }
 

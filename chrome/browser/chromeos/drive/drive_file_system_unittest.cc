@@ -1223,6 +1223,11 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
 TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
+  // The transfered file is cached and the change of "offline avaialble"
+  // attribute is notified.
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath local_dest_file_path = temp_dir.path().Append("local_copy.txt");
@@ -1731,6 +1736,11 @@ TEST_F(DriveFileSystemTest, CreateDirectoryWithService) {
 TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
+  // The transfered file is cached and the change of "offline avaialble"
+  // attribute is notified.
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
   FilePath downloaded_file = GetCachePathForFile(
@@ -1782,6 +1792,11 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
 
 TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
+
+  // The transfered file is cached and the change of "offline avaialble"
+  // attribute is notified.
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
@@ -1928,6 +1943,11 @@ TEST_F(DriveFileSystemTest, GetFileByPath_HostedDocument) {
 
 TEST_F(DriveFileSystemTest, GetFileByResourceId) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+
+  // The transfered file is cached and the change of "offline avaialble"
+  // attribute is notified.
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
@@ -2212,6 +2232,11 @@ TEST_F(DriveFileSystemTest, RequestDirectoryRefresh) {
 
 TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
+
+  // The transfered file is cached and the change of "offline avaialble"
+  // attribute is notified.
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
   const FilePath kFileInRoot(FILE_PATH_LITERAL("drive/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(kFileInRoot));

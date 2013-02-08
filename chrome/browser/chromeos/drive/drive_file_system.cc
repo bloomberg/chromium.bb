@@ -1432,6 +1432,8 @@ void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
                     downloaded_file_path,
                     DriveCache::FILE_OPERATION_MOVE,
                     base::Bind(&EmptyFileOperationCallback));
+      // Storing to cache changes the "offline available" status, hence notify.
+      OnDirectoryChanged(params.virtual_file_path.DirName());
     } else {
       // If we don't have enough space, remove the downloaded file, and
       // report "no space" error.
