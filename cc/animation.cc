@@ -18,6 +18,7 @@ static const char* const s_runStateNames[] = {
     "WaitingForTargetAvailability",
     "WaitingForStartTime",
     "WaitingForDeletion",
+    "Starting",
     "Running",
     "Paused",
     "Finished",
@@ -77,7 +78,8 @@ void Animation::setRunState(RunState runState, double monotonicTime)
 
     bool isWaitingToStart = m_runState == WaitingForNextTick
         || m_runState == WaitingForTargetAvailability
-        || m_runState == WaitingForStartTime;
+        || m_runState == WaitingForStartTime
+        || m_runState == Starting;
 
     if (isWaitingToStart && runState == Running)
         TRACE_EVENT_ASYNC_BEGIN1("cc", "Animation", this, "Name", TRACE_STR_COPY(nameBuffer));

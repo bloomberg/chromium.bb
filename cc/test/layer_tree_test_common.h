@@ -27,7 +27,8 @@ public:
     virtual bool prepareToDrawOnThread(
         LayerTreeHostImpl*, LayerTreeHostImpl::FrameData&, bool result);
     virtual void drawLayersOnThread(LayerTreeHostImpl*) { }
-    virtual void animateLayers(LayerTreeHostImpl*, base::TimeTicks monotonicTime, bool hasUnfinishedAnimation) { }
+    virtual void animateLayers(LayerTreeHostImpl*, base::TimeTicks monotonicTime) { }
+    virtual void updateAnimationState(LayerTreeHostImpl*, bool hasUnfinishedAnimation) { }
     virtual void willAnimateLayers(LayerTreeHostImpl*, base::TimeTicks monotonicTime) { }
     virtual void applyScrollAndScale(gfx::Vector2d, float) { }
     virtual void animate(base::TimeTicks monotonicTime) { }
@@ -151,6 +152,7 @@ public:
 
 protected:
     virtual void animateLayers(base::TimeTicks monotonicTime, base::Time wallClockTime) OVERRIDE;
+    virtual void updateAnimationState() OVERRIDE;
     virtual base::TimeDelta lowFrequencyAnimationInterval() const OVERRIDE;
 
 private:

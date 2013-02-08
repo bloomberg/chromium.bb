@@ -847,8 +847,10 @@ void LayerTreeHost::animateLayers(base::TimeTicks time)
     double monotonicTime = (time - base::TimeTicks()).InSecondsF();
 
     AnimationRegistrar::AnimationControllerMap copy = m_animationRegistrar->active_animation_controllers();
-    for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin(); iter != copy.end(); ++iter)
-        (*iter).second->animate(monotonicTime, 0);
+    for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin(); iter != copy.end(); ++iter) {
+        (*iter).second->animate(monotonicTime);
+        (*iter).second->updateState(0);
+    }
 }
 
 void LayerTreeHost::setAnimationEventsRecursive(const AnimationEventsVector& events, Layer* layer, base::Time wallClockTime)

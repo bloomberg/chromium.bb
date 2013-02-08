@@ -23,15 +23,16 @@ public:
     // availibility will run as soon as their target property is free (and all the animations
     // animating with it are also able to run). Animations waiting for their start time to
     // come have be scheduled to run at a particular point in time. When this time arrives,
-    // the controller will move the animations into the Running state. Running animations
-    // may toggle between Running and Paused, and may be stopped by moving into either the
-    // Aborted or Finished states. A Finished animation was allowed to run to completion, but
-    // an Aborted animation was not.
+    // the controller will move the animations into the Starting state, and then into the
+    // Running state. Running animations may toggle between Running and Paused, and may be
+    // stopped by moving into either the Aborted or Finished states. A Finished animation
+    // was allowed to run to completion, but an Aborted animation was not.
     enum RunState {
         WaitingForNextTick = 0,
         WaitingForTargetAvailability,
         WaitingForStartTime,
         WaitingForDeletion,
+        Starting,
         Running,
         Paused,
         Finished,

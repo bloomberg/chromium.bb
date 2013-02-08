@@ -815,6 +815,7 @@ void LayerTreeHostImpl::drawLayers(FrameData& frame)
     for (unsigned int i = 0; i < frame.renderSurfaceLayerList->size(); i++)
         (*frame.renderSurfaceLayerList)[i]->renderSurface()->damageTracker()->didDrawDamagedArea();
     rootLayer()->resetAllChangeTrackingForSubtree();
+    updateAnimationState();
 }
 
 void LayerTreeHostImpl::didDrawAllLayers(const FrameData& frame)
@@ -1524,18 +1525,30 @@ void LayerTreeHostImpl::animateLayers(base::TimeTicks monotonicTime, base::Time 
 
     TRACE_EVENT0("cc", "LayerTreeHostImpl::animateLayers");
 
+    m_lastAnimationTime = wallClockTime;
     double monotonicSeconds = (monotonicTime - base::TimeTicks()).InSecondsF();
 
-    scoped_ptr<AnimationEventsVector> events(make_scoped_ptr(new AnimationEventsVector));
     AnimationRegistrar::AnimationControllerMap copy = m_animationRegistrar->active_animation_controllers();
     for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin(); iter != copy.end(); ++iter)
-        (*iter).second->animate(monotonicSeconds, events.get());
-
-    if (!events->empty())
-        m_client->postAnimationEventsToMainThreadOnImplThread(events.Pass(), wallClockTime);
+        (*iter).second->animate(monotonicSeconds);
 
     m_client->setNeedsRedrawOnImplThread();
     setBackgroundTickingEnabled(!m_visible && !m_animationRegistrar->active_animation_controllers().empty());
+}
+
+void LayerTreeHostImpl::updateAnimationState()
+{
+    if (!m_settings.acceleratedAnimationEnabled || m_animationRegistrar->active_animation_controllers().empty() || !rootLayer())
+        return;
+
+    TRACE_EVENT0("cc", "LayerTreeHostImpl::updateAnimationState");
+    scoped_ptr<AnimationEventsVector> events(make_scoped_ptr(new AnimationEventsVector));
+    AnimationRegistrar::AnimationControllerMap copy = m_animationRegistrar->active_animation_controllers();
+    for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin(); iter != copy.end(); ++iter)
+        (*iter).second->updateState(events.get());
+
+    if (!events->empty())
+        m_client->postAnimationEventsToMainThreadOnImplThread(events.Pass(), m_lastAnimationTime);
 }
 
 base::TimeDelta LayerTreeHostImpl::lowFrequencyAnimationInterval() const

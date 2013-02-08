@@ -88,6 +88,12 @@ void MockLayerTreeHostImpl::animateLayers(base::TimeTicks monotonicTime, base::T
 {
     m_testHooks->willAnimateLayers(this, monotonicTime);
     LayerTreeHostImpl::animateLayers(monotonicTime, wallClockTime);
+    m_testHooks->animateLayers(this, monotonicTime);
+}
+
+void MockLayerTreeHostImpl::updateAnimationState()
+{
+    LayerTreeHostImpl::updateAnimationState();
     bool hasUnfinishedAnimation = false;
     AnimationRegistrar::AnimationControllerMap::const_iterator iter = activeAnimationControllers().begin();
     for (; iter != activeAnimationControllers().end(); ++iter) {
@@ -96,7 +102,7 @@ void MockLayerTreeHostImpl::animateLayers(base::TimeTicks monotonicTime, base::T
             break;
         }
     }
-    m_testHooks->animateLayers(this, monotonicTime, hasUnfinishedAnimation);
+    m_testHooks->updateAnimationState(this, hasUnfinishedAnimation);
 }
 
 base::TimeDelta MockLayerTreeHostImpl::lowFrequencyAnimationInterval() const

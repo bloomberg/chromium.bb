@@ -20,6 +20,7 @@ LayerAnimationController::LayerAnimationController(int id)
     , m_id(id)
     , m_registrar(0)
     , m_isActive(false)
+    , m_lastTickTime(0)
 {
 }
 
@@ -111,18 +112,29 @@ void LayerAnimationController::pushAnimationUpdatesTo(LayerAnimationController* 
     updateActivation();
 }
 
-void LayerAnimationController::animate(double monotonicTime, AnimationEventsVector* events)
+void LayerAnimationController::animate(double monotonicTime)
 {
     if (!hasActiveObserver())
         return;
 
-    startAnimationsWaitingForNextTick(monotonicTime, events);
-    startAnimationsWaitingForStartTime(monotonicTime, events);
-    startAnimationsWaitingForTargetAvailability(monotonicTime, events);
+    startAnimationsWaitingForNextTick(monotonicTime);
+    startAnimationsWaitingForStartTime(monotonicTime);
+    startAnimationsWaitingForTargetAvailability(monotonicTime);
     resolveConflicts(monotonicTime);
     tickAnimations(monotonicTime);
-    markAnimationsForDeletion(monotonicTime, events);
-    startAnimationsWaitingForTargetAvailability(monotonicTime, events);
+    m_lastTickTime = monotonicTime;
+}
+
+void LayerAnimationController::updateState(AnimationEventsVector* events)
+{
+    if (!hasActiveObserver())
+        return;
+
+    promoteStartedAnimations(m_lastTickTime, events);
+    markFinishedAnimations(m_lastTickTime);
+    markAnimationsForDeletion(m_lastTickTime, events);
+    startAnimationsWaitingForTargetAvailability(m_lastTickTime);
+    promoteStartedAnimations(m_lastTickTime, events);
 
     updateActivation();
 }
@@ -256,36 +268,28 @@ void LayerAnimationController::pushPropertiesToImplThread(LayerAnimationControll
     }
 }
 
-void LayerAnimationController::startAnimationsWaitingForNextTick(double monotonicTime, AnimationEventsVector* events)
+void LayerAnimationController::startAnimationsWaitingForNextTick(double monotonicTime)
 {
     for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
-        if (m_activeAnimations[i]->runState() == Animation::WaitingForNextTick) {
-            m_activeAnimations[i]->setRunState(Animation::Running, monotonicTime);
-            if (!m_activeAnimations[i]->hasSetStartTime())
-                m_activeAnimations[i]->setStartTime(monotonicTime);
-            if (events)
-                events->push_back(AnimationEvent(AnimationEvent::Started, m_id, m_activeAnimations[i]->group(), m_activeAnimations[i]->targetProperty(), monotonicTime));
-        }
+        if (m_activeAnimations[i]->runState() == Animation::WaitingForNextTick)
+            m_activeAnimations[i]->setRunState(Animation::Starting, monotonicTime);
     }
 }
 
-void LayerAnimationController::startAnimationsWaitingForStartTime(double monotonicTime, AnimationEventsVector* events)
+void LayerAnimationController::startAnimationsWaitingForStartTime(double monotonicTime)
 {
     for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
-        if (m_activeAnimations[i]->runState() == Animation::WaitingForStartTime && m_activeAnimations[i]->startTime() <= monotonicTime) {
-            m_activeAnimations[i]->setRunState(Animation::Running, monotonicTime);
-            if (events)
-                events->push_back(AnimationEvent(AnimationEvent::Started, m_id, m_activeAnimations[i]->group(), m_activeAnimations[i]->targetProperty(), monotonicTime));
-        }
+        if (m_activeAnimations[i]->runState() == Animation::WaitingForStartTime && m_activeAnimations[i]->startTime() <= monotonicTime)
+            m_activeAnimations[i]->setRunState(Animation::Starting, monotonicTime);
     }
 }
 
-void LayerAnimationController::startAnimationsWaitingForTargetAvailability(double monotonicTime, AnimationEventsVector* events)
+void LayerAnimationController::startAnimationsWaitingForTargetAvailability(double monotonicTime)
 {
     // First collect running properties.
     TargetProperties blockedProperties;
     for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
-        if (m_activeAnimations[i]->runState() == Animation::Running || m_activeAnimations[i]->runState() == Animation::Finished)
+        if (m_activeAnimations[i]->runState() == Animation::Starting || m_activeAnimations[i]->runState() == Animation::Running || m_activeAnimations[i]->runState() == Animation::Finished)
             blockedProperties.insert(m_activeAnimations[i]->targetProperty());
     }
 
@@ -310,20 +314,34 @@ void LayerAnimationController::startAnimationsWaitingForTargetAvailability(doubl
 
             // If the intersection is null, then we are free to start the animations in the group.
             if (nullIntersection) {
-                m_activeAnimations[i]->setRunState(Animation::Running, monotonicTime);
-                if (!m_activeAnimations[i]->hasSetStartTime())
-                    m_activeAnimations[i]->setStartTime(monotonicTime);
-                if (events)
-                    events->push_back(AnimationEvent(AnimationEvent::Started, m_id, m_activeAnimations[i]->group(), m_activeAnimations[i]->targetProperty(), monotonicTime));
+                m_activeAnimations[i]->setRunState(Animation::Starting, monotonicTime);
                 for (size_t j = i + 1; j < m_activeAnimations.size(); ++j) {
-                    if (m_activeAnimations[i]->group() == m_activeAnimations[j]->group()) {
-                        m_activeAnimations[j]->setRunState(Animation::Running, monotonicTime);
-                        if (!m_activeAnimations[j]->hasSetStartTime())
-                            m_activeAnimations[j]->setStartTime(monotonicTime);
-                    }
+                    if (m_activeAnimations[i]->group() == m_activeAnimations[j]->group())
+                        m_activeAnimations[j]->setRunState(Animation::Starting, monotonicTime);
                 }
             }
         }
+    }
+}
+
+void LayerAnimationController::promoteStartedAnimations(double monotonicTime, AnimationEventsVector* events)
+{
+    for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
+        if (m_activeAnimations[i]->runState() == Animation::Starting) {
+            m_activeAnimations[i]->setRunState(Animation::Running, monotonicTime);
+            if (!m_activeAnimations[i]->hasSetStartTime())
+                m_activeAnimations[i]->setStartTime(monotonicTime);
+            if (events)
+                events->push_back(AnimationEvent(AnimationEvent::Started, m_id, m_activeAnimations[i]->group(), m_activeAnimations[i]->targetProperty(), monotonicTime));
+        }
+    }
+}
+
+void LayerAnimationController::markFinishedAnimations(double monotonicTime)
+{
+    for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
+        if (m_activeAnimations[i]->isFinishedAt(monotonicTime))
+            m_activeAnimations[i]->setRunState(Animation::Finished, monotonicTime);
     }
 }
 
@@ -335,9 +353,11 @@ void LayerAnimationController::resolveConflicts(double monotonicTime)
     // (2) has an equal start time, but was added to the queue earlier, i.e.,
     // has a lower index in m_activeAnimations).
     for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
-        if (m_activeAnimations[i]->runState() == Animation::Running) {
+        if (m_activeAnimations[i]->runState() == Animation::Starting || m_activeAnimations[i]->runState() == Animation::Running) {
             for (size_t j = i + 1; j < m_activeAnimations.size(); ++j) {
-                if (m_activeAnimations[j]->runState() == Animation::Running && m_activeAnimations[i]->targetProperty() == m_activeAnimations[j]->targetProperty()) {
+                if ((m_activeAnimations[j]->runState() == Animation::Starting ||
+                     m_activeAnimations[j]->runState() == Animation::Running) &&
+                    m_activeAnimations[i]->targetProperty() == m_activeAnimations[j]->targetProperty()) {
                     if (m_activeAnimations[i]->startTime() > m_activeAnimations[j]->startTime())
                         m_activeAnimations[j]->setRunState(Animation::Aborted, monotonicTime);
                     else
@@ -355,7 +375,7 @@ void LayerAnimationController::markAnimationsForDeletion(double monotonicTime, A
         bool allAnimsWithSameIdAreFinished = false;
         // If an animation is finished, and not already marked for deletion,
         // Find out if all other animations in the same group are also finished.
-        if (m_activeAnimations[i]->isFinished()) {
+        if (m_activeAnimations[i]->isFinished() && m_activeAnimations[i]->runState() != Animation::WaitingForDeletion) {
             allAnimsWithSameIdAreFinished = true;
             for (size_t j = 0; j < m_activeAnimations.size(); ++j) {
                 if (groupId == m_activeAnimations[j]->group() && !m_activeAnimations[j]->isFinished()) {
@@ -407,7 +427,9 @@ void LayerAnimationController::replaceImplThreadAnimations(LayerAnimationControl
 void LayerAnimationController::tickAnimations(double monotonicTime)
 {
     for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
-        if (m_activeAnimations[i]->runState() == Animation::Running || m_activeAnimations[i]->runState() == Animation::Paused) {
+        if (m_activeAnimations[i]->runState() == Animation::Starting ||
+            m_activeAnimations[i]->runState() == Animation::Running ||
+            m_activeAnimations[i]->runState() == Animation::Paused) {
             double trimmed = m_activeAnimations[i]->trimTimeToCurrentIteration(monotonicTime);
 
             // Animation assumes its initial value until it gets the synchronized start time
@@ -415,14 +437,15 @@ void LayerAnimationController::tickAnimations(double monotonicTime)
             if (m_activeAnimations[i]->needsSynchronizedStartTime())
                 trimmed = 0;
 
+            // A just-started animation assumes its initial value.
+            if (m_activeAnimations[i]->runState() == Animation::Starting && !m_activeAnimations[i]->hasSetStartTime())
+                trimmed = 0;
+
             switch (m_activeAnimations[i]->targetProperty()) {
 
             case Animation::Transform: {
                 const TransformAnimationCurve* transformAnimationCurve = m_activeAnimations[i]->curve()->toTransformAnimationCurve();
                 const gfx::Transform transform = transformAnimationCurve->getValue(trimmed);
-                if (m_activeAnimations[i]->isFinishedAt(monotonicTime))
-                    m_activeAnimations[i]->setRunState(Animation::Finished, monotonicTime);
-
                 notifyObserversTransformAnimated(transform);
                 break;
             }
@@ -430,9 +453,6 @@ void LayerAnimationController::tickAnimations(double monotonicTime)
             case Animation::Opacity: {
                 const FloatAnimationCurve* floatAnimationCurve = m_activeAnimations[i]->curve()->toFloatAnimationCurve();
                 const float opacity = floatAnimationCurve->getValue(trimmed);
-                if (m_activeAnimations[i]->isFinishedAt(monotonicTime))
-                    m_activeAnimations[i]->setRunState(Animation::Finished, monotonicTime);
-
                 notifyObserversOpacityAnimated(opacity);
                 break;
             }

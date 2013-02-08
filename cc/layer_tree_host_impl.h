@@ -266,6 +266,7 @@ protected:
 
     // Virtual for testing.
     virtual void animateLayers(base::TimeTicks monotonicTime, base::Time wallClockTime);
+    virtual void updateAnimationState();
 
     // Virtual for testing.
     virtual base::TimeDelta lowFrequencyAnimationInterval() const;
@@ -336,6 +337,10 @@ private:
 
     bool m_pinchGestureActive;
     gfx::Point m_previousPinchAnchor;
+
+    // This is set by animateLayers() and used by updateAnimationState()
+    // when sending animation events to the main thread.
+    base::Time m_lastAnimationTime;
 
     scoped_ptr<TopControlsManager> m_topControlsManager;
 
