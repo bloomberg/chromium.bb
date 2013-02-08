@@ -116,6 +116,7 @@ void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
 
 void CloudPolicyClient::FetchPolicy() {
   CHECK(is_registered());
+  CHECK(!namespaces_to_fetch_.empty());
 
   request_job_.reset(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH));
