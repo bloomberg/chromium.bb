@@ -82,11 +82,6 @@ class NET_EXPORT URLFetcher {
                       // <winnt.h> defines a DELETE macro.
     PUT,
     PATCH,
-
-    // DEPRECATED: Now POST should work well for empty body, and this value
-    //   will be removed soon.
-    // This is POST method with no body, and no content-type header.
-    POST_WITHOUT_BODY,
   };
 
   // Used by SetURLRequestUserData.  The callback should make a fresh

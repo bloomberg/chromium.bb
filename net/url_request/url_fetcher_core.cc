@@ -774,10 +774,6 @@ void URLFetcherCore::StartURLRequest() {
           &URLFetcherCore::InformDelegateUploadProgress);
       break;
 
-    case URLFetcher::POST_WITHOUT_BODY:
-      request_->set_method("POST");
-      break;
-
     case URLFetcher::HEAD:
       request_->set_method("HEAD");
       break;
