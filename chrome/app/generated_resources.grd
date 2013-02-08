@@ -7150,6 +7150,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SYNC_DICTIONARY_DESCRIPTION" desc="Description of about:flags option to turn on dictionary sync.">
         Enabling syncing the custom spelling dictionary. To view data, visit chrome://settings/editDictionary.
       </message>
+      <message name="IDS_FLAGS_ENABLE_SCREEN_CAPTURE_NAME" desc="Name of the flag to enable screen capture support.">
+        Enable screen capture support in getUserMedia().
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SCREEN_CAPTURE_DESCRIPTION" desc="Description of flag to enable screen capture.">
+        Allow web pages to request access to the screen contents via the getUserMedia() API.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

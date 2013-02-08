@@ -1289,6 +1289,13 @@ const Experiment kExperiments[] = {
     kOsWin | kOsCrOS | kOsLinux,
     SINGLE_VALUE_TYPE(switches::kEnableSyncDictionary)
   },
+  {
+    "enable-usermedia-screen-capture",
+    IDS_FLAGS_ENABLE_SCREEN_CAPTURE_NAME,
+    IDS_FLAGS_ENABLE_SCREEN_CAPTURE_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableUserMediaScreenCapturing)
+  },
 };
 
 const Experiment* experiments = kExperiments;
