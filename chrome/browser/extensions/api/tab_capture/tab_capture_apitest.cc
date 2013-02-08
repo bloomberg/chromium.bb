@@ -29,7 +29,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
                                   "api_tests.html")) << message_;
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // See http://crbug.com/174640
 #define MAYBE_EndToEnd DISABLED_EndToEnd
 #else
