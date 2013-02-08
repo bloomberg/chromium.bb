@@ -27,6 +27,10 @@ class GDataWapiUrlGenerator {
   // show folders in the feed are added to document feed URLs.
   static GURL AddStandardUrlParams(const GURL& url);
 
+  // Adds additional parameters for initiate uploading as well as standard
+  // url params (as AddStandardUrlParams above does).
+  static GURL AddInitiateUploadUrlParams(const GURL& url);
+
   // Adds additional parameters to metadata feed to include installed 3rd
   // party applications.
   static GURL AddMetadataUrlParams(const GURL& url);

@@ -73,6 +73,12 @@ GURL GDataWapiUrlGenerator::AddStandardUrlParams(const GURL& url) {
 }
 
 // static
+GURL GDataWapiUrlGenerator::AddInitiateUploadUrlParams(const GURL& url) {
+  GURL result = net::AppendOrReplaceQueryParameter(url, "convert", "false");
+  return AddStandardUrlParams(result);
+}
+
+// static
 GURL GDataWapiUrlGenerator::AddMetadataUrlParams(const GURL& url) {
   GURL result = AddStandardUrlParams(url);
   result = net::AppendOrReplaceQueryParameter(

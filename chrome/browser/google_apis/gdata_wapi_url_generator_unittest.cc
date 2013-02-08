@@ -25,6 +25,12 @@ TEST_F(GDataWapiUrlGeneratorTest, AddStandardUrlParams) {
                 GURL("http://www.example.com")).spec());
 }
 
+TEST_F(GDataWapiUrlGeneratorTest, AddInitiateUploadUrlParams) {
+  EXPECT_EQ("http://www.example.com/?convert=false&v=3&alt=json",
+            GDataWapiUrlGenerator::AddInitiateUploadUrlParams(
+                GURL("http://www.example.com")).spec());
+}
+
 TEST_F(GDataWapiUrlGeneratorTest, AddMetadataUrlParams) {
   EXPECT_EQ("http://www.example.com/?v=3&alt=json&include-installed-apps=true",
             GDataWapiUrlGenerator::AddMetadataUrlParams(

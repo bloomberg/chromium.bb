@@ -33,8 +33,6 @@ const char kUploadContentLength[] = "X-Upload-Content-Length: ";
 const char kFeedField[] = "feed";
 
 // Templates for file uploading.
-const char kUploadParamConvertKey[] = "convert";
-const char kUploadParamConvertValue[] = "false";
 const char kUploadResponseLocation[] = "location";
 const char kUploadResponseRange[] = "range";
 
@@ -500,18 +498,15 @@ InitiateUploadOperation::InitiateUploadOperation(
                             OPERATION_UPLOAD,
                             params.drive_file_path),
       callback_(callback),
-      params_(params),
-      initiate_upload_url_(net::AppendOrReplaceQueryParameter(
-          params.upload_location,
-          kUploadParamConvertKey,
-          kUploadParamConvertValue)) {
+      params_(params) {
   DCHECK(!callback_.is_null());
 }
 
 InitiateUploadOperation::~InitiateUploadOperation() {}
 
 GURL InitiateUploadOperation::GetURL() const {
-  return GDataWapiUrlGenerator::AddStandardUrlParams(initiate_upload_url_);
+  return GDataWapiUrlGenerator::AddInitiateUploadUrlParams(
+      params_.upload_location);
 }
 
 void InitiateUploadOperation::ProcessURLFetchResults(

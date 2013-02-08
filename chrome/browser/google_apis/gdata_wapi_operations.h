@@ -421,7 +421,6 @@ class InitiateUploadOperation : public UrlFetchOperationBase {
  private:
   const InitiateUploadCallback callback_;
   const InitiateUploadParams params_;
-  const GURL initiate_upload_url_;
 
   DISALLOW_COPY_AND_ASSIGN(InitiateUploadOperation);
 };
