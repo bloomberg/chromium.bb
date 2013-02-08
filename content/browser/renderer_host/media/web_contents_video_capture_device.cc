@@ -337,14 +337,12 @@ void BackingStoreCopier::LookUpAndObserveWebContents() {
                     << render_process_id_ << ", " << render_view_id_
                     << ") returned NULL.";
   Observe(rvh ? WebContents::FromRenderViewHost(rvh) : NULL);
-  if (web_contents())
-    web_contents()->IncrementCapturerCount();
-  else
+  WebContentsImpl* contents = static_cast<WebContentsImpl*>(web_contents());
+  if (contents) {
+    contents->IncrementCapturerCount();
+    fullscreen_widget_id_ = contents->GetFullscreenWidgetRoutingID();
+  } else {
     DVLOG(1) << "WebContents::FromRenderViewHost(" << rvh << ") returned NULL.";
-
-  if (fullscreen_widget_id_ == MSG_ROUTING_NONE && web_contents()) {
-    fullscreen_widget_id_ = static_cast<WebContentsImpl*>(web_contents())->
-        GetFullscreenWidgetRoutingID();
   }
 }
 
