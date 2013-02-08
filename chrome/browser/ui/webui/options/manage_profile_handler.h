@@ -95,6 +95,16 @@ class ManageProfileHandler : public OptionsPageUIHandler {
   // being edited has any desktop shortcuts.
   void OnHasProfileShortcuts(bool has_shortcuts);
 
+  // Callback for the "addProfileShortcut" message, which is called when editing
+  // an existing profile and the user clicks the "Add desktop shortcut" button.
+  // Adds a desktop shortcut for the profile.
+  void AddProfileShortcut(const base::ListValue* args);
+
+  // Callback for the "removeProfileShortcut" message, which is called when
+  // editing an existing profile and the user clicks the "Remove desktop
+  // shortcut" button. Removes the desktop shortcut for the profile.
+  void RemoveProfileShortcut(const base::ListValue* args);
+
   // URL for the current profile's GAIA picture.
   std::string gaia_picture_url_;
 

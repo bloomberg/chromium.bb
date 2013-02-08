@@ -63,6 +63,12 @@ cr.define('options', function() {
         OptionsPage.closeOverlay();
         chrome.send('deleteProfile', [self.profileInfo_.filePath]);
       };
+      $('add-shortcut-button').onclick = function(event) {
+        chrome.send('addProfileShortcut', [self.profileInfo_.filePath]);
+      };
+      $('remove-shortcut-button').onclick = function(event) {
+        chrome.send('removeProfileShortcut', [self.profileInfo_.filePath]);
+      };
     },
 
     /** @override */
@@ -73,13 +79,12 @@ cr.define('options', function() {
       if (!cr.isChromeOS && window.location.pathname == '/manageProfile')
         ManageProfileOverlay.getInstance().prepareForManageDialog_();
 
-      // When editing a profile, initially hide both the "create shortcut" and
-      // "remove shortcut" boxes and ask the handler which to show. It will call
-      // |receiveHasProfileShortcuts|, which will show the appropriate one.
-      $('manage-shortcut-container').hidden = true;
-      $('remove-shortcut-container').hidden = true;
-      $('manage-shortcut').checked = false;
-      $('remove-shortcut').checked = false;
+      // When editing a profile, initially hide the "add shortcut" and
+      // "remove shortcut" buttons and ask the handler which to show. It will
+      // call |receiveHasProfileShortcuts|, which will show the appropriate one.
+      $('remove-shortcut-button').hidden = true;
+      $('add-shortcut-button').hidden = true;
+
       if (loadTimeData.getBoolean('profileShortcutsEnabled')) {
         var profileInfo = ManageProfileOverlay.getInstance().profileInfo_;
         chrome.send('requestHasProfileShortcuts', [profileInfo.filePath]);
@@ -138,7 +143,7 @@ cr.define('options', function() {
       this.profileInfo_ = profileInfo;
       $(mode + '-profile-name').value = profileInfo.name;
       $(mode + '-profile-icon-grid').selectedItem = profileInfo.iconURL;
-      $('managed-user-settings-container').hidden =
+      $('managed-user-settings-button').hidden =
           !loadTimeData.getBoolean('managedUsersEnabled') ||
           !profileInfo.isManaged;
     },
@@ -199,14 +204,15 @@ cr.define('options', function() {
     },
 
     /**
-     * Callback to show the create shortcut checkbox when in edit mode, called
-     * by the handler as a result of the 'requestHasProfileShortcuts_' message.
+     * Callback to show the add/remove shortcut buttons when in edit mode,
+     * called by the handler as a result of the 'requestHasProfileShortcuts_'
+     * message.
      * @param {boolean} hasShortcuts Whether profile has any existing shortcuts.
      * @private
      */
     receiveHasProfileShortcuts_: function(hasShortcuts) {
-      var mode = hasShortcuts ? 'remove' : 'manage';
-      $(mode + '-shortcut-container').hidden = false;
+      $('add-shortcut-button').hidden = hasShortcuts;
+      $('remove-shortcut-button').hidden = !hasShortcuts;
     },
 
     /**
@@ -269,14 +275,9 @@ cr.define('options', function() {
     submitManageChanges_: function() {
       var name = $('manage-profile-name').value;
       var iconURL = $('manage-profile-icon-grid').selectedItem;
-      var shortcutAction = '';
-      if ($('manage-shortcut').checked)
-        shortcutAction = 'create';
-      else if ($('remove-shortcut').checked)
-        shortcutAction = 'remove';
 
       chrome.send('setProfileNameAndIcon',
-                  [this.profileInfo_.filePath, name, iconURL, shortcutAction]);
+                  [this.profileInfo_.filePath, name, iconURL]);
     },
 
     /**

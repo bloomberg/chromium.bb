@@ -105,6 +105,13 @@
   -webkit-box-flex: 1;
 }
 
+/* Proper spacing for the buttons. */
+#managed-user-settings-button,
+#remove-shortcut-button,
+#add-shortcut-button {
+  -webkit-margin-end: 10px;
+}
+
 #delete-profile-message {
   -webkit-padding-start: 48px;
   background-repeat: no-repeat;

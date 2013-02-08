@@ -77,8 +77,8 @@ void ManageProfileHandler::GetLocalizedValues(
     { "createProfileTitle", IDS_PROFILES_CREATE_TITLE },
     { "createProfileInstructions", IDS_PROFILES_CREATE_INSTRUCTIONS },
     { "createProfileConfirm", IDS_PROFILES_CREATE_CONFIRM },
-    { "createProfileShortcut", IDS_PROFILES_CREATE_SHORTCUT_CHECKBOX },
-    { "removeProfileShortcut", IDS_PROFILES_REMOVE_SHORTCUT_CHECKBOX },
+    { "createProfileShortcut", IDS_PROFILES_CREATE_SHORTCUT },
+    { "removeProfileShortcut", IDS_PROFILES_REMOVE_SHORTCUT },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -124,6 +124,12 @@ void ManageProfileHandler::RegisterMessages() {
       base::Bind(&ManageProfileHandler::SwitchAppListProfile,
                  base::Unretained(this)));
 #endif
+  web_ui()->RegisterMessageCallback("addProfileShortcut",
+      base::Bind(&ManageProfileHandler::AddProfileShortcut,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("removeProfileShortcut",
+      base::Bind(&ManageProfileHandler::RemoveProfileShortcut,
+                 base::Unretained(this)));
 }
 
 void ManageProfileHandler::Observe(
@@ -218,25 +224,6 @@ void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
       g_browser_process->profile_manager()->GetProfile(profile_file_path);
   if (!profile)
     return;
-
-  std::string shortcut_mode;
-  if (!args->GetString(3, &shortcut_mode))
-    return;
-  if (!shortcut_mode.empty()) {
-    DCHECK(ProfileShortcutManager::IsFeatureEnabled());
-    ProfileShortcutManager* shortcut_manager =
-        g_browser_process->profile_manager()->profile_shortcut_manager();
-    DCHECK(shortcut_manager);
-
-    const FilePath profile_path = cache.GetPathOfProfileAtIndex(profile_index);
-    if (shortcut_mode == "create") {
-      shortcut_manager->CreateProfileShortcut(profile_path);
-    } else if (shortcut_mode == "remove") {
-      shortcut_manager->RemoveProfileShortcuts(profile_path);
-    } else {
-      NOTREACHED() << shortcut_mode;
-    }
-  }
 
   string16 new_profile_name;
   if (!args->GetString(1, &new_profile_name))
@@ -400,6 +387,38 @@ void ManageProfileHandler::OnHasProfileShortcuts(bool has_shortcuts) {
   const base::FundamentalValue has_shortcuts_value(has_shortcuts);
   web_ui()->CallJavascriptFunction(
       "ManageProfileOverlay.receiveHasProfileShortcuts", has_shortcuts_value);
+}
+
+void ManageProfileHandler::AddProfileShortcut(const base::ListValue* args) {
+  FilePath profile_file_path;
+  if (!GetProfilePathFromArgs(args, &profile_file_path))
+    return;
+
+  DCHECK(ProfileShortcutManager::IsFeatureEnabled());
+  ProfileShortcutManager* shortcut_manager =
+      g_browser_process->profile_manager()->profile_shortcut_manager();
+  DCHECK(shortcut_manager);
+
+  shortcut_manager->CreateProfileShortcut(profile_file_path);
+
+  // Update the UI buttons.
+  OnHasProfileShortcuts(true);
+}
+
+void ManageProfileHandler::RemoveProfileShortcut(const base::ListValue* args) {
+  FilePath profile_file_path;
+  if (!GetProfilePathFromArgs(args, &profile_file_path))
+    return;
+
+  DCHECK(ProfileShortcutManager::IsFeatureEnabled());
+  ProfileShortcutManager* shortcut_manager =
+    g_browser_process->profile_manager()->profile_shortcut_manager();
+  DCHECK(shortcut_manager);
+
+  shortcut_manager->RemoveProfileShortcuts(profile_file_path);
+
+  // Update the UI buttons.
+  OnHasProfileShortcuts(false);
 }
 
 }  // namespace options
