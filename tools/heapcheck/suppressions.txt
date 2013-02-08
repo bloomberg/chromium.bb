@@ -1768,3 +1768,11 @@
    Heapcheck:Leak
    fun:drive::SearchMetadataTest::SetUp
 }
+{
+   bug_175100
+   Heapcheck:Leak
+   ...
+   fun:::StartSync
+   fun:OneClickSigninHelper::DidStopLoading
+   fun:OneClickSigninHelperTest_SigninFromWebstoreWithConfigSyncfirst_Test::TestBody
+}

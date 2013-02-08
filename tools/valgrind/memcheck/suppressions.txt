@@ -6526,3 +6526,10 @@
    fun:_ZN3gpu5gles2*Immediate4InitE*
    fun:_ZN3gpu5gles2*GLES2ImplementationTest_*_Test8TestBodyEv
 }
+{
+   bug_175100
+   Memcheck:Leak
+   ...
+   fun:_ZN20OneClickSigninHelper14DidStopLoadingEPN7content14RenderViewHostE
+   fun:_ZN67OneClickSigninHelperTest_SigninFromWebstoreWithConfigSyncfirst_Test8TestBodyEv
+}
