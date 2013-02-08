@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_resource_array_dev.idl modified Thu Dec 20 13:10:26 2012.
+// From dev/ppb_resource_array_dev.idl modified Tue Dec  4 10:44:11 2012.
 
 #include "ppapi/c/dev/ppb_resource_array_dev.h"
 #include "ppapi/c/pp_errors.h"

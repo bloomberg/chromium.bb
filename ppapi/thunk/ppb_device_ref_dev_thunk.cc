@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_device_ref_dev.idl modified Thu Dec 20 13:10:26 2012.
+// From dev/ppb_device_ref_dev.idl modified Tue Jan 22 12:22:52 2013.
 
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
 #include "ppapi/c/pp_errors.h"
