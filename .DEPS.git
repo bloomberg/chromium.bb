@@ -98,11 +98,11 @@ deps = {
     'src/third_party/sfntly/cpp/src':
         Var('git_url') + '/external/sfntly/cpp/src.git@cfb2f1743f0169ad8d01035458617bce97107539',
     'src/third_party/skia/gyp':
-        Var('git_url') + '/external/skia/gyp.git@5ff2fad9ed48c2ba2512990be28d5d354271d7a3',
+        Var('git_url') + '/external/skia/gyp.git@2a9705d5b73929d78de2efe79ddf79a096409d1d',
     'src/third_party/skia/include':
-        Var('git_url') + '/external/skia/include.git@35807515f5ab833cfcc94903d77a99f91559f2ed',
+        Var('git_url') + '/external/skia/include.git@ae051aa42a5004d3e9a39cbb9ac52a730f4fa4b2',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@6340d77c8a5496593bf4498ffc63ded7f838aac1',
+        Var('git_url') + '/external/skia/src.git@b5ec4e2d9d61a868500b37861702f12135edb4c6',
     'src/third_party/smhasher/src':
         Var('git_url') + '/external/smhasher.git@e813f9b95be7adad5a2e441f4484278c453e5261',
     'src/third_party/snappy/src':
@@ -136,7 +136,7 @@ deps = {
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@6be0a66a1ebd7ebc5abc1b2f405a945f6d871521',
     'src/tools/swarm_client':
-        Var('git_url') + '/chromium/tools/swarm_client.git@b54e1defdf196831e601d92976c162d36c981c5f',
+        Var('git_url') + '/chromium/tools/swarm_client.git@9f8e7a47dd99135f24ed2a218388a4e5d05474a4',
     'src/v8':
         Var('git_url') + '/external/v8.git@2f0efdebb142c00de6950453b4c2df20ceb8df6e',
     'src/webkit/media/crypto/ppapi/cdm':
