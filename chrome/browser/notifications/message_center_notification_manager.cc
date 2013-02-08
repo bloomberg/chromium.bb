@@ -17,6 +17,8 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/web_contents.h"
+#include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_center_tray.h"
 
 MessageCenterNotificationManager::MessageCenterNotificationManager(
@@ -33,6 +35,7 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
 
 MessageCenterNotificationManager::~MessageCenterNotificationManager() {
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // NotificationUIManager
@@ -107,7 +110,8 @@ void MessageCenterNotificationManager::CancelAll() {
 bool MessageCenterNotificationManager::ShowNotification(
     const Notification& notification, Profile* profile) {
   // There is always space in MessageCenter, it never rejects Notifications.
-  AddProfileNotification(new ProfileNotification(profile, notification));
+  AddProfileNotification(
+      new ProfileNotification(profile, notification, message_center_));
   return true;
 }
 
@@ -136,14 +140,15 @@ bool MessageCenterNotificationManager::UpdateNotification(
       old_notification->notification().Close(false); // Not by user.
       delete old_notification;
       profile_notifications_.erase(old_id);
-      profile_notifications_[notification.notification_id()] =
-          new ProfileNotification(profile, notification);
-
+      ProfileNotification* new_notification =
+          new ProfileNotification(profile, notification, message_center_);
+      profile_notifications_[notification.notification_id()] = new_notification;
       message_center_->UpdateNotification(old_id,
                                           notification.notification_id(),
                                           notification.title(),
                                           notification.body(),
                                           notification.optional_fields());
+      new_notification->StartDownloads();
       notification.Display();
       return true;
     }
@@ -211,13 +216,133 @@ void MessageCenterNotificationManager::OnButtonClicked(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ImageDownloads
+
+MessageCenterNotificationManager::ImageDownloads::ImageDownloads(
+    message_center::MessageCenter* message_center)
+    : message_center_(message_center) {
+}
+
+MessageCenterNotificationManager::ImageDownloads::~ImageDownloads() { }
+
+void MessageCenterNotificationManager::ImageDownloads::StartDownloads(
+    const Notification& notification) {
+  // Notification primary icon.
+  StartDownloadWithImage(
+      notification,
+      &notification.icon(),
+      notification.icon_url(),
+      message_center::kNotificationIconSize,
+      base::Bind(&message_center::MessageCenter::SetNotificationIcon,
+                 base::Unretained(message_center_),
+                 notification.notification_id()));
+
+  // Notification image.
+  StartDownloadByKey(
+      notification,
+      ui::notifications::kImageUrlKey,
+      message_center::kNotificationPreferredImageSize,
+      base::Bind(&message_center::MessageCenter::SetNotificationImage,
+                 base::Unretained(message_center_),
+                 notification.notification_id()));
+
+  // Notification button icons.
+  StartDownloadByKey(
+      notification,
+      ui::notifications::kButtonOneIconUrlKey,
+      message_center::kNotificationButtonIconSize,
+      base::Bind(&message_center::MessageCenter::SetNotificationButtonIcon,
+                 base::Unretained(message_center_),
+                 notification.notification_id(), 0));
+  StartDownloadByKey(
+      notification, ui::notifications::kButtonTwoIconUrlKey,
+      message_center::kNotificationButtonIconSize,
+      base::Bind(&message_center::MessageCenter::SetNotificationButtonIcon,
+                 base::Unretained(message_center_),
+                 notification.notification_id(), 1));
+}
+
+void MessageCenterNotificationManager::ImageDownloads::StartDownloadWithImage(
+    const Notification& notification,
+    const gfx::ImageSkia* image,
+    const GURL& url,
+    int size,
+    const SetImageCallback& callback) {
+  // Set the image directly if we have it.
+  if (image && !image->isNull()) {
+    callback.Run(*image);
+    return;
+  }
+
+  // Leave the image null if there's no URL.
+  if (url.is_empty())
+    return;
+
+  content::RenderViewHost* host = notification.GetRenderViewHost();
+  if (!host) {
+    LOG(WARNING) << "Notification needs an image but has no RenderViewHost";
+    return;
+  }
+
+  content::WebContents* contents =
+      content::WebContents::FromRenderViewHost(host);
+  if (!contents) {
+    LOG(WARNING) << "Notification needs an image but has no WebContents";
+    return;
+  }
+
+  contents->DownloadFavicon(
+      url,
+      size,
+      base::Bind(
+          &MessageCenterNotificationManager::ImageDownloads::DownloadComplete,
+          AsWeakPtr(),
+          callback));
+}
+
+void MessageCenterNotificationManager::ImageDownloads::StartDownloadByKey(
+    const Notification& notification,
+    const char* key,
+    int size,
+    const SetImageCallback& callback) {
+  const base::DictionaryValue* optional_fields = notification.optional_fields();
+  if (optional_fields && optional_fields->HasKey(key)) {
+    string16 url;
+    optional_fields->GetString(key, &url);
+    StartDownloadWithImage(notification, NULL, GURL(url), size, callback);
+  }
+}
+
+void MessageCenterNotificationManager::ImageDownloads::DownloadComplete(
+    const SetImageCallback& callback,
+    int download_id,
+    const GURL& image_url,
+    int requested_size,
+    const std::vector<SkBitmap>& bitmaps) {
+  if (bitmaps.empty())
+    return;
+  gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(bitmaps[0]);
+  callback.Run(image);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ProfileNotification
 
 MessageCenterNotificationManager::ProfileNotification::ProfileNotification(
-    Profile* profile, const Notification& notification)
-  : profile_(profile),
-    notification_(notification) {
+    Profile* profile,
+    const Notification& notification,
+    message_center::MessageCenter* message_center)
+    : profile_(profile),
+      notification_(notification),
+      downloads_(new ImageDownloads(message_center)) {
   DCHECK(profile);
+}
+
+MessageCenterNotificationManager::ProfileNotification::~ProfileNotification() {
+}
+
+void MessageCenterNotificationManager::ProfileNotification::StartDownloads() {
+  downloads_->StartDownloads(notification_);
 }
 
 std::string
@@ -247,6 +372,7 @@ void MessageCenterNotificationManager::AddProfileNotification(
                                    notification.display_source(),
                                    profile_notification->GetExtensionId(),
                                    notification.optional_fields());
+  profile_notification->StartDownloads();
   notification.Display();
 }
 

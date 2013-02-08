@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/notification_ui_manager_impl.h"
 
 #include "base/logging.h"
+#include "base/memory/linked_ptr.h"
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/fullscreen.h"
@@ -145,7 +146,9 @@ void NotificationUIManagerImpl::CheckUserState() {
   }
 }
 
-// TODO(dewittj): Eliminate recursion.
+// Attempts to show each notification, leaving any failures in the queue.
+// TODO(dewittj): Eliminate recursion when BallonCollection is used to render
+// the Notification UI surfaces.
 void NotificationUIManagerImpl::ShowNotifications() {
   while (!show_queue_.empty()) {
     linked_ptr<QueuedNotification> queued_notification(show_queue_.front());
