@@ -1070,6 +1070,11 @@
                 'base/simd/linear_scale_yuv_to_rgb_mmx_x64.asm',
                 'base/simd/scale_yuv_to_rgb_sse2_x64.asm',
               ],
+              'variables': {
+                'yasm_flags': [
+                  '-DARCH_X86_64',
+                ],
+              },
             }],
             [ 'os_posix == 1 and OS != "mac" and OS != "android"', {
               'cflags': [
@@ -1087,44 +1092,10 @@
                    },
                  },
               },
-            }],
-            [ 'OS=="win"', {
               'variables': {
-                'conditions': [
-                  [ 'target_arch=="ia32"', {
-                    'yasm_flags': [
-                      '-DCHROMIUM',
-                      '-Isimd',
-                    ],
-                  }, {
-                    'yasm_flags': [
-                      '-DARCH_X86_64',
-                      '-DCHROMIUM',
-                      '-Isimd',
-                    ],
-                  }],
-                ],
-              },
-            }],
-            [ 'OS=="mac"', {
-              'variables': {
-                'conditions': [
-                  [ 'target_arch=="ia32"', {
-                    'yasm_flags': [
-                      '-DPREFIX',
-                      '-DMACHO',
-                      '-DCHROMIUM',
-                      '-Isimd',
-                    ],
-                  }, {
-                    'yasm_flags': [
-                      '-DPREFIX',
-                      '-DARCH_X86_64',
-                      '-DMACHO',
-                      '-DCHROMIUM',
-                      '-Isimd',
-                    ],
-                  }],
+                'yasm_flags': [
+                  '-DPREFIX',
+                  '-DMACHO',
                 ],
               },
             }],
@@ -1135,16 +1106,11 @@
                     'yasm_flags': [
                       '-DX86_32',
                       '-DELF',
-                      '-DCHROMIUM',
-                      '-Isimd',
                     ],
                   }, {
                     'yasm_flags': [
-                      '-DARCH_X86_64',
                       '-DELF',
                       '-DPIC',
-                      '-DCHROMIUM',
-                      '-Isimd',
                     ],
                   }],
                 ],
@@ -1153,6 +1119,12 @@
           ],
           'variables': {
             'yasm_output_path': '<(SHARED_INTERMEDIATE_DIR)/media',
+            'yasm_flags': [
+              '-DCHROMIUM',
+              # In addition to the same path as source asm, let yasm %include
+              # search path be relative to src/ per Chromium policy.
+              '-I..',
+            ],
           },
           'msvs_2010_disable_uldi_when_referenced': 1,
           'includes': [

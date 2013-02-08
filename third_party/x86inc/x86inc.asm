@@ -36,6 +36,10 @@
 %ifndef MEDIA_BASE_SIMD_X86INC_ASM_
 %define MEDIA_BASE_SIMD_X86INC_ASM_
 
+; TODO(wolenetz): Consider either updating this customized version to base from
+; a more recent original, or switching to using third_party/ffmpeg's version of
+; this abstraction layer.  See http://crbug.com/175029
+
 %define program_name ff
 
 %ifdef ARCH_X86_64

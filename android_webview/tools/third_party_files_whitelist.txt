@@ -87,9 +87,6 @@ content/browser/renderer_host/render_widget_host_view_mac.mm
 content/browser/renderer_host/web_input_event_aurax11.cc
 # Copyright Google Inc, no license. Not used on Android.
 google_update/google_update_idl.idl
-# Copyright Loren Merritt, Anton Mitrofanov and Jason Garrett-Glaser; ISC
-# license. Not used on Android.
-media/base/simd/x86inc.asm
 # String '(c)' used in certificates organization names
 net/base/test_certificate_data.h
 # Copyright The Chromium Authors and Netscape Communications Corporation; BSD

@@ -2,7 +2,7 @@
 ; Use of this source code is governed by a BSD-style license that can be
 ; found in the LICENSE file.
 
-%include "x86inc.asm"
+%include "third_party/x86inc/x86inc.asm"
 
 ;
 ; This file uses SSE, SSE2, SSE3, and SSSE3, which are supported by all ATOM

@@ -2,7 +2,7 @@
 ; Use of this source code is governed by a BSD-style license that can be
 ; found in the LICENSE file.
 
-%include "x86inc.asm"
+%include "third_party/x86inc/x86inc.asm"
 
 ;
 ; This file uses MMX instructions as an alternative to _mm_empty() which
