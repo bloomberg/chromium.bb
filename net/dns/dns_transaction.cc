@@ -502,6 +502,7 @@ class DnsTransactionImpl : public DnsTransaction,
       qtype_(qtype),
       callback_(callback),
       net_log_(net_log),
+      qnames_initial_size_(0),
       had_tcp_attempt_(false),
       first_server_index_(0) {
     DCHECK(session_);
@@ -534,6 +535,9 @@ class DnsTransactionImpl : public DnsTransaction,
                         base::Bind(&NetLogStartCallback, &hostname_, qtype_));
     int rv = PrepareSearch();
     if (rv == OK) {
+      qnames_initial_size_ = qnames_.size();
+      if (qtype_ == dns_protocol::kTypeA)
+        UMA_HISTOGRAM_COUNTS("AsyncDns.SuffixSearchStart", qnames_.size());
       AttemptResult result = ProcessAttemptResult(StartQuery());
       if (result.rv == OK) {
         // DnsTransaction must never succeed synchronously.
@@ -618,6 +622,12 @@ class DnsTransactionImpl : public DnsTransaction,
     CHECK(result.rv != OK || response != NULL);
 
     timer_.Stop();
+
+    if (response && qtype_ == dns_protocol::kTypeA) {
+      UMA_HISTOGRAM_COUNTS("AsyncDns.SuffixSearchRemain", qnames_.size());
+      UMA_HISTOGRAM_COUNTS("AsyncDns.SuffixSearchDone",
+                           qnames_initial_size_ - qnames_.size());
+    }
 
     DnsTransactionFactory::CallbackType callback = callback_;
     callback_.Reset();
@@ -824,6 +834,7 @@ class DnsTransactionImpl : public DnsTransaction,
 
   // Search list of fully-qualified DNS names to query next (in DNS format).
   std::deque<std::string> qnames_;
+  size_t qnames_initial_size_;
 
   // List of attempts for the current name.
   ScopedVector<DnsAttempt> attempts_;
