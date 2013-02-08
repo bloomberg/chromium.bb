@@ -1,0 +1,134 @@
+{
+  "encoding": "UTF-8",
+  "feed": {
+    "author": [ {
+      "email": { "$t": "tester@example.com" },
+      "name": { "$t": "testing" }
+    } ],
+    "category": [ {
+      "label": "item",
+      "scheme": "http://schemas.google.com/g/2005#kind",
+      "term": "http://schemas.google.com/docs/2007#item"
+    } ],
+    "entry": [ {
+      "app$edited": {
+        "$t": "2013-02-07T12:35:26.742Z",
+        "xmlns$app": "http://www.w3.org/2007/app"
+      },
+      "author": [ {
+        "email": { "$t": "tester@example.com" },
+        "name": { "$t": "testing" }
+      } ],
+      "category": [ {
+        "label": "application/octet-stream",
+        "scheme": "http://schemas.google.com/g/2005#kind",
+        "term": "http://schemas.google.com/docs/2007#file"
+      }, {
+        "label": "modified-by-me",
+        "scheme": "http://schemas.google.com/g/2005/labels",
+        "term": "http://schemas.google.com/g/2005/labels#modified-by-me"
+      } ],
+      "content": {
+        "src": "https://content_url",
+        "type": "application/octet-stream"
+      },
+      "docs$filename": { "$t": "testfile" },
+      "docs$isShareable": { "value": "true" },
+      "docs$md5Checksum": { "$t": "6cd860c0d7b9deec409c4980e89b8d09" },
+      "docs$modifiedByMeDate": { "$t": "2013-02-07T12:35:26.733Z" },
+      "docs$size": { "$t": "97" },
+      "docs$suggestedFilename": { "$t": "testfile" },
+      "docs$writersCanInvite": { "value": "true" },
+      "gd$etag": "\"ClAUE0pVQSt7ImBk\"",
+      "gd$feedLink": [ {
+        "href": "https://docs.google.com/feeds/default/private/full/file%3A0B5ABxZbXmXlnQUc2eUdRRFVLcnM/revisions",
+        "rel": "http://schemas.google.com/docs/2007/revisions"
+      } ],
+      "gd$lastModifiedBy": {
+        "email": { "$t": "tester@example.com" },
+        "name": { "$t": "testing" }
+      },
+      "gd$quotaBytesUsed": { "$t": "97" },
+      "gd$resourceId": { "$t": "file:0B5ABxZbXmXlnQUc2eUdRRFVLcnM" },
+      "id": { "$t": "https://docs.google.com/feeds/id/file%3A0B5ABxZbXmXlnQUc2eUdRRFVLcnM" },
+      "link": [ {
+        "href": "https://docs.google.com/feeds/default/private/full/folder%3Asub_dir_folder_resource_id",
+        "rel": "http://schemas.google.com/docs/2007#parent",
+        "title": "ejenhdkopobmhdkdanoikinohnnpnkcf",
+        "type": "application/atom+xml"
+      }, {
+        "href": "https://docs.google.com/file/d/0B5ABxZbXmXlnQUc2eUdRRFVLcnM/edit",
+        "rel": "alternate",
+        "type": "text/html"
+      }, {
+        "href": "https://ssl.gstatic.com/docs/doclist/images/icon_10_generic_list.png",
+        "rel": "http://schemas.google.com/docs/2007#icon",
+        "type": "image/png"
+      }, {
+        "href": "https://docs.google.com/feeds/upload/create-session/default/private/full/file%3A0B5ABxZbXmXlnQUc2eUdRRFVLcnM",
+        "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
+        "type": "application/atom+xml"
+      }, {
+        "href": "https://docs.google.com/feeds/upload/file/default/private/full/file%3A0B5ABxZbXmXlnQUc2eUdRRFVLcnM",
+        "rel": "http://schemas.google.com/docs/2007#alt-edit-media",
+        "type": "application/atom+xml"
+      }, {
+        "href": "https://docs.google.com/feeds/default/private/full/folder%3Asub_dir_folder_resource_id/contents/file%3A0B5ABxZbXmXlnQUc2eUdRRFVLcnM",
+        "rel": "self",
+        "type": "application/atom+xml"
+      }, {
+        "href": "https://docs.google.com/feeds/default/private/full/folder%3Asub_dir_folder_resource_id/contents/file%3A0B5ABxZbXmXlnQUc2eUdRRFVLcnM",
+        "rel": "edit",
+        "type": "application/atom+xml"
+      }, {
+        "href": "https://docs.google.com/feeds/default/contentmedia/folder%3Asub_dir_folder_resource_id/file%3A0B5ABxZbXmXlnQUc2eUdRRFVLcnM",
+        "rel": "edit-media",
+        "type": "application/octet-stream"
+      } ],
+      "published": { "$t": "2013-02-07T12:35:26.742Z" },
+      "title": { "$t": "testfile" },
+      "updated": { "$t": "2013-02-07T12:35:26.742Z" }
+    } ],
+    "gd$etag": "W/\"CkIGSXs_fCt7ImA9WhBTEkk.\"",
+    "id": { "$t": "https://docs.google.com/feeds/default/private/full/folder%3Asub_dir_folder_resource_id/contents" },
+    "link": [ {
+      "href": "https://docs.google.com/folder/d/0B5ABxZbXmXlnX3JsTVBQOXRrSmM/edit",
+      "rel": "alternate",
+      "type": "text/html"
+    }, {
+      "href": "https://docs.google.com/feeds/upload/create-session/default/private/full/folder%3Asub_dir_folder_resource_id/contents",
+      "rel": "http://schemas.google.com/g/2005#resumable-create-media",
+      "type": "application/atom+xml"
+    }, {
+      "href": "https://docs.google.com/feeds/upload/file/default/private/full/folder%3Asub_dir_folder_resource_id/contents",
+      "rel": "http://schemas.google.com/docs/2007#alt-post",
+      "type": "application/atom+xml"
+    }, {
+      "href": "https://docs.google.com/feeds/default/private/full/folder%3Asub_dir_folder_resource_id/contents",
+      "rel": "http://schemas.google.com/g/2005#feed",
+      "type": "application/atom+xml"
+    }, {
+      "href": "https://docs.google.com/feeds/default/private/full/folder%3Asub_dir_folder_resource_id/contents",
+      "rel": "http://schemas.google.com/g/2005#post",
+      "type": "application/atom+xml"
+    }, {
+      "href": "https://docs.google.com/feeds/default/private/full/folder%3Asub_dir_folder_resource_id/contents/batch",
+      "rel": "http://schemas.google.com/g/2005#batch",
+      "type": "application/atom+xml"
+    }, {
+      "href": "https://docs.google.com/feeds/default/private/full/folder%3Asub_dir_folder_resource_id/contents/-/mine?alt=json&q=title%3A%27Otestfile%27&max-results=50&include-installed-apps=true&showfolders=true",
+      "rel": "self",
+      "type": "application/atom+xml"
+    } ],
+    "openSearch$itemsPerPage": { "$t": "50" },
+    "openSearch$startIndex": { "$t": "1" },
+    "title": { "$t": "Documents in \"ejenhdkopobmhdkdanoikinohnnpnkcf\"" },
+    "updated": { "$t": "2013-02-07T12:35:28.544Z" },
+    "xmlns": "http://www.w3.org/2005/Atom",
+    "xmlns$batch": "http://schemas.google.com/gdata/batch",
+    "xmlns$docs": "http://schemas.google.com/docs/2007",
+    "xmlns$gd": "http://schemas.google.com/g/2005",
+    "xmlns$openSearch": "http://a9.com/-/spec/opensearch/1.1/"
+  },
+  "version": "1.0"
+}
