@@ -262,12 +262,12 @@ DirectoryModel.prototype.setSelectedPaths_ = function(value) {
   var indexes = [];
   var fileList = this.getFileList();
 
-  function safeKey(key) {
+  var safeKey = function(key) {
     // The transformation must:
     // 1. Never generate a reserved name ('__proto__')
     // 2. Keep different keys different.
     return '#' + key;
-  }
+  };
 
   var hash = {};
 
@@ -444,23 +444,23 @@ DirectoryModel.prototype.scan_ = function(dirContents, successCallback) {
    *
    * @return {boolean} Did pending scan exist.
    */
-  function maybeRunPendingRescan() {
+  var maybeRunPendingRescan = function() {
     if (self.pendingRescan_) {
       self.rescanSoon();
       self.pendingRescan_ = false;
       return true;
     }
     return false;
-  }
+  };
 
-  function onSuccess() {
+  var onSuccess = function() {
     self.runningScan_ = null;
     successCallback();
     self.scanFailures_ = 0;
     maybeRunPendingRescan();
-  }
+  };
 
-  function onFailure() {
+  var onFailure = function() {
     self.runningScan_ = null;
     self.scanFailures_++;
 
@@ -469,7 +469,7 @@ DirectoryModel.prototype.scan_ = function(dirContents, successCallback) {
 
     if (self.scanFailures_ <= 1)
       self.rescanLater();
-  }
+  };
 
   this.runningScan_ = dirContents;
 
@@ -522,7 +522,7 @@ DirectoryModel.prototype.onEntryChanged = function(name) {
   var fileList = this.getFileList();
   var self = this;
 
-  function onEntryFound(entry) {
+  var onEntryFound = function(entry) {
     // Do nothing if current directory changed during async operations.
     if (self.getCurrentDirEntry() != currentEntry)
       return;
@@ -539,7 +539,7 @@ DirectoryModel.prototype.onEntryChanged = function(name) {
     });
   };
 
-  function onError(err) {
+  var onError = function(err) {
     if (err.code != FileError.NOT_FOUND_ERR) {
       self.rescanLater();
       return;
@@ -603,9 +603,9 @@ DirectoryModel.prototype.renameEntry = function(entry, newName,
     }.bind(this));
   }.bind(this);
 
-  function onParentFound(parentEntry) {
+  var onParentFound = function(parentEntry) {
     entry.moveTo(parentEntry, newName, onSuccess, errorCallback);
-  }
+  };
 
   entry.getParent(onParentFound, errorCallback);
 };
@@ -619,13 +619,13 @@ DirectoryModel.prototype.renameEntry = function(entry, newName,
  *     is true if it's a file.
  */
 DirectoryModel.prototype.doesExist = function(entry, name, callback) {
-  function onParentFound(parentEntry) {
+  var onParentFound = function(parentEntry) {
     util.resolvePath(parentEntry, name,
         function(foundEntry) {
           callback(true, foundEntry.isFile);
         },
         callback.bind(window, false));
-  }
+  };
 
   entry.getParent(onParentFound, callback.bind(window, false));
 };
@@ -760,13 +760,13 @@ DirectoryModel.prototype.changeRoot = function(path) {
  */
 DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
                                                                 opt_callback) {
-  function onScanComplete() {
+  var onScanComplete = function() {
     if (opt_callback)
       opt_callback();
     // For tests that open the dialog to empty directories, everything
     // is loaded at this point.
     chrome.test.sendMessage('directory-change-complete');
-  }
+  };
   this.clearAndScan_(new DirectoryContentsBasic(this.currentFileListContext_,
                                                 dirEntry),
                      onScanComplete.bind(this));
@@ -863,24 +863,24 @@ DirectoryModel.prototype.setupPath = function(path, opt_pathResolveCallback) {
   tracker.start();
 
   var self = this;
-  function resolveCallback(directoryPath, fileName, exists) {
+  var resolveCallback = function(directoryPath, fileName, exists) {
     tracker.stop();
     if (!opt_pathResolveCallback)
       return;
     opt_pathResolveCallback(directoryPath, fileName,
                             exists && !tracker.hasChanged);
-  }
+  };
 
-  function changeDirectoryEntry(directoryEntry, initial, opt_callback) {
+  var changeDirectoryEntry = function(directoryEntry, initial, opt_callback) {
     tracker.stop();
     if (!tracker.hasChanged)
       self.changeDirectoryEntry_(initial, directoryEntry, opt_callback);
-  }
+  };
 
   var INITIAL = true;
   var EXISTS = true;
 
-  function changeToDefault(leafName) {
+  var changeToDefault = function(leafName) {
     var def = self.getDefaultDirectory();
     self.resolveDirectory(def, function(directoryEntry) {
       resolveCallback(def, leafName, !EXISTS);
@@ -889,12 +889,12 @@ DirectoryModel.prototype.setupPath = function(path, opt_pathResolveCallback) {
       console.error('Failed to resolve default directory: ' + def, error);
       resolveCallback('/', leafName, !EXISTS);
     });
-  }
+  };
 
-  function noParentDirectory(leafName, error) {
+  var noParentDirectory = function(leafName, error) {
     console.log('Can\'t resolve parent directory: ' + path, error);
     changeToDefault(leafName);
-  }
+  };
 
   if (DirectoryModel.isSystemDirectory(path)) {
     changeToDefault('');
@@ -1004,7 +1004,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
   var self = this;
 
   metrics.startInterval('Load.Roots');
-  function done() {
+  var done = function() {
     for (var i in groups)
       if (!groups[i])
         return;
@@ -1014,30 +1014,30 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
              concat(groups.archives).
              concat(groups.removables));
     metrics.recordInterval('Load.Roots');
-  }
+  };
 
-  function append(index, values, opt_error) {
+  var append = function(index, values, opt_error) {
     groups[index] = values;
     done();
-  }
+  };
 
-  function appendSingle(index, entry) {
+  var appendSingle = function(index, entry) {
     groups[index] = [entry];
     done();
-  }
+  };
 
-  function onSingleError(index, defaultValue, error) {
+  var onSingleError = function(index, defaultValue, error) {
     groups[index] = defaultValue || [];
     done();
     console.error('Error resolving root dir ', index, 'error: ', error);
-  }
+  };
 
   var root = this.root_;
-  function readSingle(dir, index, opt_defaultValue) {
+  var readSingle = function(dir, index, opt_defaultValue) {
     root.getDirectory(dir, { create: false },
                       appendSingle.bind(this, index),
                       onSingleError.bind(this, index, opt_defaultValue));
-  }
+  };
 
   readSingle(RootDirectory.DOWNLOADS.substring(1), 'downloads');
   util.readDirectory(root, RootDirectory.ARCHIVE.substring(1),

@@ -215,13 +215,13 @@ FileTasks.prototype.execute_ = function(taskId, opt_urls) {
  * @private
  */
 FileTasks.prototype.checkAvailability_ = function(callback) {
-  function areAll(props, name) {
-    function isOne(e) {
+  var areAll = function(props, name) {
+    var isOne = function(e) {
       // If got no properties, we safely assume that item is unavailable.
       return e && e[name];
-    }
+    };
     return props.filter(isOne).length == props.length;
-  }
+  };
 
   var fm = this.fileManager_;
   var urls = this.urls_;
@@ -399,7 +399,7 @@ FileTasks.prototype.openGallery = function(urls) {
   // changes in the Gallery and popped when the Gallery is closed.
   util.updateAppState(false /*push*/);
 
-  function onClose(selectedUrls) {
+  var onClose = function(selectedUrls) {
     fm.directoryModel_.selectUrls(selectedUrls);
     if (util.platform.v2()) {
       fm.closeFilePopup_();  // Will call Gallery.unload.
@@ -409,7 +409,7 @@ FileTasks.prototype.openGallery = function(urls) {
     } else {
       window.history.back(1);  // This will restore document.title.
     }
-  }
+  };
 
   galleryFrame.onload = function() {
     fm.show_();

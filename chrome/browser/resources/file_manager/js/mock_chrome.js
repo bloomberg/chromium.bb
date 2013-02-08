@@ -228,11 +228,11 @@ chrome.fileBrowserPrivate = {
     console.log('executing task: ' + taskId + ': ' + urlList.length + ' urls');
     var parts = taskId.split('|');
     taskId = parts[parts.length - 1];
-    function createEntry(url) {
+    var createEntry = function(url) {
       return {
         toURL: function() { return url; }
       };
-    }
+    };
     chrome.fileBrowserHandler.onExecute.notify(
         taskId, {entries: urlList.map(createEntry)});
   },
@@ -328,7 +328,7 @@ chrome.fileBrowserPrivate = {
         break;
       }
     }
-    function notify(status) {
+    var notify = function(status) {
       chrome.fileBrowserPrivate.onMountCompleted.notify({
         eventType: 'unmount',
         status: status,
@@ -358,9 +358,9 @@ chrome.fileBrowserPrivate = {
   getVolumeMetadata: function(url, callback) {
     var metadata = {};
     var urlLocalPath = chrome.fileBrowserPrivate.fileUrlToLocalPath_(url);
-    function urlStartsWith(path) {
+    var urlStartsWith = function(path) {
       return urlLocalPath && urlLocalPath.indexOf(path) == 0;
-    }
+    };
     if (urlStartsWith('/removable')) {
       metadata.deviceType = urlLocalPath.split('-').pop();
       if (urlLocalPath.indexOf('readonly') != -1) {

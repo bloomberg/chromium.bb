@@ -181,9 +181,9 @@ DialogType.isModal = function(type) {
    */
   var DOUBLE_CLICK_TIMEOUT = 200;
 
-  function removeChildren(element) {
+  var removeChildren = function(element) {
     element.textContent = '';
-  }
+  };
 
   /**
    * Update the elemenst to display the information about remainig space for
@@ -193,7 +193,7 @@ DialogType.isModal = function(type) {
    * @param {!Element} spaceInfoLabel Inline element to contain the message.
    * @param {!Element} spaceOuterBar Block element around the percentage bar.
    */
-   function updateSpaceInfo(
+   var updateSpaceInfo = function(
       sizeStatsResult, spaceInnerBar, spaceInfoLabel, spaceOuterBar) {
     spaceInnerBar.removeAttribute('pending');
     if (sizeStatsResult) {
@@ -210,7 +210,7 @@ DialogType.isModal = function(type) {
       spaceOuterBar.style.display = 'none';
       spaceInfoLabel.textContent = str('FAILED_SPACE_INFO');
     }
-  }
+  };
 
   // Public statics.
 
@@ -363,10 +363,10 @@ DialogType.isModal = function(type) {
     var self = this;
     var downcount = 3;
     var viewOptions = {};
-    function done() {
+    var done = function() {
       if (--downcount == 0)
         self.init_(viewOptions);
-    }
+    };
 
     chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
       metrics.recordInterval('Load.FileSystem');
@@ -1066,12 +1066,12 @@ DialogType.isModal = function(type) {
     if (this.isOnDrive() && this.directoryModel_.isSearching())
       return;
 
-    function inCurrentDirectory(entry) {
+    var inCurrentDirectory = function(entry) {
       var fullPath = entry.fullPath;
       var dirPath = fullPath.substr(0, fullPath.length -
                                        entry.name.length - 1);
       return dirPath == currentPath;
-    }
+    };
     for (var i = 0; i < event.affectedEntries.length; i++) {
       var entry = event.affectedEntries[i];
       if (inCurrentDirectory(entry))
@@ -1675,10 +1675,10 @@ DialogType.isModal = function(type) {
       callback) {
     var self = this;
     var downcount = 2;
-    function done() {
+    var done = function() {
       if (--downcount == 0)
         callback();
-    }
+    };
 
     chrome.fileBrowserPrivate.getPreferences(function(prefs) {
       self.preferences_ = prefs;
@@ -2246,15 +2246,15 @@ DialogType.isModal = function(type) {
     var suffix = '';
     var index = '';
 
-    function advance() {
+    var advance = function() {
       separator = ' (';
       suffix = ')';
       index++;
-    }
+    };
 
-    function current() {
+    var current = function() {
       return baseName + separator + index + suffix;
-    }
+    };
 
     // Accessing hasOwnProperty is safe since hash properties filtered.
     while (hash.hasOwnProperty(current())) {
@@ -2263,21 +2263,21 @@ DialogType.isModal = function(type) {
 
     var self = this;
     var list = self.currentList_;
-    function tryCreate() {
+    var tryCreate = function() {
       self.directoryModel_.createDirectory(current(),
                                            onSuccess, onError);
-    }
+    };
 
-    function onSuccess(entry) {
+    var onSuccess = function(entry) {
       metrics.recordUserAction('CreateNewFolder');
       list.selectedItem = entry;
       self.initiateRename();
-    }
+    };
 
-    function onError(error) {
+    var onError = function(error) {
       self.alert.show(strf('ERROR_CREATING_FOLDER', current(),
                            util.getFileErrorString(error.code)));
-    }
+    };
 
     tryCreate();
   };
@@ -2818,7 +2818,7 @@ DialogType.isModal = function(type) {
     var searchString = this.document_.getElementById('search-box').value;
     var noResultsDiv = this.document_.getElementById('no-search-results');
 
-    function reportEmptySearchResults() {
+    var reportEmptySearchResults = function() {
       if (this.directoryModel_.getFileList().length === 0) {
         var text = strf('SEARCH_NO_MATCHING_FILES', searchString);
         noResultsDiv.innerHTML = text;
@@ -2826,11 +2826,11 @@ DialogType.isModal = function(type) {
       } else {
         noResultsDiv.removeAttribute('show');
       }
-    }
+    };
 
-    function hideNoResultsDiv() {
+    var hideNoResultsDiv = function() {
       noResultsDiv.removeAttribute('show');
-    }
+    };
 
     this.directoryModel_.search(searchString,
                                 reportEmptySearchResults.bind(this),

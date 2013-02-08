@@ -152,9 +152,9 @@ PathUtil.isParentPath = function(parent_path, child_path) {
  * @return {string} The localized name.
  */
 PathUtil.getRootLabel = function(path) {
-  function str(id) {
+  var str = function(id) {
     return loadTimeData.getString(id);
-  }
+  };
 
   if (path === RootDirectory.DOWNLOADS)
     return str('DOWNLOADS_DIRECTORY_LABEL');

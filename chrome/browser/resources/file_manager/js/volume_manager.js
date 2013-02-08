@@ -116,7 +116,7 @@ VolumeManager.prototype.initMountPoints_ = function() {
   var self = this;
   var index = 0;
   this.deferredQueue_ = [];
-  function step(mountPoints) {
+  var step = function(mountPoints) {
     if (index < mountPoints.length) {
       var info = mountPoints[index];
       if (info.mountType == 'drive')
@@ -147,7 +147,7 @@ VolumeManager.prototype.initMountPoints_ = function() {
       if (mountedVolumes.length > 0)
         cr.dispatchSimpleEvent(self, 'change');
     }
-  }
+  };
 
   chrome.fileBrowserPrivate.getMountPoints(step);
 };
@@ -253,14 +253,14 @@ VolumeManager.prototype.makeVolumeInfo_ = function(
   if (error)
     this.validateError_(error);
   this.validateMountPath_(mountPath);
-  function onVolumeMetadata(metadata) {
+  var onVolumeMetadata = function(metadata) {
    callback({
      mountPath: mountPath,
      error: error,
      deviceType: metadata && metadata.deviceType,
      readonly: !!metadata && metadata.isReadOnly
    });
-  }
+  };
   chrome.fileBrowserPrivate.getVolumeMetadata(
       util.makeFilesystemUrl(mountPath), onVolumeMetadata);
 };
@@ -474,11 +474,11 @@ VolumeManager.prototype.finishRequest_ = function(key, status, opt_mountPath) {
  */
 VolumeManager.prototype.invokeRequestCallbacks_ = function(request, status,
                                                            opt_mountPath) {
-  function callEach(callbacks, self, args) {
+  var callEach = function(callbacks, self, args) {
     for (var i = 0; i < callbacks.length; i++) {
       callbacks[i].apply(self, args);
     }
-  }
+  };
   if (status == 'success') {
     callEach(request.successCallbacks, this, [opt_mountPath]);
   } else {

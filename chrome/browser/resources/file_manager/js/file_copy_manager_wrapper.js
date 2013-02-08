@@ -65,8 +65,8 @@ FileCopyManagerWrapper.prototype.getCopyManagerAsync_ = function(callback) {
   var root = this.root_;
   var retries = 0;
 
-  function tryOnce() {
-    function onGetBackgroundPage(bg) {
+  var tryOnce = function() {
+    var onGetBackgroundPage = function(bg) {
       if (bg) {
         callback(bg.FileCopyManager.getInstance(root));
         return;
@@ -75,12 +75,12 @@ FileCopyManagerWrapper.prototype.getCopyManagerAsync_ = function(callback) {
         setTimeout(tryOnce, TIMEOUT);
       else
         console.error('Can\'t get copy manager.');
-    }
+    };
     if (chrome.runtime && chrome.runtime.getBackgroundPage)
       chrome.runtime.getBackgroundPage(onGetBackgroundPage);
     else
       onGetBackgroundPage(chrome.extension.getBackgroundPage());
-  }
+  };
 
   tryOnce();
 };

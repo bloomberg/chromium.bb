@@ -122,9 +122,9 @@ Commands.unmountCommand = {
     var root = CommandUtil.getCommandRoot(event, rootsList);
     if (!root) return;
 
-    function doUnmount() {
+    var doUnmount = function() {
       fileManager.unmountVolume(PathUtil.getRootPath(root.fullPath));
-    }
+    };
 
     if (fileManager.butterBar_.forceDeleteAndHide()) {
       // TODO(dgozman): add completion callback to file copy manager.
@@ -334,14 +334,14 @@ Commands.togglePinnedCommand = {
     var pin = !event.command.checked;
     var entry = CommandUtil.getSingleEntry(event, fileManager);
 
-    function showError(filesystem) {
+    var showError = function(filesystem) {
       fileManager.alert.showHtml(str('DRIVE_OUT_OF_SPACE_HEADER'),
           strf('DRIVE_OUT_OF_SPACE_MESSAGE',
                unescape(entry.name),
                util.bytesToString(filesystem.size)));
-    }
+    };
 
-    function callback(props) {
+    var callback = function(props) {
       var fileProps = props[0];
       if (fileProps.errorCode && pin) {
         fileManager.metadataCache_.get(entry, 'filesystem', showError);
@@ -351,7 +351,7 @@ Commands.togglePinnedCommand = {
       fileManager.metadataCache_.get(entry, 'drive', function(drive) {
         fileManager.updateMetadataInUI_('drive', [entry.toURL()], [drive]);
       });
-    }
+    };
 
     chrome.fileBrowserPrivate.pinDriveFile([entry.toURL()], pin, callback);
     event.command.checked = pin;

@@ -566,7 +566,7 @@ FileTransferController.prototype = {
     // (copy, paste and drag). DataTransfer object closes for write after
     // returning control from that handlers so they may not have
     // asynchronous operations.
-    function prepareFileObjects() {
+    var prepareFileObjects = function() {
       for (var i = 0; i < fileEntries.length; i++) {
         fileEntries[i].file(function(file) { files.push(file); });
       }

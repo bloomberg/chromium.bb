@@ -495,13 +495,13 @@ FileListBannerController.prototype.ensureDriveUnmountedPanelInitialized_ =
   if (panel.firstElementChild)
     return;
 
-  function create(parent, tag, className, opt_textContent) {
+  var create = function(parent, tag, className, opt_textContent) {
     var div = panel.ownerDocument.createElement(tag);
     div.className = className;
     div.textContent = opt_textContent || '';
     parent.appendChild(div);
     return div;
-  }
+  };
 
   var loading = create(panel, 'div', 'loading', str('DRIVE_LOADING'));
   var spinnerBox = create(loading, 'div', 'spinner-box');

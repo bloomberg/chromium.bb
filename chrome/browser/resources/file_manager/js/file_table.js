@@ -331,11 +331,11 @@ FileTable.prototype.renderOffline_ = function(entry, columnId, table) {
   checkbox.classList.add('pin');
 
   var command = this.ownerDocument.querySelector('command#toggle-pinned');
-  function onPinClick(event) {
+  var onPinClick = function(event) {
     command.canExecuteChange(checkbox);
     command.execute(checkbox);
     event.preventDefault();
-  }
+  };
 
   checkbox.addEventListener('click', onPinClick);
   checkbox.style.display = 'none';
@@ -543,10 +543,10 @@ FileTable.prototype.renderIconType_ = function(entry, columnId, table) {
  * @param {HTMLInputElement} input Element to decorate.
  */
 filelist.decorateCheckbox = function(input) {
-  function stopEventPropagation(event) {
+  var stopEventPropagation = function(event) {
     if (!event.shiftKey)
       event.stopPropagation();
-  }
+  };
   input.setAttribute('type', 'checkbox');
   input.setAttribute('tabindex', -1);
   input.classList.add('common');

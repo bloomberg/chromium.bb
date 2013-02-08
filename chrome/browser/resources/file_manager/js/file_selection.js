@@ -489,7 +489,7 @@ FileSelectionHandler.prototype.showPreviewThumbnails_ = function(selection) {
   var thumbnailsHaveZoom = false;
   var self = this;
 
-  function showThumbnails() {
+  var showThumbnails = function() {
     // have-zoom class may be updated twice: then timeout exceeds and then
     // then all images loaded.
     if (self.selection == selection) {
@@ -511,18 +511,18 @@ FileSelectionHandler.prototype.showPreviewThumbnails_ = function(selection) {
       for (var i = 0; i < thumbnails.length; i++)
         self.previewThumbnails_.appendChild(thumbnails[i]);
     }
-  }
+  };
 
-  function onThumbnailLoaded() {
+  var onThumbnailLoaded = function() {
     thumbnailLoaded++;
     if (thumbnailLoaded == thumbnailCount)
       showThumbnails();
-  }
+  };
 
-  function thumbnailClickHandler() {
+  var thumbnailClickHandler = function() {
     if (selection.tasks)
       selection.tasks.executeDefault();
-  }
+  };
 
   var doc = this.fileManager_.document_;
   for (var i = 0; i < selection.entries.length; i++) {

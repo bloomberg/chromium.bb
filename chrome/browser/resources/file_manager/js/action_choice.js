@@ -47,10 +47,10 @@ ActionChoice.load = function(opt_filesystem, opt_params) {
   if (!params.source) params.source = hash;
   if (!params.metadataCache) params.metadataCache = MetadataCache.createFull();
 
-  function onFilesystem(filesystem) {
+  var onFilesystem = function(filesystem) {
     var dom = document.querySelector('.action-choice');
     ActionChoice.instance = new ActionChoice(dom, filesystem, params);
-  }
+  };
 
   chrome.fileBrowserPrivate.getStrings(function(strings) {
     loadTimeData.data = strings;

@@ -113,7 +113,7 @@ util.recurseAndResolveEntries = function(entries, recurse, successCallback) {
   var fileEntries = [];
   var fileBytes = 0;
 
-  function pathCompare(a, b) {
+  var pathCompare = function(a, b) {
     if (a.fullPath > b.fullPath)
       return 1;
 
@@ -121,15 +121,15 @@ util.recurseAndResolveEntries = function(entries, recurse, successCallback) {
       return -1;
 
     return 0;
-  }
+  };
 
-  function parentPath(path) {
+  var parentPath = function(path) {
     return path.substring(0, path.lastIndexOf('/'));
-  }
+  };
 
   // We invoke this after each async callback to see if we've received all
   // the expected callbacks.  If so, we're done.
-  function areWeThereYet() {
+  var areWeThereYet = function() {
     if (pendingSubdirectories == 0 && pendingFiles == 0) {
       var result = {
         dirEntries: dirEntries.sort(pathCompare),
@@ -141,9 +141,9 @@ util.recurseAndResolveEntries = function(entries, recurse, successCallback) {
         successCallback(result);
       }
     }
-  }
+  };
 
-  function tallyEntry(entry, originalSourcePath) {
+  var tallyEntry = function(entry, originalSourcePath) {
     entry.originalSourcePath = originalSourcePath;
     if (entry.isDirectory) {
       dirEntries.push(entry);
@@ -159,9 +159,9 @@ util.recurseAndResolveEntries = function(entries, recurse, successCallback) {
         areWeThereYet();
       });
     }
-  }
+  };
 
-  function recurseDirectory(dirEntry, originalSourcePath) {
+  var recurseDirectory = function(dirEntry, originalSourcePath) {
     pendingSubdirectories++;
 
     util.forEachDirEntry(dirEntry, function(entry) {
@@ -173,7 +173,7 @@ util.recurseAndResolveEntries = function(entries, recurse, successCallback) {
           tallyEntry(entry, originalSourcePath);
         }
     });
-  }
+  };
 
   for (var i = 0; i < entries.length; i++) {
     tallyEntry(entries[i], parentPath(entries[i].fullPath));
@@ -192,11 +192,11 @@ util.recurseAndResolveEntries = function(entries, recurse, successCallback) {
 util.forEachDirEntry = function(dirEntry, callback) {
   var reader;
 
-  function onError(err) {
+  var onError = function(err) {
     console.error('Failed to read  dir entries at ' + dirEntry.fullPath);
-  }
+  };
 
-  function onReadSome(results) {
+  var onReadSome = function(results) {
     if (results.length == 0)
       return callback(null);
 
@@ -217,13 +217,13 @@ util.forEachDirEntry = function(dirEntry, callback) {
  * @param {function(Array.<Entry>)} callback List of entries passed to callback.
  */
 util.readDirectory = function(root, path, callback) {
-  function onError(e) {
+  var onError = function(e) {
     callback([], e);
-  }
+  };
   root.getDirectory(path, {create: false}, function(entry) {
     var reader = entry.createReader();
     var r = [];
-    function readNext() {
+    var readNext = function() {
       reader.readEntries(function(results) {
         if (results.length == 0) {
           callback(r, null);
@@ -232,7 +232,7 @@ util.readDirectory = function(root, path, callback) {
         r.push.apply(r, results);
         readNext();
       }, onError);
-    }
+    };
     readNext();
   }, onError);
 };
@@ -263,11 +263,11 @@ util.getDirectories = function(dirEntry, params, paths, successCallback,
   // Copy the params array, since we're going to destroy it.
   params = [].slice.call(params);
 
-  function onComplete() {
+  var onComplete = function() {
     successCallback(null);
-  }
+  };
 
-  function getNextDirectory() {
+  var getNextDirectory = function() {
     var path = paths.shift();
     if (!path)
       return onComplete();
@@ -282,7 +282,7 @@ util.getDirectories = function(dirEntry, params, paths, successCallback,
         errorCallback(err);
         getNextDirectory();
       });
-  }
+  };
 
   getNextDirectory();
 };
@@ -312,11 +312,11 @@ util.getFiles = function(dirEntry, params, paths, successCallback,
   // Copy the params array, since we're going to destroy it.
   params = [].slice.call(params);
 
-  function onComplete() {
+  var onComplete = function() {
     successCallback(null);
-  }
+  };
 
-  function getNextFile() {
+  var getNextFile = function() {
     var path = paths.shift();
     if (!path)
       return onComplete();
@@ -331,7 +331,7 @@ util.getFiles = function(dirEntry, params, paths, successCallback,
         errorCallback(err);
         getNextFile();
       });
-  }
+  };
 
   getNextFile();
 };
@@ -382,10 +382,10 @@ util.getOrCreateFile = function(root, path, successCallback, errorCallback) {
   var dirname = null;
   var basename = null;
 
-  function onDirFound(dirEntry) {
+  var onDirFound = function(dirEntry) {
     dirEntry.getFile(basename, { create: true },
                      successCallback, errorCallback);
-  }
+  };
 
   var i = path.lastIndexOf('/');
   if (i > -1) {
@@ -415,7 +415,7 @@ util.getOrCreateDirectory = function(root, path, successCallback,
                                      errorCallback) {
   var names = path.split('/');
 
-  function getOrCreateNextName(dir) {
+  var getOrCreateNextName = function(dir) {
     if (!names.length)
       return successCallback(dir);
 
@@ -426,7 +426,7 @@ util.getOrCreateDirectory = function(root, path, successCallback,
 
     dir.getDirectory(name, { create: true }, getOrCreateNextName,
                      errorCallback);
-  }
+  };
 
   getOrCreateNextName(root);
 };
@@ -468,16 +468,16 @@ util.bytesToString = function(bytes) {
                Math.pow(2, 40),
                Math.pow(2, 50)];
 
-  function str(n, u) {
+  var str = function(n, u) {
     // TODO(rginda): Switch to v8Locale's number formatter when it's
     // available.
     return strf(u, n.toLocaleString());
-  }
+  };
 
-  function fmt(s, u) {
+  var fmt = function(s, u) {
     var rounded = Math.round(bytes / s * 10) / 10;
     return str(rounded, u);
-  }
+  };
 
   // Less than 1KB is displayed like '80 bytes'.
   if (bytes < STEPS[1]) {
@@ -536,16 +536,16 @@ if (!Blob.prototype.slice) {
  * @param {function(FileError)} onError Error handler.
  */
 util.writeBlobToFile = function(entry, blob, onSuccess, onError) {
-  function truncate(writer) {
+  var truncate = function(writer) {
     writer.onerror = onError;
     writer.onwriteend = write.bind(null, writer);
     writer.truncate(0);
-  }
+  };
 
-  function write(writer) {
+  var write = function(writer) {
     writer.onwriteend = onSuccess;
     writer.write(blob);
-  }
+  };
 
   entry.createWriter(truncate, onError);
 };
@@ -651,12 +651,12 @@ util.forEachEntryInTree = function(root, callback, max_depth, opt_filter) {
   var pending = 0;
   var cancelled = false;
 
-  function maybeDone() {
+  var maybeDone = function() {
     if (pending == 0 && !cancelled)
       callback(null);
-  }
+  };
 
-  function readEntry(entry, depth) {
+  var readEntry = function(entry, depth) {
     if (cancelled) return;
     if (opt_filter && !opt_filter(entry)) return;
 
@@ -679,7 +679,7 @@ util.forEachEntryInTree = function(root, callback, max_depth, opt_filter) {
         readEntry(childEntry, depth + 1);
       }
     });
-  }
+  };
 
   readEntry(root, 0);
 };
@@ -935,10 +935,10 @@ util.loadScripts = function(urls, onload) {
     onload();
     return;
   }
-  function done() {
+  var done = function() {
     if (--countdown == 0)
       onload();
-  }
+  };
   while (urls.length) {
     var script = document.createElement('script');
     script.src = urls.shift();
