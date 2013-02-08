@@ -4,13 +4,21 @@
 
 #include "net/spdy/spdy_session.h"
 
+#include "base/location.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
+#include "base/pending_task.h"
+#include "base/string_util.h"
 #include "net/base/cert_test_util.h"
 #include "net/base/host_cache.h"
+#include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_log_unittest.h"
 #include "net/base/test_data_directory.h"
+#include "net/base/test_data_stream.h"
 #include "net/spdy/spdy_io_buffer.h"
 #include "net/spdy/spdy_session_pool.h"
+#include "net/spdy/spdy_session_test_util.h"
 #include "net/spdy/spdy_stream.h"
 #include "net/spdy/spdy_test_util_spdy3.h"
 #include "testing/platform_test.h"
@@ -1746,6 +1754,306 @@ TEST_F(SpdySessionSpdy3Test, UpdateStreamsSendWindowSize) {
   EXPECT_EQ(spdy_stream2->send_window_size(), window_size);
   spdy_stream2->Cancel();
   spdy_stream2 = NULL;
+}
+
+// Test that SpdySession::DoRead reads data from the socket without yielding.
+// This test makes 32k - 1 bytes of data available on the socket for reading. It
+// then verifies that it has read all the available data without yielding.
+TEST_F(SpdySessionSpdy3Test, ReadDataWithoutYielding) {
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  BufferedSpdyFramer framer(3, false);
+
+  scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
+  MockWrite writes[] = {
+    CreateMockWrite(*req1, 0),
+  };
+
+  // Build buffer of size kMaxReadBytes / 4 (-spdy_data_frame_size).
+  ASSERT_EQ(32 * 1024, kMaxReadBytes);
+  const int kPayloadSize = kMaxReadBytes / 4 - SpdyDataFrame::size();
+  TestDataStream test_stream;
+  scoped_refptr<net::IOBuffer> payload(new net::IOBuffer(kPayloadSize));
+  char* payload_data = payload->data();
+  test_stream.GetBytes(payload_data, kPayloadSize);
+
+  scoped_ptr<SpdyFrame> partial_data_frame(
+      framer.CreateDataFrame(1, payload_data, kPayloadSize, DATA_FLAG_NONE));
+  scoped_ptr<SpdyFrame> finish_data_frame(
+      framer.CreateDataFrame(1, payload_data, kPayloadSize - 1, DATA_FLAG_FIN));
+
+  scoped_ptr<SpdyFrame> resp1(ConstructSpdyGetSynReply(NULL, 0, 1));
+
+  // Write 1 byte less than kMaxReadBytes to check that DoRead reads up to 32k
+  // bytes.
+  MockRead reads[] = {
+    CreateMockRead(*resp1, 1),
+    CreateMockRead(*partial_data_frame, 2),
+    CreateMockRead(*partial_data_frame, 3, SYNCHRONOUS),
+    CreateMockRead(*partial_data_frame, 4, SYNCHRONOUS),
+    CreateMockRead(*finish_data_frame, 5, SYNCHRONOUS),
+    MockRead(ASYNC, 0, 6)  // EOF
+  };
+
+  // Create SpdySession and SpdyStream and send the request.
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
+  data.set_connect_data(connect_data);
+  session_deps_.host_resolver->set_synchronous_mode(true);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  CreateDeterministicNetworkSession();
+
+  scoped_refptr<SpdySession> session = CreateInitializedSession();
+
+  scoped_refptr<SpdyStream> spdy_stream1;
+  TestCompletionCallback callback1;
+  GURL url1("http://www.google.com");
+  EXPECT_EQ(OK, session->CreateStream(url1, MEDIUM, &spdy_stream1,
+                                      BoundNetLog(), callback1.callback()));
+  EXPECT_EQ(0u, spdy_stream1->stream_id());
+
+  scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
+  (*headers)[":method"] = "GET";
+  (*headers)[":scheme"] = url1.scheme();
+  (*headers)[":host"] = url1.host();
+  (*headers)[":path"] = url1.path();
+  (*headers)[":version"] = "HTTP/1.1";
+
+  spdy_stream1->set_spdy_headers(headers.Pass());
+  EXPECT_TRUE(spdy_stream1->HasUrl());
+  spdy_stream1->SendRequest(false);
+
+  // Set up the TaskObserver to verify SpdySession::DoRead doesn't post a task.
+  SpdySessionTestTaskObserver observer("spdy_session.cc", "DoRead");
+
+  // Run until 1st read.
+  EXPECT_EQ(0u, spdy_stream1->stream_id());
+  data.RunFor(2);
+  EXPECT_EQ(1u, spdy_stream1->stream_id());
+  EXPECT_EQ(0u, observer.executed_count());
+
+  // Read all the data and verify SpdySession::DoRead has not posted a task.
+  data.RunFor(4);
+
+  // Verify task observer's executed_count is zero, which indicates DoRead read
+  // all the available data.
+  EXPECT_EQ(0u, observer.executed_count());
+  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.at_read_eof());
+}
+
+// Test that SpdySession::DoRead yields while reading the data. This test makes
+// 32k + 1 bytes of data available on the socket for reading. It then verifies
+// that DoRead has yielded even though there is data available for it to read
+// (i.e, socket()->Read didn't return ERR_IO_PENDING during socket reads).
+TEST_F(SpdySessionSpdy3Test, TestYieldingDuringReadData) {
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  BufferedSpdyFramer framer(3, false);
+
+  scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
+  MockWrite writes[] = {
+    CreateMockWrite(*req1, 0),
+  };
+
+  // Build buffer of size kMaxReadBytes / 4 (-spdy_data_frame_size).
+  ASSERT_EQ(32 * 1024, kMaxReadBytes);
+  const int kPayloadSize = kMaxReadBytes / 4 - SpdyDataFrame::size();
+  TestDataStream test_stream;
+  scoped_refptr<net::IOBuffer> payload(new net::IOBuffer(kPayloadSize));
+  char* payload_data = payload->data();
+  test_stream.GetBytes(payload_data, kPayloadSize);
+
+  scoped_ptr<SpdyFrame> partial_data_frame(
+      framer.CreateDataFrame(1, payload_data, kPayloadSize, DATA_FLAG_NONE));
+  scoped_ptr<SpdyFrame> finish_data_frame(
+      framer.CreateDataFrame(1, "h", 1, DATA_FLAG_FIN));
+
+  scoped_ptr<SpdyFrame> resp1(ConstructSpdyGetSynReply(NULL, 0, 1));
+
+  // Write 1 byte more than kMaxReadBytes to check that DoRead yields.
+  MockRead reads[] = {
+    CreateMockRead(*resp1, 1),
+    CreateMockRead(*partial_data_frame, 2),
+    CreateMockRead(*partial_data_frame, 3, SYNCHRONOUS),
+    CreateMockRead(*partial_data_frame, 4, SYNCHRONOUS),
+    CreateMockRead(*partial_data_frame, 5, SYNCHRONOUS),
+    CreateMockRead(*finish_data_frame, 6, SYNCHRONOUS),
+    MockRead(ASYNC, 0, 7)  // EOF
+  };
+
+  // Create SpdySession and SpdyStream and send the request.
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
+  data.set_connect_data(connect_data);
+  session_deps_.host_resolver->set_synchronous_mode(true);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  CreateDeterministicNetworkSession();
+
+  scoped_refptr<SpdySession> session = CreateInitializedSession();
+
+  scoped_refptr<SpdyStream> spdy_stream1;
+  TestCompletionCallback callback1;
+  GURL url1("http://www.google.com");
+  EXPECT_EQ(OK, session->CreateStream(url1, MEDIUM, &spdy_stream1,
+                                      BoundNetLog(), callback1.callback()));
+  EXPECT_EQ(0u, spdy_stream1->stream_id());
+
+  scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
+  (*headers)[":method"] = "GET";
+  (*headers)[":scheme"] = url1.scheme();
+  (*headers)[":host"] = url1.host();
+  (*headers)[":path"] = url1.path();
+  (*headers)[":version"] = "HTTP/1.1";
+
+  spdy_stream1->set_spdy_headers(headers.Pass());
+  EXPECT_TRUE(spdy_stream1->HasUrl());
+  spdy_stream1->SendRequest(false);
+
+  // Set up the TaskObserver to verify SpdySession::DoRead posts a task.
+  SpdySessionTestTaskObserver observer("spdy_session.cc", "DoRead");
+
+  // Run until 1st read.
+  EXPECT_EQ(0u, spdy_stream1->stream_id());
+  data.RunFor(2);
+  EXPECT_EQ(1u, spdy_stream1->stream_id());
+  EXPECT_EQ(0u, observer.executed_count());
+
+  // Read all the data and verify SpdySession::DoRead has posted a task.
+  data.RunFor(6);
+
+  // Verify task observer's executed_count is 1, which indicates DoRead has
+  // posted only one task and thus yielded though there is data available for it
+  // to read.
+  EXPECT_EQ(1u, observer.executed_count());
+  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.at_read_eof());
+}
+
+// Test that SpdySession::DoRead yields while reading the data. This test makes
+// 4 reads of kMaxReadBytes / 4 (-spdy_data_frame_size), one read of
+// kMaxReadBytes (-spdy_data_frame_size), and some reads of kMaxReadBytes + 8k
+// (-spdy_data_frame_size), bytes of data available on the socket for reading.
+// It then verifies that DoRead has yielded even though there is data available
+// for it to read (i.e, socket()->Read didn't return ERR_IO_PENDING during
+// socket reads). Also verifies that SpdySession reads only
+// SpdySession::kReadBufferSize data from the underlying transport.
+// TODO(rtennti): Make this test work after fixes to DeterministicSocketData.
+TEST_F(SpdySessionSpdy3Test, DISABLED_TestYieldingDuringLargeReadData) {
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  BufferedSpdyFramer framer(3, false);
+
+  scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
+  MockWrite writes[] = {
+    CreateMockWrite(*req1, 0),
+  };
+
+  // Build buffer of size kMaxReadBytes / 4 (-spdy_data_frame_size).
+  ASSERT_EQ(32 * 1024, kMaxReadBytes);
+  TestDataStream test_stream;
+  const int kSmallPayloadSize = kMaxReadBytes / 4 - SpdyDataFrame::size();
+  scoped_refptr<net::IOBuffer> small_payload(
+      new net::IOBuffer(kSmallPayloadSize));
+  char* small_payload_data = small_payload->data();
+  test_stream.GetBytes(small_payload_data, kSmallPayloadSize);
+
+  // Build buffer of size kMaxReadBytes - (-spdy_data_frame_size).
+  TestDataStream test_stream1;
+  const int kMaxReadBytesPayloadSize = kMaxReadBytes - SpdyDataFrame::size();
+  scoped_refptr<net::IOBuffer> max_bytes_payload(
+      new net::IOBuffer(kMaxReadBytesPayloadSize));
+  char* max_bytes_payload_data = max_bytes_payload->data();
+  test_stream1.GetBytes(max_bytes_payload_data, kMaxReadBytesPayloadSize);
+
+  // Build buffer of size kMaxReadBytes + kSmallPayloadSize
+  // (-spdy_data_frame_size).
+  TestDataStream test_stream2;
+  const int kLargePayloadSize =
+      kMaxReadBytes + kSmallPayloadSize - SpdyDataFrame::size();
+  scoped_refptr<net::IOBuffer> large_payload(
+      new net::IOBuffer(kLargePayloadSize));
+  char* large_payload_data = large_payload->data();
+  test_stream2.GetBytes(large_payload_data, kLargePayloadSize);
+
+  scoped_ptr<SpdyFrame> small_data_frame(framer.CreateDataFrame(
+      1, small_payload_data, kSmallPayloadSize, DATA_FLAG_NONE));
+  scoped_ptr<SpdyFrame> max_bytes_data_frame(framer.CreateDataFrame(
+      1, max_bytes_payload_data, kMaxReadBytesPayloadSize, DATA_FLAG_NONE));
+  scoped_ptr<SpdyFrame> large_data_frame(framer.CreateDataFrame(
+      1, large_payload_data, kLargePayloadSize, DATA_FLAG_NONE));
+  scoped_ptr<SpdyFrame> finish_data_frame(framer.CreateDataFrame(
+      1, "h", 1, DATA_FLAG_FIN));
+
+  scoped_ptr<SpdyFrame> resp1(ConstructSpdyGetSynReply(NULL, 0, 1));
+
+  MockRead reads[] = {
+    CreateMockRead(*resp1, 1),
+    CreateMockRead(*small_data_frame, 2),
+    CreateMockRead(*small_data_frame, 3, SYNCHRONOUS),
+    CreateMockRead(*small_data_frame, 4, SYNCHRONOUS),
+    CreateMockRead(*small_data_frame, 5, SYNCHRONOUS),
+    CreateMockRead(*max_bytes_data_frame, 6),
+    CreateMockRead(*large_data_frame, 7, SYNCHRONOUS),
+    CreateMockRead(*finish_data_frame, 8, SYNCHRONOUS),
+    MockRead(ASYNC, 0, 9)  // EOF
+  };
+
+  // Create SpdySession and SpdyStream and send the request.
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
+  data.set_connect_data(connect_data);
+  session_deps_.host_resolver->set_synchronous_mode(true);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  CreateDeterministicNetworkSession();
+
+  scoped_refptr<SpdySession> session = CreateInitializedSession();
+
+  scoped_refptr<SpdyStream> spdy_stream1;
+  TestCompletionCallback callback1;
+  GURL url1("http://www.google.com");
+  EXPECT_EQ(OK, session->CreateStream(url1, MEDIUM, &spdy_stream1,
+                                      BoundNetLog(), callback1.callback()));
+  EXPECT_EQ(0u, spdy_stream1->stream_id());
+
+  scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
+  (*headers)[":method"] = "GET";
+  (*headers)[":scheme"] = url1.scheme();
+  (*headers)[":host"] = url1.host();
+  (*headers)[":path"] = url1.path();
+  (*headers)[":version"] = "HTTP/1.1";
+
+  spdy_stream1->set_spdy_headers(headers.Pass());
+  EXPECT_TRUE(spdy_stream1->HasUrl());
+  spdy_stream1->SendRequest(false);
+
+  // Set up the TaskObserver to verify SpdySession::DoRead posts a task.
+  SpdySessionTestTaskObserver observer("spdy_session.cc", "DoRead");
+
+  // Run until 1st read.
+  EXPECT_EQ(0u, spdy_stream1->stream_id());
+  data.RunFor(2);
+  EXPECT_EQ(1u, spdy_stream1->stream_id());
+  EXPECT_EQ(0u, observer.executed_count());
+
+  // Read all the data and verify SpdySession::DoRead has posted a task.
+  data.RunFor(10);
+
+  // Verify task observer's executed_count is 1, which indicates DoRead has
+  // posted only one task and thus yielded though there is data available for
+  // it to read.
+  EXPECT_EQ(1u, observer.executed_count());
+  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.at_read_eof());
 }
 
 }  // namespace net
