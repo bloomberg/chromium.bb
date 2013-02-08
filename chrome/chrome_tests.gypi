@@ -223,6 +223,7 @@
         'browser/ui/panels/test_panel_collection_squeeze_observer.cc',
         'browser/ui/panels/test_panel_collection_squeeze_observer.h',
         'browser/ui/startup/startup_browser_creator_interactive_uitest.cc',
+        'browser/ui/views/ash/tab_scrubber_browsertest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
         'browser/ui/views/button_dropdown_test.cc',
         'browser/ui/views/constrained_window_views_browsertest.cc',

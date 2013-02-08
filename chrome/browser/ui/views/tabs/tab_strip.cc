@@ -945,6 +945,20 @@ void TabStrip::SetImmersiveStyle(bool enable) {
   }
 }
 
+bool TabStrip::IsAnimating() const {
+  return bounds_animator_.IsAnimating();
+}
+
+void TabStrip::StopAnimating(bool layout) {
+  if (!IsAnimating())
+    return;
+
+  bounds_animator_.Cancel();
+
+  if (layout)
+    DoLayout();
+}
+
 const ui::ListSelectionModel& TabStrip::GetSelectionModel() {
   return controller_->GetSelectionModel();
 }
@@ -1617,16 +1631,6 @@ void TabStrip::ScheduleRemoveTabAnimation(Tab* tab) {
     bounds_animator_.StopAnimatingView(newtab_button_);
     newtab_button_->SetBoundsRect(newtab_button_bounds_);
   }
-}
-
-void TabStrip::StopAnimating(bool layout) {
-  if (!IsAnimating())
-    return;
-
-  bounds_animator_.Cancel();
-
-  if (layout)
-    DoLayout();
 }
 
 void TabStrip::AnimateToIdealBounds() {
@@ -2348,10 +2352,6 @@ TabStrip::DropInfo::~DropInfo() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-bool TabStrip::IsAnimating() const {
-  return bounds_animator_.IsAnimating();
-}
 
 void TabStrip::PrepareForAnimation() {
   if (!IsDragSessionActive() && !TabDragController::IsAttachedTo(this)) {

@@ -13,16 +13,17 @@
 namespace views {
 
 // Amount to scale the opacity.
-static const double kOpacityScale = 0.5;
+static const double kTrackOpacityScale = 0.5;
+static const double kHighlightOpacityScale = 1.0;
 
 // How long the hover state takes.
-static const int kHoverDurationMs = 400;
+static const int kTrackHoverDurationMs = 400;
 
 GlowHoverController::GlowHoverController(views::View* view)
     : view_(view),
-      ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)),
+      opacity_scale_(kTrackOpacityScale) {
   animation_.set_delegate(this);
-  animation_.SetSlideDuration(kHoverDurationMs);
 }
 
 GlowHoverController::~GlowHoverController() {
@@ -39,9 +40,21 @@ void GlowHoverController::SetLocation(const gfx::Point& location) {
     view_->SchedulePaint();
 }
 
-void GlowHoverController::Show() {
-  animation_.SetTweenType(ui::Tween::EASE_OUT);
-  animation_.Show();
+void GlowHoverController::Show(Style style) {
+  switch (style) {
+    case SUBTLE:
+      opacity_scale_ = kTrackOpacityScale;
+      animation_.SetSlideDuration(kTrackHoverDurationMs);
+      animation_.SetTweenType(ui::Tween::EASE_OUT);
+      animation_.Show();
+      break;
+    case PRONOUNCED:
+      opacity_scale_ = kHighlightOpacityScale;
+      // Force the end state to show immediately.
+      animation_.Show();
+      animation_.End();
+      break;
+  }
 }
 
 void GlowHoverController::Hide() {
@@ -80,7 +93,7 @@ void GlowHoverController::Draw(gfx::Canvas* canvas,
   center_point.iset(location_.x(), location_.y());
   SkColor colors[2];
   int hover_alpha =
-      static_cast<int>(255 * kOpacityScale * animation_.GetCurrentValue());
+      static_cast<int>(255 * opacity_scale_ * animation_.GetCurrentValue());
   colors[0] = SkColorSetARGB(hover_alpha, 255, 255, 255);
   colors[1] = SkColorSetARGB(0, 255, 255, 255);
   skia::RefPtr<SkShader> shader = skia::AdoptRef(

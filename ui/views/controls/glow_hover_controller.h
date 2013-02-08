@@ -29,6 +29,11 @@ class View;
 // invokes SchedulePaint() back on the View as necessary.
 class VIEWS_EXPORT GlowHoverController : public ui::AnimationDelegate {
  public:
+  enum Style {
+    SUBTLE,
+    PRONOUNCED
+  };
+
   explicit GlowHoverController(views::View* view);
   virtual ~GlowHoverController();
 
@@ -40,7 +45,7 @@ class VIEWS_EXPORT GlowHoverController : public ui::AnimationDelegate {
   void SetLocation(const gfx::Point& location);
 
   // Initiates showing the hover.
-  void Show();
+  void Show(Style style);
 
   // Hides the hover.
   void Hide();
@@ -72,6 +77,7 @@ class VIEWS_EXPORT GlowHoverController : public ui::AnimationDelegate {
 
   // Location of the glow, relative to view.
   gfx::Point location_;
+  double opacity_scale_;
 
   DISALLOW_COPY_AND_ASSIGN(GlowHoverController);
 };

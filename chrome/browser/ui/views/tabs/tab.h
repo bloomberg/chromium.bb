@@ -103,6 +103,10 @@ class Tab : public ui::AnimationDelegate,
   // immersive mode light bar. crbug.com/166929
   void UpdateIconDominantColor();
 
+  views::GlowHoverController* hover_controller() {
+    return &hover_controller_;
+  }
+
   // Returns the minimum possible size of a single unselected Tab.
   static gfx::Size GetMinimumUnselectedSize();
   // Returns the minimum possible size of a selected Tab. Selected tabs must
