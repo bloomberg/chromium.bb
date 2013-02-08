@@ -12,8 +12,8 @@ class Profile;
 
 namespace chrome {
 
-// TODO(koz/benwells): These functions need to be put somewhere more
-// specific than the chrome namespace.
+// TODO(koz/benwells): These functions should be put on an AppList class that
+// can be accessed as a global.
 
 // Do any once off initialization needed for the app list.
 void InitAppList(Profile* profile);
@@ -38,6 +38,11 @@ Profile* GetCurrentAppListProfile();
 
 // Returns true if the app list is visible.
 bool IsAppListVisible();
+
+// Notify the app list that an extension has started downloading.
+void NotifyAppListOfBeginExtensionInstall(Profile* profile,
+                                          const std::string& extension_id,
+                                          const std::string& extension_name);
 
 }  // namespace chrome
 

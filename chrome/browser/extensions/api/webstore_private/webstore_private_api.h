@@ -173,6 +173,7 @@ class CompleteInstallFunction
 
  private:
   void AfterMaybeInstallAppLauncher(bool ok);
+  void OnGetAppLauncherEnabled(std::string id, bool app_launcher_enabled);
 
   scoped_ptr<WebstoreInstaller::Approval> approval_;
 };
