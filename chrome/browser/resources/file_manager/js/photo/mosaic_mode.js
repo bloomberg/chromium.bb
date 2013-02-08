@@ -1536,8 +1536,9 @@ Mosaic.Tile.prototype.load = function(metadata, callback) {
   this.markUnloaded();
   this.left_ = null;  // Mark as not laid out.
 
-  this.thumbnailLoader_ =
-      new ThumbnailLoader(this.getItem().getUrl(), metadata);
+  this.thumbnailLoader_ = new ThumbnailLoader(this.getItem().getUrl(),
+                                              ThumbnailLoader.LoaderType.CANVAS,
+                                              metadata);
 
   this.thumbnailLoader_.loadDetachedImage(function(success) {
     if (this.thumbnailLoader_.hasValidImage()) {

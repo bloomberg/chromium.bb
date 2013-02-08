@@ -3,13 +3,20 @@
 // found in the LICENSE file.
 
 /**
+ * Loads a thumbnail using provided url. In CANVAS mode, loaded images
+ * are attached as <canvas> element, while in IMAGE mode as <img>.
+ * <canvas> renders faster than <img>, however has bigger memory overhead.
+ *
  * @param {string} url File URL.
+ * @param {ThumbnailLoader.LoaderType} opt_loaderType Canvas or Image loader,
+ *     default: IMAGE.
  * @param {Object} opt_metadata Metadata object.
  * @param {string} opt_mediaType Media type.
  * @constructor
  */
-function ThumbnailLoader(url, opt_metadata, opt_mediaType) {
+function ThumbnailLoader(url, opt_loaderType, opt_metadata, opt_mediaType) {
   this.mediaType_ = opt_mediaType || FileType.getMediaType(url);
+  this.loaderType_ = opt_loaderType || ThumbnailLoader.LoaderType.IMAGE;
 
   if (!opt_metadata) {
     this.thumbnailUrl_ = url;  // Use the URL directly.
@@ -71,6 +78,15 @@ ThumbnailLoader.FillMode = {
 };
 
 /**
+ * Type of element to store the image.
+ * @enum
+ */
+ThumbnailLoader.LoaderType = {
+  IMAGE: 0,
+  CANVAS: 1
+};
+
+/**
  * If an image file does not have an embedded thumbnail we might want to use
  * the image itself as a thumbnail. If the image is too large it hurts
  * the performance a lot so we allow it only for moderately sized files.
@@ -91,7 +107,7 @@ ThumbnailLoader.canUseImageUrl_ = function(metadata) {
  *
  * @param {HTMLElement} box Container element.
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
- * @param {function(HTMLImageElement, object} opt_onSuccess Success callback,
+ * @param {function(Image, object} opt_onSuccess Success callback,
  *   accepts the image and the transform.
  * @param {function} opt_onError Error callback.
  * @param {function} opt_onGeneric Callback for generic image used.
@@ -105,7 +121,8 @@ ThumbnailLoader.prototype.load = function(
     return;
   }
 
-  this.image_ = box.ownerDocument.createElement('img');
+  this.canvasUpToDate_ = false;
+  this.image_ = new Image();
   this.image_.onload = function() {
     this.attachImage(box, fillMode);
     if (opt_onSuccess)
@@ -115,7 +132,10 @@ ThumbnailLoader.prototype.load = function(
     if (opt_onError)
       opt_onError();
     if (this.fallbackUrl_) {
-      new ThumbnailLoader(this.fallbackUrl_, null, this.mediaType_).
+      new ThumbnailLoader(this.fallbackUrl_,
+                          this.loaderType_,
+                          null,
+                          this.mediaType_).
           load(box, fillMode, opt_onSuccess);
     } else {
       box.setAttribute('generic-thumbnail', this.mediaType_);
@@ -171,6 +191,7 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
     return;
   }
 
+  this.canvasUpToDate_ = false;
   this.image_ = new Image();
   this.image_.onload = callback.bind(null, true);
   this.image_.onerror = callback.bind(null, false);
@@ -188,12 +209,33 @@ ThumbnailLoader.prototype.attachImage = function(container, fillMode) {
     return;
   }
 
+  var attachableMedia;
+  if (this.loaderType_ == ThumbnailLoader.LoaderType.CANVAS) {
+    if (!this.canvas_)
+      this.canvas_ = container.ownerDocument.createElement('canvas');
+
+    // Copy the image to a canvas if the canvas is outdated.
+    if (!this.canvasUpToDate_) {
+      this.canvas_.width = this.image_.width;
+      this.canvas_.height = this.image_.height;
+      var context = this.canvas_.getContext('2d');
+      context.drawImage(this.image_, 0, 0);
+      this.canvasUpToDate_ = true;
+    }
+
+    // Canvas will be attached.
+    attachableMedia = this.canvas_;
+  } else {
+    // Image will be attached.
+    attachableMedia = this.image_;
+  }
+
   util.applyTransform(container, this.transform_);
   ThumbnailLoader.centerImage_(
-      container, this.image_, fillMode, this.isRotated_());
+      container, attachableMedia, fillMode, this.isRotated_());
   if (this.image_.parentNode != container) {
     container.textContent = '';
-    container.appendChild(this.image_);
+    container.appendChild(attachableMedia);
   }
 };
 
@@ -205,7 +247,7 @@ ThumbnailLoader.prototype.attachImage = function(container, fillMode) {
  * position it at the center.
  *
  * @param {HTMLElement} box Containing element.
- * @param {HTMLImageElement} img Image element.
+ * @param {Image|HTMLCanvasElement} img Element containing an image.
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
  * @param {boolean} rotate True if the image should be rotated 90 degrees.
  * @private

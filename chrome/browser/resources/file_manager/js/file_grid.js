@@ -126,7 +126,9 @@ FileGrid.decorateThumbnailBox = function(
 
   metadataCache.get(imageUrl, metadataTypes,
       function(metadata) {
-        new ThumbnailLoader(imageUrl, metadata).
+        new ThumbnailLoader(imageUrl,
+                            ThumbnailLoader.LoaderType.IMAGE,
+                            metadata).
             load(box, fillMode, opt_imageLoadCallback, onImageLoadError);
       });
 };

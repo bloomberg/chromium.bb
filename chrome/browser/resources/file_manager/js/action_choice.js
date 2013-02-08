@@ -217,7 +217,9 @@ ActionChoice.prototype.renderPreview_ = function(entries, count) {
 
   this.metadataCache_.get(entry, 'thumbnail|filesystem',
       function(metadata) {
-        new ThumbnailLoader(entry.toURL(), metadata).load(
+        new ThumbnailLoader(entry.toURL(),
+                            ThumbnailLoader.LoaderType.IMAGE,
+                            metadata).load(
             box, ThumbnailLoader.FillMode.FILL, onSuccess, onError, onError);
       });
 };
