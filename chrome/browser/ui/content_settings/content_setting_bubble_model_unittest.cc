@@ -5,6 +5,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/infobar_delegate.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -202,6 +203,15 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastream) {
                 url,
                 CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
                 std::string()));
+
+  // Removing an |InfoBarDelegate| from the |InfoBarService| does not delete
+  // it. Hence the |delegate| must be cleaned up after it was removed from the
+  // |infobar_service|.
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents());
+  scoped_ptr<InfoBarDelegate> delegate(
+      infobar_service->GetInfoBarDelegateAt(0));
+  infobar_service->RemoveInfoBar(delegate.get());
 }
 
 TEST_F(ContentSettingBubbleModelTest, Plugins) {
