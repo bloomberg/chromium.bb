@@ -234,6 +234,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Factory of callbacks.
   base::WeakPtrFactory<ExistingUserController> weak_factory_;
 
+  // Whether everything is ready to launch the browser.
+  bool ready_for_browser_launch_;
+
   // The displayed email for the next login attempt set by |SetDisplayEmail|.
   std::string display_email_;
 

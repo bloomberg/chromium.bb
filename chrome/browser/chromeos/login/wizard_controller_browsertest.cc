@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowResetScreen) {
 
 // TODO(nkostylev): Add test for WebUI accelerators http://crosbug.com/22571
 
-COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 16,
+COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 14,
                add_tests_for_new_control_flow_you_just_introduced);
 
 }  // namespace chromeos

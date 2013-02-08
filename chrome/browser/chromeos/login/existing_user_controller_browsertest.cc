@@ -26,7 +26,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
-#include "chromeos/dbus/mock_shill_manager_client.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -131,18 +130,6 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
         new MockDBusThreadManager;
     EXPECT_CALL(*mock_dbus_thread_manager, GetSystemBus())
         .WillRepeatedly(Return(reinterpret_cast<dbus::Bus*>(NULL)));
-    EXPECT_CALL(*mock_dbus_thread_manager, GetIBusInputContextClient())
-        .WillRepeatedly(
-            Return(reinterpret_cast<IBusInputContextClient*>(NULL)));
-    EXPECT_CALL(*mock_dbus_thread_manager->mock_shill_manager_client(),
-                GetProperties(_))
-        .Times(AnyNumber());
-    EXPECT_CALL(*mock_dbus_thread_manager->mock_shill_manager_client(),
-                AddPropertyChangedObserver(_))
-        .Times(AnyNumber());
-    EXPECT_CALL(*mock_dbus_thread_manager->mock_shill_manager_client(),
-                RemovePropertyChangedObserver(_))
-        .Times(AnyNumber());
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
     CrosInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     cros_mock_->InitStatusAreaMocks();
@@ -185,9 +172,6 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
         .Times(AnyNumber())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_user_manager_.user_manager(), IsLoggedInAsDemoUser())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_.user_manager(), IsLoggedInAsPublicAccount())
         .Times(AnyNumber())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_user_manager_.user_manager(), IsSessionStarted())
@@ -283,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
   EXPECT_CALL(*mock_login_display_, OnFadeOut())
       .Times(1);
   EXPECT_CALL(*mock_login_display_host_,
-              StartWizard(WizardController::kTermsOfServiceScreenName, NULL))
+              StartWizard(WizardController::kUserImageScreenName, NULL))
       .Times(0);
   EXPECT_CALL(*mock_user_manager_.user_manager(), IsCurrentUserNew())
       .Times(AnyNumber())
@@ -322,14 +306,12 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(WizardController::kEnterpriseEnrollmentScreenName, _))
       .Times(0);
-  // This will be the first sign-in of a new user, which may cause the (legacy)
-  // registration to be activated. A real WizardController instance immediately
-  // advances to the Terms of Service or user image screen but this test uses
-  // MockLoginDisplayHost Instead.
+  // That will be sign in of a new user and (legacy) registration screen is
+  // activated. In a real WizardController instance that is immediately switched
+  // to image screen but this tests uses MockLoginDisplayHost instead.
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(AnyOf(WizardController::kRegistrationScreenName,
-                                WizardController::kTermsOfServiceScreenName),
-                          NULL))
+                                WizardController::kUserImageScreenName), _))
       .Times(1);
   EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
       .Times(1)

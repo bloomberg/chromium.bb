@@ -720,12 +720,17 @@ void ExistingUserController::OnLoginSuccess(
 }
 
 void ExistingUserController::OnProfilePrepared(Profile* profile) {
+  bool known_user = !UserManager::Get()->IsCurrentUserNew();
+  bool skip_image_screen =
+      WizardController::default_controller()->skip_user_image_selection();
+  ready_for_browser_launch_ = known_user || skip_image_screen;
+
   OptionallyShowReleaseNotes(profile);
 
   // Reenable clicking on other windows and status area.
   login_display_->SetUIEnabled(true);
 
-  if (UserManager::Get()->IsCurrentUserNew()) {
+  if (!ready_for_browser_launch_) {
     // Don't specify start URLs if the administrator has configured the start
     // URLs via policy.
     if (!SessionStartupPref::TypeIsManaged(profile->GetPrefs()))
@@ -733,12 +738,13 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
 #ifndef NDEBUG
     if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kOobeSkipPostLogin)) {
+      ready_for_browser_launch_ = true;
       LoginUtils::Get()->DoBrowserLaunch(profile, host_);
       host_ = NULL;
     } else {
 #endif
       ActivateWizard(WizardController::IsDeviceRegistered() ?
-          WizardController::kTermsOfServiceScreenName :
+          WizardController::kUserImageScreenName :
           WizardController::kRegistrationScreenName);
 #ifndef NDEBUG
     }
@@ -895,8 +901,7 @@ void ExistingUserController::InitializeStartUrls() const {
           start_urls.push_back(url);
       }
     }
-  // Skip the default first-run behavior for public accounts.
-  } else if (!UserManager::Get()->IsLoggedInAsPublicAccount()) {
+  } else {
     if (prefs->GetBoolean(prefs::kSpokenFeedbackEnabled)) {
       const char* url = kChromeVoxTutorialURLPattern;
       const std::string current_locale =

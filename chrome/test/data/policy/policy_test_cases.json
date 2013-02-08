@@ -1558,14 +1558,6 @@
     ]
   },
 
-  "TermsOfServiceURL": {
-    "os": ["chromeos"],
-    "test_policy": { "TermsOfServiceURL": "http://www.example.com/terms_of_service.txt" },
-    "pref_mappings": [
-      { "pref": "terms_of_service.url" }
-    ]
-  },
-
   "ScreenDimDelayAC": {
     "os": ["chromeos"],
     "test_policy": { "ScreenDimDelayAC": 420000 },

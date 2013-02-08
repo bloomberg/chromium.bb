@@ -1875,8 +1875,6 @@
         'browser/ui/webui/chromeos/login/reset_screen_handler.h',
         'browser/ui/webui/chromeos/login/signin_screen_handler.cc',
         'browser/ui/webui/chromeos/login/signin_screen_handler.h',
-        'browser/ui/webui/chromeos/login/terms_of_service_screen_handler.cc',
-        'browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h',
         'browser/ui/webui/chromeos/login/update_screen_handler.cc',
         'browser/ui/webui/chromeos/login/update_screen_handler.h',
         'browser/ui/webui/chromeos/login/user_image_screen_handler.cc',

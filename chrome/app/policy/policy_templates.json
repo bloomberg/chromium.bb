@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 185
+#   For your editing convenience: highest ID currently used: 184
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -3875,26 +3875,6 @@
       The policy value should be specified in milliseconds. Values are clamped to a range of 30 seconds to 24 hours.''',
     },
     {
-      'name': 'TermsOfServiceURL',
-      'type': 'string',
-      'schema': { 'type': 'string' },
-      'supported_on': ['chrome_os:26-'],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-      },
-      'example_value': 'http://www.example.com/terms_of_service.txt',
-      'id': 172,
-      'caption': '''Set the Terms of Service for a device-local account''',
-      'desc': '''Sets the Terms of Service that the user must accept before starting a device-local account session.
-
-      If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download the Terms of Service and present them to the user whenever a device-local account session is starting. The user will only be allowed into the session after accepting the Terms of Service.
-
-      If this policy is not set, no Terms of Service are shown.
-
-      The policy should be set to a URL from which <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can download the Terms of Service. The Terms of Service must be plain text, served as MIME type text/plain. No markup is allowed.''',
-    },
-    {
       'name': 'PowerManagement',
       'type': 'group',
       'caption': '''Power mangement''',
@@ -3912,7 +3892,7 @@
             'per_profile': False,
           },
           'example_value': 420000,
-          'id': 173,
+          'id': 172,
           'caption': '''Screen dim delay when running on AC power''',
           'desc': '''Specifies the length of time without user input after which the screen is dimmed when running on AC power.
 
@@ -3934,7 +3914,7 @@
             'per_profile': False,
           },
           'example_value': 480000,
-          'id': 174,
+          'id': 173,
           'caption': '''Screen off delay when running on AC power''',
           'desc': '''Specifies the length of time without user input after which the screen is turned off when running on AC power.
 
@@ -3956,7 +3936,7 @@
             'per_profile': False,
           },
           'example_value': 600000,
-          'id': 175,
+          'id': 174,
           'caption': '''Screen lock delay when running on AC power''',
           'desc': '''Specifies the length of time without user input after which the screen is locked when running on AC power.
 
@@ -3980,7 +3960,7 @@
             'per_profile': False,
           },
           'example_value': 1800000,
-          'id': 176,
+          'id': 175,
           'caption': '''Idle delay when running on AC power''',
           'desc': '''Specifies the length of time without user input after which the idle action is taken when running on AC power.
 
@@ -4000,7 +3980,7 @@
             'per_profile': False,
           },
           'example_value': 300000,
-          'id': 177,
+          'id': 176,
           'caption': '''Screen dim delay when running on battery power''',
           'desc': '''Specifies the length of time without user input after which the screen is dimmed when running on battery power.
 
@@ -4022,7 +4002,7 @@
             'per_profile': False,
           },
           'example_value': 360000,
-          'id': 178,
+          'id': 177,
           'caption': '''Screen off delay when running on battery power''',
           'desc': '''Specifies the length of time without user input after which the screen is turned off when running on battery power.
 
@@ -4044,7 +4024,7 @@
             'per_profile': False,
           },
           'example_value': 600000,
-          'id': 179,
+          'id': 178,
           'caption': '''Screen lock delay when running on battery power''',
           'desc': '''Specifies the length of time without user input after which the screen is locked when running on battery power.
 
@@ -4068,7 +4048,7 @@
             'per_profile': False,
           },
           'example_value': 600000,
-          'id': 180,
+          'id': 179,
           'caption': '''Idle delay when running on battery power''',
           'desc': '''Specifies the length of time without user input after which the idle action is taken when running on battery power.
 
@@ -4113,7 +4093,7 @@
             'per_profile': False,
           },
           'example_value': 0,
-          'id': 181,
+          'id': 180,
           'caption': '''Action to take when the idle delay is reached''',
           'desc': '''Specify the action to take when the idle delay is reached.
 
@@ -4158,7 +4138,7 @@
             'per_profile': False,
           },
           'example_value': 0,
-          'id': 182,
+          'id': 181,
           'caption': '''Action to take when the user closes the lid''',
           'desc': '''Specify the action to take when the user closes the lid.
 
@@ -4178,7 +4158,7 @@
             'per_profile': False,
           },
           'example_value': True,
-          'id': 183,
+          'id': 182,
           'caption': '''Specify whether audio activity affects power management''',
           'desc': '''Specifies whether audio activity affects power management.
 
@@ -4196,7 +4176,7 @@
             'per_profile': False,
           },
           'example_value': True,
-          'id': 184,
+          'id': 183,
           'caption': '''Specify whether video activity affects power management''',
           'desc': '''Specifies whether vidoe activity affects power management.
 
@@ -4214,7 +4194,7 @@
             'per_profile': False,
           },
           'example_value': 200,
-          'id': 185,
+          'id': 184,
           'caption': '''Percentage by which to scale the idle delay in presentation mode''',
           'desc': '''Specifies the percentage by which the idle delay is scaled when the device is in presentation node.
 

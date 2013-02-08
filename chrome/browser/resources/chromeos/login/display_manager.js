@@ -170,7 +170,7 @@ cr.define('cr.ui.login', function() {
      */
     disableButtons_: function(screen, disabled) {
       var buttons = document.querySelectorAll(
-          '#' + screen.id + '-controls button:not(.preserve-disabled-state)');
+          '#' + screen.id + '-controls button');
       for (var i = 0; i < buttons.length; ++i) {
         buttons[i].disabled = disabled;
       }

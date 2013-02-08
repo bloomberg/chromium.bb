@@ -1472,28 +1472,6 @@ Press any key to continue exploring.
     Reset
   </message>
 
-  <message name="IDS_TERMS_OF_SERVICE_SCREEN_HEADING" desc="Heading at the top of the Terms of Service screen.">
-    <ph name="DOMAIN">$1<ex>example.com</ex></ph> Terms of Service
-  </message>
-  <message name="IDS_TERMS_OF_SERVICE_SCREEN_CONTENT_HEADING" desc="Heading at the start of the the Terms of Service text.">
-    <ph name="DOMAIN">$1<ex>example.com</ex></ph> Terms
-  </message>
-  <message name="IDS_TERMS_OF_SERVICE_SCREEN_LOADING" desc="Message shown while the Terms of Service are being downloaded.">
-    loading...
-  </message>
-  <message name="IDS_TERMS_OF_SERVICE_SCREEN_ERROR" desc="Error message shown when the Terms of Service could not be loaded.">
-    Oops, something went wrong.
-  </message>
-  <message name="IDS_TERMS_OF_SERVICE_SCREEN_TRY_AGAIN" desc="Message telling the user to try again later. Shown beneath the error message when the Terms of Service could not be loaded.">
-    Please try again later.
-  </message>
-  <message name="IDS_TERMS_OF_SERVICE_SCREEN_BACK_BUTTON" desc="Text of the back button on Terms of Service screen.">
-    Back
-  </message>
-  <message name="IDS_TERMS_OF_SERVICE_SCREEN_ACCEPT_BUTTON" desc="Text of the accept button on the Terms of Service screen.">
-    Accept and continue
-  </message>
-
   <message name="IDS_OPTION_DISABLED_BY_POLICY" desc="Tooltip for options managed by enterprise policy">
     This option is controlled by enterprise policy. Please contact your administrator for more information.
   </message>

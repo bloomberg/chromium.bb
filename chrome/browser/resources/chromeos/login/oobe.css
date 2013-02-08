@@ -71,8 +71,7 @@ button:not(.custom-appearance) {
 
 #back-button,
 #reset-button,
-#password-changed-back-button,
-#tos-back-button {
+#password-changed-back-button {
   -webkit-margin-end: 8px;
 }
 
@@ -127,8 +126,7 @@ html[oobe=new] #oobe.update #inner-container,
 html[oobe=new] #oobe.user-image #inner-container,
 html[oobe=new] #oobe.managed-user-creation #inner-container,
 html[oobe=new] #oobe.tpm-error-message #inner-container,
-html[oobe=new] #oobe.password-changed #inner-container,
-html[oobe=new] #oobe.terms-of-service #inner-container {
+html[oobe=new] #oobe.password-changed #inner-container {
   background: -webkit-linear-gradient(rgba(255,255,255,0.99),
                                       rgba(255,255,255,0.95));
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
@@ -876,8 +874,7 @@ html[oobe=old] .step-controls {
 #error-message-dot,
 #tpm-error-message-dot,
 #password-changed-dot,
-#managed-user-creation-dot,
-#terms-of-service-dot {
+#managed-user-creation-dot {
   display: none;
 }
 
@@ -982,6 +979,7 @@ html[oobe=old] #update div {
   display: -webkit-box;
 }
 
+
 html[oobe=old] #update #update-screen-curtain {
   margin: 9em auto;
 }
@@ -1067,16 +1065,14 @@ html[oobe=old] #update progress {
 }
 
 #cros-eula,
-#oem-eula,
-#tos-container {
+#oem-eula {
   border: 1px solid #d9d9d9;
   height: 200px;
 }
 
 html[oobe=new] .eula-frame,
 html[oobe=new] #cros-eula,
-html[oobe=new] #oem-eula,
-html[oobe=new] #tos-container {
+html[oobe=new] #oem-eula {
   height: 222px;
 }
 
@@ -1084,9 +1080,11 @@ html[oobe=new] #tos-container {
   border-left: none;
 }
 
-#eulas.one-column #cros-eula,
-#eulas.one-column #cros-eula-frame,
-#tos-container {
+#eulas.one-column #cros-eula {
+  width: 100%;
+}
+
+#eulas.one-column #cros-eula-frame {
   width: 100%;
 }
 
