@@ -75,7 +75,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.14",
+  "version": "4.15",
   "entries": [
     {
       "id": 1,
@@ -985,6 +985,21 @@
         "version": {
           "op": "=",
           "number": "6.0"
+        }
+      },
+      "blacklist": [
+        "force_compositing_mode"
+      ]
+    },
+    {
+      "id": 66,
+      "description": "Force compositing mode is unstable in MacOSX earlier than 10.8.",
+      "cr_bugs": [174101],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "number": "10.8"
         }
       },
       "blacklist": [
