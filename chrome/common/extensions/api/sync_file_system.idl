@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 namespace syncFileSystem {
-  enum SyncOperationStatus {
-    added, updated, deleted, conflicted
+  enum SyncAction {
+    added, updated, deleted
   };
 
   enum ServiceStatus {
@@ -44,9 +44,28 @@ namespace syncFileSystem {
     conflicting
   };
 
+  enum SyncDirection {
+    local_to_remote, remote_to_local
+  };
+
+  dictionary FileInfo {
+    // |fileEntry| will contain name and path information of synchronized file.
+    // On file deletion, fileEntry information will still be available but file
+    // will no longer exist.
+    [instanceOf=FileEntry] object fileEntry;
+    
+    FileStatus status;
+    
+    // Only applies if status is synced.
+    SyncAction? action;
+    
+    // Only applies if status is synced.
+    SyncDirection? direction;
+  };
+
   dictionary StorageInfo {
-    long usage_bytes;
-    long quota_bytes;
+    long usageBytes;
+    long quotaBytes;
   };
 
   dictionary ServiceInfo {
@@ -95,11 +114,7 @@ namespace syncFileSystem {
     static void onServiceStatusChanged(ServiceInfo detail);
 
     // Fired when a file has been updated by the background sync service.
-    // |fileEntry| will contain name and path information of synchronized file.
-    // On file deletion, fileEntry information will still be valid but file will
-    // no longer exist.
-    static void onFileStatusChanged([instanceOf=FileEntry] object fileEntry, 
-                                    SyncOperationStatus result);
+    static void onFileStatusChanged(FileInfo detail);
   };
 
 };

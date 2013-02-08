@@ -26,7 +26,7 @@ var testStep = [
     chrome.syncFileSystem.getUsageAndQuota(fileSystem, testStep.shift());
   },
   function(storageInfo) {
-    usageBeforeWrite = storageInfo.usage_bytes;
+    usageBeforeWrite = storageInfo.usageBytes;
     testStep.shift()();
   },
   // Write a known number of bytes.
@@ -57,7 +57,7 @@ var testStep = [
     chrome.syncFileSystem.getUsageAndQuota(fileSystem, testStep.shift());
   },
   function(storageInfo) {
-    var usageAfterWrite = storageInfo.usage_bytes;
+    var usageAfterWrite = storageInfo.usageBytes;
     chrome.test.assertEq(testData.length, usageAfterWrite - usageBeforeWrite);
     chrome.test.succeed();
   }

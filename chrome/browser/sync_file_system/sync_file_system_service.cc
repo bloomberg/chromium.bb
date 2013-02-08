@@ -385,7 +385,8 @@ void SyncFileSystemService::DidProcessRemoteChange(
        status == fileapi::SYNC_STATUS_HAS_CONFLICT) &&
       result != fileapi::SYNC_OPERATION_NONE) {
     // Notify observers of the changes made for a remote sync.
-    FOR_EACH_OBSERVER(SyncEventObserver, observers_, OnFileSynced(url, result));
+    FOR_EACH_OBSERVER(SyncEventObserver, observers_,
+                      OnFileSynced(url, result));
   }
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,

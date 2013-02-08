@@ -57,6 +57,13 @@ chromeHidden.Event.registerArgumentMassager(
   var fileEntry = fileSystemNatives.GetFileEntry(fileSystemType,
       fileSystemName, rootUrl, filePath, false);
 
-  var syncOperationResult = args[4];
-  dispatch([fileEntry, syncOperationResult]);
+  // Combine into a single dictionary.
+  var fileInfo = new Object();
+  fileInfo.fileEntry = fileEntry;
+  fileInfo.status = args[4];
+  if (fileInfo.status == "synced") {
+    fileInfo.action = args[5];
+    fileInfo.direction = args[6];
+  }
+  dispatch([fileInfo]);
 });

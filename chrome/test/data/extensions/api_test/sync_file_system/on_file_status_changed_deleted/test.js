@@ -8,15 +8,20 @@ function setupListener() {
 }
 
 // Confirm contents of FileEntry, should still be valid for deleted file.
-function fileInfoReceived(file_entry, sync_operation_status) {
-  chrome.test.assertEq("foo.txt", file_entry.name);
-  chrome.test.assertEq("/foo.txt", file_entry.fullPath);
-  chrome.test.assertTrue(file_entry.isFile);
-  chrome.test.assertFalse(file_entry.isDirectory);
-  chrome.test.assertEq("deleted", sync_operation_status);
+function fileInfoReceived(fileInfo) {
+  // FileEntry object fields.
+  var fileEntry = fileInfo.fileEntry;
+  chrome.test.assertEq("foo.txt", fileEntry.name);
+  chrome.test.assertEq("/foo.txt", fileEntry.fullPath);
+  chrome.test.assertTrue(fileEntry.isFile);
+  chrome.test.assertFalse(fileEntry.isDirectory);
+
+  chrome.test.assertEq("synced", fileInfo.status);
+  chrome.test.assertEq("deleted", fileInfo.action);
+  chrome.test.assertEq("remote_to_local", fileInfo.direction);
 
   // Try to open file using FileEntry, should fail cause file was deleted.
-  file_entry.file(getFileObjectSucceeded, getFileObjectFailed);
+  fileEntry.file(getFileObjectSucceeded, getFileObjectFailed);
 }
 
 function getFileObjectFailed(e) {
