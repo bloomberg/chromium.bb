@@ -74,7 +74,7 @@ class Operand(object):
         def_format.OperandType.REGISTER_IN_RM,
         def_format.OperandType.REGISTER_OR_MEMORY,
         def_format.OperandType.MEMORY,
-        def_format.OperandType.SEGMENT_REGISTER_IN_RM,
+        def_format.OperandType.SEGMENT_REGISTER_IN_REG,
         def_format.OperandType.MMX_REGISTER_IN_RM,
         def_format.OperandType.MMX_REGISTER_IN_REG,
         def_format.OperandType.MMX_REGISTER_OR_MEMORY,
@@ -291,7 +291,7 @@ class Instruction(object):
   def GetNameAsIdentifier(self):
     """Return name in a form suitable to use as part of C identifier.
 
-    In principle, collisions are possible, but will result in compilation,
+    In principle, collisions are possible, but will result in compilation
     failure, so we are not checking for them here for simplicity.
 
     Returns:
@@ -305,6 +305,24 @@ class Instruction(object):
 
   def __str__(self):
     return ' '.join([self.name] + map(str, self.operands))
+
+  def RMatters(self):
+    """Return True iff rex.r bit influences instruction."""
+    # TODO(shcherbina): perhaps do something with rex.r_matters field?
+
+    if self.FindOperand(def_format.OperandType.REGISTER_IN_REG) is not None:
+      return True
+    if self.FindOperand(def_format.OperandType.XMM_REGISTER_IN_REG) is not None:
+      return True
+
+    # Control registers are switched from %cr0..%cr7 to %cr8..%cr15 iff rex.r
+    # bit is set or instruction has 0xf0 (lock) prefix.
+    # Hence, rex.r bit influences control register if and only if lock prefix
+    # is not used.
+    if self.FindOperand(def_format.OperandType.CONTROL_REGISTER) is not None:
+      return '0xf0' not in self.required_prefixes
+
+    return False
 
 
 DECODER = object()
@@ -359,6 +377,23 @@ class InstructionPrinter(object):
     else:
       self._out.write(' '.join(main_opcode_part))
 
+  def _PrintSpuriousRexInfo(self, instruction):
+    if (self._mode == DECODER and
+        self._bitness == 64 and
+        not instruction.IsVexOrXop()):
+      # Note that even if 'norex' attribute is present, we print
+      # @spurious_rex_... actions because NOP needs them (and it has REX
+      # prefix specified as part of the opcode).
+      # TODO(shcherbina): fix that?
+      if not instruction.rex.b_matters:
+        self._out.write('@set_spurious_rex_b\n')
+      if not instruction.rex.x_matters:
+        self._out.write('@set_spurious_rex_x\n')
+      if not instruction.rex.r_matters:
+        self._out.write('@set_spurious_rex_r\n')
+      if not instruction.rex.w_matters:
+        self._out.write('@set_spurious_rex_w\n')
+
   def _PrintSignature(self, instruction):
     """Print actions specifying instruction name and info about its operands.
 
@@ -393,22 +428,6 @@ class InstructionPrinter(object):
     # attribute 'nacl-amd64-modifiable' is present.
     # TODO(shcherbina): print info about CPU features.
     # TODO(shcherbina): att_show_name_suffix.
-
-    if (self._mode == DECODER and
-        self._bitness == 64 and
-        not instruction.IsVexOrXop()):
-      # Note that even if 'norex' attribute is present, we print
-      # @spurious_rex_... actions because NOP needs them (and it has REX
-      # prefix specified as part of the opcode).
-      # TODO(shcherbina): fix that?
-      if not instruction.rex.b_matters:
-        self._out.write('@set_spurious_rex_b\n')
-      if not instruction.rex.x_matters:
-        self._out.write('@set_spurious_rex_x\n')
-      if not instruction.rex.r_matters:
-        self._out.write('@set_spurious_rex_r\n')
-      if not instruction.rex.w_matters:
-        self._out.write('@set_spurious_rex_w\n')
 
   def _NeedOperandInfo(self, operand):
     """Whether we need to print actions describing operand format and source."""
@@ -475,6 +494,7 @@ class InstructionPrinter(object):
     self._out.write('\n')
 
     self._PrintSignature(instruction)
+    self._PrintSpuriousRexInfo(instruction)
     self._PrintImplicitOperandSources(instruction)
 
     # TODO(shcherbina): print immediate args.
@@ -500,6 +520,59 @@ class InstructionPrinter(object):
       self._PrintOperandSource(operand, 'jmp_to')
 
     # TODO(shcherbina): subtract NOP from XCHG
+
+  def PrintInstructionWithModRMReg(self, instruction):
+    """Print instruction that encodes register in its ModRM.r/m field."""
+
+    assert not instruction.IsVexOrXop(), 'not supported yet'
+    assert instruction.HasModRM()
+
+    if instruction.RMatters():
+      instruction.rex.r_matters = True
+
+    # TODO(shcherbina): generalize and move somewhere?
+    if (instruction.FindOperand(
+            def_format.OperandType.REGISTER_IN_RM) is not None or
+        instruction.FindOperand(
+            def_format.OperandType.XMM_REGISTER_IN_RM) is not None):
+      instruction.rex.b_matters = True
+
+    self._PrintLegacyPrefixes(instruction)
+    self._PrintRexPrefix(instruction)
+
+    assert not instruction.HasOpcodeInsteadOfImmediate(), 'not supported yet'
+
+    self._PrintOpcode(instruction)
+    self._out.write('\n')
+
+    self._PrintSignature(instruction)
+    self._PrintImplicitOperandSources(instruction)
+
+    self._out.write('modrm_registers\n')
+    for operand in instruction.operands:
+      if operand.arg_type in [
+          def_format.OperandType.CONTROL_REGISTER,
+          def_format.OperandType.DEBUG_REGISTER,
+          def_format.OperandType.REGISTER_IN_REG,
+          def_format.OperandType.XMM_REGISTER_IN_REG]:
+        source = 'from_modrm_reg'
+      elif operand.arg_type in [
+          def_format.OperandType.MMX_REGISTER_IN_REG,
+          def_format.OperandType.SEGMENT_REGISTER_IN_REG]:
+        source = 'from_modrm_reg_norex'
+      elif operand.arg_type in [
+          def_format.OperandType.REGISTER_IN_RM,
+          def_format.OperandType.XMM_REGISTER_IN_RM]:
+        source = 'from_modrm_rm'
+      elif operand.arg_type == def_format.OperandType.MMX_REGISTER_IN_RM:
+        source = 'from_modrm_rm_norex'
+      else:
+        continue
+      self._PrintOperandSource(operand, source)
+
+    self._PrintSpuriousRexInfo(instruction)
+
+    # TODO(shcherbina): print immediate args.
 
 
 def ParseDefFile(filename):

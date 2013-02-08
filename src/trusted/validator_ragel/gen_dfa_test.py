@@ -255,6 +255,28 @@ class TestInstructionPrinter(unittest.TestCase):
         0xa4
         """.split())
 
+  def test_modrm_reg(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 64)
+    instr = gen_dfa.Instruction.Parse(
+        'mov Gw !Rw, 0x89')
+
+    printer.PrintInstructionWithModRMReg(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        REX_RXB?
+        0x89
+        @instruction_mov
+        @operands_count_is_2
+        @operand0_16bit
+        @operand1_16bit
+        modrm_registers
+        @operand0_from_modrm_reg
+        @operand1_from_modrm_rm
+        @set_spurious_rex_x
+        """.split())
+
 
 class TestParser(unittest.TestCase):
 

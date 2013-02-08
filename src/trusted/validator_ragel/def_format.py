@@ -389,7 +389,7 @@ class OperandType(object):
   REGISTER_IN_REG = 'G'
   REGISTER_OR_MEMORY = 'E'  # in ModRM.mod and .r/m
   MEMORY = 'M'  # in ModRM.mod and .r/m
-  SEGMENT_REGISTER_IN_RM = 'S'
+  SEGMENT_REGISTER_IN_REG = 'S'
 
   MMX_REGISTER_IN_RM = 'N'
   MMX_REGISTER_IN_REG = 'P'
