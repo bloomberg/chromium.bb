@@ -178,7 +178,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Add a message to the console. Returning true indicates that the delegate
   // handled the message. If false is returned the default logging mechanism
   // will be used for the message.
-  virtual bool AddMessageToConsole(WebContents* soruce,
+  virtual bool AddMessageToConsole(WebContents* source,
                                    int32 level,
                                    const string16& message,
                                    int32 line_no,
@@ -192,6 +192,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void BeforeUnloadFired(WebContents* tab,
                                  bool proceed,
                                  bool* proceed_to_fire_unload);
+
+  // Returns true if the location bar should be focused by default rather than
+  // the page contents.
+  virtual bool ShouldFocusLocationBarByDefault(WebContents* source);
 
   // Sets focus to the location bar or some other place that is appropriate.
   // This is called when the tab wants to encourage user input, like for the
@@ -210,7 +214,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // This is called when WebKit tells us that it is done tabbing through
   // controls on the page. Provides a way for WebContentsDelegates to handle
   // this. Returns true if the delegate successfully handled it.
-  virtual bool TakeFocus(WebContents* soruce,
+  virtual bool TakeFocus(WebContents* source,
                          bool reverse);
 
   // Invoked when the page loses mouse capture.

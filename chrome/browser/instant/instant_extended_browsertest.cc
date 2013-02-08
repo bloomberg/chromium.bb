@@ -3,11 +3,20 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/instant/instant_commit_type.h"
-#include "chrome/browser/instant/instant_loader.h"
+#include "chrome/browser/instant/instant_ntp.h"
+#include "chrome/browser/instant/instant_overlay.h"
+#include "chrome/browser/instant/instant_service.h"
+#include "chrome/browser/instant/instant_service_factory.h"
 #include "chrome/browser/instant/instant_test_utils.h"
 #include "chrome/browser/ui/search/search.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 
 class InstantExtendedTest : public InstantTestBase {
  protected:
@@ -16,6 +25,18 @@ class InstantExtendedTest : public InstantTestBase {
     ASSERT_TRUE(https_test_server_.Start());
     instant_url_ = https_test_server_.
         GetURL("files/instant_extended.html?strk=1&");
+  }
+
+  void FocusOmniboxAndWaitForInstantSupport() {
+    content::WindowedNotificationObserver ntp_observer(
+        chrome::NOTIFICATION_INSTANT_NTP_SUPPORT_DETERMINED,
+        content::NotificationService::AllSources());
+    content::WindowedNotificationObserver overlay_observer(
+        chrome::NOTIFICATION_INSTANT_OVERLAY_SUPPORT_DETERMINED,
+        content::NotificationService::AllSources());
+    FocusOmnibox();
+    ntp_observer.Wait();
+    overlay_observer.Wait();
   }
 
   std::string GetOmniboxText() {
@@ -52,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxFocusLoadsInstant) {
   EXPECT_FALSE(omnibox()->model()->has_focus());
 
   // Delete any existing preview.
-  instant()->loader_.reset();
+  instant()->overlay_.reset();
   EXPECT_FALSE(instant()->GetPreviewContents());
 
   // Refocus the omnibox. The InstantController should've preloaded Instant.
@@ -65,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxFocusLoadsInstant) {
   EXPECT_TRUE(preview_tab);
 
   // Check that the page supports Instant, but it isn't showing.
-  EXPECT_TRUE(instant()->loader_->supports_instant());
+  EXPECT_TRUE(instant()->overlay_->supports_instant());
   EXPECT_FALSE(instant()->IsPreviewingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
@@ -167,4 +188,156 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateSuggestionsWithArrowKeys) {
   EXPECT_EQ("result 1", GetOmniboxText());
   SendUpArrow();
   EXPECT_EQ("hello", GetOmniboxText());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NTPIsPreloaded) {
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  // NTP contents should be preloaded.
+  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
+  content::WebContents* ntp_contents = instant()->ntp_->contents();
+  EXPECT_TRUE(ntp_contents);
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInNewTab) {
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  // NTP contents should be preloaded.
+  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
+  content::WebContents* ntp_contents = instant()->ntp_->contents();
+  EXPECT_TRUE(ntp_contents);
+
+  // Open new tab. Preloaded NTP contents should have been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(ntp_contents, active_tab);
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInSameTab) {
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  // NTP contents should be preloaded.
+  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
+  content::WebContents* ntp_contents = instant()->ntp_->contents();
+  EXPECT_TRUE(ntp_contents);
+
+  // Open new tab. Preloaded NTP contents should have been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(ntp_contents, active_tab);
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxHasFocusOnNewTab) {
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  // Explicitly unfocus the omnibox.
+  EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
+  EXPECT_FALSE(omnibox()->model()->has_focus());
+
+  // Open new tab. Preloaded NTP contents should have been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
+  // Omnibox should have focus.
+  EXPECT_TRUE(omnibox()->model()->has_focus());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxEmptyOnNewTabPage) {
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  // Open new tab. Preloaded NTP contents should have been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  // Omnibox should be empty.
+  EXPECT_TRUE(omnibox()->GetText().empty());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, InputOnNTPDoesntShowOverlay) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+
+  // Focus omnibox and confirm overlay isn't shown.
+  FocusOmniboxAndWaitForInstantSupport();
+  content::WebContents* preview_tab = instant()->GetPreviewContents();
+  EXPECT_TRUE(preview_tab);
+  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_TRUE(instant()->model()->mode().is_default());
+
+  // Navigate to the NTP.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  // Typing in the omnibox should not show the overlay.
+  SetOmniboxText("query");
+  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_TRUE(instant()->model()->mode().is_default());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ProcessIsolation) {
+  // Prior to setup no render process is dedicated to Instant.
+  InstantService* instant_service =
+        InstantServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
+  EXPECT_EQ(0, instant_service->GetInstantProcessCount());
+
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  // Now there should be a registered Instant render process.
+  EXPECT_LT(0, instant_service->GetInstantProcessCount());
+
+  // And the Instant overlay and ntp should live inside it.
+  content::WebContents* preview = instant()->GetPreviewContents();
+  EXPECT_TRUE(instant_service->IsInstantProcess(
+      preview->GetRenderProcessHost()->GetID()));
+  content::WebContents* ntp_contents = instant()->ntp_->contents();
+  EXPECT_TRUE(instant_service->IsInstantProcess(
+      ntp_contents->GetRenderProcessHost()->GetID()));
+
+  // Navigating to the NTP should use the Instant render process.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(instant_service->IsInstantProcess(
+      active_tab->GetRenderProcessHost()->GetID()));
+
+  // Navigating elsewhere should not use the Instant render process.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
+  EXPECT_FALSE(instant_service->IsInstantProcess(
+      active_tab->GetRenderProcessHost()->GetID()));
 }

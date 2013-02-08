@@ -43,23 +43,38 @@ class BrowserInstantController : public content::NotificationObserver,
   // Registers Instant related preferences.
   static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
+  // If |url| is the new tab page URL, set |target_contents| to the preloaded
+  // NTP contents from InstantController. If |source_contents| is not NULL, we
+  // replace it with the new |target_contents| in the tabstrip and delete
+  // |source_contents|. Otherwise, the caller owns |target_contents| and is
+  // responsible for inserting it into the tabstrip.
+  //
+  // Returns true if and only if we update |target_contents|.
+  bool MaybeSwapInInstantNTPContents(
+      const GURL& url,
+      content::WebContents* source_contents,
+      content::WebContents** target_contents);
+
   // Commits the current Instant, returning true on success. This is intended
   // for use from OpenCurrentURL.
   bool OpenInstant(WindowOpenDisposition disposition);
+
+  // Returns the Profile associated with the Browser that owns this object.
+  Profile* profile() const;
 
   // Returns the InstantController or NULL if there is no InstantController for
   // this BrowserInstantController.
   InstantController* instant() { return &instant_; }
 
   // Invoked by |instant_| to commit the |preview| by merging it into the active
-  // tab or adding it as a new tab. We take ownership of |preview|.
-  void CommitInstant(content::WebContents* preview, bool in_new_tab);
+  // tab or adding it as a new tab.
+  void CommitInstant(scoped_ptr<content::WebContents> preview, bool in_new_tab);
 
   // Invoked by |instant_| to autocomplete the |suggestion| into the omnibox.
   void SetInstantSuggestion(const InstantSuggestion& suggestion);
 
   // Invoked by |instant_| to get the bounds that the preview is placed at,
-  // in screen coordinated.
+  // in screen coordinates.
   gfx::Rect GetInstantBounds();
 
   // Invoked by |instant_| to notify that the preview gained focus, usually due
@@ -112,6 +127,11 @@ class BrowserInstantController : public content::NotificationObserver,
 
   // Helper for handling theme area height change.
   void OnThemeAreaHeightChanged(int height);
+
+  // Replaces the contents at tab |index| with |new_contents| and deletes the
+  // existing contents.
+  void ReplaceWebContentsAt(int index,
+                            scoped_ptr<content::WebContents> new_contents);
 
   Browser* const browser_;
 

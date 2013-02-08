@@ -1107,9 +1107,13 @@ enum NotificationType {
   // containing the committed preview.
   NOTIFICATION_INSTANT_COMMITTED,
 
-  // Sent when the Instant loader determines whether the page supports the
+  // Sent when the Instant Controller determines whether the overlay supports
+  // the Instant API or not.
+  NOTIFICATION_INSTANT_OVERLAY_SUPPORT_DETERMINED,
+
+  // Sent when the Instant Controller determines whether the NTP supports the
   // Instant API or not.
-  NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
+  NOTIFICATION_INSTANT_NTP_SUPPORT_DETERMINED,
 
   // Sent when the CaptivePortalService checks if we're behind a captive portal.
   // The Source is the Profile the CaptivePortalService belongs to, and the

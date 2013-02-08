@@ -2059,7 +2059,9 @@ bool WebContentsImpl::FocusLocationBarByDefault() {
   if (web_ui)
     return web_ui->ShouldFocusLocationBarByDefault();
   NavigationEntry* entry = controller_.GetActiveEntry();
-  return (entry && entry->GetURL() == GURL(chrome::kAboutBlankURL));
+  if (entry && entry->GetURL() == GURL(chrome::kAboutBlankURL))
+    return true;
+  return delegate_ && delegate_->ShouldFocusLocationBarByDefault(this);
 }
 
 void WebContentsImpl::SetFocusToLocationBar(bool select_all) {

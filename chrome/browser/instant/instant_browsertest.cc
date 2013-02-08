@@ -4,7 +4,7 @@
 
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/instant/instant_loader.h"
+#include "chrome/browser/instant/instant_overlay.h"
 #include "chrome/browser/instant/instant_service.h"
 #include "chrome/browser/instant/instant_service_factory.h"
 #include "chrome/browser/instant/instant_test_utils.h"
@@ -16,9 +16,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -29,6 +31,14 @@ class InstantTest : public InstantTestBase {
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ASSERT_TRUE(test_server()->Start());
     instant_url_ = test_server()->GetURL("files/instant.html?");
+  }
+
+  void FocusOmniboxAndWaitForInstantSupport() {
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_INSTANT_OVERLAY_SUPPORT_DETERMINED,
+        content::NotificationService::AllSources());
+    FocusOmnibox();
+    observer.Wait();
   }
 
   bool UpdateSearchState(content::WebContents* contents) WARN_UNUSED_RESULT {
@@ -65,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OmniboxFocusLoadsInstant) {
   EXPECT_FALSE(omnibox()->model()->has_focus());
 
   // Delete any existing preview.
-  instant()->loader_.reset();
+  instant()->overlay_.reset();
   EXPECT_FALSE(instant()->GetPreviewContents());
 
   // Refocus the omnibox. The InstantController should've preloaded Instant.
@@ -78,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OmniboxFocusLoadsInstant) {
   EXPECT_TRUE(preview_tab);
 
   // Check that the page supports Instant, but it isn't showing.
-  EXPECT_TRUE(instant()->loader_->supports_instant());
+  EXPECT_TRUE(instant()->overlay_->supports_instant());
   EXPECT_FALSE(instant()->IsPreviewingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
@@ -115,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetWithTemplateURL) {
   EXPECT_FALSE(omnibox()->model()->has_focus());
 
   // Delete any existing preview.
-  instant()->loader_.reset();
+  instant()->overlay_.reset();
   EXPECT_FALSE(instant()->GetPreviewContents());
 
   // Refocus the omnibox. The InstantController should've preloaded Instant.
@@ -128,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetWithTemplateURL) {
   EXPECT_TRUE(preview_tab);
 
   // Check that the page supports Instant, but it isn't showing.
-  EXPECT_TRUE(instant()->loader_->supports_instant());
+  EXPECT_TRUE(instant()->overlay_->supports_instant());
   EXPECT_FALSE(instant()->IsPreviewingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 }
@@ -213,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   EXPECT_FALSE(instant()->IsPreviewingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
-  // The old loader is deleted and a new one is created.
+  // The old overlay is deleted and a new one is created.
   EXPECT_TRUE(instant()->GetPreviewContents());
   EXPECT_NE(instant()->GetPreviewContents(), preview_tab);
 
@@ -273,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   EXPECT_FALSE(instant()->IsPreviewingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
-  // The old loader is deleted and a new one is created.
+  // The old overlay is deleted and a new one is created.
   EXPECT_TRUE(instant()->GetPreviewContents());
   EXPECT_NE(instant()->GetPreviewContents(), preview_tab);
 
@@ -777,37 +787,37 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NewWindowDismissesInstant) {
   EXPECT_TRUE(instant()->model()->mode().is_default());
 }
 
-// Test that the Instant loader is recreated when all these conditions are met:
-// - The stale loader timer has fired.
+// Test that the Instant overlay is recreated when all these conditions are met:
+// - The stale overlay timer has fired.
 // - The preview is not showing.
 // - The omnibox doesn't have focus.
-IN_PROC_BROWSER_TEST_F(InstantTest, InstantLoaderRefresh) {
+IN_PROC_BROWSER_TEST_F(InstantTest, InstantOverlayRefresh) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   // The preview is refreshed only after all three conditions above are met.
   SetOmniboxTextAndWaitForInstantToShow("query");
-  instant()->stale_loader_timer_.Stop();
-  instant()->OnStaleLoader();
-  EXPECT_TRUE(instant()->loader_->supports_instant());
-  instant()->HideLoader();
-  EXPECT_TRUE(instant()->loader_->supports_instant());
+  instant()->overlay_->is_stale_ = true;
+  instant()->ReloadOverlayIfStale();
+  EXPECT_TRUE(instant()->overlay_->supports_instant());
+  instant()->HideOverlay();
+  EXPECT_TRUE(instant()->overlay_->supports_instant());
   instant()->OmniboxFocusChanged(OMNIBOX_FOCUS_NONE,
                                  OMNIBOX_FOCUS_CHANGE_EXPLICIT, NULL);
-  EXPECT_FALSE(instant()->loader_->supports_instant());
+  EXPECT_FALSE(instant()->overlay_->supports_instant());
 
   // Try with a different ordering.
   SetOmniboxTextAndWaitForInstantToShow("query");
-  instant()->stale_loader_timer_.Stop();
-  instant()->OnStaleLoader();
-  EXPECT_TRUE(instant()->loader_->supports_instant());
+  instant()->overlay_->is_stale_ = true;
+  instant()->ReloadOverlayIfStale();
+  EXPECT_TRUE(instant()->overlay_->supports_instant());
   instant()->OmniboxFocusChanged(OMNIBOX_FOCUS_NONE,
                                  OMNIBOX_FOCUS_CHANGE_EXPLICIT, NULL);
-  // TODO(sreeram): Currently, OmniboxLostFocus() calls HideLoader(). When it
+  // TODO(sreeram): Currently, OmniboxLostFocus() calls HideOverlay(). When it
   // stops hiding the preview eventually, uncomment these two lines:
-  //     EXPECT_TRUE(instant()->loader_->supports_instant());
-  //     instant()->HideLoader();
-  EXPECT_FALSE(instant()->loader_->supports_instant());
+  //     EXPECT_TRUE(instant()->overlay_->supports_instant());
+  //     instant()->HideOverlay();
+  EXPECT_FALSE(instant()->overlay_->supports_instant());
 }
 
 // Test that suggestions are case insensitive. http://crbug.com/150728
@@ -917,7 +927,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_CommitInNewTab) {
   EXPECT_FALSE(instant()->IsPreviewingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
-  // The old loader is deleted and a new one is created.
+  // The old overlay is deleted and a new one is created.
   EXPECT_TRUE(instant()->GetPreviewContents());
   EXPECT_NE(instant()->GetPreviewContents(), preview_tab);
 
@@ -971,7 +981,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreReusable) {
   EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
 }
 
-// Test that instant loader is recreated if it gets destroyed.
+// Test that instant overlay is recreated if it gets destroyed.
 IN_PROC_BROWSER_TEST_F(InstantTest, InstantRenderViewGone) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();

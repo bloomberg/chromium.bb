@@ -9,12 +9,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
@@ -97,14 +95,6 @@ void InstantTestBase::FocusOmnibox() {
   } else {
     browser()->window()->GetLocationBar()->FocusLocation(false);
   }
-}
-
-void InstantTestBase::FocusOmniboxAndWaitForInstantSupport() {
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
-      content::NotificationService::AllSources());
-  FocusOmnibox();
-  observer.Wait();
 }
 
 void InstantTestBase::SetOmniboxText(const std::string& text) {

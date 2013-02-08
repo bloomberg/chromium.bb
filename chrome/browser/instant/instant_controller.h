@@ -19,6 +19,7 @@
 #include "base/timer.h"
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/instant/instant_model.h"
+#include "chrome/browser/instant/instant_page.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/search_types.h"
@@ -29,7 +30,8 @@
 
 struct AutocompleteMatch;
 class AutocompleteProvider;
-class InstantLoader;
+class InstantNTP;
+class InstantOverlay;
 class InstantTab;
 class TemplateURL;
 
@@ -45,17 +47,32 @@ class WebContents;
 #define LOG_INSTANT_DEBUG_EVENT(controller, message) \
     controller->LogDebugEvent(message)
 
-// InstantController maintains a WebContents that is intended to give a preview
-// of search suggestions and results. InstantController is owned by Browser via
-// BrowserInstantController.
-class InstantController {
+// InstantController drives Chrome Instant, i.e., the browser implementation of
+// the Embedded Search API (see http://dev.chromium.org/embeddedsearch).
+//
+// In extended mode, InstantController maintains and coordinates three
+// instances of InstantPage:
+//  (1) An InstantOverlay instance that is used to show search suggestions and
+//      results in an overlay over a non-search page.
+//  (2) An InstantNTP instance which is a preloaded sarch page that will be
+//      swapped-in the next time the user navigates to the New Tab Page. It is
+//      never shown to the user in an uncommitted state.
+//  (3) An InstantTab instance which points to the currently active tab, if it
+//      supports the Embedded Search API.
+//
+// All three are backed by a WebContents. InstantOverlay and InstantNTP own
+// their corresponding WebContents; InstantTab does not. In non-extended mode,
+// only an InstantOverlay instance is kept.
+//
+// InstantController is owned by Browser via BrowserInstantController.
+class InstantController : public InstantPage::Delegate {
  public:
   // The URL for the local omnibox popup.
   static const char* kLocalOmniboxPopupURL;
 
   InstantController(chrome::BrowserInstantController* browser,
                     bool extended_enabled);
-  ~InstantController();
+  virtual ~InstantController();
 
   // Invoked as the user types into the omnibox. |user_text| is what the user
   // has typed. |full_text| is what the omnibox is showing. These may differ if
@@ -74,6 +91,10 @@ class InstantController {
               bool omnibox_popup_is_open,
               bool escape_pressed,
               bool is_keyword_search);
+
+  // Releases and returns the NTP WebContents. May be NULL. Loads a new
+  // WebContents for the NTP.
+  scoped_ptr<content::WebContents> ReleaseNTPContents() WARN_UNUSED_RESULT;
 
   // Sets the bounds of the omnibox popup, in screen coordinates.
   void SetPopupBounds(const gfx::Rect& bounds);
@@ -108,7 +129,7 @@ class InstantController {
                            gfx::NativeView view_gaining_focus);
 
   // The search mode in the active tab has changed. Pass the message down to
-  // the loader which will notify the renderer. Create |instant_tab_| if the
+  // the overlay which will notify the renderer. Create |instant_tab_| if the
   // |new_mode| reflects an Instant search results page.
   void SearchModeChanged(const chrome::search::Mode& old_mode,
                          const chrome::search::Mode& new_mode);
@@ -131,58 +152,16 @@ class InstantController {
   // The theme area height has changed. Pass the message to the preview page.
   void ThemeAreaHeightChanged(int height);
 
-  // Returns the transition type of the last AutocompleteMatch passed to Update.
-  content::PageTransition last_transition_type() const {
-    return last_transition_type_;
-  }
+  // Called when someone else swapped in a different contents in the |overlay_|.
+  void SwappedOverlayContents();
 
-  // Non-const for Add/RemoveObserver only.  Other model changes should only
-  // happen through the InstantController interface.
-  InstantModel* model() { return &model_; }
+  // Called when contents for |overlay_| received focus.
+  void FocusedOverlayContents();
 
-  // Invoked by the page when it has suggested text.
-  void SetSuggestions(const content::WebContents* contents,
-                      const std::vector<InstantSuggestion>& suggestions);
-
-  // Invoked by the page when its support for the Instant API is determined.
-  void InstantSupportDetermined(const content::WebContents* contents,
-                                bool supports_instant);
-
-  // Invoked by InstantLoader to request that the preview be shown.
-  void ShowInstantPreview(InstantShownReason reason,
-                          int height,
-                          InstantSizeUnits units);
-
-  // Invoked by InstantLoader to request the browser to start capturing user key
-  // strokes.
-  void StartCapturingKeyStrokes();
-
-  // Invoked by InstantLoader to request the browser to stop capturing user key
-  // strokes.
-  void StopCapturingKeyStrokes();
-
-  // Invoked by InstantLoader when it has swapped a different WebContents into
-  // the preview, usually because a prerendered page was navigated to.
-  void SwappedWebContents();
-
-  // Invoked by InstantLoader when the preview gains focus, usually due to the
-  // user clicking on it.
-  void InstantLoaderContentsFocused();
-
-  // Invoked by the InstantLoader when its RenderView crashes.
-  void InstantLoaderRenderViewGone();
-
-  // Invoked by InstantLoader when the instant page is about to navigate.
-  void InstantLoaderAboutToNavigateMainFrame(const GURL& url);
-
-  // Invoked by InstantLoader when it's underlying RenderView is created.
-  // TODO(shishir): We assume that the WebContent's current RenderViewHost is
-  // the RenderViewHost being created which is not always true. Fix this.
-  void InstantLoaderRenderViewCreated();
-
-  // Invoked by the InstantLoader when the instant page wants to navigate to
-  // the speicfied URL.
-  void NavigateToURL(const GURL& url, content::PageTransition transition);
+  // Called when the |overlay_| might be stale. If it's actually stale, and the
+  // omnibox doesn't have focus, and the preview isn't showing, the |overlay_|
+  // is deleted and recreated. Else the refresh is skipped.
+  void ReloadOverlayIfStale();
 
   // Adds a new event to |debug_events_| and also DVLOG's it. Ensures that
   // |debug_events_| doesn't get too large.
@@ -193,39 +172,79 @@ class InstantController {
     return debug_events_;
   }
 
+  // Returns the transition type of the last AutocompleteMatch passed to Update.
+  content::PageTransition last_transition_type() const {
+    return last_transition_type_;
+  }
+
+  // Non-const for Add/RemoveObserver only.  Other model changes should only
+  // happen through the InstantController interface.
+  InstantModel* model() { return &model_; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantTest, OmniboxFocusLoadsInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, SetWithTemplateURL);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, NonInstantSearchProvider);
-  FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantLoaderRefresh);
+  FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantOverlayRefresh);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ExtendedModeIsOn);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OmniboxFocusLoadsInstant);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, NTPIsPreloaded);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInNewTab);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInSameTab);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
+
+  // Overridden from InstantPage::Delegate:
+  // TODO(shishir): We assume that the WebContent's current RenderViewHost is
+  // the RenderViewHost being created which is not always true. Fix this.
+  virtual void InstantPageRenderViewCreated(
+      const content::WebContents* contents) OVERRIDE;
+  virtual void InstantSupportDetermined(
+      const content::WebContents* contents,
+      bool supports_instant) OVERRIDE;
+  virtual void InstantPageRenderViewGone(
+      const content::WebContents* contents) OVERRIDE;
+  virtual void InstantPageAboutToNavigateMainFrame(
+      const content::WebContents* contents,
+      const GURL& url) OVERRIDE;
+  virtual void SetSuggestions(
+      const content::WebContents* contents,
+      const std::vector<InstantSuggestion>& suggestions) OVERRIDE;
+  virtual void ShowInstantPreview(
+      const content::WebContents* contents,
+      InstantShownReason reason,
+      int height,
+      InstantSizeUnits units) OVERRIDE;
+  virtual void StartCapturingKeyStrokes(
+      const content::WebContents* contents) OVERRIDE;
+  virtual void StopCapturingKeyStrokes(content::WebContents* contents) OVERRIDE;
+  virtual void NavigateToURL(
+      const content::WebContents* contents,
+      const GURL& url,
+      content::PageTransition transition) OVERRIDE;
 
   // Helper for OmniboxFocusChanged. Commit or discard the preview.
   void OmniboxLostFocus(gfx::NativeView view_gaining_focus);
 
-  // Ensures that |loader_| uses the Instant URL returned by GetInstantURL(),
-  // creating a new loader if necessary. In extended mode, will fallback to
+  // Creates a new NTP, using the instant_url property of the default
+  // TemplateURL.
+  void ResetNTP();
+
+  // Ensures that |overlay_| uses the Instant URL returned by GetInstantURL(),
+  // creating a new overlay if necessary. In extended mode, will fallback to
   // using the kLocalOmniboxPopupURL as the Instant URL in case GetInstantURL()
   // returns false. Returns true if an Instant URL could be determined.
   // For |ignore_blacklist| look at comments in |GetInstantURL|.
-  bool EnsureLoaderIsCurrent(bool ignore_blacklist);
+  bool EnsureOverlayIsCurrent(bool ignore_blacklist);
 
-  // Recreates the |loader_| with the input |instant_url|. The caller should
-  // ensure that the |loader_| is not already on the stack since it is deleted
-  // in this call.
-  void CreateLoader(const std::string& instant_url,
-                    const content::WebContents* active_tab);
+  // Recreates the |overlay_| with |instant_url|. Note that |overlay_| is
+  // deleted in this call.
+  void CreateOverlay(const std::string& instant_url,
+                     const content::WebContents* active_tab);
 
-  // Called when the |loader_| might be stale. If it's actually stale, and the
-  // omnibox doesn't have focus, and the preview isn't showing, the |loader_| is
-  // deleted and recreated. Else the refresh is skipped.
-  void OnStaleLoader();
-
-  // If the |loader_| being used is in fallback mode, it will be switched back
-  // to the remote loader if the loader is not showing and the omnibox does not
-  // have focus.
-  void MaybeSwitchToRemoteLoader();
+  // If the |overlay_| being used is in fallback mode, it will be switched back
+  // to the remote overlay if the overlay is not showing and the omnibox does
+  // not have focus.
+  void MaybeSwitchToRemoteOverlay();
 
   // If the active tab is an Instant search results page, sets |instant_tab_| to
   // point to it. Else, deletes any existing |instant_tab_|.
@@ -233,17 +252,17 @@ class InstantController {
 
   // Hide the preview. Also sends an onchange event (with blank query) to the
   // preview, telling it to clear out results for any old queries.
-  void HideLoader();
+  void HideOverlay();
 
-  // Like HideLoader(), but doesn't call OnStaleLoader(). Use HideLoader()
-  // unless you are going to call loader_.reset() yourself subsequently.
+  // Like HideOverlay(), but doesn't call OnStaleOverlay(). Use HideOverlay()
+  // unless you are going to call overlay_.reset() yourself subsequently.
   void HideInternal();
 
-  // Counterpart to HideLoader(). Asks the |browser_| to display the preview
-  // with the given |height|.
-  void ShowLoader(InstantShownReason reason,
-                  int height,
-                  InstantSizeUnits units);
+  // Counterpart to HideOverlay(). Asks the |browser_| to display the preview
+  // with the given |height| in |units|.
+  void ShowOverlay(InstantShownReason reason,
+                   int height,
+                   InstantSizeUnits units);
 
   // Send the omnibox popup bounds to the page.
   void SendPopupBoundsToPage();
@@ -261,9 +280,21 @@ class InstantController {
   // the blacklist.
   //
   // Returns true if a valid Instant URL could be found that is not blacklisted.
-  bool GetInstantURL(const content::WebContents* active_tab,
+  bool GetInstantURL(Profile* profile,
                      bool ignore_blacklist,
                      std::string* instant_url) const;
+
+  // Adds the URL for the page to the blacklist. Deletes the contents held and
+  // recreates a new page.
+  void BlacklistAndResetOverlay();
+  void BlacklistAndResetNTP();
+
+  // Removes |url| from the blacklist.
+  void RemoveFromBlacklist(const std::string& url);
+
+  InstantOverlay* overlay() const { return overlay_.get(); }
+  InstantTab* instant_tab() const { return instant_tab_.get(); }
+  InstantNTP* ntp() const { return ntp_.get(); }
 
   chrome::BrowserInstantController* const browser_;
 
@@ -275,19 +306,22 @@ class InstantController {
   // If true, the instant URL is set to kLocalOmniboxPopupURL.
   bool use_local_preview_only_;
 
-  // The state of the preview page, i.e., the page owned by |loader_|. Ignored
+  // The state of the preview page, i.e., the page owned by |overlay_|. Ignored
   // if |instant_tab_| is in use.
   InstantModel model_;
 
-  // The preview WebContents.
-  scoped_ptr<InstantLoader> loader_;
-
-  // A committed WebContents that supports Instant. If non-NULL, the |loader_|
-  // is guaranteed to be hidden and messages will be sent to this instead.
+  // The three instances of InstantPage maintained by InstantController as
+  // described above. All three may be non-NULL in extended mode.  If
+  // |instant_tab_| is not NULL, then |overlay_| is guaranteed to be hidden and
+  // messages will be sent to |instant_tab_| instead.
+  //
+  // In non-extended mode, only |overlay_| is ever non-NULL.
+  scoped_ptr<InstantOverlay> overlay_;
+  scoped_ptr<InstantNTP> ntp_;
   scoped_ptr<InstantTab> instant_tab_;
 
   // The most recent full_text passed to Update(). If empty, we'll not accept
-  // search suggestions from |loader_| or |instant_tab_|.
+  // search suggestions from |overlay_| or |instant_tab_|.
   string16 last_omnibox_text_;
 
   // True if the last Update() had an inline autocompletion. Used only to make
@@ -329,9 +363,6 @@ class InstantController {
 
   // Timer used to update the bounds of the omnibox popup.
   base::OneShotTimer<InstantController> update_bounds_timer_;
-
-  // Timer used to ensure that the Instant page does not get too stale.
-  base::OneShotTimer<InstantController> stale_loader_timer_;
 
   // For each key K => value N, the map says that we found that the search
   // engine identified by Instant URL K didn't support the Instant API, or

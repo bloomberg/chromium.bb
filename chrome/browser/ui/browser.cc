@@ -1389,6 +1389,10 @@ void Browser::BeforeUnloadFired(WebContents* web_contents,
       unload_controller_->BeforeUnloadFired(web_contents, proceed);
 }
 
+bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
+  return source->GetURL() == GURL(chrome::kChromeUINewTabURL);
+}
+
 void Browser::SetFocusToLocationBar(bool select_all) {
   // Two differences between this and FocusLocationBar():
   // (1) This doesn't get recorded in user metrics, since it's called

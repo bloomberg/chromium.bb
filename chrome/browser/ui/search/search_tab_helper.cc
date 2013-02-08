@@ -61,8 +61,7 @@ namespace chrome {
 namespace search {
 
 SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
-    : WebContentsObserver(web_contents),
-      is_search_enabled_(IsSearchEnabled(ProfileFromWebContents(web_contents))),
+    : is_search_enabled_(IsSearchEnabled(ProfileFromWebContents(web_contents))),
       user_input_in_progress_(false),
       model_(web_contents) {
   if (!is_search_enabled_)
@@ -96,19 +95,6 @@ void SearchTabHelper::NavigationEntryUpdated() {
   UpdateModelBasedOnURL(web_contents()->GetURL());
 }
 
-void SearchTabHelper::NavigateToPendingEntry(
-    const GURL& url,
-    content::NavigationController::ReloadType reload_type) {
-  if (!is_search_enabled_)
-    return;
-
-  // NTP mode changes are initiated at "pending", all others are initiated
-  // when "committed".  This is because NTP is rendered natively so is faster
-  // to render than the web contents and we need to coordinate the animations.
-  if (IsNTP(url))
-    UpdateModelBasedOnURL(url);
-}
-
 void SearchTabHelper::Observe(
     int type,
     const content::NotificationSource& source,
@@ -116,10 +102,7 @@ void SearchTabHelper::Observe(
   DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
   content::LoadCommittedDetails* committed_details =
       content::Details<content::LoadCommittedDetails>(details).ptr();
-  // See comment in |NavigateToPendingEntry()| about why |!IsNTP()| is used.
-  if (!IsNTP(committed_details->entry->GetURL())) {
-    UpdateModelBasedOnURL(committed_details->entry->GetURL());
-  }
+  UpdateModelBasedOnURL(committed_details->entry->GetVirtualURL());
 }
 
 void SearchTabHelper::UpdateModelBasedOnURL(const GURL& url) {

@@ -136,6 +136,9 @@ bool ToolbarModelImpl::ShouldDisplayURL() const {
     return false;
 #endif
 
+  if (entry && entry->GetVirtualURL() == GURL(chrome::kChromeUINewTabURL))
+    return false;
+
   return true;
 }
 

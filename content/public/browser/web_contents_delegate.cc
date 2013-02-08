@@ -55,11 +55,15 @@ void WebContentsDelegate::BeforeUnloadFired(WebContents* web_contents,
   *proceed_to_fire_unload = true;
 }
 
+bool WebContentsDelegate::ShouldFocusLocationBarByDefault(WebContents* source) {
+  return false;
+}
+
 bool WebContentsDelegate::ShouldFocusPageAfterCrash() {
   return true;
 }
 
-bool WebContentsDelegate::TakeFocus(WebContents* soruce, bool reverse) {
+bool WebContentsDelegate::TakeFocus(WebContents* source, bool reverse) {
   return false;
 }
 

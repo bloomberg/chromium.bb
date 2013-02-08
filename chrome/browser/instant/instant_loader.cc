@@ -8,348 +8,73 @@
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
-#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
-#include "ipc/ipc_message.h"
 
 namespace {
 
-int kUserDataKey;
+const int kStalePageTimeoutMS = 3 * 3600 * 1000;  // 3 hours
 
-class InstantLoaderUserData : public base::SupportsUserData::Data {
- public:
-  explicit InstantLoaderUserData(InstantLoader* loader) : loader_(loader) {}
+// This HTTP header and value are set on loads that originate from Instant.
+const char kInstantHeader[] = "X-Purpose: Instant";
 
-  InstantLoader* loader() const { return loader_; }
+}  // namespace
 
- private:
-  virtual ~InstantLoaderUserData() {}
-
-  InstantLoader* const loader_;
-
-  DISALLOW_COPY_AND_ASSIGN(InstantLoaderUserData);
-};
-
+InstantLoader::Delegate::~Delegate() {
 }
 
-// WebContentsDelegateImpl -----------------------------------------------------
-
-class InstantLoader::WebContentsDelegateImpl
-    : public CoreTabHelperDelegate,
-      public content::WebContentsDelegate {
- public:
-  explicit WebContentsDelegateImpl(InstantLoader* loader);
-
- private:
-  // Overridden from CoreTabHelperDelegate:
-  virtual void SwapTabContents(content::WebContents* old_contents,
-                               content::WebContents* new_contents) OVERRIDE;
-
-  // Overridden from content::WebContentsDelegate:
-  virtual bool ShouldSuppressDialogs() OVERRIDE;
-  virtual bool ShouldFocusPageAfterCrash() OVERRIDE;
-  virtual void LostCapture() OVERRIDE;
-  virtual void WebContentsFocused(content::WebContents* contents) OVERRIDE;
-  virtual bool CanDownload(content::RenderViewHost* render_view_host,
-                           int request_id,
-                           const std::string& request_method) OVERRIDE;
-  virtual void HandleMouseDown() OVERRIDE;
-  virtual void HandleMouseUp() OVERRIDE;
-  virtual void HandlePointerActivate() OVERRIDE;
-  virtual void HandleGestureEnd() OVERRIDE;
-  virtual void DragEnded() OVERRIDE;
-  virtual bool OnGoToEntryOffset(int offset) OVERRIDE;
-  virtual content::WebContents* OpenURLFromTab(
-      content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
-
-  void MaybeCommitFromPointerRelease();
-
-  InstantLoader* const loader_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsDelegateImpl);
-};
-
-InstantLoader::WebContentsDelegateImpl::WebContentsDelegateImpl(
-    InstantLoader* loader)
-    : loader_(loader) {
-}
-
-void InstantLoader::WebContentsDelegateImpl::SwapTabContents(
-    content::WebContents* old_contents,
-    content::WebContents* new_contents) {
-  // If this is being called, something is swapping in to loader's |contents_|
-  // before we've added it to the tab strip.
-  loader_->ReplacePreviewContents(old_contents, new_contents);
-}
-
-bool InstantLoader::WebContentsDelegateImpl::ShouldSuppressDialogs() {
-  // Any message shown during Instant cancels Instant, so we suppress them.
-  return true;
-}
-
-bool InstantLoader::WebContentsDelegateImpl::ShouldFocusPageAfterCrash() {
-  return false;
-}
-
-void InstantLoader::WebContentsDelegateImpl::LostCapture() {
-  MaybeCommitFromPointerRelease();
-}
-
-void InstantLoader::WebContentsDelegateImpl::WebContentsFocused(
-    content::WebContents* /* contents */) {
-  // The preview is getting focus. Equivalent to it being clicked.
-  bool tmp = loader_->is_pointer_down_from_activate_;
-  loader_->is_pointer_down_from_activate_ = true;
-  loader_->controller_->InstantLoaderContentsFocused();
-  loader_->is_pointer_down_from_activate_ = tmp;
-}
-
-bool InstantLoader::WebContentsDelegateImpl::CanDownload(
-    content::RenderViewHost* /* render_view_host */,
-    int /* request_id */,
-    const std::string& /* request_method */) {
-  // Downloads are disabled.
-  return false;
-}
-
-void InstantLoader::WebContentsDelegateImpl::HandleMouseDown() {
-  loader_->is_pointer_down_from_activate_ = true;
-}
-
-void InstantLoader::WebContentsDelegateImpl::HandleMouseUp() {
-  MaybeCommitFromPointerRelease();
-}
-
-void InstantLoader::WebContentsDelegateImpl::HandlePointerActivate() {
-  loader_->is_pointer_down_from_activate_ = true;
-}
-
-void InstantLoader::WebContentsDelegateImpl::HandleGestureEnd() {
-  MaybeCommitFromPointerRelease();
-}
-
-void InstantLoader::WebContentsDelegateImpl::DragEnded() {
-  // If the user drags, we won't get a mouse up (at least on Linux). Commit the
-  // Instant result when the drag ends, so that during the drag the page won't
-  // move around.
-  MaybeCommitFromPointerRelease();
-}
-
-bool InstantLoader::WebContentsDelegateImpl::OnGoToEntryOffset(int offset) {
-  return false;
-}
-
-content::WebContents* InstantLoader::WebContentsDelegateImpl::OpenURLFromTab(
-    content::WebContents* source,
-    const content::OpenURLParams& params) {
-  content::WebContents* preview = loader_->contents_.get();
-  if (loader_->controller_->CommitIfPossible(INSTANT_COMMIT_NAVIGATED))
-    return preview->GetDelegate()->OpenURLFromTab(source, params);
-  return NULL;
-}
-
-void InstantLoader::WebContentsDelegateImpl::MaybeCommitFromPointerRelease() {
-  if (loader_->is_pointer_down_from_activate_) {
-    loader_->is_pointer_down_from_activate_ = false;
-    loader_->controller_->CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
-  }
-}
-
-// InstantLoader ---------------------------------------------------------------
-
-// static
-InstantLoader* InstantLoader::FromWebContents(
-    const content::WebContents* web_contents) {
-  InstantLoaderUserData* data = static_cast<InstantLoaderUserData*>(
-      web_contents->GetUserData(&kUserDataKey));
-  return data ? data->loader() : NULL;
-}
-
-InstantLoader::InstantLoader(InstantController* controller,
-                             const std::string& instant_url)
-    : client_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      controller_(controller),
-      delegate_(new WebContentsDelegateImpl(
-                        ALLOW_THIS_IN_INITIALIZER_LIST(this))),
-      instant_url_(instant_url),
-      supports_instant_(false),
-      is_pointer_down_from_activate_(false) {
+InstantLoader::InstantLoader(Delegate* delegate)
+  : delegate_(delegate),
+    contents_(NULL),
+    stale_page_timer_(false, false) {
 }
 
 InstantLoader::~InstantLoader() {
 }
 
-void InstantLoader::InitContents(const content::WebContents* active_tab) {
-  content::WebContents::CreateParams create_params(
-      active_tab->GetBrowserContext(),
-      active_tab->GetSiteInstance()->GetRelatedSiteInstance(
-          GURL(instant_url_)));
-  if (active_tab)
+void InstantLoader::Init(const GURL& instant_url,
+                         Profile* profile,
+                         const content::WebContents* active_tab,
+                         const base::Closure& on_stale_callback) {
+  content::WebContents::CreateParams create_params(profile);
+  if (active_tab) {
     create_params.initial_size = active_tab->GetView()->GetContainerSize();
-  contents_.reset(content::WebContents::CreateWithSessionStorage(
-      create_params,
-      active_tab->GetController().GetSessionStorageNamespaceMap()));
-  SetupPreviewContents();
+    create_params.site_instance = active_tab->GetSiteInstance()->
+        GetRelatedSiteInstance(instant_url);
+  } else {
+    create_params.site_instance = content::SiteInstance::CreateForURL(
+        profile, instant_url);
+  }
+  SetContents(scoped_ptr<content::WebContents>(
+      content::WebContents::Create(create_params)));
+  instant_url_ = instant_url;
+  on_stale_callback_ = on_stale_callback;
+}
 
-  // This HTTP header and value are set on loads that originate from Instant.
-  const char kInstantHeader[] = "X-Purpose: Instant";
+void InstantLoader::Load() {
   DVLOG(1) << "LoadURL: " << instant_url_;
-  contents_->GetController().LoadURL(GURL(instant_url_), content::Referrer(),
+  contents_->GetController().LoadURL(
+      instant_url_, content::Referrer(),
       content::PAGE_TRANSITION_GENERATED, kInstantHeader);
   contents_->WasHidden();
+  stale_page_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kStalePageTimeoutMS),
+      on_stale_callback_);
 }
 
-content::WebContents* InstantLoader::ReleaseContents() {
-  CleanupPreviewContents();
-  return contents_.release();
-}
-
-void InstantLoader::DidNavigate(
-    const history::HistoryAddPageArgs& add_page_args) {
-  last_navigation_ = add_page_args;
-}
-
-bool InstantLoader::IsUsingLocalPreview() const {
-  return instant_url_ == InstantController::kLocalOmniboxPopupURL;
-}
-
-void InstantLoader::Update(const string16& text,
-                           size_t selection_start,
-                           size_t selection_end,
-                           bool verbatim) {
-  last_navigation_ = history::HistoryAddPageArgs();
-  client_.Update(text, selection_start, selection_end, verbatim);
-}
-
-void InstantLoader::Submit(const string16& text) {
-  client_.Submit(text);
-}
-
-void InstantLoader::Cancel(const string16& text) {
-  client_.Cancel(text);
-}
-
-void InstantLoader::SetPopupBounds(const gfx::Rect& bounds) {
-  client_.SetPopupBounds(bounds);
-}
-
-void InstantLoader::SetMarginSize(int start, int end) {
-  client_.SetMarginSize(start, end);
-}
-
-void InstantLoader::InitializeFonts() {
-  client_.InitializeFonts();
-}
-
-void InstantLoader::SendAutocompleteResults(
-    const std::vector<InstantAutocompleteResult>& results) {
-  client_.SendAutocompleteResults(results);
-}
-
-void InstantLoader::UpOrDownKeyPressed(int count) {
-  client_.UpOrDownKeyPressed(count);
-}
-
-void InstantLoader::SearchModeChanged(const chrome::search::Mode& mode) {
-  client_.SearchModeChanged(mode);
-}
-
-void InstantLoader::SendThemeBackgroundInfo(
-    const ThemeBackgroundInfo& theme_info) {
-  client_.SendThemeBackgroundInfo(theme_info);
-}
-
-void InstantLoader::SendThemeAreaHeight(int height) {
-  client_.SendThemeAreaHeight(height);
-}
-
-void InstantLoader::SetDisplayInstantResults(bool display_instant_results) {
-  client_.SetDisplayInstantResults(display_instant_results);
-}
-
-void InstantLoader::KeyCaptureChanged(bool is_key_capture_enabled) {
-  client_.KeyCaptureChanged(is_key_capture_enabled);
-}
-
-void InstantLoader::SetSuggestions(
-    const std::vector<InstantSuggestion>& suggestions) {
-  InstantSupportDetermined(true);
-  controller_->SetSuggestions(contents(), suggestions);
-}
-
-void InstantLoader::InstantSupportDetermined(bool supports_instant) {
-  // If we had already determined that the page supports Instant, nothing to do.
-  if (supports_instant_)
-    return;
-
-  supports_instant_ = supports_instant;
-  controller_->InstantSupportDetermined(contents(), supports_instant);
-}
-
-void InstantLoader::ShowInstantPreview(InstantShownReason reason,
-                                       int height,
-                                       InstantSizeUnits units) {
-  InstantSupportDetermined(true);
-  controller_->ShowInstantPreview(reason, height, units);
-}
-
-void InstantLoader::StartCapturingKeyStrokes() {
-  InstantSupportDetermined(true);
-  controller_->StartCapturingKeyStrokes();
-}
-
-void InstantLoader::StopCapturingKeyStrokes() {
-  InstantSupportDetermined(true);
-  controller_->StopCapturingKeyStrokes();
-}
-
-void InstantLoader::RenderViewGone() {
-  controller_->InstantLoaderRenderViewGone();
-}
-
-void InstantLoader::AboutToNavigateMainFrame(const GURL& url) {
-  controller_->InstantLoaderAboutToNavigateMainFrame(url);
-}
-
-void InstantLoader::NavigateToURL(const GURL& url,
-                                  content::PageTransition transition) {
-  InstantSupportDetermined(true);
-  controller_->NavigateToURL(url, transition);
-}
-
-void InstantLoader::RenderViewCreated() {
-  controller_->InstantLoaderRenderViewCreated();
-}
-
-void InstantLoader::Observe(int type,
-                            const content::NotificationSource& source,
-                            const content::NotificationDetails& details) {
-#if defined(OS_MACOSX)
-  if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
-    if (content::RenderWidgetHostView* rwhv =
-            contents_->GetRenderWidgetHostView())
-      rwhv->SetTakesFocusOnlyOnMouseDown(true);
-    return;
-  }
-  NOTREACHED();
-#endif
-}
-
-void InstantLoader::SetupPreviewContents() {
-  client_.SetContents(contents());
-  contents_->SetUserData(&kUserDataKey, new InstantLoaderUserData(this));
-  contents_->SetDelegate(delegate_.get());
+void InstantLoader::SetContents(scoped_ptr<content::WebContents> new_contents) {
+  contents_.reset(new_contents.release());
+  contents_->SetDelegate(this);
 
   // Set up various tab helpers. The rest will get attached when (if) the
   // contents is added to the tab strip.
@@ -364,7 +89,7 @@ void InstantLoader::SetupPreviewContents() {
 
   // A tab helper to catch prerender content swapping shenanigans.
   CoreTabHelper::CreateForWebContents(contents());
-  CoreTabHelper::FromWebContents(contents())->set_delegate(delegate_.get());
+  CoreTabHelper::FromWebContents(contents())->set_delegate(this);
 
   // Tab helpers used when committing a preview.
   chrome::search::SearchTabHelper::CreateForWebContents(contents());
@@ -391,12 +116,10 @@ void InstantLoader::SetupPreviewContents() {
 #endif
 }
 
-void InstantLoader::CleanupPreviewContents() {
-  client_.SetContents(NULL);
-  contents_->RemoveUserData(&kUserDataKey);
+scoped_ptr<content::WebContents> InstantLoader::ReleaseContents() {
   contents_->SetDelegate(NULL);
 
-  // Undo tab helper work done in SetupPreviewContents().
+  // Undo tab helper work done in SetContents().
 
   BlockedContentTabHelper::FromWebContents(contents())->
       SetAllContentsBlocked(false);
@@ -413,16 +136,87 @@ void InstantLoader::CleanupPreviewContents() {
                     content::Source<content::NavigationController>(
                         &contents_->GetController()));
 #endif
+
+  return contents_.Pass();
 }
 
-void InstantLoader::ReplacePreviewContents(content::WebContents* old_contents,
-                                           content::WebContents* new_contents) {
+void InstantLoader::Observe(int type,
+                            const content::NotificationSource& /* source */,
+                            const content::NotificationDetails& /* details */) {
+#if defined(OS_MACOSX)
+  if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
+    if (content::RenderWidgetHostView* rwhv =
+            contents_->GetRenderWidgetHostView())
+      rwhv->SetTakesFocusOnlyOnMouseDown(true);
+    return;
+  }
+  NOTREACHED();
+#endif
+}
+
+void InstantLoader::SwapTabContents(content::WebContents* old_contents,
+                                    content::WebContents* new_contents) {
   DCHECK_EQ(old_contents, contents());
-  CleanupPreviewContents();
-  // We release here without deleting so that the caller still has the
-  // responsibility for deleting the WebContents.
-  ignore_result(contents_.release());
-  contents_.reset(new_contents);
-  SetupPreviewContents();
-  controller_->SwappedWebContents();
+  // We release here without deleting since the caller has the responsibility
+  // for deleting the old WebContents.
+  ignore_result(ReleaseContents().release());
+  SetContents(scoped_ptr<content::WebContents>(new_contents));
+  delegate_->OnSwappedContents();
+}
+
+bool InstantLoader::ShouldSuppressDialogs() {
+  // Messages shown during Instant cancel Instant, so we suppress them.
+  return true;
+}
+
+bool InstantLoader::ShouldFocusPageAfterCrash() {
+  return false;
+}
+
+void InstantLoader::LostCapture() {
+  delegate_->OnMouseUp();
+}
+
+void InstantLoader::WebContentsFocused(content::WebContents* /* contents */) {
+  delegate_->OnFocus();
+}
+
+bool InstantLoader::CanDownload(content::RenderViewHost* /* render_view_host */,
+                                int /* request_id */,
+                                const std::string& /* request_method */) {
+  // Downloads are disabled.
+  return false;
+}
+
+void InstantLoader::HandleMouseDown() {
+  delegate_->OnMouseDown();
+}
+
+void InstantLoader::HandleMouseUp() {
+  delegate_->OnMouseUp();
+}
+
+void InstantLoader::HandlePointerActivate() {
+  delegate_->OnMouseDown();
+}
+
+void InstantLoader::HandleGestureEnd() {
+  delegate_->OnMouseUp();
+}
+
+void InstantLoader::DragEnded() {
+  // If the user drags, we won't get a mouse up (at least on Linux). Commit
+  // the Instant result when the drag ends, so that during the drag the page
+  // won't move around.
+  delegate_->OnMouseUp();
+}
+
+bool InstantLoader::OnGoToEntryOffset(int /* offset */) {
+  return false;
+}
+
+content::WebContents* InstantLoader::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  return delegate_->OpenURLFromTab(source, params);
 }

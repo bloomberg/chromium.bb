@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/search/search_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 class OmniboxEditModel;
@@ -23,8 +22,7 @@ namespace search {
 
 // Per-tab search "helper".  Acts as the owner and controller of the tab's
 // search UI model.
-class SearchTabHelper : public content::WebContentsObserver,
-                        public content::NotificationObserver,
+class SearchTabHelper : public content::NotificationObserver,
                         public content::WebContentsUserData<SearchTabHelper> {
  public:
   virtual ~SearchTabHelper();
@@ -42,11 +40,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   // virtual URL of the active entry. Regular navigations are captured through
   // the notification system and shouldn't call this method.
   void NavigationEntryUpdated();
-
-  // Overridden from contents::WebContentsObserver:
-  virtual void NavigateToPendingEntry(
-      const GURL& url,
-      content::NavigationController::ReloadType reload_type) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
