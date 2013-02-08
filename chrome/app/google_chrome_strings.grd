@@ -770,6 +770,11 @@ For Google Chrome, processes used to display diagnostics information (such as th
         <message name="IDS_SYNC_WRONG_EMAIL" desc="Message shown when sync setup failed due to the user entering the wrong email address for sign in.">
           You were signed in to Chrome as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Please use the same account to sign in again.
         </message>
+        <message name="IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_MESSAGE" desc="Error message to display when setting up sync for a second time and the user name is different from the previous user name.">
+          Someone previously signed in to Chrome on this computer as <ph name="ACCOUNT_EMAIL_LAST">$1<ex>user@example.com</ex></ph>. If that isn't your account, create a new Chrome user to keep your information separate.
+
+Signing in anyway will merge Chrome information like bookmarks, history, and other settings to <ph name="ACCOUNT_EMAIL_NEW">$2<ex>user@example.com</ex></ph>.
+        </message>
       </if>
 
       <!-- Enterprise sign-in profile linking -->

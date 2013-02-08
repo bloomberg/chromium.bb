@@ -11288,6 +11288,12 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_ONE_CLICK_SIGNIN_INFOBAR_CANCEL_BUTTON" desc="The string used in the infobar button that the user presses to never see this infobar again.">
         No thanks
       </message>
+      <message name="IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_OK_BUTTON" desc="The string used in the dialog for the button that means 'create a new profile'.">
+        Create a new user
+      </message>
+      <message name="IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_CANCEL_BUTTON" desc="The string used in the dialog for the button that means 'go ahead and sign in'.">
+        Sign in anyway
+      </message>
 
       <!-- One click sign in bubble and dialog -->
       <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE" desc="The message of the one click sign in dialog.">
@@ -11307,6 +11313,9 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       </message>
       <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_CHECKBOX" desc="The text of checkbox in the one click sign in dialog indicating that default sync settings will be used.">
         Use default settings
+      </message>
+      <message name="IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_TITLE" desc="The title of the modal dialog window that opens when the user signs in with a different account.">
+        Sign in
       </message>
 
       <!-- Enterprise sign-in profile linking -->
