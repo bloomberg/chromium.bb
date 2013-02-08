@@ -9,6 +9,8 @@ cr.define('cr.ui', function() {
 
   /**
    * Creates a new autocomplete list item.
+   * This is suitable for selecting a web site, and used by default.
+   * A different behavior can be set by AutocompleteListItem.itemConstructor.
    * @param {Object} pageInfo The page this item represents.
    * @constructor
    * @extends {cr.ui.ListItem}
@@ -93,36 +95,37 @@ cr.define('cr.ui', function() {
      */
     suggestionUpdateRequestCallback_: null,
 
+    /**
+     * A function to call when a suggestion is
+     * selected. setInputValueToSelectedUrl_ is used by default.
+     * @type {Function}
+     * @private
+     */
+    suggestionSelectedCallback_: null,
+
     /** @override */
     decorate: function() {
       List.prototype.decorate.call(this);
       this.classList.add('autocomplete-suggestions');
       this.selectionModel = new cr.ui.ListSingleSelectionModel;
 
+      this.itemConstructor = AutocompleteListItem;
       this.textFieldKeyHandler_ = this.handleAutocompleteKeydown_.bind(this);
       var self = this;
       this.textFieldInputHandler_ = function(e) {
         if (self.suggestionUpdateRequestCallback_)
           self.suggestionUpdateRequestCallback_(self.targetInput_.value);
       };
-      this.addEventListener('change', function(e) {
-        var input = self.targetInput;
-        if (!input || !self.selectedItem)
-          return;
-        input.value = self.selectedItem['url'];
-        // Programatically change the value won't trigger a change event, but
-        // clients are likely to want to know when changes happen, so fire one.
-        var changeEvent = document.createEvent('Event');
-        changeEvent.initEvent('change', true, true);
-        input.dispatchEvent(changeEvent);
-      });
+      this.suggestionSelectedCallback_ =
+          this.setInputValueToSelectedUrl_.bind(this);
+      this.addEventListener('change', this.suggestionSelectedCallback_);
       // Start hidden; adding suggestions will unhide.
       this.hidden = true;
     },
 
     /** @override */
     createItem: function(pageInfo) {
-      return new AutocompleteListItem(pageInfo);
+      return new this.itemConstructor(pageInfo);
     },
 
     /**
@@ -142,6 +145,18 @@ cr.define('cr.ui', function() {
      */
     set suggestionUpdateRequestCallback(callback) {
       this.suggestionUpdateRequestCallback_ = callback;
+    },
+
+    /**
+     * A function to call when a suggestion is selected.
+     * The function should take one change Event argument, which is raised
+     * when a suggestion is selected.
+     * @type {Function}
+     */
+    set suggestionSelectedCallback(callback) {
+      this.removeEventListener('change', this.suggestionSelectedCallback_);
+      this.suggestionSelectedCallback_ = callback;
+      this.addEventListener('change', this.suggestionSelectedCallback_);
     },
 
     /**
@@ -232,6 +247,22 @@ cr.define('cr.ui', function() {
         event.preventDefault();
         event.stopPropagation();
       }
+    },
+
+    /**
+     * Sets the target input element's value to the 'url' field of the
+     * selected item.
+     * @param {Event} event The change event.
+     * @private
+     */
+    setInputValueToSelectedUrl_ : function(event) {
+      var input = this.targetInput_;
+      if (!input || !this.selectedItem)
+        return;
+      input.value = this.selectedItem['url'];
+      // Programatically change the value won't trigger a change event, but
+      // clients are likely to want to know when changes happen, so fire one.
+      cr.dispatchSimpleEvent(input, 'change', true);
     },
   };
 
