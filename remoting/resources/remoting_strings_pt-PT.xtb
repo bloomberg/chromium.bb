@@ -1,114 +1,126 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
-<translation id="4176825807642096119">Código de acesso</translation>
-<translation id="8355326866731426344">Este código de acesso irá expirar às <ph name="TIMEOUT"/></translation>
-<translation id="4068946408131579958">Todas as ligações</translation>
-<translation id="5601503069213153581">PIN</translation>
-<translation id="3362124771485993931">Voltar a introduzir o PIN</translation>
-<translation id="7658239707568436148">Cancelar</translation>
-<translation id="6746493157771801606">Limpar histórico</translation>
-<translation id="6040143037577758943">Fechar</translation>
-<translation id="5254120496627797685">Se sair desta página, terminará a sessão do Ambiente de Trabalho Remoto do Chrome.</translation>
-<translation id="5308380583665731573">Ligar</translation>
-<translation id="6985691951107243942">Tem a certeza de que pretende desativar as ligações remotas a <ph name="HOSTNAME"/>? Se mudar de ideias, será necessário aceder a esse computador e voltar a ativar as ligações.</translation>
-<translation id="6748108480210050150">De</translation>
-<translation id="5714695932513333758">Histórico de ligações</translation>
-<translation id="4736223761657662401">Histórico de Ligações</translation>
-<translation id="6998989275928107238">Para</translation>
-<translation id="2359808026110333948">Continuar</translation>
-<translation id="2919669478609886916">Está atualmente a partilhar este computador com outro utilizador. Pretende continuar a partilhar?</translation>
-<translation id="173559734173571936">Para utilizar o Ambiente de Trabalho Remoto do Chrome, é necessário conceder permissões de acesso alargadas ao computador. Apenas tem de efetuar esta operação uma vez.</translation>
-<translation id="1023096696228309145">Solicite ao utilizador a cujo computador pretende aceder que clique em &quot;Partilhar Agora&quot; e que indique o código de acesso.</translation>
-<translation id="5379087427956679853">O Ambiente de Trabalho Remoto do Chrome permite partilhar o computador de forma segura através da Web. Ambos os utilizadores devem ter em execução a aplicação do Ambiente de Trabalho Remoto do Chrome, que pode ser encontrada em <ph name="URL"/>.</translation>
-<translation id="4394049700291259645">Desativar</translation>
-<translation id="4314644002001494905">Desligar (Ctrl+Alt +Esc)</translation>
-<translation id="8342538585421421741">Desligar (Opt+Ctrl+Esc)</translation>
-
-<translation id="4804818685124855865">Desligar</translation>
-
-<translation id="6930242544192836755">Duração</translation>
-<translation id="8172070902751707422">Falha na autenticação. Inicie sessão em Chrome Remote Desktop de novo.</translation>
-<translation id="2707879711568641861">Faltam alguns componentes necessários ao Ambiente de Trabalho Remoto do Chrome. Certifique-se de que instalou a versão mais recente e tente novamente.</translation>
-<translation id="2813770873348017932">As ligações ao computador remoto estão temporariamente bloqueadas, porque alguém tentou estabelecer ligação com um PIN inválido. Volte a tentar mais tarde.</translation>
-<translation id="3106379468611574572">O computador remoto não está a responder aos pedidos de ligação. Verifique se está on-line e tente novamente.</translation>
-<translation id="851521648418609391">Foi detetada uma versão não compatível do Ambiente de Trabalho Remoto do Chrome. Certifique-se de que tem a versão mais recente do Google Chrome e do Ambiente de Trabalho Remoto do Chrome em ambos os computadores e tente novamente.</translation>
-<translation id="4277736576214464567">O código de acesso é inválido. Tente novamente.</translation>
-<translation id="2208514473086078157">As definições da política não permitem a partilha deste computador como um anfitrião do Ambiente de Trabalho Remoto do Chrome. Contacte o administrador do sistema para obter assistência.</translation>
-<translation id="2366718077645204424">Não é possível contactar o anfitrião. Provavelmente, isso deve-se à configuração da rede que está a utilizar.</translation>
-<translation id="7729639150174291243">Não tem sessão iniciada no Chrome Remote Desktop. Inicie sessão e tente de novo.</translation>
-<translation id="4019628723432694459">Faltam alguns componentes necessários ao Ambiente de Trabalho Remoto do Chrome. Certifique-se de que está a executar a versão mais recente do Google Chrome e tente novamente.</translation>
-<translation id="2805036638902441020">O servidor não conseguiu responder ao pedido de rede.</translation>
-<translation id="5593560073513909978">O serviço está temporariamente indisponível. Tente novamente mais tarde.</translation>
-<translation id="1546934824884762070">Ocorreu um erro inesperado. Comunique este problema aos programadores.</translation>
-<translation id="1742469581923031760">A ligar...</translation>
-<translation id="4913529628896049296">a aguardar ligação...</translation>
-<translation id="8525306231823319788">Ecrã inteiro</translation>
-<translation id="4472575034687746823">Introdução</translation>
-<translation id="7649070708921625228">Ajuda</translation>
-<translation id="4572065712096155137">Aceder</translation>
-<translation id="1342297293546459414">Ver e controlar um computador partilhado.</translation>
-<translation id="3258789396564295715">Pode aceder com segurança ao computador utilizando o Ambiente de Trabalho Remoto do Chrome.</translation>
-<translation id="6198252989419008588">Alterar PIN</translation>
-<translation id="1199593201721843963">Desativar ligações remotas</translation>
 <translation id="7606912958770842224">Ativar ligações remotas</translation>
-<translation id="4006787130661126000">Se pretende utilizar o Ambiente de Trabalho Remoto do Chrome para aceder ao computador, é necessário ativar as ligações remotas.</translation>
-<translation id="4361728918881830843">Para ativar ligações remotas a um computador diferente, instale o Chrome Remote Desktop e clique em &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
-<translation id="174018511426417793">Não tem computadores registados. Para ativar ligações remotas a um computador, instale o Chrome Remote Desktop e clique em &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
-<translation id="2499160551253595098">Ajude-nos a melhorar o Chrome Remote Desktop, permitindo-nos recolher estatísticas de utilização e relatórios de falhas.</translation>
-<translation id="4156740505453712750">Para proteger o acesso a este computador, escolha um PIN <ph name="BOLD_START"/>com pelo menos seis dígitos<ph name="BOLD_END"/> . Este PIN será necessário quando se ligar a partir de outro local.</translation>
-<translation id="154040539590487450">Falha ao iniciar o serviço de acesso remoto.</translation>
-<translation id="2013884659108657024">O Chrome está a transferir o ficheiro de instalação do Anfitrião do Ambiente de Trabalho Remoto do Chrome. Concluída a transferência, execute o ficheiro de instalação antes de continuar.</translation>
-<translation id="4207623512727273241">Execute o ficheiro de instalação antes de continuar.</translation>
-<translation id="170207782578677537">Falha ao registar o computador.</translation>
-<translation id="2089514346391228378">Foram ativadas as ligações remotas neste computador.</translation>
-<translation id="7782471917492991422">Verifique as definições de gestão de energia do computador e certifique-se de que não está configurado para suspender quando inativo.</translation>
-<translation id="1654128982815600832">A ativar as ligações remotas neste computador…</translation>
-<translation id="2926340305933667314">Falha ao desativar o acesso remoto neste computador. Tente novamente mais tarde.</translation>
-<translation id="7672203038394118626">Foram desativadas as ligações remotas neste computador.</translation>
 <translation id="1841799852846221389">A desativar as ligações remotas neste computador…</translation>
-<translation id="6668065415969892472">O seu PIN foi atualizado.</translation>
-<translation id="652218476070540101">O PIN para este computador está a ser atualizado...</translation>
-<translation id="3020807351229499221">Falha ao atualizar o PIN. Tente novamente mais tarde.</translation>
-<translation id="6527303717912515753">Partilhar</translation>
-<translation id="2235518894410572517">Partilhar este computador para que outro utilizador o possa ver e controlar.</translation>
-<translation id="5265129178187621741">(esta funcionalidade ainda não está disponível para Chromebooks... fique atento)</translation>
-<translation id="5619148062500147964">A este computador</translation>
-<translation id="9149992051684092333">Para começar a partilhar o seu ambiente de trabalho, forneça o código de acesso abaixo à pessoa que o irá ajudar.</translation>
-<translation id="2851674870054673688">A sessão de partilha começa assim que introduzirem o código.</translation>
-<translation id="7215059001581613786">Introduza um PIN com seis ou mais dígitos.</translation>
-<translation id="8178433417677596899">Partilha de ecrã entre utilizadores, ideal para suporte técnico remoto.</translation>
-<translation id="5702987232842159181">Ligado:</translation>
-<translation id="811307782653349804">Aceda ao seu próprio computador a partir de qualquer lugar.</translation>
-<translation id="4430915108080446161">A gerar código de acesso...</translation>
-<translation id="3776024066357219166">A sessão do  Ambiente de Trabalho Remoto do Chrome terminou.</translation>
-<translation id="5708869785009007625">O computador está a ser atualmente partilhado com <ph name="USER"/>.</translation>
-<translation id="9188433529406846933">Autorizar</translation>
-<translation id="701976023053394610">Assistência Remota</translation>
-<translation id="809687642899217504">Os Meus Computadores</translation>
-<translation id="6965382102122355670">OK</translation>
-<translation id="5064360042339518108"><ph name="HOSTNAME"/> (offline)</translation>
-<translation id="4686372254213217147">Tamanho original</translation>
-<translation id="837021510621780684">A partir deste computador</translation>
-
-<translation id="4808503597364150972">Introduza o PIN para <ph name="HOSTNAME"/>.</translation>
-<translation id="5156271271724754543">Introduza o mesmo PIN em ambas as caixas.</translation>
-<translation id="5625493749705183369">Aceder a outros computadores ou permitir que outro utilizador aceda ao seu computador de forma segura através da internet.</translation>
-<translation id="7401733114166276557">Ambiente de Trabalho Remoto do Chrome</translation>
-<translation id="579702532610384533">Restabelecer ligação</translation>
-<translation id="7144878232160441200">Tentar novamente</translation>
-<translation id="7948001860594368197">Opções de ecrã</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
-<translation id="6091564239975589852">Enviar teclas</translation>
-<translation id="1369030621715708553">PrtScn</translation>
-<translation id="3908017899227008678">Ajustar texto</translation>
-<translation id="3950820424414687140">Iniciar sessão</translation>
-<translation id="5222676887888702881">Terminar sessão</translation>
-<translation id="7319983568955948908">Terminar Partilha</translation>
-<translation id="2841013758207633010">Hora</translation>
-<translation id="6193698048504518729">Ligar a <ph name="HOSTNAME"/></translation>
-<translation id="4430435636878359009">Desativar as ligações remotas a este computador…</translation>
-<translation id="332624996707057614">Editar nome do computador</translation>
-<translation id="409800995205263688">NOTA: as definições da Política permitem ligações apenas entre computadores da sua rede.</translation>
 <translation id="5843054235973879827">Porque é que isto é seguro?</translation>
+<translation id="5619148062500147964">A este computador</translation>
+<translation id="4068946408131579958">Todas as ligações</translation>
+<translation id="2208514473086078157">As definições da política não permitem a partilha deste computador como um anfitrião do Ambiente de Trabalho Remoto do Chrome. Contacte o administrador do sistema para obter assistência.</translation>
+<translation id="2801119484858626560">Foi detetada uma versão não compatível do Ambiente de Trabalho Remoto do Chrome. Certifique-se de que tem a versão mais recente do Chrome e do Ambiente de Trabalho Remoto do Chrome em ambos os computadores e tente novamente.</translation>
+<translation id="2805036638902441020">O servidor não conseguiu responder ao pedido de rede.</translation>
+<translation id="6998989275928107238">Para</translation>
+<translation id="3258789396564295715">Pode aceder com segurança ao computador utilizando o Ambiente de Trabalho Remoto do Chrome.</translation>
+<translation id="4808503597364150972">Introduza o PIN para <ph name="HOSTNAME"/>.</translation>
+<translation id="7672203038394118626">Foram desativadas as ligações remotas neste computador.</translation>
+<translation id="332624996707057614">Editar nome do computador</translation>
+<translation id="1996161829609978754">O Chrome está a transferir o ficheiro de instalação do Anfitrião do Chromoting. Concluída a transferência, execute o ficheiro de instalação antes de continuar.</translation>
+<translation id="7658239707568436148">Cancelar</translation>
+<translation id="7782471917492991422">Verifique as definições de gestão de energia do computador e certifique-se de que não está configurado para suspender quando inativo.</translation>
+<translation id="2707879711568641861">Faltam alguns componentes necessários ao Ambiente de Trabalho Remoto do Chrome. Certifique-se de que instalou a versão mais recente e tente novamente.</translation>
+<translation id="2499160551253595098">Ajude-nos a melhorar o Ambiente de Trabalho Remoto do Chrome, permitindo-nos recolher estatísticas de utilização e relatórios de falhas.</translation>
+<translation id="8864965950780407789">Para utilizar o Chromoting, é necessário conceder permissões de acesso alargadas ao computador. Apenas tem de efetuar esta operação uma vez.</translation>
+<translation id="8355326866731426344">Este código de acesso irá expirar em <ph name="TIMEOUT"/></translation>
+<translation id="6198252989419008588">Alterar PIN</translation>
+<translation id="170207782578677537">Falha ao registar o computador.</translation>
+<translation id="4804818685124855865">Desligar</translation>
+<translation id="5708869785009007625">O seu ambiente de trabalho está a ser atualmente partilhado com <ph name="USER"/>.</translation>
+<translation id="5601503069213153581">PIN</translation>
+<translation id="5222676887888702881">Terminar sessão</translation>
+<translation id="5064360042339518108"><ph name="HOSTNAME"/> (offline)</translation>
+<translation id="4472575034687746823">Começar</translation>
+<translation id="2813770873348017932">As ligações ao computador remoto estão temporariamente bloqueadas, porque alguém tentou estabelecer ligação com um PIN inválido. Volte a tentar mais tarde.</translation>
+<translation id="6746493157771801606">Limpar histórico</translation>
+<translation id="4430435636878359009">Desativar as ligações remotas a este computador</translation>
+<translation id="9188433529406846933">Autorizar</translation>
+<translation id="2851674870054673688">A sessão de partilha começa assim que introduzirem o código.</translation>
+<translation id="5593560073513909978">O serviço está temporariamente indisponível. Tente novamente mais tarde.</translation>
+<translation id="3908017899227008678">Ajustar texto</translation>
+<translation id="1199593201721843963">Desativar ligações remotas</translation>
+<translation id="5379087427956679853">O Ambiente de Trabalho Remoto do Chrome permite partilhar o computador de forma segura através da Web. Ambos os utilizadores devem ter em execução a aplicação Ambiente de Trabalho Remoto do Chrome, que pode ser encontrada em <ph name="URL"/>.</translation>
+<translation id="1409991159633941777">Faltam alguns componentes necessários ao Ambiente de Trabalho Remoto do Chrome. Certifique-se de que está a executar a versão mais recente do Chrome e tente novamente.</translation>
+<translation id="174018511426417793">Não existem computadores registados. Para ativar as ligações remotas a um computador, instale o Ambiente de Trabalho Remoto do Chrome aí e clique em “<ph name="BUTTON_NAME"/>”.</translation>
+<translation id="8525306231823319788">Ecrã inteiro</translation>
+<translation id="5702987232842159181">Ligado:</translation>
+<translation id="4736223761657662401">Histórico de Ligações</translation>
+<translation id="4430915108080446161">A gerar código de acesso...</translation>
+<translation id="8228265668171617545">Foi detetada uma versão incompatível do Chromoting. Certifique-se de que tem a versão mais recente do Chrome e do Chromoting em ambos os computadores e tente novamente.</translation>
+<translation id="6985691951107243942">Tem a certeza de que pretende desativar as ligações remotas a <ph name="HOSTNAME"/>? Se mudar de ideias, será necessário aceder a esse computador e voltar a ativar as ligações.</translation>
+<translation id="9149992051684092333">Para começar a partilhar o seu ambiente de trabalho, forneça o código de acesso abaixo à pessoa que o irá ajudar.</translation>
+<translation id="409800995205263688">NOTA: as definições da política permitem ligações apenas entre computadores da sua rede.</translation>
+<translation id="2353140552984634198">Pode aceder com segurança a este computador utilizando o Chromoting.</translation>
+<translation id="4481276415609939789">Não existem computadores registados. Para ativar as ligações remotas a um computador, instale o Chromoting aí e clique em “<ph name="BUTTON_NAME"/>”.</translation>
+<translation id="2013884659108657024">O Chrome está a transferir o ficheiro de instalação do Anfitrião do Ambiente de Trabalho Remoto do Chrome. Concluída a transferência, execute o ficheiro de instalação antes de continuar.</translation>
+<translation id="1742469581923031760">A ligar...</translation>
+<translation id="6748108480210050150">De</translation>
+<translation id="3950820424414687140">Iniciar sessão</translation>
+<translation id="1291443878853470558">Se pretende utilizar o Chromoting para aceder a este computador, é necessário ativar as ligações remotas.</translation>
+<translation id="6091564239975589852">Enviar teclas</translation>
+<translation id="4572065712096155137">Acesso</translation>
+<translation id="5908809458024685848">Não tem sessão iniciada no Chromoting. Inicie sessão e tente novamente.</translation>
+<translation id="7401733114166276557">Ambiente de Trabalho Remoto do Chrome</translation>
+<translation id="3362124771485993931">Voltar a introduzir o PIN</translation>
+<translation id="4686372254213217147">Tamanho original</translation>
+<translation id="154040539590487450">Falha ao iniciar o serviço de acesso remoto.</translation>
+<translation id="7948001860594368197">Opções de ecrã</translation>
+<translation id="8172070902751707422">Falha na autenticação. Inicie sessão novamente no Ambiente de Trabalho Remoto do Chrome.</translation>
+<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
+<translation id="5254120496627797685">Se sair desta página, terminará a sessão do Ambiente de Trabalho Remoto do Chrome.</translation>
+<translation id="173559734173571936">Para utilizar o Ambiente de Trabalho Remoto do Chrome, é necessário conceder permissões de acesso alargadas ao computador. Apenas tem de efetuar esta operação uma vez.</translation>
+<translation id="9032136467203159543">Faltam alguns componentes necessários ao Chromoting. Certifique-se de que instalou a versão mais recente e tente novamente.</translation>
+<translation id="1342297293546459414">Ver e controlar um computador partilhado.</translation>
+<translation id="701976023053394610">Assistência Remota</translation>
+<translation id="6193698048504518729">Ligar a <ph name="HOSTNAME"/></translation>
+<translation id="3020807351229499221">Falha ao atualizar o PIN. Tente novamente mais tarde.</translation>
+<translation id="579702532610384533">Restabelecer ligação</translation>
+<translation id="4211066471404647515">Faltam alguns componentes necessários para o Chromoting. Certifique-se de que está a executar a versão mais recente do Chrome e tente novamente.</translation>
+<translation id="5265129178187621741">(esta funcionalidade ainda não está disponível para Chromebooks... fique atento)</translation>
+<translation id="5156271271724754543">Introduza o mesmo PIN em ambas as caixas.</translation>
+<translation id="4361728918881830843">Para ativar as ligações remotas a outro computador, instale o Ambiente de Trabalho Remoto do Chrome aí e clique em &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
+<translation id="4913529628896049296">a aguardar ligação...</translation>
+<translation id="5714695932513333758">Histórico de ligações</translation>
+<translation id="811307782653349804">Aceda ao seu computador a partir de qualquer lugar.</translation>
+<translation id="2366718077645204424">Não é possível contactar o anfitrião. Provavelmente, isso deve-se à configuração da rede que está a utilizar.</translation>
+<translation id="3776024066357219166">A sessão do Ambiente de Trabalho Remoto do Chrome terminou.</translation>
+<translation id="5625493749705183369">Aceder a outros computadores ou permitir que outro utilizador aceda ao seu computador de forma segura através da Internet.</translation>
+<translation id="2699970397166997657">Chromoting</translation>
+<translation id="897805526397249209">Para ativar as ligações remotas a outro computador, instale o Chromoting aí e clique em “<ph name="BUTTON_NAME"/>”.</translation>
+<translation id="809687642899217504">Os Meus Computadores</translation>
+<translation id="3106379468611574572">O computador remoto não está a responder aos pedidos de ligação. Verifique se está online e tente novamente.</translation>
+<translation id="2359808026110333948">Continuar</translation>
+<translation id="1643640058022401035">Se sair desta página, terminará a sessão do Chromoting.</translation>
+<translation id="2235518894410572517">Partilhar este computador para que outro utilizador o possa ver e controlar.</translation>
+<translation id="1023096696228309145">Solicite ao utilizador a cujo computador pretende aceder que clique em &quot;Partilhar Agora&quot; e que indique o código de acesso.</translation>
+<translation id="4006787130661126000">Se pretende utilizar o Ambiente de Trabalho Remoto do Chrome para aceder ao computador, é necessário ativar as ligações remotas.</translation>
+<translation id="6930242544192836755">Duração</translation>
+<translation id="6527303717912515753">Partilhar</translation>
+<translation id="2926340305933667314">Falha ao desativar o acesso remoto a este computador. Tente novamente mais tarde.</translation>
+<translation id="2089514346391228378">Foram ativadas as ligações remotas neste computador.</translation>
+<translation id="8246880134154544773">Falha na autenticação. Inicie sessão novamente no Chromoting.</translation>
+<translation id="1654128982815600832">A ativar as ligações remotas neste computador…</translation>
+<translation id="7038683108611689168">Ajude-nos a melhorar o Chromoting, permitindo-nos recolher estatísticas de utilização e relatórios de falhas.</translation>
+<translation id="6040143037577758943">Fechar</translation>
+<translation id="7649070708921625228">Ajuda</translation>
+<translation id="4176825807642096119">Código de acesso</translation>
+<translation id="7144878232160441200">Repetir</translation>
+<translation id="4703799847237267011">A sessão do Chromoting terminou.</translation>
+<translation id="1369030621715708553">PrtScn</translation>
+<translation id="8178433417677596899">Partilha de ecrã entre utilizadores, ideal para suporte técnico remoto.</translation>
+<translation id="652218476070540101">O PIN para este computador está a ser atualizado...</translation>
+<translation id="5308380583665731573">Ligar</translation>
+<translation id="7319983568955948908">Terminar Partilha</translation>
+<translation id="6668065415969892472">O seu PIN foi atualizado.</translation>
+<translation id="4277736576214464567">O código de acesso é inválido. Tente novamente.</translation>
+<translation id="7729639150174291243">Não tem sessão iniciada no Ambiente de Trabalho Remoto do Chrome. Inicie sessão e tente de novo.</translation>
+<translation id="2841013758207633010">Tempo</translation>
+<translation id="6011539954251327702">O Chromoting permite partilhar o computador de forma segura através da Web. Ambos os utilizadores devem ter em execução a aplicação Chromoting, que pode ser encontrada em <ph name="URL"/>.</translation>
+<translation id="2919669478609886916">Está atualmente a partilhar este computador com outro utilizador. Pretende continuar a partilhar?</translation>
+<translation id="4207623512727273241">Execute o ficheiro de instalação antes de continuar.</translation>
+<translation id="837021510621780684">A partir deste computador</translation>
+<translation id="7215059001581613786">Introduza um PIN com seis ou mais dígitos.</translation>
+<translation id="1546934824884762070">Ocorreu um erro inesperado. Comunique este problema aos programadores.</translation>
+<translation id="6965382102122355670">OK</translation>
+<translation id="3403830762023901068">As definições da política não permitem a partilha deste computador como um anfitrião do Chromoting. Contacte o administrador do sistema para obter assistência.</translation>
+<translation id="4394049700291259645">Desactivar</translation>
+<translation id="4156740505453712750">Para proteger o acesso a este computador, escolha um PIN de <ph name="BOLD_START"/>pelo menos seis dígitos<ph name="BOLD_END"/>. Este PIN será necessário quando ligar a partir de outra localização.</translation>
 </translationbundle>

@@ -1,114 +1,126 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
-<translation id="4176825807642096119">Código de acceso</translation>
-<translation id="8355326866731426344">Este código de acceso caducará en <ph name="TIMEOUT"/>.</translation>
-<translation id="4068946408131579958">Todas las conexiones</translation>
-<translation id="5601503069213153581">PIN</translation>
-<translation id="3362124771485993931">Vuelve a escribir el PIN.</translation>
-<translation id="7658239707568436148">Cancelar</translation>
-<translation id="6746493157771801606">Borrar historial</translation>
-<translation id="6040143037577758943">Cerrar</translation>
-<translation id="5254120496627797685">Al abandonar esta página, se cerrará la sesión que iniciaste en Chrome Remote Desktop.</translation>
-<translation id="5308380583665731573">Conectar</translation>
-<translation id="6985691951107243942">¿Realmente deseas inhabilitar las conexiones remotas con <ph name="HOSTNAME"/>? Si cambias de opinión, tendrás que volver a habilitar las conexiones desde esta computadora.</translation>
-<translation id="6748108480210050150">De</translation>
-<translation id="5714695932513333758">Historial de conexiones</translation>
-<translation id="4736223761657662401">Historial de conexiones</translation>
-<translation id="6998989275928107238">Para</translation>
-<translation id="2359808026110333948">Continuar</translation>
-<translation id="2919669478609886916">En este momento compartes esta computadora con otro usuario. ¿Deseas continuar compartiéndola?</translation>
-<translation id="173559734173571936">Para usar Chrome Remote Desktop debes extender los permisos de acceso a tu computadora. Solo tienes que hacer esto una vez.</translation>
-<translation id="1023096696228309145">Solicita que el usuario de la computadora a la que deseas acceder haga clic en &quot;Compartir ahora&quot; y te proporcione el código de acceso.</translation>
-<translation id="5379087427956679853">Chrome Remote Desktop te permite compartir tu computadora con otro usuario de manera segura en la Web. Tanto tú como el otro usuario deben ejecutar la aplicación Chrome Remote Desktop, disponible en <ph name="URL"/>.</translation>
-<translation id="4394049700291259645">Inhabilitar</translation>
-<translation id="4314644002001494905">Desconectar (Ctrl+Alt+Esc)</translation>
-<translation id="8342538585421421741">Desconectar (Opt+Ctrl+Esc)</translation>
-
-<translation id="4804818685124855865">Desconectar</translation>
-
-<translation id="6930242544192836755">Duración</translation>
-<translation id="8172070902751707422">Se produjo un error al realizar la autenticación. Vuelve a acceder a Escritorio remoto de Chrome.</translation>
-<translation id="2707879711568641861">Faltan algunos de los componentes necesarios para Chrome Remote Desktop. Asegúrate de haber instalado la última versión y vuelve a intentarlo.</translation>
-<translation id="2813770873348017932">Las conexiones establecidas con la computadora remota se bloquearon temporalmente porque alguien intentó conectarse con ella a través de un PIN no válido. Vuelve a intentarlo más adelante.</translation>
-<translation id="3106379468611574572">La computadora remota no responde a las solicitudes de conexión. Verifica que esta se encuentre en línea y vuelve a intentarlo.</translation>
-<translation id="851521648418609391">Se detectó una versión incompatible de Chrome Remote Desktop. Asegúrate de que se hayan instalado las últimas versiones de Google Chrome y de Chrome Remote Desktop en ambas computadoras y vuelve a intentarlo.</translation>
-<translation id="4277736576214464567">El código de acceso no es válido. Vuelve a intentarlo.</translation>
-<translation id="2208514473086078157">La configuración de la política no permite compartir esta computadora como un host de Escritorio remoto de Chrome. Comunícate con el administrador de tu sistema para obtener ayuda.</translation>
-<translation id="2366718077645204424">No se puede establecer conexión con el host. Probablemente esto se deba a la configuración de la red que usas.</translation>
-<translation id="7729639150174291243">No accediste a Escritorio remoto de Chrome. Accede y vuelve a intentarlo.</translation>
-<translation id="4019628723432694459">Faltan algunos de los componentes necesarios para Chrome Remote Desktop. Asegúrate de estar ejecutando la última versión de Google Chrome y vuelve a intentarlo.</translation>
-<translation id="2805036638902441020">El servidor no pudo responder a la solicitud de red.</translation>
-<translation id="5593560073513909978">El servicio no está disponible temporalmente. Vuelve a intentarlo más adelante.</translation>
-<translation id="1546934824884762070">Se produjo un error inesperado. Informa este problema a los programadores.</translation>
-<translation id="1742469581923031760">Conectándose…</translation>
-<translation id="4913529628896049296">Aguardando la conexión...</translation>
-<translation id="8525306231823319788">Pantalla completa</translation>
-<translation id="4472575034687746823">Comenzar</translation>
-<translation id="7649070708921625228">Ayuda</translation>
-<translation id="4572065712096155137">Acceder</translation>
-<translation id="1342297293546459414">Ve y controla una computadora compartida.</translation>
-<translation id="3258789396564295715">Puedes acceder a esta computadora sin correr ningún riesgo a través de Escritorio remoto de Chrome.</translation>
-<translation id="6198252989419008588">Cambiar PIN</translation>
-<translation id="1199593201721843963">Inhabilitar conexiones remotas</translation>
 <translation id="7606912958770842224">Habilitar conexiones remotas</translation>
-<translation id="4006787130661126000">Debes habilitar las conexiones remotas si deseas usar Escritorio remoto de Chrome para acceder a esta computadora.</translation>
-<translation id="4361728918881830843">Para establecer conexiones remotas con una computadora diferente, instala en ella Escritorio remoto de Chrome y haz clic en “<ph name="BUTTON_NAME"/>”.</translation>
-<translation id="174018511426417793">No tienes ninguna computadora registrada. Para establecer conexiones remotas con una computadora, instala en ella Escritorio remoto de Chrome y haz clic en &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
-<translation id="2499160551253595098">Ayúdanos a mejorar Escritorio remoto de Chrome permitiéndonos recopilar estadísticas de uso e informes sobre fallos.</translation>
-<translation id="4156740505453712750">Para proteger el acceso a esta computadora, elige un PIN de <ph name="BOLD_START"/>al menos seis dígitos<ph name="BOLD_END"/>. Se solicitará este PIN cuando se establezca conexión desde otra ubicación.</translation>
-<translation id="154040539590487450">No se pudo iniciar el servicio de acceso remoto.</translation>
-<translation id="2013884659108657024">Chrome está descargando el instalador de Escritorio remoto de Chrome. Luego de que la descarga se complete, ejecuta el instalador antes de continuar.</translation>
-<translation id="4207623512727273241">Ejecuta el instalador antes de continuar.</translation>
-<translation id="170207782578677537">No se pudo registrar esta computadora.</translation>
-<translation id="2089514346391228378">Se habilitaron las conexiones remotas con esta computadora.</translation>
-<translation id="7782471917492991422">Controla la configuración de la administración de energía de tu computadora y asegúrate de que no se habilite el modo de hibernación cuando esta se encuentra inactiva.</translation>
-<translation id="1654128982815600832">Habilitando conexiones remotas para esta computadora…</translation>
-<translation id="2926340305933667314">No se pudo inhabilitar el acceso remoto a esta computadora. Vuelve a intentarlo más adelante.</translation>
-<translation id="7672203038394118626">Se inhabilitaron las conexiones remotas con esta computadora.</translation>
-<translation id="1841799852846221389">Inhabilitando conexiones remotas para esta computadora…</translation>
-<translation id="6668065415969892472">Se actualizó tu PIN.</translation>
-<translation id="652218476070540101">Se está actualizando el PIN para esta computadora…</translation>
-<translation id="3020807351229499221">No se pudo actualizar el PIN. Vuelve a intentarlo más adelante.</translation>
-<translation id="6527303717912515753">Compartir</translation>
-<translation id="2235518894410572517">Comparte esta computadora con otro usuario para que este pueda verla y controlarla.</translation>
-<translation id="5265129178187621741">(Esta función aún no está disponible para las Chromebooks… Queda a la espera de novedades).</translation>
-<translation id="5619148062500147964">Conexiones con esta computadora</translation>
-<translation id="9149992051684092333">Para comenzar a compartir tu escritorio, proporciona el código de acceso que aparece a continuación a la persona que te asistirá.</translation>
-<translation id="2851674870054673688">Una vez que se haya ingresado el código, se iniciará la sesión compartida.</translation>
-<translation id="7215059001581613786">Ingresa un PIN de al menos seis dígitos.</translation>
-<translation id="8178433417677596899">Uso de la pantalla compartido entre usuarios, ideal para recibir asistencia técnica remota</translation>
-<translation id="5702987232842159181">Conectado:</translation>
-<translation id="811307782653349804">Accede a tu computadora desde cualquier lugar.</translation>
-<translation id="4430915108080446161">Generando el código de acceso...</translation>
-<translation id="3776024066357219166">Se cerró la sesión que iniciaste en Chrome Remote Desktop.</translation>
-<translation id="5708869785009007625">En este momento, estás compartiendo tu escritorio con <ph name="USER"/>.</translation>
-<translation id="9188433529406846933">Autorizar</translation>
-<translation id="701976023053394610">Asistencia remota</translation>
-<translation id="809687642899217504">Mis computadoras</translation>
-<translation id="6965382102122355670">Aceptar</translation>
-<translation id="5064360042339518108"><ph name="HOSTNAME"/> (sin conexión)</translation>
-<translation id="4686372254213217147">Tamaño original</translation>
-<translation id="837021510621780684">Desde esta computadora</translation>
-
-<translation id="4808503597364150972">Ingresa tu PIN de <ph name="HOSTNAME"/>.</translation>
-<translation id="5156271271724754543">Ingresa el mismo PIN en ambos cuadros.</translation>
-<translation id="5625493749705183369">Accede a otras computadoras o permite que otro usuario acceda a tu computadora de manera segura en Internet.</translation>
-<translation id="7401733114166276557">Chrome Remote Desktop</translation>
-<translation id="579702532610384533">Volver a conectar</translation>
-<translation id="7144878232160441200">Reintentar</translation>
-<translation id="7948001860594368197">Opciones de pantalla</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
-<translation id="6091564239975589852">Enviar teclas</translation>
-<translation id="1369030621715708553">Impr Pant</translation>
-<translation id="3908017899227008678">Ajustar tamaño a ventana de navegador</translation>
-<translation id="3950820424414687140">Acceder</translation>
-<translation id="5222676887888702881">Salir</translation>
-<translation id="7319983568955948908">Dejar de compartir</translation>
-<translation id="2841013758207633010">Hora</translation>
-<translation id="6193698048504518729">Establecer conexión con <ph name="HOSTNAME"/></translation>
-<translation id="4430435636878359009">Inhabilitar conexiones remotas establecidas con esta computadora</translation>
-<translation id="332624996707057614">Editar nombre de computadora</translation>
-<translation id="409800995205263688">NOTA: La configuración de la política local solo permite conexiones entre computadoras de tu misma red.</translation>
+<translation id="1841799852846221389">Inhabilitando conexiones remotas con esta computadora…</translation>
 <translation id="5843054235973879827">¿Por qué esta operación es segura?</translation>
+<translation id="5619148062500147964">Hacia esta computadora</translation>
+<translation id="4068946408131579958">Todas las conexiones</translation>
+<translation id="2208514473086078157">La configuración de la política no permite compartir esta computadora como host de Escritorio remoto de Chrome. Comunícate con el administrador de tu sistema para obtener ayuda.</translation>
+<translation id="2801119484858626560">Se detectó una versión incompatible del Escritorio remoto de Chrome. Asegúrate de que se hayan instalado la última versión de Chrome y del Escritorio remoto de Chrome en ambas computadoras y vuelve a intentarlo.</translation>
+<translation id="2805036638902441020">El servidor no pudo responder a la solicitud de la red.</translation>
+<translation id="6998989275928107238">Para</translation>
+<translation id="3258789396564295715">Puedes acceder a esta computadora sin correr riesgos a través del Escritorio remoto de Chrome.</translation>
+<translation id="4808503597364150972">Ingresa tu PIN de <ph name="HOSTNAME"/>.</translation>
+<translation id="7672203038394118626">Se inhabilitaron las conexiones remotas con esta computadora.</translation>
+<translation id="332624996707057614">Editar el nombre de la computadora</translation>
+<translation id="1996161829609978754">Chrome está descargando el instalador del host de  Chromoting. Cuando termine la descarga, abre el instalador antes de continuar.</translation>
+<translation id="7658239707568436148">Cancelar</translation>
+<translation id="7782471917492991422">Configura la administración de energía de tu computadora y asegúrate de que no se habilite el modo de hibernación cuando esté inactiva.</translation>
+<translation id="2707879711568641861">Faltan algunos de los componentes necesarios para Escritorio remoto de Chrome. Asegúrate de haber instalado la última versión y vuelve a intentarlo.</translation>
+<translation id="2499160551253595098">Ayúdanos a mejorar la aplicación Escritorio remoto de Chrome permitiéndonos recopilar estadísticas de uso e informes sobre fallos.</translation>
+<translation id="8864965950780407789">Para usar Chromoting, debes extender los permisos de acceso a tu computadora. Solo tienes que hacer esto una vez.</translation>
+<translation id="8355326866731426344">Este código de acceso vence en <ph name="TIMEOUT"/>.</translation>
+<translation id="6198252989419008588">Cambiar PIN</translation>
+<translation id="170207782578677537">No se pudo registrar esta computadora.</translation>
+<translation id="4804818685124855865">Desconectar</translation>
+<translation id="5708869785009007625">En este momento, estás compartiendo tu escritorio con <ph name="USER"/>.</translation>
+<translation id="5601503069213153581">PIN</translation>
+<translation id="5222676887888702881">Salir</translation>
+<translation id="5064360042339518108"><ph name="HOSTNAME"/> (sin conexión)</translation>
+<translation id="4472575034687746823">Comenzar</translation>
+<translation id="2813770873348017932">Las conexiones con la computadora remota se bloquearon temporalmente porque alguien intentó conectarse con ella a través de un PIN no válido. Vuelve a intentarlo más tarde.</translation>
+<translation id="6746493157771801606">Borrar historial</translation>
+<translation id="4430435636878359009">Inhabilitar conexiones remotas con esta computadora</translation>
+<translation id="9188433529406846933">Autorizar</translation>
+<translation id="2851674870054673688">Una vez que se haya ingresado el código, se iniciará la sesión compartida.</translation>
+<translation id="5593560073513909978">El servicio no está disponible temporalmente. Vuelve a intentarlo más tarde.</translation>
+<translation id="3908017899227008678">Ajustar tamaño a ventana de navegador</translation>
+<translation id="1199593201721843963">Inhabilitar conexiones remotas</translation>
+<translation id="5379087427956679853">Escritorio remoto de Chrome te permite compartir tu computadora con otro usuario de manera segura en la Web. Tanto tú como el otro usuario deben usar la aplicación Escritorio remoto de Chrome, que está disponible en <ph name="URL"/>.</translation>
+<translation id="1409991159633941777">Faltan algunos de los componentes necesarios para el Escritorio remoto de Chrome. Asegúrate de estar usando la última versión de Chrome y vuelve a intentarlo.</translation>
+<translation id="174018511426417793">No tienes ninguna computadora registrada. Para habilitar conexiones remotas con una computadora, instala allí Escritorio remoto de Chrome y haz clic en &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
+<translation id="8525306231823319788">Pantalla completa</translation>
+<translation id="5702987232842159181">Conectado:</translation>
+<translation id="4736223761657662401">Historial de conexiones</translation>
+<translation id="4430915108080446161">Generando el código de acceso...</translation>
+<translation id="8228265668171617545">Se detectó una versión incompatible de Chromoting. Asegúrate de que tienes instalada la última versión de Chrome y de Chromoting en ambas computadoras y vuelve a intentarlo.</translation>
+<translation id="6985691951107243942">¿Realmente deseas inhabilitar las conexiones remotas con <ph name="HOSTNAME"/>? Si te arrepientes, tendrás que ir a esa computadora para volver a habilitar las conexiones.</translation>
+<translation id="9149992051684092333">Para comenzar a compartir tu escritorio, proporciona el código de acceso que aparece a continuación a la persona que te asistirá.</translation>
+<translation id="409800995205263688">NOTA: La configuración de la política solo permite conexiones entre computadoras que estén dentro de tu red.</translation>
+<translation id="2353140552984634198">Puedes acceder a esta computadora sin correr ningún riesgo a través de Chromoting.</translation>
+<translation id="4481276415609939789">No tienes ninguna computadora registrada. Para habilitar conexiones remotas con una computadora, instala allí Chromoting y haz clic en &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
+<translation id="2013884659108657024">Chrome está descargando el instalador del host de Escritorio remoto de Chrome. Cuando termine la descarga, abre el instalador antes de continuar.</translation>
+<translation id="1742469581923031760">Conectando…</translation>
+<translation id="6748108480210050150">De</translation>
+<translation id="3950820424414687140">Acceder</translation>
+<translation id="1291443878853470558">Debes habilitar las conexiones remotas si deseas usar Chromoting para acceder a esta computadora.</translation>
+<translation id="6091564239975589852">Enviar teclas</translation>
+<translation id="4572065712096155137">Acceder</translation>
+<translation id="5908809458024685848">No accediste a Chromoting. Accede y vuelve a intentarlo.</translation>
+<translation id="7401733114166276557">Escritorio remoto de Chrome</translation>
+<translation id="3362124771485993931">Vuelve a escribir el PIN.</translation>
+<translation id="4686372254213217147">Tamaño original</translation>
+<translation id="154040539590487450">No se pudo iniciar el servicio de acceso remoto.</translation>
+<translation id="7948001860594368197">Opciones de pantalla</translation>
+<translation id="8172070902751707422">Se produjo un error al realizar la autenticación. Vuelve a acceder al Escritorio remoto de Chrome.</translation>
+<translation id="6146986332407778716">Ctrl-Alt-Supr</translation>
+<translation id="5254120496627797685">Al abandonar esta página, se cerrará la sesión en el Escritorio remoto de Chrome.</translation>
+<translation id="173559734173571936">Para usar el Escritorio remoto de Chrome, debes extender los permisos de acceso a tu computadora. Solo tienes que hacer esto una vez.</translation>
+<translation id="9032136467203159543">Faltan algunos de los componentes necesarios para Chromoting. Asegúrate de haber instalado la última versión y vuelve a intentarlo.</translation>
+<translation id="1342297293546459414">Permite ver y controlar una computadora compartida.</translation>
+<translation id="701976023053394610">Asistencia remota</translation>
+<translation id="6193698048504518729">Establecer conexión con <ph name="HOSTNAME"/></translation>
+<translation id="3020807351229499221">No se pudo actualizar el PIN. Vuelve a intentarlo más tarde.</translation>
+<translation id="579702532610384533">Volver a conectar</translation>
+<translation id="4211066471404647515">Faltan algunos de los componentes necesarios para Chromoting. Asegúrate de estar usando la última versión de Chrome y vuelve a intentarlo.</translation>
+<translation id="5265129178187621741">(Esta función todavía no está disponible para las Chromebooks. Pronto habrá novedades).</translation>
+<translation id="5156271271724754543">Ingresa el mismo PIN en ambos cuadros.</translation>
+<translation id="4361728918881830843">Para habilitar conexiones remotas con otra computadora, instala allí Escritorio remoto de Chrome y haz clic en “<ph name="BUTTON_NAME"/>”.</translation>
+<translation id="4913529628896049296">Aguardando la conexión...</translation>
+<translation id="5714695932513333758">Historial de conexiones</translation>
+<translation id="811307782653349804">Accede a tu computadora desde cualquier lugar.</translation>
+<translation id="2366718077645204424">No se puede establecer la conexión con el host. Probablemente esto se deba a la configuración de la red que usas.</translation>
+<translation id="3776024066357219166">Se cerró tu sesión en Escritorio remoto de Chrome.</translation>
+<translation id="5625493749705183369">Accede a otras computadoras o permite que otro usuario acceda a tu computadora a través de Internet sin correr riesgos.</translation>
+<translation id="2699970397166997657">Chromoting</translation>
+<translation id="897805526397249209">Para habilitar conexiones remotas con otra computadora, instala allí Chromoting y haz clic en “<ph name="BUTTON_NAME"/>”.</translation>
+<translation id="809687642899217504">Mis computadoras</translation>
+<translation id="3106379468611574572">La computadora remota no responde a las solicitudes de conexión. Verifica que esté conectada a Internet y vuelve a intentarlo.</translation>
+<translation id="2359808026110333948">Continuar</translation>
+<translation id="1643640058022401035">Al abandonar esta página, se cerrará tu sesión en Chromoting.</translation>
+<translation id="2235518894410572517">Comparte esta computadora con otro usuario para que este pueda verla y controlarla.</translation>
+<translation id="1023096696228309145">Solicita que el usuario de la computadora a la que deseas acceder haga clic en &quot;Compartir ahora&quot; y te proporcione el código de acceso.</translation>
+<translation id="4006787130661126000">Debes habilitar las conexiones remotas si deseas usar Escritorio remoto de Chrome para acceder a esta computadora.</translation>
+<translation id="6930242544192836755">Duración</translation>
+<translation id="6527303717912515753">Compartir</translation>
+<translation id="2926340305933667314">No se pudo inhabilitar el acceso remoto a esta computadora. Vuelve a intentarlo más tarde.</translation>
+<translation id="2089514346391228378">Se habilitaron las conexiones remotas con esta computadora.</translation>
+<translation id="8246880134154544773">Se produjo un error de autenticación. Vuelve a acceder a Chromoting.</translation>
+<translation id="1654128982815600832">Habilitando conexiones remotas para esta computadora…</translation>
+<translation id="7038683108611689168">Ayúdanos a mejorar la aplicación Chromoting permitiéndonos recopilar estadísticas de uso e informes sobre fallos.</translation>
+<translation id="6040143037577758943">Cerrar</translation>
+<translation id="7649070708921625228">Ayuda</translation>
+<translation id="4176825807642096119">Código de acceso</translation>
+<translation id="7144878232160441200">Volver a intentarlo</translation>
+<translation id="4703799847237267011">Se cerró tu sesión en Chromoting.</translation>
+<translation id="1369030621715708553">Impr Pant</translation>
+<translation id="8178433417677596899">Uso compartido de la pantalla entre usuarios, ideal para recibir asistencia técnica remota</translation>
+<translation id="652218476070540101">Se está actualizando el PIN para esta computadora…</translation>
+<translation id="5308380583665731573">Conectar</translation>
+<translation id="7319983568955948908">Dejar de compartir</translation>
+<translation id="6668065415969892472">Se actualizó tu PIN.</translation>
+<translation id="4277736576214464567">El código de acceso no es válido. Vuelve a intentarlo.</translation>
+<translation id="7729639150174291243">No accediste a Escritorio remoto de Chrome. Accede y vuelve a intentarlo.</translation>
+<translation id="2841013758207633010">Hora</translation>
+<translation id="6011539954251327702">Chromoting te permite compartir tu computadora con otro usuario de manera segura en la Web. Tanto tú como el otro usuario deben ejecutar la aplicación Chromoting, que está disponible en <ph name="URL"/>.</translation>
+<translation id="2919669478609886916">En este momento compartes esta computadora con otro usuario. ¿Deseas continuar compartiéndola?</translation>
+<translation id="4207623512727273241">Ejecuta el instalador antes de continuar.</translation>
+<translation id="837021510621780684">Desde esta computadora</translation>
+<translation id="7215059001581613786">Ingresa un PIN de al menos seis dígitos.</translation>
+<translation id="1546934824884762070">Se produjo un error inesperado. Informa este problema a los programadores.</translation>
+<translation id="6965382102122355670">Aceptar</translation>
+<translation id="3403830762023901068">La configuración de la política no permite compartir esta computadora como host de Chromoting. Comunícate con el administrador de tu sistema para obtener ayuda.</translation>
+<translation id="4394049700291259645">Inhabilitar</translation>
+<translation id="4156740505453712750">Debes elegir un PIN de <ph name="BOLD_START"/>al menos seis dígitos<ph name="BOLD_END"/> para proteger el acceso a esta computadora. Se solicitará ese PIN cada vez que se establezca una conexión con esa computadora desde otra ubicación.</translation>
 </translationbundle>

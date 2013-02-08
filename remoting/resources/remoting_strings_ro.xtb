@@ -1,114 +1,126 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
-<translation id="4176825807642096119">Cod de acces</translation>
-<translation id="8355326866731426344">Acest cod de acces va expira în <ph name="TIMEOUT"/></translation>
-<translation id="4068946408131579958">Toate conexiunile</translation>
-<translation id="5601503069213153581">Cod PIN</translation>
-<translation id="3362124771485993931">Reintroduceţi codul PIN</translation>
-<translation id="7658239707568436148">Anulaţi</translation>
-<translation id="6746493157771801606">Ştergeţi istoricul</translation>
-<translation id="6040143037577758943">Închideţi</translation>
-<translation id="5254120496627797685">Părăsind această pagină veţi încheia sesiunea dvs. Desktop la distanţă Chrome.</translation>
-<translation id="5308380583665731573">Conectaţi-vă</translation>
-<translation id="6985691951107243942">Sigur doriţi să dezactivaţi conexiunile la distanţă la <ph name="HOSTNAME"/>? Dacă vă răzgândiţi, va fi necesar să accesaţi computerul respectiv pentru a reactiva conexiunile.</translation>
-<translation id="6748108480210050150">De la</translation>
-<translation id="5714695932513333758">Istoricul conexiunilor</translation>
-<translation id="4736223761657662401">Istoricul conexiunilor</translation>
-<translation id="6998989275928107238">La</translation>
-<translation id="2359808026110333948">Continuaţi</translation>
-<translation id="2919669478609886916">În prezent permiteţi accesul la acest computer altui utilizator. Doriţi să permiteţi în continuare accesul?</translation>
-<translation id="173559734173571936">Pentru a utiliza aplicaţia Desktop la distanţă Chrome trebuie să acordaţi permisiuni extinse de acces la computerul dvs. Este necesar să faceţi acest lucru numai o singură dată.</translation>
-<translation id="1023096696228309145">Cereţi-i utilizatorului al cărui computer doriţi să îl accesaţi să facă clic pe „Permiteţi accesul acum” şi să vă transmită codul de acces.</translation>
-<translation id="5379087427956679853">Cu aplicaţia Desktop la distanţă Chrome puteţi permite accesul în siguranţă la computerul dvs. pe web. Ambii utilizatori trebuie să ruleze aplicaţia Desktop la distanţă Chrome, care poate fi găsită la <ph name="URL"/>.</translation>
-<translation id="4394049700291259645">Dezactivaţi</translation>
-<translation id="4314644002001494905">Deconectaţi-vă (Ctrl+Alt+Esc)</translation>
-<translation id="8342538585421421741">Deconectaţi-vă (Opt+Ctrl+Esc)</translation>
-
-<translation id="4804818685124855865">Deconectaţi-vă</translation>
-
-<translation id="6930242544192836755">Durată</translation>
-<translation id="8172070902751707422">Autentificarea a eşuat. Conectaţi-vă din nou la Desktop la distanţă Chrome.</translation>
-<translation id="2707879711568641861">Unele componente necesare pentru Desktop la distanţă Chrome lipsesc. Asiguraţi-vă că aţi instalat cea mai recentă versiune a aplicaţiei şi încercaţi din nou.</translation>
-<translation id="2813770873348017932">Conexiunile cu computerul la distanţă sunt blocate temporar, deoarece cineva a încercat să se conecteze la acesta utilizând un cod PIN nevalid. Încercaţi din nou mai târziu.</translation>
-<translation id="3106379468611574572">Computerul la distanţă nu răspunde la solicitările de conectare. Verificaţi dacă respectivul computer este online şi încercaţi din nou.</translation>
-<translation id="851521648418609391">A fost detectată o versiune incompatibilă a aplicaţiei Desktop la distanţă Chrome. Asiguraţi-vă că aveţi cea mai recentă versiune pentru Google Chrome şi Desktop la distanţă Chrome pe ambele computere şi încercaţi din nou.</translation>
-<translation id="4277736576214464567">Codul de acces nu este valid. Încercaţi din nou.</translation>
-<translation id="2208514473086078157">Setările politicii nu acceptă permiterea accesului la acest computer în calitate de gazdă pentru Desktop la distanţă Chrome. Contactaţi administratorul de sistem pentru asistenţă.</translation>
-<translation id="2366718077645204424">Gazda nu poate fi accesată. Acest lucru este cauzat probabil de configuraţia reţelei pe care o utilizaţi.</translation>
-<translation id="7729639150174291243">Nu sunteţi conectat(ă) la Desktop la distanţă Chrome. Conectaţi-vă şi încercaţi din nou.</translation>
-<translation id="4019628723432694459">Unele componente necesare pentru aplicaţia Desktop la distanţă Chrome lipsesc. Asiguraţi-vă că rulaţi cea mai recentă versiune a browserului Google Chrome şi încercaţi din nou.</translation>
-<translation id="2805036638902441020">Serverul nu a putut răspunde la solicitarea din reţea.</translation>
-<translation id="5593560073513909978">Serviciul este temporar indisponibil. Încercaţi din nou mai târziu.</translation>
-<translation id="1546934824884762070">A apărut o eroare neaşteptată. Raportaţi această problemă dezvoltatorilor.</translation>
-<translation id="1742469581923031760">Se conectează…</translation>
-<translation id="4913529628896049296">se aşteaptă realizarea conexiunii...</translation>
-<translation id="8525306231823319788">Ecran complet</translation>
-<translation id="4472575034687746823">Începeţi</translation>
-<translation id="7649070708921625228">Ajutor</translation>
-<translation id="4572065712096155137">Accesaţi</translation>
-<translation id="1342297293546459414">Vedeţi şi controlaţi un computer la care se permite accesul.</translation>
-<translation id="3258789396564295715">Puteţi accesa acest computer în siguranţă utilizând Desktop la distanţă Chrome.</translation>
-<translation id="6198252989419008588">Schimbaţi codul PIN</translation>
-<translation id="1199593201721843963">Dezactivaţi conexiunile la distanţă</translation>
-<translation id="7606912958770842224">Activaţi conexiunile la distanţă</translation>
-<translation id="4006787130661126000">Trebuie să permiteţi conexiunile la distanţă dacă doriţi să utilizaţi Desktop la distanţă Chrome pentru a accesa acest computer.</translation>
-<translation id="4361728918881830843">Pentru a activa conexiunile la distanţă pentru alt computer, instalaţi Desktop la distanţă Chrome pe acesta şi faceţi clic pe „<ph name="BUTTON_NAME"/>”.</translation>
-<translation id="174018511426417793">Nu aveţi niciun computer înregistrat. Pentru a activa conexiunile la distanţă pentru un computer, instalaţi Desktop la distanţă Chrome pe acesta şi faceţi clic pe „<ph name="BUTTON_NAME"/>”.</translation>
-<translation id="2499160551253595098">Ajutaţi-ne să îmbunătăţim Desktop la distanţă Chrome, permiţându-ne să colectăm statistici de utilizare şi rapoarte de blocare.</translation>
-<translation id="4156740505453712750">Pentru a proteja accesul la acest computer, alegeţi un cod PIN format din <ph name="BOLD_START"/>cel puţin şase cifre<ph name="BOLD_END"/>. Acest cod PIN va fi solicitat când vă conectaţi din altă locaţie.</translation>
-<translation id="154040539590487450">Pornirea serviciului de acces la distanţă a eşuat.</translation>
-<translation id="2013884659108657024">Chrome descarcă programul de instalare a gazdei pentru Desktop la distanţă Chrome. După ce se descarcă, rulaţi programul de instalare înainte de a continua.</translation>
-<translation id="4207623512727273241">Rulaţi programul de instalare înainte de a continua.</translation>
-<translation id="170207782578677537">Înregistrarea acestui computer a eşuat.</translation>
-<translation id="2089514346391228378">Conexiunile la distanţă pentru acest computer au fost activate.</translation>
-<translation id="7782471917492991422">Verificaţi setările de gestionare a energiei pentru computerul dvs. şi asiguraţi-vă că nu este configurat să treacă în modul inactiv când este în repaus.</translation>
-<translation id="1654128982815600832">Se activează conexiunile la distanţă pentru acest computer…</translation>
-<translation id="2926340305933667314">Dezactivarea accesului la distanţă la acest computer a eşuat. Încercaţi din nou mai târziu.</translation>
-<translation id="7672203038394118626">Conexiunile la distanţă pentru acest computer au fost dezactivate.</translation>
-<translation id="1841799852846221389">Se dezactivează conexiunile la distanţă pentru acest computer…</translation>
-<translation id="6668065415969892472">Codul dvs. PIN a fost actualizat.</translation>
-<translation id="652218476070540101">Codul PIN pentru acest computer este în curs de actualizare…</translation>
-<translation id="3020807351229499221">Actualizarea codului PIN a eşuat. Încercaţi din nou mai târziu.</translation>
-<translation id="6527303717912515753">Permiteţi accesul</translation>
-<translation id="2235518894410572517">Permiteţi accesul la acest computer altui utilizator, pentru ca acesta să îl poată vedea şi controla.</translation>
-<translation id="5265129178187621741">(această funcţie nu este încă disponibilă pentru Chromebooks... urmăriţi-ne în continuare)</translation>
-<translation id="5619148062500147964">La acest computer</translation>
-<translation id="9149992051684092333">Pentru a începe să permiteţi accesul la desktopul dvs., trimiteţi codul de acces de mai jos persoanei care vă va oferi asistenţă.</translation>
-<translation id="2851674870054673688">După ce persoana respectivă introduce codul, sesiunea de permitere a accesului va începe.</translation>
-<translation id="7215059001581613786">Introduceţi un cod PIN format din şase sau mai multe cifre.</translation>
-<translation id="8178433417677596899">Permiterea accesului la ecran de tip utilizator-la-utilizator, perfectă pentru asistenţa tehnică la distanţă.</translation>
-<translation id="5702987232842159181">Conectat:</translation>
-<translation id="811307782653349804">Accesaţi propriul computer de oriunde.</translation>
-<translation id="4430915108080446161">Se generează codul de acces...</translation>
-<translation id="3776024066357219166">Sesiunea dvs. Desktop la distanţă Chrome s-a încheiat.</translation>
-<translation id="5708869785009007625">În prezent, accesul la desktopul dvs. este permis pentru <ph name="USER"/>.</translation>
-<translation id="9188433529406846933">Autorizaţi</translation>
-<translation id="701976023053394610">Asistenţă la distanţă</translation>
-<translation id="809687642899217504">Computerele mele</translation>
-<translation id="6965382102122355670">OK</translation>
-<translation id="5064360042339518108"><ph name="HOSTNAME"/> (offline)</translation>
-<translation id="4686372254213217147">Dimensiune inițială</translation>
-<translation id="837021510621780684">De la acest computer</translation>
-
-<translation id="4808503597364150972">Introduceţi codul PIN pentru <ph name="HOSTNAME"/>.</translation>
-<translation id="5156271271724754543">Introduceţi acelaşi cod PIN în ambele casete.</translation>
-<translation id="5625493749705183369">Accesaţi alte computere sau permiteţi altui utilizator să acceseze computerul dvs. în siguranţă pe internet.</translation>
-<translation id="7401733114166276557">Desktop la distanţă Chrome</translation>
-<translation id="579702532610384533">Reconectaţi-vă</translation>
-<translation id="7144878232160441200">Reîncercaţi</translation>
-<translation id="7948001860594368197">Opţiuni ecran</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
-<translation id="6091564239975589852">Trimiteţi apăsări de taste</translation>
-<translation id="1369030621715708553">PrtScn</translation>
-<translation id="3908017899227008678">Potriviţi prin micşorare</translation>
-<translation id="3950820424414687140">Conectaţi-vă</translation>
-<translation id="5222676887888702881">Deconectaţi-vă</translation>
-<translation id="7319983568955948908">Opriţi permiterea accesului</translation>
-<translation id="2841013758207633010">Oră</translation>
-<translation id="6193698048504518729">Conectaţi-vă la <ph name="HOSTNAME"/></translation>
-<translation id="4430435636878359009">Dezactivaţi conexiunile la distanţă la acest computer</translation>
-<translation id="332624996707057614">Editaţi numele computerului</translation>
-<translation id="409800995205263688">NOTĂ: setările politicii permit conexiuni numai între computerele din reţeaua dvs.</translation>
+<translation id="7606912958770842224">Activați conexiunile la distanță</translation>
+<translation id="1841799852846221389">Se dezactivează conexiunile la distanță pentru acest computer…</translation>
 <translation id="5843054235973879827">De ce este această operație sigură?</translation>
+<translation id="5619148062500147964">La acest computer</translation>
+<translation id="4068946408131579958">Toate conexiunile</translation>
+<translation id="2208514473086078157">Setările politicii nu acceptă permiterea accesului la acest computer în calitate de gazdă pentru Desktop la distanță Chrome. Contactați administratorul de sistem pentru asistență.</translation>
+<translation id="2801119484858626560">A fost detectată o versiune incompatibilă a aplicației Desktop la distanță Chrome. Asigurați-vă că aveți cea mai recentă versiune Chrome și Desktop la distanță Chrome pe ambele computere și încercați din nou.</translation>
+<translation id="2805036638902441020">Serverul nu a putut răspunde la solicitarea din rețea.</translation>
+<translation id="6998989275928107238">Către</translation>
+<translation id="3258789396564295715">Puteți accesa acest computer în siguranță utilizând Desktop la distanță Chrome.</translation>
+<translation id="4808503597364150972">Introduceți codul PIN pentru <ph name="HOSTNAME"/>.</translation>
+<translation id="7672203038394118626">Conexiunile la distanță pentru acest computer au fost dezactivate.</translation>
+<translation id="332624996707057614">Modificați numele computerului</translation>
+<translation id="1996161829609978754">Chrome descarcă programul de instalare a gazdei pentru Chromoting. După ce se descarcă, rulați programul de instalare înainte de a continua.</translation>
+<translation id="7658239707568436148">Anulați</translation>
+<translation id="7782471917492991422">Verificați setările de gestionare a energiei pentru computerul dvs. și asigurați-vă că nu este configurat să treacă în modul inactiv când este în repaus.</translation>
+<translation id="2707879711568641861">Unele componente necesare pentru Desktop la distanță Chrome lipsesc. Asigurați-vă că ați instalat cea mai recentă versiune a aplicației și încercați din nou.</translation>
+<translation id="2499160551253595098">Ajutați-ne să îmbunătățim Desktop la distanță Chrome, permițându-ne să colectăm statistici de utilizare și rapoarte de blocare.</translation>
+<translation id="8864965950780407789">Pentru a utiliza Chromoting, trebuie să acordați permisiuni extinse de acces la computer. Este necesar să faceți acest lucru o singură dată.</translation>
+<translation id="8355326866731426344">Acest cod de acces va expira în <ph name="TIMEOUT"/></translation>
+<translation id="6198252989419008588">Schimbaţi codul PIN</translation>
+<translation id="170207782578677537">Înregistrarea acestui computer nu a reușit.</translation>
+<translation id="4804818685124855865">Deconectați-vă</translation>
+<translation id="5708869785009007625">În prezent, accesul la desktopul dvs. este permis pentru <ph name="USER"/>.</translation>
+<translation id="5601503069213153581">Cod PIN</translation>
+<translation id="5222676887888702881">Deconectați-vă</translation>
+<translation id="5064360042339518108"><ph name="HOSTNAME"/> (offline)</translation>
+<translation id="4472575034687746823">Începeţi</translation>
+<translation id="2813770873348017932">Conexiunile la computerul la distanță sunt blocate temporar, întrucât cineva a încercat să se conecteze la acesta utilizând un cod PIN greșit. Încercați din nou mai târziu.</translation>
+<translation id="6746493157771801606">Goliți istoricul</translation>
+<translation id="4430435636878359009">Dezactivați conexiunile la distanță la acest computer</translation>
+<translation id="9188433529406846933">Autorizați</translation>
+<translation id="2851674870054673688">După ce persoana respectivă introduce codul, sesiunea de permitere a accesului va începe.</translation>
+<translation id="5593560073513909978">Serviciul este temporar indisponibil. Încercați din nou mai târziu.</translation>
+<translation id="3908017899227008678">Potriviți prin micșorare</translation>
+<translation id="1199593201721843963">Dezactivați conexiunile la distanță</translation>
+<translation id="5379087427956679853">Cu aplicația Desktop la distanță Chrome, puteți permite accesul în siguranță la computerul dvs. pe web. Ambii utilizatori trebuie să ruleze aplicația Desktop la distanță Chrome, care poate fi găsită la <ph name="URL"/>.</translation>
+<translation id="1409991159633941777">Unele componente necesare pentru aplicația Desktop la distanță Chrome lipsesc. Asigurați-vă că rulați cea mai recentă versiune Chrome și încercați din nou.</translation>
+<translation id="174018511426417793">Nu aveți niciun computer înregistrat. Pentru a activa conexiunile la distanță pentru un alt computer, instalați Desktop la distanță Chrome pe acesta și dați clic pe „<ph name="BUTTON_NAME"/>”.</translation>
+<translation id="8525306231823319788">Ecran complet</translation>
+<translation id="5702987232842159181">Conectat:</translation>
+<translation id="4736223761657662401">Istoricul conexiunilor</translation>
+<translation id="4430915108080446161">Se generează codul de acces...</translation>
+<translation id="8228265668171617545">A fost detectată o versiune incompatibilă a aplicației Chromoting. Asigurați-vă că aveți cea mai recentă versiune Chrome și Chromoting pe ambele computere și încercați din nou.</translation>
+<translation id="6985691951107243942">Sigur doriți să dezactivați conexiunile la distanță la <ph name="HOSTNAME"/>? Dacă vă răzgândiți, va trebui să accesați computerul respectiv pentru a reactiva conexiunile.</translation>
+<translation id="9149992051684092333">Pentru a începe să permiteți accesul la desktopul dvs., trimiteți codul de acces de mai jos persoanei care vă va oferi asistență.</translation>
+<translation id="409800995205263688">NOTĂ: setările politicii permit conexiuni numai între computerele din rețeaua dvs.</translation>
+<translation id="2353140552984634198">Puteți accesa acest computer în siguranță utilizând Chromoting.</translation>
+<translation id="4481276415609939789">Nu aveți niciun computer înregistrat. Pentru a activa conexiunile la distanță pentru un alt computer, instalați Chromoting pe acesta și dați clic pe „<ph name="BUTTON_NAME"/>”.</translation>
+<translation id="2013884659108657024">Chrome descarcă programul de instalare a gazdei pentru Desktop la distanță Chrome. După ce se descarcă, rulați programul de instalare înainte de a continua.</translation>
+<translation id="1742469581923031760">Se conectează…</translation>
+<translation id="6748108480210050150">De la</translation>
+<translation id="3950820424414687140">Conectați-vă</translation>
+<translation id="1291443878853470558">Trebuie să activați conexiunile la distanță dacă doriți să utilizați Chromoting pentru a accesa acest computer.</translation>
+<translation id="6091564239975589852">Trimiteți apăsări de taste</translation>
+<translation id="4572065712096155137">Accesați</translation>
+<translation id="5908809458024685848">Nu sunteți conectat(ă) la Chromoting. Conectați-vă și încercați din nou.</translation>
+<translation id="7401733114166276557">Desktop la distanță Chrome</translation>
+<translation id="3362124771485993931">Reintroduceți codul PIN</translation>
+<translation id="4686372254213217147">Dimensiune inițială</translation>
+<translation id="154040539590487450">Pornirea serviciului de acces la distanță nu a reușit.</translation>
+<translation id="7948001860594368197">Opțiuni ecran</translation>
+<translation id="8172070902751707422">Autentificarea nu a reușit. Conectați-vă din nou la Desktop la distanță Chrome.</translation>
+<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
+<translation id="5254120496627797685">Părăsind această pagină, veți încheia sesiunea Desktop la distanță Chrome.</translation>
+<translation id="173559734173571936">Pentru a utiliza aplicația Desktop la distanță Chrome, trebuie să acordați permisiuni extinse de acces la computer. Este necesar să faceți acest lucru o singură dată.</translation>
+<translation id="9032136467203159543">Unele componente necesare pentru Chromoting lipsesc. Asigurați-vă că ați instalat cea mai recentă versiune a aplicației și încercați din nou.</translation>
+<translation id="1342297293546459414">Vedeți și controlați un computer la care se permite accesul.</translation>
+<translation id="701976023053394610">Asistență la distanță</translation>
+<translation id="6193698048504518729">Conectați-vă la <ph name="HOSTNAME"/></translation>
+<translation id="3020807351229499221">Codul PIN nu a putut fi actualizat. Încercați din nou mai târziu.</translation>
+<translation id="579702532610384533">Reconectaţi-vă</translation>
+<translation id="4211066471404647515">Unele componente necesare pentru aplicația Chromoting lipsesc. Asigurați-vă că rulați cea mai recentă versiune Chrome și încercați din nou.</translation>
+<translation id="5265129178187621741">(această funcție nu este încă disponibilă pentru Chromebookuri...urmăriți-ne în continuare)</translation>
+<translation id="5156271271724754543">Introduceți același cod PIN în ambele casete.</translation>
+<translation id="4361728918881830843">Pentru a activa conexiunile la distanță pentru un alt computer, instalați Desktop la distanță Chrome pe acesta și dați clic pe „<ph name="BUTTON_NAME"/>”.</translation>
+<translation id="4913529628896049296">se așteaptă realizarea conexiunii...</translation>
+<translation id="5714695932513333758">Istoricul conexiunilor</translation>
+<translation id="811307782653349804">Accesați-vă computerul de oriunde.</translation>
+<translation id="2366718077645204424">Gazda nu poate fi accesată. Acest lucru este cauzat, probabil, de configurația rețelei pe care o utilizați.</translation>
+<translation id="3776024066357219166">Sesiunea Desktop la distanță Chrome s-a încheiat.</translation>
+<translation id="5625493749705183369">Accesați alte computere sau permiteți altui utilizator să vă acceseze computerul în siguranță pe internet.</translation>
+<translation id="2699970397166997657">Chromoting</translation>
+<translation id="897805526397249209">Pentru a activa conexiunile la distanță pentru un alt computer, instalați Chromoting pe acesta și dați clic pe „<ph name="BUTTON_NAME"/>”.</translation>
+<translation id="809687642899217504">Computerele mele</translation>
+<translation id="3106379468611574572">Computerul la distanță nu răspunde la solicitările de conectare. Verificați dacă respectivul computer este online și încercați din nou.</translation>
+<translation id="2359808026110333948">Continuați</translation>
+<translation id="1643640058022401035">Părăsind această pagină, veți încheia sesiunea Chromoting.</translation>
+<translation id="2235518894410572517">Permiteți accesul la acest computer altui utilizator, pentru ca acesta să îl poată vedea și controla.</translation>
+<translation id="1023096696228309145">Cereți-i utilizatorului al cărui computer doriți să îl accesați să dea clic pe „Permiteți accesul acum” și să vă transmită codul de acces.</translation>
+<translation id="4006787130661126000">Trebuie să activați conexiunile la distanță dacă doriți să utilizați Desktop la distanță Chrome pentru a accesa acest computer.</translation>
+<translation id="6930242544192836755">Durată</translation>
+<translation id="6527303717912515753">Distribuiţi</translation>
+<translation id="2926340305933667314">Dezactivarea accesului la distanță la acest computer nu a reușit. Încercați din nou mai târziu.</translation>
+<translation id="2089514346391228378">Conexiunile la distanță pentru acest computer au fost activate.</translation>
+<translation id="8246880134154544773">Autentificarea nu a reușit. Conectați-vă din nou la Chromoting.</translation>
+<translation id="1654128982815600832">Se activează conexiunile la distanță pentru acest computer…</translation>
+<translation id="7038683108611689168">Ajutați-ne să îmbunătățim Chromoting, permițându-ne să colectăm statistici de utilizare și rapoarte de blocare.</translation>
+<translation id="6040143037577758943">Închideți</translation>
+<translation id="7649070708921625228">Ajutor</translation>
+<translation id="4176825807642096119">Cod de acces</translation>
+<translation id="7144878232160441200">Reîncercaţi</translation>
+<translation id="4703799847237267011">Sesiunea Chromoting s-a încheiat.</translation>
+<translation id="1369030621715708553">PrtScn</translation>
+<translation id="8178433417677596899">Permiterea accesului la ecran de tip utilizator-la-utilizator, perfectă pentru asistența tehnică la distanță.</translation>
+<translation id="652218476070540101">Se actualizează codul PIN pentru acest computer…</translation>
+<translation id="5308380583665731573">Conectați-vă</translation>
+<translation id="7319983568955948908">Opriți permiterea accesului</translation>
+<translation id="6668065415969892472">Codul PIN a fost actualizat.</translation>
+<translation id="4277736576214464567">Codul de acces este greșit. Încercați din nou.</translation>
+<translation id="7729639150174291243">Nu sunteți conectat(ă) la Desktop la distanță Chrome. Conectați-vă și încercați din nou.</translation>
+<translation id="2841013758207633010">Oră</translation>
+<translation id="6011539954251327702">Utilizând Chromoting, puteți permite accesul în siguranță la computerul dvs. pe web. Ambii utilizatori trebuie să ruleze aplicația Chromoting, care poate fi găsită la <ph name="URL"/>.</translation>
+<translation id="2919669478609886916">În prezent, permiteți accesul unui alt utilizator la acest computer. Doriți să permiteți în continuare accesul?</translation>
+<translation id="4207623512727273241">Rulați programul de instalare înainte de a continua.</translation>
+<translation id="837021510621780684">De la acest computer</translation>
+<translation id="7215059001581613786">Introduceți un cod PIN format din cel puțin șase cifre.</translation>
+<translation id="1546934824884762070">A apărut o eroare neașteptată. Raportați această problemă dezvoltatorilor.</translation>
+<translation id="6965382102122355670">OK</translation>
+<translation id="3403830762023901068">Setările politicii nu acceptă permiterea accesului la acest computer în calitate de gazdă pentru Chromoting. Contactați administratorul de sistem pentru asistență.</translation>
+<translation id="4394049700291259645">Dezactivați</translation>
+<translation id="4156740505453712750">Pentru a proteja accesul la acest computer, alegeți un cod PIN format din <ph name="BOLD_START"/>cel puțin șase cifre<ph name="BOLD_END"/>. Acest cod PIN va fi necesar când vă conectați din altă locație.</translation>
 </translationbundle>

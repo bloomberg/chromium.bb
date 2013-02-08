@@ -1,114 +1,126 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
-<translation id="4176825807642096119">アクセス コード</translation>
-<translation id="8355326866731426344">このアクセス コードはあと <ph name="TIMEOUT"/> で期限切れとなります。</translation>
-<translation id="4068946408131579958">すべての接続</translation>
-<translation id="5601503069213153581">PIN</translation>
-<translation id="3362124771485993931">PIN を再入力</translation>
-<translation id="7658239707568436148">キャンセル</translation>
-<translation id="6746493157771801606">履歴を消去</translation>
-<translation id="6040143037577758943">閉じる</translation>
-<translation id="5254120496627797685">このページを閉じると、Chrome リモート デスクトップ セッションが終了します。</translation>
-<translation id="5308380583665731573">接続</translation>
-<translation id="6985691951107243942"><ph name="HOSTNAME"/> へのリモート接続を無効にしてもよろしいですか？元に戻したい場合は、該当のパソコンにアクセスして接続を再び有効にする必要があります。</translation>
-<translation id="6748108480210050150">接続元</translation>
-<translation id="5714695932513333758">接続履歴</translation>
-<translation id="4736223761657662401">接続履歴</translation>
-<translation id="6998989275928107238">接続先</translation>
-<translation id="2359808026110333948">続行</translation>
-<translation id="2919669478609886916">現在このパソコンを別のユーザーと共有しています。共有を継続しますか？</translation>
-<translation id="173559734173571936">Chrome リモート デスクトップを使用するには、このパソコンに拡張アクセス許可を付与する必要があります。この作業は 1 回だけ必要です。</translation>
-<translation id="1023096696228309145">アクセスしたいパソコンのユーザーに [今すぐ共有] ボタンをクリックするよう伝えて、アクセス コードを受け取ってください。</translation>
-<translation id="5379087427956679853">Chrome リモート デスクトップを使用すると、パソコンをウェブ経由で安全に共有できます。両方のユーザーが Chrome リモート デスクトップ アプリケーションを実行している必要があります。このアプリケーションは <ph name="URL"/> から入手できます。</translation>
-<translation id="4394049700291259645">無効にする</translation>
-<translation id="4314644002001494905">切断（Ctrl+Alt+Esc）</translation>
-<translation id="8342538585421421741">切断（Opt+Ctrl+Esc）</translation>
-
-<translation id="4804818685124855865">切断する</translation>
-
-<translation id="6930242544192836755">接続時間</translation>
-<translation id="8172070902751707422">認証に失敗しました。Chrome リモート デスクトップにもう一度ログインしてください。</translation>
-<translation id="2707879711568641861">Chrome リモート デスクトップに必要なコンポーネントが見つかりません。最新のバージョンがインストールされていることを確認して、もう一度試してください。</translation>
-<translation id="2813770873348017932">誰かが無効な PIN を使用して接続しようとしたため、リモートのパソコンへの接続が一時的にブロックされています。しばらくしてからもう一度お試しください。</translation>
-<translation id="3106379468611574572">リモートのパソコンが接続リクエストに応答しません。そのパソコンがネットワークに接続されていることを確認してから、もう一度試してください。</translation>
-<translation id="851521648418609391">互換性のないバージョンの Chrome リモート デスクトップが検出されました。最新バージョンの Google Chrome と Chrome リモート デスクトップが両方のパソコンにインストールされていることを確認してから、もう一度試してください。</translation>
-<translation id="4277736576214464567">アクセス コードが無効です。もう一度入力してください。</translation>
-<translation id="2208514473086078157">ポリシー設定により、Chrome リモート デスクトップのホストとしてこのパソコンを共有することはできません。詳しくはシステム管理者にお問い合わせください。</translation>
-<translation id="2366718077645204424">ホストにアクセスできません。これは、お使いのネットワークの設定が原因だと考えられます。</translation>
-<translation id="7729639150174291243">Chrome リモート デスクトップにログインしていません。ログインしてからもう一度お試しください。</translation>
-<translation id="4019628723432694459">Chrome リモート デスクトップに必要なコンポーネントが見つかりません。実行している Google Chrome のバージョンが最新であることを確認して、もう一度やり直してください。</translation>
-<translation id="2805036638902441020">サーバーがネットワーク リクエストに応答しませんでした。</translation>
-<translation id="5593560073513909978">このサービスは一時的に利用できなくなっています。しばらくしてからもう一度お試しください。</translation>
-<translation id="1546934824884762070">予期しないエラーが発生しました。この問題をデベロッパーに報告してください。</translation>
-<translation id="1742469581923031760">接続しています...</translation>
-<translation id="4913529628896049296">接続を待機しています...</translation>
-<translation id="8525306231823319788">全画面表示</translation>
-<translation id="4472575034687746823">ご利用開始</translation>
-<translation id="7649070708921625228">ヘルプ</translation>
-<translation id="4572065712096155137">アクセス</translation>
-<translation id="1342297293546459414">共有パソコンの画面を見ながら操作します。</translation>
-<translation id="3258789396564295715">Chrome リモート デスクトップを使用して、このパソコンに安全にアクセスできます。</translation>
-<translation id="6198252989419008588">PIN を変更</translation>
-<translation id="1199593201721843963">リモート接続を無効にする</translation>
 <translation id="7606912958770842224">リモート接続を有効にする</translation>
-<translation id="4006787130661126000">Chrome リモート デスクトップを使用してこのパソコンにアクセスするには、リモート接続を有効にする必要があります。</translation>
-<translation id="4361728918881830843">別のパソコンへのリモート接続を有効にするには、対象となるパソコンに Chrome リモート デスクトップをインストールし、[<ph name="BUTTON_NAME"/>] をクリックしてください。</translation>
-<translation id="174018511426417793">パソコンが登録されていません。パソコンへのリモート接続を有効にするには、対象となるパソコンに Chrome リモート デスクトップをインストールし、[<ph name="BUTTON_NAME"/>] をクリックしてください。</translation>
-<translation id="2499160551253595098">Chrome リモート デスクトップの改善のため、使用統計情報とクラッシュ レポートの収集に協力する</translation>
-<translation id="4156740505453712750">このパソコンへのアクセスを保護するため、<ph name="BOLD_START"/>6 桁以上<ph name="BOLD_END"/>の PIN を選択してください。この PIN は別の場所から接続する際に必要となります。</translation>
-<translation id="154040539590487450">リモート アクセス サービスを開始できませんでした。</translation>
-<translation id="2013884659108657024">Chrome は Chrome リモート デスクトップ ホスト インストーラをダウンロードしています。ダウンロードが完了したら、続行する前にインストーラを実行してください。</translation>
-<translation id="4207623512727273241">続行する前にインストーラを実行してください。</translation>
-<translation id="170207782578677537">このパソコンを登録できませんでした。</translation>
-<translation id="2089514346391228378">このパソコンのリモート接続が有効になりました。</translation>
-<translation id="7782471917492991422">お使いのパソコンの電源管理設定で、アイドル状態のときにスリープにならないように設定されていることをご確認ください。</translation>
-<translation id="1654128982815600832">このパソコンのリモート接続を有効にしています...</translation>
-<translation id="2926340305933667314">このパソコンへのリモート アクセスを無効にできませんでした。しばらくしてからもう一度お試しください。</translation>
-<translation id="7672203038394118626">このパソコンのリモート接続が無効になりました。</translation>
 <translation id="1841799852846221389">このパソコンのリモート接続を無効にしています...</translation>
-<translation id="6668065415969892472">PIN が更新されました。</translation>
-<translation id="652218476070540101">このパソコン用の PIN を更新しています...</translation>
-<translation id="3020807351229499221">PIN を更新できませんでした。しばらくしてからもう一度お試しください。</translation>
-<translation id="6527303717912515753">共有</translation>
-<translation id="2235518894410572517">このパソコンが共有され、他のユーザーがこのパソコンの画面を見ながら操作できるようになります。</translation>
-<translation id="5265129178187621741">（この機能は現在 Chromebook に対応しておりません。ご利用可能になるまでしばらくお待ちください。）</translation>
-<translation id="5619148062500147964">このパソコンへの接続</translation>
-<translation id="9149992051684092333">デスクトップの共有を開始するには、共有するユーザーに以下のアクセス コードを通知してください。</translation>
-<translation id="2851674870054673688">共有するユーザーがこのコードを入力すると、共有セッションが開始されます。</translation>
-<translation id="7215059001581613786">PIN は 6 桁以上で入力してください。</translation>
-<translation id="8178433417677596899">リモート テクニカル サポートに最適な、ユーザー同士の画面共有。</translation>
-<translation id="5702987232842159181">接続済み:</translation>
-<translation id="811307782653349804">どこからでも自分のパソコンにアクセスできます。</translation>
-<translation id="4430915108080446161">アクセス コードを生成しています...</translation>
-<translation id="3776024066357219166">Chrome リモート デスクトップ セッションが終了しました。</translation>
-<translation id="5708869785009007625">デスクトップは現在 <ph name="USER"/> と共有されています。</translation>
-<translation id="9188433529406846933">承認</translation>
-<translation id="701976023053394610">リモート サポート</translation>
-<translation id="809687642899217504">マイ パソコン</translation>
-<translation id="6965382102122355670">OK</translation>
-<translation id="5064360042339518108"><ph name="HOSTNAME"/>（オフライン）</translation>
-<translation id="4686372254213217147">元のサイズ</translation>
-<translation id="837021510621780684">このパソコンからの接続</translation>
-
-<translation id="4808503597364150972"><ph name="HOSTNAME"/> の PIN を入力してください。</translation>
-<translation id="5156271271724754543">両方のボックスに同じ PIN を入力してください。</translation>
-<translation id="5625493749705183369">このパソコンから他のパソコンに、または他のパソコンからこのパソコンに、インターネットを経由して安全にアクセスできるようになります。</translation>
-<translation id="7401733114166276557">Chrome リモート デスクトップ</translation>
-<translation id="579702532610384533">再接続</translation>
-<translation id="7144878232160441200">再試行</translation>
-<translation id="7948001860594368197">画面のオプション</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
-<translation id="6091564239975589852">キーを送信</translation>
-<translation id="1369030621715708553">PrtScn</translation>
-<translation id="3908017899227008678">ウィンドウに合わせて縮小</translation>
-<translation id="3950820424414687140">ログイン</translation>
-<translation id="5222676887888702881">ログアウト</translation>
-<translation id="7319983568955948908">共有を停止</translation>
-<translation id="2841013758207633010">接続日時</translation>
-<translation id="6193698048504518729"><ph name="HOSTNAME"/> に接続</translation>
-<translation id="4430435636878359009">このパソコンへのリモート接続を無効にする</translation>
-<translation id="332624996707057614">パソコン名を編集</translation>
-<translation id="409800995205263688">注: ポリシー設定に基づき、接続が許可されるのはこのネットワーク内のパソコン間のみとなります。</translation>
 <translation id="5843054235973879827">この操作が安全な理由</translation>
+<translation id="5619148062500147964">このパソコンへの接続</translation>
+<translation id="4068946408131579958">すべての接続</translation>
+<translation id="2208514473086078157">ポリシー設定により、Chrome リモート デスクトップのホストとしてこのパソコンを共有することはできません。詳しくはシステム管理者にお問い合わせください。</translation>
+<translation id="2801119484858626560">互換性のないバージョンの Chrome リモート デスクトップが検出されました。最新バージョンの Chrome と Chrome リモート デスクトップが両方のパソコンにインストールされていることを確認して、もう一度お試しください。</translation>
+<translation id="2805036638902441020">サーバーがネットワーク リクエストに応答しませんでした。</translation>
+<translation id="6998989275928107238">接続先</translation>
+<translation id="3258789396564295715">Chrome リモート デスクトップを使用して、このパソコンに安全にアクセスできます。</translation>
+<translation id="4808503597364150972"><ph name="HOSTNAME"/> の PIN を入力してください。</translation>
+<translation id="7672203038394118626">このパソコンのリモート接続が無効になりました。</translation>
+<translation id="332624996707057614">パソコン名を編集</translation>
+<translation id="1996161829609978754">Chromoting ホスト インストーラをダウンロードしています。ダウンロードが完了したら、続行する前にインストーラを実行してください。</translation>
+<translation id="7658239707568436148">キャンセル</translation>
+<translation id="7782471917492991422">お使いのパソコンの電源管理設定で、アイドル状態のときにスリープにならないように設定されていることをご確認ください。</translation>
+<translation id="2707879711568641861">Chrome リモート デスクトップに必要なコンポーネントが見つかりません。最新のバージョンがインストールされていることを確認して、もう一度お試しください。</translation>
+<translation id="2499160551253595098">Chrome リモート デスクトップの改善のため、使用統計情報とクラッシュ レポートの収集に協力する</translation>
+<translation id="8864965950780407789">Chromoting を使用するには、このパソコンに拡張アクセス許可を付与する必要があります。この作業は 1 回だけ必要です。</translation>
+<translation id="8355326866731426344">このアクセス コードは <ph name="TIMEOUT"/> で期限切れとなります。</translation>
+<translation id="6198252989419008588">PIN を変更</translation>
+<translation id="170207782578677537">このパソコンを登録できませんでした。</translation>
+<translation id="4804818685124855865">切断</translation>
+<translation id="5708869785009007625">デスクトップは現在 <ph name="USER"/> と共有されています。</translation>
+<translation id="5601503069213153581">PIN</translation>
+<translation id="5222676887888702881">ログアウト</translation>
+<translation id="5064360042339518108"><ph name="HOSTNAME"/>（オフライン）</translation>
+<translation id="4472575034687746823">利用を開始</translation>
+<translation id="2813770873348017932">無効な PIN を使用した接続が試みられたため、リモートのパソコンへの接続が一時的にブロックされています。しばらくしてからもう一度お試しください。</translation>
+<translation id="6746493157771801606">履歴をクリア</translation>
+<translation id="4430435636878359009">このパソコンへのリモート接続を無効にする</translation>
+<translation id="9188433529406846933">承認</translation>
+<translation id="2851674870054673688">共有するユーザーがこのコードを入力すると、共有セッションが開始されます。</translation>
+<translation id="5593560073513909978">このサービスは一時的に利用できなくなっています。しばらくしてからもう一度お試しください。</translation>
+<translation id="3908017899227008678">ウィンドウに合わせて縮小</translation>
+<translation id="1199593201721843963">リモート接続を無効にする</translation>
+<translation id="5379087427956679853">Chrome リモート デスクトップを使用すると、パソコンをウェブ経由で安全に共有できます。共有するには両方のユーザーが Chrome リモート デスクトップ アプリを実行している必要があります。このアプリは <ph name="URL"/> から入手できます。</translation>
+<translation id="1409991159633941777">Chrome リモート デスクトップに必要なコンポーネントが見つかりません。実行している Chrome のバージョンが最新であることを確認して、もう一度お試しください。</translation>
+<translation id="174018511426417793">パソコンが登録されていません。パソコンへのリモート接続を有効にするには、対象となるパソコンに Chrome リモート デスクトップをインストールし、[<ph name="BUTTON_NAME"/>] をクリックしてください。</translation>
+<translation id="8525306231823319788">全画面表示</translation>
+<translation id="5702987232842159181">接続済み:</translation>
+<translation id="4736223761657662401">接続履歴</translation>
+<translation id="4430915108080446161">アクセス コードを生成しています...</translation>
+<translation id="8228265668171617545">互換性のないバージョンの Chromoting が検出されました。最新バージョンの Chrome と Chromoting が両方のパソコンにインストールされていることを確認して、もう一度お試しください。</translation>
+<translation id="6985691951107243942"><ph name="HOSTNAME"/> へのリモート接続を無効にしてもよろしいですか？元に戻す場合は、該当のパソコンにアクセスして接続を再び有効にする必要があります。</translation>
+<translation id="9149992051684092333">デスクトップの共有を開始するには、共有するユーザーに以下のアクセス コードをお知らせください。</translation>
+<translation id="409800995205263688">注: ポリシー設定に基づき、接続が許可されるのはこのネットワーク内のパソコン間のみとなります。</translation>
+<translation id="2353140552984634198">Chromoting を使用して、このパソコンに安全にアクセスできます。</translation>
+<translation id="4481276415609939789">パソコンが登録されていません。パソコンへのリモート接続を有効にするには、対象となるパソコンに Chromoting をインストールし、[<ph name="BUTTON_NAME"/>] をクリックしてください。</translation>
+<translation id="2013884659108657024">Chrome リモート デスクトップ ホスト インストーラをダウンロードしています。ダウンロードが完了したら、続行する前にインストーラを実行してください。</translation>
+<translation id="1742469581923031760">接続しています...</translation>
+<translation id="6748108480210050150">接続元</translation>
+<translation id="3950820424414687140">ログイン</translation>
+<translation id="1291443878853470558">Chromoting を使用してこのパソコンにアクセスするには、リモート接続を有効にする必要があります。</translation>
+<translation id="6091564239975589852">キーを送信</translation>
+<translation id="4572065712096155137">アクセス</translation>
+<translation id="5908809458024685848">Chromoting にログインしていません。ログインしてもう一度お試しください。</translation>
+<translation id="7401733114166276557">Chrome リモート デスクトップ</translation>
+<translation id="3362124771485993931">PIN を再入力</translation>
+<translation id="4686372254213217147">元のサイズ</translation>
+<translation id="154040539590487450">リモート アクセス サービスを開始できませんでした。</translation>
+<translation id="7948001860594368197">画面のオプション</translation>
+<translation id="8172070902751707422">認証に失敗しました。Chrome リモート デスクトップにもう一度ログインしてください。</translation>
+<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
+<translation id="5254120496627797685">このページを閉じると、Chrome リモート デスクトップ セッションが終了します。</translation>
+<translation id="173559734173571936">Chrome リモート デスクトップを使用するには、このパソコンに拡張アクセス許可を付与する必要があります。この作業は 1 回だけ必要です。</translation>
+<translation id="9032136467203159543">Chromoting に必要なコンポーネントが見つかりません。最新のバージョンがインストールされていることを確認して、もう一度お試しください。</translation>
+<translation id="1342297293546459414">共有パソコンの画面を見ながら操作します。</translation>
+<translation id="701976023053394610">リモート サポート</translation>
+<translation id="6193698048504518729"><ph name="HOSTNAME"/> に接続</translation>
+<translation id="3020807351229499221">PIN を更新できませんでした。しばらくしてからもう一度お試しください。</translation>
+<translation id="579702532610384533">再接続</translation>
+<translation id="4211066471404647515">Chromoting に必要なコンポーネントが見つかりません。実行している Chrome のバージョンが最新であることを確認して、もう一度お試しください。</translation>
+<translation id="5265129178187621741">（この機能は現在 Chromebook に対応していません。対応までしばらくお待ちください。）</translation>
+<translation id="5156271271724754543">両方のボックスに同じ PIN を入力してください。</translation>
+<translation id="4361728918881830843">別のパソコンへのリモート接続を有効にするには、対象となるパソコンに Chrome リモート デスクトップをインストールし、[<ph name="BUTTON_NAME"/>] をクリックしてください。</translation>
+<translation id="4913529628896049296">接続を待機しています...</translation>
+<translation id="5714695932513333758">接続履歴</translation>
+<translation id="811307782653349804">どこからでも自分のパソコンにアクセスできます。</translation>
+<translation id="2366718077645204424">ホストにアクセスできません。お使いのネットワークの設定が原因であることが考えられます。</translation>
+<translation id="3776024066357219166">Chrome リモート デスクトップ セッションが終了しました。</translation>
+<translation id="5625493749705183369">このパソコンから他のパソコンに、または他のパソコンからこのパソコンに、インターネットを経由して安全にアクセスできるようになります。</translation>
+<translation id="2699970397166997657">Chromoting</translation>
+<translation id="897805526397249209">別のパソコンへのリモート接続を有効にするには、対象となるパソコンに Chromoting をインストールし、[<ph name="BUTTON_NAME"/>] をクリックしてください。</translation>
+<translation id="809687642899217504">マイ パソコン</translation>
+<translation id="3106379468611574572">リモートのパソコンが接続リクエストに応答しません。リモートのパソコンがネットワークに接続していることを確認して、もう一度お試しください。</translation>
+<translation id="2359808026110333948">続行</translation>
+<translation id="1643640058022401035">このページを閉じると、Chromoting セッションが終了します。</translation>
+<translation id="2235518894410572517">このパソコンが共有され、他のユーザーがこのパソコンの画面を見ながら操作できるようになります。</translation>
+<translation id="1023096696228309145">アクセス先のパソコンのユーザーに、[今すぐ共有] ボタンをクリックしてアクセス コードを提供するよう依頼してください。</translation>
+<translation id="4006787130661126000">Chrome リモート デスクトップを使用してこのパソコンにアクセスするには、リモート接続を有効にする必要があります。</translation>
+<translation id="6930242544192836755">接続時間</translation>
+<translation id="6527303717912515753">共有</translation>
+<translation id="2926340305933667314">このパソコンへのリモート アクセスを無効にできませんでした。しばらくしてからもう一度お試しください。</translation>
+<translation id="2089514346391228378">このパソコンのリモート接続が有効になりました。</translation>
+<translation id="8246880134154544773">認証に失敗しました。Chromoting にもう一度ログインしてください。</translation>
+<translation id="1654128982815600832">このパソコンのリモート接続を有効にしています...</translation>
+<translation id="7038683108611689168">Chromoting の改善のため、使用統計情報とクラッシュ レポートの収集に協力する</translation>
+<translation id="6040143037577758943">閉じる</translation>
+<translation id="7649070708921625228">ヘルプ</translation>
+<translation id="4176825807642096119">アクセス コード</translation>
+<translation id="7144878232160441200">再読み込み</translation>
+<translation id="4703799847237267011">Chromoting セッションが終了しました。</translation>
+<translation id="1369030621715708553">PrtScn</translation>
+<translation id="8178433417677596899">リモート テクニカル サポートに最適な、ユーザー同士の画面共有。</translation>
+<translation id="652218476070540101">このパソコン用の PIN を更新しています...</translation>
+<translation id="5308380583665731573">接続</translation>
+<translation id="7319983568955948908">共有を停止</translation>
+<translation id="6668065415969892472">PIN を更新しました。</translation>
+<translation id="4277736576214464567">アクセス コードが無効です。もう一度入力してください。</translation>
+<translation id="7729639150174291243">Chrome リモート デスクトップにログインしていません。ログインしてもう一度お試しください。</translation>
+<translation id="2841013758207633010">時間</translation>
+<translation id="6011539954251327702">Chromoting を使用すると、パソコンをウェブ経由で安全に共有できます。共有するには両方のユーザーが Chromoting アプリを実行している必要があります。このアプリは <ph name="URL"/> から入手できます。</translation>
+<translation id="2919669478609886916">現在このパソコンを別のユーザーと共有しています。共有を継続しますか？</translation>
+<translation id="4207623512727273241">続行する前にインストーラを実行してください。</translation>
+<translation id="837021510621780684">このパソコンからの接続</translation>
+<translation id="7215059001581613786">PIN は 6 桁以上で入力してください。</translation>
+<translation id="1546934824884762070">予期しないエラーが発生しました。この問題をデベロッパーに報告してください。</translation>
+<translation id="6965382102122355670">OK</translation>
+<translation id="3403830762023901068">ポリシー設定により、Chromoting のホストとしてこのパソコンを共有することはできません。詳しくはシステム管理者にお問い合わせください。</translation>
+<translation id="4394049700291259645">無効にする</translation>
+<translation id="4156740505453712750">このパソコンへのアクセスを保護するには、<ph name="BOLD_START"/>6 桁以上<ph name="BOLD_END"/>の PIN を選択してください。この PIN は別の場所から接続するときに必要となります。</translation>
 </translationbundle>

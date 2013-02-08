@@ -1,114 +1,126 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
-<translation id="4176825807642096119">Přístupový kód</translation>
-<translation id="8355326866731426344">Platnost tohoto přístupového kódu vyprší za <ph name="TIMEOUT"/></translation>
-<translation id="4068946408131579958">Všechna připojení</translation>
-<translation id="5601503069213153581">Kód PIN</translation>
-<translation id="3362124771485993931">Ověření kódu PIN</translation>
-<translation id="7658239707568436148">Zrušit</translation>
-<translation id="6746493157771801606">Vymazat historii</translation>
-<translation id="6040143037577758943">Zavřít</translation>
-<translation id="5254120496627797685">Pokud opustíte tuto stránku, relace Vzdálené plochy Chrome bude ukončena.</translation>
-<translation id="5308380583665731573">Připojit</translation>
-<translation id="6985691951107243942">Opravdu chcete zakázat vzdálená připojení k počítači <ph name="HOSTNAME"/>? Pokud později své rozhodnutí změníte, bude nutné připojení povolit přímo z uvedeného počítače.</translation>
-<translation id="6748108480210050150">Odkud</translation>
-<translation id="5714695932513333758">Historie připojení</translation>
-<translation id="4736223761657662401">Historie připojení</translation>
-<translation id="6998989275928107238">Kam</translation>
-<translation id="2359808026110333948">Pokračovat</translation>
-<translation id="2919669478609886916">Momentálně sdílíte tento počítač s jiným uživatelem. Chcete ve sdílení pokračovat?</translation>
-<translation id="173559734173571936">Chcete-li používat Vzdálenou plochu Chrome, je třeba udělit rozšířená oprávnění k přístupu do vašeho počítače. Tato oprávnění je třeba udělit pouze jednou.</translation>
-<translation id="1023096696228309145">Požádejte uživatele, jehož počítač chcete sdílet, aby kliknul na položku Sdílet a poskytl vám přístupový kód.</translation>
-<translation id="5379087427956679853">Vzdálená plocha Chrome vám umožňuje bezpečně sdílet svůj počítač přes internet. Oba uživatelé musí mít spuštěnou aplikaci Vzdálená plocha Chrome, kterou najdete na adrese <ph name="URL"/>.</translation>
-<translation id="4394049700291259645">Zakázat</translation>
-<translation id="4314644002001494905">Odpojit (Ctrl + Alt + Esc)</translation>
-<translation id="8342538585421421741">Odpojit (Opt + Ctrl + Esc)</translation>
-
-<translation id="4804818685124855865">Odpojit</translation>
-
-<translation id="6930242544192836755">Doba trvání</translation>
-<translation id="8172070902751707422">Ověření selhalo. Přihlaste se prosím ke Vzdálené ploše Chrome znovu.</translation>
-<translation id="2707879711568641861">Některé součásti potřebné pro Vzdálenou plochu Chrome chybí. Zkontrolujte, zda je nainstalována nejnovější verze, a zkuste to znovu.</translation>
-<translation id="2813770873348017932">Připojení ke vzdálenému počítači jsou dočasně zablokována, protože došlo k několika pokusům o připojení s nesprávným kódem PIN. Opakujte akci později.</translation>
-<translation id="3106379468611574572">Vzdálený počítač nereaguje na žádosti o připojení. Zkontrolujte, zda je online, a zkuste to znovu.</translation>
-<translation id="851521648418609391">Byla zjištěna nekompatibilní verze Vzdálené plochy Chrome. Zkontrolujte, zda máte nejnovější verzi prohlížeče Google Chrome a Vzdálené plochy Chrome na obou počítačích, a zkuste to znovu.</translation>
-<translation id="4277736576214464567">Přístupový kód je neplatný. Zkuste to prosím znovu.</translation>
-<translation id="2208514473086078157">Nastavení zásad nepovoluje sdílení tohoto počítače jako hostitele Vzdálené plochy Chrome. Požádejte o pomoc svého správce systému.</translation>
-<translation id="2366718077645204424">Hostitele nelze nalézt. Pravděpodobnou příčinou je aktuální konfigurace sítě.</translation>
-<translation id="7729639150174291243">Nejste přihlášeni ke Vzdálené ploše Chrome. Přihlaste se prosím a zkuste to znovu.</translation>
-<translation id="4019628723432694459">Některé součásti potřebné pro Vzdálenou plochu Chrome chybí. Zkontrolujte, zda používáte nejnovější verzi prohlížeče Google Chrome, a zkuste to znovu.</translation>
-<translation id="2805036638902441020">Serveru se nepodařilo odpovědět na požadavek sítě.</translation>
-<translation id="5593560073513909978">Služba je dočasně nedostupná. Zkuste to prosím znovu později.</translation>
-<translation id="1546934824884762070">Došlo k neočekávané chybě. Nahlaste tento problém prosím vývojářům.</translation>
-<translation id="1742469581923031760">Připojování...</translation>
-<translation id="4913529628896049296">čeká se na připojení...</translation>
-<translation id="8525306231823319788">Celá obrazovka</translation>
-<translation id="4472575034687746823">Začínáme</translation>
-<translation id="7649070708921625228">Nápověda</translation>
-<translation id="4572065712096155137">Přihlásit se</translation>
-<translation id="1342297293546459414">Umožňuje zobrazit a ovládat sdílený počítač.</translation>
-<translation id="3258789396564295715">K tomuto počítači můžete bezpečně přistupovat pomocí Vzdálené plochy Chrome.</translation>
-<translation id="6198252989419008588">Změnit kód PIN</translation>
-<translation id="1199593201721843963">Zakázat vzdálená připojení</translation>
 <translation id="7606912958770842224">Povolit vzdálená připojení</translation>
-<translation id="4006787130661126000">Chcete-li přistupovat k tomuto počítači prostřednictvím Vzdálené plochy Chrome, je třeba povolit vzdálená připojení.</translation>
-<translation id="4361728918881830843">Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj Vzdálenou plochu Chrome a poté klikněte na tlačítko <ph name="BUTTON_NAME"/>.</translation>
-<translation id="174018511426417793">Nejsou zaregistrovány žádné počítače. Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj Vzdálenou plochu Chrome a poté klikněte na tlačítko <ph name="BUTTON_NAME"/>.</translation>
-<translation id="2499160551253595098">Pomozte nám Vzdálenou plochu Chrome vylepšit tím, že nám povolíte shromažďovat statistiky využití a zprávy o selhání.</translation>
-<translation id="4156740505453712750">Za účelem ochrany tohoto počítače prosím vyberte kód PIN, který bude mít <ph name="BOLD_START"/>alespoň 6 číslic<ph name="BOLD_END"/>. Tento kód PIN bude vyžadován při připojování z jiného místa.</translation>
-<translation id="154040539590487450">Spuštění služby pro vzdálený přístup se nezdařilo.</translation>
-<translation id="2013884659108657024">Chrome stahuje instalační program hostitele Vzdálené plochy Chrome. Po stažení instalační program spusťte a poté pokračujte.</translation>
-<translation id="4207623512727273241">Před pokračováním prosím spusťte stažený instalační program.</translation>
-<translation id="170207782578677537">Registrace tohoto počítače se nezdařila.</translation>
-<translation id="2089514346391228378">Vzdálená připojení k tomuto počítači byla povolena.</translation>
-<translation id="7782471917492991422">Zkontrolujte prosím nastavení řízení spotřeby svého počítače a ujistěte se, zda není nastaven na přechod do režimu spánku při nečinnosti.</translation>
-<translation id="1654128982815600832">Povolování vzdálených připojení k tomuto počítači…</translation>
-<translation id="2926340305933667314">Vzdálený přístup k tomuto počítači se nepodařilo zakázat. Zkuste to prosím později.</translation>
-<translation id="7672203038394118626">Vzdálená připojení k tomuto počítači byla zakázána.</translation>
 <translation id="1841799852846221389">Zakazování vzdálených připojení k tomuto počítači…</translation>
-<translation id="6668065415969892472">Váš kód PIN byl aktualizován.</translation>
-<translation id="652218476070540101">Aktualizace kódu PIN pro tento počítač…</translation>
-<translation id="3020807351229499221">Aktualizace kódu PIN se nezdařila. Zkuste to prosím později.</translation>
-<translation id="6527303717912515753">Sdílet</translation>
-<translation id="2235518894410572517">Sdílet tento počítač, aby jej mohl jiný uživatel zobrazit a ovládat.</translation>
-<translation id="5265129178187621741">(Tato funkce zatím pro Chromebooky není k dispozici, ale brzy bude.)</translation>
-<translation id="5619148062500147964">K tomuto počítači</translation>
-<translation id="9149992051684092333">Chcete-li začít sdílet svoji plochu, poskytněte níže uvedený přístupový kód osobě, která vám bude pomáhat.</translation>
-<translation id="2851674870054673688">Po zadání kódu bude spuštěna relace sdílení.</translation>
-<translation id="7215059001581613786">Zadejte kód PIN obsahující 6 nebo více číslic.</translation>
-<translation id="8178433417677596899">Sdílení obrazovky mezi uživateli je ideální pro vzdálenou technickou podporu.</translation>
-<translation id="5702987232842159181">Připojeno:</translation>
-<translation id="811307782653349804">Přistupujte ke svému počítači odkudkoli.</translation>
-<translation id="4430915108080446161">Vytváření přístupového kódu...</translation>
-<translation id="3776024066357219166">Relace Vzdálené plochy Chrome byla ukončena.</translation>
-<translation id="5708869785009007625">Aktuálně sdílíte plochu s uživatelem <ph name="USER"/>.</translation>
-<translation id="9188433529406846933">Autorizovat</translation>
-<translation id="701976023053394610">Vzdálená pomoc</translation>
-<translation id="809687642899217504">Mé počítače</translation>
-<translation id="6965382102122355670">OK</translation>
-<translation id="5064360042339518108"><ph name="HOSTNAME"/> (offline)</translation>
-<translation id="4686372254213217147">Původní velikost</translation>
-<translation id="837021510621780684">Z tohoto počítače</translation>
-
-<translation id="4808503597364150972">Zadejte kód PIN pro počítač <ph name="HOSTNAME"/>.</translation>
-<translation id="5156271271724754543">Zadejte do obou polí stejný kód PIN.</translation>
-<translation id="5625493749705183369">Přistupujte k jiným počítačům nebo umožněte dalšímu uživateli přistupovat k vašemu počítači bezpečně přes internet.</translation>
-<translation id="7401733114166276557">Vzdálená plocha Chrome</translation>
-<translation id="579702532610384533">Znovu připojit</translation>
-<translation id="7144878232160441200">Zkusit znovu</translation>
-<translation id="7948001860594368197">Možnosti obrazovky</translation>
-<translation id="6146986332407778716">Ctrl + Alt + Del</translation>
-<translation id="6091564239975589852">Odeslat kombinaci kláves</translation>
-<translation id="1369030621715708553">PrtScn</translation>
-<translation id="3908017899227008678">Zmenšit dle místa</translation>
-<translation id="3950820424414687140">Přihlásit se</translation>
-<translation id="5222676887888702881">Odhlásit se</translation>
-<translation id="7319983568955948908">Ukončit sdílení</translation>
-<translation id="2841013758207633010">Čas</translation>
-<translation id="6193698048504518729">Připojit k počítači <ph name="HOSTNAME"/></translation>
-<translation id="4430435636878359009">Zakázat vzdálená připojení k tomuto počítači</translation>
-<translation id="332624996707057614">Upravit název počítače</translation>
-<translation id="409800995205263688">POZNÁMKA: Nastavení zásad umožňují spojení pouze mezi počítači v rámci vaší sítě.</translation>
 <translation id="5843054235973879827">Proč je toto připojení bezpečné?</translation>
+<translation id="5619148062500147964">K tomuto počítači</translation>
+<translation id="4068946408131579958">Všechna připojení</translation>
+<translation id="2208514473086078157">Nastavení zásad neumožňuje sdílet tento počítač jako hostitel Vzdálené plochy Chrome. Kontaktujte administrátora systému a požádejte ho o pomoc.</translation>
+<translation id="2801119484858626560">Byla zjištěna nekompatibilní verze Vzdálené plochy Chrome. Zkontrolujte, zda máte v obou počítačích nejnovější verzi prohlížeče Google Chrome a Vzdálené plochy Chrome, a zkuste to znovu.</translation>
+<translation id="2805036638902441020">Serveru se nepodařilo odpovědět na požadavek sítě.</translation>
+<translation id="6998989275928107238">Hostitel</translation>
+<translation id="3258789396564295715">K tomuto počítači se můžete bezpečně připojit pomocí Vzdálené plochy Chrome.</translation>
+<translation id="4808503597364150972">Zadejte kód PIN pro počítač <ph name="HOSTNAME"/>.</translation>
+<translation id="7672203038394118626">Vzdálená připojení k tomuto počítači byla zakázána.</translation>
+<translation id="332624996707057614">Upravit název počítače</translation>
+<translation id="1996161829609978754">Chrome stahuje instalační program hostitele funkce Chromoting. Po stažení instalační program spusťte a poté pokračujte.</translation>
+<translation id="7658239707568436148">Zrušit</translation>
+<translation id="7782471917492991422">Zkontrolujte prosím nastavení řízení spotřeby svého počítače a ujistěte se, zda není nastaven na přechod do režimu spánku při nečinnosti.</translation>
+<translation id="2707879711568641861">Některé součásti potřebné pro Vzdálenou plochu Chrome chybí. Zkontrolujte, zda je nainstalována nejnovější verze, a zkuste to znovu.</translation>
+<translation id="2499160551253595098">Pomozte nám Vzdálenou plochu Chrome vylepšit tím, že nám povolíte shromažďovat statistiky využití a zprávy o selhání.</translation>
+<translation id="8864965950780407789">Chcete-li používat funkci Chromoting, je třeba udělit rozšířená oprávnění k přístupu do vašeho počítače. Tato oprávnění je třeba udělit pouze jednou.</translation>
+<translation id="8355326866731426344">Platnost tohoto přístupového kódu vyprší za <ph name="TIMEOUT"/></translation>
+<translation id="6198252989419008588">Změnit kód PIN</translation>
+<translation id="170207782578677537">Registrace tohoto počítače se nezdařila.</translation>
+<translation id="4804818685124855865">Odpojit</translation>
+<translation id="5708869785009007625">Aktuálně sdílíte plochu s uživatelem <ph name="USER"/>.</translation>
+<translation id="5601503069213153581">PIN</translation>
+<translation id="5222676887888702881">Odhlásit se</translation>
+<translation id="5064360042339518108"><ph name="HOSTNAME"/> (offline)</translation>
+<translation id="4472575034687746823">Začít</translation>
+<translation id="2813770873348017932">Připojení ke vzdálenému počítači jsou dočasně zablokována, protože došlo k několika pokusům o připojení s nesprávným kódem PIN. Opakujte akci později.</translation>
+<translation id="6746493157771801606">Vymazat historii</translation>
+<translation id="4430435636878359009">Zakázat vzdálená připojení k tomuto počítači</translation>
+<translation id="9188433529406846933">Autorizovat</translation>
+<translation id="2851674870054673688">Po zadání kódu bude spuštěna relace sdílení.</translation>
+<translation id="5593560073513909978">Služba je dočasně nedostupná. Zkuste to prosím znovu později.</translation>
+<translation id="3908017899227008678">Zmenšit dle místa</translation>
+<translation id="1199593201721843963">Zakázat vzdálená připojení</translation>
+<translation id="5379087427956679853">Vzdálená plocha Chrome vám umožňuje bezpečně sdílet svůj počítač přes internet. Oba uživatelé musí mít spuštěnou aplikaci Vzdálená plocha Chrome, kterou najdete na adrese <ph name="URL"/>.</translation>
+<translation id="1409991159633941777">Některé součásti potřebné pro Vzdálenou plochu Chrome chybí. Zkontrolujte, zda používáte nejnovější verzi prohlížeče Chrome, a zkuste to znovu.</translation>
+<translation id="174018511426417793">Nemáte zaregistrované žádné počítače. Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj Vzdálenou plochu Chrome a klikněte na tlačítko <ph name="BUTTON_NAME"/>.</translation>
+<translation id="8525306231823319788">Celá obrazovka</translation>
+<translation id="5702987232842159181">Připojeno:</translation>
+<translation id="4736223761657662401">Historie připojení</translation>
+<translation id="4430915108080446161">Vytváření přístupového kódu...</translation>
+<translation id="8228265668171617545">Byla zjištěna nekompatibilní verze aplikace Chromoting. Zkontrolujte prosím, zda máte v obou počítačích nainstalovanou nejnovější verzi prohlížeče Chrome a aplikace Chromoting, a zkuste to znovu.</translation>
+<translation id="6985691951107243942">Opravdu chcete zakázat vzdálená připojení k počítači <ph name="HOSTNAME"/>? Pokud později své rozhodnutí změníte, bude nutné připojení povolit přímo z uvedeného počítače.</translation>
+<translation id="9149992051684092333">Chcete-li začít sdílet svoji plochu, poskytněte níže uvedený přístupový kód osobě, která vám bude pomáhat.</translation>
+<translation id="409800995205263688">POZNÁMKA: Nastavení zásad umožňují spojení pouze mezi počítači v rámci vaší sítě.</translation>
+<translation id="2353140552984634198">K tomuto počítači se můžete bezpečně připojit pomocí funkce Chromoting.</translation>
+<translation id="4481276415609939789">Nemáte zaregistrované žádné počítače. Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj aplikaci Chromoting a klikněte na tlačítko <ph name="BUTTON_NAME"/>.</translation>
+<translation id="2013884659108657024">Chrome stahuje instalační program hostitele Vzdálené plochy Chrome. Po stažení instalační program spusťte a poté pokračujte.</translation>
+<translation id="1742469581923031760">Připojování...</translation>
+<translation id="6748108480210050150">Klient</translation>
+<translation id="3950820424414687140">Přihlášení</translation>
+<translation id="1291443878853470558">Chcete-li se k tomuto počítači připojit prostřednictvím funkce Chromoting, je třeba povolit vzdálená připojení.</translation>
+<translation id="6091564239975589852">Odeslat kombinaci kláves</translation>
+<translation id="4572065712096155137">Přístup</translation>
+<translation id="5908809458024685848">Nejste přihlášeni do aplikace Chromoting. Přihlaste se prosím a zkuste to znovu.</translation>
+<translation id="7401733114166276557">Vzdálená plocha Chrome</translation>
+<translation id="3362124771485993931">Ověření kódu PIN</translation>
+<translation id="4686372254213217147">Původní velikost</translation>
+<translation id="154040539590487450">Spuštění služby pro vzdálený přístup se nezdařilo.</translation>
+<translation id="7948001860594368197">Možnosti obrazovky</translation>
+<translation id="8172070902751707422">Ověření selhalo. Přihlaste se prosím ke Vzdálené ploše Chrome znovu.</translation>
+<translation id="6146986332407778716">Ctrl + Alt + Del</translation>
+<translation id="5254120496627797685">Pokud opustíte tuto stránku, relace Vzdálené plochy Chrome bude ukončena.</translation>
+<translation id="173559734173571936">Chcete-li používat Vzdálenou plochu Chrome, je třeba udělit rozšířená oprávnění k přístupu do vašeho počítače. Tato oprávnění je třeba udělit pouze jednou.</translation>
+<translation id="9032136467203159543">Některé součásti potřebné pro Chromoting chybí. Zkontrolujte, zda je nainstalována nejnovější verze, a zkuste to znovu.</translation>
+<translation id="1342297293546459414">Umožňuje zobrazit a ovládat sdílený počítač.</translation>
+<translation id="701976023053394610">Vzdálená pomoc</translation>
+<translation id="6193698048504518729">Připojit k počítači <ph name="HOSTNAME"/></translation>
+<translation id="3020807351229499221">Aktualizace kódu PIN se nezdařila. Zkuste to prosím později.</translation>
+<translation id="579702532610384533">Znovu připojit</translation>
+<translation id="4211066471404647515">Některé součásti potřebné pro Chromoting chybí. Zkontrolujte, zda používáte nejnovější verzi prohlížeče Chrome, a zkuste to znovu.</translation>
+<translation id="5265129178187621741">(Tato funkce zatím pro Chromebooky není k dispozici, ale brzy bude.)</translation>
+<translation id="5156271271724754543">Zadejte do obou polí stejný kód PIN.</translation>
+<translation id="4361728918881830843">Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj Vzdálenou plochu Chrome a poté klikněte na tlačítko <ph name="BUTTON_NAME"/>.</translation>
+<translation id="4913529628896049296">čeká se na připojení...</translation>
+<translation id="5714695932513333758">Historie připojení</translation>
+<translation id="811307782653349804">Přistupujte ke svému počítači odkudkoli.</translation>
+<translation id="2366718077645204424">Hostitele nelze nalézt. Pravděpodobnou příčinou je aktuální konfigurace sítě.</translation>
+<translation id="3776024066357219166">Relace Vzdálené plochy Chrome byla ukončena.</translation>
+<translation id="5625493749705183369">Přistupujte k jiným počítačům nebo umožněte dalšímu uživateli přistupovat k vašemu počítači bezpečně přes internet.</translation>
+<translation id="2699970397166997657">Chromoting</translation>
+<translation id="897805526397249209">Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj aplikaci Chromoting a poté klikněte na tlačítko <ph name="BUTTON_NAME"/>.</translation>
+<translation id="809687642899217504">Mé počítače</translation>
+<translation id="3106379468611574572">Vzdálený počítač nereaguje na žádosti o připojení. Zkontrolujte, zda je online, a zkuste to znovu.</translation>
+<translation id="2359808026110333948">Pokračovat</translation>
+<translation id="1643640058022401035">Pokud opustíte tuto stránku, relace funkce Chromoting bude ukončena.</translation>
+<translation id="2235518894410572517">Sdílet tento počítač, aby jej mohl jiný uživatel zobrazit a ovládat.</translation>
+<translation id="1023096696228309145">Požádejte uživatele, jehož počítač chcete sdílet, aby kliknul na položku Sdílet a poskytl vám přístupový kód.</translation>
+<translation id="4006787130661126000">Chcete-li se k tomuto počítači připojit prostřednictvím Vzdálené plochy Chrome, je třeba povolit vzdálená připojení.</translation>
+<translation id="6930242544192836755">Délka</translation>
+<translation id="6527303717912515753">Sdílet</translation>
+<translation id="2926340305933667314">Vzdálený přístup k tomuto počítači se nepodařilo zakázat. Zkuste to prosím později.</translation>
+<translation id="2089514346391228378">Vzdálená připojení k tomuto počítači byla povolena.</translation>
+<translation id="8246880134154544773">Ověření selhalo. Přihlaste se prosím do aplikace Chromoting znovu.</translation>
+<translation id="1654128982815600832">Povolování vzdálených připojení k tomuto počítači…</translation>
+<translation id="7038683108611689168">Pomozte nám funkci Chromoting vylepšit tím, že nám povolíte shromažďovat statistiky využití a zprávy o selhání.</translation>
+<translation id="6040143037577758943">Zavřít</translation>
+<translation id="7649070708921625228">Nápověda</translation>
+<translation id="4176825807642096119">Přístupový kód</translation>
+<translation id="7144878232160441200">Opakovat</translation>
+<translation id="4703799847237267011">Relace funkce Chromoting byla ukončena.</translation>
+<translation id="1369030621715708553">PrtScn</translation>
+<translation id="8178433417677596899">Sdílení obrazovky mezi uživateli je ideální pro vzdálenou technickou podporu.</translation>
+<translation id="652218476070540101">Aktualizace kódu PIN pro tento počítač…</translation>
+<translation id="5308380583665731573">Připojit</translation>
+<translation id="7319983568955948908">Ukončit sdílení</translation>
+<translation id="6668065415969892472">Váš kód PIN byl aktualizován.</translation>
+<translation id="4277736576214464567">Přístupový kód je neplatný. Zkuste to prosím znovu.</translation>
+<translation id="7729639150174291243">Nejste přihlášeni ke Vzdálené ploše Chrome. Přihlaste se prosím a zkuste to znovu.</translation>
+<translation id="2841013758207633010">Čas</translation>
+<translation id="6011539954251327702">Funkce Chromoting umožňuje bezpečné sdílení počítače na webu. Oba uživatelé musí mít spuštěnou aplikaci Chromoting, kterou najdete na adrese <ph name="URL"/>.</translation>
+<translation id="2919669478609886916">Momentálně sdílíte tento počítač s jiným uživatelem. Chcete ve sdílení pokračovat?</translation>
+<translation id="4207623512727273241">Před pokračováním prosím spusťte stažený instalační program.</translation>
+<translation id="837021510621780684">Z tohoto počítače</translation>
+<translation id="7215059001581613786">Zadejte kód PIN obsahující 6 nebo více číslic.</translation>
+<translation id="1546934824884762070">Došlo k neočekávané chybě. Nahlaste prosím tento problém vývojářům.</translation>
+<translation id="6965382102122355670">OK</translation>
+<translation id="3403830762023901068">Nastavení zásad neumožňuje sdílet tento počítač jako hostitel funkce Chromoting. Kontaktujte administrátora systému a požádejte ho o pomoc.</translation>
+<translation id="4394049700291259645">Deaktivovat</translation>
+<translation id="4156740505453712750">Pokud chcete přístup k tomuto počítači zabezpečit, zvolte prosím kód PIN v délce <ph name="BOLD_START"/>alespoň šesti číslic<ph name="BOLD_END"/>. Tento kód PIN bude vyžadován při připojení z jiného místa.</translation>
 </translationbundle>

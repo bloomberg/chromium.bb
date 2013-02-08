@@ -1,114 +1,126 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
-<translation id="4176825807642096119">Åtkomstkod</translation>
-<translation id="8355326866731426344">Åtkomstkoden upphör att gälla om <ph name="TIMEOUT"/></translation>
-<translation id="4068946408131579958">Alla anslutningar</translation>
-<translation id="5601503069213153581">PIN-kod</translation>
-<translation id="3362124771485993931">Ange PIN-koden igen</translation>
-<translation id="7658239707568436148">Avbryt</translation>
-<translation id="6746493157771801606">Rensa historiken</translation>
-<translation id="6040143037577758943">Stäng</translation>
-<translation id="5254120496627797685">Om du lämnar sidan avslutas sessionen i Chrome Remote Desktop.</translation>
-<translation id="5308380583665731573">Anslut</translation>
-<translation id="6985691951107243942">Är du säker på att du vill inaktivera fjärranslutningar till <ph name="HOSTNAME"/>? Om du ångrar dig måste du besöka datorn för att kunna aktivera anslutningar igen.</translation>
-<translation id="6748108480210050150">Från</translation>
-<translation id="5714695932513333758">Anslutningshistorik</translation>
-<translation id="4736223761657662401">Anslutningshistorik</translation>
-<translation id="6998989275928107238">Till</translation>
-<translation id="2359808026110333948">Fortsätt</translation>
-<translation id="2919669478609886916">Du delar nu den här datorn med en annan användare. Vill du fortsätta att dela?</translation>
-<translation id="173559734173571936">Om du vill använda Chrome Remote Desktop måste du bevilja utökad åtkomstbehörighet till datorn. Du behöver bara göra det en gång.</translation>
-<translation id="1023096696228309145">Be användaren vars dator du vill få tillgång till att klicka på länken Dela nu och ge dig åtkomstkoden.</translation>
-<translation id="5379087427956679853">Med Chrome Remote Desktop kan du dela din dator via Internet på ett säkert sätt. Båda användarna måste köra appen Chrome Remote Desktop som du hittar på <ph name="URL"/>.</translation>
-<translation id="4394049700291259645">Inaktivera</translation>
-<translation id="4314644002001494905">Koppla från (Ctrl+Alt+Esc)</translation>
-<translation id="8342538585421421741">Koppla från (Opt+Ctrl+Esc)</translation>
-
-<translation id="4804818685124855865">Koppla från</translation>
-
-<translation id="6930242544192836755">Varaktighet</translation>
-<translation id="8172070902751707422">Autentiseringen misslyckades. Logga in på Chrome Remote Desktop igen.</translation>
-<translation id="2707879711568641861">Vissa komponenter som krävs för Chrome Remote Desktop saknas. Kontrollera att du har installerat den senaste versionen och försök igen.</translation>
-<translation id="2813770873348017932">Anslutningar till fjärrdatorn är tillfälligt blockerade eftersom någon försökt ansluta till fjärrdatorn med en ogiltig PIN-kod. Försök igen senare.</translation>
-<translation id="3106379468611574572">Fjärrdatorn svarar inte på anslutningsbegäran. Kontrollera att den är ansluten till Internet och försök igen.</translation>
-<translation id="851521648418609391">Du använder en inkompatibel version av Chrome Remote Desktop. Se till att den senaste versionen av Google Chrome och Chrome Remote Desktop har installerats på båda datorerna och försök igen.</translation>
-<translation id="4277736576214464567">Koden är ogiltig. Försök igen.</translation>
-<translation id="2208514473086078157">Enligt policyinställningarna får du inte dela den här datorn som en Chrome Remote Desktop-värd. Kontakta systemadministratören om du behöver hjälp.</translation>
-<translation id="2366718077645204424">Det går inte att nå värden. Detta beror troligen på konfigurationen av nätverket som du använder.</translation>
-<translation id="7729639150174291243">Du är inte inloggad på Chrome Remote Desktop. Logga in och försök igen.</translation>
-<translation id="4019628723432694459">Vissa komponenter som krävs för Chrome Remote Desktop saknas. Kontrollera att du använder den senaste versionen av Google Chrome och försök igen.</translation>
-<translation id="2805036638902441020">Servern kunde inte svara på nätverkets begäran.</translation>
-<translation id="5593560073513909978">Tjänsten är inte tillgänglig för närvarande. Försök igen senare.</translation>
-<translation id="1546934824884762070">Ett oväntat fel uppstod. Rapportera problemet till utvecklarna.</translation>
-<translation id="1742469581923031760">Anslutningen upprättas …</translation>
-<translation id="4913529628896049296">väntar på anslutning ...</translation>
-<translation id="8525306231823319788">Helskärm</translation>
-<translation id="4472575034687746823">Kom igång</translation>
-<translation id="7649070708921625228">Hjälp</translation>
-<translation id="4572065712096155137">Få åtkomst</translation>
-<translation id="1342297293546459414">Visa och styra en delad dator.</translation>
-<translation id="3258789396564295715">Du kan få säker åtkomst till den här datorn med Chrome Remote Desktop.</translation>
-<translation id="6198252989419008588">Byt PIN-kod</translation>
-<translation id="1199593201721843963">Inaktivera fjärranslutningar</translation>
 <translation id="7606912958770842224">Aktivera fjärranslutningar</translation>
-<translation id="4006787130661126000">Du måste aktivera fjärranslutningar om du vill använda Chrome Remote Desktop för att få åtkomst till den här datorn.</translation>
-<translation id="4361728918881830843">Om du vill aktivera fjärranslutning till en annan dator installerar du Chrome Remote Desktop på den och klickar på <ph name="BUTTON_NAME"/>.</translation>
-<translation id="174018511426417793">Du har inte registrerat några datorer. Om du vill aktivera fjärranslutning till en dator installerar du Chrome Remote Desktop på den och klickar på <ph name="BUTTON_NAME"/>.</translation>
-<translation id="2499160551253595098">Hjälp oss att förbättra Chrome Remote Desktop genom att låta oss samla in användningsstatistik och felrapporter.</translation>
-<translation id="4156740505453712750">Välj en PIN-kod med <ph name="BOLD_START"/>minst sex siffror<ph name="BOLD_END"/> om du vill skydda den här datorn från obehörig åtkomst. PIN-koden krävs vid anslutning från en annan plats.</translation>
-<translation id="154040539590487450">Det gick inte att starta fjärråtkomst.</translation>
-<translation id="2013884659108657024">Chrome hämtar installationsprogrammet för fjärranslutningsvärden Chrome Remote Desktop Host. Kör installationsprogrammet så fort hämtningen är klar.</translation>
-<translation id="4207623512727273241">Kör installationsprogrammet innan du fortsätter.</translation>
-<translation id="170207782578677537">Det gick inte att registrera datorn.</translation>
-<translation id="2089514346391228378">Fjärranslutningar har aktiverats för den här datorn.</translation>
-<translation id="7782471917492991422">Kontrollera datorns inställningar för energisparfunktioner och se till att den inte försätts i viloläge vid inaktivitet.</translation>
-<translation id="1654128982815600832">Fjärranslutningar aktiveras för den här datorn ...</translation>
-<translation id="2926340305933667314">Det gick inte att inaktivera fjärråtkomst till den här datorn. Försök igen senare.</translation>
-<translation id="7672203038394118626">Fjärranslutningar har inaktiverats för den här datorn.</translation>
 <translation id="1841799852846221389">Fjärranslutningar inaktiveras för den här datorn ...</translation>
-<translation id="6668065415969892472">PIN-koden har uppdaterats.</translation>
-<translation id="652218476070540101">PIN-koden för den här datorn uppdateras …</translation>
-<translation id="3020807351229499221">Det gick inte att uppdatera PIN-koden. Försök igen senare.</translation>
-<translation id="6527303717912515753">Dela</translation>
-<translation id="2235518894410572517">Dela den här datorn så att en annan användare kan visa och styra den.</translation>
-<translation id="5265129178187621741">(funktionen är ännu inte tillgängligt för Chromebooks ... håll utkik)</translation>
-<translation id="5619148062500147964">Till den här datorn</translation>
-<translation id="9149992051684092333">Om du vill dela ditt skrivbord ger du åtkomstkoden nedan till den som ska hjälpa dig.</translation>
-<translation id="2851674870054673688">När koden anges startar delningssessionen.</translation>
-<translation id="7215059001581613786">Ange en PIN-kod som består av minst sex siffror.</translation>
-<translation id="8178433417677596899">Skärmdelning mellan användare är perfekt för fjärrstyrd teknisk support.</translation>
-<translation id="5702987232842159181">Ansluten:</translation>
-<translation id="811307782653349804">Få åtkomst till din egen dator var du än är.</translation>
-<translation id="4430915108080446161">Åtkomstkod genereras ...</translation>
-<translation id="3776024066357219166">Chrome Remote Desktop-sessionen har avslutats.</translation>
-<translation id="5708869785009007625">Ditt skrivbord delas just nu med <ph name="USER"/>.</translation>
-<translation id="9188433529406846933">Auktorisera</translation>
-<translation id="701976023053394610">Fjärrhjälp</translation>
-<translation id="809687642899217504">Mina datorer</translation>
-<translation id="6965382102122355670">OK</translation>
-<translation id="5064360042339518108"><ph name="HOSTNAME"/> (offline)</translation>
-<translation id="4686372254213217147">Originalstorlek</translation>
-<translation id="837021510621780684">Från den här datorn</translation>
-
-<translation id="4808503597364150972">Ange din PIN-kod för <ph name="HOSTNAME"/>.</translation>
-<translation id="5156271271724754543">Ange samma PIN-kod i båda rutorna.</translation>
-<translation id="5625493749705183369">Få åtkomst till andra datorer eller ge andra åtkomst till din dator över Internet på ett säkert sätt.</translation>
-<translation id="7401733114166276557">Chrome Remote Desktop</translation>
-<translation id="579702532610384533">Anslut igen</translation>
-<translation id="7144878232160441200">Försök igen</translation>
-<translation id="7948001860594368197">Skärmalternativ</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
-<translation id="6091564239975589852">Skicka tangenter</translation>
-<translation id="1369030621715708553">PrtScn</translation>
-<translation id="3908017899227008678">Krymp den så att den passar in</translation>
-<translation id="3950820424414687140">Logga in</translation>
-<translation id="5222676887888702881">Logga ut</translation>
-<translation id="7319983568955948908">Sluta dela</translation>
-<translation id="2841013758207633010">Tid</translation>
-<translation id="6193698048504518729">Anslut till <ph name="HOSTNAME"/></translation>
-<translation id="4430435636878359009">Inaktivera fjärranslutningar till den här datorn</translation>
-<translation id="332624996707057614">Ändra datorns namn</translation>
-<translation id="409800995205263688">OBS! Enligt policyinställningarna tillåts endast anslutning mellan datorer i ditt nätverk.</translation>
 <translation id="5843054235973879827">Varför är det säkert?</translation>
+<translation id="5619148062500147964">Till den här datorn</translation>
+<translation id="4068946408131579958">Alla anslutningar</translation>
+<translation id="2208514473086078157">Enligt policyinställningarna får du inte dela den här datorn som en Chrome Remote Desktop-värd. Kontakta systemadministratören om du behöver hjälp.</translation>
+<translation id="2801119484858626560">Du använder en inkompatibel version av Chrome Remote Desktop. Se till att den senaste versionen av Chrome och Chrome Remote Desktop har installerats på båda datorerna och försök igen.</translation>
+<translation id="2805036638902441020">Servern kunde inte svara på nätverkets begäran.</translation>
+<translation id="6998989275928107238">Till</translation>
+<translation id="3258789396564295715">Du kan få säker åtkomst till den här datorn med Chrome Remote Desktop.</translation>
+<translation id="4808503597364150972">Ange din PIN-kod för <ph name="HOSTNAME"/>.</translation>
+<translation id="7672203038394118626">Fjärranslutningar har inaktiverats för den här datorn.</translation>
+<translation id="332624996707057614">Ändra datorns namn</translation>
+<translation id="1996161829609978754">Chrome hämtar installationsprogrammet för fjärranslutningsvärden Chromoting Host. Kör installationsprogrammet när hämtningen är klar.</translation>
+<translation id="7658239707568436148">Avbryt</translation>
+<translation id="7782471917492991422">Kontrollera datorns inställningar för energisparfunktioner och se till att den inte försätts i viloläge vid inaktivitet.</translation>
+<translation id="2707879711568641861">Vissa komponenter som krävs för Chrome Remote Desktop saknas. Kontrollera att du har installerat den senaste versionen och försök igen.</translation>
+<translation id="2499160551253595098">Hjälp oss att förbättra Chrome Remote Desktop genom att låta oss samla in användningsstatistik och felrapporter.</translation>
+<translation id="8864965950780407789">Om du vill använda Chromoting måste du bevilja utökad åtkomstbehörighet till datorn. Du behöver bara göra det en gång.</translation>
+<translation id="8355326866731426344">Åtkomstkoden upphör att gälla om <ph name="TIMEOUT"/></translation>
+<translation id="6198252989419008588">Byt PIN</translation>
+<translation id="170207782578677537">Det gick inte att registrera datorn.</translation>
+<translation id="4804818685124855865">Koppla från</translation>
+<translation id="5708869785009007625">Ditt skrivbord delas just nu med <ph name="USER"/>.</translation>
+<translation id="5601503069213153581">PIN-kod</translation>
+<translation id="5222676887888702881">Logga ut</translation>
+<translation id="5064360042339518108"><ph name="HOSTNAME"/> (offline)</translation>
+<translation id="4472575034687746823">Kom igång</translation>
+<translation id="2813770873348017932">Anslutningar till fjärrdatorn är tillfälligt blockerade eftersom någon försökt ansluta till fjärrdatorn med en ogiltig PIN-kod. Försök igen senare.</translation>
+<translation id="6746493157771801606">Rensa historik</translation>
+<translation id="4430435636878359009">Inaktivera fjärranslutningar till den här datorn</translation>
+<translation id="9188433529406846933">Auktorisera</translation>
+<translation id="2851674870054673688">När koden anges startar delningssessionen.</translation>
+<translation id="5593560073513909978">Tjänsten är inte tillgänglig för närvarande. Försök igen senare.</translation>
+<translation id="3908017899227008678">Krymp den så att den passar in</translation>
+<translation id="1199593201721843963">Inaktivera fjärranslutningar</translation>
+<translation id="5379087427956679853">Med Chrome Remote Desktop kan du dela din dator via internet på ett säkert sätt. Båda användarna måste köra appen Chrome Remote Desktop som du hittar på <ph name="URL"/>.</translation>
+<translation id="1409991159633941777">Vissa komponenter som krävs för Chrome Remote Desktop saknas. Kontrollera att du använder den senaste versionen av Chrome och försök igen.</translation>
+<translation id="174018511426417793">Du har inte registrerat några datorer. Om du vill aktivera fjärranslutningar till en dator installerar du Chrome Remote Desktop på datorn och klickar på <ph name="BUTTON_NAME"/>.</translation>
+<translation id="8525306231823319788">Helskärm</translation>
+<translation id="5702987232842159181">Ansluten:</translation>
+<translation id="4736223761657662401">Anslutningshistorik</translation>
+<translation id="4430915108080446161">Åtkomstkod genereras ...</translation>
+<translation id="8228265668171617545">En inkompatibel version av Chromoting upptäcktes. Kontrollera att du har den senaste versionen av Chrome och Chromoting på båda datorerna och försök igen.</translation>
+<translation id="6985691951107243942">Är du säker på att du vill inaktivera fjärranslutningar till <ph name="HOSTNAME"/>? Om du ångrar dig måste du besöka datorn för att kunna aktivera anslutningar igen.</translation>
+<translation id="9149992051684092333">Om du vill dela ditt skrivbord ger du åtkomstkoden nedan till den som ska hjälpa dig.</translation>
+<translation id="409800995205263688">OBS! Enligt policyinställningarna tillåts endast anslutning mellan datorer i ditt nätverk.</translation>
+<translation id="2353140552984634198">Du kan få säker åtkomst till den här datorn med Chromoting.</translation>
+<translation id="4481276415609939789">Du har inte registrerat några datorer. Om du vill aktivera fjärranslutningar till en annan dator installerar du Chromoting på datorn och klickar på <ph name="BUTTON_NAME"/>.</translation>
+<translation id="2013884659108657024">Chrome hämtar installationsprogrammet för fjärranslutningsvärden Chrome Remote Desktop Host. Kör installationsprogrammet så fort hämtningen är klar.</translation>
+<translation id="1742469581923031760">Anslutningen upprättas …</translation>
+<translation id="6748108480210050150">Från</translation>
+<translation id="3950820424414687140">Logga in</translation>
+<translation id="1291443878853470558">Du måste aktivera fjärranslutningar om du vill använda Chromoting för att få åtkomst till den här datorn.</translation>
+<translation id="6091564239975589852">Skicka tangenter</translation>
+<translation id="4572065712096155137">Åtkomst</translation>
+<translation id="5908809458024685848">Du är inte inloggad på Chromoting. Logga in och försök igen.</translation>
+<translation id="7401733114166276557">Chrome Remote Desktop</translation>
+<translation id="3362124771485993931">Ange PIN-koden igen</translation>
+<translation id="4686372254213217147">Originalstorlek</translation>
+<translation id="154040539590487450">Det gick inte att starta fjärråtkomsttjänsten.</translation>
+<translation id="7948001860594368197">Skärmalternativ</translation>
+<translation id="8172070902751707422">Autentiseringen misslyckades. Logga in på Chrome Remote Desktop igen.</translation>
+<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
+<translation id="5254120496627797685">Om du lämnar sidan avslutas sessionen i Chrome Remote Desktop.</translation>
+<translation id="173559734173571936">Om du vill använda Chrome Remote Desktop måste du bevilja utökad åtkomstbehörighet till datorn. Du behöver bara göra det en gång.</translation>
+<translation id="9032136467203159543">Vissa komponenter som krävs för Chromoting saknas. Kontrollera att du har installerat den senaste versionen och försök igen.</translation>
+<translation id="1342297293546459414">Visa och styra en delad dator.</translation>
+<translation id="701976023053394610">Fjärrhjälp</translation>
+<translation id="6193698048504518729">Anslut till <ph name="HOSTNAME"/></translation>
+<translation id="3020807351229499221">Det gick inte att uppdatera PIN-koden. Försök igen senare.</translation>
+<translation id="579702532610384533">Återanslut</translation>
+<translation id="4211066471404647515">Vissa komponenter som krävs för Chromoting saknas. Kontrollera att du kör den senaste versionen av Chrome och försök igen.</translation>
+<translation id="5265129178187621741">(funktionen är ännu inte tillgängligt för Chromebook ... håll utkik)</translation>
+<translation id="5156271271724754543">Ange samma PIN-kod i båda rutorna.</translation>
+<translation id="4361728918881830843">Om du vill aktivera fjärranslutning till en annan dator installerar du Chrome Remote Desktop på den och klickar på <ph name="BUTTON_NAME"/>.</translation>
+<translation id="4913529628896049296">väntar på anslutning ...</translation>
+<translation id="5714695932513333758">Anslutningshistorik</translation>
+<translation id="811307782653349804">Få åtkomst till din egen dator var du än är.</translation>
+<translation id="2366718077645204424">Det går inte att nå värden. Detta beror troligen på konfigurationen av nätverket som du använder.</translation>
+<translation id="3776024066357219166">Chrome Remote Desktop-sessionen har avslutats.</translation>
+<translation id="5625493749705183369">Få åtkomst till andra datorer eller ge andra åtkomst till din dator över internet på ett säkert sätt.</translation>
+<translation id="2699970397166997657">Chromoting</translation>
+<translation id="897805526397249209">Om du vill aktivera fjärranslutningar till en annan dator installerar du Chromoting på datorn och klickar på <ph name="BUTTON_NAME"/>.</translation>
+<translation id="809687642899217504">Mina datorer</translation>
+<translation id="3106379468611574572">Fjärrdatorn svarar inte på anslutningsbegäran. Kontrollera att den är ansluten till Internet och försök igen.</translation>
+<translation id="2359808026110333948">Fortsätt</translation>
+<translation id="1643640058022401035">Om du lämnar sidan avslutas sessionen i Chromoting.</translation>
+<translation id="2235518894410572517">Dela den här datorn så att en annan användare kan visa och styra den.</translation>
+<translation id="1023096696228309145">Be användaren vars dator du vill få tillgång till att klicka på länken Dela nu och ge dig åtkomstkoden.</translation>
+<translation id="4006787130661126000">Du måste aktivera fjärranslutningar om du vill använda Chrome Remote Desktop för att få åtkomst till den här datorn.</translation>
+<translation id="6930242544192836755">Varaktighet</translation>
+<translation id="6527303717912515753">Dela</translation>
+<translation id="2926340305933667314">Det gick inte att inaktivera fjärråtkomst till den här datorn. Försök igen senare.</translation>
+<translation id="2089514346391228378">Fjärranslutningar har aktiverats för den här datorn.</translation>
+<translation id="8246880134154544773">Autentiseringen misslyckades. Logga in på Chromoting igen.</translation>
+<translation id="1654128982815600832">Fjärranslutningar aktiveras för den här datorn ...</translation>
+<translation id="7038683108611689168">Hjälp oss att förbättra Chromoting genom att tillåta att vi samlar in användningsstatistik och felrapporter.</translation>
+<translation id="6040143037577758943">Stäng</translation>
+<translation id="7649070708921625228">Hjälp</translation>
+<translation id="4176825807642096119">Åtkomstkod</translation>
+<translation id="7144878232160441200">Försök igen</translation>
+<translation id="4703799847237267011">Chromoting-sessionen har avslutats.</translation>
+<translation id="1369030621715708553">PrtScn</translation>
+<translation id="8178433417677596899">Skärmdelning mellan användare är perfekt för fjärrstyrd teknisk support.</translation>
+<translation id="652218476070540101">PIN-koden för den här datorn uppdateras …</translation>
+<translation id="5308380583665731573">Anslut</translation>
+<translation id="7319983568955948908">Sluta dela</translation>
+<translation id="6668065415969892472">PIN-koden har uppdaterats.</translation>
+<translation id="4277736576214464567">Koden är ogiltig. Försök igen.</translation>
+<translation id="7729639150174291243">Du är inte inloggad på Chrome Remote Desktop. Logga in och försök igen.</translation>
+<translation id="2841013758207633010">Tid</translation>
+<translation id="6011539954251327702">Med Chromoting kan du säkert dela din dator över internet. Båda användarna måste köra appen Chromoting, som finns här: <ph name="URL"/>.</translation>
+<translation id="2919669478609886916">Du delar nu den här datorn med en annan användare. Vill du fortsätta att dela?</translation>
+<translation id="4207623512727273241">Kör installationsprogrammet innan du fortsätter.</translation>
+<translation id="837021510621780684">Från den här datorn</translation>
+<translation id="7215059001581613786">Ange en PIN-kod som består av minst sex siffror.</translation>
+<translation id="1546934824884762070">Ett oväntat fel uppstod. Rapportera problemet till utvecklarna.</translation>
+<translation id="6965382102122355670">OK</translation>
+<translation id="3403830762023901068">Enligt policyinställningarna får du inte dela den här datorn som en Chromoting-värd. Kontakta systemadministratören om du behöver hjälp.</translation>
+<translation id="4394049700291259645">Inaktivera</translation>
+<translation id="4156740505453712750">Om du vill skydda åtkomsten till den här datorn väljer du en PIN-kod som består av <ph name="BOLD_START"/>minst sex siffror<ph name="BOLD_END"/>. PIN-koden krävs när du ansluter från en annan plats.</translation>
 </translationbundle>
