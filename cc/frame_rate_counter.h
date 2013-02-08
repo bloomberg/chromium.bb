@@ -51,7 +51,7 @@ private:
     // FIXME: Determine this threshold based on monitor refresh rate, crbug.com/138642.
     static const double kDroppedFrameTime;
 
-    RingBuffer<base::TimeTicks, 130> m_ringBuffer;
+    RingBuffer<base::TimeTicks, 136> m_ringBuffer;
 
     bool m_hasImplThread;
     int m_droppedFrameCount;

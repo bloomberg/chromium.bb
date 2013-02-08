@@ -19,7 +19,7 @@ HeadsUpDisplayLayer::HeadsUpDisplayLayer()
     : Layer()
     , m_hasFontAtlas(false)
 {
-    setBounds(gfx::Size(256, 128));
+    setBounds(gfx::Size(256, 256));
 }
 
 HeadsUpDisplayLayer::~HeadsUpDisplayLayer()
@@ -40,7 +40,7 @@ void HeadsUpDisplayLayer::update(ResourceUpdateQueue&, const OcclusionTracker*, 
         int height = std::min(maxTextureSize, layerTreeHost()->layoutViewportSize().height());
         bounds = gfx::Size(width, height);
     } else {
-        bounds = gfx::Size(256, 128);
+        bounds = gfx::Size(256, 256);
         matrix.Translate(layerTreeHost()->layoutViewportSize().width() - 256, 0);
     }
 

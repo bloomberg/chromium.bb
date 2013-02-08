@@ -29,7 +29,7 @@ class PaintTimeCounter {
  private:
   PaintTimeCounter();
 
-  RingBuffer<base::TimeDelta, 80> ring_buffer_;
+  RingBuffer<base::TimeDelta, 90> ring_buffer_;
   base::TimeDelta last_total_paint_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintTimeCounter);

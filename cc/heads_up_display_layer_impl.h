@@ -14,6 +14,7 @@
 
 class SkCanvas;
 class SkPaint;
+class SkTypeface;
 struct SkRect;
 
 namespace cc {
@@ -69,12 +70,12 @@ private:
 
     void drawHudContents(SkCanvas*);
 
-    void drawTextLeftAligned(SkCanvas*, SkPaint*, const SkRect& bounds, const std::string& text);
-    void drawTextRightAligned(SkCanvas*, SkPaint*, const SkRect& bounds, const std::string& text);
-
+    void drawText(SkCanvas*, SkPaint*, const std::string&, const SkPaint::Align&, const int& size, const int& x, const int& y);
+    void drawText(SkCanvas*, SkPaint*, const std::string&, const SkPaint::Align&, const int& size, const SkPoint& pos);
     void drawGraphBackground(SkCanvas*, SkPaint*, const SkRect& bounds);
     void drawGraphLines(SkCanvas*, SkPaint*, const SkRect& bounds, const Graph&);
 
+    void drawPlaformLayerTree(SkCanvas*);
     int drawFPSDisplay(SkCanvas*, FrameRateCounter*, const int& top);
     int drawMemoryDisplay(SkCanvas*, MemoryHistory*, const int& top);
     int drawPaintTimeDisplay(SkCanvas*, PaintTimeCounter*, const int& top);
@@ -84,6 +85,8 @@ private:
     scoped_ptr<FontAtlas> m_fontAtlas;
     scoped_ptr<ScopedResource> m_hudTexture;
     scoped_ptr<SkCanvas> m_hudCanvas;
+
+    skia::RefPtr<SkTypeface> m_typeface;
 
     Graph m_fpsGraph;
     Graph m_paintTimeGraph;
