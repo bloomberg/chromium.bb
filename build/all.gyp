@@ -177,7 +177,7 @@
       'target_name': 'All_syzygy',
       'type': 'none',
       'conditions': [
-        ['OS=="win" and fastbuild==0 and asan!=1', {
+        ['OS=="win" and fastbuild==0', {
             'dependencies': [
               '../chrome/installer/mini_installer_syzygy.gyp:*',
             ],

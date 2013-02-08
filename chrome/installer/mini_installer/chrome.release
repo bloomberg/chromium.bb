@@ -6,6 +6,7 @@
 app_host.exe: %(ChromeDir)s\
 chrome.exe: %(ChromeDir)s\
 wow_helper.exe: %(ChromeDir)s\
+asan_rtl.dll: %(VersionDir)s\
 chrome.dll: %(VersionDir)s\
 nacl64.exe: %(VersionDir)s\
 ppGoogleNaClPluginChrome.dll: %(VersionDir)s\
