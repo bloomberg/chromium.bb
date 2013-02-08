@@ -173,6 +173,10 @@ class WebMediaPlayerMS
 
   scoped_refptr<media::MediaLog> media_log_;
 
+  // Used to auto mute the local media streams when getting the first
+  // SetVolume() from WebMediaPlayer.
+  bool volume_modified_;
+
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMS);
 };
 
