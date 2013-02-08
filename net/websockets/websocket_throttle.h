@@ -6,9 +6,10 @@
 #define NET_WEBSOCKETS_WEBSOCKET_THROTTLE_H_
 
 #include <deque>
+#include <map>
 #include <string>
 
-#include "base/hash_tables.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -48,10 +49,10 @@ class NET_EXPORT_PRIVATE WebSocketThrottle {
 
  private:
   typedef std::deque<WebSocketJob*> ConnectingQueue;
-  typedef base::hash_map<std::string, ConnectingQueue*> ConnectingAddressMap;
+  typedef std::map<IPEndPoint, ConnectingQueue*> ConnectingAddressMap;
 
   WebSocketThrottle();
-  virtual ~WebSocketThrottle();
+  ~WebSocketThrottle();
   friend struct DefaultSingletonTraits<WebSocketThrottle>;
 
   // Key: string of host's address.  Value: queue of sockets for the address.
@@ -59,6 +60,8 @@ class NET_EXPORT_PRIVATE WebSocketThrottle {
 
   // Queue of sockets for websockets in opening state.
   ConnectingQueue queue_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebSocketThrottle);
 };
 
 }  // namespace net

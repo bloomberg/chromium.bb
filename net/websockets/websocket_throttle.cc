@@ -4,10 +4,10 @@
 
 #include "net/websockets/websocket_throttle.h"
 
+#include <algorithm>
+#include <set>
 #include <string>
 
-#include "base/hash_tables.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
@@ -18,13 +18,6 @@
 #include "net/websockets/websocket_job.h"
 
 namespace net {
-
-static std::string IPEndPointToHashkey(const IPEndPoint& endpoint) {
-  return base::StringPrintf("%d:%s",
-                            endpoint.GetFamily(),
-                            base::HexEncode(&endpoint.address()[0],
-                                            endpoint.address().size()).c_str());
-}
 
 WebSocketThrottle::WebSocketThrottle() {
 }
@@ -42,70 +35,56 @@ WebSocketThrottle* WebSocketThrottle::GetInstance() {
 void WebSocketThrottle::PutInQueue(WebSocketJob* job) {
   queue_.push_back(job);
   const AddressList& address_list = job->address_list();
-  base::hash_set<std::string> address_set;
+  std::set<IPEndPoint> address_set;
   for (AddressList::const_iterator addr_iter = address_list.begin();
        addr_iter != address_list.end();
        ++addr_iter) {
-    std::string addrkey = IPEndPointToHashkey(*addr_iter);
-
-    // If |addrkey| is already processed, don't do it again.
-    if (address_set.find(addrkey) != address_set.end())
+    const IPEndPoint& address = *addr_iter;
+    // If |address| is already processed, don't do it again.
+    if (!address_set.insert(address).second)
       continue;
-    address_set.insert(addrkey);
 
-    ConnectingAddressMap::iterator iter = addr_map_.find(addrkey);
+    ConnectingAddressMap::iterator iter = addr_map_.find(address);
     if (iter == addr_map_.end()) {
       ConnectingQueue* queue = new ConnectingQueue();
       queue->push_back(job);
-      addr_map_[addrkey] = queue;
+      addr_map_[address] = queue;
     } else {
       iter->second->push_back(job);
       job->SetWaiting();
-      DVLOG(1) << "Waiting on " << addrkey;
+      DVLOG(1) << "Waiting on " << address.ToString();
     }
   }
 }
 
 void WebSocketThrottle::RemoveFromQueue(WebSocketJob* job) {
-  bool in_queue = false;
-  for (ConnectingQueue::iterator iter = queue_.begin();
-       iter != queue_.end();
-       ++iter) {
-    if (*iter == job) {
-      queue_.erase(iter);
-      in_queue = true;
-      break;
-    }
-  }
-  if (!in_queue)
+  ConnectingQueue::iterator queue_iter =
+      std::find(queue_.begin(), queue_.end(), job);
+  if (queue_iter == queue_.end())
     return;
+  queue_.erase(queue_iter);
   const AddressList& address_list = job->address_list();
-  base::hash_set<std::string> address_set;
+  std::set<IPEndPoint> address_set;
   for (AddressList::const_iterator addr_iter = address_list.begin();
        addr_iter != address_list.end();
        ++addr_iter) {
-    std::string addrkey = IPEndPointToHashkey(*addr_iter);
-    // If |addrkey| is already processed, don't do it again.
-    if (address_set.find(addrkey) != address_set.end())
+    const IPEndPoint& address = *addr_iter;
+    // If |address| is already processed, don't do it again.
+    if (!address_set.insert(address).second)
       continue;
-    address_set.insert(addrkey);
 
-    ConnectingAddressMap::iterator iter = addr_map_.find(addrkey);
-    DCHECK(iter != addr_map_.end());
+    ConnectingAddressMap::iterator map_iter = addr_map_.find(address);
+    DCHECK(map_iter != addr_map_.end());
 
-    ConnectingQueue* queue = iter->second;
-    // Job may not be front of queue when job is closed early while waiting.
-    for (ConnectingQueue::iterator iter = queue->begin();
-         iter != queue->end();
-         ++iter) {
-      if (*iter == job) {
-        queue->erase(iter);
-        break;
-      }
-    }
+    ConnectingQueue* queue = map_iter->second;
+    // Job may not be front of queue if the socket is closed while waiting.
+    ConnectingQueue::iterator address_queue_iter =
+        std::find(queue->begin(), queue->end(), job);
+    if (address_queue_iter != queue->end())
+      queue->erase(address_queue_iter);
     if (queue->empty()) {
       delete queue;
-      addr_map_.erase(iter);
+      addr_map_.erase(map_iter);
     }
   }
 }
@@ -123,10 +102,10 @@ void WebSocketThrottle::WakeupSocketIfNecessary() {
     for (AddressList::const_iterator addr_iter = address_list.begin();
          addr_iter != address_list.end();
          ++addr_iter) {
-      std::string addrkey = IPEndPointToHashkey(*addr_iter);
-      ConnectingAddressMap::iterator iter = addr_map_.find(addrkey);
-      DCHECK(iter != addr_map_.end());
-      ConnectingQueue* queue = iter->second;
+      const IPEndPoint& address = *addr_iter;
+      ConnectingAddressMap::iterator map_iter = addr_map_.find(address);
+      DCHECK(map_iter != addr_map_.end());
+      ConnectingQueue* queue = map_iter->second;
       if (job != queue->front()) {
         should_wakeup = false;
         break;

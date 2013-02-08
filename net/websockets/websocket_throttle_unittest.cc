@@ -33,7 +33,7 @@ namespace net {
 
 class WebSocketThrottleTest : public PlatformTest {
  protected:
-  IPEndPoint MakeAddr(int a1, int a2, int a3, int a4) {
+  static IPEndPoint MakeAddr(int a1, int a2, int a3, int a4) {
     IPAddressNumber ip;
     ip.push_back(a1);
     ip.push_back(a2);
@@ -302,6 +302,52 @@ TEST_F(WebSocketThrottleTest, NoThrottleForDuplicateAddress) {
   DVLOG(1) << "socket1 close";
   w1->OnClose(s1.get());
   s1->DetachDelegate();
+  DVLOG(1) << "Done";
+  MessageLoopForIO::current()->RunUntilIdle();
+}
+
+// A connection should not be blocked by another connection to the same IP
+// with a different port.
+TEST_F(WebSocketThrottleTest, NoThrottleForDistinctPort) {
+  TestURLRequestContext context;
+  DummySocketStreamDelegate delegate;
+  IPAddressNumber localhost;
+  ParseIPLiteralToNumber("127.0.0.1", &localhost);
+  WebSocketJob::set_websocket_over_spdy_enabled(false);
+
+  // socket1: 127.0.0.1:80
+  scoped_refptr<WebSocketJob> w1(new WebSocketJob(&delegate));
+  scoped_refptr<SocketStream> s1(
+      new SocketStream(GURL("ws://localhost:80/"), w1.get()));
+  s1->set_context(&context);
+  w1->InitSocketStream(s1.get());
+  MockSocketStreamConnect(s1, AddressList::CreateFromIPAddress(localhost, 80));
+
+  DVLOG(1) << "connecting socket1";
+  TestCompletionCallback callback_s1;
+  // Trying to open connection to localhost:80 will start without waiting.
+  EXPECT_EQ(OK, w1->OnStartOpenConnection(s1, callback_s1.callback()));
+
+  // socket2: 127.0.0.1:81
+  scoped_refptr<WebSocketJob> w2(new WebSocketJob(&delegate));
+  scoped_refptr<SocketStream> s2(
+      new SocketStream(GURL("ws://localhost:81/"), w2.get()));
+  s2->set_context(&context);
+  w2->InitSocketStream(s2.get());
+  MockSocketStreamConnect(s2, AddressList::CreateFromIPAddress(localhost, 81));
+
+  DVLOG(1) << "connecting socket2";
+  TestCompletionCallback callback_s2;
+  // Trying to open connection to localhost:81 will start without waiting.
+  EXPECT_EQ(OK, w2->OnStartOpenConnection(s2, callback_s2.callback()));
+
+  DVLOG(1) << "closing socket1";
+  w1->OnClose(s1.get());
+  s1->DetachDelegate();
+
+  DVLOG(1) << "closing socket2";
+  w2->OnClose(s2.get());
+  s2->DetachDelegate();
   DVLOG(1) << "Done";
   MessageLoopForIO::current()->RunUntilIdle();
 }
