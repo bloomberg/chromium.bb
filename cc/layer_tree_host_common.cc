@@ -447,22 +447,33 @@ static inline void updateLayerContentsScale(LayerImpl* layer, const gfx::Transfo
 static inline void updateLayerContentsScale(Layer* layer, const gfx::Transform& combinedTransform, float deviceScaleFactor, float pageScaleFactor, bool animatingTransformToScreen)
 {
     float rasterScale = layer->rasterScale();
-    if (!rasterScale) {
-        rasterScale = 1;
 
-        if (!animatingTransformToScreen && layer->automaticallyComputeRasterScale()) {
-            gfx::Vector2dF transformScale = MathUtil::computeTransform2dScaleComponents(combinedTransform, 0.f);
-            float combinedScale = std::max(transformScale.x(), transformScale.y());
-            rasterScale = combinedScale / deviceScaleFactor;
-            if (!layer->boundsContainPageScale())
-                rasterScale /= pageScaleFactor;
-            // Prevent scale factors below 1 from being used or saved.
-            if (rasterScale < 1)
-                rasterScale = 1;
-            else
+    if (layer->automaticallyComputeRasterScale()) {
+        gfx::Vector2dF transformScale = MathUtil::computeTransform2dScaleComponents(combinedTransform, 0.f);
+        float combinedScale = std::max(transformScale.x(), transformScale.y());
+        float idealRasterScale = combinedScale / deviceScaleFactor;
+        if (!layer->boundsContainPageScale())
+            idealRasterScale /= pageScaleFactor;
+
+        bool needToSetRasterScale = !rasterScale;
+
+        // If we've previously saved a rasterScale but the ideal changes, things are unpredictable and we should just use 1.
+        if (rasterScale && rasterScale != 1.f && idealRasterScale != rasterScale) {
+            idealRasterScale = 1.f;
+            needToSetRasterScale = true;
+        }
+
+        if (needToSetRasterScale) {
+            bool useAndSaveIdealScale = idealRasterScale >= 1.f && !animatingTransformToScreen;
+            if (useAndSaveIdealScale) {
+                rasterScale = idealRasterScale;
                 layer->setRasterScale(rasterScale);
+            }
         }
     }
+
+    if (!rasterScale)
+        rasterScale = 1.f;
 
     float contentsScale = rasterScale * deviceScaleFactor;
     if (!layer->boundsContainPageScale())

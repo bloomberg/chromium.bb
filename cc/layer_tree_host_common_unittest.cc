@@ -4426,19 +4426,7 @@ TEST(LayerTreeHostCommonTest, verifyContentsScale)
     EXPECT_FLOAT_EQ(initialParentScale * initialChildScale / fixedRasterScale, childNoAutoScale->drawTransform().matrix().getDouble(0, 0));
     EXPECT_FLOAT_EQ(initialParentScale * initialChildScale / fixedRasterScale, childNoAutoScale->drawTransform().matrix().getDouble(1, 1));
 
-    // If the transform changes, we expect the contentsScale to remain unchanged.
-    childScale->setTransform(identityMatrix);
-    childEmpty->setTransform(identityMatrix);
-
-    renderSurfaceLayerList.clear();
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, false, renderSurfaceLayerList);
-
-    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * initialParentScale, parent);
-    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childScale);
-    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childEmpty);
-    EXPECT_CONTENTS_SCALE_EQ(1, childNoScale);
-
-    // But if the deviceScaleFactor or pageScaleFactor changes, then it should be updated, but using the initial transform.
+    // If the deviceScaleFactor or pageScaleFactor changes, then it should be updated using the initial transform as the rasterScale.
     deviceScaleFactor = 2.25;
     pageScaleFactor = 1.25;
 
@@ -4453,6 +4441,38 @@ TEST(LayerTreeHostCommonTest, verifyContentsScale)
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * initialParentScale, parent);
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childScale);
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childEmpty);
+    EXPECT_CONTENTS_SCALE_EQ(1, childNoScale);
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * fixedRasterScale, childNoAutoScale);
+
+    // If the transform changes, we expect the rasterScale to be reset to 1.0.
+    const double secondChildScale = 1.75;
+    childScaleMatrix.Scale(secondChildScale / initialChildScale, secondChildScale / initialChildScale);
+    childScale->setTransform(childScaleMatrix);
+    childEmpty->setTransform(childScaleMatrix);
+
+    renderSurfaceLayerList.clear();
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, false, renderSurfaceLayerList);
+
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * initialParentScale, parent);
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor, childScale);
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor, childEmpty);
+    EXPECT_CONTENTS_SCALE_EQ(1, childNoScale);
+
+    // If the deviceScaleFactor or pageScaleFactor changes, then it should be updated, but still using 1.0 as the rasterScale.
+    deviceScaleFactor = 2.75;
+    pageScaleFactor = 1.75;
+
+    // FIXME: Remove this when pageScaleFactor is applied in the compositor.
+    pageScaleMatrix = identityMatrix;
+    pageScaleMatrix.Scale(pageScaleFactor, pageScaleFactor);
+    parent->setSublayerTransform(pageScaleMatrix);
+
+    renderSurfaceLayerList.clear();
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, false, renderSurfaceLayerList);
+
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * initialParentScale, parent);
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor, childScale);
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor, childEmpty);
     EXPECT_CONTENTS_SCALE_EQ(1, childNoScale);
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * fixedRasterScale, childNoAutoScale);
 }
