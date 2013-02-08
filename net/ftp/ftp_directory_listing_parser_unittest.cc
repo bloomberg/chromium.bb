@@ -24,7 +24,7 @@ class FtpDirectoryListingParserTest
 };
 
 TEST_P(FtpDirectoryListingParserTest, Parse) {
-  FilePath test_dir;
+  base::FilePath test_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &test_dir);
   test_dir = test_dir.AppendASCII("net");
   test_dir = test_dir.AppendASCII("data");

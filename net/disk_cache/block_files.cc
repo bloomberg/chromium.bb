@@ -218,7 +218,7 @@ bool ValidateCounters(const disk_cache::BlockFileHeader* header) {
 
 namespace disk_cache {
 
-BlockFiles::BlockFiles(const FilePath& path)
+BlockFiles::BlockFiles(const base::FilePath& path)
     : init_(false), zero_buffer_(NULL), path_(path) {
 }
 
@@ -403,7 +403,7 @@ bool BlockFiles::IsValid(Addr address) {
 }
 
 bool BlockFiles::CreateBlockFile(int index, FileType file_type, bool force) {
-  FilePath name = Name(index);
+  base::FilePath name = Name(index);
   int flags =
       force ? base::PLATFORM_FILE_CREATE_ALWAYS : base::PLATFORM_FILE_CREATE;
   flags |= base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_EXCLUSIVE_WRITE;
@@ -428,7 +428,7 @@ bool BlockFiles::OpenBlockFile(int index) {
     block_files_.resize(block_files_.size() + to_add);
   }
 
-  FilePath name = Name(index);
+  base::FilePath name = Name(index);
   scoped_refptr<MappedFile> file(new MappedFile());
 
   if (!file->Init(name, kBlockHeaderSize)) {
@@ -585,7 +585,7 @@ bool BlockFiles::RemoveEmptyFile(FileType block_type) {
 
       // We get a new handle to the file and release the old one so that the
       // file gets unmmaped... so we can delete it.
-      FilePath name = Name(file_index);
+      base::FilePath name = Name(file_index);
       scoped_refptr<File> this_file(new File(false));
       this_file->Init(name);
       block_files_[file_index]->Release();
@@ -677,7 +677,7 @@ void BlockFiles::GetFileStats(int index, int* used_count, int* load) {
     *load = *used_count * 100 / max_blocks;
 }
 
-FilePath BlockFiles::Name(int index) {
+base::FilePath BlockFiles::Name(int index) {
   // The file format allows for 256 files.
   DCHECK(index < 256 || index >= 0);
   std::string tmp = base::StringPrintf("%s%d", kBlockName, index);

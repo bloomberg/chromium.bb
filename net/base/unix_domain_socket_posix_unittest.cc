@@ -52,7 +52,7 @@ enum EventType {
 };
 
 string MakeSocketPath() {
-  FilePath temp_dir;
+  base::FilePath temp_dir;
   file_util::GetTempDir(&temp_dir);
   return temp_dir.Append(kSocketFilename).value();
 }
@@ -212,7 +212,7 @@ class UnixDomainSocketTestHelper : public testing::Test {
     return thread.Pass();
   }
 
-  const FilePath file_path_;
+  const base::FilePath file_path_;
   const bool allow_user_;
   scoped_refptr<EventManager> event_manager_;
   scoped_ptr<TestListenSocketDelegate> socket_delegate_;

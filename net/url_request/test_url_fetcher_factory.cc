@@ -137,7 +137,7 @@ void TestURLFetcher::SetAutomaticallyRetryOnNetworkChanges(int max_retries) {
 }
 
 void TestURLFetcher::SaveResponseToFileAtPath(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     scoped_refptr<base::TaskRunner> file_task_runner) {
 }
 
@@ -203,7 +203,7 @@ bool TestURLFetcher::GetResponseAsString(
 }
 
 bool TestURLFetcher::GetResponseAsFilePath(
-    bool take_ownership, FilePath* out_response_path) const {
+    bool take_ownership, base::FilePath* out_response_path) const {
   if (fake_response_destination_ != TEMP_FILE)
     return false;
 
@@ -237,7 +237,7 @@ void TestURLFetcher::SetResponseString(const std::string& response) {
   fake_response_string_ = response;
 }
 
-void TestURLFetcher::SetResponseFilePath(const FilePath& path) {
+void TestURLFetcher::SetResponseFilePath(const base::FilePath& path) {
   fake_response_destination_ = TEMP_FILE;
   fake_response_file_path_ = path;
 }

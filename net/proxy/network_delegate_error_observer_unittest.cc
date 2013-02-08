@@ -73,7 +73,7 @@ class TestNetworkDelegate : public net::NetworkDelegate {
     return true;
   }
   virtual bool OnCanAccessFile(const net::URLRequest& request,
-                               const FilePath& path) const OVERRIDE {
+                               const base::FilePath& path) const OVERRIDE {
     return true;
   }
   virtual bool OnCanThrottleRequest(const URLRequest& request) const OVERRIDE {

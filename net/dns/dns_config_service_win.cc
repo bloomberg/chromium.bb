@@ -332,11 +332,12 @@ bool IsStatelessDiscoveryAddress(const IPAddressNumber& address) {
 
 }  // namespace
 
-FilePath GetHostsPath() {
+base::FilePath GetHostsPath() {
   TCHAR buffer[MAX_PATH];
   UINT rc = GetSystemDirectory(buffer, MAX_PATH);
   DCHECK(0 < rc && rc < MAX_PATH);
-  return FilePath(buffer).Append(FILE_PATH_LITERAL("drivers\\etc\\hosts"));
+  return base::FilePath(buffer).Append(
+      FILE_PATH_LITERAL("drivers\\etc\\hosts"));
 }
 
 bool ParseSearchList(const string16& value, std::vector<std::string>* output) {
@@ -558,7 +559,7 @@ class DnsConfigServiceWin::Watcher
   }
 
  private:
-  void OnHostsChanged(const FilePath& path, bool error) {
+  void OnHostsChanged(const base::FilePath& path, bool error) {
     if (error)
       NetworkChangeNotifier::RemoveIPAddressObserver(this);
     service_->OnHostsChanged(!error);
@@ -662,7 +663,7 @@ class DnsConfigServiceWin::HostsReader : public SerialWorker {
     }
   }
 
-  const FilePath path_;
+  const base::FilePath path_;
   DnsConfigServiceWin* service_;
   // Written in DoWork, read in OnWorkFinished, no locking necessary.
   DnsHosts hosts_;

@@ -32,7 +32,7 @@
 namespace net {
 
 bool PlatformMimeUtil::GetPlatformMimeTypeFromExtension(
-    const FilePath::StringType& ext, std::string* result) const {
+    const base::FilePath::StringType& ext, std::string* result) const {
   std::string ext_nodot = ext;
   if (ext_nodot.length() >= 1 && ext_nodot[0] == L'.')
     ext_nodot.erase(ext_nodot.begin());
@@ -56,7 +56,7 @@ bool PlatformMimeUtil::GetPlatformMimeTypeFromExtension(
 }
 
 bool PlatformMimeUtil::GetPreferredExtensionForMimeType(
-    const std::string& mime_type, FilePath::StringType* ext) const {
+    const std::string& mime_type, base::FilePath::StringType* ext) const {
   base::mac::ScopedCFTypeRef<CFStringRef> mime_ref(
       base::SysUTF8ToCFStringRef(mime_type));
   if (!mime_ref)
@@ -78,7 +78,7 @@ bool PlatformMimeUtil::GetPreferredExtensionForMimeType(
 
 void PlatformMimeUtil::GetPlatformExtensionsForMimeType(
     const std::string& mime_type,
-    base::hash_set<FilePath::StringType>* extensions) const {
+    base::hash_set<base::FilePath::StringType>* extensions) const {
 #if defined(OS_IOS)
   NSArray* extensions_list = nil;
 #else
@@ -101,7 +101,7 @@ void PlatformMimeUtil::GetPlatformExtensionsForMimeType(
       extensions->insert(base::SysNSStringToUTF8(extension));
   } else {
     // Huh? Give up.
-    FilePath::StringType ext;
+    base::FilePath::StringType ext;
     if (GetPreferredExtensionForMimeType(mime_type, &ext))
       extensions->insert(ext);
   }

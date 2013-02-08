@@ -537,7 +537,7 @@ bool TestNetworkDelegate::OnCanSetCookie(const URLRequest& request,
 }
 
 bool TestNetworkDelegate::OnCanAccessFile(const URLRequest& request,
-                                          const FilePath& path) const {
+                                          const base::FilePath& path) const {
   return true;
 }
 

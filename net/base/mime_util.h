@@ -15,7 +15,7 @@ namespace net {
 
 // Get the mime type (if any) that is associated with the given file extension.
 // Returns true if a corresponding mime type exists.
-NET_EXPORT bool GetMimeTypeFromExtension(const FilePath::StringType& ext,
+NET_EXPORT bool GetMimeTypeFromExtension(const base::FilePath::StringType& ext,
                                          std::string* mime_type);
 
 // Get the mime type (if any) that is associated with the given file extension.
@@ -23,12 +23,12 @@ NET_EXPORT bool GetMimeTypeFromExtension(const FilePath::StringType& ext,
 // the search for a mime type is constrained to a limited set of
 // types known to the net library, the OS/registry is not consulted.
 NET_EXPORT bool GetWellKnownMimeTypeFromExtension(
-    const FilePath::StringType& ext,
+    const base::FilePath::StringType& ext,
     std::string* mime_type);
 
 // Get the mime type (if any) that is associated with the given file.  Returns
 // true if a corresponding mime type exists.
-NET_EXPORT bool GetMimeTypeFromFile(const FilePath& file_path,
+NET_EXPORT bool GetMimeTypeFromFile(const base::FilePath& file_path,
                                     std::string* mime_type);
 
 // Get the preferred extension (if any) associated with the given mime type.
@@ -36,7 +36,7 @@ NET_EXPORT bool GetMimeTypeFromFile(const FilePath& file_path,
 // returned without a prefixed dot, ex "html".
 NET_EXPORT bool GetPreferredExtensionForMimeType(
     const std::string& mime_type,
-    FilePath::StringType* extension);
+    base::FilePath::StringType* extension);
 
 // Check to see if a particular MIME type is in our list.
 NET_EXPORT bool IsSupportedImageMimeType(const std::string& mime_type);
@@ -92,7 +92,7 @@ NET_EXPORT bool IsSupportedStrictMediaMimeType(
 // Instead, we append the result to it.
 NET_EXPORT void GetExtensionsForMimeType(
     const std::string& mime_type,
-    std::vector<FilePath::StringType>* extensions);
+    std::vector<base::FilePath::StringType>* extensions);
 
 // Test only methods that return lists of proprietary media types and codecs
 // that are not supported by all variations of Chromium.

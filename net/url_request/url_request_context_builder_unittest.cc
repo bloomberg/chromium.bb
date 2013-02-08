@@ -25,21 +25,21 @@ namespace {
 // http://crbug.com/114369
 class LocalHttpTestServer : public TestServer {
  public:
-  explicit LocalHttpTestServer(const FilePath& document_root)
+  explicit LocalHttpTestServer(const base::FilePath& document_root)
       : TestServer(TestServer::TYPE_HTTP,
                    ScopedCustomUrlRequestTestHttpHost::value(),
                    document_root) {}
   LocalHttpTestServer()
       : TestServer(TestServer::TYPE_HTTP,
                    ScopedCustomUrlRequestTestHttpHost::value(),
-                   FilePath()) {}
+                   base::FilePath()) {}
 };
 
 class URLRequestContextBuilderTest : public PlatformTest {
  protected:
   URLRequestContextBuilderTest()
       : test_server_(
-          FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest"))) {
+          base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest"))) {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
     builder_.set_proxy_config_service(
         new ProxyConfigServiceFixed(ProxyConfig::CreateDirect()));

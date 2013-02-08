@@ -36,7 +36,7 @@ void FileStream::Context::Orphan() {
   }
 }
 
-void FileStream::Context::OpenAsync(const FilePath& path,
+void FileStream::Context::OpenAsync(const base::FilePath& path,
                                     int open_flags,
                                     const CompletionCallback& callback) {
   DCHECK(!async_in_progress_);
@@ -55,7 +55,7 @@ void FileStream::Context::OpenAsync(const FilePath& path,
   async_in_progress_ = true;
 }
 
-int FileStream::Context::OpenSync(const FilePath& path, int open_flags) {
+int FileStream::Context::OpenSync(const base::FilePath& path, int open_flags) {
   DCHECK(!async_in_progress_);
 
   BeginOpenEvent(path);
@@ -143,14 +143,14 @@ int FileStream::Context::RecordAndMapError(int error,
   return net_error;
 }
 
-void FileStream::Context::BeginOpenEvent(const FilePath& path) {
+void FileStream::Context::BeginOpenEvent(const base::FilePath& path) {
   std::string file_name = path.AsUTF8Unsafe();
   bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_OPEN,
                             NetLog::StringCallback("file_name", &file_name));
 }
 
 FileStream::Context::OpenResult FileStream::Context::OpenFileImpl(
-    const FilePath& path, int open_flags) {
+    const base::FilePath& path, int open_flags) {
   // FileStream::Context actually closes the file asynchronously, independently
   // from FileStream's destructor. It can cause problems for users wanting to
   // delete the file right after FileStream deletion. Thus we are always

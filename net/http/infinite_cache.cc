@@ -379,7 +379,7 @@ class InfiniteCache::Worker : public base::RefCountedThreadSafe<Worker> {
   Worker() : init_(false), flushed_(false) {}
 
   // Construction and destruction helpers.
-  void Init(const FilePath& path);
+  void Init(const base::FilePath& path);
   void Cleanup();
 
   // Deletes all tracked data.
@@ -462,12 +462,12 @@ class InfiniteCache::Worker : public base::RefCountedThreadSafe<Worker> {
   bool init_;
   bool flushed_;
   scoped_ptr<Header> header_;
-  FilePath path_;
+  base::FilePath path_;
 
   DISALLOW_COPY_AND_ASSIGN(Worker);
 };
 
-void InfiniteCache::Worker::Init(const FilePath& path) {
+void InfiniteCache::Worker::Init(const base::FilePath& path) {
   path_ = path;
   LoadData();
   UMA_HISTOGRAM_BOOLEAN("InfiniteCache.NewSession", true);
@@ -620,7 +620,7 @@ void InfiniteCache::Worker::StoreData() {
   header_->header_hash = base::Hash(
       reinterpret_cast<char*>(header_.get()), offsetof(Header, header_hash));
 
-  FilePath temp_file = path_.ReplaceExtension(FILE_PATH_LITERAL("tmp"));
+  base::FilePath temp_file = path_.ReplaceExtension(FILE_PATH_LITERAL("tmp"));
   PlatformFile file = base::CreatePlatformFile(
       temp_file, base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
       NULL, NULL);
@@ -1104,7 +1104,7 @@ InfiniteCache::~InfiniteCache() {
   worker_ = NULL;
 }
 
-void InfiniteCache::Init(const FilePath& path) {
+void InfiniteCache::Init(const base::FilePath& path) {
   worker_pool_ = new base::SequencedWorkerPool(1, "Infinite cache thread");
   task_runner_ = worker_pool_->GetSequencedTaskRunnerWithShutdownBehavior(
                      worker_pool_->GetSequenceToken(),

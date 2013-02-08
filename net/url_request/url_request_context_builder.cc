@@ -99,7 +99,7 @@ class BasicNetworkDelegate : public NetworkDelegate {
   }
 
   virtual bool OnCanAccessFile(const net::URLRequest& request,
-                               const FilePath& path) const OVERRIDE {
+                               const base::FilePath& path) const OVERRIDE {
     return true;
   }
 

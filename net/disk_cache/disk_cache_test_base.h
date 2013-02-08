@@ -46,7 +46,7 @@ class DiskCacheTest : public PlatformTest {
 
   virtual void TearDown() OVERRIDE;
 
-  FilePath cache_path_;
+  base::FilePath cache_path_;
 
  private:
   base::ScopedTempDir temp_dir_;

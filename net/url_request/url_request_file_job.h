@@ -31,7 +31,7 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
  public:
   URLRequestFileJob(URLRequest* request,
                     NetworkDelegate* network_delegate,
-                    const FilePath& file_path);
+                    const base::FilePath& file_path);
 
   static URLRequest::ProtocolFactory Factory;
 
@@ -52,7 +52,7 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
   virtual ~URLRequestFileJob();
 
   // The OS-specific full path name of the file
-  FilePath file_path_;
+  base::FilePath file_path_;
 
  private:
   // Meta information about the file. It's used as a member in the
@@ -75,7 +75,7 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
   };
 
   // Fetches file info on a background thread.
-  static void FetchMetaInfo(const FilePath& file_path,
+  static void FetchMetaInfo(const base::FilePath& file_path,
                             FileMetaInfo* meta_info);
 
   // Callback after fetching file info on a background thread.

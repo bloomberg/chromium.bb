@@ -26,16 +26,16 @@ static int Usage(const char* argv0) {
 int main(int argc, char** argv) {
   base::AtExitManager at_exit_manager;
 
-  FilePath crl_set_filename, delta_filename, output_filename;
+  base::FilePath crl_set_filename, delta_filename, output_filename;
 
   if (argc < 2 || argc > 4)
     return Usage(argv[0]);
 
-  crl_set_filename = FilePath::FromUTF8Unsafe(argv[1]);
+  crl_set_filename = base::FilePath::FromUTF8Unsafe(argv[1]);
   if (argc >= 3)
-    delta_filename = FilePath::FromUTF8Unsafe(argv[2]);
+    delta_filename = base::FilePath::FromUTF8Unsafe(argv[2]);
   if (argc >= 4)
-    output_filename = FilePath::FromUTF8Unsafe(argv[3]);
+    output_filename = base::FilePath::FromUTF8Unsafe(argv[3]);
 
   std::string crl_set_bytes, delta_bytes;
   if (!file_util::ReadFileToString(crl_set_filename, &crl_set_bytes))

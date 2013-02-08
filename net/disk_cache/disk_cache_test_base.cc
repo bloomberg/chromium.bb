@@ -24,7 +24,7 @@ DiskCacheTest::~DiskCacheTest() {
 }
 
 bool DiskCacheTest::CopyTestCache(const std::string& name) {
-  FilePath path;
+  base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("net");
   path = path.AppendASCII("data");

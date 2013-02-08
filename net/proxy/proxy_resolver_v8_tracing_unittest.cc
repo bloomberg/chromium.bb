@@ -40,7 +40,7 @@ class ProxyResolverV8TracingTest : public testing::Test {
 };
 
 scoped_refptr<ProxyResolverScriptData> LoadScriptData(const char* filename) {
-  FilePath path;
+  base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("net");
   path = path.AppendASCII("data");

@@ -12,7 +12,7 @@
 namespace net {
 
 bool PlatformMimeUtil::GetPlatformMimeTypeFromExtension(
-    const FilePath::StringType& ext, std::string* result) const {
+    const base::FilePath::StringType& ext, std::string* result) const {
   // check windows registry for file extension's mime type (registry key
   // names are not case-sensitive).
   std::wstring value, key = L"." + ext;
@@ -26,7 +26,7 @@ bool PlatformMimeUtil::GetPlatformMimeTypeFromExtension(
 }
 
 bool PlatformMimeUtil::GetPreferredExtensionForMimeType(
-    const std::string& mime_type, FilePath::StringType* ext) const {
+    const std::string& mime_type, base::FilePath::StringType* ext) const {
   std::wstring key(L"MIME\\Database\\Content Type\\" + UTF8ToWide(mime_type));
   if (base::win::RegKey(HKEY_CLASSES_ROOT, key.c_str(), KEY_READ).ReadValue(
           L"Extension", ext) != ERROR_SUCCESS) {
@@ -41,12 +41,12 @@ bool PlatformMimeUtil::GetPreferredExtensionForMimeType(
 
 void PlatformMimeUtil::GetPlatformExtensionsForMimeType(
     const std::string& mime_type,
-    base::hash_set<FilePath::StringType>* extensions) const {
+    base::hash_set<base::FilePath::StringType>* extensions) const {
   // Multiple extensions could have the given mime type specified as their types
   // in their 'HKCR\.<extension>\Content Type' keys. Iterating all the HKCR
   // entries, though, is wildly impractical. Cheat by returning just the
   // preferred extension.
-  FilePath::StringType ext;
+  base::FilePath::StringType ext;
   if (GetPreferredExtensionForMimeType(mime_type, &ext))
     extensions->insert(ext);
 }

@@ -58,7 +58,7 @@ class MultiThreadedCertVerifierTest : public ::testing::Test {
 };
 
 TEST_F(MultiThreadedCertVerifierTest, CacheHit) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "ok_cert.pem"));
   ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
@@ -97,7 +97,7 @@ TEST_F(MultiThreadedCertVerifierTest, CacheHit) {
 // certificates.  These should be treated as different certificate chains even
 // though the two X509Certificate objects contain the same server certificate.
 TEST_F(MultiThreadedCertVerifierTest, DifferentCACerts) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
 
   scoped_refptr<X509Certificate> server_cert =
       ImportCertFromFile(certs_dir, "salesforce_com_test.pem");
@@ -155,7 +155,7 @@ TEST_F(MultiThreadedCertVerifierTest, DifferentCACerts) {
 
 // Tests an inflight join.
 TEST_F(MultiThreadedCertVerifierTest, InflightJoin) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "ok_cert.pem"));
   ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
@@ -189,7 +189,7 @@ TEST_F(MultiThreadedCertVerifierTest, InflightJoin) {
 
 // Tests that the callback of a canceled request is never made.
 TEST_F(MultiThreadedCertVerifierTest, CancelRequest) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "ok_cert.pem"));
   ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
@@ -222,7 +222,7 @@ TEST_F(MultiThreadedCertVerifierTest, CancelRequest) {
 
 // Tests that a canceled request is not leaked.
 TEST_F(MultiThreadedCertVerifierTest, CancelRequestThenQuit) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "ok_cert.pem"));
   ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);

@@ -1379,7 +1379,7 @@ TEST_F(DiskCacheEntryTest, MissingData) {
   FlushQueueForTest();
 
   disk_cache::Addr address(0x80000001);
-  FilePath name = cache_impl_->GetFileName(address);
+  base::FilePath name = cache_impl_->GetFileName(address);
   EXPECT_TRUE(file_util::Delete(name, false));
 
   // Attempt to read the data.

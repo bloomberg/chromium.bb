@@ -14,10 +14,10 @@
 #include "build/build_config.h"
 
 // Re-creates a given test file inside the cache test folder.
-bool CreateCacheTestFile(const FilePath& name);
+bool CreateCacheTestFile(const base::FilePath& name);
 
 // Deletes all file son the cache.
-bool DeleteCache(const FilePath& path);
+bool DeleteCache(const base::FilePath& path);
 
 // Fills buffer with random values (may contain nulls unless no_nulls is true).
 void CacheTestFillBuffer(char* buffer, size_t len, bool no_nulls);
@@ -26,7 +26,8 @@ void CacheTestFillBuffer(char* buffer, size_t len, bool no_nulls);
 std::string GenerateKey(bool same_length);
 
 // Returns true if the cache is not corrupt.
-bool CheckCacheIntegrity(const FilePath& path, bool new_eviction, uint32 mask);
+bool CheckCacheIntegrity(const base::FilePath& path, bool new_eviction,
+                         uint32 mask);
 
 // -----------------------------------------------------------------------
 

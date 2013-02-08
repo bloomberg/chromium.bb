@@ -88,7 +88,8 @@ class PacPerfSuiteRunner {
         test_server_(
             net::TestServer::TYPE_HTTP,
             net::TestServer::kLocalhost,
-            FilePath(FILE_PATH_LITERAL("net/data/proxy_resolver_perftest"))) {
+            base::FilePath(
+                FILE_PATH_LITERAL("net/data/proxy_resolver_perftest"))) {
   }
 
   void RunAllTests() {
@@ -153,7 +154,7 @@ class PacPerfSuiteRunner {
 
   // Read the PAC script from disk and initialize the proxy resolver with it.
   void LoadPacScriptIntoResolver(const std::string& script_name) {
-    FilePath path;
+    base::FilePath path;
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.AppendASCII("net");
     path = path.AppendASCII("data");

@@ -72,7 +72,7 @@ URLFetcherCore::FileWriter::~FileWriter() {
 }
 
 void URLFetcherCore::FileWriter::CreateFileAtPath(
-    const FilePath& file_path) {
+    const base::FilePath& file_path) {
   DCHECK(core_->network_task_runner_->BelongsToCurrentThread());
   DCHECK(file_task_runner_.get());
   base::FileUtilProxy::CreateOrOpen(
@@ -203,7 +203,7 @@ void URLFetcherCore::FileWriter::DeleteFile(
 }
 
 void URLFetcherCore::FileWriter::DidCreateFile(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     base::PlatformFileError error_code,
     base::PassPlatformFile file_handle,
     bool created) {
@@ -213,12 +213,12 @@ void URLFetcherCore::FileWriter::DidCreateFile(
 void URLFetcherCore::FileWriter::DidCreateTempFile(
     base::PlatformFileError error_code,
     base::PassPlatformFile file_handle,
-    const FilePath& file_path) {
+    const base::FilePath& file_path) {
   DidCreateFileInternal(file_path, error_code, file_handle);
 }
 
 void URLFetcherCore::FileWriter::DidCreateFileInternal(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     base::PlatformFileError error_code,
     base::PassPlatformFile file_handle) {
   DCHECK(core_->network_task_runner_->BelongsToCurrentThread());
@@ -456,7 +456,7 @@ void URLFetcherCore::SetAutomaticallyRetryOnNetworkChanges(int max_retries) {
 }
 
 void URLFetcherCore::SaveResponseToFileAtPath(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     scoped_refptr<base::TaskRunner> file_task_runner) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   file_task_runner_ = file_task_runner;
@@ -542,7 +542,7 @@ bool URLFetcherCore::GetResponseAsString(
 }
 
 bool URLFetcherCore::GetResponseAsFilePath(bool take_ownership,
-                                           FilePath* out_response_path) {
+                                           base::FilePath* out_response_path) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   const bool destination_is_file =
       response_destination_ == URLFetcherCore::TEMP_FILE ||

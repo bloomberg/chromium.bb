@@ -45,13 +45,13 @@ namespace net {
 // Singleton utility class for mime types.
 class MimeUtil : public PlatformMimeUtil {
  public:
-  bool GetMimeTypeFromExtension(const FilePath::StringType& ext,
+  bool GetMimeTypeFromExtension(const base::FilePath::StringType& ext,
                                 std::string* mime_type) const;
 
-  bool GetMimeTypeFromFile(const FilePath& file_path,
+  bool GetMimeTypeFromFile(const base::FilePath& file_path,
                            std::string* mime_type) const;
 
-  bool GetWellKnownMimeTypeFromExtension(const FilePath::StringType& ext,
+  bool GetWellKnownMimeTypeFromExtension(const base::FilePath::StringType& ext,
                                          std::string* mime_type) const;
 
   bool IsSupportedImageMimeType(const std::string& mime_type) const;
@@ -94,7 +94,7 @@ class MimeUtil : public PlatformMimeUtil {
   // For faster lookup, keep hash sets.
   void InitializeMimeTypeMaps();
 
-  bool GetMimeTypeFromExtensionHelper(const FilePath::StringType& ext,
+  bool GetMimeTypeFromExtensionHelper(const base::FilePath::StringType& ext,
                                       bool include_platform_types,
                                       std::string* mime_type) const;
 
@@ -184,28 +184,29 @@ static const char* FindMimeType(const MimeInfo* mappings,
   return NULL;
 }
 
-bool MimeUtil::GetMimeTypeFromExtension(const FilePath::StringType& ext,
+bool MimeUtil::GetMimeTypeFromExtension(const base::FilePath::StringType& ext,
                                         string* result) const {
   return GetMimeTypeFromExtensionHelper(ext, true, result);
 }
 
 bool MimeUtil::GetWellKnownMimeTypeFromExtension(
-    const FilePath::StringType& ext,
+    const base::FilePath::StringType& ext,
     string* result) const {
   return GetMimeTypeFromExtensionHelper(ext, false, result);
 }
 
-bool MimeUtil::GetMimeTypeFromFile(const FilePath& file_path,
+bool MimeUtil::GetMimeTypeFromFile(const base::FilePath& file_path,
                                    string* result) const {
-  FilePath::StringType file_name_str = file_path.Extension();
+  base::FilePath::StringType file_name_str = file_path.Extension();
   if (file_name_str.empty())
     return false;
   return GetMimeTypeFromExtension(file_name_str.substr(1), result);
 }
 
-bool MimeUtil::GetMimeTypeFromExtensionHelper(const FilePath::StringType& ext,
-                                              bool include_platform_types,
-                                              string* result) const {
+bool MimeUtil::GetMimeTypeFromExtensionHelper(
+    const base::FilePath::StringType& ext,
+    bool include_platform_types,
+    string* result) const {
   // Avoids crash when unable to handle a long file path. See crbug.com/48733.
   const unsigned kMaxFilePathSize = 65536;
   if (ext.length() > kMaxFilePathSize)
@@ -677,22 +678,23 @@ bool MimeUtil::IsSupportedStrictMediaMimeType(
 // Wrappers for the singleton
 //----------------------------------------------------------------------------
 
-bool GetMimeTypeFromExtension(const FilePath::StringType& ext,
+bool GetMimeTypeFromExtension(const base::FilePath::StringType& ext,
                               std::string* mime_type) {
   return g_mime_util.Get().GetMimeTypeFromExtension(ext, mime_type);
 }
 
-bool GetMimeTypeFromFile(const FilePath& file_path, std::string* mime_type) {
+bool GetMimeTypeFromFile(const base::FilePath& file_path,
+                         std::string* mime_type) {
   return g_mime_util.Get().GetMimeTypeFromFile(file_path, mime_type);
 }
 
-bool GetWellKnownMimeTypeFromExtension(const FilePath::StringType& ext,
+bool GetWellKnownMimeTypeFromExtension(const base::FilePath::StringType& ext,
                                        std::string* mime_type) {
   return g_mime_util.Get().GetWellKnownMimeTypeFromExtension(ext, mime_type);
 }
 
 bool GetPreferredExtensionForMimeType(const std::string& mime_type,
-                                      FilePath::StringType* extension) {
+                                      base::FilePath::StringType* extension) {
   return g_mime_util.Get().GetPreferredExtensionForMimeType(mime_type,
                                                             extension);
 }
@@ -829,8 +831,8 @@ void GetExtensionsFromHardCodedMappings(
     const MimeInfo* mappings,
     size_t mappings_len,
     const std::string& leading_mime_type,
-    base::hash_set<FilePath::StringType>* extensions) {
-  FilePath::StringType extension;
+    base::hash_set<base::FilePath::StringType>* extensions) {
+  base::FilePath::StringType extension;
   for (size_t i = 0; i < mappings_len; ++i) {
     if (StartsWithASCII(mappings[i].mime_type, leading_mime_type, false)) {
       std::vector<string> this_extensions;
@@ -838,9 +840,9 @@ void GetExtensionsFromHardCodedMappings(
                                    &this_extensions);
       for (size_t j = 0; j < this_extensions.size(); ++j) {
 #if defined(OS_WIN)
-        FilePath::StringType extension(UTF8ToWide(this_extensions[j]));
+        base::FilePath::StringType extension(UTF8ToWide(this_extensions[j]));
 #else
-        FilePath::StringType extension(this_extensions[j]);
+        base::FilePath::StringType extension(this_extensions[j]);
 #endif
         extensions->insert(extension);
       }
@@ -848,10 +850,11 @@ void GetExtensionsFromHardCodedMappings(
   }
 }
 
-void GetExtensionsHelper(const char* const* standard_types,
-                         size_t standard_types_len,
-                         const std::string& leading_mime_type,
-                         base::hash_set<FilePath::StringType>* extensions) {
+void GetExtensionsHelper(
+    const char* const* standard_types,
+    size_t standard_types_len,
+    const std::string& leading_mime_type,
+    base::hash_set<base::FilePath::StringType>* extensions) {
   for (size_t i = 0; i < standard_types_len; ++i) {
     g_mime_util.Get().GetPlatformExtensionsForMimeType(standard_types[i],
                                                        extensions);
@@ -883,13 +886,14 @@ void HashSetToVector(base::hash_set<T>* source, std::vector<T>* target) {
 }
 }
 
-void GetExtensionsForMimeType(const std::string& unsafe_mime_type,
-                              std::vector<FilePath::StringType>* extensions) {
+void GetExtensionsForMimeType(
+    const std::string& unsafe_mime_type,
+    std::vector<base::FilePath::StringType>* extensions) {
   if (unsafe_mime_type == "*/*" || unsafe_mime_type == "*")
     return;
 
   const std::string mime_type = StringToLowerASCII(unsafe_mime_type);
-  base::hash_set<FilePath::StringType> unique_extensions;
+  base::hash_set<base::FilePath::StringType> unique_extensions;
 
   if (EndsWith(mime_type, "/*", true)) {
     std::string leading_mime_type = mime_type.substr(0, mime_type.length() - 1);

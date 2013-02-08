@@ -12,7 +12,7 @@ namespace net {
 
 TEST(MimeUtilTest, ExtensionTest) {
   const struct {
-    const FilePath::CharType* extension;
+    const base::FilePath::CharType* extension;
     const char* mime_type;
     bool valid;
   } tests[] = {
@@ -36,7 +36,7 @@ TEST(MimeUtilTest, ExtensionTest) {
 
 TEST(MimeUtilTest, FileTest) {
   const struct {
-    const FilePath::CharType* file_path;
+    const base::FilePath::CharType* file_path;
     const char* mime_type;
     bool valid;
   } tests[] = {
@@ -52,7 +52,7 @@ TEST(MimeUtilTest, FileTest) {
   bool rv;
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    rv = GetMimeTypeFromFile(FilePath(tests[i].file_path),
+    rv = GetMimeTypeFromFile(base::FilePath(tests[i].file_path),
                                   &mime_type);
     EXPECT_EQ(tests[i].valid, rv);
     if (rv)
@@ -255,7 +255,7 @@ TEST(MimeUtilTest, TestGetExtensionsForMimeType) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    std::vector<FilePath::StringType> extensions;
+    std::vector<base::FilePath::StringType> extensions;
     GetExtensionsForMimeType(tests[i].mime_type, &extensions);
     ASSERT_TRUE(tests[i].min_expected_size <= extensions.size());
 

@@ -13,7 +13,7 @@ HANDLE CreateServer(string16* pipe_number);
 
 // Runs a loop to write a new cache with all the data available from a slave
 // process connected through the provided |pipe|.
-int UpgradeCache(const FilePath& output_path, HANDLE pipe);
+int UpgradeCache(const base::FilePath& output_path, HANDLE pipe);
 
 // This process will only execute commands from the controller.
-int RunSlave(const FilePath& input_path, const string16& pipe_number);
+int RunSlave(const base::FilePath& input_path, const string16& pipe_number);

@@ -36,7 +36,7 @@ namespace net {
 
 namespace {
 
-const FilePath::CharType kDocRoot[] =
+const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("net/data/proxy_script_fetcher_unittest");
 
 struct FetchResult {
@@ -78,7 +78,7 @@ class RequestContext : public URLRequestContext {
 
 // Get a file:// url relative to net/data/proxy/proxy_script_fetcher_unittest.
 GURL GetTestFileUrl(const std::string& relpath) {
-  FilePath path;
+  base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("net");
   path = path.AppendASCII("data");
@@ -157,7 +157,7 @@ class BasicNetworkDelegate : public NetworkDelegate {
   }
 
   virtual bool OnCanAccessFile(const net::URLRequest& request,
-                               const FilePath& path) const OVERRIDE {
+                               const base::FilePath& path) const OVERRIDE {
     return true;
   }
   virtual bool OnCanThrottleRequest(const URLRequest& request) const OVERRIDE {
@@ -184,7 +184,7 @@ class ProxyScriptFetcherImplTest : public PlatformTest {
   ProxyScriptFetcherImplTest()
       : test_server_(TestServer::TYPE_HTTP,
                      net::TestServer::kLocalhost,
-                     FilePath(kDocRoot)) {
+                     base::FilePath(kDocRoot)) {
     context_.set_network_delegate(&network_delegate_);
   }
 

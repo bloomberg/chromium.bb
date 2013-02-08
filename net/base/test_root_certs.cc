@@ -20,7 +20,7 @@ bool g_has_instance = false;
 base::LazyInstance<TestRootCerts>::Leaky
     g_test_root_certs = LAZY_INSTANCE_INITIALIZER;
 
-CertificateList LoadCertificates(const FilePath& filename) {
+CertificateList LoadCertificates(const base::FilePath& filename) {
   std::string raw_cert;
   if (!file_util::ReadFileToString(filename, &raw_cert)) {
     LOG(ERROR) << "Can't load certificate " << filename.value();
@@ -42,7 +42,7 @@ bool TestRootCerts::HasInstance() {
   return g_has_instance;
 }
 
-bool TestRootCerts::AddFromFile(const FilePath& file) {
+bool TestRootCerts::AddFromFile(const base::FilePath& file) {
   CertificateList root_certs = LoadCertificates(file);
   if (root_certs.empty() || root_certs.size() > 1)
     return false;

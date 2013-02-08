@@ -357,7 +357,7 @@ class ProxyConfigServiceLinuxTest : public PlatformTest {
     std::string prefix("ProxyConfigServiceLinuxTest_user_home");
     file_util::CreateNewTempDirectory(prefix, &user_home_);
     kde_home_ = user_home_.Append(FILE_PATH_LITERAL(".kde"));
-    FilePath path = kde_home_.Append(FILE_PATH_LITERAL("share"));
+    base::FilePath path = kde_home_.Append(FILE_PATH_LITERAL("share"));
     path = path.Append(FILE_PATH_LITERAL("config"));
     file_util::CreateDirectory(path);
     kioslaverc_ = path.Append(FILE_PATH_LITERAL("kioslaverc"));
@@ -374,14 +374,14 @@ class ProxyConfigServiceLinuxTest : public PlatformTest {
     PlatformTest::TearDown();
   }
 
-  FilePath user_home_;
+  base::FilePath user_home_;
   // KDE3 paths.
-  FilePath kde_home_;
-  FilePath kioslaverc_;
+  base::FilePath kde_home_;
+  base::FilePath kioslaverc_;
   // KDE4 paths.
-  FilePath kde4_home_;
-  FilePath kde4_config_;
-  FilePath kioslaverc4_;
+  base::FilePath kde4_home_;
+  base::FilePath kde4_config_;
+  base::FilePath kioslaverc4_;
 };
 
 // Builds an identifier for each test in an array.

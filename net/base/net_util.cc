@@ -83,7 +83,7 @@ namespace net {
 namespace {
 
 // what we prepend to get a file URL
-static const FilePath::CharType kFileURLPrefix[] =
+static const base::FilePath::CharType kFileURLPrefix[] =
     FILE_PATH_LITERAL("file:///");
 
 // The general list of blocked ports. Will be blocked unless a specific
@@ -852,15 +852,15 @@ bool IsReservedName(const string16& filename) {
 //    integrating with the user's shell.
 void EnsureSafeExtension(const std::string& mime_type,
                          bool ignore_extension,
-                         FilePath* file_name) {
+                         base::FilePath* file_name) {
   // See if our file name already contains an extension.
-  FilePath::StringType extension = file_name->Extension();
+  base::FilePath::StringType extension = file_name->Extension();
   if (!extension.empty())
     extension.erase(extension.begin());  // Erase preceding '.'.
 
   if ((ignore_extension || extension.empty()) && !mime_type.empty()) {
-    FilePath::StringType preferred_mime_extension;
-    std::vector<FilePath::StringType> all_mime_extensions;
+    base::FilePath::StringType preferred_mime_extension;
+    std::vector<base::FilePath::StringType> all_mime_extensions;
     // The GetPreferredExtensionForMimeType call will end up going to disk.  Do
     // this on another thread to avoid slowing the IO thread.
     // http://crbug.com/61827
@@ -882,7 +882,7 @@ void EnsureSafeExtension(const std::string& mime_type,
   }
 
 #if defined(OS_WIN)
-  static const FilePath::CharType default_extension[] =
+  static const base::FilePath::CharType default_extension[] =
       FILE_PATH_LITERAL("download");
 
   // Rename shell-integrated extensions.
@@ -911,11 +911,11 @@ size_t GetCountOfExplicitlyAllowedPorts() {
   return g_explicitly_allowed_ports.Get().size();
 }
 
-GURL FilePathToFileURL(const FilePath& path) {
+GURL FilePathToFileURL(const base::FilePath& path) {
   // Produce a URL like "file:///C:/foo" for a regular file, or
   // "file://///server/path" for UNC. The URL canonicalizer will fix up the
   // latter case to be the canonical UNC form: "file://server/path"
-  FilePath::StringType url_string(kFileURLPrefix);
+  base::FilePath::StringType url_string(kFileURLPrefix);
   url_string.append(path.value());
 
   // Now do replacement of some characters. Since we assume the input is a
@@ -1120,19 +1120,19 @@ string16 StripWWWFromHost(const GURL& url) {
 
 void GenerateSafeFileName(const std::string& mime_type,
                           bool ignore_extension,
-                          FilePath* file_path) {
+                          base::FilePath* file_path) {
   // Make sure we get the right file extension
   EnsureSafeExtension(mime_type, ignore_extension, file_path);
 
 #if defined(OS_WIN)
   // Prepend "_" to the file name if it's a reserved name
-  FilePath::StringType leaf_name = file_path->BaseName().value();
+  base::FilePath::StringType leaf_name = file_path->BaseName().value();
   DCHECK(!leaf_name.empty());
   if (IsReservedName(leaf_name)) {
-    leaf_name = FilePath::StringType(FILE_PATH_LITERAL("_")) + leaf_name;
+    leaf_name = base::FilePath::StringType(FILE_PATH_LITERAL("_")) + leaf_name;
     *file_path = file_path->DirName();
-    if (file_path->value() == FilePath::kCurrentDirectory) {
-      *file_path = FilePath(leaf_name);
+    if (file_path->value() == base::FilePath::kCurrentDirectory) {
+      *file_path = base::FilePath(leaf_name);
     } else {
       *file_path = file_path->Append(leaf_name);
     }
@@ -1207,24 +1207,24 @@ string16 GetSuggestedFilename(const GURL& url,
   trimmed_trailing_character_count += path_length_before_trim - path.length();
   file_util::ReplaceIllegalCharactersInPath(&path, '-');
   path.append(trimmed_trailing_character_count, '-');
-  FilePath result(path);
+  base::FilePath result(path);
   GenerateSafeFileName(mime_type, overwrite_extension, &result);
   return result.value();
 #else
   std::string path = filename.empty() ? default_name : filename;
   file_util::ReplaceIllegalCharactersInPath(&path, '-');
-  FilePath result(path);
+  base::FilePath result(path);
   GenerateSafeFileName(mime_type, overwrite_extension, &result);
   return UTF8ToUTF16(result.value());
 #endif
 }
 
-FilePath GenerateFileName(const GURL& url,
-                          const std::string& content_disposition,
-                          const std::string& referrer_charset,
-                          const std::string& suggested_name,
-                          const std::string& mime_type,
-                          const std::string& default_file_name) {
+base::FilePath GenerateFileName(const GURL& url,
+                                const std::string& content_disposition,
+                                const std::string& referrer_charset,
+                                const std::string& suggested_name,
+                                const std::string& mime_type,
+                                const std::string& default_file_name) {
   string16 file_name = GetSuggestedFilename(url,
                                             content_disposition,
                                             referrer_charset,
@@ -1233,9 +1233,10 @@ FilePath GenerateFileName(const GURL& url,
                                             default_file_name);
 
 #if defined(OS_WIN)
-  FilePath generated_name(file_name);
+  base::FilePath generated_name(file_name);
 #else
-  FilePath generated_name(base::SysWideToNativeMB(UTF16ToWide(file_name)));
+  base::FilePath generated_name(
+      base::SysWideToNativeMB(UTF16ToWide(file_name)));
 #endif
 
 #if defined(OS_CHROMEOS)

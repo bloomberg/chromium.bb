@@ -21,13 +21,13 @@ class RemoteTestServer : public BaseTestServer {
   // |document_root| must be a relative path under the root tree.
   RemoteTestServer(Type type,
                    const std::string& host,
-                   const FilePath& document_root);
+                   const base::FilePath& document_root);
 
   // Initialize a TestServer with a specific set of SSLOptions.
   // |document_root| must be a relative path under the root tree.
   RemoteTestServer(Type type,
                    const SSLOptions& ssl_options,
-                   const FilePath& document_root);
+                   const base::FilePath& document_root);
 
   virtual ~RemoteTestServer();
 
@@ -47,10 +47,10 @@ class RemoteTestServer : public BaseTestServer {
   // should be called by test cases to retrieve the actual document root path
   // on the Android device, otherwise document_root() function is used to get
   // the document root.
-  FilePath GetDocumentRoot() const;
+  base::FilePath GetDocumentRoot() const;
 
  private:
-  bool Init(const FilePath& document_root);
+  bool Init(const base::FilePath& document_root);
 
   // The local port used to communicate with the TestServer spawner. This is
   // used to control the startup and shutdown of the Python TestServer running

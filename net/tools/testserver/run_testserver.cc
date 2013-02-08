@@ -89,7 +89,7 @@ int main(int argc, const char* argv[]) {
     }
   }
 
-  FilePath doc_root = command_line->GetSwitchValuePath("doc-root");
+  base::FilePath doc_root = command_line->GetSwitchValuePath("doc-root");
   if (doc_root.empty()) {
     printf("Error: --doc-root must be specified\n");
     PrintUsage();

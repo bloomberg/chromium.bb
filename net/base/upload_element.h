@@ -29,7 +29,7 @@ class NET_EXPORT UploadElement {
 
   const char* bytes() const { return bytes_start_ ? bytes_start_ : &buf_[0]; }
   uint64 bytes_length() const { return buf_.size() + bytes_length_; }
-  const FilePath& file_path() const { return file_path_; }
+  const base::FilePath& file_path() const { return file_path_; }
   uint64 file_range_offset() const { return file_range_offset_; }
   uint64 file_range_length() const { return file_range_length_; }
   // If NULL time is returned, we do not do the check.
@@ -51,14 +51,14 @@ class NET_EXPORT UploadElement {
     bytes_length_ = bytes_len;
   }
 
-  void SetToFilePath(const FilePath& path) {
+  void SetToFilePath(const base::FilePath& path) {
     SetToFilePathRange(path, 0, kuint64max, base::Time());
   }
 
   // If expected_modification_time is NULL, we do not check for the file
   // change. Also note that the granularity for comparison is time_t, not
   // the full precision.
-  void SetToFilePathRange(const FilePath& path,
+  void SetToFilePathRange(const base::FilePath& path,
                           uint64 offset, uint64 length,
                           const base::Time& expected_modification_time) {
     type_ = TYPE_FILE;
@@ -73,7 +73,7 @@ class NET_EXPORT UploadElement {
   std::vector<char> buf_;
   const char* bytes_start_;
   uint64 bytes_length_;
-  FilePath file_path_;
+  base::FilePath file_path_;
   uint64 file_range_offset_;
   uint64 file_range_length_;
   base::Time expected_file_modification_time_;

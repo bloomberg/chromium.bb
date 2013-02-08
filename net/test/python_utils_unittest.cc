@@ -15,16 +15,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(PythonUtils, Append) {
-  const FilePath::CharType kAppendDir1[] =
+  const base::FilePath::CharType kAppendDir1[] =
       FILE_PATH_LITERAL("test/path_append1");
-  const FilePath::CharType kAppendDir2[] =
+  const base::FilePath::CharType kAppendDir2[] =
       FILE_PATH_LITERAL("test/path_append2");
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   std::string python_path;
-  FilePath append_path1(kAppendDir1);
-  FilePath append_path2(kAppendDir2);
+  base::FilePath append_path1(kAppendDir1);
+  base::FilePath append_path2(kAppendDir2);
 
   // Get a clean start
   env->UnSetVar(kPythonPathEnv);

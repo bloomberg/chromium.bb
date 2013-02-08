@@ -14,7 +14,7 @@
 namespace {
 
 const int32 kSegmentCount = 10;
-const FilePath::StringType kCachePath = FILE_PATH_LITERAL("cache");
+const base::FilePath::StringType kCachePath = FILE_PATH_LITERAL("cache");
 
 }  // namespace
 
@@ -28,7 +28,7 @@ FlashCacheTest::~FlashCacheTest() {
 
 void FlashCacheTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  const FilePath path(temp_dir_.path().Append(kCachePath));
+  const base::FilePath path(temp_dir_.path().Append(kCachePath));
 
   int32 storage_size = num_segments_in_storage_ * disk_cache::kFlashSegmentSize;
   storage_.reset(new disk_cache::Storage(path, storage_size));

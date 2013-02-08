@@ -22,7 +22,7 @@ void UploadData::AppendBytes(const char* bytes, int bytes_len) {
   }
 }
 
-void UploadData::AppendFileRange(const FilePath& file_path,
+void UploadData::AppendFileRange(const base::FilePath& file_path,
                                  uint64 offset, uint64 length,
                                  const base::Time& expected_modification_time) {
   DCHECK(!is_chunked_);

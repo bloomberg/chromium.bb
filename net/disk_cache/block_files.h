@@ -25,7 +25,7 @@ namespace disk_cache {
 // This class handles the set of block-files open by the disk cache.
 class NET_EXPORT_PRIVATE BlockFiles {
  public:
-  explicit BlockFiles(const FilePath& path);
+  explicit BlockFiles(const base::FilePath& path);
   ~BlockFiles();
 
   // Performs the object initialization. create_files indicates if the backing
@@ -83,11 +83,11 @@ class NET_EXPORT_PRIVATE BlockFiles {
   void GetFileStats(int index, int* used_count, int* load);
 
   // Returns the filename for a given file index.
-  FilePath Name(int index);
+  base::FilePath Name(int index);
 
   bool init_;
   char* zero_buffer_;  // Buffer to speed-up cleaning deleted entries.
-  FilePath path_;  // Path to the backing folder.
+  base::FilePath path_;  // Path to the backing folder.
   std::vector<MappedFile*> block_files_;  // The actual files.
   scoped_ptr<base::ThreadChecker> thread_checker_;
 

@@ -51,7 +51,7 @@ const int kExpectedCrash = 100;
 
 // Starts a new process.
 int RunSlave(int iteration) {
-  FilePath exe;
+  base::FilePath exe;
   PathService::Get(base::FILE_EXE, &exe);
 
   CommandLine cmdline(exe);
@@ -102,7 +102,7 @@ void StressTheCache(int iteration) {
   int cache_size = 0x2000000;  // 32MB.
   uint32 mask = 0xfff;  // 4096 entries.
 
-  FilePath path;
+  base::FilePath path;
   PathService::Get(base::DIR_TEMP, &path);
   path = path.AppendASCII("cache_test_stress");
 

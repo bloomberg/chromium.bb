@@ -71,23 +71,23 @@ BaseTestServer::SSLOptions::SSLOptions(
 
 BaseTestServer::SSLOptions::~SSLOptions() {}
 
-FilePath BaseTestServer::SSLOptions::GetCertificateFile() const {
+base::FilePath BaseTestServer::SSLOptions::GetCertificateFile() const {
   switch (server_certificate) {
     case CERT_OK:
     case CERT_MISMATCHED_NAME:
-      return FilePath(FILE_PATH_LITERAL("ok_cert.pem"));
+      return base::FilePath(FILE_PATH_LITERAL("ok_cert.pem"));
     case CERT_EXPIRED:
-      return FilePath(FILE_PATH_LITERAL("expired_cert.pem"));
+      return base::FilePath(FILE_PATH_LITERAL("expired_cert.pem"));
     case CERT_CHAIN_WRONG_ROOT:
       // This chain uses its own dedicated test root certificate to avoid
       // side-effects that may affect testing.
-      return FilePath(FILE_PATH_LITERAL("redundant-server-chain.pem"));
+      return base::FilePath(FILE_PATH_LITERAL("redundant-server-chain.pem"));
     case CERT_AUTO:
-      return FilePath();
+      return base::FilePath();
     default:
       NOTREACHED();
   }
-  return FilePath();
+  return base::FilePath();
 }
 
 std::string BaseTestServer::SSLOptions::GetOCSPArgument() const {
@@ -247,8 +247,8 @@ void BaseTestServer::Init(const std::string& host) {
   log_to_console_ = true;
 }
 
-void BaseTestServer::SetResourcePath(const FilePath& document_root,
-                                     const FilePath& certificates_dir) {
+void BaseTestServer::SetResourcePath(const base::FilePath& document_root,
+                                     const base::FilePath& certificates_dir) {
   // This method shouldn't get called twice.
   DCHECK(certificates_dir_.empty());
   document_root_ = document_root;
@@ -287,9 +287,9 @@ bool BaseTestServer::LoadTestRootCert() const {
     return false;
 
   // Should always use absolute path to load the root certificate.
-  FilePath root_certificate_path = certificates_dir_;
+  base::FilePath root_certificate_path = certificates_dir_;
   if (!certificates_dir_.IsAbsolute()) {
-    FilePath src_dir;
+    base::FilePath src_dir;
     if (!PathService::Get(base::DIR_SOURCE_ROOT, &src_dir))
       return false;
     root_certificate_path = src_dir.Append(certificates_dir_);
@@ -335,8 +335,8 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
 
   if (UsingSSL(type_)) {
     // Check the certificate arguments of the HTTPS server.
-    FilePath certificate_path(certificates_dir_);
-    FilePath certificate_file(ssl_options_.GetCertificateFile());
+    base::FilePath certificate_path(certificates_dir_);
+    base::FilePath certificate_file(ssl_options_.GetCertificateFile());
     if (!certificate_file.value().empty()) {
       certificate_path = certificate_path.Append(certificate_file);
       if (certificate_path.IsAbsolute() &&
@@ -353,7 +353,7 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
       arguments->Set("ssl-client-auth", base::Value::CreateNullValue());
     scoped_ptr<base::ListValue> ssl_client_certs(new base::ListValue());
 
-    std::vector<FilePath>::const_iterator it;
+    std::vector<base::FilePath>::const_iterator it;
     for (it = ssl_options_.client_authorities.begin();
          it != ssl_options_.client_authorities.end(); ++it) {
       if (it->IsAbsolute() && !file_util::PathExists(*it)) {

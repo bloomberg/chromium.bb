@@ -100,7 +100,7 @@ class ProxyResolverV8WithMockBindings : public ProxyResolverV8 {
 
   // Initialize with the PAC script data at |filename|.
   int SetPacScriptFromDisk(const char* filename) {
-    FilePath path;
+    base::FilePath path;
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.AppendASCII("net");
     path = path.AppendASCII("data");

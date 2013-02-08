@@ -42,16 +42,16 @@ enum BackendFlags {
 class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   friend class Eviction;
  public:
-  BackendImpl(const FilePath& path, base::MessageLoopProxy* cache_thread,
+  BackendImpl(const base::FilePath& path, base::MessageLoopProxy* cache_thread,
               net::NetLog* net_log);
   // mask can be used to limit the usable size of the hash table, for testing.
-  BackendImpl(const FilePath& path, uint32 mask,
+  BackendImpl(const base::FilePath& path, uint32 mask,
               base::MessageLoopProxy* cache_thread, net::NetLog* net_log);
   virtual ~BackendImpl();
 
   // Returns a new backend with the desired flags. See the declaration of
   // CreateCacheBackend().
-  static int CreateBackend(const FilePath& full_path, bool force,
+  static int CreateBackend(const base::FilePath& full_path, bool force,
                            int max_bytes, net::CacheType type,
                            uint32 flags, base::MessageLoopProxy* thread,
                            net::NetLog* net_log, Backend** backend,
@@ -94,7 +94,7 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   void SetType(net::CacheType type);
 
   // Returns the full name for an external storage file.
-  FilePath GetFileName(Addr address) const;
+  base::FilePath GetFileName(Addr address) const;
 
   // Returns the actual file used to store a given (non-external) address.
   MappedFile* File(Addr address);
@@ -357,7 +357,7 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
 
   InFlightBackendIO background_queue_;  // The controller of pending operations.
   scoped_refptr<MappedFile> index_;  // The main cache index.
-  FilePath path_;  // Path to the folder used as backing storage.
+  base::FilePath path_;  // Path to the folder used as backing storage.
   Index* data_;  // Pointer to the index data.
   BlockFiles block_files_;  // Set of files used to store all data.
   Rankings rankings_;  // Rankings to be able to trim the cache.

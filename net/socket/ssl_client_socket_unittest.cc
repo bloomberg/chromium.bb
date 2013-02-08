@@ -74,7 +74,7 @@ static bool LogContainsSSLConnectEndEvent(
 TEST_F(SSLClientSocketTest, Connect) {
   net::TestServer test_server(net::TestServer::TYPE_HTTPS,
                               net::TestServer::kLocalhost,
-                              FilePath());
+                              base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
   net::AddressList addr;
@@ -117,7 +117,7 @@ TEST_F(SSLClientSocketTest, ConnectExpired) {
       net::TestServer::SSLOptions::CERT_EXPIRED);
   net::TestServer test_server(net::TestServer::TYPE_HTTPS,
                               ssl_options,
-                              FilePath());
+                              base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
   cert_verifier_->set_default_result(net::ERR_CERT_DATE_INVALID);
@@ -164,7 +164,7 @@ TEST_F(SSLClientSocketTest, ConnectMismatched) {
       net::TestServer::SSLOptions::CERT_MISMATCHED_NAME);
   net::TestServer test_server(net::TestServer::TYPE_HTTPS,
                               ssl_options,
-                              FilePath());
+                              base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
   cert_verifier_->set_default_result(net::ERR_CERT_COMMON_NAME_INVALID);
@@ -213,7 +213,7 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthCertRequested) {
   ssl_options.request_client_certificate = true;
   net::TestServer test_server(net::TestServer::TYPE_HTTPS,
                               ssl_options,
-                              FilePath());
+                              base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
   net::AddressList addr;
@@ -275,7 +275,7 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthSendNullCert) {
   ssl_options.request_client_certificate = true;
   net::TestServer test_server(net::TestServer::TYPE_HTTPS,
                               ssl_options,
-                              FilePath());
+                              base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
   net::AddressList addr;
@@ -335,7 +335,7 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthSendNullCert) {
 TEST_F(SSLClientSocketTest, Read) {
   net::TestServer test_server(net::TestServer::TYPE_HTTPS,
                               net::TestServer::kLocalhost,
-                              FilePath());
+                              base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
   net::AddressList addr;
@@ -391,7 +391,7 @@ TEST_F(SSLClientSocketTest, Read) {
 TEST_F(SSLClientSocketTest, Read_FullDuplex) {
   net::TestServer test_server(net::TestServer::TYPE_HTTPS,
                               net::TestServer::kLocalhost,
-                              FilePath());
+                              base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
   net::AddressList addr;
@@ -449,7 +449,7 @@ TEST_F(SSLClientSocketTest, Read_FullDuplex) {
 TEST_F(SSLClientSocketTest, Read_SmallChunks) {
   net::TestServer test_server(net::TestServer::TYPE_HTTPS,
                               net::TestServer::kLocalhost,
-                              FilePath());
+                              base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
   net::AddressList addr;
@@ -502,7 +502,7 @@ TEST_F(SSLClientSocketTest, Read_SmallChunks) {
 TEST_F(SSLClientSocketTest, Read_Interrupted) {
   net::TestServer test_server(net::TestServer::TYPE_HTTPS,
                               net::TestServer::kLocalhost,
-                              FilePath());
+                              base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
   net::AddressList addr;
@@ -552,7 +552,7 @@ TEST_F(SSLClientSocketTest, Read_Interrupted) {
 TEST_F(SSLClientSocketTest, Read_FullLogging) {
   net::TestServer test_server(net::TestServer::TYPE_HTTPS,
                               net::TestServer::kLocalhost,
-                              FilePath());
+                              base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
   net::AddressList addr;
@@ -620,7 +620,7 @@ TEST_F(SSLClientSocketTest, Read_FullLogging) {
 TEST_F(SSLClientSocketTest, PrematureApplicationData) {
   net::TestServer test_server(net::TestServer::TYPE_HTTPS,
                               net::TestServer::kLocalhost,
-                              FilePath());
+                              base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
   net::AddressList addr;
@@ -684,7 +684,7 @@ TEST_F(SSLClientSocketTest, CipherSuiteDisables) {
       net::TestServer::SSLOptions::BULK_CIPHER_RC4;
   net::TestServer test_server(net::TestServer::TYPE_HTTPS,
                               ssl_options,
-                              FilePath());
+                              base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
   net::AddressList addr;
@@ -755,7 +755,7 @@ TEST_F(SSLClientSocketTest, CipherSuiteDisables) {
 TEST_F(SSLClientSocketTest, ClientSocketHandleNotFromPool) {
   net::TestServer test_server(net::TestServer::TYPE_HTTPS,
                               net::TestServer::kLocalhost,
-                              FilePath());
+                              base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
   net::AddressList addr;
@@ -789,7 +789,7 @@ TEST_F(SSLClientSocketTest, ClientSocketHandleNotFromPool) {
 TEST_F(SSLClientSocketTest, ExportKeyingMaterial) {
   net::TestServer test_server(net::TestServer::TYPE_HTTPS,
                               net::TestServer::kLocalhost,
-                              FilePath());
+                              base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
   net::AddressList addr;
@@ -884,9 +884,9 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
   // Set up a test server with CERT_CHAIN_WRONG_ROOT.
   net::TestServer::SSLOptions ssl_options(
       net::TestServer::SSLOptions::CERT_CHAIN_WRONG_ROOT);
-  net::TestServer test_server(net::TestServer::TYPE_HTTPS,
-                              ssl_options,
-                              FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  net::TestServer test_server(
+      net::TestServer::TYPE_HTTPS, ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   net::AddressList addr;
@@ -947,7 +947,7 @@ class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
       net::TestServer::SSLOptions ssl_options) {
     net::TestServer test_server(net::TestServer::TYPE_HTTPS,
                                 ssl_options,
-                                FilePath());
+                                base::FilePath());
     if (!test_server.Start())
       return NULL;
 
@@ -985,7 +985,7 @@ class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
   // |client_authorities| in server SSLOptions. Current implementation of
   // RemoteTestServer (used on Android) expects relative paths, as opposed to
   // LocalTestServer, which expects absolute paths (what to fix?).
-  FilePath CertDirectory() {
+  base::FilePath CertDirectory() {
 #ifdef OS_ANDROID
     return net::GetTestCertsDirectoryRelative();
 #else
@@ -1004,7 +1004,7 @@ TEST_F(SSLClientSocketCertRequestInfoTest, NoAuthorities) {
 }
 
 TEST_F(SSLClientSocketCertRequestInfoTest, TwoAuthorities) {
-  const FilePath::CharType kThawteFile[] =
+  const base::FilePath::CharType kThawteFile[] =
       FILE_PATH_LITERAL("thawte.single.pem");
   const unsigned char kThawteDN[] = {
     0x30, 0x4c, 0x31, 0x0b, 0x30, 0x09, 0x06, 0x03, 0x55, 0x04, 0x06, 0x13,
@@ -1017,7 +1017,7 @@ TEST_F(SSLClientSocketCertRequestInfoTest, TwoAuthorities) {
   };
   const size_t kThawteLen = sizeof(kThawteDN);
 
-  const FilePath::CharType kDiginotarFile[] =
+  const base::FilePath::CharType kDiginotarFile[] =
       FILE_PATH_LITERAL("diginotar_root_ca.pem");
   const unsigned char kDiginotarDN[] = {
     0x30, 0x5f, 0x31, 0x0b, 0x30, 0x09, 0x06, 0x03, 0x55, 0x04, 0x06, 0x13,

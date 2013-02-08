@@ -80,7 +80,8 @@ int LaunchSlave(CommandLine command_line,
   bool do_convert_to_text = command_line.HasSwitch(kDumpToFiles);
 
   if (do_upgrade) {
-    FilePath program(base::StringPrintf(L"%ls%d", L"dump_cache", version));
+    base::FilePath program(
+        base::StringPrintf(L"%ls%d", L"dump_cache", version));
     command_line.SetProgram(program);
   }
 
@@ -108,14 +109,14 @@ int main(int argc, const char* argv[]) {
   CommandLine::Init(argc, argv);
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  FilePath input_path = command_line.GetSwitchValuePath(kInputPath);
+  base::FilePath input_path = command_line.GetSwitchValuePath(kInputPath);
   if (input_path.empty())
     return Help();
 
   bool dump_to_files = command_line.HasSwitch(kDumpToFiles);
   bool upgrade = command_line.HasSwitch(kUpgrade);
 
-  FilePath output_path = command_line.GetSwitchValuePath(kOutputPath);
+  base::FilePath output_path = command_line.GetSwitchValuePath(kOutputPath);
   if ((dump_to_files || upgrade) && output_path.empty())
     return Help();
 

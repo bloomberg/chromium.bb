@@ -54,7 +54,7 @@ URLRequestFileJob::FileMetaInfo::FileMetaInfo()
 
 URLRequestFileJob::URLRequestFileJob(URLRequest* request,
                                      NetworkDelegate* network_delegate,
-                                     const FilePath& file_path)
+                                     const base::FilePath& file_path)
     : URLRequestJob(request, network_delegate),
       file_path_(file_path),
       stream_(new FileStream(NULL)),
@@ -66,7 +66,7 @@ URLRequestFileJob::URLRequestFileJob(URLRequest* request,
 URLRequestJob* URLRequestFileJob::Factory(URLRequest* request,
                                           NetworkDelegate* network_delegate,
                                           const std::string& scheme) {
-  FilePath file_path;
+  base::FilePath file_path;
   const bool is_file = FileURLToFilePath(request->url(), &file_path);
 
   // Check file access permissions.
@@ -166,7 +166,7 @@ bool URLRequestFileJob::IsRedirectResponse(GURL* location,
   if (!LowerCaseEqualsASCII(file_path_.Extension(), ".lnk"))
     return false;
 
-  FilePath new_path = file_path_;
+  base::FilePath new_path = file_path_;
   bool resolved;
   resolved = base::win::ResolveShortcut(new_path, &new_path, NULL);
 
@@ -221,7 +221,7 @@ void URLRequestFileJob::SetExtraRequestHeaders(
 URLRequestFileJob::~URLRequestFileJob() {
 }
 
-void URLRequestFileJob::FetchMetaInfo(const FilePath& file_path,
+void URLRequestFileJob::FetchMetaInfo(const base::FilePath& file_path,
                                       FileMetaInfo* meta_info) {
   base::PlatformFileInfo platform_info;
   meta_info->file_exists = file_util::GetFileInfo(file_path, &platform_info);

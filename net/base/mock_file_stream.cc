@@ -8,7 +8,7 @@ namespace net {
 
 namespace testing {
 
-int MockFileStream::OpenSync(const FilePath& path, int open_flags) {
+int MockFileStream::OpenSync(const base::FilePath& path, int open_flags) {
   path_ = path;
   return ReturnError(FileStream::OpenSync(path, open_flags));
 }

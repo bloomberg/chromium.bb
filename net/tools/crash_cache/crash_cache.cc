@@ -42,7 +42,7 @@ using disk_cache::RankCrashes;
 
 // Starts a new process, to generate the files.
 int RunSlave(RankCrashes action) {
-  FilePath exe;
+  base::FilePath exe;
   PathService::Get(base::FILE_EXE, &exe);
 
   CommandLine cmdline(exe);
@@ -86,8 +86,8 @@ NET_EXPORT_PRIVATE extern RankCrashes g_rankings_crash;
 const char* kCrashEntryName = "the first key";
 
 // Creates the destinaton folder for this run, and returns it on full_path.
-bool CreateTargetFolder(const FilePath& path, RankCrashes action,
-                        FilePath* full_path) {
+bool CreateTargetFolder(const base::FilePath& path, RankCrashes action,
+                        base::FilePath* full_path) {
   const char* folders[] = {
     "",
     "insert_empty1",
@@ -133,7 +133,7 @@ void FlushQueue(disk_cache::Backend* cache) {
   cb.GetResult(rv);  // Ignore the result;
 }
 
-bool CreateCache(const FilePath& path,
+bool CreateCache(const base::FilePath& path,
                  base::Thread* thread,
                  disk_cache::Backend** cache,
                  net::TestCompletionCallback* cb) {
@@ -146,7 +146,7 @@ bool CreateCache(const FilePath& path,
 }
 
 // Generates the files for an empty and one item cache.
-int SimpleInsert(const FilePath& path, RankCrashes action,
+int SimpleInsert(const base::FilePath& path, RankCrashes action,
                  base::Thread* cache_thread) {
   net::TestCompletionCallback cb;
   disk_cache::Backend* cache;
@@ -180,7 +180,7 @@ int SimpleInsert(const FilePath& path, RankCrashes action,
 }
 
 // Generates the files for a one item cache, and removing the head.
-int SimpleRemove(const FilePath& path, RankCrashes action,
+int SimpleRemove(const base::FilePath& path, RankCrashes action,
                  base::Thread* cache_thread) {
   DCHECK(action >= disk_cache::REMOVE_ONE_1);
   DCHECK(action <= disk_cache::REMOVE_TAIL_3);
@@ -219,7 +219,7 @@ int SimpleRemove(const FilePath& path, RankCrashes action,
   return NOT_REACHED;
 }
 
-int HeadRemove(const FilePath& path, RankCrashes action,
+int HeadRemove(const base::FilePath& path, RankCrashes action,
                base::Thread* cache_thread) {
   DCHECK(action >= disk_cache::REMOVE_HEAD_1);
   DCHECK(action <= disk_cache::REMOVE_HEAD_4);
@@ -256,7 +256,7 @@ int HeadRemove(const FilePath& path, RankCrashes action,
 }
 
 // Generates the files for insertion and removals on heavy loaded caches.
-int LoadOperations(const FilePath& path, RankCrashes action,
+int LoadOperations(const base::FilePath& path, RankCrashes action,
                    base::Thread* cache_thread) {
   DCHECK(action >= disk_cache::INSERT_LOAD_1);
 
@@ -315,10 +315,10 @@ int LoadOperations(const FilePath& path, RankCrashes action,
 }
 
 // Main function on the child process.
-int SlaveCode(const FilePath& path, RankCrashes action) {
+int SlaveCode(const base::FilePath& path, RankCrashes action) {
   MessageLoopForIO message_loop;
 
-  FilePath full_path;
+  base::FilePath full_path;
   if (!CreateTargetFolder(path, action, &full_path)) {
     printf("Destination folder found, please remove it.\n");
     return CRASH_OVERWRITE;
@@ -366,7 +366,7 @@ int main(int argc, const char* argv[]) {
     return INVALID_ARGUMENT;
   }
 
-  FilePath path;
+  base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("net");
   path = path.AppendASCII("data");

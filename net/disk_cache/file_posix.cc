@@ -175,7 +175,7 @@ File::File(base::PlatformFile file)
       sync_platform_file_(base::kInvalidPlatformFileValue) {
 }
 
-bool File::Init(const FilePath& name) {
+bool File::Init(const base::FilePath& name) {
   if (init_)
     return false;
 

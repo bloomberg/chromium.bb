@@ -152,7 +152,7 @@ TEST_F(CertVerifyProcTest, PaypalNullCertParsing) {
 // pass if error == ERR_CERT_DATE_INVALID.  TODO(wtc): generate test
 // certificates for this unit test. http://crbug.com/111742
 TEST_F(CertVerifyProcTest, IntermediateCARequireExplicitPolicy) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
 
   scoped_refptr<X509Certificate> server_cert =
       ImportCertFromFile(certs_dir, "www_us_army_mil_cert.der");
@@ -197,7 +197,7 @@ TEST_F(CertVerifyProcTest, IntermediateCARequireExplicitPolicy) {
 // SEC_ERROR_REVOKED_CERTIFICATE. This indicates a lack of revocation
 // status, i.e. that the revocation check is failing for some reason.
 TEST_F(CertVerifyProcTest, DISABLED_GlobalSignR3EVTest) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
 
   scoped_refptr<X509Certificate> server_cert =
       ImportCertFromFile(certs_dir, "2029_globalsign_com_cert.pem");
@@ -227,7 +227,7 @@ TEST_F(CertVerifyProcTest, DISABLED_GlobalSignR3EVTest) {
 // Test that verifying an ECDSA certificate doesn't crash on XP. (See
 // crbug.com/144466).
 TEST_F(CertVerifyProcTest, ECDSA_RSA) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
 
   scoped_refptr<X509Certificate> cert =
       ImportCertFromFile(certs_dir,
@@ -258,7 +258,7 @@ static bool IsWeakKeyType(const std::string& key_type) {
 }
 
 TEST_F(CertVerifyProcTest, RejectWeakKeys) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
   typedef std::vector<std::string> Strings;
   Strings key_types;
 
@@ -329,7 +329,7 @@ TEST_F(CertVerifyProcTest, RejectWeakKeys) {
 // pass if error == ERR_CERT_DATE_INVALID.  TODO(rsleevi): generate test
 // certificates for this unit test.  http://crbug.com/111730
 TEST_F(CertVerifyProcTest, ExtraneousMD5RootCert) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
 
   scoped_refptr<X509Certificate> server_cert =
       ImportCertFromFile(certs_dir, "images_etrade_wallst_com.pem");
@@ -363,7 +363,7 @@ TEST_F(CertVerifyProcTest, ExtraneousMD5RootCert) {
 
 // Test for bug 94673.
 TEST_F(CertVerifyProcTest, GoogleDigiNotarTest) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
 
   scoped_refptr<X509Certificate> server_cert =
       ImportCertFromFile(certs_dir, "google_diginotar.pem");
@@ -402,7 +402,7 @@ TEST_F(CertVerifyProcTest, DigiNotarCerts) {
     NULL,
   };
 
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
 
   for (size_t i = 0; kDigiNotarFilenames[i]; i++) {
     scoped_refptr<X509Certificate> diginotar_cert =
@@ -428,7 +428,7 @@ TEST_F(CertVerifyProcTest, DigiNotarCerts) {
 }
 
 TEST_F(CertVerifyProcTest, TestKnownRoot) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
       certs_dir, "certse.pem", X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(3U, certs.size());
@@ -452,7 +452,7 @@ TEST_F(CertVerifyProcTest, TestKnownRoot) {
 }
 
 TEST_F(CertVerifyProcTest, PublicKeyHashes) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
       certs_dir, "certse.pem", X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(3U, certs.size());
@@ -492,7 +492,7 @@ TEST_F(CertVerifyProcTest, PublicKeyHashes) {
 // The Key Usage extension in this RSA SSL server certificate does not have
 // the keyEncipherment bit.
 TEST_F(CertVerifyProcTest, InvalidKeyUsage) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
 
   scoped_refptr<X509Certificate> server_cert =
       ImportCertFromFile(certs_dir, "invalid_key_usage_cert.der");
@@ -526,7 +526,7 @@ TEST_F(CertVerifyProcTest, InvalidKeyUsage) {
 // used to ensure that the actual, verified chain is being returned by
 // Verify().
 TEST_F(CertVerifyProcTest, VerifyReturnChainBasic) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
       certs_dir, "x509_verify_results.chain.pem",
       X509Certificate::FORMAT_AUTO);
@@ -569,7 +569,7 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainBasic) {
 // of intermediate certificates are combined, it's possible that order may
 // not be maintained.
 TEST_F(CertVerifyProcTest, VerifyReturnChainProperlyOrdered) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
       certs_dir, "x509_verify_results.chain.pem",
       X509Certificate::FORMAT_AUTO);
@@ -610,7 +610,7 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainProperlyOrdered) {
 // Test that Verify() filters out certificates which are not related to
 // or part of the certificate chain being verified.
 TEST_F(CertVerifyProcTest, VerifyReturnChainFiltersUnrelatedCerts) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
       certs_dir, "x509_verify_results.chain.pem",
       X509Certificate::FORMAT_AUTO);
@@ -792,7 +792,7 @@ class CertVerifyProcWeakDigestTest
 
 TEST_P(CertVerifyProcWeakDigestTest, Verify) {
   WeakDigestTestData data = GetParam();
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
 
   ScopedTestRoot test_root;
   if (data.root_cert_filename) {

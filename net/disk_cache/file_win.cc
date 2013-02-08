@@ -71,7 +71,7 @@ File::File(base::PlatformFile file)
       sync_platform_file_(file) {
 }
 
-bool File::Init(const FilePath& name) {
+bool File::Init(const base::FilePath& name) {
   DCHECK(!init_);
   if (init_)
     return false;

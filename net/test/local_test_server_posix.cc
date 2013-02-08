@@ -98,7 +98,7 @@ bool ReadData(int fd, ssize_t bytes_max, uint8* buffer,
 
 namespace net {
 
-bool LocalTestServer::LaunchPython(const FilePath& testserver_path) {
+bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
   // Log is useful in the event you want to run a nearby script (e.g. a test) in
   // the same environment as the TestServer.
   VLOG(1) << "LaunchPython called with PYTHONPATH = " << getenv(kPythonPathEnv);

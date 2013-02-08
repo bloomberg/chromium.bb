@@ -41,7 +41,7 @@
 namespace net {
 
 HttpCache::DefaultBackend::DefaultBackend(CacheType type,
-                                          const FilePath& path,
+                                          const base::FilePath& path,
                                           int max_bytes,
                                           base::MessageLoopProxy* thread)
     : type_(type),
@@ -54,7 +54,7 @@ HttpCache::DefaultBackend::~DefaultBackend() {}
 
 // static
 HttpCache::BackendFactory* HttpCache::DefaultBackend::InMemory(int max_bytes) {
-  return new DefaultBackend(MEMORY_CACHE, FilePath(), max_bytes, NULL);
+  return new DefaultBackend(MEMORY_CACHE, base::FilePath(), max_bytes, NULL);
 }
 
 int HttpCache::DefaultBackend::CreateBackend(
@@ -388,7 +388,7 @@ void HttpCache::OnExternalCacheHit(const GURL& url,
   disk_cache_->OnExternalCacheHit(key);
 }
 
-void HttpCache::InitializeInfiniteCache(const FilePath& path) {
+void HttpCache::InitializeInfiniteCache(const base::FilePath& path) {
   if (base::FieldTrialList::FindFullName("InfiniteCache") != "Yes")
     return;
   // To be enabled after everything is fully wired.

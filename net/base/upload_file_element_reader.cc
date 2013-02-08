@@ -22,7 +22,7 @@ uint64 overriding_content_length = 0;
 
 // This function is used to implement Init().
 template<typename FileStreamDeleter>
-int InitInternal(const FilePath& path,
+int InitInternal(const base::FilePath& path,
                  uint64 range_offset,
                  uint64 range_length,
                  const base::Time& expected_modification_time,
@@ -110,7 +110,7 @@ void UploadFileElementReader::FileStreamDeleter::operator() (
 
 UploadFileElementReader::UploadFileElementReader(
     base::TaskRunner* task_runner,
-    const FilePath& path,
+    const base::FilePath& path,
     uint64 range_offset,
     uint64 range_length,
     const base::Time& expected_modification_time)
@@ -240,7 +240,7 @@ UploadFileElementReader::ScopedOverridingContentLengthForTests::
 }
 
 UploadFileElementReaderSync::UploadFileElementReaderSync(
-    const FilePath& path,
+    const base::FilePath& path,
     uint64 range_offset,
     uint64 range_length,
     const base::Time& expected_modification_time)

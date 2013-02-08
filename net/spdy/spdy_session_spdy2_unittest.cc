@@ -1246,7 +1246,7 @@ TEST_F(SpdySessionSpdy2Test, VerifyDomainAuthentication) {
   //   www.example.org
   //   mail.example.org
   //   www.example.com
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
   ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
@@ -1314,7 +1314,7 @@ TEST_F(SpdySessionSpdy2Test, ConnectionPooledWithTlsChannelId) {
   //   www.example.org
   //   mail.example.org
   //   www.example.com
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
   ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);

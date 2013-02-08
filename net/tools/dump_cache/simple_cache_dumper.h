@@ -26,7 +26,7 @@ class IOBufferWithSize;
 // response body, as if the HTTP response were written directly to disk.
 class SimpleCacheDumper {
  public:
-  SimpleCacheDumper(FilePath input_path, FilePath output_path);
+  SimpleCacheDumper(base::FilePath input_path, base::FilePath output_path);
   ~SimpleCacheDumper();
 
   // Dumps the cache to disk. Returns OK if the operation was successful,
@@ -74,8 +74,8 @@ class SimpleCacheDumper {
   void OnIOComplete(int rv);
 
   State state_;
-  FilePath input_path_;
-  FilePath output_path_;
+  base::FilePath input_path_;
+  base::FilePath output_path_;
   disk_cache::Backend* cache_;
   scoped_ptr<DiskDumper> writer_;
   base::Thread* cache_thread_;

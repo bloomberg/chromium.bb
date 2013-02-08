@@ -50,7 +50,7 @@ bool ReadTestCase(const char* filename,
                   uint16* id, std::string* qname, uint16* qtype,
                   std::vector<char>* resp_buf,
                   bool* crash_test) {
-  FilePath filepath = FilePath::FromUTF8Unsafe(filename);
+  base::FilePath filepath = base::FilePath::FromUTF8Unsafe(filename);
 
   std::string json;
   if (!file_util::ReadFileToString(filepath, &json)) {

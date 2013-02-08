@@ -44,7 +44,7 @@ class UploadFileElementReaderTest : public PlatformTest {
   std::vector<char> bytes_;
   scoped_ptr<UploadElementReader> reader_;
   base::ScopedTempDir temp_dir_;
-  FilePath temp_file_path_;
+  base::FilePath temp_file_path_;
 };
 
 TEST_F(UploadFileElementReaderTest, ReadPartially) {
@@ -196,7 +196,7 @@ TEST_F(UploadFileElementReaderTest, FileChanged) {
 }
 
 TEST_F(UploadFileElementReaderTest, WrongPath) {
-  const FilePath wrong_path(FILE_PATH_LITERAL("wrong_path"));
+  const base::FilePath wrong_path(FILE_PATH_LITERAL("wrong_path"));
   reader_.reset(new UploadFileElementReader(
       base::MessageLoopProxy::current(),
       wrong_path, 0, kuint64max, base::Time()));
@@ -234,7 +234,7 @@ class UploadFileElementReaderSyncTest : public PlatformTest {
   std::vector<char> bytes_;
   scoped_ptr<UploadElementReader> reader_;
   base::ScopedTempDir temp_dir_;
-  FilePath temp_file_path_;
+  base::FilePath temp_file_path_;
 };
 
 TEST_F(UploadFileElementReaderSyncTest, ReadPartially) {
@@ -327,7 +327,7 @@ TEST_F(UploadFileElementReaderSyncTest, FileChanged) {
 }
 
 TEST_F(UploadFileElementReaderSyncTest, WrongPath) {
-  const FilePath wrong_path(FILE_PATH_LITERAL("wrong_path"));
+  const base::FilePath wrong_path(FILE_PATH_LITERAL("wrong_path"));
   reader_.reset(new UploadFileElementReaderSync(
       wrong_path, 0, kuint64max, base::Time()));
   ASSERT_EQ(OK, reader_->Init(CompletionCallback()));

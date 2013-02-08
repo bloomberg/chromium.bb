@@ -41,7 +41,7 @@ void CacheTestFillBuffer(char* buffer, size_t len, bool no_nulls) {
     buffer[0] = 'g';
 }
 
-bool CreateCacheTestFile(const FilePath& name) {
+bool CreateCacheTestFile(const base::FilePath& name) {
   int flags = base::PLATFORM_FILE_CREATE_ALWAYS |
               base::PLATFORM_FILE_READ |
               base::PLATFORM_FILE_WRITE;
@@ -55,12 +55,13 @@ bool CreateCacheTestFile(const FilePath& name) {
   return true;
 }
 
-bool DeleteCache(const FilePath& path) {
+bool DeleteCache(const base::FilePath& path) {
   disk_cache::DeleteCache(path, false);
   return true;
 }
 
-bool CheckCacheIntegrity(const FilePath& path, bool new_eviction, uint32 mask) {
+bool CheckCacheIntegrity(const base::FilePath& path, bool new_eviction,
+                         uint32 mask) {
   scoped_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
       path, mask, base::MessageLoopProxy::current(), NULL));
   if (!cache.get())

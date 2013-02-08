@@ -261,7 +261,7 @@ class TestNetworkDelegate : public NetworkDelegate {
                               const std::string& cookie_line,
                               CookieOptions* options) OVERRIDE;
   virtual bool OnCanAccessFile(const URLRequest& request,
-                               const FilePath& path) const OVERRIDE;
+                               const base::FilePath& path) const OVERRIDE;
   virtual bool OnCanThrottleRequest(
       const URLRequest& request) const OVERRIDE;
   virtual int OnBeforeSocketStreamConnect(

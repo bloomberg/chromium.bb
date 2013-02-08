@@ -94,7 +94,7 @@ void SortData(std::vector<DirectoryLister::DirectoryListerData>* data,
 
 }  // namespace
 
-DirectoryLister::DirectoryLister(const FilePath& dir,
+DirectoryLister::DirectoryLister(const base::FilePath& dir,
                                  DirectoryListerDelegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
         core_(new Core(dir, false, ALPHA_DIRS_FIRST, this))),
@@ -103,7 +103,7 @@ DirectoryLister::DirectoryLister(const FilePath& dir,
   DCHECK(!dir.value().empty());
 }
 
-DirectoryLister::DirectoryLister(const FilePath& dir,
+DirectoryLister::DirectoryLister(const base::FilePath& dir,
                                  bool recursive,
                                  SortType sort,
                                  DirectoryListerDelegate* delegate)
@@ -126,7 +126,7 @@ void DirectoryLister::Cancel() {
   return core_->Cancel();
 }
 
-DirectoryLister::Core::Core(const FilePath& dir,
+DirectoryLister::Core::Core(const base::FilePath& dir,
                             bool recursive,
                             SortType sort,
                             DirectoryLister* lister)
@@ -166,7 +166,7 @@ void DirectoryLister::Core::StartInternal() {
 
   file_util::FileEnumerator file_enum(dir_, recursive_, types);
 
-  FilePath path;
+  base::FilePath path;
   std::vector<DirectoryListerData> file_data;
   while (lister_ && !(path = file_enum.Next()).empty()) {
     DirectoryListerData data;

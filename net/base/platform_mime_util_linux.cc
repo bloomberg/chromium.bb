@@ -19,12 +19,12 @@ namespace net {
 
 #if defined(OS_ANDROID)
 bool PlatformMimeUtil::GetPlatformMimeTypeFromExtension(
-    const FilePath::StringType& ext, std::string* result) const {
+    const base::FilePath::StringType& ext, std::string* result) const {
   return android::GetMimeTypeFromExtension(ext, result);
 }
 #else
 bool PlatformMimeUtil::GetPlatformMimeTypeFromExtension(
-    const FilePath::StringType& ext, std::string* result) const {
+    const base::FilePath::StringType& ext, std::string* result) const {
   // TODO(thestig): This is a temporary hack until we can fix this
   // properly in test shell / webkit.
   // We have to play dumb and not return application/x-perl here
@@ -32,7 +32,7 @@ bool PlatformMimeUtil::GetPlatformMimeTypeFromExtension(
   if (ext == "pl")
     return false;
 
-  FilePath dummy_path("foo." + ext);
+  base::FilePath dummy_path("foo." + ext);
   std::string out = base::nix::GetFileMimeType(dummy_path);
 
   // GetFileMimeType likes to return application/octet-stream
@@ -74,7 +74,7 @@ const struct MimeToExt mime_type_ext_map[] = {
 };
 
 bool PlatformMimeUtil::GetPreferredExtensionForMimeType(
-    const std::string& mime_type, FilePath::StringType* ext) const {
+    const std::string& mime_type, base::FilePath::StringType* ext) const {
 
   for (size_t x = 0;
        x < (sizeof(mime_type_ext_map) / sizeof(MimeToExt));
@@ -100,8 +100,8 @@ bool PlatformMimeUtil::GetPreferredExtensionForMimeType(
 
 void PlatformMimeUtil::GetPlatformExtensionsForMimeType(
     const std::string& mime_type,
-    base::hash_set<FilePath::StringType>* extensions) const {
-  FilePath::StringType ext;
+    base::hash_set<base::FilePath::StringType>* extensions) const {
+  base::FilePath::StringType ext;
   if (GetPreferredExtensionForMimeType(mime_type, &ext))
     extensions->insert(ext);
 }

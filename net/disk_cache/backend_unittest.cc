@@ -230,8 +230,9 @@ TEST_F(DiskCacheTest, CreateBackend) {
     delete cache;
     cache = NULL;
 
-    rv = disk_cache::CreateCacheBackend(net::MEMORY_CACHE, FilePath(), 0, false,
-                                        NULL, NULL, &cache, cb.callback());
+    rv = disk_cache::CreateCacheBackend(net::MEMORY_CACHE, base::FilePath(), 0,
+                                        false, NULL, NULL, &cache,
+                                        cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
     ASSERT_TRUE(cache);
     delete cache;
@@ -243,7 +244,7 @@ TEST_F(DiskCacheTest, CreateBackend) {
 // Testst that re-creating the cache performs the expected cleanup.
 TEST_F(DiskCacheBackendTest, CreateBackend_MissingFile) {
   ASSERT_TRUE(CopyTestCache("bad_entry"));
-  FilePath filename = cache_path_.AppendASCII("data_1");
+  base::FilePath filename = cache_path_.AppendASCII("data_1");
   file_util::Delete(filename, false);
   DisableFirstCleanup();
   SetForceCreation();
@@ -256,7 +257,7 @@ TEST_F(DiskCacheBackendTest, CreateBackend_MissingFile) {
 TEST_F(DiskCacheBackendTest, ExternalFiles) {
   InitCache();
   // First, let's create a file on the folder.
-  FilePath filename = cache_path_.AppendASCII("f_000001");
+  base::FilePath filename = cache_path_.AppendASCII("f_000001");
 
   const int kSize = 50;
   scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize));
@@ -441,7 +442,7 @@ TEST_F(DiskCacheBackendTest, ShutdownWithPendingCreate_Fast) {
 
 TEST_F(DiskCacheTest, TruncatedIndex) {
   ASSERT_TRUE(CleanupCacheDir());
-  FilePath index = cache_path_.AppendASCII("index");
+  base::FilePath index = cache_path_.AppendASCII("index");
   ASSERT_EQ(5, file_util::WriteFile(index, "hello", 5));
 
   base::Thread cache_thread("CacheThread");
@@ -2520,7 +2521,7 @@ TEST_F(DiskCacheBackendTest, FileSharing) {
 
   disk_cache::Addr address(0x80000001);
   ASSERT_TRUE(cache_impl_->CreateExternalFile(&address));
-  FilePath name = cache_impl_->GetFileName(address);
+  base::FilePath name = cache_impl_->GetFileName(address);
 
   scoped_refptr<disk_cache::File> file(new disk_cache::File(false));
   file->Init(name);

@@ -16,9 +16,9 @@ class CacheUtilTest : public PlatformTest {
     PlatformTest::SetUp();
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
     cache_dir_ = tmp_dir_.path().Append(FILE_PATH_LITERAL("Cache"));
-    file1_ = FilePath(cache_dir_.Append(FILE_PATH_LITERAL("file01")));
-    file2_ = FilePath(cache_dir_.Append(FILE_PATH_LITERAL(".file02")));
-    dir1_ = FilePath(cache_dir_.Append(FILE_PATH_LITERAL("dir01")));
+    file1_ = base::FilePath(cache_dir_.Append(FILE_PATH_LITERAL("file01")));
+    file2_ = base::FilePath(cache_dir_.Append(FILE_PATH_LITERAL(".file02")));
+    dir1_ = base::FilePath(cache_dir_.Append(FILE_PATH_LITERAL("dir01")));
     ASSERT_TRUE(file_util::CreateDirectory(cache_dir_));
     FILE *fp = file_util::OpenFile(file1_, "w");
     ASSERT_TRUE(fp != NULL);
@@ -28,21 +28,22 @@ class CacheUtilTest : public PlatformTest {
     file_util::CloseFile(fp);
     ASSERT_TRUE(file_util::CreateDirectory(dir1_));
     dest_dir_ = tmp_dir_.path().Append(FILE_PATH_LITERAL("old_Cache_001"));
-    dest_file1_ = FilePath(dest_dir_.Append(FILE_PATH_LITERAL("file01")));
-    dest_file2_ = FilePath(dest_dir_.Append(FILE_PATH_LITERAL(".file02")));
-    dest_dir1_ = FilePath(dest_dir_.Append(FILE_PATH_LITERAL("dir01")));
+    dest_file1_ = base::FilePath(dest_dir_.Append(FILE_PATH_LITERAL("file01")));
+    dest_file2_ =
+        base::FilePath(dest_dir_.Append(FILE_PATH_LITERAL(".file02")));
+    dest_dir1_ = base::FilePath(dest_dir_.Append(FILE_PATH_LITERAL("dir01")));
   }
 
  protected:
   base::ScopedTempDir tmp_dir_;
-  FilePath cache_dir_;
-  FilePath file1_;
-  FilePath file2_;
-  FilePath dir1_;
-  FilePath dest_dir_;
-  FilePath dest_file1_;
-  FilePath dest_file2_;
-  FilePath dest_dir1_;
+  base::FilePath cache_dir_;
+  base::FilePath file1_;
+  base::FilePath file2_;
+  base::FilePath dir1_;
+  base::FilePath dest_dir_;
+  base::FilePath dest_file1_;
+  base::FilePath dest_file2_;
+  base::FilePath dest_dir1_;
 };
 
 TEST_F(CacheUtilTest, MoveCache) {

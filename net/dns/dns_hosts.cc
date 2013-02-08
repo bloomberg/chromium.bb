@@ -48,7 +48,7 @@ void ParseHosts(const std::string& contents, DnsHosts* dns_hosts) {
   }
 }
 
-bool ParseHostsFile(const FilePath& path, DnsHosts* dns_hosts) {
+bool ParseHostsFile(const base::FilePath& path, DnsHosts* dns_hosts) {
   dns_hosts->clear();
   // Missing file indicates empty HOSTS.
   if (!file_util::PathExists(path))

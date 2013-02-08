@@ -488,7 +488,7 @@ void RunGenerateFileNameTestCase(const GenerateFilenameCase* test_case,
                                  size_t iteration,
                                  const char* suite) {
   std::string default_filename(WideToUTF8(test_case->default_filename));
-  FilePath file_path = GenerateFileName(
+  base::FilePath file_path = GenerateFileName(
       GURL(test_case->url), test_case->content_disp_header,
       test_case->referrer_charset, test_case->suggested_filename,
       test_case->mime_type, default_filename);
@@ -539,7 +539,7 @@ TEST(NetUtilTest, FileURLConversion) {
   };
 
   // First, we'll test that we can round-trip all of the above cases of URLs
-  FilePath output;
+  base::FilePath output;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(round_trip_cases); i++) {
     // convert to the file URL
     GURL file_url(FilePathToFileURL(
@@ -818,8 +818,8 @@ TEST(NetUtilTest, StripWWW) {
 TEST(NetUtilTest, GenerateSafeFileName) {
   const struct {
     const char* mime_type;
-    const FilePath::CharType* filename;
-    const FilePath::CharType* expected_filename;
+    const base::FilePath::CharType* filename;
+    const base::FilePath::CharType* expected_filename;
   } safe_tests[] = {
 #if defined(OS_WIN)
     {
@@ -964,7 +964,7 @@ TEST(NetUtilTest, GenerateSafeFileName) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(safe_tests); ++i) {
-    FilePath file_path(safe_tests[i].filename);
+    base::FilePath file_path(safe_tests[i].filename);
     GenerateSafeFileName(safe_tests[i].mime_type, false, &file_path);
     EXPECT_EQ(safe_tests[i].expected_filename, file_path.value())
         << "Iteration " << i;

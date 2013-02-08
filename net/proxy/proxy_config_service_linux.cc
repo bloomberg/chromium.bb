@@ -824,7 +824,7 @@ bool SettingGetterImplGSettings::LoadAndCheckVersion(
     std::vector<std::string> paths;
     Tokenize(path, ":", &paths);
     for (size_t i = 0; i < paths.size(); ++i) {
-      FilePath file(paths[i]);
+      base::FilePath file(paths[i]);
       if (file_util::PathExists(file.Append("gnome-network-properties"))) {
         VLOG(1) << "Found gnome-network-properties. Will fall back to gconf.";
         return false;
@@ -854,7 +854,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
     std::string home;
     if (env_var_getter->GetVar("KDEHOME", &home) && !home.empty()) {
       // $KDEHOME is set. Use it unconditionally.
-      kde_config_dir_ = KDEHomeToConfigPath(FilePath(home));
+      kde_config_dir_ = KDEHomeToConfigPath(base::FilePath(home));
     } else {
       // $KDEHOME is unset. Try to figure out what to use. This seems to be
       // the common case on most distributions.
@@ -864,7 +864,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
       if (base::nix::GetDesktopEnvironment(env_var_getter) ==
           base::nix::DESKTOP_ENVIRONMENT_KDE3) {
         // KDE3 always uses .kde for its configuration.
-        FilePath kde_path = FilePath(home).Append(".kde");
+        base::FilePath kde_path = base::FilePath(home).Append(".kde");
         kde_config_dir_ = KDEHomeToConfigPath(kde_path);
       } else {
         // Some distributions patch KDE4 to use .kde4 instead of .kde, so that
@@ -877,10 +877,10 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
         // settings (a gconf restriction). As noted below, the initial read of
         // the proxy settings will be done in this thread anyway, so we check
         // for .kde4 here in this thread as well.
-        FilePath kde3_path = FilePath(home).Append(".kde");
-        FilePath kde3_config = KDEHomeToConfigPath(kde3_path);
-        FilePath kde4_path = FilePath(home).Append(".kde4");
-        FilePath kde4_config = KDEHomeToConfigPath(kde4_path);
+        base::FilePath kde3_path = base::FilePath(home).Append(".kde");
+        base::FilePath kde3_config = KDEHomeToConfigPath(kde3_path);
+        base::FilePath kde4_path = base::FilePath(home).Append(".kde4");
+        base::FilePath kde4_config = KDEHomeToConfigPath(kde4_path);
         bool use_kde4 = false;
         if (file_util::DirectoryExists(kde4_path)) {
           base::PlatformFileInfo kde3_info;
@@ -1028,7 +1028,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
     reversed_bypass_list_ = false;
   }
 
-  FilePath KDEHomeToConfigPath(const FilePath& kde_home) {
+  base::FilePath KDEHomeToConfigPath(const base::FilePath& kde_home) {
     return kde_home.Append("share").Append("config");
   }
 
@@ -1166,7 +1166,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
   // Reads kioslaverc one line at a time and calls AddKDESetting() to add
   // each relevant name-value pair to the appropriate value table.
   void UpdateCachedSettings() {
-    FilePath kioslaverc = kde_config_dir_.Append("kioslaverc");
+    base::FilePath kioslaverc = kde_config_dir_.Append("kioslaverc");
     file_util::ScopedFILE input(file_util::OpenFile(kioslaverc, "r"));
     if (!input.get())
       return;
@@ -1312,7 +1312,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
   base::MessagePumpLibevent::FileDescriptorWatcher inotify_watcher_;
   ProxyConfigServiceLinux::Delegate* notify_delegate_;
   base::OneShotTimer<SettingGetterImplKDE> debounce_timer_;
-  FilePath kde_config_dir_;
+  base::FilePath kde_config_dir_;
   bool indirect_manual_;
   bool auto_no_pac_;
   bool reversed_bypass_list_;

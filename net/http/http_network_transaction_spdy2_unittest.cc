@@ -7451,7 +7451,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test, LargeContentLengthThenClose) {
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test, UploadFileSmallerThanLength) {
-  FilePath temp_file_path;
+  base::FilePath temp_file_path;
   ASSERT_TRUE(file_util::CreateTemporaryFile(&temp_file_path));
   const uint64 kFakeSize = 100000;  // file is actually blank
   UploadFileElementReader::ScopedOverridingContentLengthForTests
@@ -7504,7 +7504,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test, UploadFileSmallerThanLength) {
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test, UploadUnreadableFile) {
-  FilePath temp_file;
+  base::FilePath temp_file;
   ASSERT_TRUE(file_util::CreateTemporaryFile(&temp_file));
   std::string temp_file_content("Unreadable file.");
   ASSERT_TRUE(file_util::WriteFile(temp_file, temp_file_content.c_str(),
@@ -7561,7 +7561,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test, UploadUnreadableFile) {
 }
 
 TEST_F(HttpNetworkTransactionSpdy2Test, UnreadableUploadFileAfterAuthRestart) {
-  FilePath temp_file;
+  base::FilePath temp_file;
   ASSERT_TRUE(file_util::CreateTemporaryFile(&temp_file));
   std::string temp_file_contents("Unreadable file.");
   std::string unreadable_contents(temp_file_contents.length(), '\0');
@@ -11101,7 +11101,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test, DoNotUseSpdySessionIfCertDoesNotMatch) {
   // be valid for proxy because the MockSSLClientSocket does
   // not actually verify it.  But SpdySession will use this
   // to see if it is valid for the new origin
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> server_cert(
       ImportCertFromFile(certs_dir, "ok_cert.pem"));
   ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert);

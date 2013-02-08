@@ -214,7 +214,7 @@ bool BaseSM::IsPending() {
 
 class MasterSM : public BaseSM {
  public:
-  MasterSM(const FilePath& path, HANDLE channel)
+  MasterSM(const base::FilePath& path, HANDLE channel)
       : BaseSM(channel),
         path_(path) {
   }
@@ -264,7 +264,7 @@ class MasterSM : public BaseSM {
   int read_size_;
   scoped_ptr<disk_cache::Backend> cache_;
   CacheDumpWriter* writer_;
-  const FilePath path_;
+  const base::FilePath path_;
 };
 
 void MasterSM::OnIOCompleted(MessageLoopForIO::IOContext* context,
@@ -552,7 +552,7 @@ void MasterSM::Fail() {
 
 class SlaveSM : public BaseSM {
  public:
-  SlaveSM(const FilePath& path, HANDLE channel);
+  SlaveSM(const base::FilePath& path, HANDLE channel);
   virtual ~SlaveSM();
 
   bool DoInit();
@@ -585,7 +585,7 @@ class SlaveSM : public BaseSM {
   scoped_ptr<disk_cache::BackendImpl> cache_;
 };
 
-SlaveSM::SlaveSM(const FilePath& path, HANDLE channel)
+SlaveSM::SlaveSM(const base::FilePath& path, HANDLE channel)
     : BaseSM(channel), iterator_(NULL) {
   disk_cache::Backend* cache;
   net::TestCompletionCallback cb;
@@ -881,7 +881,7 @@ HANDLE CreateServer(string16* pipe_number) {
 }
 
 // This is the controller process for an upgrade operation.
-int UpgradeCache(const FilePath& output_path, HANDLE pipe) {
+int UpgradeCache(const base::FilePath& output_path, HANDLE pipe) {
   MessageLoop loop(MessageLoop::TYPE_IO);
 
   MasterSM master(output_path, pipe);
@@ -895,7 +895,7 @@ int UpgradeCache(const FilePath& output_path, HANDLE pipe) {
 }
 
 // This process will only execute commands from the controller.
-int RunSlave(const FilePath& input_path, const string16& pipe_number) {
+int RunSlave(const base::FilePath& input_path, const string16& pipe_number) {
   MessageLoop loop(MessageLoop::TYPE_IO);
 
   base::win::ScopedHandle pipe(OpenServer(pipe_number));

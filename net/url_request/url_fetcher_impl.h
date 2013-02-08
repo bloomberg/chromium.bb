@@ -66,7 +66,7 @@ class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
   virtual base::TimeDelta GetBackoffDelay() const OVERRIDE;
   virtual void SetAutomaticallyRetryOnNetworkChanges(int max_retries) OVERRIDE;
   virtual void SaveResponseToFileAtPath(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       scoped_refptr<base::TaskRunner> file_task_runner) OVERRIDE;
   virtual void SaveResponseToTemporaryFile(
       scoped_refptr<base::TaskRunner> file_task_runner) OVERRIDE;
@@ -86,7 +86,7 @@ class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
       std::string* out_response_string) const OVERRIDE;
   virtual bool GetResponseAsFilePath(
       bool take_ownership,
-      FilePath* out_response_path) const OVERRIDE;
+      base::FilePath* out_response_path) const OVERRIDE;
 
   static void CancelAll();
 

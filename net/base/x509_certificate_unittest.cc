@@ -314,7 +314,7 @@ TEST(X509CertificateTest, ThawteCertParsing) {
 // one AVA per RDN, but some CAs place all AVAs within a single RDN.
 // This is a regression test for http://crbug.com/101009
 TEST(X509CertificateTest, MultivalueRDN) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
 
   scoped_refptr<X509Certificate> multivalue_rdn_cert =
       ImportCertFromFile(certs_dir, "multivalue_rdn.pem");
@@ -338,7 +338,7 @@ TEST(X509CertificateTest, MultivalueRDN) {
 // such as '=' or '"', are not escaped when parsed as individual components.
 // This is a regression test for http://crbug.com/102839
 TEST(X509CertificateTest, UnescapedSpecialCharacters) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
 
   scoped_refptr<X509Certificate> unescaped_cert =
       ImportCertFromFile(certs_dir, "unescaped.pem");
@@ -388,7 +388,7 @@ TEST(X509CertificateTest, SerialNumbers) {
 }
 
 TEST(X509CertificateTest, CAFingerprints) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
 
   scoped_refptr<X509Certificate> server_cert =
       ImportCertFromFile(certs_dir, "salesforce_com_test.pem");
@@ -442,7 +442,7 @@ TEST(X509CertificateTest, CAFingerprints) {
 }
 
 TEST(X509CertificateTest, ParseSubjectAltNames) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
 
   scoped_refptr<X509Certificate> san_cert =
       ImportCertFromFile(certs_dir, "subjectAltName_sanity_check.pem");
@@ -480,7 +480,7 @@ TEST(X509CertificateTest, ParseSubjectAltNames) {
 }
 
 TEST(X509CertificateTest, ExtractSPKIFromDERCert) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> cert =
       ImportCertFromFile(certs_dir, "nist.der");
   ASSERT_NE(static_cast<X509Certificate*>(NULL), cert);
@@ -500,7 +500,7 @@ TEST(X509CertificateTest, ExtractSPKIFromDERCert) {
 }
 
 TEST(X509CertificateTest, ExtractCRLURLsFromDERCert) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> cert =
       ImportCertFromFile(certs_dir, "nist.der");
   ASSERT_NE(static_cast<X509Certificate*>(NULL), cert);
@@ -682,7 +682,7 @@ TEST(X509CertificateTest, IntermediateCertificates) {
 }
 
 TEST(X509CertificateTest, IsIssuedByEncoded) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
 
   // Test a client certificate from MIT.
   scoped_refptr<X509Certificate> mit_davidben_cert(
@@ -724,7 +724,7 @@ TEST(X509CertificateTest, IsIssuedByEncoded) {
 }
 
 TEST(X509CertificateTest, IsIssuedByEncodedWithIntermediates) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
 
   scoped_refptr<X509Certificate> server_cert =
       ImportCertFromFile(certs_dir, "www_us_army_mil_cert.der");
@@ -921,7 +921,7 @@ class X509CertificateParseTest
 };
 
 TEST_P(X509CertificateParseTest, CanParseFormat) {
-  FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
       certs_dir, test_data_.file_name, test_data_.format);
   ASSERT_FALSE(certs.empty());

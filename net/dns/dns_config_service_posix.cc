@@ -28,7 +28,8 @@ namespace internal {
 
 namespace {
 
-const FilePath::CharType* kFilePathHosts = FILE_PATH_LITERAL("/etc/hosts");
+const base::FilePath::CharType* kFilePathHosts =
+    FILE_PATH_LITERAL("/etc/hosts");
 
 #if defined(OS_MACOSX)
 // From 10.7.3 configd-395.10/dnsinfo/dnsinfo.h
@@ -50,7 +51,7 @@ class ConfigWatcher {
 #define _PATH_RESCONF "/etc/resolv.conf"
 #endif
 
-static const FilePath::CharType* kFilePathConfig =
+static const base::FilePath::CharType* kFilePathConfig =
     FILE_PATH_LITERAL(_PATH_RESCONF);
 
 class ConfigWatcher {
@@ -59,13 +60,13 @@ class ConfigWatcher {
 
   bool Watch(const CallbackType& callback) {
     callback_ = callback;
-    return watcher_.Watch(FilePath(kFilePathConfig), false,
+    return watcher_.Watch(base::FilePath(kFilePathConfig), false,
                           base::Bind(&ConfigWatcher::OnCallback,
                                      base::Unretained(this)));
   }
 
  private:
-  void OnCallback(const FilePath& path, bool error) {
+  void OnCallback(const base::FilePath& path, bool error) {
     callback_.Run(!error);
   }
 
@@ -120,7 +121,7 @@ class DnsConfigServicePosix::Watcher {
       LOG(ERROR) << "DNS config watch failed to start.";
       success = false;
     }
-    if (!hosts_watcher_.Watch(FilePath(kFilePathHosts), false,
+    if (!hosts_watcher_.Watch(base::FilePath(kFilePathHosts), false,
                               base::Bind(&Watcher::OnHostsChanged,
                                          base::Unretained(this)))) {
       LOG(ERROR) << "DNS hosts watch failed to start.";
@@ -130,7 +131,7 @@ class DnsConfigServicePosix::Watcher {
   }
 
  private:
-  void OnHostsChanged(const FilePath& path, bool error) {
+  void OnHostsChanged(const base::FilePath& path, bool error) {
     service_->OnHostsChanged(!error);
   }
 
@@ -205,7 +206,7 @@ class DnsConfigServicePosix::HostsReader : public SerialWorker {
   }
 
   DnsConfigServicePosix* service_;
-  const FilePath path_;
+  const base::FilePath path_;
   const CallbackType callback_;
   // Written in DoWork, read in OnWorkFinished, no locking necessary.
   DnsHosts hosts_;

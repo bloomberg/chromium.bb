@@ -13,7 +13,7 @@ namespace disk_cache {
 
 class NET_EXPORT_PRIVATE Storage {
  public:
-  Storage(const FilePath& path, int32 size);
+  Storage(const base::FilePath& path, int32 size);
   bool Init();
   ~Storage();
 
@@ -23,7 +23,7 @@ class NET_EXPORT_PRIVATE Storage {
   bool Write(const void* buffer, int32 size, int32 offset);
 
  private:
-  FilePath path_;
+  base::FilePath path_;
   int32 size_;
   base::PlatformFile file_;
 

@@ -29,8 +29,8 @@
 
 namespace net {
 
-bool FileURLToFilePath(const GURL& url, FilePath* path) {
-  *path = FilePath();
+bool FileURLToFilePath(const GURL& url, base::FilePath* path) {
+  *path = base::FilePath();
   std::string& file_path_str = const_cast<std::string&>(path->value());
   file_path_str.clear();
 

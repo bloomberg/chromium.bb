@@ -36,7 +36,7 @@ void NET_EXPORT_PRIVATE ParseHosts(const std::string& contents,
                                    DnsHosts* dns_hosts);
 
 // As above but reads the file pointed to by |path|.
-bool NET_EXPORT_PRIVATE ParseHostsFile(const FilePath& path,
+bool NET_EXPORT_PRIVATE ParseHostsFile(const base::FilePath& path,
                                        DnsHosts* dns_hosts);
 
 

@@ -18,7 +18,8 @@
 
 namespace net {
 
-SimpleCacheDumper::SimpleCacheDumper(FilePath input_path, FilePath output_path)
+SimpleCacheDumper::SimpleCacheDumper(base::FilePath input_path,
+                                     base::FilePath output_path)
     : state_(STATE_NONE),
       input_path_(input_path),
       output_path_(output_path),

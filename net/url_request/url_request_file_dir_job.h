@@ -21,7 +21,7 @@ class URLRequestFileDirJob
  public:
   URLRequestFileDirJob(URLRequest* request,
                        NetworkDelegate* network_delegate,
-                       const FilePath& dir_path);
+                       const base::FilePath& dir_path);
 
   bool list_complete() const { return list_complete_; }
 
@@ -55,7 +55,7 @@ class URLRequestFileDirJob
   bool FillReadBuffer(char *buf, int buf_size, int *bytes_read);
 
   DirectoryLister lister_;
-  FilePath dir_path_;
+  base::FilePath dir_path_;
   std::string data_;
   bool canceled_;
 

@@ -27,7 +27,7 @@ class NET_EXPORT DirectoryLister  {
   // Represents one file found.
   struct DirectoryListerData {
     file_util::FileEnumerator::FindInfo info;
-    FilePath path;
+    base::FilePath path;
   };
 
   // Implement this class to receive directory entries.
@@ -55,10 +55,10 @@ class NET_EXPORT DirectoryLister  {
     FULL_PATH
   };
 
-  DirectoryLister(const FilePath& dir,
+  DirectoryLister(const base::FilePath& dir,
                   DirectoryListerDelegate* delegate);
 
-  DirectoryLister(const FilePath& dir,
+  DirectoryLister(const base::FilePath& dir,
                   bool recursive,
                   SortType sort,
                   DirectoryListerDelegate* delegate);
@@ -76,7 +76,7 @@ class NET_EXPORT DirectoryLister  {
  private:
   class Core : public base::RefCountedThreadSafe<Core> {
    public:
-    Core(const FilePath& dir,
+    Core(const base::FilePath& dir,
          bool recursive,
          SortType sort,
          DirectoryLister* lister);
@@ -98,7 +98,7 @@ class NET_EXPORT DirectoryLister  {
 
     void OnDone(int error);
 
-    FilePath dir_;
+    base::FilePath dir_;
     bool recursive_;
     SortType sort_;
     scoped_refptr<base::MessageLoopProxy> origin_loop_;

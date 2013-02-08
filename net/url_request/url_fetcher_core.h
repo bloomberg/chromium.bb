@@ -93,7 +93,7 @@ class URLFetcherCore
   base::TimeDelta GetBackoffDelay() const;
   void SetAutomaticallyRetryOnNetworkChanges(int max_retries);
   void SaveResponseToFileAtPath(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       scoped_refptr<base::TaskRunner> file_task_runner);
   void SaveResponseToTemporaryFile(
       scoped_refptr<base::TaskRunner> file_task_runner);
@@ -115,7 +115,7 @@ class URLFetcherCore
   void ReceivedContentWasMalformed();
   bool GetResponseAsString(std::string* out_response_string) const;
   bool GetResponseAsFilePath(bool take_ownership,
-                             FilePath* out_response_path);
+                             base::FilePath* out_response_path);
 
   // Overridden from URLRequest::Delegate:
   virtual void OnReceivedRedirect(URLRequest* request,
@@ -177,7 +177,7 @@ class URLFetcherCore
                scoped_refptr<base::TaskRunner> file_task_runner);
     ~FileWriter();
 
-    void CreateFileAtPath(const FilePath& file_path);
+    void CreateFileAtPath(const base::FilePath& file_path);
     void CreateTempFile();
 
     // Record |num_bytes_| response bytes in |core_->buffer_| to the file.
@@ -197,22 +197,22 @@ class URLFetcherCore
     // Close the file if it is open and then delete it.
     void CloseAndDeleteFile();
 
-    const FilePath& file_path() const { return file_path_; }
+    const base::FilePath& file_path() const { return file_path_; }
     int64 total_bytes_written() { return total_bytes_written_; }
     base::PlatformFileError error_code() const { return error_code_; }
 
    private:
     // Callback which gets the result of a permanent file creation.
-    void DidCreateFile(const FilePath& file_path,
+    void DidCreateFile(const base::FilePath& file_path,
                        base::PlatformFileError error_code,
                        base::PassPlatformFile file_handle,
                        bool created);
     // Callback which gets the result of a temporary file creation.
     void DidCreateTempFile(base::PlatformFileError error_code,
                            base::PassPlatformFile file_handle,
-                           const FilePath& file_path);
+                           const base::FilePath& file_path);
     // This method is used to implement DidCreateFile and DidCreateTempFile.
-    void DidCreateFileInternal(const FilePath& file_path,
+    void DidCreateFileInternal(const base::FilePath& file_path,
                                base::PlatformFileError error_code,
                                base::PassPlatformFile file_handle);
 
@@ -237,7 +237,7 @@ class URLFetcherCore
     scoped_refptr<base::TaskRunner> file_task_runner_;
 
     // Path to the file.  This path is empty when there is no file.
-    FilePath file_path_;
+    base::FilePath file_path_;
 
     // Handle to the file.
     base::PlatformFile file_handle_;
@@ -370,7 +370,7 @@ class URLFetcherCore
   ResponseDestinationType response_destination_;
 
   // Path to the file where the response is written.
-  FilePath response_destination_file_path_;
+  base::FilePath response_destination_file_path_;
 
   // By default any server-initiated redirects are automatically followed.  If
   // this flag is set to true, however, a redirect will halt the fetch and call

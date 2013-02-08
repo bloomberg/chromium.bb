@@ -272,7 +272,8 @@ TEST(DhcpProxyScriptAdapterFetcher, MockDhcpRealFetch) {
   TestServer test_server(
       TestServer::TYPE_HTTP,
       net::TestServer::kLocalhost,
-      FilePath(FILE_PATH_LITERAL("net/data/proxy_script_fetcher_unittest")));
+      base::FilePath(
+          FILE_PATH_LITERAL("net/data/proxy_script_fetcher_unittest")));
   ASSERT_TRUE(test_server.Start());
 
   GURL configured_url = test_server.GetURL("files/downloadable.pac");

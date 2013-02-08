@@ -27,13 +27,13 @@ class LocalTestServer : public BaseTestServer {
   // |document_root| must be a relative path under the root tree.
   LocalTestServer(Type type,
                   const std::string& host,
-                  const FilePath& document_root);
+                  const base::FilePath& document_root);
 
   // Initialize a TestServer with a specific set of SSLOptions.
   // |document_root| must be a relative path under the root tree.
   LocalTestServer(Type type,
                   const SSLOptions& ssl_options,
-                  const FilePath& document_root);
+                  const base::FilePath& document_root);
 
   virtual ~LocalTestServer();
 
@@ -66,9 +66,9 @@ class LocalTestServer : public BaseTestServer {
   // Modify PYTHONPATH to contain libraries we need.
   virtual bool SetPythonPath() const WARN_UNUSED_RESULT;
 
-  // Returns true if the FilePath for the testserver python script is
+  // Returns true if the base::FilePath for the testserver python script is
   // successfully stored  in |*testserver_path|.
-  virtual bool GetTestServerPath(FilePath* testserver_path) const
+  virtual bool GetTestServerPath(base::FilePath* testserver_path) const
       WARN_UNUSED_RESULT;
 
   // Adds the command line arguments for the Python test server to
@@ -78,13 +78,13 @@ class LocalTestServer : public BaseTestServer {
 
   // Returns the actual path of document root for test cases. This function
   // should be called by test cases to retrieve the actual document root path.
-  FilePath GetDocumentRoot() const { return document_root(); };
+  base::FilePath GetDocumentRoot() const { return document_root(); };
 
  private:
-  bool Init(const FilePath& document_root);
+  bool Init(const base::FilePath& document_root);
 
   // Launches the Python test server. Returns true on success.
-  bool LaunchPython(const FilePath& testserver_path) WARN_UNUSED_RESULT;
+  bool LaunchPython(const base::FilePath& testserver_path) WARN_UNUSED_RESULT;
 
   // Waits for the server to start. Returns true on success.
   bool WaitToStart() WARN_UNUSED_RESULT;

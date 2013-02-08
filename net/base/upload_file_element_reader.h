@@ -27,13 +27,13 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
  public:
   // |task_runner| is used to perform file operations. It must not be NULL.
   UploadFileElementReader(base::TaskRunner* task_runner,
-                          const FilePath& path,
+                          const base::FilePath& path,
                           uint64 range_offset,
                           uint64 range_length,
                           const base::Time& expected_modification_time);
   virtual ~UploadFileElementReader();
 
-  const FilePath& path() const { return path_; }
+  const base::FilePath& path() const { return path_; }
   uint64 range_offset() const { return range_offset_; }
   uint64 range_length() const { return range_length_; }
   const base::Time& expected_modification_time() const {
@@ -94,7 +94,7 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
   };
 
   scoped_refptr<base::TaskRunner> task_runner_;
-  const FilePath path_;
+  const base::FilePath path_;
   const uint64 range_offset_;
   const uint64 range_length_;
   const base::Time expected_modification_time_;
@@ -111,7 +111,7 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
 // Use this class only if the thread is IO allowed.
 class NET_EXPORT UploadFileElementReaderSync : public UploadElementReader {
  public:
-  UploadFileElementReaderSync(const FilePath& path,
+  UploadFileElementReaderSync(const base::FilePath& path,
                               uint64 range_offset,
                               uint64 range_length,
                               const base::Time& expected_modification_time);
@@ -126,7 +126,7 @@ class NET_EXPORT UploadFileElementReaderSync : public UploadElementReader {
                    const CompletionCallback& callback) OVERRIDE;
 
  private:
-  const FilePath path_;
+  const base::FilePath path_;
   const uint64 range_offset_;
   const uint64 range_length_;
   const base::Time expected_modification_time_;

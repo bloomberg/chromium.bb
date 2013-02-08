@@ -10,7 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST_F(DiskCacheTest, StorageBlock_LoadStore) {
-  FilePath filename = cache_path_.AppendASCII("a_test");
+  base::FilePath filename = cache_path_.AppendASCII("a_test");
   scoped_refptr<disk_cache::MappedFile> file(new disk_cache::MappedFile);
   ASSERT_TRUE(CreateCacheTestFile(filename));
   ASSERT_TRUE(file->Init(filename, 8192));
@@ -30,7 +30,7 @@ TEST_F(DiskCacheTest, StorageBlock_LoadStore) {
 }
 
 TEST_F(DiskCacheTest, StorageBlock_SetData) {
-  FilePath filename = cache_path_.AppendASCII("a_test");
+  base::FilePath filename = cache_path_.AppendASCII("a_test");
   scoped_refptr<disk_cache::MappedFile> file(new disk_cache::MappedFile);
   ASSERT_TRUE(CreateCacheTestFile(filename));
   ASSERT_TRUE(file->Init(filename, 8192));
@@ -50,7 +50,7 @@ TEST_F(DiskCacheTest, StorageBlock_SetData) {
 }
 
 TEST_F(DiskCacheTest, StorageBlock_SetModified) {
-  FilePath filename = cache_path_.AppendASCII("a_test");
+  base::FilePath filename = cache_path_.AppendASCII("a_test");
   scoped_refptr<disk_cache::MappedFile> file(new disk_cache::MappedFile);
   ASSERT_TRUE(CreateCacheTestFile(filename));
   ASSERT_TRUE(file->Init(filename, 8192));

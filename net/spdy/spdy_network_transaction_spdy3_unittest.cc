@@ -384,7 +384,7 @@ class SpdyNetworkTransactionSpdy3Test
 
   const HttpRequestInfo& CreateFilePostRequest() {
     if (!google_post_request_initialized_) {
-      FilePath file_path;
+      base::FilePath file_path;
       CHECK(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &file_path));
       CHECK_EQ(static_cast<int>(kUploadDataSize),
                file_util::WriteFile(file_path, kUploadData, kUploadDataSize));
@@ -409,7 +409,7 @@ class SpdyNetworkTransactionSpdy3Test
       const int kFileRangeLength = 3;
       CHECK_LT(kFileRangeOffset + kFileRangeLength, kUploadDataSize);
 
-      FilePath file_path;
+      base::FilePath file_path;
       CHECK(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &file_path));
       CHECK_EQ(static_cast<int>(kUploadDataSize),
                file_util::WriteFile(file_path, kUploadData, kUploadDataSize));

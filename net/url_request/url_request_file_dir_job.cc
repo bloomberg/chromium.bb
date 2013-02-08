@@ -24,7 +24,7 @@ namespace net {
 
 URLRequestFileDirJob::URLRequestFileDirJob(URLRequest* request,
                                            NetworkDelegate* network_delegate,
-                                           const FilePath& dir_path)
+                                           const base::FilePath& dir_path)
     : URLRequestJob(request, network_delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(lister_(dir_path, this)),
       dir_path_(dir_path),

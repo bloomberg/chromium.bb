@@ -593,7 +593,7 @@ TEST_F(URLRequestTest, DataURLImageTest) {
 }
 
 TEST_F(URLRequestTest, FileTest) {
-  FilePath app_path;
+  base::FilePath app_path;
   PathService::Get(base::FILE_EXE, &app_path);
   GURL app_url = FilePathToFileURL(app_path);
 
@@ -619,7 +619,7 @@ TEST_F(URLRequestTest, FileTest) {
 }
 
 TEST_F(URLRequestTest, FileTestCancel) {
-  FilePath app_path;
+  base::FilePath app_path;
   PathService::Get(base::FILE_EXE, &app_path);
   GURL app_url = FilePathToFileURL(app_path);
 
@@ -641,7 +641,7 @@ TEST_F(URLRequestTest, FileTestFullSpecifiedRange) {
   scoped_array<char> buffer(new char[buffer_size]);
   FillBuffer(buffer.get(), buffer_size);
 
-  FilePath temp_path;
+  base::FilePath temp_path;
   EXPECT_TRUE(file_util::CreateTemporaryFile(&temp_path));
   GURL temp_url = FilePathToFileURL(temp_path);
   EXPECT_TRUE(file_util::WriteFile(temp_path, buffer.get(), buffer_size));
@@ -685,7 +685,7 @@ TEST_F(URLRequestTest, FileTestHalfSpecifiedRange) {
   scoped_array<char> buffer(new char[buffer_size]);
   FillBuffer(buffer.get(), buffer_size);
 
-  FilePath temp_path;
+  base::FilePath temp_path;
   EXPECT_TRUE(file_util::CreateTemporaryFile(&temp_path));
   GURL temp_url = FilePathToFileURL(temp_path);
   EXPECT_TRUE(file_util::WriteFile(temp_path, buffer.get(), buffer_size));
@@ -728,7 +728,7 @@ TEST_F(URLRequestTest, FileTestMultipleRanges) {
   scoped_array<char> buffer(new char[buffer_size]);
   FillBuffer(buffer.get(), buffer_size);
 
-  FilePath temp_path;
+  base::FilePath temp_path;
   EXPECT_TRUE(file_util::CreateTemporaryFile(&temp_path));
   GURL temp_url = FilePathToFileURL(temp_path);
   EXPECT_TRUE(file_util::WriteFile(temp_path, buffer.get(), buffer_size));
@@ -769,7 +769,7 @@ TEST_F(URLRequestTest, InvalidUrlTest) {
 
 #if defined(OS_WIN)
 TEST_F(URLRequestTest, ResolveShortcutTest) {
-  FilePath app_path;
+  base::FilePath app_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &app_path);
   app_path = app_path.AppendASCII("net");
   app_path = app_path.AppendASCII("data");
@@ -798,7 +798,8 @@ TEST_F(URLRequestTest, ResolveShortcutTest) {
 
   TestDelegate d;
   {
-    URLRequest r(FilePathToFileURL(FilePath(lnk_path)), &d, &default_context_);
+    URLRequest r(FilePathToFileURL(base::FilePath(lnk_path)), &d,
+                 &default_context_);
 
     r.Start();
     EXPECT_TRUE(r.is_pending());
@@ -836,7 +837,7 @@ TEST_F(URLRequestTest, FileDirCancelTest) {
 
   TestDelegate d;
   {
-    FilePath file_path;
+    base::FilePath file_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &file_path);
     file_path = file_path.Append(FILE_PATH_LITERAL("net"));
     file_path = file_path.Append(FILE_PATH_LITERAL("data"));
@@ -859,7 +860,7 @@ TEST_F(URLRequestTest, FileDirRedirectNoCrash) {
   // directory and does not end with a slash.  Ensure that following such
   // redirects does not crash.  See http://crbug.com/18686.
 
-  FilePath path;
+  base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.Append(FILE_PATH_LITERAL("net"));
   path = path.Append(FILE_PATH_LITERAL("data"));
@@ -1410,14 +1411,14 @@ TEST_F(URLRequestTest, RequestCompletionForEmptyResponse) {
 // http://crbug.com/114369
 class LocalHttpTestServer : public TestServer {
  public:
-  explicit LocalHttpTestServer(const FilePath& document_root)
+  explicit LocalHttpTestServer(const base::FilePath& document_root)
       : TestServer(TestServer::TYPE_HTTP,
                    ScopedCustomUrlRequestTestHttpHost::value(),
                    document_root) {}
   LocalHttpTestServer()
       : TestServer(TestServer::TYPE_HTTP,
                    ScopedCustomUrlRequestTestHttpHost::value(),
-                   FilePath()) {}
+                   base::FilePath()) {}
 };
 
 TEST_F(URLRequestTest, DelayedCookieCallback) {
@@ -1962,7 +1963,7 @@ TEST_F(URLRequestTest, DoNotOverrideReferrer) {
 class URLRequestTestHTTP : public URLRequestTest {
  public:
   URLRequestTestHTTP()
-      : test_server_(FilePath(FILE_PATH_LITERAL(
+      : test_server_(base::FilePath(FILE_PATH_LITERAL(
                                   "net/data/url_request_unittest"))) {
   }
 
@@ -2946,9 +2947,9 @@ TEST_F(URLRequestTestHTTP, GetZippedTest) {
 TEST_F(URLRequestTestHTTP, DISABLED_HTTPSToHTTPRedirectNoRefererTest) {
   ASSERT_TRUE(test_server_.Start());
 
-  TestServer https_test_server(TestServer::TYPE_HTTPS,
-                               TestServer::kLocalhost,
-                               FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  TestServer https_test_server(
+      TestServer::TYPE_HTTPS, TestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(https_test_server.Start());
 
   // An https server is sent a request with an https referer,
@@ -3259,13 +3260,13 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
     URLRequest r(test_server_.GetURL("echo"), &d, &default_context_);
     r.set_method("POST");
 
-    FilePath dir;
+    base::FilePath dir;
     PathService::Get(base::DIR_EXE, &dir);
     file_util::SetCurrentDirectory(dir);
 
     ScopedVector<UploadElementReader> element_readers;
 
-    FilePath path;
+    base::FilePath path;
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.Append(FILE_PATH_LITERAL("net"));
     path = path.Append(FILE_PATH_LITERAL("data"));
@@ -3277,7 +3278,7 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
     // This file should just be ignored in the upload stream.
     element_readers.push_back(new UploadFileElementReader(
         base::MessageLoopProxy::current(),
-        FilePath(FILE_PATH_LITERAL(
+        base::FilePath(FILE_PATH_LITERAL(
             "c:\\path\\to\\non\\existant\\file.randomness.12345")),
         0, kuint64max, base::Time()));
     r.set_upload(make_scoped_ptr(new UploadDataStream(&element_readers, 0)));
@@ -3392,7 +3393,7 @@ TEST_F(URLRequestTestHTTP, ProcessSTS) {
   TestServer https_test_server(
       TestServer::TYPE_HTTPS,
       ssl_options,
-      FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
+      base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(https_test_server.Start());
 
   TestDelegate d;
@@ -3419,7 +3420,7 @@ TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
   TestServer https_test_server(
       TestServer::TYPE_HTTPS,
       ssl_options,
-      FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
+      base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(https_test_server.Start());
 
   TestDelegate d;
@@ -3538,7 +3539,7 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect) {
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_EQ(URLRequestStatus::SUCCESS, req.status().status());
 
-    FilePath path;
+    base::FilePath path;
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.Append(FILE_PATH_LITERAL("net"));
     path = path.Append(FILE_PATH_LITERAL("data"));
@@ -4145,7 +4146,7 @@ class HTTPSRequestTest : public testing::Test {
 TEST_F(HTTPSRequestTest, DISABLED_HTTPSGetTest) {
   TestServer test_server(TestServer::TYPE_HTTPS,
                          TestServer::kLocalhost,
-                         FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   TestDelegate d;
@@ -4172,7 +4173,7 @@ TEST_F(HTTPSRequestTest, HTTPSMismatchedTest) {
       TestServer::SSLOptions::CERT_MISMATCHED_NAME);
   TestServer test_server(TestServer::TYPE_HTTPS,
                          ssl_options,
-                         FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   bool err_allowed = true;
@@ -4205,7 +4206,7 @@ TEST_F(HTTPSRequestTest, HTTPSExpiredTest) {
       TestServer::SSLOptions::CERT_EXPIRED);
   TestServer test_server(TestServer::TYPE_HTTPS,
                          ssl_options,
-                         FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   // Iterate from false to true, just so that we do the opposite of the
@@ -4252,7 +4253,7 @@ TEST_F(HTTPSRequestTest, TLSv1Fallback) {
       TestServer::SSLOptions::TLS_INTOLERANT_TLS1_1;
   TestServer test_server(TestServer::TYPE_HTTPS,
                          ssl_options,
-                         FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   TestDelegate d;
@@ -4279,7 +4280,7 @@ TEST_F(HTTPSRequestTest, HTTPSPreloadedHSTSTest) {
       TestServer::SSLOptions::CERT_MISMATCHED_NAME);
   TestServer test_server(TestServer::TYPE_HTTPS,
                          ssl_options,
-                         FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   // We require that the URL be www.google.com in order to pick up the
@@ -4322,7 +4323,7 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
       TestServer::SSLOptions::CERT_MISMATCHED_NAME);
   TestServer test_server(TestServer::TYPE_HTTPS,
                          ssl_options,
-                         FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   // We require that the URL be www.google.com in order to pick up the
@@ -4381,7 +4382,7 @@ TEST_F(HTTPSRequestTest, HSTSPreservesPosts) {
   TestServer::SSLOptions ssl_options(TestServer::SSLOptions::CERT_OK);
   TestServer test_server(TestServer::TYPE_HTTPS,
                          ssl_options,
-                         FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
 
@@ -4431,7 +4432,7 @@ TEST_F(HTTPSRequestTest, SSLv3Fallback) {
   ssl_options.tls_intolerant = TestServer::SSLOptions::TLS_INTOLERANT_ALL;
   TestServer test_server(TestServer::TYPE_HTTPS,
                          ssl_options,
-                         FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   TestDelegate d;
@@ -4481,7 +4482,7 @@ TEST_F(HTTPSRequestTest, ClientAuthTest) {
   ssl_options.request_client_certificate = true;
   TestServer test_server(TestServer::TYPE_HTTPS,
                          ssl_options,
-                         FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   SSLClientAuthTestDelegate d;
@@ -4517,7 +4518,7 @@ TEST_F(HTTPSRequestTest, ResumeTest) {
   ssl_options.record_resume = true;
   TestServer test_server(TestServer::TYPE_HTTPS,
                          ssl_options,
-                         FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   SSLClientSocket::ClearSessionCache();
@@ -4585,7 +4586,7 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   ssl_options.record_resume = true;
   TestServer test_server(TestServer::TYPE_HTTPS,
                          ssl_options,
-                         FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   SSLClientSocket::ClearSessionCache();
@@ -4721,7 +4722,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
     *out_cert_status = 0;
     TestServer test_server(TestServer::TYPE_HTTPS,
                            ssl_options,
-                           FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+                           base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
     ASSERT_TRUE(test_server.Start());
 
     TestDelegate d;
@@ -5014,7 +5015,8 @@ TEST_F(HTTPSCRLSetTest, ExpiredCRLSet) {
 class URLRequestTestFTP : public URLRequestTest {
  public:
   URLRequestTestFTP()
-      : test_server_(TestServer::TYPE_FTP, TestServer::kLocalhost, FilePath()) {
+      : test_server_(TestServer::TYPE_FTP, TestServer::kLocalhost,
+                     base::FilePath()) {
   }
 
  protected:
@@ -5078,7 +5080,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPDirectoryListing) {
 TEST_F(URLRequestTestFTP, DISABLED_FTPGetTestAnonymous) {
   ASSERT_TRUE(test_server_.Start());
 
-  FilePath app_path;
+  base::FilePath app_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &app_path);
   app_path = app_path.AppendASCII("LICENSE");
   TestDelegate d;
@@ -5107,7 +5109,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPGetTestAnonymous) {
 TEST_F(URLRequestTestFTP, DISABLED_FTPGetTest) {
   ASSERT_TRUE(test_server_.Start());
 
-  FilePath app_path;
+  base::FilePath app_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &app_path);
   app_path = app_path.AppendASCII("LICENSE");
   TestDelegate d;
@@ -5143,7 +5145,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPGetTest) {
 TEST_F(URLRequestTestFTP, DISABLED_FTPCheckWrongPassword) {
   ASSERT_TRUE(test_server_.Start());
 
-  FilePath app_path;
+  base::FilePath app_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &app_path);
   app_path = app_path.AppendASCII("LICENSE");
   TestDelegate d;
@@ -5173,7 +5175,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPCheckWrongPassword) {
 TEST_F(URLRequestTestFTP, DISABLED_FTPCheckWrongPasswordRestart) {
   ASSERT_TRUE(test_server_.Start());
 
-  FilePath app_path;
+  base::FilePath app_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &app_path);
   app_path = app_path.AppendASCII("LICENSE");
   TestDelegate d;
@@ -5206,7 +5208,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPCheckWrongPasswordRestart) {
 TEST_F(URLRequestTestFTP, DISABLED_FTPCheckWrongUser) {
   ASSERT_TRUE(test_server_.Start());
 
-  FilePath app_path;
+  base::FilePath app_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &app_path);
   app_path = app_path.AppendASCII("LICENSE");
   TestDelegate d;
@@ -5236,7 +5238,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPCheckWrongUser) {
 TEST_F(URLRequestTestFTP, DISABLED_FTPCheckWrongUserRestart) {
   ASSERT_TRUE(test_server_.Start());
 
-  FilePath app_path;
+  base::FilePath app_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &app_path);
   app_path = app_path.AppendASCII("LICENSE");
   TestDelegate d;
@@ -5269,7 +5271,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPCheckWrongUserRestart) {
 TEST_F(URLRequestTestFTP, DISABLED_FTPCacheURLCredentials) {
   ASSERT_TRUE(test_server_.Start());
 
-  FilePath app_path;
+  base::FilePath app_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &app_path);
   app_path = app_path.AppendASCII("LICENSE");
 
@@ -5319,7 +5321,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPCacheURLCredentials) {
 TEST_F(URLRequestTestFTP, DISABLED_FTPCacheLoginBoxCredentials) {
   ASSERT_TRUE(test_server_.Start());
 
-  FilePath app_path;
+  base::FilePath app_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &app_path);
   app_path = app_path.AppendASCII("LICENSE");
 

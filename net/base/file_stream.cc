@@ -43,7 +43,7 @@ FileStream::~FileStream() {
   bound_net_log_.EndEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
 }
 
-int FileStream::Open(const FilePath& path, int open_flags,
+int FileStream::Open(const base::FilePath& path, int open_flags,
                      const CompletionCallback& callback) {
   if (IsOpen()) {
     DLOG(FATAL) << "File is already open!";
@@ -56,7 +56,7 @@ int FileStream::Open(const FilePath& path, int open_flags,
   return ERR_IO_PENDING;
 }
 
-int FileStream::OpenSync(const FilePath& path, int open_flags) {
+int FileStream::OpenSync(const base::FilePath& path, int open_flags) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   if (IsOpen()) {

@@ -14,10 +14,10 @@
 namespace net {
 
 CertificateList CreateCertificateListFromFile(
-    const FilePath& certs_dir,
+    const base::FilePath& certs_dir,
     const std::string& cert_file,
     int format) {
-  FilePath cert_path = certs_dir.AppendASCII(cert_file);
+  base::FilePath cert_path = certs_dir.AppendASCII(cert_file);
   std::string cert_data;
   if (!file_util::ReadFileToString(cert_path, &cert_data))
     return CertificateList();
@@ -27,9 +27,9 @@ CertificateList CreateCertificateListFromFile(
 }
 
 scoped_refptr<X509Certificate> ImportCertFromFile(
-    const FilePath& certs_dir,
+    const base::FilePath& certs_dir,
     const std::string& cert_file) {
-  FilePath cert_path = certs_dir.AppendASCII(cert_file);
+  base::FilePath cert_path = certs_dir.AppendASCII(cert_file);
   std::string cert_data;
   if (!file_util::ReadFileToString(cert_path, &cert_data))
     return NULL;

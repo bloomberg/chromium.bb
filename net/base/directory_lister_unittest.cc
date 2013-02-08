@@ -84,11 +84,11 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
   bool recursive_;
   bool quit_loop_after_each_file_;
   std::vector<file_util::FileEnumerator::FindInfo> file_list_;
-  std::vector<FilePath> paths_;
+  std::vector<base::FilePath> paths_;
 };
 
 TEST(DirectoryListerTest, BigDirTest) {
-  FilePath path;
+  base::FilePath path;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &path));
 
   ListerDelegate delegate(false, false);
@@ -101,7 +101,7 @@ TEST(DirectoryListerTest, BigDirTest) {
 }
 
 TEST(DirectoryListerTest, BigDirRecursiveTest) {
-  FilePath path;
+  base::FilePath path;
   ASSERT_TRUE(PathService::Get(base::DIR_EXE, &path));
 
   ListerDelegate delegate(true, false);
@@ -114,7 +114,7 @@ TEST(DirectoryListerTest, BigDirRecursiveTest) {
 }
 
 TEST(DirectoryListerTest, CancelTest) {
-  FilePath path;
+  base::FilePath path;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &path));
 
   ListerDelegate delegate(false, true);

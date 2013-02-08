@@ -45,7 +45,7 @@ const wchar_t* const kPolicyPath =
     L"SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient";
 
 // Returns the path to the HOSTS file.
-FilePath GetHostsPath();
+base::FilePath GetHostsPath();
 
 // Parses |value| as search list (comma-delimited list of domain names) from
 // a registry key and stores it in |out|. Returns true on success. Empty

@@ -49,10 +49,10 @@ class FileStreamTest : public PlatformTest {
     PlatformTest::TearDown();
   }
 
-  const FilePath temp_file_path() const { return temp_file_path_; }
+  const base::FilePath temp_file_path() const { return temp_file_path_; }
 
  private:
-  FilePath temp_file_path_;
+  base::FilePath temp_file_path_;
 };
 
 namespace {

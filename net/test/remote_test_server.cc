@@ -31,11 +31,11 @@ namespace {
 // to a single testing device.
 // The mapping between the test server spawner and the individual Python test
 // servers is written to a file on the device prior to executing any tests.
-FilePath GetTestServerPortInfoFile() {
+base::FilePath GetTestServerPortInfoFile() {
 #if !defined(OS_ANDROID)
-  return FilePath("/tmp/net-test-server-ports");
+  return base::FilePath("/tmp/net-test-server-ports");
 #else
-  FilePath test_data_dir;
+  base::FilePath test_data_dir;
   PathService::Get(base::DIR_ANDROID_EXTERNAL_STORAGE, &test_data_dir);
   return test_data_dir.Append("net-test-server-ports");
 #endif
@@ -66,7 +66,7 @@ std::string GetServerTypeString(BaseTestServer::Type type) {
 
 RemoteTestServer::RemoteTestServer(Type type,
                                    const std::string& host,
-                                   const FilePath& document_root)
+                                   const base::FilePath& document_root)
     : BaseTestServer(type, host),
       spawner_server_port_(0) {
   if (!Init(document_root))
@@ -75,7 +75,7 @@ RemoteTestServer::RemoteTestServer(Type type,
 
 RemoteTestServer::RemoteTestServer(Type type,
                                    const SSLOptions& ssl_options,
-                                   const FilePath& document_root)
+                                   const base::FilePath& document_root)
     : BaseTestServer(type, ssl_options),
       spawner_server_port_(0) {
   if (!Init(document_root))
@@ -154,13 +154,13 @@ bool RemoteTestServer::Stop() {
 // root in the host machine where the test server is launched. So prepend
 // DIR_SOURCE_ROOT here to get the actual path of document root on the Android
 // device.
-FilePath RemoteTestServer::GetDocumentRoot() const {
-  FilePath src_dir;
+base::FilePath RemoteTestServer::GetDocumentRoot() const {
+  base::FilePath src_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &src_dir);
   return src_dir.Append(document_root());
 }
 
-bool RemoteTestServer::Init(const FilePath& document_root) {
+bool RemoteTestServer::Init(const base::FilePath& document_root) {
   if (document_root.IsAbsolute())
     return false;
 
@@ -193,7 +193,7 @@ bool RemoteTestServer::Init(const FilePath& document_root) {
     return false;
   SetPort(test_server_port);
 
-  SetResourcePath(document_root, FilePath().AppendASCII("net")
+  SetResourcePath(document_root, base::FilePath().AppendASCII("net")
                                            .AppendASCII("data")
                                            .AppendASCII("ssl")
                                            .AppendASCII("certificates"));

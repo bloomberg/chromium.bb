@@ -28,7 +28,7 @@ class MockFileStream : public net::FileStream {
       : net::FileStream(file, flags, net_log), forced_error_(net::OK) {}
 
   // FileStream methods.
-  virtual int OpenSync(const FilePath& path, int open_flags) OVERRIDE;
+  virtual int OpenSync(const base::FilePath& path, int open_flags) OVERRIDE;
   virtual int Seek(net::Whence whence, int64 offset,
                    const Int64CompletionCallback& callback) OVERRIDE;
   virtual int64 SeekSync(net::Whence whence, int64 offset) OVERRIDE;
@@ -49,7 +49,7 @@ class MockFileStream : public net::FileStream {
   void set_forced_error(int error) { forced_error_ = error; }
   void clear_forced_error() { forced_error_ = net::OK; }
   int forced_error() const { return forced_error_; }
-  const FilePath& get_path() const { return path_; }
+  const base::FilePath& get_path() const { return path_; }
 
  private:
   int ReturnError(int function_error) {
@@ -73,7 +73,7 @@ class MockFileStream : public net::FileStream {
   }
 
   int forced_error_;
-  FilePath path_;
+  base::FilePath path_;
 };
 
 }  // namespace testing

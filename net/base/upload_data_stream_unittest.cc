@@ -126,7 +126,7 @@ class UploadDataStreamTest : public PlatformTest {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
-  void FileChangedHelper(const FilePath& file_path,
+  void FileChangedHelper(const base::FilePath& file_path,
                          const base::Time& time,
                          bool error_expected);
 
@@ -162,7 +162,7 @@ TEST_F(UploadDataStreamTest, ConsumeAllBytes) {
 }
 
 TEST_F(UploadDataStreamTest, File) {
-  FilePath temp_file_path;
+  base::FilePath temp_file_path;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
                                                   &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
@@ -192,7 +192,7 @@ TEST_F(UploadDataStreamTest, File) {
 }
 
 TEST_F(UploadDataStreamTest, FileSmallerThanLength) {
-  FilePath temp_file_path;
+  base::FilePath temp_file_path;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
                                                   &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
@@ -306,7 +306,7 @@ TEST_F(UploadDataStreamTest, ReadErrorAsync) {
 }
 
 TEST_F(UploadDataStreamTest, FileAndBytes) {
-  FilePath temp_file_path;
+  base::FilePath temp_file_path;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
                                                   &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
@@ -506,7 +506,7 @@ TEST_F(UploadDataStreamTest, ReadAsync) {
   EXPECT_EQ(static_cast<int>(kTestDataSize*2), read_callback3.WaitForResult());
 }
 
-void UploadDataStreamTest::FileChangedHelper(const FilePath& file_path,
+void UploadDataStreamTest::FileChangedHelper(const base::FilePath& file_path,
                                              const base::Time& time,
                                              bool error_expected) {
   // Don't use element_readers_ here, as this function is called twice, and
@@ -526,7 +526,7 @@ void UploadDataStreamTest::FileChangedHelper(const FilePath& file_path,
 }
 
 TEST_F(UploadDataStreamTest, FileChanged) {
-  FilePath temp_file_path;
+  base::FilePath temp_file_path;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
                                                   &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
@@ -545,7 +545,7 @@ TEST_F(UploadDataStreamTest, FileChanged) {
 }
 
 TEST_F(UploadDataStreamTest, MultipleInit) {
-  FilePath temp_file_path;
+  base::FilePath temp_file_path;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
                                                   &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
@@ -586,7 +586,7 @@ TEST_F(UploadDataStreamTest, MultipleInit) {
 }
 
 TEST_F(UploadDataStreamTest, MultipleInitAsync) {
-  FilePath temp_file_path;
+  base::FilePath temp_file_path;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
                                                   &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
@@ -626,7 +626,7 @@ TEST_F(UploadDataStreamTest, MultipleInitAsync) {
 }
 
 TEST_F(UploadDataStreamTest, InitToReset) {
-  FilePath temp_file_path;
+  base::FilePath temp_file_path;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
                                                   &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
@@ -678,7 +678,7 @@ TEST_F(UploadDataStreamTest, InitToReset) {
 }
 
 TEST_F(UploadDataStreamTest, InitDuringAsyncInit) {
-  FilePath temp_file_path;
+  base::FilePath temp_file_path;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
                                                   &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
@@ -722,7 +722,7 @@ TEST_F(UploadDataStreamTest, InitDuringAsyncInit) {
 }
 
 TEST_F(UploadDataStreamTest, InitDuringAsyncRead) {
-  FilePath temp_file_path;
+  base::FilePath temp_file_path;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
                                                   &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),

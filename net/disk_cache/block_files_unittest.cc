@@ -14,10 +14,11 @@ using base::Time;
 namespace {
 
 // Returns the number of files in this folder.
-int NumberOfFiles(const FilePath& path) {
+int NumberOfFiles(const base::FilePath& path) {
   file_util::FileEnumerator iter(path, false, file_util::FileEnumerator::FILES);
   int count = 0;
-  for (FilePath file = iter.Next(); !file.value().empty(); file = iter.Next()) {
+  for (base::FilePath file = iter.Next(); !file.value().empty();
+       file = iter.Next()) {
     count++;
   }
   return count;
@@ -160,7 +161,7 @@ TEST_F(DiskCacheTest, BlockFiles_ZeroSizeFile) {
   BlockFiles files(cache_path_);
   ASSERT_TRUE(files.Init(true));
 
-  FilePath filename = files.Name(0);
+  base::FilePath filename = files.Name(0);
   files.CloseFiles();
   // Truncate one of the files.
   {
@@ -183,7 +184,7 @@ TEST_F(DiskCacheTest, BlockFiles_TruncatedFile) {
   Addr address;
   EXPECT_TRUE(files.CreateBlock(RANKINGS, 2, &address));
 
-  FilePath filename = files.Name(0);
+  base::FilePath filename = files.Name(0);
   files.CloseFiles();
   // Truncate one of the files.
   {
@@ -264,7 +265,7 @@ TEST_F(DiskCacheTest, BlockFiles_InvalidFile) {
   EXPECT_TRUE(NULL == files.GetFile(addr));
 
   // Let's create an invalid file.
-  FilePath filename(files.Name(5));
+  base::FilePath filename(files.Name(5));
   char header[kBlockHeaderSize];
   memset(header, 'a', kBlockHeaderSize);
   EXPECT_EQ(kBlockHeaderSize,

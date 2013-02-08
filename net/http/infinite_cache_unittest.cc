@@ -71,7 +71,7 @@ void ProcessRequestWithTime(const MockTransaction& http_transaction,
 
 TEST(InfiniteCache, Basics) {
   InfiniteCache cache;
-  cache.Init(FilePath());
+  cache.Init(base::FilePath());
 
   scoped_ptr<InfiniteCacheTransaction> transaction
       (cache.CreateInfiniteCacheTransaction());
@@ -116,7 +116,7 @@ TEST(InfiniteCache, Basics) {
 TEST(InfiniteCache, Save_Restore) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  FilePath path = dir.path().Append(FILE_PATH_LITERAL("infinite"));
+  base::FilePath path = dir.path().Append(FILE_PATH_LITERAL("infinite"));
 
   scoped_ptr<InfiniteCache> cache(new InfiniteCache);
   cache->Init(path);
@@ -141,7 +141,7 @@ TEST(InfiniteCache, Save_Restore) {
 
 TEST(InfiniteCache, DoomMethod) {
   InfiniteCache cache;
-  cache.Init(FilePath());
+  cache.Init(base::FilePath());
 
   ProcessRequest(kTypicalGET_Transaction, &cache);
   ProcessRequest(kSimpleGET_Transaction, &cache);
@@ -168,7 +168,7 @@ TEST(InfiniteCache, DoomMethod) {
 TEST(InfiniteCache, Delete) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  FilePath path = dir.path().Append(FILE_PATH_LITERAL("infinite"));
+  base::FilePath path = dir.path().Append(FILE_PATH_LITERAL("infinite"));
 
   scoped_ptr<InfiniteCache> cache(new InfiniteCache);
   cache->Init(path);
@@ -194,7 +194,7 @@ TEST(InfiniteCache, DeleteBetween) {
 #if !defined(OS_ANDROID)
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  FilePath path = dir.path().Append(FILE_PATH_LITERAL("infinite"));
+  base::FilePath path = dir.path().Append(FILE_PATH_LITERAL("infinite"));
 
   scoped_ptr<InfiniteCache> cache(new InfiniteCache);
   cache->Init(path);
@@ -252,7 +252,7 @@ TEST(InfiniteCache, DeleteBetween) {
 TEST(InfiniteCache, FillUp) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  FilePath path = dir.path().Append(FILE_PATH_LITERAL("infinite"));
+  base::FilePath path = dir.path().Append(FILE_PATH_LITERAL("infinite"));
 
   scoped_ptr<InfiniteCache> cache(new InfiniteCache);
   cache->Init(path);

@@ -14,8 +14,8 @@
 namespace {
 
 // Deletes all the files on path that match search_name pattern.
-void DeleteFiles(const FilePath& path, const wchar_t* search_name) {
-  FilePath name(path.Append(search_name));
+void DeleteFiles(const base::FilePath& path, const wchar_t* search_name) {
+  base::FilePath name(path.Append(search_name));
 
   WIN32_FIND_DATA data;
   HANDLE handle = FindFirstFile(name.value().c_str(), &data);
@@ -36,7 +36,7 @@ void DeleteFiles(const FilePath& path, const wchar_t* search_name) {
 
 namespace disk_cache {
 
-bool MoveCache(const FilePath& from_path, const FilePath& to_path) {
+bool MoveCache(const base::FilePath& from_path, const base::FilePath& to_path) {
   // I don't want to use the shell version of move because if something goes
   // wrong, that version will attempt to move file by file and fail at the end.
   if (!MoveFileEx(from_path.value().c_str(), to_path.value().c_str(), 0)) {
@@ -46,13 +46,13 @@ bool MoveCache(const FilePath& from_path, const FilePath& to_path) {
   return true;
 }
 
-void DeleteCache(const FilePath& path, bool remove_folder) {
+void DeleteCache(const base::FilePath& path, bool remove_folder) {
   DeleteFiles(path, L"*");
   if (remove_folder)
     RemoveDirectory(path.value().c_str());
 }
 
-bool DeleteCacheFile(const FilePath& name) {
+bool DeleteCacheFile(const base::FilePath& name) {
   // We do a simple delete, without ever falling back to SHFileOperation, as the
   // version from base does.
   if (!DeleteFile(name.value().c_str())) {

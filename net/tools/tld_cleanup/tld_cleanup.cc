@@ -58,7 +58,7 @@ const char kEndPrivateDomainsComment[] = "// ===END PRIVATE DOMAINS===";
 // Writes the list of domain rules contained in the 'rules' set to the
 // 'outfile', with each rule terminated by a LF.  The file must already have
 // been created with write access.
-bool WriteRules(const RuleMap& rules, const FilePath& outfile) {
+bool WriteRules(const RuleMap& rules, const base::FilePath& outfile) {
   std::string data;
   data.append(
 "%{\n"
@@ -166,8 +166,8 @@ NormalizeResult NormalizeRule(std::string* domain, Rule* rule) {
 // Loads the file described by 'in_filename', converts it to the desired format
 // (see the file comments above), and saves it into 'out_filename'.  Returns
 // the most severe of the result codes encountered when normalizing the rules.
-NormalizeResult NormalizeFile(const FilePath& in_filename,
-                              const FilePath& out_filename) {
+NormalizeResult NormalizeFile(const base::FilePath& in_filename,
+                              const base::FilePath& out_filename) {
   std::string data;
   if (!file_util::ReadFileToString(in_filename, &data)) {
     LOG(ERROR) << "Unable to read file";
@@ -280,7 +280,7 @@ int main(int argc, const char* argv[]) {
 
   CommandLine::Init(argc, argv);
 
-  FilePath log_filename;
+  base::FilePath log_filename;
   PathService::Get(base::DIR_EXE, &log_filename);
   log_filename = log_filename.AppendASCII("tld_cleanup.log");
   logging::InitLogging(
@@ -292,14 +292,14 @@ int main(int argc, const char* argv[]) {
 
   icu_util::Initialize();
 
-  FilePath input_file;
+  base::FilePath input_file;
   PathService::Get(base::DIR_SOURCE_ROOT, &input_file);
   input_file = input_file.Append(FILE_PATH_LITERAL("net"))
                          .Append(FILE_PATH_LITERAL("base"))
                          .Append(FILE_PATH_LITERAL(
                              "registry_controlled_domains"))
                          .Append(FILE_PATH_LITERAL("effective_tld_names.dat"));
-  FilePath output_file;
+  base::FilePath output_file;
   PathService::Get(base::DIR_SOURCE_ROOT, &output_file);
   output_file = output_file.Append(FILE_PATH_LITERAL("net"))
                            .Append(FILE_PATH_LITERAL("base"))

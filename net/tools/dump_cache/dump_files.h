@@ -12,12 +12,12 @@
 #include "base/file_path.h"
 
 // Returns the major version of the specified cache.
-int GetMajorVersion(const FilePath& input_path);
+int GetMajorVersion(const base::FilePath& input_path);
 
 // Dumps all entries from the cache.
-int DumpContents(const FilePath& input_path);
+int DumpContents(const base::FilePath& input_path);
 
 // Dumps the headers of all files.
-int DumpHeaders(const FilePath& input_path);
+int DumpHeaders(const base::FilePath& input_path);
 
 #endif  // NET_TOOLS_DUMP_CACHE_DUMP_FILES_H_

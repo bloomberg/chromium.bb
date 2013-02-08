@@ -61,7 +61,7 @@ class GZipUnitTest : public PlatformTest {
     gzip_encode_buffer_ = NULL;
 
     // Get the path of source data file.
-    FilePath file_path;
+    base::FilePath file_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &file_path);
     file_path = file_path.AppendASCII("net");
     file_path = file_path.AppendASCII("data");
