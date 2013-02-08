@@ -50,6 +50,17 @@ id PerformSelectorIgnoringExceptions(NSObject* target, SEL sel) {
   return ret;
 }
 
+id RunBlockIgnoringExceptions(BlockReturningId block) {
+  id ret = nil;
+  @try {
+    base::mac::ScopedNSExceptionEnabler enable;
+    ret = block();
+  }
+  @catch(id exception) {
+  }
+  return ret;
+}
+
 ScopedNSExceptionEnabler::ScopedNSExceptionEnabler() {
   was_enabled_ = GetNSExceptionsAllowed();
   SetNSExceptionsAllowed(true);

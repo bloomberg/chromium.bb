@@ -45,7 +45,14 @@ BASE_EXPORT void SetNSExceptionsAllowed(bool allowed);
 // Executes [target performSelector:sel] with fatal-exceptions turned
 // off, and returns the result.  If an exception is thrown during the
 // perform, nil is returned.
+// TODO(shess): Deprecated, convert to RunBlockIgnoringExceptions().
 BASE_EXPORT id PerformSelectorIgnoringExceptions(NSObject* target, SEL sel);
+
+// Executes |block| with fatal-exceptions turned off, and returns the
+// result.  If an exception is thrown during the perform, nil is
+// returned.
+typedef id (^BlockReturningId)();
+BASE_EXPORT id RunBlockIgnoringExceptions(BlockReturningId block);
 
 }  // namespace mac
 }  // namespace base

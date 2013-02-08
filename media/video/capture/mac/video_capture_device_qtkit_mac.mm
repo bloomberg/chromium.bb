@@ -8,6 +8,7 @@
 
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
+#include "base/mac/scoped_nsexception_enabler.h"
 #include "media/video/capture/mac/video_capture_device_mac.h"
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_types.h"
@@ -17,8 +18,14 @@
 #pragma mark Class methods
 
 + (void)getDeviceNames:(NSMutableDictionary*)deviceNames {
+  // Third-party drivers often throw exceptions, which are fatal in
+  // Chromium (see comments in scoped_nsexception_enabler.h).  The
+  // following catches any exceptions and continues in an orderly
+  // fashion with no devices detected.
   NSArray* captureDevices =
-      [QTCaptureDevice inputDevicesWithMediaType:QTMediaTypeVideo];
+      base::mac::RunBlockIgnoringExceptions(^() {
+          return [QTCaptureDevice inputDevicesWithMediaType:QTMediaTypeVideo];
+      });
 
   for (QTCaptureDevice* device in captureDevices) {
     [deviceNames setObject:[device localizedDisplayName]
