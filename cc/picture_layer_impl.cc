@@ -360,10 +360,12 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
         std::min(max_untiled_content_size.width(), content_bounds.width());
     int height =
         std::min(max_untiled_content_size.height(), content_bounds.height());
-    // Round width and height up to the closest multiple of 8.  This is to
-    // help IMG drivers where facter of 8 texture sizes are faster.
-    width = RoundUp(width, 8);
-    height = RoundUp(height, 8);
+    // Round width and height up to the closest multiple of 64.  This is to
+    // help IMG drivers where facter of 8 texture sizes are faster, and also
+    // to prevent creating textures of too many different size for better
+    // recycling.
+    width = RoundUp(width, 64);
+    height = RoundUp(height, 64);
     return gfx::Size(width, height);
   }
 
