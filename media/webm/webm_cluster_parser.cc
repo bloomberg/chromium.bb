@@ -23,8 +23,41 @@ static std::string GenerateCounterBlock(const uint8* iv, int iv_size) {
   return counter_block;
 }
 
+WebMClusterParser::TextTrackIterator::TextTrackIterator(
+    const TextTrackMap& text_track_map) :
+    iterator_(text_track_map.begin()),
+    iterator_end_(text_track_map.end()) {
+}
+
+WebMClusterParser::TextTrackIterator::TextTrackIterator(
+    const TextTrackIterator& rhs) :
+    iterator_(rhs.iterator_),
+    iterator_end_(rhs.iterator_end_) {
+}
+
+WebMClusterParser::TextTrackIterator::~TextTrackIterator() {
+}
+
+bool WebMClusterParser::TextTrackIterator::operator()(
+  int* track_num,
+  const BufferQueue** buffers) {
+  if (iterator_ == iterator_end_) {
+    *track_num = 0;
+    *buffers = NULL;
+
+    return false;
+  }
+
+  *track_num = iterator_->first;
+  *buffers = &iterator_->second.buffers();
+
+  ++iterator_;
+  return true;
+}
+
 WebMClusterParser::WebMClusterParser(
     int64 timecode_scale, int audio_track_num, int video_track_num,
+    const std::set<int>& text_tracks,
     const std::set<int64>& ignored_tracks,
     const std::string& audio_encryption_key_id,
     const std::string& video_encryption_key_id,
@@ -43,6 +76,11 @@ WebMClusterParser::WebMClusterParser(
       audio_(audio_track_num, false),
       video_(video_track_num, true),
       log_cb_(log_cb) {
+  for (std::set<int>::const_iterator it = text_tracks.begin();
+       it != text_tracks.end();
+       ++it) {
+    text_track_map_.insert(std::make_pair(*it, Track(*it, false)));
+  }
 }
 
 WebMClusterParser::~WebMClusterParser() {}
@@ -55,11 +93,13 @@ void WebMClusterParser::Reset() {
   parser_.Reset();
   audio_.Reset();
   video_.Reset();
+  ResetTextTracks();
 }
 
 int WebMClusterParser::Parse(const uint8* buf, int size) {
   audio_.Reset();
   video_.Reset();
+  ResetTextTracks();
 
   int result = parser_.Parse(buf, size);
 
@@ -88,6 +128,11 @@ int WebMClusterParser::Parse(const uint8* buf, int size) {
   }
 
   return result;
+}
+
+WebMClusterParser::TextTrackIterator
+WebMClusterParser::CreateTextTrackIterator() const {
+  return TextTrackIterator(text_track_map_);
 }
 
 WebMParserClient* WebMClusterParser::OnListStart(int id) {
@@ -219,6 +264,12 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
     encryption_key_id = video_encryption_key_id_;
   } else if (ignored_tracks_.find(track_num) != ignored_tracks_.end()) {
     return true;
+  } else if (Track* const text_track = FindTextTrack(track_num)) {
+    if (is_simple_block)  // BlockGroup is required for WebVTT cues
+      return false;
+    if (block_duration < 0)  // not specified
+      return false;
+    track = text_track;
   } else {
     MEDIA_LOG(log_cb_) << "Unexpected track number " << track_num;
     return false;
@@ -334,6 +385,24 @@ bool WebMClusterParser::Track::IsKeyframe(const uint8* data, int size) const {
     return false;
 
   return true;
+}
+
+void WebMClusterParser::ResetTextTracks() {
+  for (TextTrackMap::iterator it = text_track_map_.begin();
+       it != text_track_map_.end();
+       ++it) {
+    it->second.Reset();
+  }
+}
+
+WebMClusterParser::Track*
+WebMClusterParser::FindTextTrack(int track_num) {
+  const TextTrackMap::iterator it = text_track_map_.find(track_num);
+
+  if (it == text_track_map_.end())
+    return NULL;
+
+  return &it->second;
 }
 
 }  // namespace media

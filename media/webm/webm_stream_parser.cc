@@ -294,6 +294,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
     case kWebMIdVoid:
     case kWebMIdCRC32:
     case kWebMIdCues:
+    case kWebMIdChapters:
       if (cur_size < (result + element_size)) {
         // We don't have the whole element yet. Signal we need more data.
         return 0;
@@ -395,6 +396,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
       info_parser.timecode_scale(),
       tracks_parser.audio_track_num(),
       tracks_parser.video_track_num(),
+      tracks_parser.text_tracks(),
       tracks_parser.ignored_tracks(),
       tracks_parser.audio_encryption_key_id(),
       tracks_parser.video_encryption_key_id(),
@@ -424,7 +426,8 @@ int WebMStreamParser::ParseCluster(const uint8* data, int size) {
   if (id == kWebMIdCluster)
     waiting_for_buffers_ = true;
 
-  if (id == kWebMIdCues) {
+  // TODO(matthewjheaney): implement support for chapters
+  if (id == kWebMIdCues || id == kWebMIdChapters) {
     if (size < (result + element_size)) {
       // We don't have the whole element yet. Signal we need more data.
       return 0;

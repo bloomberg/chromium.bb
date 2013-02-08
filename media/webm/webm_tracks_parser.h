@@ -40,6 +40,10 @@ class WebMTracksParser : public WebMParserClient {
     return video_encryption_key_id_;
   }
 
+  const std::set<int>& text_tracks() const {
+    return text_tracks_;
+  }
+
  private:
   // WebMParserClient methods
   virtual WebMParserClient* OnListStart(int id) OVERRIDE;
@@ -52,9 +56,11 @@ class WebMTracksParser : public WebMParserClient {
   int64 track_type_;
   int64 track_num_;
   scoped_ptr<WebMContentEncodingsClient> track_content_encodings_client_;
+  TextKind text_track_kind_;
 
   int64 audio_track_num_;
   int64 video_track_num_;
+  std::set<int> text_tracks_;
   std::set<int64> ignored_tracks_;
   std::string audio_encryption_key_id_;
   std::string video_encryption_key_id_;

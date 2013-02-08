@@ -153,6 +153,15 @@ class MEDIA_EXPORT WebMListParser {
 int MEDIA_EXPORT WebMParseElementHeader(const uint8* buf, int size,
                                         int* id, int64* element_size);
 
+// Specifies the varieties of text tracks.
+enum TextKind {
+  kTextNone,
+  kTextSubtitles,
+  kTextCaptions,
+  kTextDescriptions,
+  kTextMetadata
+};
+
 }  // namespace media
 
 #endif  // MEDIA_WEBM_WEBM_PARSER_H_
