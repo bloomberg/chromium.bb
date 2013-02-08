@@ -29,7 +29,7 @@ GURL GetBaseWalletUrl() {
 }
 
 GURL GetBaseAutocheckoutUrl() {
-  return GetBaseWalletUrl().Resolve("wallet/autocheckout/");
+  return GetBaseWalletUrl().Resolve("wallet/autocheckout/v1/");
 }
 
 GURL GetBaseSecureUrl() {

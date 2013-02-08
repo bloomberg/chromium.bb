@@ -9,19 +9,19 @@
 namespace wallet {
 
 TEST(WalletServiceUrl, CheckDefaultUrls) {
-  ASSERT_EQ("https://wallet.google.com/online/v2/wallet/autocheckout/"
+  ASSERT_EQ("https://wallet.google.com/online/v2/wallet/autocheckout/v1/"
             "getWalletItemsJwtless",
             GetGetWalletItemsUrl().spec());
-  ASSERT_EQ("https://wallet.google.com/online/v2/wallet/autocheckout/"
+  ASSERT_EQ("https://wallet.google.com/online/v2/wallet/autocheckout/v1/"
             "getFullWalletJwtless",
             GetGetFullWalletUrl().spec());
-  ASSERT_EQ("https://wallet.google.com/online/v2/wallet/autocheckout/"
+  ASSERT_EQ("https://wallet.google.com/online/v2/wallet/autocheckout/v1/"
             "acceptLegalDocuments",
             GetAcceptLegalDocumentsUrl().spec());
-  ASSERT_EQ("https://wallet.google.com/online/v2/wallet/autocheckout/"
+  ASSERT_EQ("https://wallet.google.com/online/v2/wallet/autocheckout/v1/"
             "reportStatus",
             GetSendStatusUrl().spec());
-  ASSERT_EQ("https://wallet.google.com/online/v2/wallet/autocheckout/"
+  ASSERT_EQ("https://wallet.google.com/online/v2/wallet/autocheckout/v1/"
             "saveToWallet",
             GetSaveToWalletUrl().spec());
   ASSERT_EQ("https://wallet.google.com/online/v2/passiveauth",
