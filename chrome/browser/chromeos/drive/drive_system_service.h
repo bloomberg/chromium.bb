@@ -31,6 +31,7 @@ namespace drive {
 class DriveCache;
 class DriveDownloadHandler;
 class DriveFileSystemInterface;
+class DriveFileSystemProxy;
 class DriveWebAppsRegistry;
 class DriveSyncClient;
 class DrivePrefetcher;
@@ -141,6 +142,7 @@ class DriveSystemService : public ProfileKeyedService,
   scoped_ptr<DriveSyncClient> sync_client_;
   scoped_ptr<DrivePrefetcher> prefetcher_;
   scoped_ptr<StaleCacheFilesRemover> stale_cache_files_remover_;
+  scoped_refptr<DriveFileSystemProxy> file_system_proxy_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

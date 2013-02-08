@@ -25,6 +25,11 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // |file_system| is the DriveFileSystem instance owned by DriveSystemService.
   explicit DriveFileSystemProxy(DriveFileSystemInterface* file_system);
 
+  // Detaches this instance from |file_system_|.
+  // Method calls may result in no-op after calling this method.
+  // This method must be called on UI thread.
+  void DetachFromFileSystem();
+
   // fileapi::RemoteFileSystemProxyInterface overrides.
   virtual void GetFileInfo(
       const fileapi::FileSystemURL& url,
@@ -92,6 +97,14 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // a corresponding element within this file system.
   static bool ValidateUrl(const fileapi::FileSystemURL& url,
                           FilePath* file_path);
+
+  // Helper method to call methods of DriveFilesSystem. This method aborts
+  // method calls in case DetachFromFileSystem() has been called.
+  void CallDriveFileSystemMethodOnUIThread(const base::Closure& method_call);
+
+  // Used to implement CallDriveFileSystemMethodOnUIThread.
+  void CallDriveFileSystemMethodOnUIThreadInternal(
+      const base::Closure& method_call);
 
   // Helper callback for relaying reply for status callbacks to the
   // calling thread.
@@ -184,10 +197,6 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       base::PlatformFile* platform_file,
       base::PlatformFileError* truncate_result);
 
-  // DriveFileSystem is owned by Profile, which outlives DriveFileSystemProxy,
-  // which is owned by CrosMountPointProvider (i.e. by the time Profile is
-  // removed, the file manager is already gone). Hence it's safe to use this as
-  // a raw pointer.
   DriveFileSystemInterface* file_system_;
 };
 

@@ -257,21 +257,19 @@ void DriveSystemService::ReloadAndRemountFileSystem() {
 
 void DriveSystemService::AddDriveMountPoint() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!file_system_proxy_.get());
 
   const FilePath drive_mount_point = util::GetDriveMountPointPath();
   fileapi::ExternalMountPoints* mount_points =
       BrowserContext::GetMountPoints(profile_);
   DCHECK(mount_points);
 
-  // Create a scoped_refptr so the proxy doesn't leak if
-  // |RegisterRemoteFileSystem| fails.
-  scoped_refptr<DriveFileSystemProxy> proxy(
-      new DriveFileSystemProxy(file_system_.get()));
+  file_system_proxy_ = new DriveFileSystemProxy(file_system_.get());
 
   bool success = mount_points->RegisterRemoteFileSystem(
       drive_mount_point.BaseName().AsUTF8Unsafe(),
       fileapi::kFileSystemTypeDrive,
-      proxy,
+      file_system_proxy_,
       drive_mount_point);
 
   if (success) {
@@ -292,6 +290,10 @@ void DriveSystemService::RemoveDriveMountPoint() {
 
   mount_points->RevokeFileSystem(
       util::GetDriveMountPointPath().BaseName().AsUTF8Unsafe());
+  if (file_system_proxy_) {
+    file_system_proxy_->DetachFromFileSystem();
+    file_system_proxy_ = NULL;
+  }
   event_logger_->Log("RemoveDriveMountPoint");
 }
 
