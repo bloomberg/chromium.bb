@@ -1,8 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Unit test for SyncChannel.
 
 #include "ipc/ipc_sync_channel.h"
 
@@ -15,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/run_loop.h"
 #include "base/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
@@ -27,8 +26,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::WaitableEvent;
-using namespace IPC;
 
+namespace IPC {
 namespace {
 
 // Base class for a "process" with listener and IPC threads.
@@ -181,7 +180,7 @@ class Worker : public Listener, public Sender {
     // SyncChannel needs to be destructed on the thread that it was created on.
     channel_.reset();
 
-    MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     ipc_thread_.message_loop()->PostTask(
         FROM_HERE, base::Bind(&Worker::OnIPCThreadShutdown, this,
@@ -190,7 +189,7 @@ class Worker : public Listener, public Sender {
 
   void OnIPCThreadShutdown(WaitableEvent* listener_event,
                            WaitableEvent* ipc_event) {
-    MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     ipc_event->Signal();
 
     listener_thread_.message_loop()->PostTask(
@@ -199,7 +198,7 @@ class Worker : public Listener, public Sender {
   }
 
   void OnListenerThreadShutdown2(WaitableEvent* listener_event) {
-    MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     listener_event->Signal();
   }
 
@@ -1887,3 +1886,4 @@ TEST_F(IPCSyncChannelTest, Verified) {
 }
 
 }  // namespace
+}  // namespace IPC
