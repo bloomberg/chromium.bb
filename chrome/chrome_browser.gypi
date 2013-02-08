@@ -1616,6 +1616,8 @@
         'browser/profiles/avatar_menu_model.cc',
         'browser/profiles/avatar_menu_model.h',
         'browser/profiles/avatar_menu_model_observer.h',
+        'browser/profiles/bookmark_model_loaded_observer.cc',
+        'browser/profiles/bookmark_model_loaded_observer.h',
         'browser/profiles/chrome_version_service.cc',
         'browser/profiles/chrome_version_service.h',
         'browser/profiles/gaia_info_update_service.cc',

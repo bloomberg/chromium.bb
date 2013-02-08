@@ -17,8 +17,6 @@
 #include "base/timer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl_io_data.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/host_zoom_map.h"
 
 class NetPrefObserver;
@@ -51,8 +49,7 @@ class UserCloudPolicyManager;
 }
 
 // The default profile implementation.
-class ProfileImpl : public Profile,
-                    public content::NotificationObserver {
+class ProfileImpl : public Profile {
  public:
   // Value written to prefs when the exit type is EXIT_NORMAL. Public for tests.
   static const char* const kPrefExitTypeNormal;
@@ -152,11 +149,6 @@ class ProfileImpl : public Profile,
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
  private:
   friend class Profile;
   friend class BetterSessionRestoreCrashTest;
@@ -212,7 +204,6 @@ class ProfileImpl : public Profile,
                           FilePath* cache_path,
                           int* max_size);
 
-  content::NotificationRegistrar registrar_;
   content::HostZoomMap::ZoomLevelChangedCallback zoom_callback_;
   PrefChangeRegistrar pref_change_registrar_;
 

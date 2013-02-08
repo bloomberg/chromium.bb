@@ -14,11 +14,14 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -664,6 +667,14 @@ void ProfileManager::OnImportFinished(Profile* profile) {
   will_import_ = false;
   did_perform_profile_import = true;
   DCHECK(profile);
+
+#if !defined(OS_CHROMEOS)
+  // If the import process was not run, it means this branch was not called,
+  // and it was handled by ProfileImpl::DoFinalInit().
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
+  model->AddObserver(new BookmarkModelLoadedObserver(profile));
+#endif
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_IMPORT_FINISHED,
       content::Source<Profile>(profile),

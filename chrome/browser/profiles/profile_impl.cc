@@ -24,6 +24,8 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/background/background_mode_manager.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -55,6 +57,7 @@
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/gaia_info_update_service_factory.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -64,7 +67,6 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
@@ -445,13 +447,6 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
   UpdateProfileUserNameCache();
   GAIAInfoUpdateServiceFactory::GetForProfile(this);
 
-#if !defined(OS_CHROMEOS)
-  // Listen for bookmark model load, to bootstrap the sync service.
-  // On CrOS sync service will be initialized after sign in.
-  registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                 content::Source<Profile>(this));
-#endif
-
   PrefService* local_state = g_browser_process->local_state();
   ssl_config_service_manager_.reset(
       SSLConfigServiceManager::CreateDefaultManager(local_state, prefs));
@@ -544,6 +539,18 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
       chrome::NOTIFICATION_PROFILE_CREATED,
       content::Source<Profile>(this),
       content::NotificationService::NoDetails());
+
+#if !defined(OS_CHROMEOS)
+  // Listen for bookmark model load, to bootstrap the sync service.
+  // On CrOS sync service will be initialized after sign in.
+  if (!g_browser_process->profile_manager()->will_import()) {
+    // If |will_import()| is true we add the observer in
+    // ProfileManager::OnImportFinished().
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(this);
+    model->AddObserver(new BookmarkModelLoadedObserver(this));
+  }
+#endif
+
 }
 
 void ProfileImpl::InitHostZoomMap() {
@@ -955,21 +962,6 @@ history::TopSites* ProfileImpl::GetTopSites() {
 
 history::TopSites* ProfileImpl::GetTopSitesWithoutCreating() {
   return top_sites_;
-}
-
-void ProfileImpl::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED:
-      // Causes lazy-load if sync is enabled.
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(this);
-      registrar_.Remove(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                        content::Source<Profile>(this));
-      break;
-    default:
-      NOTREACHED();
-  }
 }
 
 void ProfileImpl::OnDefaultZoomLevelChanged() {
