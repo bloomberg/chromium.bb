@@ -5,6 +5,7 @@
 #include "content/renderer/date_time_formatter.h"
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDateTimeChooserParams.h"
 #include "third_party/icu/public/i18n/unicode/smpdtfmt.h"
@@ -52,8 +53,6 @@ DateTimeFormatter::DateTimeFormatter(
   pattern_ = type_ > 0 && type_ <= ui::TEXT_INPUT_TYPE_MAX ?
       &patterns_[type_] : &patterns_[ui::TEXT_INPUT_TYPE_NONE];
 
-  std::string patt;
-  pattern_->toUTF8String(patt);
   formatted_string_ = FormatString();
 }
 
@@ -107,7 +106,11 @@ const std::string DateTimeFormatter::FormatString() const {
     icu::SimpleDateFormat formatter(*pattern_, success);
     icu::UnicodeString formattedTime;
     formatter.format(time, formattedTime, success);
-    formattedTime.toUTF8String(result);
+    // Android WebView builds with the system ICU which is different
+    // from Chromium's ICU; as such we can't easily get a UTF8 string
+    // from formattedTime but we can go round-the-houses a bit.
+    result = UTF16ToUTF8(string16(formattedTime.getBuffer(),
+        static_cast<size_t>(formattedTime.length())));
     if (success <= U_ZERO_ERROR)
       return result;
   }
@@ -162,7 +165,7 @@ bool DateTimeFormatter::ParseValues() {
 
   UErrorCode success = U_ZERO_ERROR;
   icu::UnicodeString icu_value =
-      icu::UnicodeString::fromUTF8(formatted_string_);
+      icu::UnicodeString::fromUTF8(formatted_string_.c_str());
   if (type_ > 0 && type_ <= ui::TEXT_INPUT_TYPE_MAX) {
     const icu::UnicodeString pattern = patterns_[type_];
     icu::SimpleDateFormat formatter(pattern, success);

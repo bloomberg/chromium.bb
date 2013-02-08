@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_DATE_TIME_FORMATTER_H_
 #define CONTENT_RENDERER_DATE_TIME_FORMATTER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "third_party/icu/public/common/unicode/unistr.h"
