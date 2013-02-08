@@ -33,16 +33,12 @@ cr.define('wallpapers', function() {
       GridItem.prototype.decorate.call(this);
       // Removes garbage created by GridItem.
       this.innerText = '';
-      cr.defineProperty(this, 'active', cr.PropertyKind.BOOL_ATTR);
-      this.active = false;
       var imageEl = cr.doc.createElement('img');
       imageEl.classList.add('thumbnail');
       cr.defineProperty(imageEl, 'offline', cr.PropertyKind.BOOL_ATTR);
       imageEl.offline = this.dataItem.availableOffline;
       this.appendChild(imageEl);
-      var checkMark = cr.doc.createElement('div');
-      checkMark.classList.add('check');
-      this.appendChild(checkMark);
+
       var self = this;
       chrome.wallpaperPrivate.getThumbnail(this.dataItem.baseURL,
                                            function(data) {

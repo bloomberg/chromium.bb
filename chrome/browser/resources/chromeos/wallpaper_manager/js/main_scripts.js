@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@
 //<include src="../../../../../../ui/webui/resources/js/cr/ui/list_selection_controller.js"/>
 //<include src="../../../../../../ui/webui/resources/js/cr/ui/list.js"/>
 //<include src="../../../../../../ui/webui/resources/js/cr/ui/grid.js"/>
-//<include src="butter_bar.js"/>
+//<include src="progress_manager.js"/>
 //<include src="wallpaper_images_grid.js"/>
 //<include src="wallpaper_manager.js"/>
 //<include src="main.js"/>

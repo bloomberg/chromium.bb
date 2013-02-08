@@ -29,7 +29,7 @@ found in the LICENSE file.
     <script src="../../../../../ui/webui/resources/js/cr/ui/list_selection_controller.js"></script>
     <script src="../../../../../ui/webui/resources/js/cr/ui/list.js"></script>
     <script src="../../../../../ui/webui/resources/js/cr/ui/grid.js"></script>
-    <script src="js/butter_bar.js"></script>
+    <script src="js/progress_manager.js"></script>
     <script src="js/wallpaper_images_grid.js"></script>
     <script src="js/wallpaper_manager.js"></script>
     <script src="js/main.js"></script>
@@ -44,11 +44,14 @@ found in the LICENSE file.
         <div id="bar"></div>
       </div>
       <div class="spacer"></div>
-      <img id="close" src="images/ui/close-white.png">
+      <div id="close"></div>
     </div>
     <div class="dialog-main">
       <div id="category-container">
         <grid id="wallpaper-grid" class="image-picker"></grid>
+        <div class="progress-bar" hidden>
+          <div class="progress-track"></div>
+        </div>
         <div class="bottom-bar">
           <img id="attribute-image" hidden>
           <div id="wallpaper-attribute" hidden>
@@ -78,20 +81,6 @@ found in the LICENSE file.
         <div i18n-content="previewLabel"></div>
         <img id="preview">
       </div>
-    </div>
-  </div>
-  <div id="butter-bar-container">
-    <div id="butter-bar">
-      <div class="content">
-        <div>
-          <span class="butter-message"></span>
-          <a class="learn-more" i18n-content="learnMore" target="_blank"></a>
-        </div>
-        <div class="progress-bar" hidden>
-          <div class="progress-track"></div>
-        </div>
-      </div>
-      <div class="actions" hidden></div>
     </div>
   </div>
 </body>

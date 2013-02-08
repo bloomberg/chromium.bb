@@ -18,10 +18,12 @@ function WallpaperManager(dialogDom) {
   this.storage_ = chrome.storage.local;
   this.document_ = dialogDom.ownerDocument;
   this.selectedCategory = null;
-  this.butterBar_ = new ButterBar(this.dialogDom_);
+  this.progressManager_ = new ProgressManager();
   this.customWallpaperData_ = null;
   this.currentWallpaper_ = null;
   this.wallpaperRequest_ = null;
+  this.checkmark_ = cr.doc.createElement('div');
+  this.checkmark_.classList.add('check');
   this.fetchManifest_();
 }
 
@@ -167,8 +169,8 @@ function WallpaperManager(dialogDom) {
     var self = this;
     this.storage_.get(AccessManifestKey, function(items) {
       self.manifest_ = items[AccessManifestKey] ? items[AccessManifestKey] : {};
-      self.butterBar_.showError_(str('connectionFailed'),
-                                 {help_url: LEARN_MORE_URL});
+      // TODO(bshe): Add error message back once we decide how to show error
+      // message in the new UI. http://crbug.com/162563
       self.initDom_();
       $('wallpaper-grid').classList.add('image-picker-offline');
     });
@@ -295,6 +297,7 @@ function WallpaperManager(dialogDom) {
     if (selectedItem && selectedItem.dynamicURL &&
         !this.wallpaperGrid_.inProgramSelection) {
       var wallpaperURL = selectedItem.baseURL + HighResolutionSuffix;
+      var selectedGridItem = this.wallpaperGrid_.getListItem(selectedItem);
       var self = this;
 
       chrome.wallpaperPrivate.setWallpaperIfExist(wallpaperURL,
@@ -302,7 +305,7 @@ function WallpaperManager(dialogDom) {
                                                   function() {
         if (chrome.runtime.lastError == undefined) {
           self.currentWallpaper_ = wallpaperURL;
-          self.setActiveThumb(selectedItem);
+          self.setActiveThumb(selectedGridItem);
           return;
         }
 
@@ -313,20 +316,20 @@ function WallpaperManager(dialogDom) {
         self.wallpaperRequest_ = new XMLHttpRequest();
         self.wallpaperRequest_.open('GET', wallpaperURL, true);
         self.wallpaperRequest_.responseType = 'arraybuffer';
+        self.progressManager_.reset(self.wallpaperRequest_, selectedGridItem);
         self.wallpaperRequest_.send(null);
-        self.butterBar_.setRequest(self.wallpaperRequest_);
         self.wallpaperRequest_.addEventListener('load', function(e) {
           if (self.wallpaperRequest_.status === 200) {
             var image = self.wallpaperRequest_.response;
-            chrome.wallpaperPrivate.setWallpaper(image,
-                                                 selectedItem.layout,
-                                                 wallpaperURL,
-                                                 self.onFinished_.bind(self));
+            chrome.wallpaperPrivate.setWallpaper(
+                image,
+                selectedItem.layout,
+                wallpaperURL,
+                self.onFinished_.bind(self, selectedGridItem));
             self.currentWallpaper_ = wallpaperURL;
-            self.setActiveThumb(selectedItem);
           } else {
-            self.butterBar_.showError_(str('downloadFailed'),
-                                       {help_url: LEARN_MORE_URL});
+            // TODO(bshe): Add error message back once we decide how to show
+            // error message in the new UI. http://crbug.com/162563
           }
           self.wallpaperRequest_ = null;
         });
@@ -439,16 +442,16 @@ function WallpaperManager(dialogDom) {
       console.error('More than one files are selected or no file selected');
     var file = files[0];
     if (!file.type.match('image/jpeg')) {
-      this.butterBar_.showError_(str('invalidWallpaper'),
-                                 {help_url: LEARN_MORE_URL});
+      // TODO(bshe): Add error message back once we decide how to show error
+      // message in the new UI. http://crbug.com/162563
       return;
     }
     var reader = new FileReader();
     reader.readAsArrayBuffer(files[0]);
     var self = this;
     reader.addEventListener('error', function(e) {
-      this.butterBar_.showError_(str('accessFileFailure'),
-                                 {help_url: LEARN_MORE_URL});
+      // TODO(bshe): Add error message back once we decide how to show error
+      // message in the new UI. http://crbug.com/162563
     });
     reader.addEventListener('load', function(e) {
       self.customWallpaperData_ = e.target.result;
@@ -473,13 +476,18 @@ function WallpaperManager(dialogDom) {
 
   /**
    * Sets wallpaper finished. Displays error message in butter bar if any.
+   * @param {WallpaperThumbnailsGridItem=} opt_selectedGridItem The wallpaper
+   *     thumbnail grid item. It extends from cr.ui.ListItem.
    */
-  WallpaperManager.prototype.onFinished_ = function() {
+  WallpaperManager.prototype.onFinished_ = function(opt_selectedGridItem) {
+    if (opt_selectedGridItem)
+      this.progressManager_.hideProgressBar(opt_selectedGridItem);
+
     if (chrome.runtime.lastError != undefined) {
-      this.butterBar_.showError_(chrome.runtime.lastError.message,
-                                 {help_url: LEARN_MORE_URL});
-    } else {
-      this.butterBar_.hide_();
+      // TODO(bshe): Add error message back once we decide how to show error
+      // message in the new UI. http://crbug.com/162563
+    } else if (opt_selectedGridItem) {
+      this.setActiveThumb(opt_selectedGridItem);
     }
   };
 
@@ -563,7 +571,7 @@ function WallpaperManager(dialogDom) {
       }
       this.wallpaperGrid_.dataModel = wallpapersDataModel;
       this.wallpaperGrid_.selectedItem = selectedItem;
-      this.setActiveThumb(selectedItem);
+      this.setActiveThumb(this.wallpaperGrid_.getListItem(selectedItem));
     }
   };
 
@@ -571,19 +579,16 @@ function WallpaperManager(dialogDom) {
    * Shows a checkmark on the active thumbnail and clears previous active one if
    * any. Note if wallpaper was not set successfully, checkmark should not show
    * on that thumbnail.
-   * @param {{baseURL: string, dynamicURL: string, layout: string,
-   *          author: string, authorWebsite: string, availableOffline: boolean}}
-   *     activeItem the wallpaper item to active (show checkmark).
+   * @param {WallpaperThumbnailsGridItem} selectedGridItem The wallpaper
+   *     thumbnail grid item. It extends from cr.ui.ListItem.
    */
-  WallpaperManager.prototype.setActiveThumb = function(activeItem) {
-    var activeThumb = $('wallpaper-grid').getListItem(activeItem);
-    if (!activeThumb)
+  WallpaperManager.prototype.setActiveThumb = function(selectedGridItem) {
+    if (!selectedGridItem)
       return;
     // Clears previous checkmark.
-    var previousActiveThumb = $('wallpaper-grid').querySelector('[active]');
-    if (previousActiveThumb)
-      previousActiveThumb.active = false;
-    activeThumb.active = true;
+    if (this.checkmark_.parentNode)
+      this.checkmark_.parentNode.removeChild(this.checkmark_);
+    selectedGridItem.appendChild(this.checkmark_);
   };
 
 })();
