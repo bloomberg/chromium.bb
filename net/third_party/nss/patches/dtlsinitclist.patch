@@ -1,0 +1,16 @@
+Index: mozilla/security/nss/lib/ssl/sslsock.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/lib/ssl/sslsock.c,v
+retrieving revision 1.98
+retrieving revision 1.99
+diff -p -u -r1.98 -r1.99
+--- mozilla/security/nss/lib/ssl/sslsock.c	14 Nov 2012 01:14:12 -0000	1.98
++++ mozilla/security/nss/lib/ssl/sslsock.c	20 Dec 2012 20:29:36 -0000	1.99
+@@ -2904,6 +2904,7 @@ ssl_NewSocket(PRBool makeLocks, SSLProto
+ 	ssl_ChooseOps(ss);
+ 	ssl2_InitSocketPolicy(ss);
+ 	ssl3_InitSocketPolicy(ss);
++	PR_INIT_CLIST(&ss->ssl3.hs.lastMessageFlight);
+ 
+ 	if (makeLocks) {
+ 	    status = ssl_MakeLocks(ss);

@@ -88,6 +88,10 @@ Patches:
     patches/cbc.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=822365
 
+  * Fix a crash in dtls_FreeHandshakeMessages.
+    patches/dtlsinitclist.patch
+    https://bugzilla.mozilla.org/show_bug.cgi?id=822433 (fixed in NSS 3.14.2)
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 
