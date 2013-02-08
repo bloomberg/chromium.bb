@@ -22,8 +22,6 @@ using content::BrowserThread;
 
 namespace chromeos {
 
-typedef base::SequencedWorkerPool::SequenceToken SequenceToken;
-
 UserImageLoader::ImageInfo::ImageInfo(int size,
                                       const LoadedCallback& loaded_cb)
     : size(size),
@@ -44,13 +42,21 @@ UserImageLoader::~UserImageLoader() {
 void UserImageLoader::Start(const std::string& filepath,
                             int size,
                             const LoadedCallback& loaded_cb) {
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  SequenceToken sequence_token = pool->GetSequenceToken();
+  Start(filepath, size, sequence_token, loaded_cb);
+}
+
+void UserImageLoader::Start(const std::string& filepath,
+                            int size,
+                            const SequenceToken& token,
+                            const LoadedCallback& loaded_cb) {
   target_message_loop_ = MessageLoop::current();
 
   ImageInfo image_info(size, loaded_cb);
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-  SequenceToken sequence_token = pool->GetSequenceToken();
   scoped_refptr<base::SequencedTaskRunner> task_runner = pool->
-      GetSequencedTaskRunnerWithShutdownBehavior(sequence_token,
+      GetSequencedTaskRunnerWithShutdownBehavior(token,
           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
   task_runner->PostTask(
       FROM_HERE,

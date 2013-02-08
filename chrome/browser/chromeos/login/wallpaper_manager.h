@@ -51,8 +51,16 @@ class UserImage;
 extern const char kWallpaperSequenceTokenName[];
 
 // File path suffices of resized small or large wallpaper.
+// TODO(bshe): Use the same sub folder system as custom wallpapers use.
+// crbug.com/174928
 extern const char kSmallWallpaperSuffix[];
 extern const char kLargeWallpaperSuffix[];
+
+// Directory names of custom wallpapers.
+extern const char kSmallWallpaperSubDir[];
+extern const char kLargeWallpaperSubDir[];
+extern const char kOriginalWallpaperSubDir[];
+extern const char kThumbnailWallpaperSubDir[];
 
 // This class maintains wallpapers for users who have logged into this Chrome
 // OS device.
@@ -82,6 +90,12 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Clears ONLINE and CUSTOM wallpaper cache.
   void ClearWallpaperCache();
 
+  // Returns custom wallpaper path. Append |sub_dir|, |email| and |file| to
+  // custom wallpaper directory.
+  FilePath GetCustomWallpaperPath(const char* sub_dir,
+                                  const std::string& email,
+                                  const std::string& file);
+
   // Gets encoded wallpaper from cache. Returns true if success.
   bool GetWallpaperFromCache(const std::string& email,
                              gfx::ImageSkia* wallpaper);
@@ -92,6 +106,8 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Returns small resolution custom wallpaper filepath for the given user when
   // |is_small| is ture. Otherwise, returns large resolution custom wallpaper
   // path.
+  // TODO(bshe): Remove this function when all custom wallpapers moved to the
+  // new direcotry. crbug.com/174925
   FilePath GetWallpaperPathForUser(const std::string& username,
                                    bool is_small);
 
@@ -194,6 +210,17 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Deletes all |email| related custom or converted wallpapers.
   void DeleteUserWallpapers(const std::string& email);
 
+  // Creates all new custom wallpaper directories for |email| if not exist.
+  void EnsureCustomWallpaperDirectories(const std::string& email);
+
+  // Loads custom wallpaper from old places and triggers move all custom
+  // wallpapers to new places.
+  // TODO(bshe): Remove this function when all custom wallpapers moved to the
+  // new direcotry. crbug.com/174925
+  void FallbackToOldCustomWallpaper(const std::string& email,
+                                    const WallpaperInfo& info,
+                                    bool update_wallpaper);
+
   // Initialize wallpaper of registered device after device policy is trusted.
   // Note that before device is enrolled, it proceeds with untrusted setting.
   void InitializeRegisteredDeviceWallpaper();
@@ -203,6 +230,28 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   void LoadWallpaper(const std::string& email,
                      const WallpaperInfo& info,
                      bool update_wallpaper);
+
+  // Gets UserList and starts MoveCustomWallpapersOnWorker().
+  // Must be called on UI thread.
+  // TODO(bshe): Remove this function when all custom wallpapers moved to the
+  // new direcotry. crbug.com/174925
+  void MoveCustomWallpapers();
+
+  // Move old custom wallpapers to new places for |users|.
+  // Must execute on wallpaper sequenced worker thread.
+  // TODO(bshe): Remove this function when all custom wallpapers moved to the
+  // new direcotry. crbug.com/174925
+  void MoveCustomWallpapersOnWorker(const UserList& users);
+
+  // Gets |email|'s custom wallpaper at |wallpaper_path|. Falls back on original
+  // custom wallpaper. When |update_wallpaper| is true, sets wallpaper to the
+  // loaded wallpaper. Must run on wallpaper sequenced worker thread.
+  // TODO(bshe): Remove this function when all custom wallpapers moved to the
+  // new direcotry. crbug.com/174925
+  void GetCustomWallpaperInternalOld(const std::string& email,
+                                     const WallpaperInfo& info,
+                                     const FilePath& wallpaper_path,
+                                     bool update_wallpaper);
 
   // Gets |email|'s custom wallpaper at |wallpaper_path|. Falls back on original
   // custom wallpaper. When |update_wallpaper| is true, sets wallpaper to the

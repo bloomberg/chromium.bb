@@ -100,6 +100,8 @@ enum {
                                 // wallpapers reside.
   DIR_CHROMEOS_WALLPAPER_THUMBNAILS,  // Directory where downloaded chromeos
                                       // wallpaper thumbnails reside.
+  DIR_CHROMEOS_CUSTOM_WALLPAPERS,     // Directory where custom wallpapers
+                                      // reside.
   FILE_DEFAULT_APP_ORDER,       // Full path to the json file that defines the
                                 // default app order.
 #endif

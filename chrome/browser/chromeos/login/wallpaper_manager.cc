@@ -78,6 +78,16 @@ int RoundPositive(double x) {
   return static_cast<int>(floor(x + 0.5));
 }
 
+// Returns custom wallpaper directory by appending |sub_dir| and |email| as sub
+// directories.
+FilePath GetCustomWallpaperDir(const char* sub_dir, const std::string& email) {
+  FilePath custom_wallpaper_dir;
+  CHECK(PathService::Get(chrome::DIR_CHROMEOS_CUSTOM_WALLPAPERS,
+                         &custom_wallpaper_dir));
+  return custom_wallpaper_dir.Append(sub_dir).Append(email);
+}
+
+
 }  // namespace
 
 namespace chromeos {
@@ -86,6 +96,11 @@ const char kWallpaperSequenceTokenName[] = "wallpaper-sequence";
 
 const char kSmallWallpaperSuffix[] = "_small";
 const char kLargeWallpaperSuffix[] = "_large";
+
+const char kSmallWallpaperSubDir[] = "small";
+const char kLargeWallpaperSubDir[] = "large";
+const char kOriginalWallpaperSubDir[] = "original";
+const char kThumbnailWallpaperSubDir[] = "thumb";
 
 static WallpaperManager* g_wallpaper_manager = NULL;
 
@@ -175,6 +190,13 @@ void WallpaperManager::ClearWallpaperCache() {
   // Cancel callback for previous cache requests.
   weak_factory_.InvalidateWeakPtrs();
   wallpaper_cache_.clear();
+}
+
+FilePath WallpaperManager::GetCustomWallpaperPath(const char* sub_dir,
+                                                  const std::string& email,
+                                                  const std::string& file) {
+  FilePath custom_wallpaper_path = GetCustomWallpaperDir(sub_dir, email);
+  return custom_wallpaper_path.Append(file);
 }
 
 bool WallpaperManager::GetWallpaperFromCache(const std::string& email,
@@ -396,8 +418,10 @@ void WallpaperManager::SetCustomWallpaper(const std::string& username,
     const UserImage& wallpaper) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  std::string wallpaper_path =
-      GetOriginalWallpaperPathForUser(username).value();
+  std::string file = base::Int64ToString(base::Time::Now().ToInternalValue());
+  FilePath wallpaper_path = GetCustomWallpaperPath(kOriginalWallpaperSubDir,
+                                                   username,
+                                                   file);
 
   // If decoded wallpaper is empty, we are probably failed to decode the file.
   // Use default wallpaper in this case.
@@ -413,7 +437,7 @@ void WallpaperManager::SetCustomWallpaper(const std::string& username,
   scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.image().DeepCopy());
 
   WallpaperInfo wallpaper_info = {
-      wallpaper_path,
+      wallpaper_path.value(),
       layout,
       type,
       // Date field is not used.
@@ -438,10 +462,9 @@ void WallpaperManager::SetCustomWallpaper(const std::string& username,
       SetCustomWallpaper(wallpaper.image(), layout);
 
   // User's custom wallpaper path is determined by username/email and the
-  // appropriate wallpaper resolution in GetCustomWallpaperInternal. So use
-  // DUMMY as file name here.
+  // appropriate wallpaper resolution in GetCustomWallpaperInternal.
   WallpaperInfo info = {
-      "DUMMY",
+      file,
       layout,
       User::CUSTOMIZED,
       base::Time::Now().LocalMidnight()
@@ -537,8 +560,10 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
       if (info.type == User::CUSTOMIZED) {
         ash::WallpaperResolution resolution = ash::Shell::GetInstance()->
             desktop_background_controller()->GetAppropriateResolution();
-        bool is_small  = (resolution == ash::WALLPAPER_RESOLUTION_SMALL);
-        FilePath wallpaper_path = GetWallpaperPathForUser(email, is_small);
+        const char* sub_dir = (resolution == ash::WALLPAPER_RESOLUTION_SMALL) ?
+            kSmallWallpaperSubDir : kLargeWallpaperSubDir;
+        FilePath wallpaper_path = GetCustomWallpaperPath(sub_dir, email,
+                                                         info.file);
         if (current_wallpaper_path_ == wallpaper_path)
           return;
         current_wallpaper_path_ = wallpaper_path;
@@ -612,8 +637,10 @@ void WallpaperManager::CacheUserWallpaper(const std::string& email) {
     if (info.type == User::CUSTOMIZED) {
       ash::WallpaperResolution resolution = ash::Shell::GetInstance()->
           desktop_background_controller()->GetAppropriateResolution();
-      bool is_small  = (resolution == ash::WALLPAPER_RESOLUTION_SMALL);
-      FilePath wallpaper_path = GetWallpaperPathForUser(email, is_small);
+      const char* sub_dir  = (resolution == ash::WALLPAPER_RESOLUTION_SMALL) ?
+            kSmallWallpaperSubDir : kLargeWallpaperSubDir;
+      FilePath wallpaper_path = GetCustomWallpaperPath(sub_dir, email,
+                                                       info.file);
       task_runner_->PostTask(FROM_HERE,
           base::Bind(&WallpaperManager::GetCustomWallpaperInternal,
                      base::Unretained(this), email, info, wallpaper_path,
@@ -638,13 +665,12 @@ void WallpaperManager::DeleteWallpaperInList(
   for (std::vector<FilePath>::const_iterator it = file_list.begin();
        it != file_list.end(); ++it) {
     FilePath path = *it;
-    if (!file_util::Delete(path, false)) {
-      LOG(ERROR) << "Failed to remove user wallpaper.";
+    // Some users may still have legacy wallpapers with png extension. We need
+    // to delete these wallpapers too.
+    if (!file_util::Delete(path, true) &&
+        !file_util::Delete(path.AddExtension(".png"), false)) {
+      LOG(ERROR) << "Failed to remove user wallpaper at " << path.value();
     }
-
-    // Some users may still have wallpapers with a file extension. This will
-    // delete those legacy wallpapers.
-    file_util::Delete(path.AddExtension(".png"), false);
   }
 }
 
@@ -653,13 +679,23 @@ void WallpaperManager::DeleteUserWallpapers(const std::string& email) {
   // Remove small user wallpaper.
   FilePath wallpaper_path = GetWallpaperPathForUser(email, true);
   file_to_remove.push_back(wallpaper_path);
+  wallpaper_path = GetCustomWallpaperDir(kSmallWallpaperSubDir, email);
+  file_to_remove.push_back(wallpaper_path);
 
   // Remove large user wallpaper.
   wallpaper_path = GetWallpaperPathForUser(email, false);
   file_to_remove.push_back(wallpaper_path);
+  wallpaper_path = GetCustomWallpaperDir(kLargeWallpaperSubDir, email);
+  file_to_remove.push_back(wallpaper_path);
+
+  // Remove user wallpaper thumbnail.
+  wallpaper_path = GetCustomWallpaperDir(kThumbnailWallpaperSubDir, email);
+  file_to_remove.push_back(wallpaper_path);
 
   // Remove original user wallpaper.
   wallpaper_path = GetOriginalWallpaperPathForUser(email);
+  file_to_remove.push_back(wallpaper_path);
+  wallpaper_path = GetCustomWallpaperDir(kOriginalWallpaperSubDir, email);
   file_to_remove.push_back(wallpaper_path);
 
   base::WorkerPool::PostTask(
@@ -668,6 +704,37 @@ void WallpaperManager::DeleteUserWallpapers(const std::string& email) {
                  base::Unretained(this),
                  file_to_remove),
       false);
+}
+
+void WallpaperManager::EnsureCustomWallpaperDirectories(
+    const std::string& email) {
+  FilePath dir;
+  dir = GetCustomWallpaperDir(kSmallWallpaperSubDir, email);
+  if (!file_util::PathExists(dir))
+    file_util::CreateDirectory(dir);
+  dir = GetCustomWallpaperDir(kLargeWallpaperSubDir, email);
+  if (!file_util::PathExists(dir))
+    file_util::CreateDirectory(dir);
+  dir = GetCustomWallpaperDir(kOriginalWallpaperSubDir, email);
+  if (!file_util::PathExists(dir))
+    file_util::CreateDirectory(dir);
+  dir = GetCustomWallpaperDir(kThumbnailWallpaperSubDir, email);
+  if (!file_util::PathExists(dir))
+    file_util::CreateDirectory(dir);
+}
+
+void WallpaperManager::FallbackToOldCustomWallpaper(const std::string& email,
+                                                    const WallpaperInfo& info,
+                                                    bool update_wallpaper){
+  ash::WallpaperResolution resolution = ash::Shell::GetInstance()->
+      desktop_background_controller()->GetAppropriateResolution();
+  bool is_small  = resolution == ash::WALLPAPER_RESOLUTION_SMALL;
+  FilePath wallpaper_path = GetWallpaperPathForUser(email, is_small);
+
+  task_runner_->PostTask(FROM_HERE,
+      base::Bind(&WallpaperManager::GetCustomWallpaperInternalOld,
+                 base::Unretained(this), email, info, wallpaper_path,
+                 true /* update wallpaper */));
 }
 
 void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
@@ -737,6 +804,53 @@ void WallpaperManager::LoadWallpaper(const std::string& email,
   }
 }
 
+void WallpaperManager::MoveCustomWallpapers() {
+  UserList users = UserManager::Get()->GetUsers();
+  if (!users.empty()) {
+    task_runner_->PostTask(FROM_HERE,
+        base::Bind(&WallpaperManager::MoveCustomWallpapersOnWorker,
+                  base::Unretained(this), users));
+  }
+}
+
+void WallpaperManager::MoveCustomWallpapersOnWorker(const UserList& users) {
+  DCHECK(BrowserThread::GetBlockingPool()->
+      IsRunningSequenceOnCurrentThread(sequence_token_));
+
+  FilePath from_path;
+  FilePath to_path;
+  // Move old custom wallpapers to new place for all existing users.
+  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+    std::string email = (*it)->email();
+    EnsureCustomWallpaperDirectories(email);
+    from_path = GetWallpaperPathForUser(email, true);
+    // Old wallpaper with extension name may still exist.
+    if (!file_util::PathExists(from_path))
+      from_path = from_path.AddExtension(".png");
+    if (file_util::PathExists(from_path)) {
+      // Appends DUMMY to the file name of moved custom wallpaper. This way we
+      // do not need to update WallpaperInfo for user.
+      to_path = GetCustomWallpaperPath(kSmallWallpaperSubDir, email, "DUMMY");
+      file_util::Move(from_path, to_path);
+    }
+    from_path = GetWallpaperPathForUser(email, false);
+    if (!file_util::PathExists(from_path))
+      from_path = from_path.AddExtension(".png");
+    if (file_util::PathExists(from_path)) {
+      to_path = GetCustomWallpaperPath(kLargeWallpaperSubDir, email, "DUMMY");
+      file_util::Move(from_path, to_path);
+    }
+    from_path = GetOriginalWallpaperPathForUser(email);
+    if (!file_util::PathExists(from_path))
+      from_path = from_path.AddExtension(".png");
+    if (file_util::PathExists(from_path)) {
+      to_path = GetCustomWallpaperPath(kOriginalWallpaperSubDir, email,
+                                       "DUMMY");
+      file_util::Move(from_path, to_path);
+    }
+  }
+}
+
 bool WallpaperManager::GetUserWallpaperInfo(const std::string& email,
                                             WallpaperInfo* info){
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -778,7 +892,7 @@ bool WallpaperManager::GetUserWallpaperInfo(const std::string& email,
   return false;
 }
 
-void WallpaperManager::GetCustomWallpaperInternal(
+void WallpaperManager::GetCustomWallpaperInternalOld(
     const std::string& email,
     const WallpaperInfo& info,
     const FilePath& wallpaper_path,
@@ -806,6 +920,48 @@ void WallpaperManager::GetCustomWallpaperInternal(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&WallpaperManager::StartLoad, base::Unretained(this), email,
                  info, update_wallpaper, valid_path));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&WallpaperManager::MoveCustomWallpapers,
+                 base::Unretained(this)));
+}
+
+void WallpaperManager::GetCustomWallpaperInternal(
+    const std::string& email,
+    const WallpaperInfo& info,
+    const FilePath& wallpaper_path,
+    bool update_wallpaper) {
+  DCHECK(BrowserThread::GetBlockingPool()->
+      IsRunningSequenceOnCurrentThread(sequence_token_));
+
+  FilePath valid_path = wallpaper_path;
+  if (!file_util::PathExists(wallpaper_path)) {
+    // Falls back on original file if the correct resoltuion file does not
+    // exist. This may happen when the original custom wallpaper is small or
+    // browser shutdown before resized wallpaper saved.
+    valid_path = GetCustomWallpaperPath(kOriginalWallpaperSubDir, email,
+                                        info.file);
+  }
+
+  if (!file_util::PathExists(valid_path)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&WallpaperManager::FallbackToOldCustomWallpaper,
+                   base::Unretained(this),
+                   email,
+                   info,
+                   update_wallpaper));
+  } else {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&WallpaperManager::StartLoad,
+                                       base::Unretained(this),
+                                       email,
+                                       info,
+                                       update_wallpaper,
+                                       valid_path));
+  }
 }
 
 void WallpaperManager::OnWallpaperDecoded(const std::string& email,
@@ -855,21 +1011,28 @@ void WallpaperManager::ProcessCustomWallpaper(
 }
 
 void WallpaperManager::SaveCustomWallpaper(const std::string& email,
-                                           const FilePath& path,
+                                           const FilePath& original_path,
                                            ash::WallpaperLayout layout,
                                            const UserImage& wallpaper) {
-  FilePath small_wallpaper_path = GetWallpaperPathForUser(email, true);
-  // Delete previous saved wallpapers.
-  if (file_util::PathExists(small_wallpaper_path))
-    file_util::Delete(small_wallpaper_path, false);
-  FilePath large_wallpaper_path = GetWallpaperPathForUser(email, false);
-  if (file_util::PathExists(large_wallpaper_path))
-    file_util::Delete(large_wallpaper_path, false);
+  DCHECK(BrowserThread::GetBlockingPool()->
+      IsRunningSequenceOnCurrentThread(sequence_token_));
+  EnsureCustomWallpaperDirectories(email);
+  std::string file_name = original_path.BaseName().value();
+  FilePath small_wallpaper_path = GetCustomWallpaperPath(kSmallWallpaperSubDir,
+                                                         email,
+                                                         file_name);
+  FilePath large_wallpaper_path = GetCustomWallpaperPath(kLargeWallpaperSubDir,
+                                                         email,
+                                                         file_name);
+  FilePath thumbnail_path = GetCustomWallpaperPath(kThumbnailWallpaperSubDir,
+                                                   email,
+                                                   file_name);
 
   std::vector<unsigned char> image_data = wallpaper.raw_image();
   // Saves the original file in case that resized wallpaper is not generated
   // (i.e. chrome shutdown before resized wallpaper is saved).
-  SaveWallpaperInternal(path, reinterpret_cast<char*>(&*image_data.begin()),
+  SaveWallpaperInternal(original_path,
+                        reinterpret_cast<char*>(&*image_data.begin()),
                         image_data.size());
 
   ResizeAndSaveWallpaper(wallpaper, small_wallpaper_path, layout,
@@ -878,6 +1041,10 @@ void WallpaperManager::SaveCustomWallpaper(const std::string& email,
   ResizeAndSaveWallpaper(wallpaper, large_wallpaper_path, layout,
                          ash::kLargeWallpaperMaxWidth,
                          ash::kLargeWallpaperMaxHeight);
+  ResizeAndSaveWallpaper(wallpaper, thumbnail_path,
+                         ash::WALLPAPER_LAYOUT_STRETCH,
+                         ash::kWallpaperThumbnailWidth,
+                         ash::kWallpaperThumbnailHeight);
 }
 
 void WallpaperManager::RecordUma(User::WallpaperType type, int index) {
@@ -898,7 +1065,9 @@ void WallpaperManager::StartLoad(const std::string& email,
                                  const FilePath& wallpaper_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  wallpaper_loader_->Start(wallpaper_path.value(), 0,
+  // All wallpaper related operation should run on the same thread. So we pass
+  // |sequence_token_| here.
+  wallpaper_loader_->Start(wallpaper_path.value(), 0, sequence_token_,
                            base::Bind(&WallpaperManager::OnWallpaperDecoded,
                                       base::Unretained(this),
                                       email,

@@ -57,6 +57,10 @@ ASH_EXPORT extern const int kSmallWallpaperMaxHeight;
 ASH_EXPORT extern const int kLargeWallpaperMaxWidth;
 ASH_EXPORT extern const int kLargeWallpaperMaxHeight;
 
+// The width and heigh of wallpaper thumbnails.
+ASH_EXPORT extern const int kWallpaperThumbnailWidth;
+ASH_EXPORT extern const int kWallpaperThumbnailHeight;
+
 class DesktopBackgroundControllerObserver;
 
 // Loads selected desktop wallpaper from file system asynchronously and updates

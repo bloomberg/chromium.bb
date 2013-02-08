@@ -20,6 +20,8 @@ class SkBitmap;
 
 namespace chromeos {
 
+typedef base::SequencedWorkerPool::SequenceToken SequenceToken;
+
 class UserImage;
 
 // A facility to read a file containing user image asynchronously in the IO
@@ -37,6 +39,14 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
   // If |size| is positive, image is cropped and (if needed) downsized to
   // |size|x|size| pixels.
   void Start(const std::string& filepath, int size,
+             const LoadedCallback& loaded_cb);
+
+  // Start reading the image from |filepath| on a worker thread associated with
+  // |token|. Calls |loaded_cb| when image has been successfully loaded.
+  // If |size| is positive, image is cropped and (if needed) downsized to
+  // |size|x|size| pixels.
+  void Start(const std::string& filepath, int size,
+             const SequenceToken& token,
              const LoadedCallback& loaded_cb);
 
  private:

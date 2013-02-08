@@ -66,6 +66,8 @@ const int kSmallWallpaperMaxWidth = 1366;
 const int kSmallWallpaperMaxHeight = 800;
 const int kLargeWallpaperMaxWidth = 2560;
 const int kLargeWallpaperMaxHeight = 1700;
+const int kWallpaperThumbnailWidth = 108;
+const int kWallpaperThumbnailHeight = 68;
 
 // Stores the current wallpaper data.
 struct DesktopBackgroundController::WallpaperData {
