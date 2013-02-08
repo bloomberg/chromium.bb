@@ -138,6 +138,8 @@
               'AdditionalManifestFiles': '$(ProjectDir)\\installer\\mini_installer\\mini_installer.exe.manifest',
             },
           },
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
         },
         {
           'target_name': 'installer_util_strings',
