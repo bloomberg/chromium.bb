@@ -51,9 +51,6 @@
 
 crbug.com/170082 platform/chromium/virtual/gpu/fast/canvas/canvas-imageSmoothingEnabled-patterns.html [ ImageOnlyFailure ]
 
-# Needs rebaseline due to minor pixel differences.
-webkit.org/b/104289 css3/filters/effect-reference-ordering-hw.html [ ImageOnlyFailure ]
-
 # These images were fixed in r7653 (https://codereview.appspot.com/7310059) 
 # which fixed a gradient bug.
 crbug.com/175123 svg/dynamic-updates/SVGLinearGradientElement-dom-y1-attr.html [ ImageOnlyFailure ]
