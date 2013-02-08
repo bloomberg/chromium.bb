@@ -1737,6 +1737,9 @@ bool SpdyFramer::IncrementallyDecompressControlFrameHeaderData(
     bool input_exhausted = ((rv == Z_BUF_ERROR) && (decomp->avail_in == 0));
     if ((rv == Z_OK) || input_exhausted) {
       size_t decompressed_len = arraysize(buffer) - decomp->avail_out;
+      if (debug_visitor_ != NULL) {
+        debug_visitor_->OnDecompressedHeaderBlock(decompressed_len, len);
+      }
       if (decompressed_len > 0) {
         processed_successfully = visitor_->OnControlFrameHeaderData(
             stream_id, buffer, decompressed_len);

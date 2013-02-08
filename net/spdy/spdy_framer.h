@@ -228,6 +228,16 @@ class SpdyFramerDebugVisitorInterface {
   // Provides uncompressed and compressed sizes.
   virtual void OnCompressedHeaderBlock(size_t uncompressed_len,
                                        size_t compressed_len) {}
+
+  // Called when decompressing header blocks.
+  // Provides uncompressed and compressed sizes.
+  // Called once per incremental decompression. That is to say, if a header
+  // block is decompressed in four chunks, this will result in four calls to
+  // OnDecompressedHeaderBlock() interleaved with four calls to
+  // OnControlFrameHeaderData(). Note that uncompressed_len may be 0 in some
+  // valid cases, even though compressed_len is nonzero.
+  virtual void OnDecompressedHeaderBlock(size_t uncompressed_len,
+                                         size_t compressed_len) {}
 };
 
 class NET_EXPORT_PRIVATE SpdyFramer {

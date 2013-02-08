@@ -484,6 +484,12 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     last_compressed_size_ = compressed_size;
   }
 
+  virtual void OnDecompressedHeaderBlock(size_t decompressed_size,
+                                         size_t compressed_size) OVERRIDE {
+    last_uncompressed_size_ = decompressed_size;
+    last_compressed_size_ = compressed_size;
+  }
+
   // Convenience function which runs a framer simulation with particular input.
   void SimulateInFramer(const unsigned char* input, size_t size) {
     framer_.set_enable_compression(use_compression_);
@@ -914,9 +920,9 @@ TEST_P(SpdyFramerTest, BasicCompression) {
   headers["content-type"] = "text/html";
   headers["content-length"] = "12";
 
-  TestSpdyVisitor visitor(spdy_version_);
+  scoped_ptr<TestSpdyVisitor> visitor(new TestSpdyVisitor(spdy_version_));
   SpdyFramer framer(spdy_version_);
-  framer.set_debug_visitor(&visitor);
+  framer.set_debug_visitor(visitor.get());
   framer.set_enable_compression(true);
   scoped_ptr<SpdySynStreamControlFrame> frame1(
       framer.CreateSynStream(1,  // stream id
@@ -927,18 +933,18 @@ TEST_P(SpdyFramerTest, BasicCompression) {
                              true,  // compress
                              &headers));
   if (IsSpdy2()) {
-    EXPECT_EQ(139u, visitor.last_uncompressed_size_);
+    EXPECT_EQ(139u, visitor->last_uncompressed_size_);
 #if defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(93u, visitor.last_compressed_size_);
+    EXPECT_EQ(93u, visitor->last_compressed_size_);
 #else  // !defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(135u, visitor.last_compressed_size_);
+    EXPECT_EQ(135u, visitor->last_compressed_size_);
 #endif  // !defined(USE_SYSTEM_ZLIB)
   } else {
-    EXPECT_EQ(165u, visitor.last_uncompressed_size_);
+    EXPECT_EQ(165u, visitor->last_uncompressed_size_);
 #if defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(72u, visitor.last_compressed_size_);
+    EXPECT_EQ(72u, visitor->last_compressed_size_);
 #else  // !defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(117u, visitor.last_compressed_size_);
+    EXPECT_EQ(117u, visitor->last_compressed_size_);
 #endif  // !defined(USE_SYSTEM_ZLIB)
   }
   scoped_ptr<SpdySynStreamControlFrame> frame2(
@@ -958,8 +964,25 @@ TEST_P(SpdyFramerTest, BasicCompression) {
       &framer, *frame1.get()));
 
   // Decompress the second frame
+  visitor.reset(new TestSpdyVisitor(spdy_version_));
+  framer.set_debug_visitor(visitor.get());
   scoped_ptr<SpdyFrame> frame4(SpdyFramerTestUtil::DecompressFrame(
       &framer, *frame2.get()));
+  if (IsSpdy2()) {
+    EXPECT_EQ(139u, visitor->last_uncompressed_size_);
+#if defined(USE_SYSTEM_ZLIB)
+    EXPECT_EQ(9u, visitor->last_compressed_size_);
+#else  // !defined(USE_SYSTEM_ZLIB)
+    EXPECT_EQ(101u, visitor->last_compressed_size_);
+#endif  // !defined(USE_SYSTEM_ZLIB)
+  } else {
+    EXPECT_EQ(165u, visitor->last_uncompressed_size_);
+#if defined(USE_SYSTEM_ZLIB)
+    EXPECT_EQ(9u, visitor->last_compressed_size_);
+#else  // !defined(USE_SYSTEM_ZLIB)
+    EXPECT_EQ(102u, visitor->last_compressed_size_);
+#endif  // !defined(USE_SYSTEM_ZLIB)
+  }
 
   // Expect frames 3 & 4 to be the same.
   EXPECT_EQ(0,
