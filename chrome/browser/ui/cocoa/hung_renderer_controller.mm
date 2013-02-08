@@ -77,6 +77,9 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
 - (void)dealloc {
   DCHECK(!g_instance);
   [tableView_ setDataSource:nil];
+  [tableView_ setDelegate:nil];
+  [killButton_ setTarget:nil];
+  [waitButton_ setTarget:nil];
   [super dealloc];
 }
 
@@ -156,6 +159,10 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
   // chrome::ShowHungRendererDialog() between the autorelease call and the
   // actual dealloc.
   g_instance = nil;
+
+  // Prevent kills from happening after close if the user had the
+  // button depressed just when new activity was detected.
+  hungContents_ = NULL;
 
   [self autorelease];
 }
