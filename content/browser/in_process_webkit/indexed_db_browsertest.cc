@@ -321,6 +321,22 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithCorruptLevelDB,
   EXPECT_NE(original_size, new_size);
 }
 
+class IndexedDBBrowserTestWithMissingSSTFile : public
+    IndexedDBBrowserTestWithPreexistingLevelDB {
+  virtual std::string EnclosingLevelDBDir() {
+    return "missing_sst";
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithMissingSSTFile,
+                       DestroyTest) {
+  int64 original_size = RequestDiskUsage();
+  EXPECT_GT(original_size, 0);
+  SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
+  int64 new_size = RequestDiskUsage();
+  EXPECT_NE(original_size, new_size);
+}
+
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, LevelDBLogFileTest) {
   // Any page that opens an IndexedDB will work here.
   SimpleTest(GetTestUrl("indexeddb", "database_test.html"));
