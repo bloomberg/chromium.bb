@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/env_vars.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/install_util.h"
@@ -428,6 +429,9 @@ int MainDllLoader::Launch(HINSTANCE instance,
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
   env->SetVar(chrome::kChromeVersionEnvVar, WideToUTF8(version));
+  // TODO(erikwright): Remove this when http://crbug.com/174953 is fixed and
+  // widely deployed.
+  env->UnSetVar(env_vars::kGoogleUpdateIsMachineEnvVar);
 
   InitCrashReporter();
   OnBeforeLaunch(file);

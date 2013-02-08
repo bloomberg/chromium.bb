@@ -18,6 +18,11 @@ extern const char kRtlLocale[];
 extern const char kLtrLocale[];
 extern const char kStartupTestsNumCycles[];
 
+// Google Update named environment variable that implies kSystemLevel.
+// TODO(erikwright): Put this in chrome/installer/util/util_constants.h when
+// http://crbug.com/174953 is fixed and widely deployed.
+extern const char kGoogleUpdateIsMachineEnvVar[];
+
 }  // namespace env_vars
 
 #endif  // CHROME_COMMON_ENV_VARS_H__

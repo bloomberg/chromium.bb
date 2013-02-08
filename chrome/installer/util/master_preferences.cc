@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "chrome/common/env_vars.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
 #include "googleurl/src/gurl.h"
@@ -200,7 +201,7 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   if (env != NULL) {
     std::string is_machine_var;
-    env->GetVar(kGoogleUpdateIsMachineEnvVar, &is_machine_var);
+    env->GetVar(env_vars::kGoogleUpdateIsMachineEnvVar, &is_machine_var);
     if (!is_machine_var.empty() && is_machine_var[0] == '1') {
       VLOG(1) << "Taking system-level from environment.";
       name.assign(installer::master_preferences::kDistroDict);

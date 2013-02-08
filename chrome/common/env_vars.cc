@@ -32,4 +32,11 @@ const char kLtrLocale[] = "LEFT_TO_RIGHT";
 // Number of times to run a given startup_tests unit test.
 const char kStartupTestsNumCycles[] = "STARTUP_TESTS_NUMCYCLES";
 
+// The presence of this environment variable with a value of 1 implies that
+// setup.exe should run as a system installation regardless of what is on the
+// command line.
+// TODO(erikwright): Put this in chrome/installer/util/util_constants.cc when
+// http://crbug.com/174953 is fixed and widely deployed.
+const char kGoogleUpdateIsMachineEnvVar[] = "GoogleUpdateIsMachine";
+
 }  // namespace env_vars
