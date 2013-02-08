@@ -11,42 +11,32 @@
 
 namespace installer {
 
-namespace {
-
-// Adds a work item to set |value_name| to DWORD 1 if |value_data| is true;
-// adds a work item to remove |value_name| otherwise.
-WorkItem* AddSetOptionalBoolRegValueWorkItem(
-    HKEY predefined_root,
-    const string16& key_path,
-    const string16& value_name,
-    bool value_data,
-    WorkItemList* item_list) {
-  if (value_data) {
-    return item_list->AddSetRegValueWorkItem(predefined_root,
-                                             key_path,
-                                             value_name,
-                                             static_cast<DWORD>(1),
-                                             true);
-  } else {
-    return item_list->AddDeleteRegValueWorkItem(predefined_root,
-                                                key_path,
-                                                value_name);
-  }
-}
-
-}  // namespace
+// static
+// Associate bool member variables with registry entries.
+const AppCommand::NamedBoolVar AppCommand::kNameBoolVars[] = {
+  {&AppCommand::sends_pings_,
+       google_update::kRegSendsPingsField},
+  {&AppCommand::is_web_accessible_,
+       google_update::kRegWebAccessibleField},
+  {&AppCommand::is_auto_run_on_os_upgrade_,
+       google_update::kRegAutoRunOnOSUpgradeField},
+  {&AppCommand::is_run_as_user_,
+       google_update::kRegRunAsUserField},
+};
 
 AppCommand::AppCommand()
     : sends_pings_(false),
       is_web_accessible_(false),
-      is_auto_run_on_os_upgrade_(false) {
+      is_auto_run_on_os_upgrade_(false),
+      is_run_as_user_(false) {
 }
 
 AppCommand::AppCommand(const string16& command_line)
     : command_line_(command_line),
       sends_pings_(false),
       is_web_accessible_(false),
-      is_auto_run_on_os_upgrade_(false) {
+      is_auto_run_on_os_upgrade_(false),
+      is_run_as_user_(false) {
 }
 
 bool AppCommand::Initialize(const base::win::RegKey& key) {
@@ -57,9 +47,6 @@ bool AppCommand::Initialize(const base::win::RegKey& key) {
 
   LONG result = ERROR_SUCCESS;
   string16 cmd_line;
-  DWORD sends_pings = 0;
-  DWORD is_web_acc = 0;
-  DWORD is_auto_run_on_os_upgrade = 0;
 
   result = key.ReadValue(google_update::kRegCommandLineField, &cmd_line);
   if (result != ERROR_SUCCESS) {
@@ -68,16 +55,14 @@ bool AppCommand::Initialize(const base::win::RegKey& key) {
     return false;
   }
 
-  // Note: ReadValueDW only modifies its out param on success.
-  key.ReadValueDW(google_update::kRegSendsPingsField, &sends_pings);
-  key.ReadValueDW(google_update::kRegWebAccessibleField, &is_web_acc);
-  key.ReadValueDW(google_update::kRegAutoRunOnOSUpgradeField,
-                  &is_auto_run_on_os_upgrade);
-
   command_line_.swap(cmd_line);
-  sends_pings_ = (sends_pings != 0);
-  is_web_accessible_ = (is_web_acc != 0);
-  is_auto_run_on_os_upgrade_ = (is_auto_run_on_os_upgrade != 0);
+
+  for (int i = 0; i < arraysize(kNameBoolVars); ++i) {
+    DWORD value = 0;  // Set default to false.
+    // Note: ReadValueDW only modifies out param on success.
+    key.ReadValueDW(kNameBoolVars[i].name, &value);
+    this->*(kNameBoolVars[i].data) = (value != 0);
+  }
 
   return true;
 }
@@ -91,24 +76,25 @@ void AppCommand::AddWorkItems(HKEY predefined_root,
                                     google_update::kRegCommandLineField,
                                     command_line_, true)
       ->set_log_message("setting AppCommand CommandLine registry value");
-  AddSetOptionalBoolRegValueWorkItem(predefined_root,
-                                     command_path,
-                                     google_update::kRegSendsPingsField,
-                                     sends_pings_,
-                                     item_list)
-      ->set_log_message("setting AppCommand SendsPings registry value");
-  AddSetOptionalBoolRegValueWorkItem(predefined_root,
-                                     command_path,
-                                     google_update::kRegWebAccessibleField,
-                                     is_web_accessible_,
-                                     item_list)
-      ->set_log_message("setting AppCommand WebAccessible registry value");
-  AddSetOptionalBoolRegValueWorkItem(predefined_root,
-                                     command_path,
-                                     google_update::kRegAutoRunOnOSUpgradeField,
-                                     is_auto_run_on_os_upgrade_,
-                                     item_list)
-      ->set_log_message("setting AppCommand AutoRunOnOSUpgrade registry value");
+
+  for (int i = 0; i < arraysize(kNameBoolVars); ++i) {
+    const wchar_t* var_name = kNameBoolVars[i].name;
+    bool var_data = this->*(kNameBoolVars[i].data);
+
+    // Adds a work item to set |var_name| to DWORD 1 if |var_data| is true;
+    // adds a work item to remove |var_name| otherwise.
+    if (var_data) {
+      item_list->AddSetRegValueWorkItem(predefined_root,
+                                        command_path,
+                                        var_name,
+                                        static_cast<DWORD>(1),
+                                        true);
+    } else {
+      item_list->AddDeleteRegValueWorkItem(predefined_root,
+                                           command_path,
+                                           var_name);
+    }
+  }
 }
 
 }  // namespace installer

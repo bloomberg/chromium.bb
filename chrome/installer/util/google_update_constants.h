@@ -68,6 +68,7 @@ extern const wchar_t kRegRLZBrandField[];
 extern const wchar_t kRegRLZReactivationBrandField[];
 extern const wchar_t kRegReferralField[];
 extern const wchar_t kRegRenameCmdField[];
+extern const wchar_t kRegRunAsUserField[];
 extern const wchar_t kRegSendsPingsField[];
 extern const wchar_t kRegUninstallCmdLine[];
 extern const wchar_t kRegUsageStatsField[];

@@ -60,11 +60,25 @@ class AppCommand {
     is_auto_run_on_os_upgrade_ = is_auto_run_on_os_upgrade;
   }
 
+  bool is_run_as_user() const { return is_run_as_user_; }
+  void set_is_run_as_user(bool is_run_as_user) {
+    is_run_as_user_ = is_run_as_user;
+  }
+
  protected:
   string16 command_line_;
   bool sends_pings_;
   bool is_web_accessible_;
   bool is_auto_run_on_os_upgrade_;
+  bool is_run_as_user_;
+
+ private:
+  struct NamedBoolVar {
+    bool AppCommand::* data;
+    const wchar_t* name;
+  };
+
+  static const NamedBoolVar kNameBoolVars[];
 };
 
 }  // namespace installer

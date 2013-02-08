@@ -78,14 +78,6 @@ class FakeProductState : public ProductState {
                            const char* version,
                            int channel_modifiers,
                            Vehicle vehicle);
-  void AddQuickEnableApplicationHostCommand(BrowserDistribution::Type dist_type,
-                                            Level install_level,
-                                            const char* version,
-                                            int channel_modifiers);
-  void AddQuickEnableCfCommand(BrowserDistribution::Type dist_type,
-                               Level install_level,
-                               const char* version,
-                               int channel_modifiers);
   void AddOsUpgradeCommand(BrowserDistribution::Type dist_type,
                            Level install_level,
                            const char* version,
@@ -94,6 +86,14 @@ class FakeProductState : public ProductState {
                                      Level install_level,
                                      const char* version,
                                      int channel_modifiers);
+  void AddQuickEnableApplicationHostCommand(BrowserDistribution::Type dist_type,
+                                            Level install_level,
+                                            const char* version,
+                                            int channel_modifiers);
+  void AddQuickEnableCfCommand(BrowserDistribution::Type dist_type,
+                               Level install_level,
+                               const char* version,
+                               int channel_modifiers);
   void set_multi_install(bool is_multi_install) {
     multi_install_ = is_multi_install;
   }
@@ -205,47 +205,6 @@ void FakeProductState::SetUninstallCommand(BrowserDistribution::Type dist_type,
     uninstall_command_.AppendSwitch(installer::switches::kMsi);
 }
 
-// Adds the "quick-enable-application-host" Google Update product command.
-void FakeProductState::AddQuickEnableApplicationHostCommand(
-    BrowserDistribution::Type dist_type,
-    Level install_level,
-    const char* version,
-    int channel_modifiers) {
-  DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BINARIES);
-  DCHECK_NE(channel_modifiers & CM_MULTI, 0);
-
-  CommandLine cmd_line(GetSetupExePath(dist_type, install_level, version,
-                                       channel_modifiers));
-  cmd_line.AppendSwitch(installer::switches::kMultiInstall);
-  cmd_line.AppendSwitch(installer::switches::kChromeAppLauncher);
-  cmd_line.AppendSwitch(installer::switches::kEnsureGoogleUpdatePresent);
-  AppCommand app_cmd(cmd_line.GetCommandLineString());
-  app_cmd.set_sends_pings(true);
-  app_cmd.set_is_web_accessible(true);
-  commands_.Set(installer::kCmdQuickEnableApplicationHost, app_cmd);
-}
-
-// Adds the "quick-enable-cf" Google Update product command.
-void FakeProductState::AddQuickEnableCfCommand(
-    BrowserDistribution::Type dist_type,
-    Level install_level,
-    const char* version,
-    int channel_modifiers) {
-  DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BINARIES);
-  DCHECK_NE(channel_modifiers & CM_MULTI, 0);
-
-  CommandLine cmd_line(GetSetupExePath(dist_type, install_level, version,
-                                       channel_modifiers));
-  cmd_line.AppendSwitch(installer::switches::kMultiInstall);
-  if (install_level == SYSTEM_LEVEL)
-    cmd_line.AppendSwitch(installer::switches::kSystemLevel);
-  cmd_line.AppendSwitch(installer::switches::kChromeFrameQuickEnable);
-  AppCommand app_cmd(cmd_line.GetCommandLineString());
-  app_cmd.set_sends_pings(true);
-  app_cmd.set_is_web_accessible(true);
-  commands_.Set(installer::kCmdQuickEnableCf, app_cmd);
-}
-
 // Adds the "on-os-upgrade" Google Update product command.
 void FakeProductState::AddOsUpgradeCommand(BrowserDistribution::Type dist_type,
                                            Level install_level,
@@ -286,7 +245,50 @@ void FakeProductState::AddQueryEULAAcceptanceCommand(
   cmd_line.AppendSwitch(installer::switches::kVerboseLogging);
   AppCommand app_cmd(cmd_line.GetCommandLineString());
   app_cmd.set_is_web_accessible(true);
+  app_cmd.set_is_run_as_user(true);
   commands_.Set(installer::kCmdQueryEULAAcceptance, app_cmd);
+}
+
+// Adds the "quick-enable-application-host" Google Update product command.
+void FakeProductState::AddQuickEnableApplicationHostCommand(
+    BrowserDistribution::Type dist_type,
+    Level install_level,
+    const char* version,
+    int channel_modifiers) {
+  DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BINARIES);
+  DCHECK_NE(channel_modifiers & CM_MULTI, 0);
+
+  CommandLine cmd_line(GetSetupExePath(dist_type, install_level, version,
+                                       channel_modifiers));
+  cmd_line.AppendSwitch(installer::switches::kMultiInstall);
+  cmd_line.AppendSwitch(installer::switches::kChromeAppLauncher);
+  cmd_line.AppendSwitch(installer::switches::kEnsureGoogleUpdatePresent);
+  AppCommand app_cmd(cmd_line.GetCommandLineString());
+  app_cmd.set_sends_pings(true);
+  app_cmd.set_is_web_accessible(true);
+  app_cmd.set_is_run_as_user(true);
+  commands_.Set(installer::kCmdQuickEnableApplicationHost, app_cmd);
+}
+
+// Adds the "quick-enable-cf" Google Update product command.
+void FakeProductState::AddQuickEnableCfCommand(
+    BrowserDistribution::Type dist_type,
+    Level install_level,
+    const char* version,
+    int channel_modifiers) {
+  DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BINARIES);
+  DCHECK_NE(channel_modifiers & CM_MULTI, 0);
+
+  CommandLine cmd_line(GetSetupExePath(dist_type, install_level, version,
+                                       channel_modifiers));
+  cmd_line.AppendSwitch(installer::switches::kMultiInstall);
+  if (install_level == SYSTEM_LEVEL)
+    cmd_line.AppendSwitch(installer::switches::kSystemLevel);
+  cmd_line.AppendSwitch(installer::switches::kChromeFrameQuickEnable);
+  AppCommand app_cmd(cmd_line.GetCommandLineString());
+  app_cmd.set_sends_pings(true);
+  app_cmd.set_is_web_accessible(true);
+  commands_.Set(installer::kCmdQuickEnableCf, app_cmd);
 }
 
 }  // namespace
