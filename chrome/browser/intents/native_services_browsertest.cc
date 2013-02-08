@@ -35,7 +35,6 @@ using content::BrowserThread;
 namespace {
 
 const std::string kPoodlePath = "/home/poodles/skippy.png";
-bool picker_success_mode = true;
 const int64 kTestFileSize = 193;
 
 FilePath CreateTestFile() {
@@ -47,8 +46,10 @@ FilePath CreateTestFile() {
 
 class TestIntentsDispatcher : public content::WebIntentsDispatcher {
  public:
-  explicit TestIntentsDispatcher(const webkit_glue::WebIntentData& intent)
-      : intent_(intent) {}
+  TestIntentsDispatcher() {
+    intent_.action = ASCIIToUTF16(web_intents::kActionPick);
+    intent_.type = ASCIIToUTF16("image/*");
+  }
 
   virtual const webkit_glue::WebIntentData& GetIntent() OVERRIDE {
     return intent_;
@@ -66,21 +67,16 @@ class TestIntentsDispatcher : public content::WebIntentsDispatcher {
   }
 
   webkit_glue::WebIntentData intent_;
-
   scoped_ptr<webkit_glue::WebIntentReply> reply_;
 };
 
-// Stub SelectFileDialog designed for testing.
-class TestSelectFileDialog : public ui::SelectFileDialog {
+class FakeSelectFileDialog : public ui::SelectFileDialog {
  public:
-  // Main factory method which returns correct type.
-  static ui::SelectFileDialog* Create(
-      Listener* listener,
-      ui::SelectFilePolicy* policy) {
-    return new TestSelectFileDialog(listener, policy);
+  FakeSelectFileDialog(
+      Listener* listener, ui::SelectFilePolicy* policy, bool should_succeed)
+      : SelectFileDialog(listener, policy), should_succeed_(should_succeed),
+        test_file_(CreateTestFile()) {
   }
-
-  // SelectFileDialog implementation.
   virtual bool IsRunning(gfx::NativeWindow parent_window) const OVERRIDE {
     return false;
   }
@@ -90,16 +86,6 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
   }
 
  protected:
-  TestSelectFileDialog(
-      Listener* listener, ui::SelectFilePolicy* policy)
-      : ui::SelectFileDialog(listener, policy),
-        listener_(listener) {
-    test_file_ = CreateTestFile();
-  }
-  virtual ~TestSelectFileDialog() {}
-
-  // SelectFileDialog implementation.
-  // |params| is user data we pass back via the Listener interface.
   virtual void SelectFileImpl(
       Type type,
       const string16& title,
@@ -109,18 +95,16 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
       const FilePath::StringType& default_extension,
       gfx::NativeWindow owning_window,
       void* params) OVERRIDE {
-    if (picker_success_mode)
-      listener_->FileSelected(test_file_, kTestFileSize, NULL);
+    if (should_succeed_)
+      listener_->FileSelected(test_file_, kTestFileSize, params);
     else
-      listener_->FileSelectionCanceled(NULL);
+      listener_->FileSelectionCanceled(params);
   }
 
  private:
-  // Weak pointer to handler for dialog events.
-  Listener* listener_;
+  bool should_succeed_;
   FilePath test_file_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestSelectFileDialog);
+  DISALLOW_COPY_AND_ASSIGN(FakeSelectFileDialog);
 };
 
 class TestSelectFileDialogFactory : public ui::SelectFileDialogFactory {
@@ -128,16 +112,13 @@ class TestSelectFileDialogFactory : public ui::SelectFileDialogFactory {
   virtual ui::SelectFileDialog* Create(
       ui::SelectFileDialog::Listener* listener,
       ui::SelectFilePolicy* policy) OVERRIDE {
-    return TestSelectFileDialog::Create(listener, policy);
+    return new FakeSelectFileDialog(listener, policy, should_succeed_);
   }
+  bool should_succeed_;
 };
-
-}  // namespace
 
 class NativeServicesBrowserTest : public InProcessBrowserTest {
  protected:
-  NativeServicesBrowserTest() {}
-
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // We start the test server now instead of in
     // SetUpInProcessBrowserTestFixture so that we can get its port number.
@@ -148,64 +129,54 @@ class NativeServicesBrowserTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    dispatcher_.reset(new TestIntentsDispatcher());
     factory_.reset(new TestSelectFileDialogFactory());
     ui::SelectFileDialog::SetFactory(factory_.get());
   }
 
-  virtual Browser* GetBrowser() { return browser(); }
+  void DispatchIntent(bool should_succeed) {
+    factory_->should_succeed_ = should_succeed;
+
+    content::WebContents* tab =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    web_intents::NativeServiceFactory factory;
+    GURL url(web_intents::kNativeFilePickerUrl);
+    scoped_ptr<web_intents::IntentServiceHost> service(
+        factory.CreateServiceInstance(url, dispatcher_->intent_, tab));
+    service->HandleIntent(dispatcher_.get());
+
+    // Reads of file size are done on the FILE thread, then posted
+    // back to the UI thread. So these are necessary for the
+    // should_succeed case and noop for the !should_succeed
+    content::RunAllPendingInMessageLoop(BrowserThread::FILE);
+    content::RunAllPendingInMessageLoop(BrowserThread::UI);
+  }
+
+  scoped_ptr<TestIntentsDispatcher> dispatcher_;
   scoped_ptr<TestSelectFileDialogFactory> factory_;
   FilePath test_file_;
 };
 
 IN_PROC_BROWSER_TEST_F(NativeServicesBrowserTest, PickFileSelected) {
-  content::WebContents* tab =
-      GetBrowser()->tab_strip_model()->GetActiveWebContents();
-
-  webkit_glue::WebIntentData intent;
-  intent.action = ASCIIToUTF16(web_intents::kActionPick);
-  intent.type = ASCIIToUTF16("image/*");
-
-  TestIntentsDispatcher dispatcher(intent);
-  web_intents::NativeServiceFactory factory;
-  GURL url(web_intents::kNativeFilePickerUrl);
-  scoped_ptr<web_intents::IntentServiceHost> service(
-      factory.CreateServiceInstance(url, intent, tab));
-  service->HandleIntent(&dispatcher);
-
-  // Reads of file size are done on the FILE thread, then posted
-  // back to the UI thread.
-  content::RunAllPendingInMessageLoop(BrowserThread::FILE);
-  content::RunAllPendingInMessageLoop(BrowserThread::UI);
-
-  ASSERT_TRUE(dispatcher.reply_);
+  DispatchIntent(true);
+  ASSERT_TRUE(dispatcher_->reply_);
   EXPECT_EQ(
       webkit_glue::WebIntentReply(
             webkit_glue::WEB_INTENT_REPLY_SUCCESS,
             test_file_,
             kTestFileSize),
-      *dispatcher.reply_.get());
+      *dispatcher_->reply_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(NativeServicesBrowserTest, PickFileCancelled) {
-  picker_success_mode = false;
-  content::WebContents* tab =
-      GetBrowser()->tab_strip_model()->GetActiveWebContents();
-
-  webkit_glue::WebIntentData intent;
-  intent.action = ASCIIToUTF16(web_intents::kActionPick);
-  intent.type = ASCIIToUTF16("image/*");
-
-  TestIntentsDispatcher dispatcher(intent);
-  web_intents::NativeServiceFactory factory;
-  GURL url(web_intents::kNativeFilePickerUrl);
-  scoped_ptr<web_intents::IntentServiceHost> service(
-      factory.CreateServiceInstance(url, intent, tab));
-  service->HandleIntent(&dispatcher);
-
-  ASSERT_TRUE(dispatcher.reply_);
+  DispatchIntent(false);
+  ASSERT_TRUE(dispatcher_->reply_);
   EXPECT_EQ(
       webkit_glue::WebIntentReply(
             webkit_glue::WEB_INTENT_REPLY_FAILURE,
             string16()),
-      *dispatcher.reply_.get());
+      *dispatcher_->reply_.get());
 }
+
+}  // namespace

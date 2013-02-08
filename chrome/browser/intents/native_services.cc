@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Native services are implemented with UI code necessitating portions
+// of native_services.h to be defined in
+// chrome/browser/ui/intents/native_file_picker_service.cc
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string16.h"
@@ -15,12 +19,10 @@
 
 namespace web_intents {
 
-#define NATIVE_SCHEME "chrome-intents-native"
-
-const char kChromeNativeSerivceScheme[] = NATIVE_SCHEME;
-const char kNativeFilePickerUrl[] = NATIVE_SCHEME "://file-picker";
+const char kNativeFilePickerUrl[] = "chrome-intents-native://file-picker";
 
 NativeServiceRegistry::NativeServiceRegistry() {}
+NativeServiceRegistry::~NativeServiceRegistry() {}
 
 void NativeServiceRegistry::GetSupportedServices(
     const string16& action,
@@ -30,13 +32,14 @@ void NativeServiceRegistry::GetSupportedServices(
     return;
 
 #if !defined(ANDROID)
-  if (EqualsASCII(action, web_intents::kActionPick)) {
+  if (EqualsASCII(action, kActionPick)) {
     // File picker registrations.
     webkit_glue::WebIntentServiceData service(
         ASCIIToUTF16(kActionPick),
-        ASCIIToUTF16("*/*"),  // handle any MIME-type
+        ASCIIToUTF16("*/*"),  // Handle any MIME-type.
+        // This is an action/type based service, so we supply an empty scheme.
         string16(),
-        GURL(web_intents::kNativeFilePickerUrl),
+        GURL(kNativeFilePickerUrl),
         FilePickerFactory::GetServiceTitle());
     service.disposition = webkit_glue::WebIntentServiceData::DISPOSITION_NATIVE;
 
@@ -46,6 +49,7 @@ void NativeServiceRegistry::GetSupportedServices(
 }
 
 NativeServiceFactory::NativeServiceFactory() {}
+NativeServiceFactory::~NativeServiceFactory() {}
 
 IntentServiceHost* NativeServiceFactory::CreateServiceInstance(
     const GURL& service_url,
@@ -58,7 +62,7 @@ IntentServiceHost* NativeServiceFactory::CreateServiceInstance(
   }
 #endif
 
-  return NULL;  // couldn't create instance
+  return NULL;  // Couldn't create an instance.
 }
 
 }  // namespace web_intents

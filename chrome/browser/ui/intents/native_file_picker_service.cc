@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This file provides the UI implementation of the classes declared
+// in chrome/browser/intents/native_services.h and partially defined in
+// chrome/browser/intents/native_services.cc.
+
 #include <vector>
 
 #include "base/file_path.h"
@@ -33,27 +37,30 @@ namespace {
 
 const int kInvalidFileSize = -1;
 
-void AddTypeInfo(
-    const std::string& mime_type,
-    ui::SelectFileDialog::FileTypeInfo* info) {
-
-  info->include_all_files = true;
-  info->extensions.resize(1);
-  net::GetExtensionsForMimeType(mime_type, &info->extensions.back());
+// Returns a FileTypeInfo instance representative of |mime_type|.
+ui::SelectFileDialog::FileTypeInfo TypeInfoFromMimeType(
+    const std::string& mime_type) {
+  ui::SelectFileDialog::FileTypeInfo info;
+  info.include_all_files = true;
+  info.extensions.resize(1);
+  net::GetExtensionsForMimeType(mime_type, &info.extensions.back());
 
   // Provide a "helpful" description when possible.
   int description_id = 0;
-  if (mime_type == "image/*")
+  if (mime_type == "image/*") {
     description_id = IDS_IMAGE_FILES;
-  else if (mime_type == "audio/*")
+  } else if (mime_type == "audio/*") {
     description_id = IDS_AUDIO_FILES;
-  else if (mime_type == "video/*")
+  } else if (mime_type == "video/*") {
     description_id = IDS_VIDEO_FILES;
+  }
 
-  if (description_id) {
-    info->extension_description_overrides.push_back(
+  if (description_id != 0) {
+    info.extension_description_overrides.push_back(
         l10n_util::GetStringUTF16(description_id));
   }
+
+  return info;
 }
 
 // FilePicker service allowing a native file picker to handle
@@ -63,24 +70,28 @@ class NativeFilePickerService
  public:
   explicit NativeFilePickerService(content::WebContents* web_contents);
   virtual ~NativeFilePickerService();
-  virtual void HandleIntent(content::WebIntentsDispatcher* dispatcher) OVERRIDE;
+
   // Reads the length of the file on the FILE thread, then returns
   // the file and the length to the UI thread.
-  virtual void ReadFileLength(const FilePath& path);
-  // Handles sending of data back to dispatcher
-  virtual void PostDataFileReply(const FilePath& path, int64 length);
+  void ReadFileLength(const FilePath& path);
 
-  // SelectFileDialog::Listener
+  // Handles sending of data back to dispatcher
+  void PostDataFileReply(const FilePath& path, int64 length);
+
+  // Implements IntentServiceHost:
+  virtual void HandleIntent(content::WebIntentsDispatcher* dispatcher) OVERRIDE;
+
+  // Implements SelectFileDialog::Listener
   virtual void FileSelected(
       const FilePath& path, int index, void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
  private:
-  // Weak pointer to the web contents on which the selector will be displayed.
+  // The web contents on which the selector will be displayed. Not owned.
   content::WebContents* web_contents_;
 
-  // Weak pointer to the dispatcher for the current intent. Only
-  // set at the time the intent request is delivered to HandleIntent.
+  // The dispatcher for the current intent. Only set at the time the intent
+  // request is delivered to HandleIntent. Not owned.
   content::WebIntentsDispatcher* dispatcher_;
 
   scoped_refptr<ui::SelectFileDialog> dialog_;
@@ -102,27 +113,18 @@ void NativeFilePickerService::HandleIntent(
   DCHECK(dispatcher);
   dispatcher_ = dispatcher;
 
-  const webkit_glue::WebIntentData& intent = dispatcher_->GetIntent();
-
-  std::string ascii_type = UTF16ToASCII(intent.type);
-  DCHECK(!(net::GetIANAMediaType(ascii_type).empty()));
-
   dialog_ = ui::SelectFileDialog::Create(this, NULL);
 
-  ui::SelectFileDialog::FileTypeInfo type_info;
-  AddTypeInfo(ascii_type, &type_info);
-
-  const FilePath default_path(FILE_PATH_LITERAL("."));
-  const FilePath::StringType default_extension = FILE_PATH_LITERAL("");
-  const string16 title = FilePickerFactory::GetServiceTitle();
+  ui::SelectFileDialog::FileTypeInfo type_info =
+      TypeInfoFromMimeType(UTF16ToASCII(dispatcher_->GetIntent().type));
 
   dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_OPEN_FILE,
-      title,
-      default_path,
+      FilePickerFactory::GetServiceTitle(),
+      FilePath(FILE_PATH_LITERAL(".")),
       &type_info,
-      1,  // index of which file description to show
-      default_extension,
+      1,  // Index of which file description to show.
+      FILE_PATH_LITERAL(""),
       platform_util::GetTopLevel(web_contents_->GetNativeView()),
       NULL);
 }
@@ -135,18 +137,16 @@ void NativeFilePickerService::ReadFileLength(const FilePath& path) {
     file_size = kInvalidFileSize;
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &NativeFilePickerService::PostDataFileReply,
-          base::Unretained(this), path, file_size));
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&NativeFilePickerService::PostDataFileReply,
+                 base::Unretained(this), path, file_size));
 }
 
 void NativeFilePickerService::PostDataFileReply(
     const FilePath& path, int64 length) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  if (length == kInvalidFileSize) {
+  if (length <= kInvalidFileSize) {
     DLOG(WARNING) << "Unable to determine file size.";
     dispatcher_->SendReply(
         webkit_glue::WebIntentReply(
@@ -158,11 +158,8 @@ void NativeFilePickerService::PostDataFileReply(
       web_contents_->GetRenderProcessHost()->GetID(),
       path);
 
-  dispatcher_->SendReply(
-      webkit_glue::WebIntentReply(
-          webkit_glue::WEB_INTENT_REPLY_SUCCESS,
-          path,
-          length));
+  dispatcher_->SendReply(webkit_glue::WebIntentReply(
+      webkit_glue::WEB_INTENT_REPLY_SUCCESS, path, length));
 }
 
 void NativeFilePickerService::FileSelected(
@@ -190,7 +187,6 @@ IntentServiceHost* FilePickerFactory::CreateServiceInstance(
   return new NativeFilePickerService(web_contents);
 }
 
-// Returns the action-specific string for |action|.
 string16 FilePickerFactory::GetServiceTitle() {
   return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_FILE_PICKER_SERVICE_TITLE);
 }

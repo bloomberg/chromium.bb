@@ -17,34 +17,44 @@
 
 namespace {
 
+using web_intents::NativeServiceRegistry;
+
 TEST(NativeServiceRegistryTest, GetSupportedServices) {
 #if !defined(ANDROID)
-  // enable native services feature, then check results again
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kWebIntentsNativeServicesEnabled);
 
-  web_intents::IntentServiceList services;
-  web_intents::NativeServiceRegistry registry;
+  NativeServiceRegistry::IntentServiceList services;
+  NativeServiceRegistry registry;
+  typedef NativeServiceRegistry::IntentServiceList::const_iterator Iter;
 
   registry.GetSupportedServices(ASCIIToUTF16("dothedew"), &services);
 
   ASSERT_EQ(0U, services.size());
+  for (Iter it = services.begin(); it != services.end(); ++it) {
+    ADD_FAILURE() << "Unexpected handler for Dew: " << *it;
+  }
 
   registry.GetSupportedServices(
       ASCIIToUTF16(web_intents::kActionPick), &services);
 
-  ASSERT_EQ(1U, services.size());
-
-  // verify the service returned is for "pick"
-  EXPECT_EQ(ASCIIToUTF16(web_intents::kActionPick), services[0].action);
-  EXPECT_EQ(GURL(web_intents::kNativeFilePickerUrl), services[0].service_url);
+  EXPECT_EQ(1U, services.size());
+  if (services.size() == 1) {
+    // Verify the service returned is for "pick".
+    EXPECT_EQ(ASCIIToUTF16(web_intents::kActionPick), services[0].action);
+    EXPECT_EQ(GURL(web_intents::kNativeFilePickerUrl), services[0].service_url);
+  } else {
+    for (Iter it = services.begin(); it != services.end(); ++it) {
+      ADD_FAILURE() << "Too many services for pick action: " << *it;
+    }
+  }
 #endif
 }
 
 TEST(NativeServiceRegistryTest, GetSupportedServicesDisabled) {
 #if !defined(ANDROID)
-  web_intents::IntentServiceList services;
-  web_intents::NativeServiceRegistry registry;
+  NativeServiceRegistry::IntentServiceList services;
+  NativeServiceRegistry registry;
 
   registry.GetSupportedServices(
       ASCIIToUTF16(web_intents::kActionPick), &services);

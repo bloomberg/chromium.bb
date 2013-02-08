@@ -26,34 +26,44 @@ namespace web_intents {
 
 class IntentServiceHost;
 
-extern const char kChromeNativeSerivceScheme[];
+// Service URL for the file picker hosted by the Chrome browser.
 extern const char kNativeFilePickerUrl[];
-
-typedef std::vector<webkit_glue::WebIntentServiceData> IntentServiceList;
 
 #if !defined(ANDROID)
 // Factory capable of producing a native file picker IntentServiceHost,
-// as well as producing registration information about the service.
+// as well as producing registration information about the service. Instances
+// of this class can be obtained via NativeServiceFactory and should not
+// otherwise be instantiated directly.
 class FilePickerFactory {
  public:
   // Returns a localized title for the file picker.
   static string16 GetServiceTitle();
 
-  // Returns a new IntentServiceHost. The instance is owned by the caller.
-  // |intent| is the intent data. |web_contents| is the context in which
-  // the intent was invoked.
+  // Returns a new IntentServiceHost for processing the given intent data in the
+  // context of the given web contents. The intent must be of action type
+  // "pick".
   static IntentServiceHost* CreateServiceInstance(
       const webkit_glue::WebIntentData& intent,
       content::WebContents* web_contents);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FilePickerFactory);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(FilePickerFactory);
 };
 #endif
 
+// Supplier of information about services hosted by Chrome itself
+// (as opposed to web services). Each service registration produced
+// by this class will have a WebIntentServiceData::DISPOSITION_NATIVE
+// disposition. This value can be used at runtime to determine when a service
+// can be instantiated by our sibling class NativeServiceFactory.
+// Instances of this class are currently stateless and fairly light weight.
+// Any two instances can be assumed to have the same information.
 class NativeServiceRegistry {
  public:
+  typedef std::vector<webkit_glue::WebIntentServiceData> IntentServiceList;
   NativeServiceRegistry();
+  ~NativeServiceRegistry();
+
   // Populates |services| with all supported IntentServiceHosts
   // capable of handling |action|.
   void GetSupportedServices(
@@ -64,13 +74,22 @@ class NativeServiceRegistry {
   DISALLOW_COPY_AND_ASSIGN(NativeServiceRegistry);
 };
 
+// Factory for services hosted by Chrome itself (as opposed to web services).
+// When implementing a new native service this is where you add support
+// for creating an instance.
+// Only services reported by NativeServiceRegistry.GetSupportedServices,
+// specifically those having a WebIntentServiceData::DISPOSITION_NATIVE
+// disposition, are instantiatable via this class.
+// Instances of this class are currently stateless and fairly light weight.
+// Any two instances can be assumed to have the same capabilities.
 class NativeServiceFactory {
  public:
   NativeServiceFactory();
-  // Returns an IntentServiceHost instance suitable to handle |intent|.
-  // |url| identifies the service to be instantiated, |web_contents| is
-  // the web_contents of the client that invoked this intent. The
-  // IntentServiceHost is owned by the caller.
+  ~NativeServiceFactory();
+
+  // Returns a new IntentServiceHost for processing the given intent data in the
+  // context of the given web contents. Callers assume ownership of the
+  // instance.
   IntentServiceHost* CreateServiceInstance(
       const GURL& url,
       const webkit_glue::WebIntentData& intent,
