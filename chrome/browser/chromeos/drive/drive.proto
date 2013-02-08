@@ -55,7 +55,11 @@ message DriveEntryProto {
   optional string title = 3;
   optional string resource_id = 4;
   optional string edit_url = 5;
-  optional string content_url = 6;
+  // For a file, this is URL to download the file content. It is transient and
+  // can be stale. For a directory, this is URL to edit its contents on GData
+  // WAPI, or empty on Drive API v2. (Thus, this shouldn't be used for a
+  // directory.)
+  optional string download_url = 6;
   optional string parent_resource_id = 7;
   // For a file, this is "resumable-edit-media" URL, used to update an
   // existing file. For a directory, this is "resumable-create-media" URL,

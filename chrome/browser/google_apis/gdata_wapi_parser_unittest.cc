@@ -87,7 +87,7 @@ TEST(GDataWAPIParserTest, ResourceListJsonParser) {
   EXPECT_EQ("entry_tester", folder_entry->authors()[0]->name());
   EXPECT_EQ("entry_tester@testing.com", folder_entry->authors()[0]->email());
   EXPECT_EQ("https://1_folder_content_url/",
-            folder_entry->content_url().spec());
+            folder_entry->download_url().spec());
   EXPECT_EQ("application/atom+xml;type=feed",
             folder_entry->content_mime_type());
 
@@ -183,7 +183,7 @@ TEST(GDataWAPIParserTest, ResourceEntryJsonParser) {
   EXPECT_EQ("tester", entry->authors()[0]->name());
   EXPECT_EQ("tester@testing.com", entry->authors()[0]->email());
   EXPECT_EQ("https://file_content_url/",
-            entry->content_url().spec());
+            entry->download_url().spec());
   EXPECT_EQ("audio/mpeg",
             entry->content_mime_type());
 

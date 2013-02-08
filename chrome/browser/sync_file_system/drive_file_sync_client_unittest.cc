@@ -780,7 +780,7 @@ TEST_F(DriveFileSyncClientTest, DownloadFile) {
   EXPECT_CALL(*mock_drive_service(),
               DownloadFile(_,  // drive_path
                            kLocalFilePath,
-                           file_entry_copy->content_url(),
+                           file_entry_copy->download_url(),
                            _, _))
       .WillOnce(InvokeDownloadActionCallback3(google_apis::HTTP_SUCCESS,
                                               kLocalFilePath))

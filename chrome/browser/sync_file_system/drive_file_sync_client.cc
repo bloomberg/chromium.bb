@@ -558,7 +558,7 @@ void DriveFileSyncClient::DownloadFileInternal(
   drive_service_->DownloadFile(
       FilePath(kDummyDrivePath),
       local_file_path,
-      entry->content_url(),
+      entry->download_url(),
       base::Bind(&DriveFileSyncClient::DidDownloadFile,
                  AsWeakPtr(), entry->file_md5(), callback),
       google_apis::GetContentCallback());

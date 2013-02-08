@@ -454,8 +454,8 @@ void FillDriveFilePropertiesValue(
   if (!file_specific_info.share_url().empty())
     property_dict->SetString("shareUrl", file_specific_info.share_url());
 
-  if (!entry_proto.content_url().empty())
-    property_dict->SetString("contentUrl", entry_proto.content_url());
+  if (!entry_proto.download_url().empty())
+    property_dict->SetString("contentUrl", entry_proto.download_url());
 
   property_dict->SetBoolean("isHosted",
                             file_specific_info.is_hosted_document());

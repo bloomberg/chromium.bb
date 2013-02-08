@@ -29,7 +29,7 @@ DriveEntryProto ConvertResourceEntryToDriveEntryProto(
   entry_proto.set_base_name(util::EscapeUtf8FileName(entry_proto.title()));
 
   entry_proto.set_resource_id(entry.resource_id());
-  entry_proto.set_content_url(entry.content_url().spec());
+  entry_proto.set_download_url(entry.download_url().spec());
 
   const google_apis::Link* edit_link =
       entry.GetLinkByType(google_apis::Link::LINK_EDIT);

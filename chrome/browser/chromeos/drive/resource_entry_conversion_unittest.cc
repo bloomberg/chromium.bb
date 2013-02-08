@@ -29,7 +29,7 @@ TEST(ResourceEntryConversionTest, ConvertResourceEntryToDriveEntryProto_File) {
   EXPECT_EQ("File 1.mp3",  entry_proto.title());
   EXPECT_EQ("File 1.mp3",  entry_proto.base_name());
   EXPECT_EQ("file:2_file_resource_id",  entry_proto.resource_id());
-  EXPECT_EQ("https://file_content_url/",  entry_proto.content_url());
+  EXPECT_EQ("https://file_content_url/",  entry_proto.download_url());
   EXPECT_EQ("https://file1_link_self/file:2_file_resource_id",
             entry_proto.edit_url());
   EXPECT_EQ("",  entry_proto.parent_resource_id());
@@ -111,7 +111,7 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ("Document 1.gdoc",  entry_proto.base_name());  // The suffix added.
   EXPECT_EQ(".gdoc", entry_proto.file_specific_info().document_extension());
   EXPECT_EQ("document:5_document_resource_id",  entry_proto.resource_id());
-  EXPECT_EQ("https://3_document_content/",  entry_proto.content_url());
+  EXPECT_EQ("https://3_document_content/",  entry_proto.download_url());
   EXPECT_EQ("https://3_document_self_link/document:5_document_resource_id",
             entry_proto.edit_url());
   EXPECT_EQ("",  entry_proto.parent_resource_id());
@@ -194,7 +194,7 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ("Sub Directory Folder",  entry_proto.title());
   EXPECT_EQ("Sub Directory Folder",  entry_proto.base_name());
   EXPECT_EQ("folder:sub_dir_folder_resource_id",  entry_proto.resource_id());
-  EXPECT_EQ("https://1_folder_content_url/",  entry_proto.content_url());
+  EXPECT_EQ("https://1_folder_content_url/",  entry_proto.download_url());
   EXPECT_EQ("https://dir2_sub_self_link/folder:sub_dir_folder_resource_id",
             entry_proto.edit_url());
   // The parent resource ID should be obtained as this is a sub directory
@@ -272,7 +272,7 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ("Deleted document",  entry_proto.title());
   EXPECT_EQ("Deleted document.gdoc",  entry_proto.base_name());
   EXPECT_EQ("document:deleted_in_root_id",  entry_proto.resource_id());
-  EXPECT_EQ("https://content_url/",  entry_proto.content_url());
+  EXPECT_EQ("https://content_url/",  entry_proto.download_url());
   EXPECT_EQ("https://edit_url/document%3Adeleted_in_root_id",
             entry_proto.edit_url());
   EXPECT_EQ("",  entry_proto.parent_resource_id());

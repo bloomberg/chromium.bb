@@ -443,10 +443,9 @@ class ResourceEntry : public FeedEntry {
   base::Time last_viewed_time() const { return last_viewed_time_; }
   const std::vector<std::string>& labels() const { return labels_; }
 
-  // Content URL is the main URL of a resource, used to perform
-  // non-destructive operations like downloading a file. Search for
-  // 'content_url' in gdata_wapi_operations.h for details.
-  const GURL& content_url() const { return content_.url(); }
+  // The URL to download a file content.
+  // Search for 'download_url' in gdata_wapi_operations.h for details.
+  const GURL& download_url() const { return content_.url(); }
 
   const std::string& content_mime_type() const { return content_.mime_type(); }
 

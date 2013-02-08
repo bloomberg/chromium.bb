@@ -1435,7 +1435,7 @@ TEST_F(DriveFileSystemTest, MoveFileFromRootToSubDirectory) {
       dest_parent_path);
   ASSERT_TRUE(dest_parent_proto.get());
   ASSERT_TRUE(dest_parent_proto->file_info().is_directory());
-  EXPECT_FALSE(dest_parent_proto->content_url().empty());
+  EXPECT_FALSE(dest_parent_proto->download_url().empty());
 
   // Expect notification for both source and destination directories.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -1477,7 +1477,7 @@ TEST_F(DriveFileSystemTest, MoveFileFromSubDirectoryToRoot) {
       src_parent_path);
   ASSERT_TRUE(src_parent_proto.get());
   ASSERT_TRUE(src_parent_proto->file_info().is_directory());
-  EXPECT_FALSE(src_parent_proto->content_url().empty());
+  EXPECT_FALSE(src_parent_proto->download_url().empty());
 
   // Expect notification for both source and destination directories.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -1526,14 +1526,14 @@ TEST_F(DriveFileSystemTest, MoveFileBetweenSubDirectories) {
       src_parent_path);
   ASSERT_TRUE(src_parent_proto.get());
   ASSERT_TRUE(src_parent_proto->file_info().is_directory());
-  EXPECT_FALSE(src_parent_proto->content_url().empty());
+  EXPECT_FALSE(src_parent_proto->download_url().empty());
 
   ASSERT_TRUE(EntryExists(dest_parent_path));
   scoped_ptr<DriveEntryProto> dest_parent_proto = GetEntryInfoByPathSync(
       dest_parent_path);
   ASSERT_TRUE(dest_parent_proto.get());
   ASSERT_TRUE(dest_parent_proto->file_info().is_directory());
-  EXPECT_FALSE(dest_parent_proto->content_url().empty());
+  EXPECT_FALSE(dest_parent_proto->download_url().empty());
 
   EXPECT_FALSE(EntryExists(interim_file_path));
 

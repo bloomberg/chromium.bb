@@ -980,8 +980,8 @@ void DriveFileSystem::OnGetResourceEntry(
   // The download URL is:
   // 1) src attribute of content element, on GData WAPI.
   // 2) the value of the key 'downloadUrl', on Drive API v2.
-  // In both cases, we can use ResourceEntry::content_url().
-  GURL download_url = entry->content_url();
+  // In both cases, we can use ResourceEntry::download_url().
+  GURL download_url = entry->download_url();
   int64 file_size = entry->file_size();
 
   // The content URL can be empty for non-downloadable files (such as files

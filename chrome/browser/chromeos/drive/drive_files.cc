@@ -264,7 +264,7 @@ void DriveEntry::FromProto(const DriveEntryProto& proto) {
   resource_id_ = proto.resource_id();
   parent_resource_id_ = proto.parent_resource_id();
   edit_url_ = GURL(proto.edit_url());
-  content_url_ = GURL(proto.content_url());
+  download_url_ = GURL(proto.download_url());
   upload_url_ = GURL(proto.upload_url());
   deleted_ = proto.deleted();
   SetBaseNameFromTitle();
@@ -280,7 +280,7 @@ void DriveEntry::ToProto(DriveEntryProto* proto) const {
   proto->set_resource_id(resource_id_);
   proto->set_parent_resource_id(parent_resource_id_);
   proto->set_edit_url(edit_url_.spec());
-  proto->set_content_url(content_url_.spec());
+  proto->set_download_url(download_url_.spec());
   proto->set_upload_url(upload_url_.spec());
   proto->set_deleted(deleted_);
 }

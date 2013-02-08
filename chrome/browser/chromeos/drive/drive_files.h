@@ -73,9 +73,9 @@ class DriveEntry {
   const std::string& resource_id() const { return resource_id_; }
   void set_resource_id(const std::string& res_id) { resource_id_ = res_id; }
 
-  // The content URL is used for downloading regular files as is.
-  const GURL& content_url() const { return content_url_; }
-  void set_content_url(const GURL& url) { content_url_ = url; }
+  // The URL used for downloading regular files as is.
+  const GURL& download_url() const { return download_url_; }
+  void set_download_url(const GURL& url) { download_url_ = url; }
 
   // Upload URL is used for uploading files. See drive.proto for details.
   const GURL& upload_url() const { return upload_url_; }
@@ -126,7 +126,7 @@ class DriveEntry {
   // For example, two files in the same directory with the same name "Foo"
   // will show up in the virtual directory as "Foo" and "Foo (2)".
   GURL edit_url_;
-  GURL content_url_;
+  GURL download_url_;
   GURL upload_url_;
 
   // Remaining fields are not serialized.
