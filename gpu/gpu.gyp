@@ -48,6 +48,8 @@
       'sources': [
         '<@(gles2_implementation_source_files)',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       # Library emulates GLES2 using command_buffers.
@@ -210,6 +212,8 @@
           ],
         }],
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'gl_tests',
