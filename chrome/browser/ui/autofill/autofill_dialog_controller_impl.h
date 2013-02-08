@@ -133,6 +133,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       const std::string& instrument_id,
       const std::string& address_id) OVERRIDE;
   virtual void OnDidSendAutocheckoutStatus() OVERRIDE;
+  virtual void OnDidUpdateInstrument(const std::string& instrument_id) OVERRIDE;
   virtual void OnWalletError() OVERRIDE;
   virtual void OnMalformedResponse() OVERRIDE;
   virtual void OnNetworkError(int response_code) OVERRIDE;

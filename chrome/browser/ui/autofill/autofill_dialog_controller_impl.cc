@@ -709,6 +709,11 @@ void AutofillDialogControllerImpl::OnDidSendAutocheckoutStatus() {
   NOTIMPLEMENTED();
 }
 
+void AutofillDialogControllerImpl::OnDidUpdateInstrument(
+    const std::string& instrument_id) {
+  NOTIMPLEMENTED() << " instrument_id=" << instrument_id;
+}
+
 void AutofillDialogControllerImpl::OnWalletError() {
   NOTIMPLEMENTED();
   wallet_items_.reset();

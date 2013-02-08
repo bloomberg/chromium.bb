@@ -149,6 +149,16 @@ const char kSaveInstrumentAndAddressMissingInstrumentResponse[] =
     "  \"shipping_address_id\":\"shipping_address_id\""
     "}";
 
+const char kUpdateInstrumentValidResponse[] =
+    "{"
+    "  \"instrument_id\":\"instrument_id\""
+    "}";
+
+const char kUpdateInstrumentMalformedResponse[] =
+    "{"
+    " \"cheese\":\"monkeys\""
+    "}";
+
 // The JSON below is used to test against the request payload being sent to
 // Online Wallet. It's indented differently since JSONWriter creates compact
 // JSON from DictionaryValues.
@@ -308,6 +318,26 @@ const char kSendAutocheckoutStatusOfFailureValidRequest[] =
         "\"success\":false"
     "}";
 
+const char kUpdateInstrumentValidRequest[] =
+    "{"
+        "\"api_key\":\"abcdefg\","
+        "\"instrument_phone_number\":\"phone_number\","
+        "\"upgraded_billing_address\":"
+        "{"
+            "\"address_line\":"
+            "["
+                "\"address_line_1\","
+                "\"address_line_2\""
+            "],"
+            "\"administrative_area_name\":\"admin_area_name\","
+            "\"country_name_code\":\"country_name_code\","
+            "\"locality_name\":\"locality_name\","
+            "\"postal_code_number\":\"postal_code_number\","
+            "\"recipient_name\":\"recipient_name\""
+        "},"
+        "\"upgraded_instrument_id\":\"instrument_id\""
+    "}";
+
 const char kEscrowSensitiveInformationRequest[] =
     "gid=obfuscated_gaia_id&cardNumber=4444444444444448&cvv=123";
 
@@ -366,6 +396,7 @@ class MockWalletClientObserver : public WalletClientObserver {
                void(const std::string& instrument_id,
                     const std::string& shipping_address_id));
   MOCK_METHOD0(OnDidSendAutocheckoutStatus, void());
+  MOCK_METHOD1(OnDidUpdateInstrument, void(const std::string& instrument_id));
   MOCK_METHOD0(OnWalletError, void());
   MOCK_METHOD0(OnMalformedResponse, void());
   MOCK_METHOD1(OnNetworkError, void(int response_code));
@@ -699,6 +730,42 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInstrumentMissing) {
                          net::HTTP_OK,
                          kSaveInstrumentAndAddressValidRequest,
                          kSaveInstrumentAndAddressMissingInstrumentResponse);
+}
+
+TEST_F(WalletClientTest, UpdateInstrumentSucceeded) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnDidUpdateInstrument("instrument_id")).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Address> address = GetTestAddress();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.UpdateInstrument("instrument_id",
+                                 *address,
+                                 &observer);
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kUpdateInstrumentValidRequest,
+                         kUpdateInstrumentValidResponse);
+}
+
+TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnMalformedResponse()).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Address> address = GetTestAddress();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.UpdateInstrument("instrument_id",
+                                 *address,
+                                 &observer);
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kUpdateInstrumentValidRequest,
+                         kUpdateInstrumentMalformedResponse);
 }
 
 TEST_F(WalletClientTest, SendAutocheckoutOfStatusSuccess) {

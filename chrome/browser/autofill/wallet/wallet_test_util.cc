@@ -10,22 +10,12 @@
 namespace wallet {
 
 scoped_ptr<Instrument> GetTestInstrument() {
-  scoped_ptr<Address> address(new Address("country_name_code",
-                                          "recipient_name",
-                                          "address_line_1",
-                                          "address_line_2",
-                                          "locality_name",
-                                          "admin_area_name",
-                                          "postal_code_number",
-                                          "phone_number",
-                                          std::string()));
-
   return scoped_ptr<Instrument>(new Instrument("4444444444444448",
                                                "123",
                                                12,
                                                2012,
                                                Instrument::VISA,
-                                               address.Pass()));
+                                               GetTestAddress().Pass()));
 }
 
 scoped_ptr<Address> GetTestShippingAddress() {
@@ -38,7 +28,18 @@ scoped_ptr<Address> GetTestShippingAddress() {
                                          "ship_postal_code_number",
                                          "ship_phone_number",
                                          std::string()));
+}
 
+scoped_ptr<Address> GetTestAddress() {
+  return scoped_ptr<Address>(new Address("country_name_code",
+                                         "recipient_name",
+                                         "address_line_1",
+                                         "address_line_2",
+                                         "locality_name",
+                                         "admin_area_name",
+                                         "postal_code_number",
+                                         "phone_number",
+                                         std::string()));
 }
 
 }  // namespace wallet

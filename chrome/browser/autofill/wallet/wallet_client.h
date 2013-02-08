@@ -104,6 +104,15 @@ class WalletClient : public net::URLFetcherDelegate {
                               const std::string& google_transaction_id,
                               WalletClientObserver* observer);
 
+  // UpdateInstrument changes the instrument with id |instrument_id| with the
+  // information in |billing_address|. Its primary use is for upgrading ZIP code
+  // only addresses or those missing phone numbers. DO NOT change the name on
+  // |billing_address| from the one returned by Online Wallet or this call will
+  // fail.
+  void UpdateInstrument(const std::string& instrument_id,
+                        const Address& billing_address,
+                        WalletClientObserver* observer);
+
  private:
   // TODO(ahutter): Implement this.
   std::string GetRiskParams() { return ""; }
@@ -119,6 +128,7 @@ class WalletClient : public net::URLFetcherDelegate {
     SAVE_INSTRUMENT,
     SAVE_INSTRUMENT_AND_ADDRESS,
     SEND_STATUS,
+    UPDATE_INSTRUMENT,
   };
 
   void MakeWalletRequest(const GURL& url,

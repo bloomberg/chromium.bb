@@ -244,6 +244,26 @@ void WalletClient::SendAutocheckoutStatus(
   MakeWalletRequest(GetSendStatusUrl(), post_body, observer, kJsonMimeType);
 }
 
+void WalletClient::UpdateInstrument(const std::string& instrument_id,
+                                    const Address& billing_address,
+                                    WalletClientObserver* observer) {
+  DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
+  request_type_ = UPDATE_INSTRUMENT;
+
+  DictionaryValue request_dict;
+  request_dict.SetString("api_key", wallet::kApiKey);
+  request_dict.SetString("upgraded_instrument_id", instrument_id);
+  request_dict.SetString("instrument_phone_number",
+                         billing_address.phone_number());
+  request_dict.Set("upgraded_billing_address",
+                   billing_address.ToDictionaryWithoutID().release());
+
+  std::string post_body;
+  base::JSONWriter::Write(&request_dict, &post_body);
+
+  MakeWalletRequest(GetSaveToWalletUrl(), post_body, observer, kJsonMimeType);
+}
+
 void WalletClient::MakeWalletRequest(const GURL& url,
                                      const std::string& post_body,
                                      WalletClientObserver* observer,
@@ -398,6 +418,18 @@ void WalletClient::OnURLFetchComplete(
         } else {
           HandleMalformedResponse(old_request.get());
         }
+      } else {
+        HandleMalformedResponse(old_request.get());
+      }
+      break;
+    case UPDATE_INSTRUMENT:
+      if (response_dict) {
+        std::string instrument_id;
+        response_dict->GetString("instrument_id", &instrument_id);
+        if (!instrument_id.empty())
+          observer_->OnDidUpdateInstrument(instrument_id);
+        else
+          HandleMalformedResponse(old_request.get());
       } else {
         HandleMalformedResponse(old_request.get());
       }

@@ -14,6 +14,7 @@ class Address;
 
 scoped_ptr<Instrument> GetTestInstrument();
 scoped_ptr<Address> GetTestShippingAddress();
+scoped_ptr<Address> GetTestAddress();
 
 }  // namespace wallet
 

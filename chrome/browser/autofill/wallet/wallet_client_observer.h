@@ -59,6 +59,9 @@ class WalletClientObserver {
   // Called when a SendAutocheckoutStatus request finishes successfully.
   virtual void OnDidSendAutocheckoutStatus() = 0;
 
+  // Called when an UpdateInstrument request finishes successfully.
+  virtual void OnDidUpdateInstrument(const std::string& instrument_id) = 0;
+
   // TODO(ahutter): This is going to need more arguments, probably an error
   // code and a message for the user.
   // Called when a request fails due to an Online Wallet error.
