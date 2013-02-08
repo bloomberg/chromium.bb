@@ -118,7 +118,10 @@ static int TryShmOrTempOpen(size_t length, const char* prefix, bool use_temp) {
     if (use_temp) {
       m = open(name, O_RDWR | O_CREAT | O_EXCL, 0);
     } else {
-      m = shm_open(name, O_RDWR | O_CREAT | O_EXCL, 0);
+      // Using 0 for the mode causes shm_unlink to fail with EACCES on Mac
+      // OS X 10.8. As of 10.8, the kernel requires the user to have write
+      // permission to successfully shm_unlink.
+      m = shm_open(name, O_RDWR | O_CREAT | O_EXCL, S_IWUSR);
     }
     if (0 <= m) {
       if (use_temp) {
