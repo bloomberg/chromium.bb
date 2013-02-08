@@ -1,27 +1,29 @@
-<div id="error-message" class="step hidden show-offline-message">
+<div id="error-message" class="step hidden show-offline-error">
   <div class="step-contents">
     <div id="error-message-screen-title">
-      <span id="error-message-title" i18n-content="offlineMessageTitle"
-          class="show-with-offline-message"></span>
       <span id="captive-portal-title" i18n-content="captivePortalTitle"
-          class="show-with-captive-portal show-with-proxy-error"></span>
+          class="show-with-captive-portal-error show-with-proxy-error"></span>
+      <span id="timeout-message-title" i18n-content="timeoutMessageTitle"
+          class="show-with-timeout-error"></span>
+      <span id="error-message-title" i18n-content="offlineMessageTitle"
+          class="show-with-offline-error"></span>
     </div>
     <div id="error-message-body">
       <span id="offline-message-text" i18n-content="offlineMessageBody"
-          class="show-with-offline-message"></span>
+          class="show-with-offline-error"></span>
       <div id="captive-portal-message-text"
-          class="show-with-captive-portal"></div>
+          class="show-with-captive-portal-error"></div>
       <div id="captive-portal-proxy-message-text"
-          class="show-with-captive-portal"></div>
+          class="show-with-captive-portal-error"></div>
       <div id="proxy-message-text"
-          class="show-with-proxy-error"></div>
+          class="show-with-proxy-error show-with-timeout-error"></div>
     </div>
     <div id="offline-network-control" class="control-with-label">
       <label for="offline-networks-list-dropdown" i18n-content="selectNetwork"
-          class="flexible-label dont-show-with-captive-portal"></label>
+          class="flexible-label dont-show-with-captive-portal-error"></label>
       <label for="offline-networks-list-dropdown"
           i18n-content="selectAnotherNetwork"
-          class="flexible-label show-with-captive-portal"></label>
+          class="flexible-label show-with-captive-portal-error"></label>
       <div class="menu-area">
         <div id="offline-networks-list" class="menu-control">
         </div>

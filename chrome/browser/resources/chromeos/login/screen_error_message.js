@@ -18,6 +18,14 @@ cr.define('login', function() {
   // Link which triggers frame reload.
   /** @const */ var RELOAD_PAGE_ID = 'proxy-error-retry-link';
 
+  // Possible states of the error screen.
+  /** @const */ var SCREEN_STATE = {
+      PROXY_ERROR: 'show-proxy-error',
+      CAPTIVE_PORTAL_ERROR: 'show-captive-portal-error',
+      TIMEOUT_ERROR: 'show-timeout-error',
+      OFFLINE_ERROR: 'show-offline-error'
+  };
+
   /**
    * Creates a new offline message screen div.
    * @constructor
@@ -115,13 +123,28 @@ cr.define('login', function() {
     },
 
     /**
+      * Sets current state of the error screen.
+      * @param {String} state New state of the error screen.
+      * @private
+      */
+    setState_: function(state) {
+      var states = [SCREEN_STATE.PROXY_ERROR,
+                    SCREEN_STATE.CAPTIVE_PORTAL_ERROR,
+                    SCREEN_STATE.TIMEOUT_ERROR,
+                    SCREEN_STATE.OFFLINE_ERROR];
+      for (var i = 0; i < states.length; i++) {
+        if (states[i] != state)
+          this.classList.remove(states[i]);
+      }
+      this.classList.add(state);
+    },
+
+    /**
      * Prepares error screen to show proxy error.
      * @private
      */
     showProxyError_: function() {
-      this.classList.remove('show-offline-message');
-      this.classList.remove('show-captive-portal');
-      this.classList.add('show-proxy-error');
+      this.setState_(SCREEN_STATE.PROXY_ERROR);
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
     },
@@ -133,9 +156,17 @@ cr.define('login', function() {
      */
     showCaptivePortalError_: function(network) {
       $(CURRENT_NETWORK_NAME_ID).textContent = network;
-      this.classList.remove('show-offline-message');
-      this.classList.remove('show-proxy-error');
-      this.classList.add('show-captive-portal');
+      this.setState_(SCREEN_STATE.CAPTIVE_PORTAL_ERROR);
+      if (Oobe.getInstance().currentScreen === this)
+        Oobe.getInstance().updateScreenSize(this);
+    },
+
+    /**
+     * Prepares error screen to show gaia loading timeout error.
+     * @private
+     */
+    showTimeoutError_: function() {
+      this.setState_(SCREEN_STATE.TIMEOUT_ERROR);
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
     },
@@ -145,9 +176,7 @@ cr.define('login', function() {
      * @private
      */
     showOfflineError_: function() {
-      this.classList.remove('show-captive-portal');
-      this.classList.remove('show-proxy-error');
-      this.classList.add('show-offline-message');
+      this.setState_(SCREEN_STATE.OFFLINE_ERROR);
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
     },
@@ -182,6 +211,13 @@ cr.define('login', function() {
    */
   ErrorMessageScreen.showCaptivePortalError = function(network) {
     $('error-message').showCaptivePortalError_(network);
+  };
+
+  /**
+   * Prepares error screen to show gaia loading timeout error.
+   */
+  ErrorMessageScreen.showTimeoutError = function() {
+    $('error-message').showTimeoutError_();
   };
 
   /**

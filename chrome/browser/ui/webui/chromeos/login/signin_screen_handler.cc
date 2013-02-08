@@ -153,6 +153,7 @@ bool IsSigninScreen(const OobeUI::Screen screen) {
 bool IsSigninScreenError(ErrorScreenActor::State state) {
   return state == ErrorScreenActor::STATE_PROXY_ERROR ||
       state == ErrorScreenActor::STATE_CAPTIVE_PORTAL_ERROR ||
+      state == ErrorScreenActor::STATE_TIMEOUT_ERROR ||
       state == ErrorScreenActor::STATE_OFFLINE_ERROR;
 }
 
@@ -503,7 +504,8 @@ void SigninScreenHandler::UpdateStateInternal(
   bool is_under_captive_portal =
       (state == NetworkStateInformer::CAPTIVE_PORTAL);
   bool is_proxy_error = IsProxyError(state, reason);
-  bool is_timeout = (reason == ErrorScreenActor::kErrorReasonLoadingTimeout);
+  bool is_gaia_loading_timeout =
+      (reason == ErrorScreenActor::kErrorReasonLoadingTimeout);
   bool is_gaia_signin =
       (IsSigninScreen(GetCurrentScreen()) || IsSigninScreenHiddenByError()) &&
       ui_state_ == UI_STATE_GAIA_SIGNIN;
@@ -532,11 +534,8 @@ void SigninScreenHandler::UpdateStateInternal(
     is_gaia_reloaded = true;
   }
 
-  // Fake portal state for loading timeout.
-  if (reason == ErrorScreenActor::kErrorReasonLoadingTimeout) {
+  if (reason == ErrorScreenActor::kErrorReasonLoadingTimeout)
     is_online = false;
-    is_under_captive_portal = true;
-  }
 
   // Portal was detected via generate_204 redirect on Chrome side.
   // Subsequent call to show dialog if it's already shown does nothing.
@@ -545,12 +544,17 @@ void SigninScreenHandler::UpdateStateInternal(
     is_under_captive_portal = true;
   }
 
+  if (is_online || !is_under_captive_portal)
+    error_screen_actor_->HideCaptivePortal();
+
   if (!is_online && is_gaia_signin && !offline_login_active_) {
     LOG(WARNING) << "Show offline message: state=" << state << ", "
                  << "network_id=" << network_id << ", "
                  << "reason=" << reason << ", "
                  << "is_under_captive_portal=" << is_under_captive_portal;
-    if (is_under_captive_portal && !is_proxy_error) {
+    if (is_proxy_error) {
+      error_screen_actor_->ShowProxyError();
+    } else if (is_under_captive_portal) {
       // Do not bother a user with obsessive captive portal showing. This
       // check makes captive portal being shown only once: either when error
       // screen is shown for the first time or when switching from another
@@ -558,28 +562,12 @@ void SigninScreenHandler::UpdateStateInternal(
       if (!IsGaiaLogin() ||
           (error_screen_actor_->state() !=
            ErrorScreenActor::STATE_CAPTIVE_PORTAL_ERROR)) {
-        // In case of timeout we're suspecting that network might be
-        // a captive portal but would like to check that first.
-        // Otherwise (signal from shill / generate_204 got redirected)
-        // show dialog right away.
-        if (is_timeout)
-          error_screen_actor_->FixCaptivePortal();
-        else
-          error_screen_actor_->ShowCaptivePortal();
+        error_screen_actor_->FixCaptivePortal();
       }
-    } else {
-      error_screen_actor_->HideCaptivePortal();
-    }
-
-    if (is_under_captive_portal) {
-      if (is_proxy_error) {
-        error_screen_actor_->ShowProxyError();
-      } else {
-        std::string network_name = GetNetworkName(service_path);
-        error_screen_actor_->ShowCaptivePortalError(network_name);
-      }
-    } else if (is_proxy_error) {
-      error_screen_actor_->ShowProxyError();
+      std::string network_name = GetNetworkName(service_path);
+      error_screen_actor_->ShowCaptivePortalError(network_name);
+    } else if (is_gaia_loading_timeout) {
+      error_screen_actor_->ShowTimeoutError();
     } else {
       error_screen_actor_->ShowOfflineError();
     }
@@ -589,7 +577,8 @@ void SigninScreenHandler::UpdateStateInternal(
     error_screen_actor_->AllowGuestSignin(guest_signin_allowed);
 
     bool offline_login_allowed = IsOfflineLoginAllowed() &&
-        IsSigninScreenError(error_screen_actor_->state());
+        IsSigninScreenError(error_screen_actor_->state()) &&
+        error_screen_actor_->state() != ErrorScreenActor::STATE_TIMEOUT_ERROR;
     error_screen_actor_->AllowOfflineLogin(offline_login_allowed);
 
     if (GetCurrentScreen() != OobeUI::SCREEN_ERROR_MESSAGE) {
@@ -598,8 +587,6 @@ void SigninScreenHandler::UpdateStateInternal(
       error_screen_actor_->Show(OobeUI::SCREEN_GAIA_SIGNIN, &params);
     }
   } else {
-    error_screen_actor_->HideCaptivePortal();
-
     if (IsSigninScreenHiddenByError()) {
       LOG(WARNING) << "Hide offline message. state=" << state << ", "
                    << "network_id=" << network_id << ", "

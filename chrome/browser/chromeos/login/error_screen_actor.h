@@ -21,6 +21,7 @@ class ErrorScreenActor {
     STATE_PROXY_ERROR,
     STATE_CAPTIVE_PORTAL_ERROR,
     STATE_OFFLINE_ERROR,
+    STATE_TIMEOUT_ERROR
   };
 
   // Possible error reasons.
@@ -64,6 +65,7 @@ class ErrorScreenActor {
   // Each of the following methods shows corresponding error message.
   virtual void ShowProxyError() = 0;
   virtual void ShowCaptivePortalError(const std::string& network) = 0;
+  virtual void ShowTimeoutError() = 0;
   virtual void ShowOfflineError() = 0;
   virtual void AllowGuestSignin(bool allowed) = 0;
   virtual void AllowOfflineLogin(bool allowed) = 0;
