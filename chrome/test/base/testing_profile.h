@@ -190,6 +190,17 @@ class TestingProfile : public Profile {
   // getter is currently only capable of returning a Context that helps test
   // the CookieMonster. See implementation comments for more details.
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
+  virtual net::URLRequestContextGetter* CreateRequestContext(
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          blob_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          file_system_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          developer_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_devtools_protocol_handler) OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;
   virtual content::ResourceContext* GetResourceContext() OVERRIDE;
@@ -244,9 +255,19 @@ class TestingProfile : public Profile {
       GetMediaRequestContextForStoragePartition(
           const FilePath& partition_path,
           bool in_memory) OVERRIDE;
-  virtual net::URLRequestContextGetter* GetRequestContextForStoragePartition(
+  virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
       const FilePath& partition_path,
-      bool in_memory) OVERRIDE;
+      bool in_memory,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          blob_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          file_system_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          developer_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_devtools_protocol_handler) OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
   virtual std::wstring GetName();

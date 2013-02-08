@@ -111,8 +111,6 @@
         'shell/shell_network_delegate.h',
         'shell/shell_render_process_observer.cc',
         'shell/shell_render_process_observer.h',
-        'shell/shell_resource_context.cc',
-        'shell/shell_resource_context.h',
         'shell/shell_resource_dispatcher_host_delegate.cc',
         'shell/shell_resource_dispatcher_host_delegate.h',
         'shell/shell_switches.cc',

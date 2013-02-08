@@ -393,9 +393,6 @@ class MockBrowserContext : public BrowserContext {
   MOCK_METHOD0(GetRequestContext, net::URLRequestContextGetter*());
   MOCK_METHOD1(GetRequestContextForRenderProcess,
                net::URLRequestContextGetter*(int renderer_child_id));
-  MOCK_METHOD2(GetRequestContextForStoragePartition,
-               net::URLRequestContextGetter*(
-                   const base::FilePath& partition_path, bool in_memory));
   MOCK_METHOD0(GetMediaRequestContext,
                net::URLRequestContextGetter*());
   MOCK_METHOD1(GetMediaRequestContextForRenderProcess,

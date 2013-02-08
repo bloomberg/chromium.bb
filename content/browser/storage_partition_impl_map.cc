@@ -46,27 +46,63 @@ namespace content {
 
 namespace {
 
-class BlobProtocolHandler : public webkit_blob::BlobProtocolHandler {
+class BlobProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  BlobProtocolHandler(
-      webkit_blob::BlobStorageController* blob_storage_controller,
-      fileapi::FileSystemContext* file_system_context,
-      base::MessageLoopProxy* loop_proxy)
-      : webkit_blob::BlobProtocolHandler(blob_storage_controller,
-                                         file_system_context,
-                                         loop_proxy) {}
+  BlobProtocolHandler(ChromeBlobStorageContext* blob_storage_context,
+                      fileapi::FileSystemContext* file_system_context)
+      : blob_storage_context_(blob_storage_context),
+        file_system_context_(file_system_context) {}
 
   virtual ~BlobProtocolHandler() {}
 
- private:
-  virtual scoped_refptr<webkit_blob::BlobData>
-      LookupBlobData(net::URLRequest* request) const {
-    const ResourceRequestInfoImpl* info =
-        ResourceRequestInfoImpl::ForRequest(request);
-    if (!info)
-      return NULL;
-    return info->requested_blob_data();
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    if (!webkit_blob_protocol_handler_impl_) {
+      webkit_blob_protocol_handler_impl_.reset(
+          new WebKitBlobProtocolHandlerImpl(blob_storage_context_->controller(),
+                                            file_system_context_));
+    }
+    return webkit_blob_protocol_handler_impl_->MaybeCreateJob(request,
+                                                              network_delegate);
   }
+
+ private:
+  // An implementation of webkit_blob::BlobProtocolHandler that gets
+  // the BlobData from ResourceRequestInfoImpl.
+  class WebKitBlobProtocolHandlerImpl
+      : public webkit_blob::BlobProtocolHandler {
+   public:
+    WebKitBlobProtocolHandlerImpl(
+        webkit_blob::BlobStorageController* blob_storage_controller,
+        fileapi::FileSystemContext* file_system_context)
+        : webkit_blob::BlobProtocolHandler(
+              blob_storage_controller, file_system_context,
+              BrowserThread::GetMessageLoopProxyForThread(
+                  BrowserThread::FILE)) {}
+
+    virtual ~WebKitBlobProtocolHandlerImpl() {}
+
+   private:
+    // webkit_blob::BlobProtocolHandler implementation.
+    virtual scoped_refptr<webkit_blob::BlobData>
+        LookupBlobData(net::URLRequest* request) const OVERRIDE {
+      const ResourceRequestInfoImpl* info =
+          ResourceRequestInfoImpl::ForRequest(request);
+      if (!info)
+        return NULL;
+      return info->requested_blob_data();
+    }
+
+    DISALLOW_COPY_AND_ASSIGN(WebKitBlobProtocolHandlerImpl);
+  };
+
+  const scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
+  const scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+
+  mutable scoped_ptr<WebKitBlobProtocolHandlerImpl>
+  webkit_blob_protocol_handler_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobProtocolHandler);
 };
@@ -75,16 +111,16 @@ class BlobProtocolHandler : public webkit_blob::BlobProtocolHandler {
 // handler because we want to reuse the chrome://scheme (everyone is familiar
 // with it, and no need to expose the content/chrome separation through our UI).
 class DeveloperProtocolHandler
-    : public net::URLRequestJobFactory::Interceptor {
+    : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   DeveloperProtocolHandler(
       AppCacheService* appcache_service,
-      BlobStorageController* blob_storage_controller)
+      ChromeBlobStorageContext* blob_storage_context)
       : appcache_service_(appcache_service),
-        blob_storage_controller_(blob_storage_controller) {}
+        blob_storage_context_(blob_storage_context) {}
   virtual ~DeveloperProtocolHandler() {}
 
-  virtual net::URLRequestJob* MaybeIntercept(
+  virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
     // Check for chrome://view-http-cache/*, which uses its own job type.
@@ -102,7 +138,7 @@ class DeveloperProtocolHandler
     // Next check for chrome://blob-internals/, which uses its own job type.
     if (ViewBlobInternalsJobFactory::IsSupportedURL(request->url())) {
       return ViewBlobInternalsJobFactory::CreateJobForRequest(
-          request, network_delegate, blob_storage_controller_);
+          request, network_delegate, blob_storage_context_->controller());
     }
 
 #if defined(USE_TCMALLOC)
@@ -122,89 +158,10 @@ class DeveloperProtocolHandler
     return NULL;
   }
 
-  virtual net::URLRequestJob* MaybeInterceptRedirect(
-        const GURL& location,
-        net::URLRequest* request,
-        net::NetworkDelegate* network_delegate) const OVERRIDE {
-    return NULL;
-  }
-
-  virtual net::URLRequestJob* MaybeInterceptResponse(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
-    return NULL;
-  }
-
-  virtual bool WillHandleProtocol(const std::string& protocol) const {
-    return protocol == chrome::kChromeUIScheme;
-  }
-
  private:
   AppCacheService* appcache_service_;
-  BlobStorageController* blob_storage_controller_;
+  ChromeBlobStorageContext* blob_storage_context_;
 };
-
-void InitializeURLRequestContext(
-    net::URLRequestContextGetter* context_getter,
-    AppCacheService* appcache_service,
-    FileSystemContext* file_system_context,
-    ChromeBlobStorageContext* blob_storage_context,
-    ResourceContext* resource_context,
-    bool off_the_record) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!context_getter)
-    return;  // tests.
-
-  // This code only modifies the URLRequestJobFactory on the context
-  // to handle blob: URLs, filesystem: URLs, and to let AppCache intercept
-  // the appropriate requests.  This is in addition to the slew of other
-  // initializtion that is done in during creation of the URLRequestContext.
-  // We cannot yet centralize this code because URLRequestContext needs
-  // to be created before the StoragePartition context.
-  //
-  // TODO(ajwong): Fix the ordering so all the initialization is in one spot.
-  net::URLRequestContext* context = context_getter->GetURLRequestContext();
-  net::URLRequestJobFactory* job_factory =
-      const_cast<net::URLRequestJobFactory*>(context->job_factory());
-
-  // Note: if this is called twice with 2 request contexts that share one job
-  // factory (as is the case with a media request context and its related
-  // normal request context) then this will early exit.
-  if (job_factory->IsHandledProtocol(chrome::kBlobScheme))
-    return;  // Already initialized this JobFactory.
-
-  bool set_protocol = job_factory->SetProtocolHandler(
-      chrome::kBlobScheme,
-      new BlobProtocolHandler(
-          blob_storage_context->controller(),
-          file_system_context,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
-  DCHECK(set_protocol);
-  set_protocol = job_factory->SetProtocolHandler(
-      chrome::kFileSystemScheme,
-      CreateFileSystemProtocolHandler(file_system_context));
-  DCHECK(set_protocol);
-
-  job_factory->AddInterceptor(
-      new DeveloperProtocolHandler(appcache_service,
-                                   blob_storage_context->controller()));
-
-  set_protocol = job_factory->SetProtocolHandler(
-      chrome::kChromeUIScheme,
-      URLDataManagerBackend::CreateProtocolHandler(
-          GetURLDataManagerForResourceContext(resource_context),
-          off_the_record));
-  DCHECK(set_protocol);
-
-  set_protocol = job_factory->SetProtocolHandler(
-      chrome::kChromeDevToolsScheme,
-      CreateDevToolsProtocolHandler(
-          GetURLDataManagerForResourceContext(resource_context),
-          off_the_record));
-  DCHECK(set_protocol);
-
-  // TODO(jam): Add the ProtocolHandlerRegistryIntercepter here!
-}
 
 // These constants are used to create the directory structure under the profile
 // where renderers with a non-default storage partition keep their persistent
@@ -488,12 +445,43 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
                                    partition_path);
   partitions_[partition_config] = partition;
 
+  ChromeBlobStorageContext* blob_storage_context =
+      ChromeBlobStorageContext::GetFor(browser_context_);
+  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler> blob_protocol_handler(
+      new BlobProtocolHandler(blob_storage_context,
+                              partition->GetFileSystemContext()));
+  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+      file_system_protocol_handler(
+            CreateFileSystemProtocolHandler(partition->GetFileSystemContext()));
+  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+      developer_protocol_handler(
+          new DeveloperProtocolHandler(partition->GetAppCacheService(),
+                                       blob_storage_context));
+  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+      chrome_protocol_handler(
+          URLDataManagerBackend::CreateProtocolHandler(
+              browser_context_->GetResourceContext(),
+              browser_context_->IsOffTheRecord()));
+  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+      chrome_devtools_protocol_handler(
+          CreateDevToolsProtocolHandler(browser_context_->GetResourceContext(),
+                                        browser_context_->IsOffTheRecord()));
+
   // These calls must happen after StoragePartitionImpl::Create().
-  partition->SetURLRequestContext(
-      partition_domain.empty() ?
-      browser_context_->GetRequestContext() :
-      browser_context_->GetRequestContextForStoragePartition(
-          partition->GetPath(), in_memory));
+  if (partition_domain.empty()) {
+    partition->SetURLRequestContext(
+        GetContentClient()->browser()->CreateRequestContext(browser_context_,
+            blob_protocol_handler.Pass(), file_system_protocol_handler.Pass(),
+            developer_protocol_handler.Pass(), chrome_protocol_handler.Pass(),
+            chrome_devtools_protocol_handler.Pass()));
+  } else {
+    partition->SetURLRequestContext(
+        GetContentClient()->browser()->CreateRequestContextForStoragePartition(
+            browser_context_, partition->GetPath(), in_memory,
+            blob_protocol_handler.Pass(), file_system_protocol_handler.Pass(),
+            developer_protocol_handler.Pass(), chrome_protocol_handler.Pass(),
+            chrome_devtools_protocol_handler.Pass()));
+  }
   partition->SetMediaURLRequestContext(
       partition_domain.empty() ?
       browser_context_->GetMediaRequestContext() :
@@ -611,19 +599,6 @@ void StoragePartitionImplMap::PostCreateInitialization(
                    make_scoped_refptr(partition->GetURLRequestContext()),
                    make_scoped_refptr(
                        browser_context_->GetSpecialStoragePolicy())));
-
-    // Add content's URLRequestContext's hooks.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &InitializeURLRequestContext,
-            make_scoped_refptr(partition->GetURLRequestContext()),
-            make_scoped_refptr(partition->GetAppCacheService()),
-            make_scoped_refptr(partition->GetFileSystemContext()),
-            make_scoped_refptr(
-                ChromeBlobStorageContext::GetFor(browser_context_)),
-            browser_context_->GetResourceContext(),
-            browser_context_->IsOffTheRecord()));
 
     // We do not call InitializeURLRequestContext() for media contexts because,
     // other than the HTTP cache, the media contexts share the same backing

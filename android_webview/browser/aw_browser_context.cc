@@ -6,9 +6,39 @@
 
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "net/url_request/url_request_context.h"
 
 namespace android_webview {
+
+namespace {
+
+class AwResourceContext : public content::ResourceContext {
+ public:
+  explicit AwResourceContext(net::URLRequestContextGetter* getter)
+      : getter_(getter) {}
+  virtual ~AwResourceContext() {}
+
+  // content::ResourceContext implementation.
+  virtual net::HostResolver* GetHostResolver() OVERRIDE {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    return getter_->GetURLRequestContext()->host_resolver();
+  }
+  virtual net::URLRequestContext* GetRequestContext() OVERRIDE {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    return getter_->GetURLRequestContext();
+  }
+
+ private:
+  net::URLRequestContextGetter* getter_;
+
+  DISALLOW_COPY_AND_ASSIGN(AwResourceContext);
+};
+
+}  // namespace
 
 AwBrowserContext::AwBrowserContext(
     const FilePath path,
@@ -43,6 +73,43 @@ void AwBrowserContext::AddVisitedURLs(const std::vector<GURL>& urls) {
   visitedlink_master_->AddURLs(urls);
 }
 
+net::URLRequestContextGetter* AwBrowserContext::CreateRequestContext(
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        blob_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        file_system_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        developer_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_devtools_protocol_handler) {
+  CHECK(url_request_context_getter_);
+  url_request_context_getter_->SetProtocolHandlers(
+      blob_protocol_handler.Pass(), file_system_protocol_handler.Pass(),
+      developer_protocol_handler.Pass(), chrome_protocol_handler.Pass(),
+      chrome_devtools_protocol_handler.Pass());
+  return url_request_context_getter_.get();
+}
+
+net::URLRequestContextGetter*
+AwBrowserContext::CreateRequestContextForStoragePartition(
+    const FilePath& partition_path,
+    bool in_memory,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        blob_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        file_system_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        developer_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_devtools_protocol_handler) {
+  CHECK(url_request_context_getter_);
+  return url_request_context_getter_.get();
+}
+
 FilePath AwBrowserContext::GetPath() {
   return context_storage_path_;
 }
@@ -53,20 +120,12 @@ bool AwBrowserContext::IsOffTheRecord() const {
 }
 
 net::URLRequestContextGetter* AwBrowserContext::GetRequestContext() {
-  DCHECK(url_request_context_getter_);
-  return url_request_context_getter_;
+  return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
 net::URLRequestContextGetter*
 AwBrowserContext::GetRequestContextForRenderProcess(
     int renderer_child_id) {
-  return GetRequestContext();
-}
-
-net::URLRequestContextGetter*
-AwBrowserContext::GetRequestContextForStoragePartition(
-    const FilePath& partition_path,
-    bool in_memory) {
   return GetRequestContext();
 }
 
@@ -88,7 +147,12 @@ AwBrowserContext::GetMediaRequestContextForStoragePartition(
 }
 
 content::ResourceContext* AwBrowserContext::GetResourceContext() {
-  return url_request_context_getter_->GetResourceContext();
+  if (!resource_context_) {
+    CHECK(url_request_context_getter_);
+    resource_context_.reset(new AwResourceContext(
+        url_request_context_getter_.get()));
+  }
+  return resource_context_.get();
 }
 
 content::DownloadManagerDelegate*

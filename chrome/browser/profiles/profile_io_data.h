@@ -80,9 +80,21 @@ class ProfileIOData {
   // Called by Profile.
   content::ResourceContext* GetResourceContext() const;
 
-  // These should only be called at most once each. Ownership is reversed when
-  // they get called, from ProfileIOData owning ChromeURLRequestContext to vice
-  // versa.
+  // Initializes the ProfileIOData object and primes the RequestContext
+  // generation. Must be called prior to any of the Get*() methods other than
+  // GetResouceContext or GetMetricsEnabledStateOnIOThread.
+  void Init(
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          blob_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          file_system_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          developer_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_devtools_protocol_handler) const;
+
   ChromeURLRequestContext* GetMainRequestContext() const;
   ChromeURLRequestContext* GetMediaRequestContext() const;
   ChromeURLRequestContext* GetExtensionsRequestContext() const;
@@ -90,7 +102,17 @@ class ProfileIOData {
       ChromeURLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-          protocol_handler_interceptor) const;
+          protocol_handler_interceptor,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          blob_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          file_system_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          developer_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_devtools_protocol_handler) const;
   ChromeURLRequestContext* GetIsolatedMediaRequestContext(
       ChromeURLRequestContext* app_context,
       const StoragePartitionDescriptor& partition_descriptor) const;
@@ -274,12 +296,6 @@ class ProfileIOData {
       net::FtpTransactionFactory* ftp_transaction_factory,
       net::FtpAuthCache* ftp_auth_cache) const;
 
-  // Lazy initializes the ProfileIOData object the first time a request context
-  // is requested. The lazy logic is implemented here. The actual initialization
-  // is done in LazyInitializeInternal(), implemented by subtypes. Static helper
-  // functions have been provided to assist in common operations.
-  void LazyInitialize() const;
-
   // Called when the profile is destroyed.
   void ShutdownOnUIThread();
 
@@ -315,6 +331,10 @@ class ProfileIOData {
     return load_time_stats_;
   }
 
+  bool initialized() const {
+    return initialized_;
+  }
+
   // Destroys the ResourceContext first, to cancel any URLRequests that are
   // using it still, before we destroy the member variables that those
   // URLRequests may be accessing.
@@ -343,8 +363,6 @@ class ProfileIOData {
    private:
     friend class ProfileIOData;
 
-    void EnsureInitialized();
-
     ProfileIOData* const io_data_;
 
     net::HostResolver* host_resolver_;
@@ -362,7 +380,18 @@ class ProfileIOData {
 
   // Does the actual initialization of the ProfileIOData subtype. Subtypes
   // should use the static helper functions above to implement this.
-  virtual void LazyInitializeInternal(ProfileParams* profile_params) const = 0;
+  virtual void InitializeInternal(
+      ProfileParams* profile_params,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          blob_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          file_system_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          developer_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_devtools_protocol_handler) const = 0;
 
   // Initializes the RequestContext for extensions.
   virtual void InitializeExtensionsRequestContext(
@@ -373,7 +402,17 @@ class ProfileIOData {
       ChromeURLRequestContext* main_context,
       const StoragePartitionDescriptor& details,
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-          protocol_handler_interceptor) const = 0;
+          protocol_handler_interceptor,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          blob_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          file_system_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          developer_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_devtools_protocol_handler) const = 0;
 
   // Does an on-demand initialization of a media RequestContext for the given
   // isolated app.
@@ -390,7 +429,17 @@ class ProfileIOData {
           ChromeURLRequestContext* main_context,
           const StoragePartitionDescriptor& partition_descriptor,
           scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-              protocol_handler_interceptor) const = 0;
+              protocol_handler_interceptor,
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+              blob_protocol_handler,
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+              file_system_protocol_handler,
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+              developer_protocol_handler,
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+              chrome_protocol_handler,
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+              chrome_devtools_protocol_handler) const = 0;
   virtual ChromeURLRequestContext*
       AcquireIsolatedMediaRequestContext(
           ChromeURLRequestContext* app_context,

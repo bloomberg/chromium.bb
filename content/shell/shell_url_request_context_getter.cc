@@ -12,6 +12,7 @@
 #include "base/threading/worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/shell/shell_network_delegate.h"
 #include "content/shell/shell_switches.h"
 #include "net/base/cert_verifier.h"
@@ -26,6 +27,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/proxy/proxy_service.h"
+#include "net/url_request/protocol_intercept_job_factory.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_storage.h"
@@ -37,11 +39,27 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
     bool ignore_certificate_errors,
     const base::FilePath& base_path,
     MessageLoop* io_loop,
-    MessageLoop* file_loop)
+    MessageLoop* file_loop,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        blob_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        file_system_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        developer_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_devtools_protocol_handler)
     : ignore_certificate_errors_(ignore_certificate_errors),
       base_path_(base_path),
       io_loop_(io_loop),
-      file_loop_(file_loop) {
+      file_loop_(file_loop),
+      blob_protocol_handler_(blob_protocol_handler.Pass()),
+      file_system_protocol_handler_(file_system_protocol_handler.Pass()),
+      developer_protocol_handler_(developer_protocol_handler.Pass()),
+      chrome_protocol_handler_(chrome_protocol_handler.Pass()),
+      chrome_devtools_protocol_handler_(
+          chrome_devtools_protocol_handler.Pass()) {
   // Must first be created on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -151,7 +169,24 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         network_session_params, main_backend);
     storage_->set_http_transaction_factory(main_cache);
 
-    storage_->set_job_factory(new net::URLRequestJobFactoryImpl);
+    scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
+        new net::URLRequestJobFactoryImpl());
+    bool set_protocol = job_factory->SetProtocolHandler(
+        chrome::kBlobScheme, blob_protocol_handler_.release());
+    DCHECK(set_protocol);
+    set_protocol = job_factory->SetProtocolHandler(
+        chrome::kFileSystemScheme, file_system_protocol_handler_.release());
+    DCHECK(set_protocol);
+    set_protocol = job_factory->SetProtocolHandler(
+            chrome::kChromeUIScheme, chrome_protocol_handler_.release());
+    DCHECK(set_protocol);
+    set_protocol = job_factory->SetProtocolHandler(
+        chrome::kChromeDevToolsScheme,
+        chrome_devtools_protocol_handler_.release());
+    DCHECK(set_protocol);
+    storage_->set_job_factory(new net::ProtocolInterceptJobFactory(
+        job_factory.PassAs<net::URLRequestJobFactory>(),
+        developer_protocol_handler_.Pass()));
   }
 
   return url_request_context_.get();

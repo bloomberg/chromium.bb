@@ -5,15 +5,13 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_NET_AW_URL_REQUEST_CONTEXT_GETTER_H_
 #define ANDROID_WEBVIEW_BROWSER_NET_AW_URL_REQUEST_CONTEXT_GETTER_H_
 
-#include "content/public/browser/browser_thread_delegate.h"
-
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/public/browser/browser_thread_delegate.h"
 #include "net/http/http_network_session.h"
 #include "net/url_request/url_request_context_getter.h"
-
-namespace content {
-class ResourceContext;
-}
+#include "net/url_request/url_request_job_factory.h"
 
 namespace net {
 class HttpTransactionFactory;
@@ -30,11 +28,9 @@ class AwNetworkDelegate;
 class AwURLRequestContextGetter : public net::URLRequestContextGetter,
                                   public content::BrowserThreadDelegate {
  public:
-  AwURLRequestContextGetter(AwBrowserContext* browser_context);
+  explicit AwURLRequestContextGetter(AwBrowserContext* browser_context);
 
   void InitializeOnNetworkThread();
-
-  content::ResourceContext* GetResourceContext();
 
   // content::BrowserThreadDelegate implementation.
   virtual void Init() OVERRIDE;
@@ -46,16 +42,47 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter,
       GetNetworkTaskRunner() const OVERRIDE;
 
  private:
+  friend class AwBrowserContext;
+
   virtual ~AwURLRequestContextGetter();
+
+  // Prior to GetURLRequestContext() being called, SetProtocolHandlers() is
+  // called to hand over the ProtocolHandlers that GetURLRequestContext() will
+  // later install into |job_factory_|.  This ordering is enforced by having
+  // AwBrowserContext::CreateRequestContext() call SetProtocolHandlers().
+  // SetProtocolHandlers() is necessary because the ProtocolHandlers are created
+  // on the UI thread while |job_factory_| must be created on the IO thread.
+  void SetProtocolHandlers(
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          blob_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          file_system_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          developer_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_devtools_protocol_handler);
 
   void PopulateNetworkSessionParams(net::HttpNetworkSession::Params* params);
 
   AwBrowserContext* browser_context_;  // weak
   scoped_ptr<net::URLRequestContext> url_request_context_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-  scoped_ptr<content::ResourceContext> resource_context_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
   scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
+
+  // ProtocolHandlers are stored here between SetProtocolHandlers() and the
+  // first GetURLRequestContext() call.
+  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler> blob_protocol_handler_;
+  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+      file_system_protocol_handler_;
+  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+      developer_protocol_handler_;
+  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+      chrome_protocol_handler_;
+  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+      chrome_devtools_protocol_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AwURLRequestContextGetter);
 };

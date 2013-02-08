@@ -262,7 +262,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   // The profile instance is only available here in the InitializeOnUIThread
   // method, so we create the url job factory here, then save it for
-  // later delivery to the job factory in LazyInitialize.
+  // later delivery to the job factory in Init().
   params->protocol_handler_interceptor =
       protocol_handler_registry->CreateJobInterceptorFactory();
 
@@ -459,52 +459,58 @@ content::ResourceContext* ProfileIOData::GetResourceContext() const {
   return resource_context_.get();
 }
 
-ChromeURLRequestContext*
-ProfileIOData::GetMainRequestContext() const {
-  LazyInitialize();
+ChromeURLRequestContext* ProfileIOData::GetMainRequestContext() const {
+  DCHECK(initialized_);
   return main_request_context_.get();
 }
 
-ChromeURLRequestContext*
-ProfileIOData::GetMediaRequestContext() const {
-  LazyInitialize();
-  ChromeURLRequestContext* context =
-      AcquireMediaRequestContext();
+ChromeURLRequestContext* ProfileIOData::GetMediaRequestContext() const {
+  DCHECK(initialized_);
+  ChromeURLRequestContext* context = AcquireMediaRequestContext();
   DCHECK(context);
   return context;
 }
 
-ChromeURLRequestContext*
-ProfileIOData::GetExtensionsRequestContext() const {
-  LazyInitialize();
+ChromeURLRequestContext* ProfileIOData::GetExtensionsRequestContext() const {
+  DCHECK(initialized_);
   return extensions_request_context_.get();
 }
 
-ChromeURLRequestContext*
-ProfileIOData::GetIsolatedAppRequestContext(
+ChromeURLRequestContext* ProfileIOData::GetIsolatedAppRequestContext(
     ChromeURLRequestContext* main_context,
     const StoragePartitionDescriptor& partition_descriptor,
     scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-        protocol_handler_interceptor) const {
-  LazyInitialize();
+        protocol_handler_interceptor,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        blob_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        file_system_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        developer_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_devtools_protocol_handler) const {
+  DCHECK(initialized_);
   ChromeURLRequestContext* context = NULL;
   if (ContainsKey(app_request_context_map_, partition_descriptor)) {
     context = app_request_context_map_[partition_descriptor];
   } else {
     context = AcquireIsolatedAppRequestContext(
-        main_context, partition_descriptor,
-        protocol_handler_interceptor.Pass());
+        main_context, partition_descriptor, protocol_handler_interceptor.Pass(),
+        blob_protocol_handler.Pass(), file_system_protocol_handler.Pass(),
+        developer_protocol_handler.Pass(), chrome_protocol_handler.Pass(),
+        chrome_devtools_protocol_handler.Pass());
     app_request_context_map_[partition_descriptor] = context;
   }
   DCHECK(context);
   return context;
 }
 
-ChromeURLRequestContext*
-ProfileIOData::GetIsolatedMediaRequestContext(
+ChromeURLRequestContext* ProfileIOData::GetIsolatedMediaRequestContext(
     ChromeURLRequestContext* app_context,
     const StoragePartitionDescriptor& partition_descriptor) const {
-  LazyInitialize();
+  DCHECK(initialized_);
   ChromeURLRequestContext* context = NULL;
   if (ContainsKey(isolated_media_request_context_map_, partition_descriptor)) {
     context = isolated_media_request_context_map_[partition_descriptor];
@@ -518,16 +524,19 @@ ProfileIOData::GetIsolatedMediaRequestContext(
 }
 
 ExtensionInfoMap* ProfileIOData::GetExtensionInfoMap() const {
-  DCHECK(extension_info_map_) << "ExtensionSystem not initialized";
+  DCHECK(initialized_) << "ExtensionSystem not initialized";
   return extension_info_map_;
 }
 
 CookieSettings* ProfileIOData::GetCookieSettings() const {
+  // Allow either Init() or SetCookieSettingsForTesting() to initialize.
+  DCHECK(initialized_ || cookie_settings_);
   return cookie_settings_;
 }
 
 #if defined(ENABLE_NOTIFICATIONS)
 DesktopNotificationService* ProfileIOData::GetNotificationService() const {
+  DCHECK(initialized_);
   return notification_service_;
 }
 #endif
@@ -578,19 +587,15 @@ ProfileIOData::ResourceContext::ResourceContext(ProfileIOData* io_data)
 
 ProfileIOData::ResourceContext::~ResourceContext() {}
 
-void ProfileIOData::ResourceContext::EnsureInitialized() {
-  io_data_->LazyInitialize();
-}
-
 net::HostResolver* ProfileIOData::ResourceContext::GetHostResolver()  {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureInitialized();
+  DCHECK(io_data_->initialized_);
   return host_resolver_;
 }
 
 net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureInitialized();
+  DCHECK(io_data_->initialized_);
   return request_context_;
 }
 
@@ -605,10 +610,22 @@ std::string ProfileIOData::GetSSLSessionCacheShard() {
   return StringPrintf("profile/%u", ssl_session_cache_instance++);
 }
 
-void ProfileIOData::LazyInitialize() const {
+void ProfileIOData::Init(
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        blob_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        file_system_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        developer_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_devtools_protocol_handler) const {
+  // The basic logic is implemented here. The specific initialization
+  // is done in InitializeInternal(), implemented by subtypes. Static helper
+  // functions have been provided to assist in common operations.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (initialized_)
-    return;
+  DCHECK(!initialized_);
 
   startup_metric_utils::ScopedSlowStartupUMA
       scoped_timer("Startup.SlowStartupProfileIODataInit");
@@ -685,7 +702,12 @@ void ProfileIOData::LazyInitialize() const {
   managed_mode_url_filter_ = profile_params_->managed_mode_url_filter;
 #endif
 
-  LazyInitializeInternal(profile_params_.get());
+  InitializeInternal(profile_params_.get(),
+                     blob_protocol_handler.Pass(),
+                     file_system_protocol_handler.Pass(),
+                     developer_protocol_handler.Pass(),
+                     chrome_protocol_handler.Pass(),
+                     chrome_devtools_protocol_handler.Pass());
 
   profile_params_.reset();
   initialized_ = true;
@@ -711,9 +733,10 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
       chrome::kFileScheme, new net::FileProtocolHandler());
   DCHECK(set_protocol);
 
+  DCHECK(extension_info_map_);
   set_protocol = job_factory->SetProtocolHandler(
       extensions::kExtensionScheme,
-      CreateExtensionProtocolHandler(is_incognito(), GetExtensionInfoMap()));
+      CreateExtensionProtocolHandler(is_incognito(), extension_info_map_));
   DCHECK(set_protocol);
   set_protocol = job_factory->SetProtocolHandler(
       chrome::kExtensionResourceScheme,

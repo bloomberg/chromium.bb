@@ -81,6 +81,50 @@ void ShellContentBrowserClient::RenderProcessHostCreated(
   host->Send(new ShellViewMsg_SetWebKitSourceDir(webkit_source_dir_));
 }
 
+net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
+    BrowserContext* content_browser_context,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        blob_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        file_system_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        developer_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_devtools_protocol_handler) {
+  ShellBrowserContext* shell_browser_context =
+      ShellBrowserContextForBrowserContext(content_browser_context);
+  return shell_browser_context->CreateRequestContext(
+      blob_protocol_handler.Pass(), file_system_protocol_handler.Pass(),
+      developer_protocol_handler.Pass(), chrome_protocol_handler.Pass(),
+      chrome_devtools_protocol_handler.Pass());
+}
+
+net::URLRequestContextGetter*
+ShellContentBrowserClient::CreateRequestContextForStoragePartition(
+    BrowserContext* content_browser_context,
+    const FilePath& partition_path,
+    bool in_memory,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        blob_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        file_system_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        developer_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_devtools_protocol_handler) {
+  ShellBrowserContext* shell_browser_context =
+      ShellBrowserContextForBrowserContext(content_browser_context);
+  return shell_browser_context->CreateRequestContextForStoragePartition(
+      partition_path, in_memory, blob_protocol_handler.Pass(),
+      file_system_protocol_handler.Pass(),
+      developer_protocol_handler.Pass(), chrome_protocol_handler.Pass(),
+      chrome_devtools_protocol_handler.Pass());
+}
+
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     CommandLine* command_line, int child_process_id) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
@@ -164,6 +208,15 @@ ShellBrowserContext*
 
 AccessTokenStore* ShellContentBrowserClient::CreateAccessTokenStore() {
   return new ShellAccessTokenStore(browser_context()->GetRequestContext());
+}
+
+ShellBrowserContext*
+ShellContentBrowserClient::ShellBrowserContextForBrowserContext(
+    BrowserContext* content_browser_context) {
+  if (content_browser_context == browser_context())
+    return browser_context();
+  DCHECK_EQ(content_browser_context, off_the_record_browser_context());
+  return off_the_record_browser_context();
 }
 
 }  // namespace content

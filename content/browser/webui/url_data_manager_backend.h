@@ -22,6 +22,7 @@ class RefCountedMemory;
 }
 
 namespace content {
+class ResourceContext;
 class URLDataManagerBackend;
 class URLDataSourceImpl;
 class URLRequestChromeJob;
@@ -37,9 +38,9 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
   virtual ~URLDataManagerBackend();
 
   // Invoked to create the protocol handler for chrome://. |is_incognito| should
-  // be set for incognito profiles.
+  // be set for incognito profiles. Called on the UI thread.
   static net::URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler(
-      URLDataManagerBackend* backend,
+      content::ResourceContext* resource_context,
       bool is_incognito);
 
   // Adds a DataSource to the collection of data sources.
@@ -95,7 +96,7 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
 // Creates protocol handler for chrome-devtools://. |is_incognito| should be
 // set for incognito profiles.
 net::URLRequestJobFactory::ProtocolHandler*
-CreateDevToolsProtocolHandler(URLDataManagerBackend* backend,
+CreateDevToolsProtocolHandler(content::ResourceContext* resource_context,
                               bool is_incognito);
 
 }  // namespace content

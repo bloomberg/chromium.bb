@@ -116,10 +116,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) = 0;
 
-  virtual net::URLRequestContextGetter* GetRequestContextForStoragePartition(
-      const base::FilePath& partition_path,
-      bool in_memory) = 0;
-
   // Returns the default request context for media resources associated with
   // this context.
   // TODO(creis): Remove this version in favor of the one below.

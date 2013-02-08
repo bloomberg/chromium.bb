@@ -82,14 +82,6 @@ TestBrowserContext::GetRequestContextForRenderProcess(int renderer_child_id) {
   return NULL;
 }
 
-
-net::URLRequestContextGetter*
-TestBrowserContext::GetRequestContextForStoragePartition(
-    const FilePath& partition_path,
-    bool in_memory) {
-  return NULL;
-}
-
 net::URLRequestContextGetter* TestBrowserContext::GetMediaRequestContext() {
   return NULL;
 }

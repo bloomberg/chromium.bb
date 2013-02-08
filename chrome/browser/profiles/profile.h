@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "content/public/browser/browser_context.h"
+#include "net/url_request/url_request_job_factory.h"
 
 class ChromeAppCacheService;
 class ExtensionService;
@@ -225,11 +226,6 @@ class Profile : public content::BrowserContext {
   // is only used for a separate cookie store currently.
   virtual net::URLRequestContextGetter* GetRequestContextForExtensions() = 0;
 
-  // Returns the request context used within |partition_id|.
-  virtual net::URLRequestContextGetter* GetRequestContextForStoragePartition(
-      const base::FilePath& partition_path,
-      bool in_memory) = 0;
-
   // Returns the SSLConfigService for this profile.
   virtual net::SSLConfigService* GetSSLConfigService() = 0;
 
@@ -251,6 +247,45 @@ class Profile : public content::BrowserContext {
   // this profile. For the single profile case, this corresponds to the time
   // the user started chrome.
   virtual base::Time GetStartTime() const = 0;
+
+  // Creates the main net::URLRequestContextGetter that will be returned by
+  // GetRequestContext(). Should only be called once per ContentBrowserClient
+  // object. This function is exposed because of the circular dependency where
+  // GetStoragePartition() is used to retrieve the request context, but creation
+  // still has to happen in the Profile so the StoragePartition calls
+  // ContextBrowserClient to call this function.
+  // TODO(ajwong): Remove once http://crbug.com/159193 is resolved.
+  virtual net::URLRequestContextGetter* CreateRequestContext(
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          blob_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          file_system_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          developer_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_devtools_protocol_handler) = 0;
+
+  // Creates the net::URLRequestContextGetter for a StoragePartition. Should
+  // only be called once per partition_path per ContentBrowserClient object.
+  // This function is exposed because the request context is retrieved from the
+  // StoragePartition, but creation still has to happen in the Profile so the
+  // StoragePartition calls ContextBrowserClient to call this function.
+  // TODO(ajwong): Remove once http://crbug.com/159193 is resolved.
+  virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
+      const base::FilePath& partition_path,
+      bool in_memory,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          blob_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          file_system_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          developer_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_devtools_protocol_handler) = 0;
 
   // Returns the last directory that was chosen for uploading or opening a file.
   virtual base::FilePath last_selected_directory() = 0;

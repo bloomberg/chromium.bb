@@ -43,13 +43,37 @@ class OffTheRecordProfileIOData : public ProfileIOData {
     // safely be used during initialization.
     content::ResourceContext* GetResourceContextNoInit() const;
     scoped_refptr<ChromeURLRequestContextGetter>
-        GetMainRequestContextGetter() const;
+        CreateMainRequestContextGetter(
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                blob_protocol_handler,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                file_system_protocol_handler,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                developer_protocol_handler,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                chrome_protocol_handler,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                chrome_devtools_protocol_handler) const;
     scoped_refptr<ChromeURLRequestContextGetter>
         GetExtensionsRequestContextGetter() const;
     scoped_refptr<ChromeURLRequestContextGetter>
         GetIsolatedAppRequestContextGetter(
             const FilePath& partition_path,
             bool in_memory) const;
+    scoped_refptr<ChromeURLRequestContextGetter>
+        CreateIsolatedAppRequestContextGetter(
+            const FilePath& partition_path,
+            bool in_memory,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                blob_protocol_handler,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                file_system_protocol_handler,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                developer_protocol_handler,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                chrome_protocol_handler,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                chrome_devtools_protocol_handler) const;
 
    private:
     typedef std::map<StoragePartitionDescriptor,
@@ -94,15 +118,35 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   OffTheRecordProfileIOData();
   virtual ~OffTheRecordProfileIOData();
 
-  virtual void LazyInitializeInternal(
-      ProfileParams* profile_params) const OVERRIDE;
+  virtual void InitializeInternal(
+      ProfileParams* profile_params,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          blob_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          file_system_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          developer_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_devtools_protocol_handler) const OVERRIDE;
   virtual void InitializeExtensionsRequestContext(
       ProfileParams* profile_params) const OVERRIDE;
   virtual ChromeURLRequestContext* InitializeAppRequestContext(
       ChromeURLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-          protocol_handler_interceptor) const OVERRIDE;
+          protocol_handler_interceptor,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          blob_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          file_system_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          developer_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_devtools_protocol_handler) const OVERRIDE;
   virtual ChromeURLRequestContext* InitializeMediaRequestContext(
       ChromeURLRequestContext* original_context,
       const StoragePartitionDescriptor& partition_descriptor) const OVERRIDE;
@@ -113,7 +157,17 @@ class OffTheRecordProfileIOData : public ProfileIOData {
           ChromeURLRequestContext* main_context,
           const StoragePartitionDescriptor& partition_descriptor,
           scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-              protocol_handler_interceptor) const OVERRIDE;
+              protocol_handler_interceptor,
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+              blob_protocol_handler,
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+              file_system_protocol_handler,
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+              developer_protocol_handler,
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+              chrome_protocol_handler,
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+              chrome_devtools_protocol_handler) const OVERRIDE;
   virtual ChromeURLRequestContext*
       AcquireIsolatedMediaRequestContext(
           ChromeURLRequestContext* app_context,
