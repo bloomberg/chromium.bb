@@ -8,7 +8,8 @@ weston_tests =				\
 	keyboard-test			\
 	event-test			\
 	button-test			\
-	text-test
+	text-test			\
+	$(xwayland_test)
 
 TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tests/weston-tests-env
 
@@ -73,6 +74,14 @@ text_test_SOURCES =				\
 	../clients/text-protocol.c		\
 	$(weston_test_client_src)
 text_test_LDADD = $(weston_test_client_libs)
+
+xwayland_test_SOURCES = xwayland-test.c	$(weston_test_client_src)
+
+xwayland_test_LDADD = $(weston_test_client_libs) $(XWAYLAND_TEST_LIBS)
+
+if ENABLE_XWAYLAND_TEST
+xwayland_test = xwayland_test
+endif
 
 matrix_test_SOURCES =				\
 	matrix-test.c				\

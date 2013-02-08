@@ -62,6 +62,12 @@ if test x$enable_xwayland = xyes; then
   AC_SUBST([XSERVER_PATH])
 fi
 
+AC_ARG_ENABLE(xwayland-test, [  --enable-xwayland-test],,
+              enable_xwayland_test=yes)
+AM_CONDITIONAL(ENABLE_XWAYLAND_TEST, test x$enable_xwayland_test = xyes)
+if test x$enable_xwayland_test = xyes; then
+  PKG_CHECK_MODULES([XWAYLAND_TEST], xcb xcb-dri2 libdrm)
+fi
 
 AC_ARG_ENABLE(x11-compositor, [  --enable-x11-compositor],,
 	      enable_x11_compositor=yes)
