@@ -34,6 +34,7 @@ class NetworkScreen;
 class OobeDisplay;
 class RegistrationScreen;
 class ResetScreen;
+class TermsOfServiceScreen;
 class UpdateScreen;
 class UserImageScreen;
 class WizardScreen;
@@ -58,11 +59,6 @@ class WizardController : public ScreenObserver {
   // Returns the default wizard controller if it has been created.
   static WizardController* default_controller() {
     return default_controller_;
-  }
-
-  // Whether the user image selection step should be skipped.
-  static bool skip_user_image_selection() {
-    return skip_user_image_selection_;
   }
 
   // Returns true if EULA has been accepted.
@@ -137,6 +133,7 @@ class WizardController : public ScreenObserver {
   HTMLPageScreen* GetHTMLPageScreen();
   EnterpriseEnrollmentScreen* GetEnterpriseEnrollmentScreen();
   ResetScreen* GetResetScreen();
+  TermsOfServiceScreen* GetTermsOfServiceScreen();
 
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
@@ -156,6 +153,7 @@ class WizardController : public ScreenObserver {
   static const char kHTMLPageScreenName[];
   static const char kEnterpriseEnrollmentScreenName[];
   static const char kResetScreenName[];
+  static const char kTermsOfServiceScreenName[];
 
  private:
   // Show specific screen.
@@ -167,6 +165,7 @@ class WizardController : public ScreenObserver {
   void ShowHTMLPageScreen();
   void ShowEnterpriseEnrollmentScreen();
   void ShowResetScreen();
+  void ShowTermsOfServiceScreen();
 
   // Shows images login screen.
   void ShowLoginScreen();
@@ -190,6 +189,8 @@ class WizardController : public ScreenObserver {
   void OnEnterpriseAutoEnrollmentDone();
   void OnResetCanceled();
   void OnOOBECompleted();
+  void OnTermsOfServiceDeclined();
+  void OnTermsOfServiceAccepted();
 
   // Loads brand code on I/O enabled thread and stores to Local State.
   void LoadBrandCodeFromFile();
@@ -228,6 +229,7 @@ class WizardController : public ScreenObserver {
   // Logs in the specified user via default login screen.
   void Login(const std::string& username, const std::string& password);
 
+  // Whether the user image selection step should be skipped.
   static bool skip_user_image_selection_;
 
   static bool zero_delay_enabled_;
@@ -242,6 +244,7 @@ class WizardController : public ScreenObserver {
   scoped_ptr<HTMLPageScreen> html_page_screen_;
   scoped_ptr<EnterpriseEnrollmentScreen>
       enterprise_enrollment_screen_;
+  scoped_ptr<TermsOfServiceScreen> terms_of_service_screen_;
 
   // Screen that's currently active.
   WizardScreen* current_screen_;

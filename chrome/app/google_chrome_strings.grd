@@ -880,7 +880,7 @@ For Google Chrome, processes used to display diagnostics information (such as th
         <message name="IDS_KEYBOARD_OVERLAY_SHOW_WRENCH_MENU" desc="The text in the keyboard overlay to explain the shortcut that opens the main Chrome menu.">
           Show the Chrome menu
         </message>
-     </if>
+      </if>
 
       <!-- App list -->
       <message name="IDS_APP_LIST_SHORTCUT_NAME" desc="Name for the Chrome App List to appear in the taskbar and in any shortcuts to it.">
@@ -895,6 +895,13 @@ For Google Chrome, processes used to display diagnostics information (such as th
       <message name="IDS_APP_LIST_SIGNIN_TEXT" desc="Text for when the launcher needs to sign in.">
         You need to be signed into Chrome to use apps. This allows Chrome to sync your apps, bookmarks, history, passwords and other settings across devices.
       </message>
+
+      <!-- Chrome OS OOBE Terms of Service screen-->
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_TERMS_OF_SERVICE_SCREEN_SUBHEADING" desc="Subheading at the top of the Terms of Service screen.">
+          <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires that you read and accept the following Terms of Service before using this device. These terms do not expand, modify or limit the Google Chrome OS Terms.
+        </message>
+      </if>
     </messages>
   </release>
 </grit>

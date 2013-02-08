@@ -15,6 +15,7 @@ class EnterpriseEnrollmentScreenActor;
 class EulaScreenActor;
 class NetworkScreenActor;
 class ResetScreenActor;
+class TermsOfServiceScreenActor;
 class UpdateScreenActor;
 class UserImageScreenActor;
 // TODO(altimofeev): use real actors instead
@@ -41,6 +42,7 @@ class OobeDisplay {
   virtual EnterpriseEnrollmentScreenActor*
       GetEnterpriseEnrollmentScreenActor() = 0;
   virtual ResetScreenActor* GetResetScreenActor() = 0;
+  virtual TermsOfServiceScreenActor* GetTermsOfServiceScreenActor() = 0;
   virtual UserImageScreenActor* GetUserImageScreenActor() = 0;
   // TODO(altimofeev): use real actors instead.
   virtual ViewScreenDelegate* GetRegistrationScreenActor() = 0;

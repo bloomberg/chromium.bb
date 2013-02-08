@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
@@ -140,6 +141,7 @@ const char OobeUI::kScreenUserImagePicker[]     = "user-image";
 const char OobeUI::kScreenTpmError[]            = "tpm-error-message";
 const char OobeUI::kScreenPasswordChanged[]     = "password-changed";
 const char OobeUI::kScreenManagedUserCreation[] = "managed-user-creation";
+const char OobeUI::kScreenTermsOfService[]      = "terms-of-service";
 
 OobeUI::OobeUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
@@ -149,6 +151,7 @@ OobeUI::OobeUI(content::WebUI* web_ui)
       reset_screen_actor_(NULL),
       error_screen_handler_(NULL),
       signin_screen_handler_(NULL),
+      terms_of_service_screen_actor_(NULL),
       user_image_screen_actor_(NULL),
       current_screen_(SCREEN_UNKNOWN) {
   InitializeScreenMaps();
@@ -184,6 +187,11 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   enterprise_enrollment_screen_actor_ =
       enterprise_oauth_enrollment_screen_handler;
   AddScreenHandler(enterprise_oauth_enrollment_screen_handler);
+
+  TermsOfServiceScreenHandler* terms_of_service_screen_handler =
+      new TermsOfServiceScreenHandler;
+  terms_of_service_screen_actor_ = terms_of_service_screen_handler;
+  AddScreenHandler(terms_of_service_screen_handler);
 
   UserImageScreenHandler* user_image_screen_handler =
       new UserImageScreenHandler();
@@ -255,6 +263,10 @@ ResetScreenActor* OobeUI::GetResetScreenActor() {
   return reset_screen_actor_;
 }
 
+TermsOfServiceScreenActor* OobeUI::GetTermsOfServiceScreenActor() {
+  return terms_of_service_screen_actor_;
+}
+
 UserImageScreenActor* OobeUI::GetUserImageScreenActor() {
   return user_image_screen_actor_;
 }
@@ -323,6 +335,7 @@ void OobeUI::InitializeScreenMaps() {
   screen_names_[SCREEN_TPM_ERROR] = kScreenTpmError;
   screen_names_[SCREEN_PASSWORD_CHANGED] = kScreenPasswordChanged;
   screen_names_[SCREEN_CREATE_MANAGED_USER] = kScreenManagedUserCreation;
+  screen_names_[SCREEN_TERMS_OF_SERVICE] = kScreenTermsOfService;
 
   screen_ids_.clear();
   for (size_t i = 0; i < screen_names_.size(); ++i)

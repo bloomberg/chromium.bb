@@ -346,6 +346,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSessionLengthLimit,
     prefs::kSessionLengthLimit,
     Value::TYPE_INTEGER },
+  { key::kTermsOfServiceURL,
+    prefs::kTermsOfServiceURL,
+    Value::TYPE_STRING },
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
