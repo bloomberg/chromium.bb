@@ -92,7 +92,7 @@ class OneClickSigninHelper
   static bool CanOffer(content::WebContents* web_contents,
                        CanOfferFor can_offer_for,
                        const std::string& email,
-                       int* error_message_id);
+                       std::string* error_message);
 
   // Returns true if the one-click signin feature can be offered at this time.
   // It can be offered if the io_data is not in an incognito window and if the

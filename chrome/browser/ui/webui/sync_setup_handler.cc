@@ -38,6 +38,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -612,6 +613,20 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
     browser = new Browser(Browser::CreateParams(
         Browser::TYPE_TABBED, GetProfile(), chrome::GetActiveDesktop()));
   }
+
+  // If the signin manager already has an authenticated username, this is a
+  // re-auth scenario, and we need to ensure that the user signs in with the
+  // same email address.
+  std::string email = SigninManagerFactory::GetForProfile(
+      browser->profile())->GetAuthenticatedUsername();
+  if (!email.empty()) {
+    std::string fragment("Email=");
+    fragment += email;
+    GURL::Replacements replacements;
+    replacements.SetRefStr(fragment);
+    url = url.ReplaceComponents(replacements);
+  }
+
   active_gaia_signin_tab_ = browser->OpenURL(
       content::OpenURLParams(url, content::Referrer(), SINGLETON_TAB,
                              content::PAGE_TRANSITION_AUTO_BOOKMARK, false));
@@ -1163,8 +1178,7 @@ void SyncSetupHandler::OpenConfigureSync() {
 void SyncSetupHandler::FocusUI() {
   DCHECK(IsActiveLogin());
   // Bring the GAIA tab to the foreground if there is one.
-  if (SyncPromoUI::UseWebBasedSigninFlow() &&
-      signin_tracker_ &&
+  if (SyncPromoUI::UseWebBasedSigninFlow() && signin_tracker_ &&
       active_gaia_signin_tab_) {
     BringTabToFront(active_gaia_signin_tab_);
   } else {
@@ -1176,6 +1190,24 @@ void SyncSetupHandler::FocusUI() {
 void SyncSetupHandler::CloseUI() {
   DCHECK(IsActiveLogin());
   CloseOverlay();
+}
+
+void SyncSetupHandler::DidStopLoading(
+    content::RenderViewHost* render_view_host) {
+  DCHECK(active_gaia_signin_tab_);
+
+  // If the user lands on a page outside of Gaia, assume they have navigated
+  // away and are no longer thinking about signing in with this tab.  Treat
+  // this as if the user closed the tab. However, don't actually close the tab
+  // since the user is doing something with it.  Disconnect and forget about it
+  // before closing down the sync setup.
+  // Ignore navigations to about:blank since that can happen during sign in.
+  const GURL& url = active_gaia_signin_tab_->GetURL();
+  if (url != GURL("about:blank") && !gaia::IsGaiaSignonRealm(url.GetOrigin())) {
+    content::WebContentsObserver::Observe(NULL);
+    active_gaia_signin_tab_ = NULL;
+    CloseSyncSetup();
+  }
 }
 
 void SyncSetupHandler::WebContentsDestroyed(

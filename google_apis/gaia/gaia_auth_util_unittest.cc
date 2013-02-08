@@ -85,6 +85,14 @@ TEST(GaiaAuthUtilTest, SanitizeExistingDomain) {
   EXPECT_EQ(existing, SanitizeEmail(existing));
 }
 
+TEST(GaiaAuthUtilTest, AreEmailsSame) {
+  EXPECT_TRUE(AreEmailsSame("foo", "foo"));
+  EXPECT_TRUE(AreEmailsSame("foo", "foo@gmail.com"));
+  EXPECT_TRUE(AreEmailsSame("foo@gmail.com", "Foo@Gmail.com"));
+  EXPECT_FALSE(AreEmailsSame("foo@gmail.com", "foo@othermail.com"));
+  EXPECT_FALSE(AreEmailsSame("user@gmail.com", "foo@gmail.com"));
+}
+
 TEST(GaiaAuthUtilTest, IsGaiaSignonRealm) {
   // Only https versions of Gaia URLs should be considered valid.
   EXPECT_TRUE(IsGaiaSignonRealm(GURL("https://accounts.google.com/")));

@@ -384,6 +384,15 @@ TEST_F(SigninManagerTest, SignInWithCredentials) {
   ExpectSignInWithCredentialsSuccess();
 }
 
+TEST_F(SigninManagerTest, SignInWithCredentialsNonCanonicalEmail) {
+  manager_->Initialize(profile_.get());
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  manager_->StartSignInWithCredentials("0", "user", "password");
+
+  ExpectSignInWithCredentialsSuccess();
+}
+
 TEST_F(SigninManagerTest, SignInWithCredentialsWrongEmail) {
   manager_->Initialize(profile_.get());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());

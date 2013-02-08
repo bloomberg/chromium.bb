@@ -13736,8 +13736,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_PROMO_SIGNIN_HEADER" desc="The header at the top of the GAIA sign in box. Note that sync here is intended as a verb, not a noun.">
         Sign in and sync
       </message>
-      <message name="IDS_SYNC_UNRECOVERABLE_ERROR" desc="Message shown when sync
-        setup failed due to an unrecoverable error and can't continue.">
+      <message name="IDS_SYNC_UNRECOVERABLE_ERROR" desc="Message shown when sync setup failed due to an unrecoverable error and can't continue.">
         Oops, Sync has stopped working.
       </message>
       <message name="IDS_SYNC_STATUS_UNRECOVERABLE_ERROR" desc="Message shown on the personal options page when there is an unrecoverable error.">

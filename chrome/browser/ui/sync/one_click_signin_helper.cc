@@ -389,12 +389,12 @@ OneClickSigninHelper::~OneClickSigninHelper() {
 bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
                                     CanOfferFor can_offer_for,
                                     const std::string& email,
-                                    int* error_message_id) {
+                                    std::string* error_message) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     VLOG(1) << "OneClickSigninHelper::CanOffer";
 
-  if (error_message_id)
-    *error_message_id = 0;
+  if (error_message)
+    error_message->clear();
 
   if (!web_contents)
     return false;
@@ -420,22 +420,32 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
     if (!manager)
       return false;
 
-    if (!manager->GetAuthenticatedUsername().empty()) {
-      if (error_message_id)
-        *error_message_id = IDS_SYNC_SETUP_ERROR;
+    // If the signin manager already has an authenticated name, then this is a
+    // re-auth scenario.  Make sure the email just signed in corresponds to the
+    // the one sign in manager expects.
+    std::string current_email = manager->GetAuthenticatedUsername();
+    const bool same_email = gaia::AreEmailsSame(current_email, email);
+    if (!current_email.empty() && !same_email) {
+      if (error_message) {
+        error_message->assign(
+            l10n_util::GetStringFUTF8(IDS_SYNC_WRONG_EMAIL,
+                                      UTF8ToUTF16(current_email)));
+      }
       return false;
     }
 
     // Make sure this username is not prohibited by policy.
     if (!manager->IsAllowedUsername(email)) {
-      if (error_message_id)
-        *error_message_id = IDS_SYNC_LOGIN_NAME_PROHIBITED;
+      if (error_message) {
+        error_message->assign(
+            l10n_util::GetStringUTF8(IDS_SYNC_LOGIN_NAME_PROHIBITED));
+      }
       return false;
     }
 
     // If some profile, not just the current one, is already connected to this
     // account, don't show the infobar.
-    if (g_browser_process) {
+    if (g_browser_process && !same_email) {
       ProfileManager* manager = g_browser_process->profile_manager();
       if (manager) {
         string16 email16 = UTF8ToUTF16(email);
@@ -443,8 +453,10 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
 
         for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
           if (email16 == cache.GetUserNameOfProfileAtIndex(i)) {
-            if (error_message_id)
-              *error_message_id = IDS_SYNC_USER_NAME_IN_USE_ERROR;
+            if (error_message) {
+              error_message->assign(
+                  l10n_util::GetStringUTF8(IDS_SYNC_USER_NAME_IN_USE_ERROR));
+            }
             return false;
           }
         }
@@ -692,8 +704,6 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
   if (!helper)
     return;
 
-  int error_message_id = 0;
-
   // Save the email in the one-click signin manager.  The manager may
   // not exist if the contents is incognito or if the profile is already
   // connected to a Google account.
@@ -712,12 +722,13 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
       (auto_accept != AUTO_ACCEPT_EXPLICIT &&
           helper->auto_accept_ != AUTO_ACCEPT_EXPLICIT) ?
           CAN_OFFER_FOR_INTERSTITAL_ONLY : CAN_OFFER_FOR_ALL;
+  std::string error_message;
 
   if (!web_contents || !CanOffer(web_contents, can_offer_for, email,
-                                 &error_message_id)) {
+                                 &error_message)) {
     VLOG(1) << "OneClickSigninHelper::ShowInfoBarUIThread: not offering";
-    if (helper && helper->error_message_.empty() && error_message_id != 0)
-      helper->error_message_ = l10n_util::GetStringUTF8(error_message_id);
+    if (helper && helper->error_message_.empty() && !error_message.empty())
+      helper->error_message_ = error_message;
 
     return;
   }

@@ -49,6 +49,11 @@ std::string SanitizeEmail(const std::string& email_address) {
   return sanitized;
 }
 
+bool AreEmailsSame(const std::string& email1, const std::string& email2) {
+  return gaia::CanonicalizeEmail(gaia::SanitizeEmail(email1)) ==
+      gaia::CanonicalizeEmail(gaia::SanitizeEmail(email2));
+}
+
 std::string ExtractDomainName(const std::string& email_address) {
   // First canonicalize which will also verify we have proper domain part.
   std::string email = CanonicalizeEmail(email_address);

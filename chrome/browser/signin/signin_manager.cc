@@ -33,6 +33,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/cookie_monster.h"
@@ -357,7 +358,7 @@ void SigninManager::StartSignIn(const std::string& username,
                                 const std::string& login_token,
                                 const std::string& login_captcha) {
   DCHECK(authenticated_username_.empty() ||
-         username == authenticated_username_);
+         gaia::AreEmailsSame(username, authenticated_username_));
 
   if (!PrepareForSignin(SIGNIN_TYPE_CLIENT_LOGIN, username, password))
     return;
@@ -403,7 +404,8 @@ void SigninManager::ProvideSecondFactorAccessCode(
 void SigninManager::StartSignInWithCredentials(const std::string& session_index,
                                                const std::string& username,
                                                const std::string& password) {
-  DCHECK(authenticated_username_.empty());
+  DCHECK(authenticated_username_.empty() ||
+         gaia::AreEmailsSame(username, authenticated_username_));
 
   if (!PrepareForSignin(SIGNIN_TYPE_WITH_CREDENTIALS, username, password))
     return;
@@ -663,8 +665,8 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
   // display name. If the name returned by GetUserInfo does not match what is
   // expected, return an error.
   if (type_ == SIGNIN_TYPE_WITH_CREDENTIALS &&
-      base::strcasecmp(display_email_iter->second.c_str(),
-                       possibly_invalid_username_.c_str()) != 0) {
+      !gaia::AreEmailsSame(display_email_iter->second,
+                           possibly_invalid_username_)) {
     OnGetUserInfoKeyNotFound(kGetInfoDisplayEmailKey);
     return;
   }

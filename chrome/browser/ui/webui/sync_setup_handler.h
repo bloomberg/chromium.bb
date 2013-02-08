@@ -46,6 +46,8 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   virtual void CloseUI() OVERRIDE;
 
   // content::WebContentsObserver implementation.
+  virtual void DidStopLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void WebContentsDestroyed(
       content::WebContents* web_contents) OVERRIDE;
 
