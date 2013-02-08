@@ -293,6 +293,12 @@ bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
 
   base::WeakPtr<GpuChannel>* weak_ptr(new base::WeakPtr<GpuChannel>(
       weak_factory_.GetWeakPtr()));
+
+  // Add the MailboxMessageFilter first so that SyncPointMessageFilter
+  // does not count IPCs handled by the MailboxMessageFilter.
+  channel_->AddFilter(
+      new MailboxMessageFilter(mailbox_manager_->private_key()));
+
   unprocessed_messages_ = new base::AtomicRefCount(0);
   filter_ = new SyncPointMessageFilter(
       weak_ptr,
@@ -302,9 +308,6 @@ bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
       unprocessed_messages_);
   io_message_loop_ = io_message_loop;
   channel_->AddFilter(filter_);
-
-  channel_->AddFilter(
-      new MailboxMessageFilter(mailbox_manager_->private_key()));
 
   return true;
 }
