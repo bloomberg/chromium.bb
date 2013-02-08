@@ -949,9 +949,17 @@ TEST_F(ProfileSyncServiceSessionTest, StaleSessionRefresh) {
   VerifySyncedSession(tag, session_reference, *(foreign_sessions[0]));
 }
 
+// Crashes sometimes on Windows, particularly XP.
+// See http://crbug.com/174951
+#if defined(OS_WIN)
+#define MAYBE_ValidTabs DISABLED_ValidTabs
+#else
+#define MAYBE_ValidTabs ValidTabs
+#endif  // defined(OS_WIN)
+
 // Test that tabs with nothing but "chrome://*" and "file://*" navigations are
 // not be synced.
-TEST_F(ProfileSyncServiceSessionTest, ValidTabs) {
+TEST_F(ProfileSyncServiceSessionTest, MAYBE_ValidTabs) {
   CreateRootHelper create_root(this);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
