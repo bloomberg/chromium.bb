@@ -440,7 +440,8 @@ class SetLastModifiedFunction : public FileBrowserFunction {
  protected:
   virtual ~SetLastModifiedFunction();
 
-  void RunOperationOnFileThread(std::string file_url, time_t timestamp);
+  void RunOperationOnFileThread(const FilePath& local_path,
+                                time_t timestamp);
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;

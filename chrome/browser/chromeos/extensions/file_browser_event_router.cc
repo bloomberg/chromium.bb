@@ -179,7 +179,6 @@ FileBrowserEventRouter::FileBrowserEventRouter(
 }
 
 FileBrowserEventRouter::~FileBrowserEventRouter() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void FileBrowserEventRouter::Shutdown() {

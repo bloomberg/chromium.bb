@@ -1763,6 +1763,8 @@ SetLastModifiedFunction::~SetLastModifiedFunction() {
 }
 
 bool SetLastModifiedFunction::RunImpl() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (args_->GetSize() != 2) {
     return false;
   }
@@ -1775,28 +1777,31 @@ bool SetLastModifiedFunction::RunImpl() {
   if (!args_->GetString(1, &timestamp))
     return false;
 
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+  FilePath local_path = GetLocalPathFromURL(file_system_context,
+                                            GURL(file_url));
+
   BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(
             &SetLastModifiedFunction::RunOperationOnFileThread,
             this,
-            file_url,
+            local_path,
             strtoul(timestamp.c_str(), NULL, 0)));
 
   return true;
 }
 
-void SetLastModifiedFunction::RunOperationOnFileThread(std::string file_url,
-                                                       time_t timestamp) {
+void SetLastModifiedFunction::RunOperationOnFileThread(
+    const FilePath& local_path,
+    time_t timestamp) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
   bool succeeded = false;
 
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
-
-  FilePath local_path = GetLocalPathFromURL(file_system_context,
-                                            GURL(file_url));
   if (!local_path.empty()) {
     struct stat sb;
     if (stat(local_path.value().c_str(), &sb) == 0) {
