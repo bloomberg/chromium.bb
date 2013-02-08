@@ -878,7 +878,11 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameDefault) {
   }
 }
 
+// TODO(gbillock): Put the platform-specific parts of this test in tests
+// for those classes, not here. This test, internally, ends up creating an
+// MTP delegate.
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
+#if !defined(OS_MACOSX)
 TEST_F(MediaFileSystemRegistryTest, GalleryNameMTP) {
   FSInfoMap galleries_info;
   InitForGalleriesInfoTest(&galleries_info);
@@ -894,6 +898,7 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameMTP) {
   CheckNewGalleryInfo(GetProfileState(0U), galleries_info, location,
                       true /*removable*/, true /* media device */);
 }
+#endif
 #endif
 
 TEST_F(MediaFileSystemRegistryTest, GalleryNameDCIM) {

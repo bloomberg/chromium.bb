@@ -31,14 +31,20 @@ class MTPDeviceDelegate {
   // Returns a pointer to a new instance of AbstractFileEnumerator to enumerate
   // the file entries of |root| path. The instance needs to be freed by the
   // caller, and its lifetime should not extend past when the current call
-  // returns to the main media task runner thread.
+  // returns to the main media task runner thread. Callers must ensure the
+  // lifetime of the enumerator is shorter than the MTPDeviceDelegate
+  // implementation itself. Calls to the enumerator are made in the context of
+  // a SeuqencedWorkerPool, and the enumerator may block while it is being
+  // called.
   virtual scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
       CreateFileEnumerator(const base::FilePath& root,
                            bool recursive) = 0;
 
   // Updates the temporary snapshot file contents given by |local_path| with
   // media file contents given by |device_file_path| and also returns the
-  // metadata of the temporary file.
+  // metadata of the temporary file. All calls to this interface method are
+  // made in the context of a SequencedWorkerPool, and so only one call will be
+  // active at once. Implementations may block this pool.
   virtual base::PlatformFileError CreateSnapshotFile(
       const base::FilePath& device_file_path,
       const base::FilePath& local_path,

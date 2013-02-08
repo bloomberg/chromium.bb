@@ -1053,6 +1053,8 @@
         'browser/media_gallery/linux/mtp_read_file_worker.h',
         'browser/media_gallery/linux/mtp_recursive_device_object_enumerator.cc',
         'browser/media_gallery/linux/mtp_recursive_device_object_enumerator.h',
+        'browser/media_gallery/mac/mtp_device_delegate_impl_mac.h',
+        'browser/media_gallery/mac/mtp_device_delegate_impl_mac.mm',
         'browser/media_gallery/media_file_system_registry.cc',
         'browser/media_gallery/media_file_system_registry.h',
         'browser/media_gallery/media_galleries_dialog_controller.cc',

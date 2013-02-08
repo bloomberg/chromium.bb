@@ -873,6 +873,7 @@
         'browser/managed_mode/managed_user_passphrase_unittest.cc',
         'browser/managed_mode/managed_user_service_unittest.cc',
         'browser/media_gallery/linux/mtp_device_object_enumerator_unittest.cc',
+        'browser/media_gallery/mac/mtp_device_delegate_impl_mac_unittest.mm',
         'browser/media_gallery/media_file_system_registry_unittest.cc',
         'browser/media_gallery/media_galleries_dialog_controller_mock.cc',
         'browser/media_gallery/media_galleries_dialog_controller_mock.h',

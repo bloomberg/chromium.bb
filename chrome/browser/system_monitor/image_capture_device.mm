@@ -159,6 +159,8 @@ base::Time NSDateToBaseTime(NSDate* date) {
   std::string name = base::SysNSStringToUTF8([file name]);
 
   if (error) {
+    DLOG(INFO) << "error..."
+               << base::SysNSStringToUTF8([error localizedDescription]);
     if (listener_)
       listener_->DownloadedFile(name, base::PLATFORM_FILE_ERROR_FAILED);
     return;
