@@ -24,7 +24,7 @@ namespace {
 
 // etag matching header.
 const char kIfMatchAllHeader[] = "If-Match: *";
-const char kIfMatchHeaderFormat[] = "If-Match: %s";
+const char kIfMatchHeaderPrefix[] = "If-Match: ";
 
 const char kUploadContentRange[] = "Content-Range: bytes ";
 const char kUploadContentType[] = "X-Upload-Content-Type: ";
@@ -35,6 +35,12 @@ const char kFeedField[] = "feed";
 // Templates for file uploading.
 const char kUploadResponseLocation[] = "location";
 const char kUploadResponseRange[] = "range";
+
+// Returns If-Match header string for |etag|.
+// If |etag| is empty, the returned header should match any etag.
+std::string GenerateIfMatchHeader(const std::string& etag) {
+  return etag.empty() ? kIfMatchAllHeader : (kIfMatchHeaderPrefix + etag);
+}
 
 }  // namespace
 
@@ -199,10 +205,7 @@ URLFetcher::RequestType DeleteResourceOperation::GetRequestType() const {
 std::vector<std::string>
 DeleteResourceOperation::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
-  if (etag_.empty())
-    headers.push_back(kIfMatchAllHeader);
-  else
-    headers.push_back(StringPrintf(kIfMatchHeaderFormat, etag_.c_str()));
+  headers.push_back(GenerateIfMatchHeader(etag_));
   return headers;
 }
 
@@ -555,12 +558,7 @@ InitiateUploadOperation::GetExtraRequestHeaders() const {
       kUploadContentLength + base::Int64ToString(params_.content_length));
 
   if (params_.upload_mode == UPLOAD_EXISTING_FILE) {
-    if (params_.etag.empty()) {
-      headers.push_back(kIfMatchAllHeader);
-    } else {
-      headers.push_back(
-          StringPrintf(kIfMatchHeaderFormat, params_.etag.c_str()));
-    }
+    headers.push_back(GenerateIfMatchHeader(params_.etag));
   }
 
   return headers;
