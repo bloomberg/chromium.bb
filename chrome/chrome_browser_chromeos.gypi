@@ -235,6 +235,8 @@
         'browser/chromeos/drive/file_change.h',
         'browser/chromeos/drive/file_system/copy_operation.cc',
         'browser/chromeos/drive/file_system/copy_operation.h',
+        'browser/chromeos/drive/file_system/create_directory_operation.cc',
+        'browser/chromeos/drive/file_system/create_directory_operation.h',
         'browser/chromeos/drive/file_system/drive_operations.cc',
         'browser/chromeos/drive/file_system/drive_operations.h',
         'browser/chromeos/drive/file_system/move_operation.cc',

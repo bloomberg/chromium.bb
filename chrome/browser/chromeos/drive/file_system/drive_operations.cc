@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/create_directory_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/update_operation.h"
@@ -40,6 +41,10 @@ void DriveOperations::Init(
                                                        uploader,
                                                        blocking_task_runner,
                                                        observer));
+  create_directory_operation_.reset(
+      new CreateDirectoryOperation(drive_scheduler,
+                                   metadata,
+                                   observer));
   move_operation_.reset(new file_system::MoveOperation(drive_scheduler,
                                                        metadata,
                                                        observer));
@@ -109,6 +114,18 @@ void DriveOperations::TransferRegularFile(
   copy_operation_->TransferRegularFile(local_src_file_path,
                                        remote_dest_file_path,
                                        callback);
+}
+
+void DriveOperations::CreateDirectory(
+    const FilePath& directory_path,
+    bool is_exclusive,
+    bool is_recursive,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  create_directory_operation_->CreateDirectory(
+      directory_path, is_exclusive, is_recursive, callback);
 }
 
 void DriveOperations::Move(const FilePath& src_file_path,

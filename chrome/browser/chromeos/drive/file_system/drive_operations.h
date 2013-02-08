@@ -27,6 +27,7 @@ class DriveScheduler;
 namespace file_system {
 
 class CopyOperation;
+class CreateDirectoryOperation;
 class MoveOperation;
 class OperationObserver;
 class RemoveOperation;
@@ -52,6 +53,13 @@ class DriveOperations {
                       MoveOperation* move_operation,
                       RemoveOperation* remove_operation,
                       UpdateOperation* update_operation);
+
+  // Wrapper function for create_directory_operation_.
+  // |callback| must not be null.
+  void CreateDirectory(const FilePath& directory_path,
+                       bool is_exclusive,
+                       bool is_recursive,
+                       const FileOperationCallback& callback);
 
   // Wrapper function for copy_operation_.
   // |callback| must not be null.
@@ -97,6 +105,7 @@ class DriveOperations {
 
  private:
   scoped_ptr<CopyOperation> copy_operation_;
+  scoped_ptr<CreateDirectoryOperation> create_directory_operation_;
   scoped_ptr<MoveOperation> move_operation_;
   scoped_ptr<RemoveOperation> remove_operation_;
   scoped_ptr<UpdateOperation> update_operation_;

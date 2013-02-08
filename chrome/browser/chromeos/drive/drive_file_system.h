@@ -155,66 +155,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
  private:
   friend class DriveFileSystemTest;
-  FRIEND_TEST_ALL_PREFIXES(DriveFileSystemTest,
-                           FindFirstMissingParentDirectory);
-  // Defines possible search results of FindFirstMissingParentDirectory().
-  enum FindFirstMissingParentDirectoryError {
-    // Target directory found, it's not a directory.
-    FIND_FIRST_FOUND_INVALID,
-    // Found missing directory segment while searching for given directory.
-    FIND_FIRST_FOUND_MISSING,
-    // Found target directory, it already exists.
-    FIND_FIRST_DIRECTORY_ALREADY_PRESENT,
-  };
-
-  // The result struct for FindFirstMissingParentDirectory().
-  struct FindFirstMissingParentDirectoryResult {
-    FindFirstMissingParentDirectoryResult();
-    ~FindFirstMissingParentDirectoryResult();
-
-    // Initializes the struct.
-    void Init(FindFirstMissingParentDirectoryError error,
-              FilePath first_missing_parent_path,
-              const std::string& last_dir_resource_id);
-
-    FindFirstMissingParentDirectoryError error;
-    // The following two fields are provided when |error| is set to
-    // FIND_FIRST_FOUND_MISSING. Otherwise, the two fields are undefined.
-
-    // Suppose "drive/foo/bar/baz/qux" is being checked, and only
-    // "drive/foo/bar" is present, "drive/foo/bar/baz" is the first missing
-    // parent path.
-    FilePath first_missing_parent_path;
-
-    // The resource id of the last found directory. In the above example, the
-    // resource id of "drive/foo/bar".
-    std::string last_dir_resource_id;
-  };
-
-  // Callback for FindFirstMissingParentDirectory().
-  typedef base::Callback<void(
-      const FindFirstMissingParentDirectoryResult& result)>
-      FindFirstMissingParentDirectoryCallback;
-
-  // Params for FindFirstMissingParentDirectory().
-  struct FindFirstMissingParentDirectoryParams;
-
-  // Defines set of parameters passes to intermediate callbacks during
-  // execution of CreateDirectory() method.
-  struct CreateDirectoryParams {
-    CreateDirectoryParams(const FilePath& created_directory_path,
-                          const FilePath& target_directory_path,
-                          bool is_exclusive,
-                          bool is_recursive,
-                          const FileOperationCallback& callback);
-    ~CreateDirectoryParams();
-
-    const FilePath created_directory_path;
-    const FilePath target_directory_path;
-    const bool is_exclusive;
-    const bool is_recursive;
-    FileOperationCallback callback;
-  };
 
   // Defines set of parameters passed to an intermediate callback
   // OnGetFileCompleteForOpen, during execution of OpenFile() method.
@@ -338,18 +278,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AccountMetadataFeed> account_metadata);
 
-  // Callback for handling directory create requests. Adds the directory
-  // represented by |entry| to the local filesystem.
-  void AddNewDirectory(const CreateDirectoryParams& params,
-                       google_apis::GDataErrorCode status,
-                       scoped_ptr<google_apis::ResourceEntry> entry);
-
-  // Callback for DriveResourceMetadata::AddEntryToDirectory. Continues the
-  // recursive creation of a directory path by calling CreateDirectory again.
-  void ContinueCreateDirectory(const CreateDirectoryParams& params,
-                               DriveFileError error,
-                               const FilePath& moved_directory_path);
-
   // Callback for handling file downloading requests.
   void OnFileDownloaded(const GetFileFromCacheParams& params,
                         google_apis::GDataErrorCode status,
@@ -376,24 +304,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void AddUploadedFileToCache(const AddUploadedFileParams& params,
                               DriveFileError error,
                               const FilePath& file_path);
-
-  // Finds the first missing parent directory of |directory_path|.
-  // |callback| must not be null.
-  void FindFirstMissingParentDirectory(
-      const FilePath& directory_path,
-      const FindFirstMissingParentDirectoryCallback& callback);
-
-  // Helper function for FindFirstMissingParentDirectory, for recursive search
-  // for first missing parent.
-  void FindFirstMissingParentDirectoryInternal(
-      scoped_ptr<FindFirstMissingParentDirectoryParams> params);
-
-  // Callback for ResourceMetadata::GetEntryInfoByPath from
-  // FindFirstMissingParentDirectory.
-  void ContinueFindFirstMissingParentDirectory(
-      scoped_ptr<FindFirstMissingParentDirectoryParams> params,
-      DriveFileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Callback for handling results of ReloadFeedFromServerIfNeeded() initiated
   // from CheckForUpdates().
@@ -543,16 +453,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const ScopedVector<google_apis::ResourceList>& feed_list,
       DriveFileError error);
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
-
-  // Part of CreateDirectory(). Called after
-  // FindFirstMissingParentDirectory() is complete.
-  // |callback| must not be null.
-  void CreateDirectoryAfterFindFirstMissingPath(
-      const FilePath& directory_path,
-      bool is_exclusive,
-      bool is_recursive,
-      const FileOperationCallback& callback,
-      const FindFirstMissingParentDirectoryResult& result);
 
   // Part of GetEntryInfoByResourceId(). Called after
   // DriveResourceMetadata::GetEntryInfoByResourceId() is complete.
