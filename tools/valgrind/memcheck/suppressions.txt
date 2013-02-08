@@ -6526,4 +6526,3 @@
    fun:_ZN3gpu5gles2*Immediate4InitE*
    fun:_ZN3gpu5gles2*GLES2ImplementationTest_*_Test8TestBodyEv
 }
-{
