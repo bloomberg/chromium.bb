@@ -264,35 +264,37 @@ static const struct wl_surface_listener surface_listener = {
 	surface_leave
 };
 
-static void
-create_shm_buffer(struct client *client)
+struct wl_buffer *
+create_shm_buffer(struct client *client, int width, int height, void **pixels)
 {
-	struct surface *surface = client->surface;
 	struct wl_shm *shm = client->wl_shm;
+	int stride = width * 4;
+	int size = stride * height;
 	struct wl_shm_pool *pool;
-	int fd, size, stride;
-
-	stride = surface->width * 4;
-	size = stride * surface->height;
+	struct wl_buffer *buffer;
+	int fd;
+	void *data;
 
 	fd = os_create_anonymous_file(size);
 	assert(fd >= 0);
 
-	surface->data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED,
-			     fd, 0);
-	if (surface->data == MAP_FAILED) {
+	data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	if (data == MAP_FAILED) {
 		close(fd);
-		assert(surface->data != MAP_FAILED);
+		assert(data != MAP_FAILED);
 	}
 
 	pool = wl_shm_create_pool(shm, fd, size);
-	surface->wl_buffer =
-		wl_shm_pool_create_buffer(pool, 0, surface->width,
-					  surface->height, stride,
-					  WL_SHM_FORMAT_ARGB8888);
+	buffer = wl_shm_pool_create_buffer(pool, 0, width, height, stride,
+					   WL_SHM_FORMAT_ARGB8888);
 	wl_shm_pool_destroy(pool);
 
 	close(fd);
+
+	if (pixels)
+		*pixels = data;
+
+	return buffer;
 }
 
 static void
@@ -510,7 +512,8 @@ client_create(int x, int y, int width, int height)
 
 	surface->width = width;
 	surface->height = height;
-	create_shm_buffer(client);
+	surface->wl_buffer = create_shm_buffer(client, width, height,
+					       &surface->data);
 
 	memset(surface->data, 64, width * height * 4);
 	wl_surface_attach(surface->wl_surface, surface->wl_buffer, 0, 0);
