@@ -57,14 +57,12 @@ void WorkerPoolTask::Completed() {
 
 }  // namespace internal
 
-WorkerPool::Worker::Worker(
-    WorkerPool* worker_pool,
-    const std::string name,
-    scoped_ptr<RenderingStats> rendering_stats)
+WorkerPool::Worker::Worker(WorkerPool* worker_pool, const std::string name)
     : base::Thread(name.c_str()),
       worker_pool_(worker_pool),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      rendering_stats_(rendering_stats.Pass()) {
+      rendering_stats_(make_scoped_ptr(new RenderingStats)),
+      record_rendering_stats_(false) {
   Start();
   DCHECK(IsRunning());
 }
@@ -90,11 +88,14 @@ void WorkerPool::Worker::StopAfterCompletingAllPendingTasks() {
 void WorkerPool::Worker::PostTask(scoped_ptr<internal::WorkerPoolTask> task) {
   DCHECK_LT(num_pending_tasks(), kNumPendingTasksPerWorker);
 
+  RenderingStats* stats =
+      record_rendering_stats_ ? rendering_stats_.get() : NULL;
+
   message_loop_proxy()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&Worker::RunTask,
                  base::Unretained(task.get()),
-                 base::Unretained(rendering_stats_.get())),
+                 base::Unretained(stats)),
       base::Bind(&Worker::OnTaskCompleted, weak_ptr_factory_.GetWeakPtr()));
 
   pending_tasks_.push_back(task.Pass());
@@ -125,18 +126,15 @@ void WorkerPool::Worker::OnTaskCompleted() {
   worker_pool_->DidNumPendingTasksChange();
 }
 
-WorkerPool::WorkerPool(size_t num_threads, bool record_rendering_stats)
+WorkerPool::WorkerPool(size_t num_threads)
     : workers_need_sorting_(false),
       shutdown_(false) {
   const std::string thread_name_prefix = kWorkerThreadNamePrefix;
   while (workers_.size() < num_threads) {
     int thread_number = workers_.size() + 1;
-    scoped_ptr<RenderingStats> rendering_stats = record_rendering_stats ?
-        make_scoped_ptr(new RenderingStats) : scoped_ptr<RenderingStats>();
     workers_.push_back(new Worker(
         this,
-        thread_name_prefix + StringPrintf("Worker%d", thread_number).c_str(),
-        rendering_stats.Pass()));
+        thread_name_prefix + StringPrintf("Worker%d", thread_number).c_str()));
   }
 }
 
@@ -170,6 +168,14 @@ bool WorkerPool::IsBusy() {
   Worker* worker = GetWorkerForNextTask();
 
   return worker->num_pending_tasks() >= kNumPendingTasksPerWorker;
+}
+
+void WorkerPool::SetRecordRenderingStats(bool record_rendering_stats) {
+  for (WorkerVector::iterator it = workers_.begin();
+       it != workers_.end(); ++it) {
+    Worker* worker = *it;
+    worker->set_record_rendering_stats(record_rendering_stats);
+  }
 }
 
 void WorkerPool::GetRenderingStats(RenderingStats* stats) {

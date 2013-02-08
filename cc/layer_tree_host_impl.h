@@ -216,7 +216,7 @@ public:
 
     AnimationRegistrar* animationRegistrar() const { return m_animationRegistrar.get(); }
 
-    void setDebugState(const LayerTreeDebugState& debugState) { m_debugState = debugState; }
+    void setDebugState(const LayerTreeDebugState& debugState);
     const LayerTreeDebugState& debugState() const { return m_debugState; }
 
     void savePaintTime(const base::TimeDelta& totalPaintTime);

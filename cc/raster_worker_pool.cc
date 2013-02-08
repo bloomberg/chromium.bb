@@ -32,9 +32,8 @@ class RasterWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 
 }  // namespace
 
-RasterWorkerPool::RasterWorkerPool(
-    size_t num_threads, bool record_rendering_stats)
-    : WorkerPool(num_threads, record_rendering_stats) {
+RasterWorkerPool::RasterWorkerPool(size_t num_threads)
+    : WorkerPool(num_threads) {
 }
 
 RasterWorkerPool::~RasterWorkerPool() {

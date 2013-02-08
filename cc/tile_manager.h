@@ -95,7 +95,6 @@ class CC_EXPORT TileManager {
   TileManager(TileManagerClient* client,
               ResourceProvider *resource_provider,
               size_t num_raster_threads,
-              bool record_rendering_stats,
               bool use_cheapess_estimator);
   virtual ~TileManager();
 
@@ -111,6 +110,7 @@ class CC_EXPORT TileManager {
   void GetMemoryStats(size_t* memoryRequiredBytes,
                       size_t* memoryNiceToHaveBytes,
                       size_t* memoryUsedBytes) const;
+  void SetRecordRenderingStats(bool record_rendering_stats);
   void GetRenderingStats(RenderingStats* stats);
   bool HasPendingWorkScheduled(WhichTree tree) const;
 

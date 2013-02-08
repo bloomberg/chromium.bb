@@ -116,16 +116,15 @@ TileManager::TileManager(
     TileManagerClient* client,
     ResourceProvider* resource_provider,
     size_t num_raster_threads,
-    bool record_rendering_stats,
     bool use_cheapness_estimator)
     : client_(client),
       resource_pool_(ResourcePool::Create(resource_provider)),
-      raster_worker_pool_(RasterWorkerPool::Create(num_raster_threads, record_rendering_stats)),
+      raster_worker_pool_(RasterWorkerPool::Create(num_raster_threads)),
       manage_tiles_pending_(false),
       manage_tiles_call_count_(0),
       bytes_pending_set_pixels_(0),
       ever_exceeded_memory_budget_(false),
-      record_rendering_stats_(record_rendering_stats),
+      record_rendering_stats_(false),
       use_cheapness_estimator_(use_cheapness_estimator) {
   for (int i = 0; i < NUM_STATES; ++i) {
     for (int j = 0; j < NUM_TREES; ++j) {
@@ -418,6 +417,14 @@ scoped_ptr<base::Value> TileManager::GetMemoryRequirementsAsValue() const {
   requirements->SetInteger("memory_nice_to_have_bytes", memoryNiceToHaveBytes);
   requirements->SetInteger("memory_used_bytes", memoryUsedBytes);
   return requirements.PassAs<base::Value>();
+}
+
+void TileManager::SetRecordRenderingStats(bool record_rendering_stats) {
+  if (record_rendering_stats_ == record_rendering_stats)
+    return;
+
+  record_rendering_stats_ = record_rendering_stats;
+  raster_worker_pool_->SetRecordRenderingStats(record_rendering_stats);
 }
 
 void TileManager::GetRenderingStats(RenderingStats* stats) {

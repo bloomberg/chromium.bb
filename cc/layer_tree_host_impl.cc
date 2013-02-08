@@ -140,7 +140,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     , m_shouldBubbleScrolls(false)
     , m_wheelScrolling(false)
     , m_settings(settings)
-    , m_debugState(settings.initialDebugState)
     , m_deviceScaleFactor(1)
     , m_visible(true)
     , m_managedMemoryPolicy(PrioritizedResourceManager::defaultMemoryAllocationLimit(),
@@ -166,6 +165,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
 
     if (settings.calculateTopControlsPosition)
         m_topControlsManager = TopControlsManager::Create(this, settings.topControlsHeight);
+
+    setDebugState(settings.initialDebugState);
 
     // LTHI always has an active tree.
     m_activeTree = LayerTreeImpl::create(this);
@@ -1054,8 +1055,10 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurfa
     if (!resourceProvider)
         return false;
 
-    if (m_settings.implSidePainting)
-      m_tileManager.reset(new TileManager(this, resourceProvider.get(), m_settings.numRasterThreads, m_debugState.recordRenderingStats(), m_settings.useCheapnessEstimator));
+    if (m_settings.implSidePainting) {
+        m_tileManager.reset(new TileManager(this, resourceProvider.get(), m_settings.numRasterThreads, m_settings.useCheapnessEstimator));
+        m_tileManager->SetRecordRenderingStats(m_debugState.recordRenderingStats());
+    }
 
     if (outputSurface->Capabilities().has_parent_compositor)
         m_renderer = DelegatingRenderer::Create(this, outputSurface.get(), resourceProvider.get());
@@ -1703,6 +1706,14 @@ skia::RefPtr<SkPicture> LayerTreeHostImpl::capturePicture()
     LayerTreeImpl* tree = pendingTree() ? pendingTree() : activeTree();
     LayerImpl* layer = getNonCompositedContentLayerRecursive(tree->RootLayer());
     return layer ? layer->getPicture() : skia::RefPtr<SkPicture>();
+}
+
+void LayerTreeHostImpl::setDebugState(const LayerTreeDebugState& debugState)
+{
+    m_debugState = debugState;
+
+    if (m_tileManager)
+        m_tileManager->SetRecordRenderingStats(m_debugState.recordRenderingStats());
 }
 
 void LayerTreeHostImpl::savePaintTime(const base::TimeDelta& totalPaintTime)

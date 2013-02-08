@@ -42,10 +42,8 @@ class WorkerPool {
 
   virtual ~WorkerPool();
 
-  static scoped_ptr<WorkerPool> Create(
-      size_t num_threads, bool record_rendering_stats) {
-    return make_scoped_ptr(
-        new WorkerPool(num_threads, record_rendering_stats));
+  static scoped_ptr<WorkerPool> Create(size_t num_threads) {
+    return make_scoped_ptr(new WorkerPool(num_threads));
   }
 
   // Tells the worker pool to shutdown and returns once all pending tasks have
@@ -60,16 +58,16 @@ class WorkerPool {
   // of pending tasks.
   bool IsBusy();
 
+  // Toggle rendering stats collection.
+  void SetRecordRenderingStats(bool record_rendering_stats);
+
   // Collect rendering stats all completed tasks.
   void GetRenderingStats(RenderingStats* stats);
 
  protected:
   class Worker : public base::Thread {
    public:
-    Worker(
-        WorkerPool* worker_pool,
-        const std::string name,
-        scoped_ptr<RenderingStats> rendering_stats);
+    Worker(WorkerPool* worker_pool, const std::string name);
     virtual ~Worker();
 
     // This must be called before the destructor.
@@ -79,6 +77,9 @@ class WorkerPool {
     void PostTask(scoped_ptr<internal::WorkerPoolTask> task);
 
     int num_pending_tasks() const { return pending_tasks_.size(); }
+    void set_record_rendering_stats(bool record_rendering_stats) {
+      record_rendering_stats_ = record_rendering_stats;
+    }
     const RenderingStats* rendering_stats() const {
       return rendering_stats_.get();
     }
@@ -96,9 +97,10 @@ class WorkerPool {
     base::WeakPtrFactory<Worker> weak_ptr_factory_;
     ScopedPtrDeque<internal::WorkerPoolTask> pending_tasks_;
     scoped_ptr<RenderingStats> rendering_stats_;
+    bool record_rendering_stats_;
   };
 
-  WorkerPool(size_t num_threads, bool record_rendering_stats);
+  explicit WorkerPool(size_t num_threads);
 
   WorkerPool::Worker* GetWorkerForNextTask();
 
