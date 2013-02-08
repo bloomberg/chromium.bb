@@ -173,6 +173,7 @@
             '../ui/surface/surface.gyp:surface',
             '../webkit/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
             '../webkit/support/webkit_support.gyp:webkit_storage',
+            '../webkit/support/webkit_support.gyp:webkit_support_common',
           ],
         }],
         ['OS == "win" or (toolkit_uses_gtk == 1 and selinux == 0)', {
