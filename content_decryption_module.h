@@ -15,10 +15,12 @@ typedef __int64 int64_t;
 #endif
 
 // The version number must be rolled when this file is updated!
-// If the CDM and the plugin use different versions of this file, the plugin
+// If the CDM and the adapter use different versions of this file, the adapter
 // will fail to load or crash!
-#define INITIALIZE_CDM_MODULE InitializeCdmModule_3
+#define INITIALIZE_CDM_MODULE InitializeCdmModule_4
 
+#define CDM_HOST_INTERFACE_1 "CDM_Host;1"
+#define CDM_HOST_INTERFACE CDM_HOST_INTERFACE_1
 
 // Define CDM_EXPORT so that functionality implemented by the CDM module
 // can be exported to consumers.
@@ -44,7 +46,7 @@ typedef __int64 int64_t;
 namespace cdm {
 class Allocator;
 class ContentDecryptionModule;
-class Host;
+class HostFactory;
 }
 
 extern "C" {
@@ -56,7 +58,7 @@ CDM_EXPORT cdm::ContentDecryptionModule* CreateCdmInstance(
     const char* key_system,
     int key_system_size,
     cdm::Allocator* allocator,
-    cdm::Host* host);
+    cdm::HostFactory* host_factory);
 CDM_EXPORT void DestroyCdmInstance(cdm::ContentDecryptionModule* instance);
 CDM_EXPORT const char* GetCdmVersion();
 }
@@ -398,10 +400,13 @@ class Allocator {
   virtual ~Allocator() {}
 };
 
-class Host {
+// Host interface that the CDM can call into to access browser side services.
+// Host interfaces are versioned for backward compatibility. CDM should use
+// HostFactory object to request a Host interface of a particular version.
+class Host_1 {
  public:
-  Host() {}
-  virtual ~Host() {}
+  Host_1() {}
+  virtual ~Host_1() {}
 
   // Requests the host to call ContentDecryptionModule::TimerFired() |delay_ms|
   // from now with |context|.
@@ -423,6 +428,23 @@ class Host {
                             int32_t session_id_length,
                             MediaKeyError error_code,
                             uint32_t system_code) = 0;
+
+  // Get private data from the host. This function is limited to internal use.
+  typedef const void* (*GetPrivateInterface)(const char* interface_name);
+  virtual void GetPrivateData(int32_t* instance,
+                              GetPrivateInterface* get_interface) = 0;
+};
+
+typedef Host_1 Host;
+
+// Interface to request a CDM Host of a particular version.
+class HostFactory {
+ public:
+  // Returns a pointer to the requested CDM Host interface upon success.
+  // Returns NULL if the requested CDM Host interface is not supported.
+  // The callee should cast the returned pointer to the type matching
+  // |host_version|.
+  virtual void* GetCdmHost(const char* host_version) = 0;
 };
 
 // Represents a decrypted block that has not been decoded.
