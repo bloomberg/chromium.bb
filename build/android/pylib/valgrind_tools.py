@@ -93,7 +93,8 @@ class AddressSanitizerTool(BaseTool):
     self._wrap_properties = ['wrap.com.google.android.apps.ch',
                              'wrap.org.chromium.native_test',
                              'wrap.org.chromium.content_shell',
-                             'wrap.org.chromium.chrome.testsh']
+                             'wrap.org.chromium.chrome.testsh',
+                             'wrap.org.chromium.android_webvi']
     # Configure AndroidCommands to run utils (such as md5sum_bin) under ASan.
     # This is required because ASan is a compiler-based tool, and md5sum
     # includes instrumented code from base.
