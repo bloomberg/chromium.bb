@@ -1025,6 +1025,8 @@
         'browser/managed_mode/managed_mode_site_list.h',
         'browser/managed_mode/managed_mode_url_filter.cc',
         'browser/managed_mode/managed_mode_url_filter.h',
+        'browser/managed_mode/managed_user_passphrase.cc',
+        'browser/managed_mode/managed_user_passphrase.h',
         'browser/managed_mode/managed_user_service.cc',
         'browser/managed_mode/managed_user_service.h',
         'browser/managed_mode/managed_user_service_factory.cc',
