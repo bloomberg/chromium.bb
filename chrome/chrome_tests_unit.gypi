@@ -303,6 +303,11 @@
             '../chromeos/chromeos.gyp:chromeos_test_support',
           ],
         }],
+        ['configuration_policy==0', {
+          'sources/': [
+            ['exclude', '^browser/policy'],
+          ],
+        }],
         ['safe_browsing!=1', {
           'sources/': [
             ['exclude', '^browser/extensions/blacklist_unittest.cc'],

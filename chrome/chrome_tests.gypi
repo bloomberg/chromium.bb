@@ -1582,6 +1582,7 @@
           ],
           'sources!': [
             'browser/ui/webui/policy_ui_browsertest.cc',
+            'browser/ui/webui/options/preferences_browsertest.cc',
           ],
         }],
         ['input_speech==0', {
