@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include "base/bind.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
@@ -133,12 +135,14 @@ gfx::ImageSkiaRep IconImage::Source::GetImageForScale(
 // IconImage
 
 IconImage::IconImage(
+    Profile* profile,
     const Extension* extension,
     const ExtensionIconSet& icon_set,
     int resource_size_in_dip,
     const gfx::ImageSkia& default_icon,
     Observer* observer)
-    : extension_(extension),
+    : profile_(profile),
+      extension_(extension),
       icon_set_(icon_set),
       resource_size_in_dip_(resource_size_in_dip),
       observer_(observer),
@@ -147,7 +151,7 @@ IconImage::IconImage(
           default_icon,
           skia::ImageOperations::RESIZE_BEST,
           gfx::Size(resource_size_in_dip, resource_size_in_dip))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   gfx::Size resource_size(resource_size_in_dip, resource_size_in_dip);
   source_ = new Source(this, resource_size);
   image_skia_ = gfx::ImageSkia(source_, resource_size);
@@ -189,43 +193,25 @@ gfx::ImageSkiaRep IconImage::LoadImageForScaleFactor(
   if (resource.empty())
     return default_icon_.GetRepresentation(scale_factor);
 
-  int id = tracker_.next_id();
-  load_map_[id].scale_factor = scale_factor;
-  load_map_[id].is_async = false;
-
-  std::vector<ImageLoadingTracker::ImageRepresentation> info_list;
-  info_list.push_back(ImageLoadingTracker::ImageRepresentation(
+  std::vector<ImageLoader::ImageRepresentation> info_list;
+  info_list.push_back(ImageLoader::ImageRepresentation(
       resource,
-      ImageLoadingTracker::ImageRepresentation::ALWAYS_RESIZE,
+      ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
       gfx::ToFlooredSize(gfx::ScaleSize(
           gfx::Size(resource_size_in_dip_, resource_size_in_dip_), scale)),
       scale_factor));
-  tracker_.LoadImages(extension_, info_list, ImageLoadingTracker::DONT_CACHE);
 
-  // If we have not received |OnImageLoaded|, image load request is
-  // asynchronous.
-  if (load_map_.find(id) != load_map_.end())
-    load_map_[id].is_async = true;
-
-  // If LoadImages returned synchronously and the requested image rep is cached
-  // in the extension, return the cached image rep.
-  if (image_skia_.HasRepresentation(scale_factor))
-    return image_skia_.GetRepresentation(scale_factor);
+  extensions::ImageLoader* loader = extensions::ImageLoader::Get(profile_);
+  loader->LoadImagesAsync(extension_, info_list,
+                          base::Bind(&IconImage::OnImageLoaded,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     scale_factor));
 
   return gfx::ImageSkiaRep();
 }
 
-void IconImage::OnImageLoaded(const gfx::Image& image_in,
-                              const std::string& extension_id,
-                              int index) {
-  LoadMap::iterator load_map_it = load_map_.find(index);
-  DCHECK(load_map_it != load_map_.end());
-
-  ui::ScaleFactor scale_factor = load_map_it->second.scale_factor;
-  bool is_async = load_map_it->second.is_async;
-
-  load_map_.erase(load_map_it);
-
+void IconImage::OnImageLoaded(ui::ScaleFactor scale_factor,
+                              const gfx::Image& image_in) {
   const gfx::ImageSkia* image =
       image_in.IsEmpty() ? &default_icon_ : image_in.ToImageSkia();
 
@@ -241,10 +227,7 @@ void IconImage::OnImageLoaded(const gfx::Image& image_in,
   image_skia_.RemoveRepresentation(rep.scale_factor());
   image_skia_.AddRepresentation(rep);
 
-  // If |tracker_| called us synchronously the image did not really change from
-  // the observer's perspective, since the initial image representation is
-  // returned synchronously.
-  if (is_async && observer_)
+  if (observer_)
     observer_->OnExtensionIconImageChanged(this);
 }
 

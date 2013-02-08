@@ -53,7 +53,8 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
   DCHECK(extension);
 
   icon_factory_.reset(
-      new ExtensionActionIconFactory(extension, page_action, this));
+      new ExtensionActionIconFactory(
+          owner_->profile(), extension, page_action, this));
 
   set_accessibility_focusable(true);
   set_context_menu_controller(this);

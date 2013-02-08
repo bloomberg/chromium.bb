@@ -60,8 +60,8 @@ PageActionDecoration::PageActionDecoration(
       GetExtensionById(page_action->extension_id(), false);
   DCHECK(extension);
 
-  icon_factory_.reset(
-      new ExtensionActionIconFactory(extension, page_action, this));
+  icon_factory_.reset(new ExtensionActionIconFactory(
+      browser_->profile(), extension, page_action, this));
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
       content::Source<Profile>(browser_->profile()));

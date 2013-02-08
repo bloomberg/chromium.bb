@@ -102,7 +102,8 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Basic) {
 
   // We should not be creating icons asynchronously, so we don't need an
   // observer.
-  ExtensionActionIconFactory icon_factory(extension, action, NULL);
+  ExtensionActionIconFactory icon_factory(
+      profile(), extension, action, NULL);
 
   // Test that we received the changes.
   EXPECT_FALSE(icon_factory.GetIcon(tab_id).IsEmpty());

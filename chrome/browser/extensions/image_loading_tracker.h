@@ -130,7 +130,6 @@ class ImageLoadingTracker : public content::NotificationObserver {
   // This class is deprecated. This just lists all currently remaining
   // usage of this class, so once this list is empty this class can and
   // should be removed.
-  friend class extensions::IconImage;
   FRIEND_TEST_ALL_PREFIXES(ImageLoadingTrackerTest, Cache);
   FRIEND_TEST_ALL_PREFIXES(ImageLoadingTrackerTest,
                            DeleteExtensionWhileWaitingForCache);

@@ -117,7 +117,7 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
           GetBrowserAction(*extension)),
       extension_(extension),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          icon_factory_(extension, browser_action_, this)),
+          icon_factory_(browser->profile(), extension, browser_action_, this)),
       delegate_(delegate),
       context_menu_(NULL),
       called_registered_extension_command_(false) {

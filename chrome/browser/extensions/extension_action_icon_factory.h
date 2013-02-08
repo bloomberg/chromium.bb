@@ -30,7 +30,8 @@ class ExtensionActionIconFactory : public extensions::IconImage::Observer {
   };
 
   // Observer should outlive this.
-  ExtensionActionIconFactory(const extensions::Extension* extension,
+  ExtensionActionIconFactory(Profile* profile,
+                             const extensions::Extension* extension,
                              const ExtensionAction* action,
                              Observer* observer);
   virtual ~ExtensionActionIconFactory();

@@ -1930,7 +1930,8 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
   DCHECK(extension);
 
   icon_factory_.reset(
-      new ExtensionActionIconFactory(extension, page_action, this));
+      new ExtensionActionIconFactory(
+          owner->browser()->profile(), extension, page_action, this));
 
   // We set the owner last of all so that we can determine whether we are in
   // the process of initializing this class or not.

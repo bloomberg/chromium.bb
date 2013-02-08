@@ -104,7 +104,8 @@ class BrowserActionButton : public content::NotificationObserver,
       : toolbar_(toolbar),
         extension_(extension),
         image_(NULL),
-        icon_factory_(extension, browser_action(), this),
+        icon_factory_(toolbar->browser()->profile(), extension,
+                      browser_action(), this),
         accel_group_(NULL) {
     button_.reset(new CustomDrawButton(
         theme_provider,

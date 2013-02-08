@@ -142,6 +142,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   // We should not be creating icons asynchronously, so we don't need an
   // observer.
   ExtensionActionIconFactory icon_factory(
+      profile(),
       extension,
       GetBrowserAction(*extension),
       NULL);

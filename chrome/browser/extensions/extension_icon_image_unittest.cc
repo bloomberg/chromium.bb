@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
@@ -208,6 +209,7 @@ class ExtensionIconImageTest : public testing::Test,
 }  // namespace
 
 TEST_F(ExtensionIconImageTest, Basic) {
+  scoped_ptr<Profile> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
@@ -226,7 +228,8 @@ TEST_F(ExtensionIconImageTest, Basic) {
       GetTestBitmap(extension, "48.png", 32);
   ASSERT_FALSE(bitmap_48_resized_to_32.empty());
 
-  IconImage image(extension, extension->icons(), 16, default_icon, this);
+  IconImage image(profile.get(), extension, extension->icons(), 16,
+                  default_icon, this);
 
   // No representations in |image_| yet.
   gfx::ImageSkia::ImageSkiaReps image_reps = image.image_skia().image_reps();
@@ -274,6 +277,7 @@ TEST_F(ExtensionIconImageTest, Basic) {
 // There is no resource with either exact or bigger size, but there is a smaller
 // resource.
 TEST_F(ExtensionIconImageTest, FallbackToSmallerWhenNoBigger) {
+  scoped_ptr<Profile> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
@@ -286,7 +290,8 @@ TEST_F(ExtensionIconImageTest, FallbackToSmallerWhenNoBigger) {
       GetTestBitmap(extension, "48.png", 48);
   ASSERT_FALSE(bitmap_48.empty());
 
-  IconImage image(extension, extension->icons(), 32, default_icon, this);
+  IconImage image(profile.get(), extension, extension->icons(), 32,
+                  default_icon, this);
 
   gfx::ImageSkiaRep representation =
       image.image_skia().GetRepresentation(ui::SCALE_FACTOR_200P);
@@ -309,6 +314,7 @@ TEST_F(ExtensionIconImageTest, FallbackToSmallerWhenNoBigger) {
 // one. Requested size is smaller than 32 though, so the smaller resource should
 // be loaded.
 TEST_F(ExtensionIconImageTest, FallbackToSmaller) {
+  scoped_ptr<Profile> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
@@ -321,7 +327,8 @@ TEST_F(ExtensionIconImageTest, FallbackToSmaller) {
       GetTestBitmap(extension, "16.png", 16);
   ASSERT_FALSE(bitmap_16.empty());
 
-  IconImage image(extension, extension->icons(), 17, default_icon, this);
+  IconImage image(profile.get(), extension, extension->icons(), 17,
+                  default_icon, this);
 
   gfx::ImageSkiaRep representation =
       image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
@@ -342,6 +349,7 @@ TEST_F(ExtensionIconImageTest, FallbackToSmaller) {
 // If resource set is empty, |GetRepresentation| should synchronously return
 // default icon, without notifying observer of image change.
 TEST_F(ExtensionIconImageTest, NoResources) {
+  scoped_ptr<Profile> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
@@ -350,8 +358,8 @@ TEST_F(ExtensionIconImageTest, NoResources) {
   gfx::ImageSkia default_icon = GetDefaultIcon();
 
   const int kRequestedSize = 24;
-  IconImage image(extension, empty_icon_set, kRequestedSize, default_icon,
-                  this);
+  IconImage image(profile.get(), extension, empty_icon_set, kRequestedSize,
+                  default_icon, this);
 
   gfx::ImageSkiaRep representation =
       image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
@@ -377,6 +385,7 @@ TEST_F(ExtensionIconImageTest, NoResources) {
 // the observer should be notified when it's done. |GetRepresentation| should
 // return the default icon representation once image load is done.
 TEST_F(ExtensionIconImageTest, InvalidResource) {
+  scoped_ptr<Profile> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
@@ -387,8 +396,8 @@ TEST_F(ExtensionIconImageTest, InvalidResource) {
 
   gfx::ImageSkia default_icon = GetDefaultIcon();
 
-  IconImage image(extension, invalid_icon_set, kInvalidIconSize, default_icon,
-                  this);
+  IconImage image(profile.get(), extension, invalid_icon_set, kInvalidIconSize,
+                  default_icon, this);
 
   gfx::ImageSkiaRep representation =
       image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
@@ -412,6 +421,7 @@ TEST_F(ExtensionIconImageTest, InvalidResource) {
 // Test that IconImage works with lazily (but synchronously) created default
 // icon when IconImage returns synchronously.
 TEST_F(ExtensionIconImageTest, LazyDefaultIcon) {
+  scoped_ptr<Profile> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
@@ -423,8 +433,8 @@ TEST_F(ExtensionIconImageTest, LazyDefaultIcon) {
   ExtensionIconSet empty_icon_set;
 
   const int kRequestedSize = 128;
-  IconImage image(extension, empty_icon_set, kRequestedSize, lazy_default_icon,
-                  this);
+  IconImage image(profile.get(), extension, empty_icon_set, kRequestedSize,
+                  lazy_default_icon, this);
 
   ASSERT_FALSE(lazy_default_icon.HasRepresentation(ui::SCALE_FACTOR_100P));
 
@@ -446,6 +456,7 @@ TEST_F(ExtensionIconImageTest, LazyDefaultIcon) {
 // Test that IconImage works with lazily (but synchronously) created default
 // icon when IconImage returns asynchronously.
 TEST_F(ExtensionIconImageTest, LazyDefaultIcon_AsyncIconImage) {
+  scoped_ptr<Profile> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
@@ -458,7 +469,7 @@ TEST_F(ExtensionIconImageTest, LazyDefaultIcon_AsyncIconImage) {
   ExtensionIconSet invalid_icon_set;
   invalid_icon_set.Add(kInvalidIconSize, "invalid.png");
 
-  IconImage image(extension, invalid_icon_set, kInvalidIconSize,
+  IconImage image(profile.get(), extension, invalid_icon_set, kInvalidIconSize,
                   lazy_default_icon, this);
 
   ASSERT_FALSE(lazy_default_icon.HasRepresentation(ui::SCALE_FACTOR_100P));
@@ -481,42 +492,12 @@ TEST_F(ExtensionIconImageTest, LazyDefaultIcon_AsyncIconImage) {
           kInvalidIconSize)));
 }
 
-TEST_F(ExtensionIconImageTest, LoadPrecachedImage) {
-  scoped_refptr<Extension> extension(CreateExtension(
-      "extension_icon_image", Manifest::INVALID_LOCATION));
-  ASSERT_TRUE(extension.get() != NULL);
-
-  gfx::ImageSkia default_icon = GetDefaultIcon();
-
-  // Store the image in the cache.
-  SkBitmap bitmap_16 =
-      GetTestBitmap(extension, "16.png", 16);
-  ASSERT_FALSE(bitmap_16.empty());
-  extension->SetCachedImage(extension->GetResource("16.png"), bitmap_16,
-                            gfx::Size(16, 16));
-
-  IconImage image(extension, extension->icons(), 16, default_icon, this);
-
-  // No representations in |image_| yet.
-  gfx::ImageSkia::ImageSkiaReps image_reps = image.image_skia().image_reps();
-  ASSERT_EQ(0u, image_reps.size());
-
-  // Gets representation for a scale factor.
-  // Since the icon representation is precached, it should be returned right
-  // away. Also, we should not receive any notifications.
-  gfx::ImageSkiaRep representation =
-      image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
-  EXPECT_TRUE(gfx::BitmapsAreEqual(representation.sk_bitmap(), bitmap_16));
-
-  EXPECT_EQ(0, ImageLoadedCount());
-  ASSERT_EQ(1u, image.image_skia().image_reps().size());
-}
-
 // Tests behavior of image created by IconImage after IconImage host goes
 // away. The image should still return loaded representations. If requested
 // representation was not loaded while IconImage host was around, transparent
 // representations should be returned.
 TEST_F(ExtensionIconImageTest, IconImageDestruction) {
+  scoped_ptr<Profile> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
@@ -530,7 +511,8 @@ TEST_F(ExtensionIconImageTest, IconImageDestruction) {
   ASSERT_FALSE(bitmap_16.empty());
 
   scoped_ptr<IconImage> image(
-      new IconImage(extension, extension->icons(), 16, default_icon, this));
+      new IconImage(profile.get(), extension, extension->icons(), 16,
+                    default_icon, this));
 
   // Load an image representation.
   gfx::ImageSkiaRep representation =

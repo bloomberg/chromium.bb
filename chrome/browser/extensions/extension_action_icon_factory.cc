@@ -24,6 +24,7 @@ gfx::ImageSkia GetDefaultIcon() {
 }  // namespace
 
 ExtensionActionIconFactory::ExtensionActionIconFactory(
+    Profile* profile,
     const Extension* extension,
     const ExtensionAction* action,
     Observer* observer)
@@ -32,6 +33,7 @@ ExtensionActionIconFactory::ExtensionActionIconFactory(
       observer_(observer) {
   if (action_->default_icon()) {
     default_icon_.reset(new IconImage(
+        profile,
         extension_,
         *action_->default_icon(),
         ExtensionAction::GetIconSizeForType(action_->action_type()),

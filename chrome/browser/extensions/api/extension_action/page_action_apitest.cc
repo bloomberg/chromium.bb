@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, Basic) {
 
   // We should not be creating icons asynchronously, so we don't need an
   // observer.
-  ExtensionActionIconFactory icon_factory(extension, action, NULL);
+  ExtensionActionIconFactory icon_factory(profile(), extension, action, NULL);
 
   // Test that we received the changes.
   tab_id = SessionTabHelper::FromWebContents(

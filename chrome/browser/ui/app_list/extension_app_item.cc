@@ -305,6 +305,7 @@ void ExtensionAppItem::LoadImage(const Extension* extension) {
     icon_size = extension_misc::EXTENSION_ICON_SMALL;
 
   icon_.reset(new extensions::IconImage(
+      profile_,
       extension,
       extension->icons(),
       icon_size,

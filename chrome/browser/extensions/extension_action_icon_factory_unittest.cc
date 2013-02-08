@@ -186,7 +186,8 @@ TEST_F(ExtensionActionIconFactoryTest, NoIcons) {
 
   gfx::ImageSkia favicon = GetFavicon();
 
-  ExtensionActionIconFactory icon_factory(extension, browser_action, this);
+  ExtensionActionIconFactory icon_factory(
+      profile(), extension,browser_action, this);
 
   gfx::Image icon = icon_factory.GetIcon(0);
 
@@ -216,7 +217,8 @@ TEST_F(ExtensionActionIconFactoryTest, AfterSetIcon) {
 
   ASSERT_FALSE(browser_action->GetExplicitlySetIcon(0 /*tab id*/).isNull());
 
-  ExtensionActionIconFactory icon_factory(extension, browser_action, this);
+  ExtensionActionIconFactory icon_factory(
+      profile(), extension, browser_action, this);
 
   gfx::Image icon = icon_factory.GetIcon(0);
 
@@ -256,7 +258,8 @@ TEST_F(ExtensionActionIconFactoryTest, DefaultIcon) {
   browser_action->set_default_icon(default_icon_set.Pass());
   ASSERT_TRUE(browser_action->default_icon());
 
-  ExtensionActionIconFactory icon_factory(extension, browser_action, this);
+  ExtensionActionIconFactory icon_factory(
+      profile(), extension, browser_action, this);
 
   gfx::Image icon = icon_factory.GetIcon(0);
 

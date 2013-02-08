@@ -54,6 +54,7 @@ void AppIconLoaderImpl::FetchImage(const std::string& id) {
     return;
 
   extensions::IconImage* image = new extensions::IconImage(
+      profile_,
       extension,
       extension->icons(),
       icon_size_,

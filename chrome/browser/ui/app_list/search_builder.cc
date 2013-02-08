@@ -175,6 +175,7 @@ class ExtensionAppResult : public SearchBuilderResult,
     const gfx::ImageSkia default_icon = extensions::OmniboxAPI::Get(profile())->
         GetOmniboxPopupIcon(extension->id()).AsImageSkia();
     icon_.reset(new extensions::IconImage(
+        profile(),
         extension,
         extension->icons(),
         extension_misc::EXTENSION_ICON_SMALL,

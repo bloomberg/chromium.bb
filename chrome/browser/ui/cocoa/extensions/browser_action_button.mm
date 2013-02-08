@@ -47,10 +47,11 @@ class ExtensionActionIconFactoryBridge
       public ExtensionActionIconFactory::Observer {
  public:
   ExtensionActionIconFactoryBridge(BrowserActionButton* owner,
+                                   Profile* profile,
                                    const Extension* extension)
       : owner_(owner),
         browser_action_([[owner cell] extensionAction]),
-        icon_factory_(extension, browser_action_, this) {
+        icon_factory_(profile, extension, browser_action_, this) {
     registrar_.Add(
         this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
         content::Source<ExtensionAction>(browser_action_));
@@ -154,8 +155,8 @@ class ExtensionActionIconFactoryBridge
 
     tabId_ = tabId;
     extension_ = extension;
-    iconFactoryBridge_.reset(
-        new ExtensionActionIconFactoryBridge(self, extension));
+    iconFactoryBridge_.reset(new ExtensionActionIconFactoryBridge(
+        self, browser->profile(), extension));
 
     moveAnimation_.reset([[NSViewAnimation alloc] init]);
     [moveAnimation_ gtm_setDuration:kAnimationDuration
