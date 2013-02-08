@@ -23,11 +23,11 @@
 
 namespace {
 
-const int kEntrySize = 48;
+const int kEntrySize = 12 * sizeof(size_t);
 #if defined(NET_BUILD_STRESS_CACHE)
 const int kNumberOfEntries = 500000;
 #else
-const int kNumberOfEntries = 5000;  // 240 KB.
+const int kNumberOfEntries = 5000;  // 240 KB on 32bit, 480 KB on 64bit
 #endif
 
 bool s_trace_enabled = false;
