@@ -212,7 +212,7 @@ sigchld_handler(int signal_number, void *data)
 	int status;
 
 	waitpid(-1, &status, 0);
-	display->child_exit_status = WEXITSTATUS(status);
+	display->child_exit_status = status;
 
 	wl_display_terminate(display->display);
 
@@ -282,5 +282,6 @@ TEST(queue)
 	wl_event_source_remove(signal_source);
 	wl_display_destroy(display.display);
 
-	assert(display.child_exit_status == EXIT_SUCCESS);
+	assert(WIFEXITED(display.child_exit_status) &&
+	       WEXITSTATUS(display.child_exit_status) == EXIT_SUCCESS);
 }
