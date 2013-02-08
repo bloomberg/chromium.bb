@@ -591,54 +591,30 @@ class SDKStageTest(AbstractStageTest, cros_test_lib.TempDirTestCase):
                      self.fake_json_data)
 
 
-class VMTestStageTest(AbstractStageTest):
+class VMTestStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
 
   def setUp(self):
-    self.fake_results_dir = '/tmp/fake_results_dir'
-    self.fake_chroot_results_dir = '/my/fake_chroot/tmp/fake_results_dir'
-    self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
-    self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
     self.bot_id = 'x86-generic-full'
     self.build_config = config.config[self.bot_id].copy()
-    self.mox.StubOutWithMock(commands, 'RunTestSuite')
-    self.mox.StubOutWithMock(commands, 'CreateTestRoot')
-    self.mox.StubOutWithMock(tempfile, 'mkdtemp')
-    commands.CreateTestRoot(self.build_root).AndReturn(self.fake_results_dir)
-
-    self.archive_stage_mock.TestResultsReady('some tarball')
-    self.archive_stage_mock.bot_archive_root = '/fake/root'
+    for cmd in ('RunTestSuite', 'CreateTestRoot', 'GenerateStackTraces',
+                'ArchiveFile', 'ArchiveTestResults', 'UploadArchivedFile'):
+      self.StartPatcher(mock.patch.object(commands, cmd, autospec=True))
+    self.StartPatcher(ArchiveStageMock())
 
   def ConstructStage(self):
+    archive_stage = stages.ArchiveStage(self.options, self.build_config,
+                                        self._current_board)
     return stages.VMTestStage(self.options, self.build_config,
-                              self._current_board, self.archive_stage_mock)
-
-  def tearDown(self):
-    self.mox.VerifyAll()
-
-  def _MockDependencies(self, test_type):
-    self.build_config['vm_tests'] = test_type
-    commands.RunTestSuite(self.build_root,
-                          self._current_board,
-                          mox.IgnoreArg(),
-                          os.path.join(self.fake_results_dir,
-                                       'test_harness'),
-                          archive_dir=mox.IgnoreArg(),
-                          whitelist_chrome_crashes=True,
-                          test_type=test_type)
-
-    commands.ArchiveTestResults(self.build_root, self.fake_results_dir,
-                                prefix='').AndReturn('some tarball')
+                              self._current_board, archive_stage)
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
-    self._MockDependencies(constants.FULL_AU_TEST_TYPE)
-    self.mox.ReplayAll()
+    self.build_config['vm_tests'] = constants.FULL_AU_TEST_TYPE
     self.RunStage()
 
   def testQuickTests(self):
     """Tests if quick unit and cros_au_test_harness tests are run correctly."""
-    self._MockDependencies(constants.SIMPLE_AU_TEST_TYPE)
-    self.mox.ReplayAll()
+    self.build_config['vm_tests'] = constants.SIMPLE_AU_TEST_TYPE
     self.RunStage()
 
 
@@ -1112,12 +1088,15 @@ class ArchiveStageMock(partial_mock.PartialMock):
   """Partial mock for Archive Stage."""
 
   TARGET = 'chromite.buildbot.cbuildbot_stages.ArchiveStage'
-  ATTRS = ('GetVersion',)
+  ATTRS = ('GetVersion', 'WaitForBreakpadSymbols',)
 
   VERSION = '0.0.0.1'
 
   def GetVersion(self, _inst):
     return self.VERSION
+
+  def WaitForBreakpadSymbols(self, _inst):
+    return True
 
 
 class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):

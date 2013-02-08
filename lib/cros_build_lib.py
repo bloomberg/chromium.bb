@@ -869,6 +869,7 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
     inputs = ['.']
   if extra_args is None:
     extra_args = []
+  kwds.setdefault('debug_level', logging.DEBUG)
 
   comp = FindCompressor(compression, chroot=chroot)
   cmd = ['tar'] + extra_args + ['-I', comp, '-cf', target] + inputs
@@ -1152,11 +1153,11 @@ class ContextManagerStack(object):
     # (or to switch that exception to a new one triggered by a handlers
     # __exit__).
     for handler in reversed(self._stack):
+      # pylint: disable=W0702
       try:
         if handler.__exit__(exc_type, exc, traceback):
           exc_type = exc = traceback = None
       except:
-        # pylint: disable=W0702
         exc_type, exc, traceback = sys.exc_info()
     if all(x is None for x in (exc_type, exc, traceback)):
       return True

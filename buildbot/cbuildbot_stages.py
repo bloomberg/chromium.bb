@@ -1215,12 +1215,34 @@ class VMTestStage(BoardSpecificBuilderStage):
     super(VMTestStage, self).__init__(options, build_config, board)
     self._archive_stage = archive_stage
 
-  def _PerformStage(self):
-    try:
-      # These directories are used later to archive test artifacts.
-      test_results_dir = None
-      test_results_dir = commands.CreateTestRoot(self._build_root)
+  def _ArchiveTestResults(self, test_results_dir):
+    """Archives test results to Google Storage."""
+    test_tarball = commands.ArchiveTestResults(
+        self._build_root, test_results_dir, prefix='')
+    # Wait for breakpad symbols. The archive path will be ready by the time
+    # the breakpad symbols are ready.
+    got_symbols = self._archive_stage.WaitForBreakpadSymbols()
+    archive_path = self._archive_stage.GetArchivePath()
+    upload_url = self._archive_stage.GetGSUploadLocation()
+    filenames = commands.GenerateStackTraces(
+        self._build_root, self._current_board, test_tarball, archive_path,
+        got_symbols)
+    filenames.append(commands.ArchiveFile(test_tarball, archive_path))
 
+    cros_build_lib.Info('Uploading artifacts to Google Storage...')
+    for filename in filenames:
+      try:
+        commands.UploadArchivedFile(archive_path, upload_url, filename,
+                                    self._archive_stage.debug, update_list=True)
+      except cros_build_lib.RunCommandError as e:
+        # Treat gsutil flake as a warning if it's the only problem.
+        self._HandleExceptionAsWarning(e)
+
+  def _PerformStage(self):
+    # These directories are used later to archive test artifacts.
+    test_results_dir = commands.CreateTestRoot(self._build_root)
+
+    try:
       commands.RunTestSuite(self._build_root,
                             self._current_board,
                             self.GetImageDirSymlink(),
@@ -1229,22 +1251,11 @@ class VMTestStage(BoardSpecificBuilderStage):
                             test_type=self._build_config['vm_tests'],
                             whitelist_chrome_crashes=self._chrome_rev is None,
                             archive_dir=self._archive_stage.bot_archive_root)
-
+    except Exception:
+      cros_build_lib.Error(_VM_TEST_ERROR_MSG)
+      raise
     finally:
-      test_tarball = None
-      if test_results_dir:
-        test_tarball = commands.ArchiveTestResults(self._build_root,
-                                                   test_results_dir,
-                                                   prefix='')
-
-      self._archive_stage.TestResultsReady(test_tarball)
-
-  def _HandleStageException(self, exception):
-    cros_build_lib.Error(_VM_TEST_ERROR_MSG)
-    return super(VMTestStage, self)._HandleStageException(exception)
-
-  def HandleSkip(self):
-    self._archive_stage.TestResultsReady(None)
+      self._ArchiveTestResults(test_results_dir)
 
 
 class TestTimeoutException(Exception):
@@ -1471,6 +1482,11 @@ class ArchiveStage(BoardSpecificBuilderStage):
         self._build_root, trybot=not self.prod_archive)
     self.bot_archive_root = os.path.join(self._archive_root, self._bot_id)
 
+    if self._options.remote_trybot:
+      self.debug = self._options.debug_forced
+    else:
+      self.debug = self._options.debug
+
     # Queues that are populated during the Archive stage.
     self._breakpad_symbols_queue = multiprocessing.Queue()
     self._hw_test_uploads_status_queue = multiprocessing.Queue()
@@ -1485,7 +1501,6 @@ class ArchiveStage(BoardSpecificBuilderStage):
     self._version_queue = multiprocessing.Queue()
     self._autotest_tarballs_queue = multiprocessing.Queue()
     self._full_autotest_tarball_queue = multiprocessing.Queue()
-    self._test_results_queue = multiprocessing.Queue()
 
     # These variables will be initialized when the stage is run.
     self._archive_path = None
@@ -1521,18 +1536,6 @@ class ArchiveStage(BoardSpecificBuilderStage):
       full_autotest_tarball: The paths of the full autotest tarball.
     """
     self._full_autotest_tarball_queue.put(full_autotest_tarball)
-
-  def TestResultsReady(self, test_results):
-    """Tell Archive Stage that test results are ready.
-
-    This must be called twice (with VM test results and Chrome test results)
-    in order for archive stage to finish.
-
-    Args:
-      test_results: The test results tarball from the tests. If no tests
-                    results are available, this should be set to None.
-    """
-    self._test_results_queue.put(test_results)
 
   def GetVersion(self):
     """Gets the version for the archive stage."""
@@ -1578,7 +1581,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     """
     self._breakpad_symbols_queue.put(success)
 
-  def _WaitForBreakpadSymbols(self):
+  def WaitForBreakpadSymbols(self):
     """Wait for the breakpad symbols to be generated.
 
     Returns:
@@ -1586,6 +1589,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       False if the breakpad symbols were not generated within 20 mins.
     """
     success = False
+    cros_build_lib.Info('Waiting for breakpad symbols...')
     try:
       # TODO: Clean this up so that we no longer rely on a timeout
       success = self._breakpad_symbols_queue.get(True, 1200)
@@ -1605,7 +1609,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       url_prefix = 'https://sandbox.google.com/storage/'
       return upload_location.replace('gs://', url_prefix)
     else:
-      return self._GetArchivePath()
+      return self.GetArchivePath()
 
   def _GetGSUtilArchiveDir(self):
     if self._options.archive_base:
@@ -1625,7 +1629,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     if version:
       return '%s/%s' % (gsutil_archive, version)
 
-  def _GetArchivePath(self):
+  def GetArchivePath(self):
     version = self.GetVersion()
     if version:
       return os.path.join(self.bot_archive_root, version)
@@ -1658,20 +1662,9 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     return full_autotest_tarball
 
-  def _GetTestResults(self):
-    """Get the path to the test results tarball."""
-    cros_build_lib.Info('Waiting for test results dir...')
-    test_tarball = self._test_results_queue.get()
-    if test_tarball:
-      cros_build_lib.Info('Found test results tarball at %s...'
-                          % test_tarball)
-      yield test_tarball
-    else:
-      cros_build_lib.Info('No test results.')
-
   def _SetupArchivePath(self):
     """Create a fresh directory for archiving a build."""
-    archive_path = self._GetArchivePath()
+    archive_path = self.GetArchivePath()
 
     if not archive_path:
       return None
@@ -1777,14 +1770,10 @@ class ArchiveStage(BoardSpecificBuilderStage):
   def _PerformStage(self):
     self._Initialize()
 
-    if self._options.remote_trybot:
-      debug = self._options.debug_forced
-    else:
-      debug = self._options.debug
-
     buildroot = self._build_root
     config = self._build_config
     board = self._current_board
+    debug = self.debug
     upload_url = self.GetGSUploadLocation()
     archive_path = self._archive_path
     image_dir = self.GetImageDirSymlink()
@@ -1823,7 +1812,6 @@ class ArchiveStage(BoardSpecificBuilderStage):
     #    \- ArchiveStrippedChrome
     #    \- BuildAndArchiveChromeSysroot
     #    \- ArchiveChromeEbuildEnv
-    #    \- ArchiveTestResults
 
     def ArchiveAutotestTarballs():
       """Archives the autotest tarballs produced in BuildTarget."""
@@ -1854,16 +1842,6 @@ class ArchiveStage(BoardSpecificBuilderStage):
           full_path = os.path.join(update_payloads_dir, payload)
           hw_test_upload_queue.put([commands.ArchiveFile(full_path,
                                                          archive_path)])
-
-    def ArchiveTestResults():
-      """Archives test results when they are ready."""
-      got_symbols = self._WaitForBreakpadSymbols()
-      for test_results in self._GetTestResults():
-        filenames = commands.GenerateStackTraces(buildroot, board, test_results,
-                                                 archive_path, got_symbols)
-        for filename in filenames:
-          upload_queue.put([filename])
-        upload_queue.put([commands.ArchiveFile(test_results, archive_path)])
 
     def ArchiveDebugSymbols():
       """Generate debug symbols and upload debug.tgz."""
@@ -2048,7 +2026,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     def BuildAndArchiveArtifacts(num_upload_processes=10):
       # Run archiving steps in parallel.
       steps = [ArchiveReleaseArtifacts, ArchiveArtifactsForHWTesting,
-               ArchiveTestResults, self.ArchiveMetadataJson]
+               self.ArchiveMetadataJson]
       if config['images']:
         steps.extend(
             [self.ArchiveStrippedChrome, self.BuildAndArchiveChromeSysroot,

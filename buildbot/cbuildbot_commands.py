@@ -420,37 +420,24 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
     test_results_dir: Path from buildroot/chroot to find test results.
       This must a subdir of /tmp.
 
-  Raises:
-    No exceptions should be raised. Callers depend on this behaviour.
-
   Returns the path to the tarball.
   """
-  try:
-    test_results_dir = test_results_dir.lstrip('/')
-    chroot = os.path.join(buildroot, 'chroot')
-    results_path = os.path.join(chroot, test_results_dir)
-    cros_build_lib.SudoRunCommand(['chmod', '-R', 'a+rw', results_path],
-                                  print_cmd=False)
+  test_results_dir = test_results_dir.lstrip('/')
+  chroot = os.path.join(buildroot, 'chroot')
+  results_path = os.path.join(chroot, test_results_dir)
+  cros_build_lib.SudoRunCommand(['chmod', '-R', 'a+rw', results_path],
+                                print_cmd=False)
 
-    test_tarball = os.path.join(buildroot, '%stest_results.tgz' % prefix)
-    if os.path.exists(test_tarball):
-      os.remove(test_tarball)
+  test_tarball = os.path.join(buildroot, '%stest_results.tgz' % prefix)
+  if os.path.exists(test_tarball):
+    os.remove(test_tarball)
 
-    cros_build_lib.CreateTarball(
-        test_tarball, results_path, compression=cros_build_lib.COMP_GZIP,
-        chroot=chroot)
+  cros_build_lib.CreateTarball(
+      test_tarball, results_path, compression=cros_build_lib.COMP_GZIP,
+      chroot=chroot)
 
-    shutil.rmtree(results_path)
-    return test_tarball
-
-  except Exception, e:
-    cros_build_lib.Warning(
-        '========================================================')
-    cros_build_lib.Warning(
-        '------>  We failed to archive test results. <-----------')
-    cros_build_lib.Warning(str(e))
-    cros_build_lib.Warning(
-        '========================================================')
+  shutil.rmtree(results_path)
+  return test_tarball
 
 
 def RunHWTestSuite(build, suite, board, pool, num, file_bugs, wait_for_results,
@@ -509,13 +496,14 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
 
   # We need to unzip the test results tarball first because we cannot update
   # a compressed tarball.
-  cros_build_lib.RunCommand([gzip, '-df', gzipped_test_tarball])
+  cros_build_lib.RunCommand([gzip, '-df', gzipped_test_tarball],
+                            debug_level=logging.DEBUG)
   test_tarball = os.path.splitext(gzipped_test_tarball)[0] + '.tar'
 
   # Extract minidump and asan files from the tarball and symbolize them.
   cmd = ['tar', 'xf', test_tarball, '--directory=%s' % temp_dir, '--wildcards']
   cros_build_lib.RunCommand(cmd + ['*.dmp', '*asan_log.*'],
-                            redirect_stderr=True, error_code_ok=True)
+                            debug_level=logging.DEBUG, error_code_ok=True)
   symbol_dir = os.path.join('/build', board, 'usr', 'lib', 'debug', 'breakpad')
   board_path = os.path.join('/build', board)
   for curr_dir, _subdirs, files in os.walk(temp_dir):
@@ -535,7 +523,7 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
         cros_build_lib.RunCommand(
             ['minidump_stackwalk', minidump, symbol_dir], cwd=cwd,
             enter_chroot=True, error_code_ok=True, redirect_stderr=True,
-            log_stdout_to_file=processed_file_path)
+            debug_level=logging.DEBUG, log_stdout_to_file=processed_file_path)
       # Process asan log.
       else:
         # Prepend '/chrome/$board' path to the stack trace in log.
@@ -552,9 +540,10 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
         # Symbolize and demangle it.
         raw = cros_build_lib.RunCommandCaptureOutput(
             ['asan_symbolize.py'], input=log_content, enter_chroot=True,
+            debug_level=logging.DEBUG,
             extra_env = {'LLVM_SYMBOLIZER_PATH' : '/usr/bin/llvm-symbolizer'})
         cros_build_lib.RunCommand(['c++filt'],
-                                  input=raw.output,
+                                  input=raw.output, debug_level=logging.DEBUG,
                                   cwd=buildroot, redirect_stderr=True,
                                   log_stdout_to_file=processed_file_path)
         # Break the bot if asan_log found. This is because some asan
@@ -569,11 +558,11 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
       # Append the processed file to archive.
       filename = ArchiveFile(processed_file_path, archive_dir)
       stack_trace_filenames.append(filename)
-  cros_build_lib.RunCommand(['tar', 'uf', test_tarball,
-                             '--directory=%s' % temp_dir, '.'])
+  cmd = ['tar', 'uf', test_tarball, '--directory=%s' % temp_dir, '.']
+  cros_build_lib.RunCommand(cmd, debug_level=logging.DEBUG)
   cros_build_lib.RunCommand('%s -c %s > %s'
                             % (gzip, test_tarball, gzipped_test_tarball),
-                            shell=True)
+                            shell=True, debug_level=logging.DEBUG)
   os.unlink(test_tarball)
   shutil.rmtree(temp_dir)
 
@@ -962,7 +951,7 @@ def UpdateUploadedList(last_uploaded, archive_path, upload_url, debug):
 
 
 def UploadArchivedFile(archive_path, upload_url, filename, debug,
-                       update_list=False):
+                       update_list=False, timeout=30 * 60):
   """Upload the specified tarball from the archive dir to Google Storage.
 
   Args:
@@ -971,6 +960,7 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
     debug: Whether we are in debug mode.
     filename: Filename of the tarball to upload.
     update_list: Flag to update the list of uploaded files.
+    timeout: Raise an exception if the upload takes longer than this timeout.
   """
 
   if upload_url:
@@ -985,7 +975,8 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
       if debug:
         cros_build_lib.Info('UploadArchivedFile would run: %s' % ' '.join(cmd))
       else:
-        cros_build_lib.RunCommandCaptureOutput(cmd)
+        with cros_build_lib.SubCommandTimeout(timeout):
+          cros_build_lib.RunCommandCaptureOutput(cmd, debug_level=logging.DEBUG)
 
     # Update the list of uploaded files.
     if update_list:
