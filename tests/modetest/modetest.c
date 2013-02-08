@@ -835,8 +835,6 @@ set_mode(struct connector *c, int count, struct plane *p, int plane_count,
 	kms_destroy(&kms);
 }
 
-extern char *optarg;
-extern int optind, opterr, optopt;
 static char optstr[] = "ecpmfs:P:v";
 
 #define min(a, b)	((a) < (b) ? (a) : (b))
