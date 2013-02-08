@@ -17,6 +17,7 @@
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -39,6 +40,7 @@ class SyncFileSystemService
       public ProfileSyncServiceObserver,
       public LocalFileSyncService::Observer,
       public RemoteFileSyncService::Observer,
+      public FileStatusObserver,
       public content::NotificationObserver,
       public base::SupportsWeakPtr<SyncFileSystemService> {
  public:
@@ -99,8 +101,7 @@ class SyncFileSystemService
 
   // Callbacks for remote/local sync.
   void DidProcessRemoteChange(fileapi::SyncStatusCode status,
-                              const fileapi::FileSystemURL& url,
-                              fileapi::SyncOperationResult result);
+                              const fileapi::FileSystemURL& url);
   void DidProcessLocalChange(fileapi::SyncStatusCode status,
                              const fileapi::FileSystemURL& url);
 
@@ -125,6 +126,13 @@ class SyncFileSystemService
 
   // ProfileSyncServiceObserver:
   virtual void OnStateChanged() OVERRIDE;
+
+  // SyncFileStatusObserver:
+  virtual void OnFileStatusChanged(
+      const fileapi::FileSystemURL& url,
+      SyncDirection direction,
+      fileapi::SyncFileStatus sync_status,
+      fileapi::SyncAction action_taken) OVERRIDE;
 
   // Check the profile's sync preference settings and call
   // remote_file_service_->SetSyncEnabled() to update the status.

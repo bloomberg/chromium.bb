@@ -15,8 +15,9 @@ class GURL;
 
 namespace sync_file_system {
 
-class RemoteChangeProcessor;
+class FileStatusObserver;
 class LocalChangeProcessor;
+class RemoteChangeProcessor;
 
 enum RemoteServiceState {
   // Remote service is up and running, or has not seen any errors yet.
@@ -77,8 +78,8 @@ class RemoteFileSyncService {
   virtual ~RemoteFileSyncService() {}
 
   // Adds and removes observers.
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
+  virtual void AddServiceObserver(Observer* observer) = 0;
+  virtual void AddFileStatusObserver(FileStatusObserver* observer) = 0;
 
   // Registers |origin| to track remote side changes for the |origin|.
   // Upon completion, invokes |callback|.
@@ -103,7 +104,7 @@ class RemoteFileSyncService {
   // the control to the sync engine).
   virtual void ProcessRemoteChange(
       RemoteChangeProcessor* processor,
-      const fileapi::SyncOperationCallback& callback) = 0;
+      const fileapi::SyncFileCallback& callback) = 0;
 
   // Returns a LocalChangeProcessor that applies a local change to the remote
   // storage backed by this service.

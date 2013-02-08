@@ -108,9 +108,9 @@ ACTION_P(MockStatusCallback, status) {
       FROM_HERE, base::Bind(arg3, status));
 }
 
-ACTION_P3(MockSyncOperationCallback, status, url, operation_type) {
+ACTION_P2(MockSyncFileCallback, status, url) {
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg1, status, url, operation_type));
+      FROM_HERE, base::Bind(arg1, status, url));
 }
 
 class SyncFileSystemServiceTest : public testing::Test {
@@ -131,7 +131,9 @@ class SyncFileSystemServiceTest : public testing::Test {
     sync_service_.reset(new SyncFileSystemService(&profile_));
 
     EXPECT_CALL(*mock_remote_service(),
-                AddObserver(sync_service_.get())).Times(1);
+                AddServiceObserver(sync_service_.get())).Times(1);
+    EXPECT_CALL(*mock_remote_service(),
+                AddFileStatusObserver(sync_service_.get())).Times(1);
 
     sync_service_->Initialize(
         make_scoped_ptr(local_service_),
@@ -378,9 +380,8 @@ TEST_F(SyncFileSystemServiceTest, SimpleSyncFlowWithFileBusy) {
 
     // Return with SYNC_STATUS_FILE_BUSY once.
     EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_, _))
-        .WillOnce(MockSyncOperationCallback(fileapi::SYNC_STATUS_FILE_BUSY,
-                                            kFile,
-                                            fileapi::SYNC_OPERATION_NONE));
+        .WillOnce(MockSyncFileCallback(fileapi::SYNC_STATUS_FILE_BUSY,
+                                       kFile));
 
     // ProcessRemoteChange should be called again when the becomes
     // not busy.

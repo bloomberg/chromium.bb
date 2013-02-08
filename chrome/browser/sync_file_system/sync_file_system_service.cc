@@ -26,6 +26,7 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
+#include "webkit/fileapi/syncable/sync_operation_result.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
 using content::BrowserThread;
@@ -237,7 +238,9 @@ void SyncFileSystemService::Initialize(
   remote_file_service_ = remote_file_service.Pass();
 
   local_file_service_->AddChangeObserver(this);
-  remote_file_service_->AddObserver(this);
+
+  remote_file_service_->AddServiceObserver(this);
+  remote_file_service_->AddFileStatusObserver(this);
 
   ProfileSyncServiceBase* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
@@ -352,13 +355,11 @@ void SyncFileSystemService::MaybeStartLocalSync() {
 
 void SyncFileSystemService::DidProcessRemoteChange(
     fileapi::SyncStatusCode status,
-    const FileSystemURL& url,
-    fileapi::SyncOperationResult result) {
+    const FileSystemURL& url) {
   DVLOG(1) << "DidProcessRemoteChange: "
            << " status=" << status
            << " (" << SyncStatusCodeToString(status) << ")"
-           << " url=" << url.DebugString()
-           << " operation_result=" << result;
+           << " url=" << url.DebugString();
   DCHECK(remote_sync_running_);
   remote_sync_running_ = false;
 
@@ -381,13 +382,6 @@ void SyncFileSystemService::DidProcessRemoteChange(
     return;
   }
 
-  if ((status == fileapi::SYNC_STATUS_OK ||
-       status == fileapi::SYNC_STATUS_HAS_CONFLICT) &&
-      result != fileapi::SYNC_OPERATION_NONE) {
-    // Notify observers of the changes made for a remote sync.
-    FOR_EACH_OBSERVER(SyncEventObserver, observers_,
-                      OnFileSynced(url, result));
-  }
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
                             AsWeakPtr()));
@@ -409,11 +403,6 @@ void SyncFileSystemService::DidProcessLocalChange(
 
   DCHECK(url.is_valid());
   local_file_service_->ClearSyncFlagForURL(url);
-
-  if (status == fileapi::SYNC_STATUS_HAS_CONFLICT) {
-    FOR_EACH_OBSERVER(SyncEventObserver, observers_,
-                      OnFileSynced(url, fileapi::SYNC_OPERATION_CONFLICTED));
-  }
 
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
@@ -510,6 +499,18 @@ void SyncFileSystemService::OnStateChanged() {
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (profile_sync_service)
     UpdateSyncEnabledStatus(profile_sync_service);
+}
+
+void SyncFileSystemService::OnFileStatusChanged(
+    const FileSystemURL& url,
+    SyncDirection direction,
+    fileapi::SyncFileStatus sync_status,
+    fileapi::SyncAction action_taken) {
+  // TODO(kinuko,calvinlo): Update this line.
+  FOR_EACH_OBSERVER(
+      SyncEventObserver, observers_,
+      OnFileSynced(url,
+                   static_cast<fileapi::SyncOperationResult>(action_taken)));
 }
 
 void SyncFileSystemService::UpdateSyncEnabledStatus(

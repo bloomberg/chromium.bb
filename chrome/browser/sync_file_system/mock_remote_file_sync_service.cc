@@ -11,7 +11,6 @@
 #include "base/message_loop_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_url.h"
-#include "webkit/fileapi/syncable/sync_operation_result.h"
 
 using ::testing::_;
 using ::testing::Invoke;
@@ -23,10 +22,10 @@ const char MockRemoteFileSyncService::kServiceName[] = "mock_sync_service";
 
 MockRemoteFileSyncService::MockRemoteFileSyncService() {
   typedef MockRemoteFileSyncService self;
-  ON_CALL(*this, AddObserver(_))
-      .WillByDefault(Invoke(this, &self::AddObserverStub));
-  ON_CALL(*this, RemoveObserver(_))
-      .WillByDefault(Invoke(this, &self::RemoveObserverStub));
+  ON_CALL(*this, AddServiceObserver(_))
+      .WillByDefault(Invoke(this, &self::AddServiceObserverStub));
+  ON_CALL(*this, AddFileStatusObserver(_))
+      .WillByDefault(Invoke(this, &self::AddFileStatusObserverStub));
   ON_CALL(*this, RegisterOriginForTrackingChanges(_, _))
       .WillByDefault(Invoke(this, &self::RegisterOriginForTrackingChangesStub));
   ON_CALL(*this, UnregisterOriginForTrackingChanges(_, _))
@@ -51,23 +50,34 @@ MockRemoteFileSyncService::~MockRemoteFileSyncService() {
 
 void MockRemoteFileSyncService::NotifyRemoteChangeQueueUpdated(
     int64 pending_changes) {
-  FOR_EACH_OBSERVER(Observer, observers_,
+  FOR_EACH_OBSERVER(Observer, service_observers_,
                     OnRemoteChangeQueueUpdated(pending_changes));
 }
 
 void MockRemoteFileSyncService::NotifyRemoteServiceStateUpdated(
     RemoteServiceState state,
     const std::string& description) {
-  FOR_EACH_OBSERVER(Observer, observers_,
+  FOR_EACH_OBSERVER(Observer, service_observers_,
                     OnRemoteServiceStateUpdated(state, description));
 }
 
-void MockRemoteFileSyncService::AddObserverStub(Observer* observer) {
-  observers_.AddObserver(observer);
+void MockRemoteFileSyncService::NotifyFileStatusChanged(
+    const fileapi::FileSystemURL& url,
+    SyncDirection direction,
+    fileapi::SyncFileStatus sync_status,
+    fileapi::SyncAction action_taken) {
+  FOR_EACH_OBSERVER(FileStatusObserver, file_status_observers_,
+                    OnFileStatusChanged(url, direction,
+                                        sync_status, action_taken));
 }
 
-void MockRemoteFileSyncService::RemoveObserverStub(Observer* observer) {
-  observers_.RemoveObserver(observer);
+void MockRemoteFileSyncService::AddServiceObserverStub(Observer* observer) {
+  service_observers_.AddObserver(observer);
+}
+
+void MockRemoteFileSyncService::AddFileStatusObserverStub(
+    FileStatusObserver* observer) {
+  file_status_observers_.AddObserver(observer);
 }
 
 void MockRemoteFileSyncService::RegisterOriginForTrackingChangesStub(
@@ -88,12 +98,11 @@ void MockRemoteFileSyncService::UnregisterOriginForTrackingChangesStub(
 
 void MockRemoteFileSyncService::ProcessRemoteChangeStub(
     RemoteChangeProcessor* processor,
-    const fileapi::SyncOperationCallback& callback) {
+    const fileapi::SyncFileCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC,
-                 fileapi::FileSystemURL(),
-                 fileapi::SYNC_OPERATION_NONE));
+                 fileapi::FileSystemURL()));
 }
 
 void MockRemoteFileSyncService::GetRemoteFileMetadataStub(

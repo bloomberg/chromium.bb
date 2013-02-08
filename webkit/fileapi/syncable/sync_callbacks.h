@@ -37,11 +37,6 @@ typedef base::Callback<void(fileapi::SyncStatusCode status,
     ConflictFileInfoCallback;
 
 typedef base::Callback<void(SyncStatusCode status,
-                            const FileSystemURL& url,
-                            SyncOperationResult result)>
-    SyncOperationCallback;
-
-typedef base::Callback<void(SyncStatusCode status,
                             SyncFileStatus sync_file_status)>
     SyncFileStatusCallback;
 

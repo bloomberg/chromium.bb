@@ -60,8 +60,8 @@ class DriveFileSyncService
       scoped_ptr<DriveMetadataStore> metadata_store);
 
   // RemoteFileSyncService overrides.
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+  virtual void AddServiceObserver(Observer* observer) OVERRIDE;
+  virtual void AddFileStatusObserver(FileStatusObserver* observer) OVERRIDE;
   virtual void RegisterOriginForTrackingChanges(
       const GURL& origin,
       const fileapi::SyncStatusCallback& callback) OVERRIDE;
@@ -70,7 +70,7 @@ class DriveFileSyncService
       const fileapi::SyncStatusCallback& callback) OVERRIDE;
   virtual void ProcessRemoteChange(
       RemoteChangeProcessor* processor,
-      const fileapi::SyncOperationCallback& callback) OVERRIDE;
+      const fileapi::SyncFileCallback& callback) OVERRIDE;
   virtual LocalChangeProcessor* GetLocalChangeProcessor() OVERRIDE;
   virtual bool IsConflicting(const fileapi::FileSystemURL& url) OVERRIDE;
   virtual void GetRemoteFileMetadata(
@@ -398,7 +398,8 @@ class DriveFileSyncService
   // sync. Polling will be disabled while this is true.
   bool is_fetching_changes_;
 
-  ObserverList<Observer> observers_;
+  ObserverList<Observer> service_observers_;
+  ObserverList<FileStatusObserver> file_status_observers_;
 
   // Use WeakPtrFactory instead of SupportsWeakPtr to revoke the weak pointer
   // in |token_|.
