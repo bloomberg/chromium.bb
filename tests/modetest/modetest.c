@@ -894,7 +894,7 @@ static int parse_plane(struct plane *p, const char *arg)
 
 static void usage(char *name)
 {
-	fprintf(stderr, "usage: %s [-cefmPpsv]\n", name);
+	fprintf(stderr, "usage: %s [-cefMmPpsv]\n", name);
 
 	fprintf(stderr, "\n Query options:\n\n");
 	fprintf(stderr, "\t-c\tlist connectors\n");
@@ -907,6 +907,9 @@ static void usage(char *name)
 	fprintf(stderr, "\t-P <connector_id>:<w>x<h>[@<format>]\tset a plane\n");
 	fprintf(stderr, "\t-s <connector_id>[@<crtc_id>]:<mode>[@<format>]\tset a mode\n");
 	fprintf(stderr, "\t-v\ttest vsynced page flipping\n");
+
+	fprintf(stderr, "\n Generic options:\n\n");
+	fprintf(stderr, "\t-M module\tuse the given driver\n");
 
 	fprintf(stderr, "\n\tDefault is to dump all info.\n");
 	exit(0);
@@ -935,7 +938,7 @@ static int page_flipping_supported(void)
 #endif
 }
 
-static char optstr[] = "cefmP:ps:v";
+static char optstr[] = "cefM:mP:ps:v";
 
 int main(int argc, char **argv)
 {
@@ -943,13 +946,17 @@ int main(int argc, char **argv)
 	int encoders = 0, connectors = 0, crtcs = 0, planes = 0, framebuffers = 0;
 	int test_vsync = 0;
 	const char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "omapdrm", "exynos", "tilcdc" };
+	char *module = NULL;
 	unsigned int i;
 	int count = 0, plane_count = 0;
 	struct connector con_args[2];
 	struct plane plane_args[2] = { { 0, }, };
+	unsigned int args = 0;
 	
 	opterr = 0;
 	while ((c = getopt(argc, argv, optstr)) != -1) {
+		args++;
+
 		switch (c) {
 		case 'c':
 			connectors = 1;
@@ -959,6 +966,11 @@ int main(int argc, char **argv)
 			break;
 		case 'f':
 			framebuffers = 1;
+			break;
+		case 'M':
+			module = optarg;
+			/* Preserve the default behaviour of dumping all information. */
+			args--;
 			break;
 		case 'm':
 			modes = 1;
@@ -986,27 +998,35 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (argc == 1)
+	if (!args)
 		encoders = connectors = crtcs = planes = modes = framebuffers = 1;
 
-	for (i = 0; i < ARRAY_SIZE(modules); i++) {
-		printf("trying to load module %s...", modules[i]);
-		fd = drmOpen(modules[i], NULL);
+	if (module) {
+		fd = drmOpen(module, NULL);
 		if (fd < 0) {
-			printf("failed.\n");
-		} else {
-			printf("success.\n");
-			break;
+			fprintf(stderr, "failed to open device '%s'.\n", module);
+			return 1;
+		}
+	} else {
+		for (i = 0; i < ARRAY_SIZE(modules); i++) {
+			printf("trying to open device '%s'...", modules[i]);
+			fd = drmOpen(modules[i], NULL);
+			if (fd < 0) {
+				printf("failed.\n");
+			} else {
+				printf("success.\n");
+				break;
+			}
+		}
+
+		if (fd < 0) {
+			fprintf(stderr, "no device found.\n");
+			return 1;
 		}
 	}
 
 	if (test_vsync && !page_flipping_supported()) {
 		fprintf(stderr, "page flipping not supported by drm.\n");
-		return -1;
-	}
-
-	if (i == ARRAY_SIZE(modules)) {
-		fprintf(stderr, "failed to load any modules, aborting.\n");
 		return -1;
 	}
 
