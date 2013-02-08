@@ -17,14 +17,17 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_internals_util.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -215,7 +218,7 @@ void SigninManager::Initialize(Profile* profile) {
     local_state_pref_registrar_.Add(
         prefs::kGoogleServicesUsernamePattern,
         base::Bind(&SigninManager::OnGoogleServicesUsernamePatternChanged,
-                   base::Unretained(this)));
+                   weak_pointer_factory_.GetWeakPtr()));
   }
 
   // If the user is clearing the token service from the command line, then
@@ -512,6 +515,9 @@ void SigninManager::ClearTransientSigninData() {
 
   CleanupNotificationRegistration();
   client_login_.reset();
+#if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+  policy_client_.reset();
+#endif
   last_result_ = ClientLoginResult();
   possibly_invalid_username_.clear();
   password_.clear();
@@ -537,9 +543,11 @@ void SigninManager::HandleAuthError(const GoogleServiceAuthError& error,
 void SigninManager::SignOut() {
   DCHECK(IsInitialized());
   if (authenticated_username_.empty() && !client_login_.get()) {
-    // Just exit if we aren't signed in (or in the process of signing in).
-    // This avoids a perf regression because SignOut() is invoked on startup to
-    // clean up any incomplete previous signin attempts.
+    // Clean up our transient data and exit if we aren't signed in (or in the
+    // process of signing in). This avoids a perf regression from clearing out
+    // the TokenDB if SignOut() is invoked on startup to clean up any
+    // incomplete previous signin attempts.
+    ClearTransientSigninData();
     return;
   }
 
@@ -674,6 +682,9 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
   possibly_invalid_username_ = email_iter->second;
 
 #if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+  // TODO(atwilson): Refactor this to expose an observer interface to allow
+  // UserPolicySigninService and OneClickSignin to display UI here, instead
+  // of having this logic in SigninManager.
   // If we have an OAuth token, try loading policy for this user now, before
   // any signed in services are initialized. If there's no oauth token (the
   // user is using the old ClientLogin flow) then policy will get loaded once
@@ -686,7 +697,7 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
         possibly_invalid_username_,
         temp_oauth_login_tokens_.refresh_token,
         base::Bind(&SigninManager::OnRegisteredForPolicy,
-                   base::Unretained(this)));
+                   weak_pointer_factory_.GetWeakPtr()));
     return;
   }
 #endif
@@ -705,15 +716,31 @@ void SigninManager::OnRegisteredForPolicy(
     return;
   }
 
-  DVLOG(1) << "Policy registration succeeded: dm_token=" << client->dm_token();
+  // Stash away a copy of our CloudPolicyClient (should not already have one).
+  DCHECK(!policy_client_);
+  policy_client_.swap(client);
+
+  DVLOG(1) << "Policy registration succeeded: dm_token="
+           << policy_client_->dm_token();
   // TODO(dconnelly): Prompt user for whether they want to create a new profile
-  // or not (http://crbug.com/171236). For now, just immediately load policy.
+  // or not (http://crbug.com/171236), and either call SignOut() if they cancel,
+  // TransferCredentialsToNewProfile() to create a new profile, or
+  // LoadPolicyWithCachedClient() if they want to sign in for the current
+  // profile.
+  // For now, just call LoadPolicyWithCachedClient() to immediately load policy
+  // into the current profile and finish signing in.
+  LoadPolicyWithCachedClient(policy_client_.Pass());
+}
+
+void SigninManager::LoadPolicyWithCachedClient(
+    scoped_ptr<policy::CloudPolicyClient> client) {
+  DCHECK(client);
   policy::UserPolicySigninService* policy_service =
       policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
   policy_service->FetchPolicyForSignedInUser(
       client.Pass(),
       base::Bind(&SigninManager::OnPolicyFetchComplete,
-                 base::Unretained(this)));
+                 weak_pointer_factory_.GetWeakPtr()));
 }
 
 void SigninManager::OnPolicyFetchComplete(bool success) {
@@ -723,6 +750,52 @@ void SigninManager::OnPolicyFetchComplete(bool success) {
   DLOG_IF(ERROR, !success) << "Error fetching policy for user";
   DVLOG_IF(1, success) << "Policy fetch successful - completing signin";
   CompleteSigninAfterPolicyLoad();
+}
+
+void SigninManager::TransferCredentialsToNewProfile() {
+  DCHECK(!possibly_invalid_username_.empty());
+  DCHECK(policy_client_);
+  // Create a new profile and have it call back when done so we can inject our
+  // signin credentials.
+  ProfileManager::CreateMultiProfileAsync(
+      UTF8ToUTF16(possibly_invalid_username_),
+      UTF8ToUTF16(ProfileInfoCache::GetDefaultAvatarIconUrl(1)),
+      base::Bind(&SigninManager::CompleteSigninForNewProfile,
+                 weak_pointer_factory_.GetWeakPtr()),
+      chrome::HOST_DESKTOP_TYPE_NATIVE,
+      false);
+}
+
+void SigninManager::CompleteSigninForNewProfile(
+    Profile* profile,
+    Profile::CreateStatus status) {
+  DCHECK_NE(profile_, profile);
+  // TODO(atwilson): On error, unregister the client to release the DMToken.
+  if (status == Profile::CREATE_STATUS_FAIL) {
+    NOTREACHED() << "Error creating new profile";
+    SignOut();
+    return;
+  }
+
+  // Wait until the profile is initialized before we transfer credentials.
+  if (status == Profile::CREATE_STATUS_INITIALIZED) {
+    DCHECK(!possibly_invalid_username_.empty());
+    DCHECK(policy_client_);
+    // Sign in to the just-created profile and fetch policy for it.
+    SigninManager* signin_manager =
+        SigninManagerFactory::GetForProfile(profile);
+    DCHECK(signin_manager);
+    signin_manager->possibly_invalid_username_ = possibly_invalid_username_;
+    signin_manager->last_result_ = last_result_;
+    signin_manager->temp_oauth_login_tokens_ = temp_oauth_login_tokens_;
+    signin_manager->LoadPolicyWithCachedClient(policy_client_.Pass());
+    // Allow sync to start up if it is not overridden by policy.
+    browser_sync::SyncPrefs prefs(profile->GetPrefs());
+    prefs.SetSyncSetupCompleted();
+
+    // We've transferred our credentials to the new profile - sign out.
+    SignOut();
+  }
 }
 #endif
 

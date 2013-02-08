@@ -25,6 +25,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/signin/signin_internals_util.h"
 #include "chrome/browser/signin/ubertoken_fetcher.h"
@@ -36,7 +37,6 @@
 
 class CookieSettings;
 class GaiaAuthFetcher;
-class Profile;
 class PrefService;
 class SigninGlobalError;
 
@@ -250,7 +250,20 @@ class SigninManager : public GaiaAuthConsumer,
   // Callback invoked when a policy fetch request has completed. |success| is
   // true if policy was successfully fetched.
   void OnPolicyFetchComplete(bool success);
-#endif
+
+  // Called to create a new profile, which is then signed in with the
+  // in-progress auth credentials currently stored in this object.
+  void TransferCredentialsToNewProfile();
+
+  // Helper function that loads policy with the passed CloudPolicyClient, then
+  // completes the signin process.
+  void LoadPolicyWithCachedClient(scoped_ptr<policy::CloudPolicyClient> client);
+
+  // Callback invoked once a profile is created, so we can complete the
+  // credentials transfer and load policy.
+  void CompleteSigninForNewProfile(Profile* profile,
+                                   Profile::CreateStatus status);
+#endif  // defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
 
   // Invoked once policy has been loaded to complete user signin.
   void CompleteSigninAfterPolicyLoad();
@@ -307,6 +320,13 @@ class SigninManager : public GaiaAuthConsumer,
       signin_diagnostics_observers_;
 
   base::WeakPtrFactory<SigninManager> weak_pointer_factory_;
+
+
+#if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+  // CloudPolicyClient reference we keep while determining whether to create
+  // a new profile for an enterprise user or not.
+  scoped_ptr<policy::CloudPolicyClient> policy_client_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(SigninManager);
 };

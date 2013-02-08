@@ -181,6 +181,9 @@ class ProfileManager : public base::NonThreadSafe,
   // Directories are named "profile_1", "profile_2", etc., in sequence of
   // creation. (Because directories can be removed, however, it may be the case
   // that at some point the list of numbered profiles is not continuous.)
+  // |callback| may be invoked multiple times (for CREATE_STATUS_INITIALIZED
+  // and CREATE_STATUS_CREATED) so binding parameters with bind::Passed() is
+  // prohibited.
   static void CreateMultiProfileAsync(
       const string16& name,
       const string16& icon_url,
