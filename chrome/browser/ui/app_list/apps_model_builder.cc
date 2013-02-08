@@ -88,6 +88,14 @@ void AppsModelBuilder::OnBeginExtensionInstall(
   HighlightApp();
 }
 
+void AppsModelBuilder::OnDownloadProgress(const std::string& extension_id,
+                                          int percent_downloaded) {
+  int i = FindApp(extension_id);
+  if (i == -1)
+    return;
+  GetAppAt(i)->SetPercentDownloaded(percent_downloaded);
+}
+
 void AppsModelBuilder::AddApps(const ExtensionSet* extensions, Apps* apps) {
   for (ExtensionSet::const_iterator app = extensions->begin();
        app != extensions->end(); ++app) {

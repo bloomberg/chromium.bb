@@ -164,6 +164,9 @@ class CompleteInstallFunction
       const std::string& id,
       const std::string& error,
       WebstoreInstaller::FailureReason reason) OVERRIDE;
+  virtual void OnExtensionDownloadProgress(
+      const std::string& id,
+      content::DownloadItem* item) OVERRIDE;
 
  protected:
   virtual ~CompleteInstallFunction();

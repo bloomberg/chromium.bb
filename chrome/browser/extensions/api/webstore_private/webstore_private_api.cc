@@ -468,9 +468,11 @@ void CompleteInstallFunction::OnGetAppLauncherEnabled(
     bool app_launcher_enabled) {
   if (app_launcher_enabled) {
     std::string name;
-    DCHECK(approval_->parsed_manifest->GetString(extension_manifest_keys::kName,
-                                                &name));
 #if defined(ENABLE_APP_LIST)
+    if (!approval_->parsed_manifest->GetString(extension_manifest_keys::kName,
+                                               &name)) {
+      NOTREACHED();
+    }
     // Tell the app list about the install that we just started.
     chrome::NotifyAppListOfBeginExtensionInstall(
         profile(), id, name, approval_->installing_icon);
@@ -513,6 +515,14 @@ void CompleteInstallFunction::OnExtensionInstallFailure(
   Release();
 }
 
+void CompleteInstallFunction::OnExtensionDownloadProgress(
+    const std::string& id,
+    content::DownloadItem* item) {
+#if defined(ENABLE_APP_LIST)
+  chrome::NotifyAppListOfDownloadProgress(profile(), id,
+                                          item->PercentComplete());
+#endif
+}
 
 bool GetBrowserLoginFunction::RunImpl() {
   SetResult(CreateLoginResult(profile_->GetOriginalProfile()));

@@ -191,6 +191,9 @@ class AppListController : public ProfileInfoCacheObserver {
                                const std::string& extension_id,
                                const std::string& extension_name,
                                const gfx::ImageSkia& installing_icon);
+  void OnDownloadProgress(Profile* profile,
+                          const std::string& extension_id,
+                          int percent_downloaded);
 
  private:
   // Loads a profile asynchronously and calls OnProfileLoaded() when done.
@@ -547,6 +550,18 @@ void AppListController::OnBeginExtensionInstall(
                                           installing_icon);
 }
 
+void AppListController::OnDownloadProgress(Profile* profile,
+                                           const std::string& extension_id,
+                                           int percent_downloaded) {
+  // We only have a model for the current profile, so ignore events about
+  // others.
+  // TODO(koz): We should keep a model for each profile so we can record
+  // information like this.
+  if (profile != profile_)
+    return;
+  view_delegate_->OnDownloadProgress(extension_id, percent_downloaded);
+}
+
 // Attempts to find the bounds of the Windows taskbar. Returns true on success.
 // |rect| is in screen coordinates. If the taskbar is in autohide mode and is
 // not visible, |rect| will be outside the current monitor's bounds, except for
@@ -860,6 +875,15 @@ void NotifyAppListOfBeginExtensionInstall(
                                                       extension_name,
                                                       installing_icon);
 }
+
+void NotifyAppListOfDownloadProgress(
+    Profile* profile,
+    const std::string& extension_id,
+    int percent_downloaded) {
+  g_app_list_controller.Get().OnDownloadProgress(profile, extension_id,
+                                                 percent_downloaded);
+}
+
 #endif  // !defined(USE_ASH)
 
 }  // namespace chrome

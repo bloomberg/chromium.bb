@@ -36,6 +36,10 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
                                const std::string& extension_name,
                                const gfx::ImageSkia& installing_icon);
 
+  // Called when the download of an extension makes progress.
+  void OnDownloadProgress(const std::string& extension_id,
+                          int percent_downloaded);
+
  private:
   // Overridden from app_list::AppListViewDelegate:
   virtual void SetModel(app_list::AppListModel* model) OVERRIDE;

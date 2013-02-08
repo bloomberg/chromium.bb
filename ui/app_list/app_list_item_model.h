@@ -36,6 +36,12 @@ class APP_LIST_EXPORT AppListItemModel {
   void SetHighlighted(bool highlighted);
   bool highlighted() const { return highlighted_; }
 
+  void SetIsInstalling(bool is_installing);
+  bool is_installing() const { return is_installing_; }
+
+  void SetPercentDownloaded(int percent_downloaded);
+  int percent_downloaded() const { return percent_downloaded_; }
+
   void AddObserver(AppListItemModelObserver* observer);
   void RemoveObserver(AppListItemModelObserver* observer);
 
@@ -47,6 +53,8 @@ class APP_LIST_EXPORT AppListItemModel {
   gfx::ImageSkia icon_;
   std::string title_;
   bool highlighted_;
+  bool is_installing_;
+  int percent_downloaded_;
 
   ObserverList<AppListItemModelObserver> observers_;
 

@@ -64,6 +64,8 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   virtual void ItemIconChanged() OVERRIDE;
   virtual void ItemTitleChanged() OVERRIDE;
   virtual void ItemHighlightedChanged() OVERRIDE;
+  virtual void ItemIsInstallingChanged() OVERRIDE;
+  virtual void ItemPercentDownloadedChanged() OVERRIDE;
 
   // views::View overrides:
   virtual std::string GetClassName() const OVERRIDE;

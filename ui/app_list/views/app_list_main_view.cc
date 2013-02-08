@@ -60,6 +60,8 @@ class AppListMainView::IconLoader : public AppListItemModelObserver {
   }
   virtual void ItemTitleChanged() OVERRIDE {}
   virtual void ItemHighlightedChanged() OVERRIDE {}
+  virtual void ItemIsInstallingChanged() OVERRIDE {};
+  virtual void ItemPercentDownloadedChanged() OVERRIDE {};
 
   AppListMainView* owner_;
   AppListItemModel* item_;

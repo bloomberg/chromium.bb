@@ -40,6 +40,10 @@ class AppsModelBuilder : public content::NotificationObserver,
                                const std::string& extension_name,
                                const gfx::ImageSkia& installing_icon);
 
+  // Called when progress is made on an extension's download.
+  void OnDownloadProgress(const std::string& extension_id,
+                          int percent_downloaded);
+
  private:
   typedef std::vector<ExtensionAppItem*> Apps;
 

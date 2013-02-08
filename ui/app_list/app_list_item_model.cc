@@ -9,7 +9,10 @@
 
 namespace app_list {
 
-AppListItemModel::AppListItemModel() : highlighted_(false) {
+AppListItemModel::AppListItemModel()
+    : highlighted_(false),
+      is_installing_(false),
+      percent_downloaded_(-1) {
 }
 
 AppListItemModel::~AppListItemModel() {
@@ -36,6 +39,26 @@ void AppListItemModel::SetHighlighted(bool highlighted) {
   FOR_EACH_OBSERVER(AppListItemModelObserver,
                     observers_,
                     ItemHighlightedChanged());
+}
+
+void AppListItemModel::SetIsInstalling(bool is_installing) {
+  if (is_installing_ == is_installing)
+    return;
+
+  is_installing_ = is_installing;
+  FOR_EACH_OBSERVER(AppListItemModelObserver,
+                    observers_,
+                    ItemIsInstallingChanged());
+}
+
+void AppListItemModel::SetPercentDownloaded(int percent_downloaded) {
+  if (percent_downloaded_ == percent_downloaded)
+    return;
+
+  percent_downloaded_ = percent_downloaded;
+  FOR_EACH_OBSERVER(AppListItemModelObserver,
+                    observers_,
+                    ItemPercentDownloadedChanged());
 }
 
 void AppListItemModel::AddObserver(AppListItemModelObserver* observer) {

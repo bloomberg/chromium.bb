@@ -87,4 +87,10 @@ void NotifyAppListOfBeginExtensionInstall(
     const gfx::ImageSkia& installing_icon) {
 }
 
+void NotifyAppListOfDownloadProgress(
+    Profile* profile,
+    const std::string& extension_id,
+    int percent_downloaded) {
+}
+
 }  // namespace chrome

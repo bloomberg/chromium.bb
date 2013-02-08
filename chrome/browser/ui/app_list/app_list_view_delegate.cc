@@ -63,6 +63,12 @@ void AppListViewDelegate::OnBeginExtensionInstall(
                                          installing_icon);
 }
 
+void AppListViewDelegate::OnDownloadProgress(
+    const std::string& extension_id,
+    int percent_downloaded) {
+  apps_builder_->OnDownloadProgress(extension_id, percent_downloaded);
+}
+
 void AppListViewDelegate::ActivateAppListItem(
     app_list::AppListItemModel* item,
     int event_flags) {

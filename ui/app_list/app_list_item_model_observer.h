@@ -20,6 +20,12 @@ class APP_LIST_EXPORT AppListItemModelObserver {
   // Invoked after item's highlighted state is changed.
   virtual void ItemHighlightedChanged() = 0;
 
+  // Invoked after item begins or finishes installing.
+  virtual void ItemIsInstallingChanged() = 0;
+
+  // Invoked after item's download percentage changes.
+  virtual void ItemPercentDownloadedChanged() = 0;
+
  protected:
   virtual ~AppListItemModelObserver() {}
 };

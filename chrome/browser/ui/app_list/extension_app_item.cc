@@ -208,8 +208,9 @@ bool ExtensionAppItem::HasOverlay() const {
 
 void ExtensionAppItem::Reload() {
   const Extension* extension = GetExtension();
-  // If the extension isn't there, show the 'extension is installing' UI.
-  if (!extension) {
+  bool is_installing = !extension;
+  SetIsInstalling(is_installing);
+  if (is_installing) {
     SetTitle(extension_name_);
     UpdateIcon();
     return;

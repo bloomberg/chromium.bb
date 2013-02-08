@@ -31,6 +31,9 @@ namespace {
 const int kTopBottomPadding = 10;
 const int kTopPadding = 20;
 const int kIconTitleSpacing = 7;
+const int kProgressBarHorizontalPadding = 8;
+const int kProgressBarVerticalPadding = 4;
+const int kProgressBarHeight = 4;
 
 const SkColor kTitleColor = SkColorSetRGB(0x5A, 0x5A, 0x5A);
 const SkColor kTitleHoverColor = SkColorSetRGB(0x3C, 0x3C, 0x3C);
@@ -38,6 +41,9 @@ const SkColor kTitleHoverColor = SkColorSetRGB(0x3C, 0x3C, 0x3C);
 const SkColor kHoverAndPushedColor = SkColorSetARGB(0x19, 0, 0, 0);
 const SkColor kSelectedColor = SkColorSetARGB(0x0D, 0, 0, 0);
 const SkColor kHighlightedColor = kHoverAndPushedColor;
+const SkColor kDownloadProgressBackgroundColor =
+    SkColorSetRGB(0x90, 0x90, 0x90);
+const SkColor kDownloadProgressColor = SkColorSetRGB(0x20, 0xAA, 0x20);
 
 const int kLeftRightPaddingChars = 1;
 
@@ -168,6 +174,16 @@ void AppListItemView::ItemHighlightedChanged() {
   SchedulePaint();
 }
 
+void AppListItemView::ItemIsInstallingChanged() {
+  if (model_->is_installing())
+    apps_grid_view_->EnsureViewVisible(this);
+  SchedulePaint();
+}
+
+void AppListItemView::ItemPercentDownloadedChanged() {
+  SchedulePaint();
+}
+
 std::string AppListItemView::GetClassName() const {
   return kViewClassName;
 }
@@ -209,6 +225,25 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
     canvas->FillRect(rect, kHoverAndPushedColor);
   } else if (apps_grid_view_->IsSelectedView(this)) {
     canvas->FillRect(rect, kSelectedColor);
+  }
+
+  if (model_->is_installing()) {
+    gfx::Rect progress_bar_background(
+        rect.x() + kProgressBarHorizontalPadding,
+        rect.bottom() - kProgressBarVerticalPadding - kProgressBarHeight,
+        rect.width() - 2 * kProgressBarHorizontalPadding,
+        kProgressBarHeight);
+    canvas->FillRect(progress_bar_background, kDownloadProgressBackgroundColor);
+
+    if (model_->percent_downloaded() != -1) {
+      float percent = model_->percent_downloaded() / 100.0;
+      gfx::Rect progress_bar(
+          progress_bar_background.x(),
+          progress_bar_background.y(),
+          progress_bar_background.width() * percent,
+          progress_bar_background.height());
+      canvas->FillRect(progress_bar, kDownloadProgressColor);
+    }
   }
 }
 
