@@ -46,6 +46,17 @@ function WallpaperManager(dialogDom) {
   /** @const */ var AccessManifestKey = 'wallpaper-picker-manifest-key';
 
   /**
+   * Index of the All category. It is the first category in wallpaper picker.
+   */
+  /** @const */ var AllCategoryIndex = 0;
+
+  /**
+   * Index offset of categories parsed from manifest. The All category is added
+   * before them. So the offset is 1.
+   */
+  /** @const */ var OnlineCategoriesOffset = 1;
+
+  /**
    * Returns a translated string.
    *
    * Wrapper function to make dealing with translated strings more concise.
@@ -224,14 +235,15 @@ function WallpaperManager(dialogDom) {
       // Selects the first category in the categories list of current
       // wallpaper as the default selected category when showing wallpaper
       // picker UI.
-      var firstCategory = 0;
+      var presetCategory = AllCategoryIndex;
       for (var key in self.manifest_.wallpaper_list) {
         var url = self.manifest_.wallpaper_list[key].base_url +
             HighResolutionSuffix;
         if (url.indexOf(self.currentWallpaper_) != -1)
-          firstCategory = self.manifest_.wallpaper_list[key].categories[0];
+          presetCategory = self.manifest_.wallpaper_list[key].categories[0] +
+              OnlineCategoriesOffset;
       }
-      self.categoriesList_.selectionModel.selectedIndex = firstCategory;
+      self.categoriesList_.selectionModel.selectedIndex = presetCategory;
     };
     if (navigator.onLine) {
       presetCategoryInner_();
@@ -391,6 +403,8 @@ function WallpaperManager(dialogDom) {
         'change', this.onCategoriesChange_.bind(this));
 
     var categoriesDataModel = new cr.ui.ArrayDataModel([]);
+    // Adds all category as first category.
+    categoriesDataModel.push(str('allCategoryLabel'));
     for (var key in this.manifest_.categories) {
       categoriesDataModel.push(this.manifest_.categories[key]);
     }
@@ -521,8 +535,9 @@ function WallpaperManager(dialogDom) {
       var selectedItem;
       var wallpapersDataModel = new cr.ui.ArrayDataModel([]);
       for (var key in this.manifest_.wallpaper_list) {
-        if (this.manifest_.wallpaper_list[key].categories.
-                indexOf(selectedIndex) != -1) {
+        if (selectedIndex == AllCategoryIndex ||
+            this.manifest_.wallpaper_list[key].categories.indexOf(
+                selectedIndex - OnlineCategoriesOffset) != -1) {
           var wallpaperInfo = {
             baseURL: this.manifest_.wallpaper_list[key].base_url,
             dynamicURL: this.manifest_.wallpaper_list[key].dynamic_url,
