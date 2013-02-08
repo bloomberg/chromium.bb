@@ -171,7 +171,8 @@ class CloudPolicyTest : public InProcessBrowserTest {
         UserCloudPolicyManagerFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(policy_manager);
     policy_manager->Connect(g_browser_process->local_state(),
-                            connector->device_management_service());
+                            UserCloudPolicyManager::CreateCloudPolicyClient(
+                                connector->device_management_service()).Pass());
 #endif  // defined(OS_CHROMEOS)
 
     ASSERT_TRUE(policy_manager->core()->client());

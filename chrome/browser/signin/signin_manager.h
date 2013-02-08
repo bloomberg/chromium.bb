@@ -40,6 +40,10 @@ class Profile;
 class PrefService;
 class SigninGlobalError;
 
+namespace policy {
+class CloudPolicyClient;
+}
+
 // Details for the Notification type GOOGLE_SIGNIN_SUCCESSFUL.
 // A listener might use this to make note of a username / password
 // pair for encryption keys.
@@ -237,6 +241,19 @@ class SigninManager : public GaiaAuthConsumer,
   // transient signin data if |clear_transient_data| is true.
   void HandleAuthError(const GoogleServiceAuthError& error,
                        bool clear_transient_data);
+
+#if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+  // Callback invoked once policy registration is complete. If registration
+  // fails, |client| will be null.
+  void OnRegisteredForPolicy(scoped_ptr<policy::CloudPolicyClient> client);
+
+  // Callback invoked when a policy fetch request has completed. |success| is
+  // true if policy was successfully fetched.
+  void OnPolicyFetchComplete(bool success);
+#endif
+
+  // Invoked once policy has been loaded to complete user signin.
+  void CompleteSigninAfterPolicyLoad();
 
   // ClientLogin identity.
   std::string possibly_invalid_username_;

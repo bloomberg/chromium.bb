@@ -66,14 +66,12 @@ class UserCloudPolicyStoreTest : public testing::Test {
 
   // Verifies that store_->policy_map() has the appropriate entries.
   void VerifyPolicyMap(CloudPolicyStore* store) {
-    EXPECT_EQ(1U, store->policy_map().size());
+    EXPECT_EQ(2U, store->policy_map().size());
     const PolicyMap::Entry* entry =
         store->policy_map().Get(key::kShowHomeButton);
     ASSERT_TRUE(entry);
     EXPECT_TRUE(base::FundamentalValue(true).Equals(entry->value));
-
-    // SyncDisabled policy should be filtered out.
-    ASSERT_FALSE(store->policy_map().Get(key::kSyncDisabled));
+    ASSERT_TRUE(store->policy_map().Get(key::kSyncDisabled));
   }
 
   // Install an expectation on |observer_| for an error code.

@@ -32,7 +32,7 @@ class UserCloudPolicyManager : public CloudPolicyManager {
   // |device_management_service| must stay valid until this object is deleted or
   // DisconnectAndRemovePolicy() gets called. Virtual for mocking.
   virtual void Connect(PrefService* local_state,
-                       DeviceManagementService* device_management_service);
+                       scoped_ptr<CloudPolicyClient> client);
 
   // Shuts down the UserCloudPolicyManager (removes and stops refreshing the
   // cached cloud policy). This is typically called when a profile is being
@@ -44,8 +44,15 @@ class UserCloudPolicyManager : public CloudPolicyManager {
   // Virtual for mocking.
   virtual bool IsClientRegistered() const;
 
-  // Register the CloudPolicyClient using the passed OAuth token.
+  // Register the CloudPolicyClient using the passed OAuth token. This contacts
+  // the DMServer to mint a new DMToken.
   void RegisterClient(const std::string& access_token);
+
+  // Creates a CloudPolicyClient for this client. Used in situations where
+  // callers want to create a DMToken without actually initializing the
+  // profile's policy infrastructure.
+  static scoped_ptr<CloudPolicyClient> CreateCloudPolicyClient(
+      DeviceManagementService* device_management_service);
 
  private:
   // The profile this instance belongs to.

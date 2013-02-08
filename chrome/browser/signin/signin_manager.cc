@@ -40,6 +40,11 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/icu/public/i18n/unicode/regex.h"
 
+#if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+#include "chrome/browser/policy/user_policy_signin_service.h"
+#include "chrome/browser/policy/user_policy_signin_service_factory.h"
+#endif
+
 using namespace signin_internals_util;
 
 using content::BrowserThread;
@@ -646,28 +651,86 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
   if (email_iter == data.end()) {
     OnGetUserInfoKeyNotFound(kGetInfoEmailKey);
     return;
-  } else if (display_email_iter == data.end()) {
+  }
+  if (display_email_iter == data.end()) {
     OnGetUserInfoKeyNotFound(kGetInfoDisplayEmailKey);
     return;
-  } else {
-    DCHECK(email_iter->first == kGetInfoEmailKey);
-    DCHECK(display_email_iter->first == kGetInfoDisplayEmailKey);
-
-    // When signing in with credentials, the possibly invalid name is the Gaia
-    // display name. If the name returned by GetUserInfo does not match what is
-    // expected, return an error.
-    if (type_ == SIGNIN_TYPE_WITH_CREDENTIALS &&
-        base::strcasecmp(display_email_iter->second.c_str(),
-                         possibly_invalid_username_.c_str()) != 0) {
-      OnGetUserInfoKeyNotFound(kGetInfoDisplayEmailKey);
-      return;
-    }
-
-    SetAuthenticatedUsername(email_iter->second);
-    possibly_invalid_username_.clear();
-    profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                    authenticated_username_);
   }
+  DCHECK(email_iter->first == kGetInfoEmailKey);
+  DCHECK(display_email_iter->first == kGetInfoDisplayEmailKey);
+
+  // When signing in with credentials, the possibly invalid name is the Gaia
+  // display name. If the name returned by GetUserInfo does not match what is
+  // expected, return an error.
+  if (type_ == SIGNIN_TYPE_WITH_CREDENTIALS &&
+      base::strcasecmp(display_email_iter->second.c_str(),
+                       possibly_invalid_username_.c_str()) != 0) {
+    OnGetUserInfoKeyNotFound(kGetInfoDisplayEmailKey);
+    return;
+  }
+
+  possibly_invalid_username_ = email_iter->second;
+
+#if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+  // If we have an OAuth token, try loading policy for this user now, before
+  // any signed in services are initialized. If there's no oauth token (the
+  // user is using the old ClientLogin flow) then policy will get loaded once
+  // the TokenService finishes initializing (not ideal, but it's a reasonable
+  // fallback).
+  if (!temp_oauth_login_tokens_.refresh_token.empty()) {
+    policy::UserPolicySigninService* policy_service =
+        policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
+    policy_service->RegisterPolicyClient(
+        possibly_invalid_username_,
+        temp_oauth_login_tokens_.refresh_token,
+        base::Bind(&SigninManager::OnRegisteredForPolicy,
+                   base::Unretained(this)));
+    return;
+  }
+#endif
+
+  // Not waiting for policy load - just complete signin directly.
+  CompleteSigninAfterPolicyLoad();
+}
+
+#if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+void SigninManager::OnRegisteredForPolicy(
+    scoped_ptr<policy::CloudPolicyClient> client) {
+  // If there's no token for the user (no policy) just finish signing in.
+  if (!client.get()) {
+    DVLOG(1) << "Policy registration failed";
+    CompleteSigninAfterPolicyLoad();
+    return;
+  }
+
+  DVLOG(1) << "Policy registration succeeded: dm_token=" << client->dm_token();
+  // TODO(dconnelly): Prompt user for whether they want to create a new profile
+  // or not (http://crbug.com/171236). For now, just immediately load policy.
+  policy::UserPolicySigninService* policy_service =
+      policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
+  policy_service->FetchPolicyForSignedInUser(
+      client.Pass(),
+      base::Bind(&SigninManager::OnPolicyFetchComplete,
+                 base::Unretained(this)));
+}
+
+void SigninManager::OnPolicyFetchComplete(bool success) {
+  // For now, we allow signin to complete even if the policy fetch fails. If
+  // we ever want to change this behavior, we could call SignOut() here
+  // instead.
+  DLOG_IF(ERROR, !success) << "Error fetching policy for user";
+  DVLOG_IF(1, success) << "Policy fetch successful - completing signin";
+  CompleteSigninAfterPolicyLoad();
+}
+#endif
+
+void SigninManager::CompleteSigninAfterPolicyLoad() {
+  DCHECK(!possibly_invalid_username_.empty());
+  SetAuthenticatedUsername(possibly_invalid_username_);
+  possibly_invalid_username_.clear();
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                  authenticated_username_);
+
   GoogleServiceSigninSuccessDetails details(authenticated_username_,
                                             password_);
   content::NotificationService::current()->Notify(
