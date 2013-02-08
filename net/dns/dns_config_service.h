@@ -108,7 +108,16 @@ class NET_EXPORT_PRIVATE DnsConfigService
   void WatchConfig(const CallbackType& callback);
 
  protected:
-  // Immediately attempts to read the current configuration.
+  enum WatchStatus {
+    DNS_CONFIG_WATCH_STARTED = 0,
+    DNS_CONFIG_WATCH_FAILED_TO_START_CONFIG,
+    DNS_CONFIG_WATCH_FAILED_TO_START_HOSTS,
+    DNS_CONFIG_WATCH_FAILED_CONFIG,
+    DNS_CONFIG_WATCH_FAILED_HOSTS,
+    DNS_CONFIG_WATCH_MAX,
+  };
+
+ // Immediately attempts to read the current configuration.
   virtual void ReadNow() = 0;
   // Registers system watchers. Returns true iff succeeds.
   virtual bool StartWatching() = 0;

@@ -532,6 +532,9 @@ class DnsConfigServiceWin::Watcher
     if (!tcpip_watcher_.Watch(kTcpipPath, callback)) {
       LOG(ERROR) << "DNS registry watch failed to start.";
       success = false;
+      UMA_HISTOGRAM_ENUMERATION("AsyncDNS.WatchStatus",
+                                DNS_CONFIG_WATCH_FAILED_TO_START_CONFIG,
+                                DNS_CONFIG_WATCH_MAX);
     }
 
     // Watch for IPv6 nameservers.
@@ -549,6 +552,9 @@ class DnsConfigServiceWin::Watcher
     if (!hosts_watcher_.Watch(GetHostsPath(), false,
                               base::Bind(&Watcher::OnHostsChanged,
                                          base::Unretained(this)))) {
+      UMA_HISTOGRAM_ENUMERATION("AsyncDNS.WatchStatus",
+                                DNS_CONFIG_WATCH_FAILED_TO_START_HOSTS,
+                                DNS_CONFIG_WATCH_MAX);
       LOG(ERROR) << "DNS hosts watch failed to start.";
       success = false;
     } else {
@@ -699,6 +705,9 @@ void DnsConfigServiceWin::OnConfigChanged(bool succeeded) {
   } else {
     LOG(ERROR) << "DNS config watch failed.";
     set_watch_failed(true);
+    UMA_HISTOGRAM_ENUMERATION("AsyncDNS.WatchStatus",
+                              DNS_CONFIG_WATCH_FAILED_CONFIG,
+                              DNS_CONFIG_WATCH_MAX);
   }
 }
 
@@ -709,6 +718,9 @@ void DnsConfigServiceWin::OnHostsChanged(bool succeeded) {
   } else {
     LOG(ERROR) << "DNS hosts watch failed.";
     set_watch_failed(true);
+    UMA_HISTOGRAM_ENUMERATION("AsyncDNS.WatchStatus",
+                              DNS_CONFIG_WATCH_FAILED_HOSTS,
+                              DNS_CONFIG_WATCH_MAX);
   }
 }
 
