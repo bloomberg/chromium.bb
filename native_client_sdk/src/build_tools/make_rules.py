@@ -175,7 +175,7 @@ WIN_TOOL = {
   'MAIN': '<tc>/<config>/<proj>.dll',
   'NMFMAIN': '<tc>/<config>/<proj>.dll',
   'SO': None,
-  'LIB': '$(NACL_SDK_ROOT)/lib/win_host/<config>/<proj>.lib',
+  'LIB': '$(NACL_SDK_ROOT)/lib/win_x86_32_host/<config>/<proj>.lib',
 }
 
 LINUX_TOOL = {
