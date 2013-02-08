@@ -62,9 +62,7 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_session_manager_client_(new MockSessionManagerClient),
       mock_sms_client_(new MockSMSClient),
       mock_speech_synthesizer_client_(new MockSpeechSynthesizerClient),
-      mock_update_engine_client_(new MockUpdateEngineClient),
-      power_policy_controller_(ALLOW_THIS_IN_INITIALIZER_LIST(
-          new PowerPolicyController(this, mock_power_manager_client_.get()))) {
+      mock_update_engine_client_(new MockUpdateEngineClient) {
   EXPECT_CALL(*this, GetBluetoothAdapterClient())
       .WillRepeatedly(Return(mock_bluetooth_adapter_client_.get()));
   EXPECT_CALL(*this, GetBluetoothDeviceClient())
@@ -103,8 +101,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_modem_messaging_client()));
   EXPECT_CALL(*this, GetPowerManagerClient())
       .WillRepeatedly(Return(mock_power_manager_client_.get()));
-  EXPECT_CALL(*this, GetPowerPolicyController())
-      .WillRepeatedly(Return(power_policy_controller_.get()));
   EXPECT_CALL(*this, GetSessionManagerClient())
       .WillRepeatedly(Return(mock_session_manager_client_.get()));
   EXPECT_CALL(*this, GetSMSClient())
@@ -121,7 +117,8 @@ MockDBusThreadManager::MockDBusThreadManager()
   EXPECT_CALL(*this, GetIBusBus())
       .WillRepeatedly(ReturnNull());
 
-  // These observers calls are used in ChromeBrowserMainPartsChromeos.
+  // |power_policy_controller_| calls some of these from the constructor, so
+  // set these expectations before creating the controller.
   EXPECT_CALL(*mock_power_manager_client_.get(), AddObserver(_))
       .Times(AnyNumber());
   EXPECT_CALL(*mock_power_manager_client_.get(), RemoveObserver(_))
@@ -130,6 +127,14 @@ MockDBusThreadManager::MockDBusThreadManager()
       .Times(AnyNumber());
   EXPECT_CALL(*mock_power_manager_client_.get(), NotifyVideoActivity(_, _))
       .Times(AnyNumber());
+  EXPECT_CALL(*mock_power_manager_client_.get(), SetPolicy(_))
+      .Times(AnyNumber());
+  power_policy_controller_.reset(
+      new PowerPolicyController(this, mock_power_manager_client_.get()));
+  EXPECT_CALL(*this, GetPowerPolicyController())
+      .WillRepeatedly(Return(power_policy_controller_.get()));
+
+  // These observers calls are used in ChromeBrowserMainPartsChromeos.
   EXPECT_CALL(*mock_session_manager_client_.get(), AddObserver(_))
       .Times(AnyNumber());
   EXPECT_CALL(*mock_session_manager_client_.get(), RemoveObserver(_))
