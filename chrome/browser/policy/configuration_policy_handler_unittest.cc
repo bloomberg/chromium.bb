@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_value_map.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"
@@ -19,6 +20,8 @@ StringToIntEnumListPolicyHandler::MappingEntry kTestTypeMap[] = {
   { "one", 1 },
   { "two", 2 },
 };
+
+const char kTestPref[] = "unit_test.test_pref";
 
 }  // namespace
 
@@ -89,6 +92,390 @@ TEST(StringToIntEnumListPolicyHandlerTest, ApplyPolicySettings) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kExtensionAllowedTypes, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
+}
+
+TEST(IntRangePolicyHandler, CheckPolicySettingsClamp) {
+  PolicyMap policy_map;
+  PolicyErrorMap errors;
+
+  // This tests needs to modify an int policy. The exact policy used and its
+  // semantics outside the test are irrelevant.
+  IntRangePolicyHandler handler(key::kDiskCacheSize, kTestPref, 0, 10, true);
+
+  // Check that values lying in the accepted range are not rejected.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0));
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5));
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10));
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  // Check that values lying outside the accepted range are not rejected
+  // (because clamping is enabled) but do yield a warning message.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5));
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15));
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+
+  // Check that an entirely invalid value is rejected and yields an error
+  // message.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateStringValue("invalid"));
+  errors.Clear();
+  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+}
+
+TEST(IntRangePolicyHandler, CheckPolicySettingsDontClamp) {
+  PolicyMap policy_map;
+  PolicyErrorMap errors;
+
+  // This tests needs to modify an int policy. The exact policy used and its
+  // semantics outside the test are irrelevant.
+  IntRangePolicyHandler handler(key::kDiskCacheSize, kTestPref, 0, 10, false);
+
+  // Check that values lying in the accepted range are not rejected.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0));
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5));
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10));
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  // Check that values lying outside the accepted range are rejected and yield
+  // an error message.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5));
+  errors.Clear();
+  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15));
+  errors.Clear();
+  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+
+  // Check that an entirely invalid value is rejected and yields an error
+  // message.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateStringValue("invalid"));
+  errors.Clear();
+  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+}
+
+TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
+  PolicyMap policy_map;
+  PrefValueMap prefs;
+  scoped_ptr<base::Value> expected;
+  const base::Value* value;
+
+  // This tests needs to modify an int policy. The exact policy used and its
+  // semantics outside the test are irrelevant.
+  IntRangePolicyHandler handler(key::kDiskCacheSize, kTestPref, 0, 10, true);
+
+  // Check that values lying in the accepted range are written to the pref.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0));
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  expected.reset(base::Value::CreateIntegerValue(0));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5));
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  expected.reset(base::Value::CreateIntegerValue(5));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10));
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  expected.reset(base::Value::CreateIntegerValue(10));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+
+  // Check that values lying outside the accepted range are clamped and written
+  // to the pref.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5));
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  expected.reset(base::Value::CreateIntegerValue(0));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15));
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  expected.reset(base::Value::CreateIntegerValue(10));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+}
+
+TEST(IntRangePolicyHandler, ApplyPolicySettingsDontClamp) {
+  PolicyMap policy_map;
+  PrefValueMap prefs;
+  scoped_ptr<base::Value> expected;
+  const base::Value* value;
+
+  // This tests needs to modify an int policy. The exact policy used and its
+  // semantics outside the test are irrelevant.
+  IntRangePolicyHandler handler(key::kDiskCacheSize, kTestPref, 0, 10, true);
+
+  // Check that values lying in the accepted range are written to the pref.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0));
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  expected.reset(base::Value::CreateIntegerValue(0));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5));
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  expected.reset(base::Value::CreateIntegerValue(5));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10));
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  expected.reset(base::Value::CreateIntegerValue(10));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+}
+
+TEST(IntPercentageToDoublePolicyHandler, CheckPolicySettingsClamp) {
+  PolicyMap policy_map;
+  PolicyErrorMap errors;
+
+  // This tests needs to modify an int policy. The exact policy used and its
+  // semantics outside the test are irrelevant.
+  IntPercentageToDoublePolicyHandler handler(
+      key::kDiskCacheSize, kTestPref, 0, 10, true);
+
+  // Check that values lying in the accepted range are not rejected.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0));
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5));
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10));
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  // Check that values lying outside the accepted range are not rejected
+  // (because clamping is enabled) but do yield a warning message.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5));
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15));
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+
+  // Check that an entirely invalid value is rejected and yields an error
+  // message.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateStringValue("invalid"));
+  errors.Clear();
+  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+}
+
+TEST(IntPercentageToDoublePolicyHandler, CheckPolicySettingsDontClamp) {
+  PolicyMap policy_map;
+  PolicyErrorMap errors;
+
+  // This tests needs to modify an int policy. The exact policy used and its
+  // semantics outside the test are irrelevant.
+  IntPercentageToDoublePolicyHandler handler(
+      key::kDiskCacheSize, kTestPref, 0, 10, false);
+
+  // Check that values lying in the accepted range are not rejected.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0));
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5));
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10));
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  // Check that values lying outside the accepted range are rejected and yield
+  // an error message.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5));
+  errors.Clear();
+  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15));
+  errors.Clear();
+  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+
+  // Check that an entirely invalid value is rejected and yields an error
+  // message.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateStringValue("invalid"));
+  errors.Clear();
+  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+}
+
+TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
+  PolicyMap policy_map;
+  PrefValueMap prefs;
+  scoped_ptr<base::Value> expected;
+  const base::Value* value;
+
+  // This tests needs to modify an int policy. The exact policy used and its
+  // semantics outside the test are irrelevant.
+  IntPercentageToDoublePolicyHandler handler(
+      key::kDiskCacheSize, kTestPref, 0, 10, true);
+
+  // Check that values lying in the accepted range are written to the pref.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0));
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  expected.reset(base::Value::CreateDoubleValue(0.0));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5));
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  expected.reset(base::Value::CreateDoubleValue(0.05));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10));
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  expected.reset(base::Value::CreateDoubleValue(0.1));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+
+  // Check that values lying outside the accepted range are clamped and written
+  // to the pref.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5));
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  expected.reset(base::Value::CreateDoubleValue(0.0));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15));
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  expected.reset(base::Value::CreateDoubleValue(0.1));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+}
+
+TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
+  PolicyMap policy_map;
+  PrefValueMap prefs;
+  scoped_ptr<base::Value> expected;
+  const base::Value* value;
+
+  // This tests needs to modify an int policy. The exact policy used and its
+  // semantics outside the test are irrelevant.
+  IntPercentageToDoublePolicyHandler handler(
+      key::kDiskCacheSize, kTestPref, 0, 10, true);
+
+  // Check that values lying in the accepted range are written to the pref.
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0));
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  expected.reset(base::Value::CreateDoubleValue(0.0));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5));
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  expected.reset(base::Value::CreateDoubleValue(0.05));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10));
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  expected.reset(base::Value::CreateDoubleValue(0.1));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 }
 
 TEST(ExtensionListPolicyHandlerTest, CheckPolicySettings) {

@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 172
+#   For your editing convenience: highest ID currently used: 185
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -3893,6 +3893,338 @@
       If this policy is not set, no Terms of Service are shown.
 
       The policy should be set to a URL from which <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can download the Terms of Service. The Terms of Service must be plain text, served as MIME type text/plain. No markup is allowed.''',
+    },
+    {
+      'name': 'PowerManagement',
+      'type': 'group',
+      'caption': '''Power mangement''',
+      'desc': '''Configure power manegement in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
+
+      These policies let you configure how <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> behaves when the user remains idle for some amount of time.''',
+      'policies': [
+        {
+          'name': 'ScreenDimDelayAC',
+          'type': 'int',
+          'schema': { 'type': 'integer' },
+          'supported_on': ['chrome_os:26-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 420000,
+          'id': 173,
+          'caption': '''Screen dim delay when running on AC power''',
+          'desc': '''Specifies the length of time without user input after which the screen is dimmed when running on AC power.
+
+          When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> dims the screen.
+
+          When this policy is set to zero, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> does not dim the screen when the user becomes idle.
+
+          When this policy is unset, a default length of time is used.
+
+          The policy value should be specified in milliseconds. Values are clamped to be less than or equal the screen off delay (if set) and the idle delay.''',
+        },
+        {
+          'name': 'ScreenOffDelayAC',
+          'type': 'int',
+          'schema': { 'type': 'integer' },
+          'supported_on': ['chrome_os:26-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 480000,
+          'id': 174,
+          'caption': '''Screen off delay when running on AC power''',
+          'desc': '''Specifies the length of time without user input after which the screen is turned off when running on AC power.
+
+          When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> turns off the screen.
+
+          When this policy is set to zero, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> does not turn off the screen when the user becomes idle.
+
+          When this policy is unset, a default length of time is used.
+
+          The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.''',
+        },
+        {
+          'name': 'ScreenLockDelayAC',
+          'type': 'int',
+          'schema': { 'type': 'integer' },
+          'supported_on': ['chrome_os:26-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 600000,
+          'id': 175,
+          'caption': '''Screen lock delay when running on AC power''',
+          'desc': '''Specifies the length of time without user input after which the screen is locked when running on AC power.
+
+          When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> locks the screen.
+
+          When this policy is set to zero, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> does not lock the screen when the user becomes idle.
+
+          When this policy is unset, a default length of time is used.
+
+          The recommended way to lock the screen on idle is to enable screen locking on suspend and have <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> suspend after the idle delay. This policy should only be used when screen locking should occur a significant amount of time sooner than suspend or when suspend on idle is not desired at all.
+
+          The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.''',
+        },
+        {
+          'name': 'IdleDelayAC',
+          'type': 'int',
+          'schema': { 'type': 'integer' },
+          'supported_on': ['chrome_os:26-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 1800000,
+          'id': 176,
+          'caption': '''Idle delay when running on AC power''',
+          'desc': '''Specifies the length of time without user input after which the idle action is taken when running on AC power.
+
+          When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes the idle action, which can be configured separately.
+
+          When this policy is unset, a default length of time is used.
+
+          The policy value should be specified in milliseconds.''',
+        },
+        {
+          'name': 'ScreenDimDelayBattery',
+          'type': 'int',
+          'schema': { 'type': 'integer' },
+          'supported_on': ['chrome_os:26-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 300000,
+          'id': 177,
+          'caption': '''Screen dim delay when running on battery power''',
+          'desc': '''Specifies the length of time without user input after which the screen is dimmed when running on battery power.
+
+          When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> dims the screen.
+
+          When this policy is set to zero, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> does not dim the screen when the user becomes idle.
+
+          When this policy is unset, a default length of time is used.
+
+          The policy value should be specified in milliseconds. Values are clamped to be less than or equal the screen off delay (if set) and the idle delay.''',
+        },
+        {
+          'name': 'ScreenOffDelayBattery',
+          'type': 'int',
+          'schema': { 'type': 'integer' },
+          'supported_on': ['chrome_os:26-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 360000,
+          'id': 178,
+          'caption': '''Screen off delay when running on battery power''',
+          'desc': '''Specifies the length of time without user input after which the screen is turned off when running on battery power.
+
+          When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> turns off the screen.
+
+          When this policy is set to zero, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> does not turn off the screen when the user becomes idle.
+
+          When this policy is unset, a default length of time is used.
+
+          The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.''',
+        },
+        {
+          'name': 'ScreenLockDelayBattery',
+          'type': 'int',
+          'schema': { 'type': 'integer' },
+          'supported_on': ['chrome_os:26-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 600000,
+          'id': 179,
+          'caption': '''Screen lock delay when running on battery power''',
+          'desc': '''Specifies the length of time without user input after which the screen is locked when running on battery power.
+
+          When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> locks the screen.
+
+          When this policy is set to zero, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> does not lock the screen when the user becomes idle.
+
+          When this policy is unset, a default length of time is used.
+
+          The recommended way to lock the screen on idle is to enable screen locking on suspend and have <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> suspend after the idle delay. This policy should only be used when screen locking should occur a significant amount of time sooner than suspend or when suspend on idle is not desired at all.
+
+          The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.''',
+        },
+        {
+          'name': 'IdleDelayBattery',
+          'type': 'int',
+          'schema': { 'type': 'integer' },
+          'supported_on': ['chrome_os:26-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 600000,
+          'id': 180,
+          'caption': '''Idle delay when running on battery power''',
+          'desc': '''Specifies the length of time without user input after which the idle action is taken when running on battery power.
+
+          When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes the idle action, which can be configured separately.
+
+          When this policy is unset, a default length of time is used.
+
+          The policy value should be specified in milliseconds.''',
+        },
+        {
+          'name': 'IdleAction',
+          'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 0, 1, 2, 3 ],
+          },
+          'items': [
+            {
+              'name': 'IdleActionSuspend',
+              'value': 0,
+              'caption': '''Suspend''',
+            },
+            {
+              'name': 'IdleActionLogout',
+              'value': 1,
+              'caption': '''Log out the user''',
+            },
+            {
+              'name': 'IdleActionShutdown',
+              'value': 2,
+              'caption': '''Shut down''',
+            },
+            {
+              'name': 'IdleActionDoNothing',
+              'value': 3,
+              'caption': '''Do nothing''',
+            },
+          ],
+          'supported_on': ['chrome_os:26-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 0,
+          'id': 181,
+          'caption': '''Action to take when the idle delay is reached''',
+          'desc': '''Specify the action to take when the idle delay is reached.
+
+          When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user remains idle for the length of time given by the idle delay, which can be configured separately.
+
+          When this policy is unset, the default action is taken, which is suspend.
+
+          If the action is suspend, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can separately be configured to either lock or not lock the screen before suspending.''',
+        },
+        {
+          'name': 'LidCloseAction',
+          'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 0, 1, 2, 3 ],
+          },
+          'items': [
+            {
+              'name': 'LidCloseActionSuspend',
+              'value': 0,
+              'caption': '''Suspend''',
+            },
+            {
+              'name': 'LidCloseActionLogout',
+              'value': 1,
+              'caption': '''Log out the user''',
+            },
+            {
+              'name': 'LidCloseActionShutdown',
+              'value': 2,
+              'caption': '''Shut down''',
+            },
+            {
+              'name': 'LidCloseActionDoNothing',
+              'value': 3,
+              'caption': '''Do nothing''',
+            },
+          ],
+          'supported_on': ['chrome_os:26-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 0,
+          'id': 182,
+          'caption': '''Action to take when the user closes the lid''',
+          'desc': '''Specify the action to take when the user closes the lid.
+
+          When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user closes the device's lid.
+
+          When this policy is unset, the default action is taken, which is suspend.
+
+          If the action is suspend, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can separately be configured to either lock or not lock the screen before suspending.''',
+        },
+        {
+          'name': 'PowerManagementUsesAudioActivity',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome_os:26-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': True,
+          'id': 183,
+          'caption': '''Specify whether audio activity affects power management''',
+          'desc': '''Specifies whether audio activity affects power management.
+
+          If this policy is set to True or is unset, the user is not considered to be idle while audio is playing. This prevents the idle timeout from being reached and the idle action from being taken. However, screen dimming, screen off and screen lock will be performed after the configured timeouts, irrespective of audio activity.
+
+          If this policy is set to False, audio activity does not prevent the user from being considered idle.''',
+        },
+        {
+          'name': 'PowerManagementUsesVideoActivity',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome_os:26-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': True,
+          'id': 184,
+          'caption': '''Specify whether video activity affects power management''',
+          'desc': '''Specifies whether vidoe activity affects power management.
+
+          If this policy is set to True or is unset, the user is not considered to be idle while video is playing. This prevents the idle delay, screen dim delay, screen off delay and screen lock delay from being reached and the corresponding actions from being taken.
+
+          If this policy is set to False, video activity does not prevent the user from being considered idle.''',
+        },
+        {
+          'name': 'PresentationIdleDelayScale',
+          'type': 'int',
+          'schema': { 'type': 'integer' },
+          'supported_on': ['chrome_os:26-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 200,
+          'id': 185,
+          'caption': '''Percentage by which to scale the idle delay in presentation mode''',
+          'desc': '''Specifies the percentage by which the idle delay is scaled when the device is in presentation node.
+
+          If this policy is set, it specifies the percentage by which the idle delay is scaled when the device is in presentation mode. When the idle delay is scaled, the screen dimming, screen off and screen lock delays get adjusted to maintain the same distances from the idle delay as originally configured.
+
+          If this policy is unset, a default scale factor is used.
+
+          The scale factor must be 100% or more. Values that would make the idle delay in presentation mode shorter than the regular idle delay are not allowed.''',
+        },
+      ],
     },
   ],
   'messages': {

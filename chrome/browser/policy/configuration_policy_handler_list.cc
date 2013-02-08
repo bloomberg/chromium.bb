@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/configuration_policy_handler_list.h"
 
+#include <limits>
+
 #include "base/prefs/pref_value_map.h"
 #include "base/stl_util.h"
 #include "base/values.h"
@@ -349,6 +351,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kTermsOfServiceURL,
     prefs::kTermsOfServiceURL,
     Value::TYPE_STRING },
+  { key::kPowerManagementUsesAudioActivity,
+    prefs::kPowerUseAudioActivity,
+    Value::TYPE_BOOLEAN },
+  { key::kPowerManagementUsesVideoActivity,
+    prefs::kPowerUseVideoActivity,
+    Value::TYPE_BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
@@ -422,6 +430,62 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
           key::kOpenNetworkConfiguration,
           chromeos::onc::ONC_SOURCE_USER_POLICY));
   handlers_.push_back(new PinnedLauncherAppsPolicyHandler());
+
+  handlers_.push_back(
+      new IntRangePolicyHandler(
+          key::kScreenDimDelayAC,
+          prefs::kPowerAcScreenDimDelayMs,
+          0, INT_MAX, true));
+  handlers_.push_back(
+      new IntRangePolicyHandler(
+          key::kScreenOffDelayAC,
+          prefs::kPowerAcScreenOffDelayMs,
+          0, INT_MAX, true));
+  handlers_.push_back(
+      new IntRangePolicyHandler(
+          key::kScreenLockDelayAC,
+          prefs::kPowerAcScreenLockDelayMs,
+          0, INT_MAX, true));
+  handlers_.push_back(
+      new IntRangePolicyHandler(
+          key::kIdleDelayAC,
+          prefs::kPowerAcIdleDelayMs,
+          0, INT_MAX, true));
+  handlers_.push_back(
+      new IntRangePolicyHandler(
+          key::kScreenDimDelayBattery,
+          prefs::kPowerBatteryScreenDimDelayMs,
+          0, INT_MAX, true));
+  handlers_.push_back(
+      new IntRangePolicyHandler(
+          key::kScreenOffDelayBattery,
+          prefs::kPowerBatteryScreenOffDelayMs,
+          0, INT_MAX, true));
+  handlers_.push_back(
+      new IntRangePolicyHandler(
+          key::kScreenLockDelayBattery,
+          prefs::kPowerBatteryScreenLockDelayMs,
+          0, INT_MAX, true));
+  handlers_.push_back(
+      new IntRangePolicyHandler(
+          key::kIdleDelayBattery,
+          prefs::kPowerBatteryIdleDelayMs,
+          0, INT_MAX, true));
+  handlers_.push_back(
+      new IntRangePolicyHandler(
+          key::kIdleAction,
+          prefs::kPowerIdleAction,
+          0, 3, false));
+  handlers_.push_back(
+      new IntRangePolicyHandler(
+          key::kLidCloseAction,
+          prefs::kPowerLidClosedAction,
+          0, 3, false));
+  handlers_.push_back(
+      new IntPercentageToDoublePolicyHandler(
+          key::kPresentationIdleDelayScale,
+          prefs::kPowerPresentationIdleDelayFactor,
+          100, INT_MAX, true));
 #endif  // defined(OS_CHROMEOS)
 }
 

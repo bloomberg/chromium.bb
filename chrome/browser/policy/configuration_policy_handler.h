@@ -81,6 +81,44 @@ class TypeCheckingPolicyHandler : public ConfigurationPolicyHandler {
   DISALLOW_COPY_AND_ASSIGN(TypeCheckingPolicyHandler);
 };
 
+// Abstract class derived from TypeCheckingPolicyHandler that ensures an int
+// policy's value lies in an allowed range. Either clamps or rejects values
+// outside the range.
+class IntRangePolicyHandlerBase : public TypeCheckingPolicyHandler {
+ public:
+  IntRangePolicyHandlerBase(const char* policy_name,
+                            int min,
+                            int max,
+                            bool clamp);
+
+  // ConfigurationPolicyHandler:
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
+                                   PolicyErrorMap* errors) OVERRIDE;
+
+ protected:
+  virtual ~IntRangePolicyHandlerBase();
+
+  // Ensures that the value is in the allowed range. Returns false if the value
+  // cannot be parsed or lies outside the allowed range and clamping is
+  // disabled.
+  bool EnsureInRange(const base::Value* input,
+                     int* output,
+                     PolicyErrorMap* errors);
+
+ private:
+  // The minimum value allowed.
+  int min_;
+
+  // The maximum value allowed.
+  int max_;
+
+  // Whether to clamp values lying outside the allowed range instead of
+  // rejecting them.
+  bool clamp_;
+
+  DISALLOW_COPY_AND_ASSIGN(IntRangePolicyHandlerBase);
+};
+
 // ConfigurationPolicyHandler for policies that map directly to a preference.
 class SimplePolicyHandler : public TypeCheckingPolicyHandler {
  public:
@@ -135,6 +173,50 @@ class StringToIntEnumListPolicyHandler : public TypeCheckingPolicyHandler {
   const MappingEntry* mapping_end_;
 
   DISALLOW_COPY_AND_ASSIGN(StringToIntEnumListPolicyHandler);
+};
+
+// A policy handler implementation that ensures an int policy's value lies in an
+// allowed range.
+class IntRangePolicyHandler : public IntRangePolicyHandlerBase {
+ public:
+  IntRangePolicyHandler(const char* policy_name,
+                        const char* pref_path,
+                        int min,
+                        int max,
+                        bool clamp);
+  virtual ~IntRangePolicyHandler();
+
+  // ConfigurationPolicyHandler:
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
+                                   PrefValueMap* prefs) OVERRIDE;
+
+ private:
+  // Name of the pref to write.
+  const char* pref_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(IntRangePolicyHandler);
+};
+
+// A policy handler implementation that maps an int percentage value to a
+// double.
+class IntPercentageToDoublePolicyHandler : public IntRangePolicyHandlerBase {
+ public:
+  IntPercentageToDoublePolicyHandler(const char* policy_name,
+                                     const char* pref_path,
+                                     int min,
+                                     int max,
+                                     bool clamp);
+  virtual ~IntPercentageToDoublePolicyHandler();
+
+  // ConfigurationPolicyHandler:
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
+                                   PrefValueMap* prefs) OVERRIDE;
+
+ private:
+  // Name of the pref to write.
+  const char* pref_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(IntPercentageToDoublePolicyHandler);
 };
 
 // Implements additional checks for policies that are lists of extension IDs.

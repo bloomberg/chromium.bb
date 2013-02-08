@@ -1566,6 +1566,110 @@
     ]
   },
 
+  "ScreenDimDelayAC": {
+    "os": ["chromeos"],
+    "test_policy": { "ScreenDimDelayAC": 420000 },
+    "pref_mappings": [
+      { "pref": "power.ac_screen_dim_delay_ms" }
+    ]
+  },
+
+  "ScreenOffDelayAC": {
+    "os": ["chromeos"],
+    "test_policy": { "ScreenOffDelayAC": 480000 },
+    "pref_mappings": [
+      { "pref": "power.ac_screen_off_delay_ms" }
+    ]
+  },
+
+  "ScreenLockDelayAC": {
+    "os": ["chromeos"],
+    "test_policy": { "ScreenLockDelayAC": 600000 },
+    "pref_mappings": [
+      { "pref": "power.ac_screen_lock_delay_ms" }
+    ]
+  },
+
+  "IdleDelayAC": {
+    "os": ["chromeos"],
+    "test_policy": { "IdleDelayAC": 1800000 },
+    "pref_mappings": [
+      { "pref": "power.ac_idle_delay_ms" }
+    ]
+  },
+
+  "ScreenDimDelayBattery": {
+    "os": ["chromeos"],
+    "test_policy": { "ScreenDimDelayBattery": 300000 },
+    "pref_mappings": [
+      { "pref": "power.battery_screen_dim_delay_ms" }
+    ]
+  },
+
+  "ScreenOffDelayBattery": {
+    "os": ["chromeos"],
+    "test_policy": { "ScreenOffDelayBattery": 360000 },
+    "pref_mappings": [
+      { "pref": "power.battery_screen_off_delay_ms" }
+    ]
+  },
+
+  "ScreenLockDelayBattery": {
+    "os": ["chromeos"],
+    "test_policy": { "ScreenLockDelayBattery": 600000 },
+    "pref_mappings": [
+      { "pref": "power.battery_screen_lock_delay_ms"  }
+    ]
+  },
+
+  "IdleDelayBattery": {
+    "os": ["chromeos"],
+    "test_policy": { "IdleDelayBattery": 600000 },
+    "pref_mappings": [
+      { "pref": "power.battery_idle_delay_ms" }
+    ]
+  },
+
+  "IdleAction": {
+    "os": ["chromeos"],
+    "test_policy": { "IdleAction": 0 },
+    "pref_mappings": [
+      { "pref": "power.idle_action" }
+    ]
+  },
+
+  "LidCloseAction": {
+    "os": ["chromeos"],
+    "test_policy": { "LidCloseAction": 0 },
+    "pref_mappings": [
+      { "pref": "power.lid_closed_action" }
+    ]
+  },
+
+  "PowerManagementUsesAudioActivity": {
+    "os": ["chromeos"],
+    "test_policy": { "PowerManagementUsesAudioActivity": true },
+    "pref_mappings": [
+      { "pref": "power.use_audio_activity" }
+    ]
+  },
+
+  "PowerManagementUsesVideoActivity": {
+    "os": ["chromeos"],
+    "test_policy": { "PowerManagementUsesVideoActivity": true },
+    "pref_mappings": [
+      { "pref": "power.use_video_activity" }
+    ]
+  },
+
+  "PresentationIdleDelayScale": {
+    "os": ["chromeos"],
+    "test_policy": { "PresentationIdleDelayScale": 200 },
+    "pref_mappings": [
+      { "pref": "power.presentation_idle_delay_factor" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {
