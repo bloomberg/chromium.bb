@@ -34,9 +34,9 @@ class PyUITestSuiteBase : public UITestSuite {
   PyUITestSuiteBase(int argc, char** argv);
   virtual ~PyUITestSuiteBase();
 
-  void InitializeWithPath(const FilePath& browser_dir);
+  void InitializeWithPath(const base::FilePath& browser_dir);
 
-  void SetCrSourceRoot(const FilePath& path);
+  void SetCrSourceRoot(const base::FilePath& path);
 
  private:
 #if defined(OS_MACOSX)
@@ -56,7 +56,7 @@ class PyUITestBase : public UITestBase {
 
   // Initialize the setup. Should be called before launching the browser.
   // |browser_dir| is the path to dir containing chromium binaries.
-  void Initialize(const FilePath& browser_dir);
+  void Initialize(const base::FilePath& browser_dir);
 
   void UseNamedChannelID(const std::string& named_channel_id) {
     named_channel_id_ = named_channel_id;

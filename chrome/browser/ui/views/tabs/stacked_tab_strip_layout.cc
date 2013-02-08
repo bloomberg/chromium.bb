@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 
 StackedTabStripLayout::StackedTabStripLayout(const gfx::Size& size,
                                              int padding,

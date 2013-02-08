@@ -9,8 +9,8 @@
 #include <windows.h>
 #endif
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #include "base/at_exit.h"
 #include "base/base_paths.h"
@@ -19,10 +19,10 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/stringprintf.h"
-#include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -45,8 +45,8 @@
 #include "chrome/test/webdriver/commands/html5_storage_commands.h"
 #include "chrome/test/webdriver/commands/keys_command.h"
 #include "chrome/test/webdriver/commands/log_command.h"
-#include "chrome/test/webdriver/commands/navigate_commands.h"
 #include "chrome/test/webdriver/commands/mouse_commands.h"
+#include "chrome/test/webdriver/commands/navigate_commands.h"
 #include "chrome/test/webdriver/commands/screenshot_command.h"
 #include "chrome/test/webdriver/commands/session_with_id.h"
 #include "chrome/test/webdriver/commands/set_timeout_commands.h"

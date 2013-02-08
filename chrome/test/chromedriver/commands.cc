@@ -8,9 +8,9 @@
 #include "base/callback.h"
 #include "base/environment.h"
 #include "base/file_util.h"
-#include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "base/values.h"
@@ -177,11 +177,11 @@ Status ExecuteNewSession(
     status = chrome_android->Launch(android_package, landing_url);
     chrome.reset(chrome_android.release());
   } else {
-    FilePath::StringType path_str;
-    FilePath chrome_exe;
+    base::FilePath::StringType path_str;
+    base::FilePath chrome_exe;
     if (params.GetString("desiredCapabilities.chromeOptions.binary",
                          &path_str)) {
-      chrome_exe = FilePath(path_str);
+      chrome_exe = base::FilePath(path_str);
       if (!file_util::PathExists(chrome_exe)) {
         std::string message = base::StringPrintf(
             "no chrome binary at %" PRFilePath,

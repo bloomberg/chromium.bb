@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/script_bubble_icon_view.h"
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/script_bubble_view.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/prerender/prerender_history.h"
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 
 namespace prerender {

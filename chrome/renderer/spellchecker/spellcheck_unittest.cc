@@ -22,10 +22,10 @@
 
 namespace {
 
-FilePath GetHunspellDirectory() {
-  FilePath hunspell_directory;
+base::FilePath GetHunspellDirectory() {
+  base::FilePath hunspell_directory;
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &hunspell_directory))
-    return FilePath();
+    return base::FilePath();
 
   hunspell_directory = hunspell_directory.AppendASCII("third_party");
   hunspell_directory = hunspell_directory.AppendASCII("hunspell_dictionaries");
@@ -55,7 +55,7 @@ class SpellCheckTest : public testing::Test {
   }
 
   void InitializeSpellCheck(const std::string& language) {
-    FilePath hunspell_directory = GetHunspellDirectory();
+    base::FilePath hunspell_directory = GetHunspellDirectory();
     EXPECT_FALSE(hunspell_directory.empty());
     base::PlatformFile file = base::CreatePlatformFile(
         chrome::spellcheck_common::GetVersionedFileName(language,
@@ -1280,9 +1280,9 @@ TEST_F(SpellCheckTest, DictionaryFiles) {
   chrome::spellcheck_common::SpellCheckLanguages(&spellcheck_languages);
   EXPECT_FALSE(spellcheck_languages.empty());
 
-  FilePath hunspell = GetHunspellDirectory();
+  base::FilePath hunspell = GetHunspellDirectory();
   for (size_t i = 0; i < spellcheck_languages.size(); ++i) {
-    FilePath dict = chrome::spellcheck_common::GetVersionedFileName(
+    base::FilePath dict = chrome::spellcheck_common::GetVersionedFileName(
         spellcheck_languages[i], hunspell);
     EXPECT_TRUE(file_util::PathExists(dict)) << dict.value() << " not found";
   }

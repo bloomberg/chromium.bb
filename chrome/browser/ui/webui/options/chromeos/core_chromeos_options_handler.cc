@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"

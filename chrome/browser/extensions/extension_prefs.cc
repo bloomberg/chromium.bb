@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/prefs/pref_notifier.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/admin_policy.h"

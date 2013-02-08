@@ -7,14 +7,14 @@
 #include <algorithm>
 
 #include "base/command_line.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_switches.h"
-#include "ipc/ipc_message.h"
 #include "ipc/ipc_channel.h"
+#include "ipc/ipc_message.h"
 
 const int kMaxChromeShutdownDelaySeconds = 60*60;
 

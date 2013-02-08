@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/json/json_writer.h"
 #include "base/process_util.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
 #include "chrome/browser/task_profiler/task_profiler_data_serializer.h"

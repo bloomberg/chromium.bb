@@ -4,8 +4,8 @@
 
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
 
-#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 

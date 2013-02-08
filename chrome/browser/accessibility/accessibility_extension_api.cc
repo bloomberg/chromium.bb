@@ -5,7 +5,7 @@
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
 
 #include "base/json/json_writer.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/accessibility/accessibility_extension_api_constants.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"

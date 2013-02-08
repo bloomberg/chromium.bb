@@ -7,11 +7,11 @@
 
 #include "chrome/installer/util/google_chrome_distribution.h"
 
-#include <vector>
 #include <windows.h>
-#include <wtsapi32.h>
 #include <msi.h>
 #include <sddl.h>
+#include <wtsapi32.h>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -20,10 +20,10 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
-#include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
@@ -33,12 +33,12 @@
 #include "chrome/common/net/test_server_locations.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/channel_info.h"
-#include "chrome/installer/util/product.h"
-#include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
+#include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/l10n_string_util.h"
+#include "chrome/installer/util/product.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/wmi.h"
 

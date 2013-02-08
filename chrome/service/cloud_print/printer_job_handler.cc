@@ -34,7 +34,7 @@ void PrinterJobHandler::JobDetails::Clear() {
   job_title_.clear();
   print_ticket_.clear();
   print_data_mime_type_.clear();
-  print_data_file_path_ = FilePath();
+  print_data_file_path_ = base::FilePath();
   tags_.clear();
 }
 

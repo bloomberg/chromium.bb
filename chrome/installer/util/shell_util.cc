@@ -9,8 +9,8 @@
 
 #include "chrome/installer/util/shell_util.h"
 
-#include <shlobj.h>
 #include <windows.h>
+#include <shlobj.h>
 
 #include <limits>
 #include <string>
@@ -25,9 +25,9 @@
 #include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
 #include "base/string16.h"
-#include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"

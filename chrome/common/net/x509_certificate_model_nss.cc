@@ -14,13 +14,13 @@
 #include <sechash.h>
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
-#include "crypto/nss_util.h"
-#include "crypto/scoped_nss_types.h"
-#include "net/base/x509_certificate.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
 #include "chrome/third_party/mozilla_security_manager/nsUsageArrayHelper.h"
+#include "crypto/nss_util.h"
+#include "crypto/scoped_nss_types.h"
+#include "net/base/x509_certificate.h"
 
 namespace psm = mozilla_security_manager;
 

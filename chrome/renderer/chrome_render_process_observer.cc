@@ -184,7 +184,7 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
 
 #if defined(OS_WIN)
   // Need to patch a few functions for font loading to work correctly.
-  FilePath pdf;
+  base::FilePath pdf;
   if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf) &&
       file_util::PathExists(pdf)) {
     g_iat_patch_createdca.Patch(
@@ -204,7 +204,7 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
   // crypt32.dll is used to decode X509 certificates for Chromoting.
   // Only load this library when the feature is enabled.
   std::string error;
-  base::LoadNativeLibrary(FilePath(L"crypt32.dll"), &error);
+  base::LoadNativeLibrary(base::FilePath(L"crypt32.dll"), &error);
 #endif
   // Setup initial set of crash dump data for Field Trials in this renderer.
   chrome_variations::SetChildProcessLoggingVariationList();

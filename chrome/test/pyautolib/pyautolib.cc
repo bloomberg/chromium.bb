@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -31,12 +31,12 @@ PyUITestSuiteBase::~PyUITestSuiteBase() {
   Shutdown();
 }
 
-void PyUITestSuiteBase::InitializeWithPath(const FilePath& browser_dir) {
+void PyUITestSuiteBase::InitializeWithPath(const base::FilePath& browser_dir) {
   SetBrowserDirectory(browser_dir);
   UITestSuite::Initialize();
 }
 
-void PyUITestSuiteBase::SetCrSourceRoot(const FilePath& path) {
+void PyUITestSuiteBase::SetCrSourceRoot(const base::FilePath& path) {
   PathService::Override(base::DIR_SOURCE_ROOT, path);
 }
 
@@ -65,7 +65,7 @@ MessageLoop* PyUITestBase::GetSharedMessageLoop(
   return message_loop_;
 }
 
-void PyUITestBase::Initialize(const FilePath& browser_dir) {
+void PyUITestBase::Initialize(const base::FilePath& browser_dir) {
   UITestBase::SetBrowserDirectory(browser_dir);
 }
 

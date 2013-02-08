@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/lazy_instance.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/key_identifier_conversion_views.h"

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/prefs/public/pref_member.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/pref_service.h"

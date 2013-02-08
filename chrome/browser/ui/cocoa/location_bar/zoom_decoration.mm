@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
 
 #include "base/string16.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"

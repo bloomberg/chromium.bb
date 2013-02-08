@@ -4,9 +4,9 @@
 
 #include "chrome/browser/enumerate_modules_model_win.h"
 
-#include <algorithm>
 #include <Tlhelp32.h>
 #include <wintrust.h>
+#include <algorithm>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -15,20 +15,20 @@
 #include "base/file_version_info_win.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
-#include "crypto/sha2.h"
 #include "chrome/browser/net/service_providers_win.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
+#include "crypto/sha2.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

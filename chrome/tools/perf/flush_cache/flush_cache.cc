@@ -21,7 +21,7 @@ int main(int argc, const char* argv[]) {
 
   for (int i = 1; i < argc; ++i) {
     std::wstring filename = base::SysNativeMBToWide(argv[i]);
-    FilePath path = FilePath::FromWStringHack(filename);
+    base::FilePath path = base::FilePath::FromWStringHack(filename);
     if (!file_util::EvictFileFromSystemCache(path)) {
       fprintf(stderr, "Failed to evict %s from cache -- is it a directory?\n",
               argv[i]);

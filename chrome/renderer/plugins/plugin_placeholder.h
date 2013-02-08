@@ -35,7 +35,7 @@ class PluginPlaceholder : public content::RenderViewObserver,
 
   static PluginPlaceholder* CreateErrorPlugin(
       content::RenderView* render_view,
-      const FilePath& plugin_path);
+      const base::FilePath& plugin_path);
 
   static PluginPlaceholder* CreateBlockedPlugin(
       content::RenderView* render_view,

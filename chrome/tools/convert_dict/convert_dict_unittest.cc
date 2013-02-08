@@ -79,11 +79,11 @@ void RunDictionaryTest(const char* codepage,
   }
 
   // Create a temporary affix file and a dictionary file from the test data.
-  FilePath aff_file;
+  base::FilePath aff_file;
   file_util::CreateTemporaryFile(&aff_file);
   file_util::WriteFile(aff_file, aff_data.c_str(), aff_data.length());
 
-  FilePath dic_file;
+  base::FilePath dic_file;
   file_util::CreateTemporaryFile(&dic_file);
   file_util::WriteFile(dic_file, dic_data.c_str(), dic_data.length());
 

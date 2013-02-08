@@ -7,8 +7,8 @@
 #include <windows.h>
 #include <objbase.h>
 
-#include <ios>
 #include <iomanip>
+#include <ios>
 #include <ostream>
 #include <sstream>
 
@@ -16,8 +16,8 @@
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
 #include "base/string_piece.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "chrome/test/logging/win/log_file_reader.h"
 

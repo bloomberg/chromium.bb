@@ -17,8 +17,8 @@ namespace {
 
 const wchar_t kStandardLogFile[] = L"operation_log.txt";
 
-bool GetCrashServiceDirectory(FilePath* dir) {
-  FilePath temp_dir;
+bool GetCrashServiceDirectory(base::FilePath* dir) {
+  base::FilePath temp_dir;
   if (!file_util::GetTempDir(&temp_dir))
     return false;
   temp_dir = temp_dir.Append(L"chrome_crashes");
@@ -40,9 +40,9 @@ int __stdcall wWinMain(HINSTANCE instance, HINSTANCE, wchar_t* cmd_line,
   CommandLine::Init(0, NULL);
 
   // We use/create a directory under the user's temp folder, for logging.
-  FilePath operating_dir;
+  base::FilePath operating_dir;
   GetCrashServiceDirectory(&operating_dir);
-  FilePath log_file = operating_dir.Append(kStandardLogFile);
+  base::FilePath log_file = operating_dir.Append(kStandardLogFile);
 
   // Logging to stderr (to help with debugging failures on the
   // buildbots) and to a file.

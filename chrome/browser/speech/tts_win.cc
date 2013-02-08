@@ -6,7 +6,7 @@
 #include <sapi.h>
 
 #include "base/memory/singleton.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/scoped_comptr.h"

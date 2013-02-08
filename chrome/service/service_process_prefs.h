@@ -20,7 +20,7 @@ class SequencedTaskRunner;
 class ServiceProcessPrefs {
  public:
   // |sequenced_task_runner| must be a shutdown-blocking task runner.
-  ServiceProcessPrefs(const FilePath& pref_filename,
+  ServiceProcessPrefs(const base::FilePath& pref_filename,
                       base::SequencedTaskRunner* task_runner);
   ~ServiceProcessPrefs();
 

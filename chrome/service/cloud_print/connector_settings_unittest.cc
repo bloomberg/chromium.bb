@@ -52,7 +52,7 @@ class ConnectorSettingsTest : public testing::Test {
   }
 
   ServiceProcessPrefs* CreateTestFile(const char* json) {
-    FilePath file_name = temp_dir_.path().AppendASCII("file.txt");
+    base::FilePath file_name = temp_dir_.path().AppendASCII("file.txt");
     file_util::Delete(file_name, false);
     if (json) {
       std::string content = json;

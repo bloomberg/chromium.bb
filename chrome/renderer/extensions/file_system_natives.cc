@@ -71,7 +71,7 @@ static v8::Handle<v8::Value> GetFileEntry(const v8::Arguments& args) {
   std::string file_system_name(*v8::String::Utf8Value(args[1]->ToString()));
   std::string file_system_root_url(*v8::String::Utf8Value(args[2]->ToString()));
   std::string file_path_string(*v8::String::Utf8Value(args[3]->ToString()));
-  FilePath file_path = FilePath::FromUTF8Unsafe(file_path_string);
+  base::FilePath file_path = base::FilePath::FromUTF8Unsafe(file_path_string);
   DCHECK(fileapi::VirtualPath::IsAbsolute(file_path.value()));
 
   DCHECK(args[4]->IsBoolean());

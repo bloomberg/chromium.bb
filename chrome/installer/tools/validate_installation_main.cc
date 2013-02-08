@@ -29,7 +29,7 @@ class ConsoleLogHelper {
   ~ConsoleLogHelper();
 
  private:
-  static FilePath GetLogFilePath();
+  static base::FilePath GetLogFilePath();
   static bool DumpLogMessage(int severity,
                              const char* file,
                              int line,
@@ -40,7 +40,7 @@ class ConsoleLogHelper {
   static FILE* const kOutputStream_;
   static const logging::LogSeverity kViolationSeverity_;
   static logging::LogMessageHandlerFunction old_message_handler_;
-  FilePath log_file_path_;
+  base::FilePath log_file_path_;
 };
 
 // static
@@ -88,12 +88,12 @@ ConsoleLogHelper::~ConsoleLogHelper() {
 // process exit since we redirect log messages to stderr.
 // static
 FilePath ConsoleLogHelper::GetLogFilePath() {
-  FilePath log_path;
+  base::FilePath log_path;
 
   if (PathService::Get(base::DIR_TEMP, &log_path))
     return log_path.Append(kLogFileName_);
   else
-    return FilePath(kLogFileName_);
+    return base::FilePath(kLogFileName_);
 }
 
 // A logging::LogMessageHandlerFunction that sends the body of messages logged

@@ -17,7 +17,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -28,8 +28,8 @@
 #include "content/public/browser/notification_service.h"
 
 #if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/chrome_browser_main_extra_parts_gtk.h"
 #include "chrome/browser/printing/print_dialog_gtk.h"
+#include "chrome/browser/ui/gtk/chrome_browser_main_extra_parts_gtk.h"
 #endif
 
 using content::BrowserThread;

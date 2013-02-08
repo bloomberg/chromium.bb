@@ -156,7 +156,7 @@ PP_NaClResult StartPpapiProxy(PP_Instance instance) {
       content::RendererPpapiHost::CreateExternalPluginModule(
           nacl_plugin_module,
           plugin_instance,
-          FilePath().AppendASCII(instance_info.url.spec()),
+          base::FilePath().AppendASCII(instance_info.url.spec()),
           instance_info.permissions,
           instance_info.channel_handle,
           instance_info.plugin_pid,

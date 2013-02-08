@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "chrome/browser/google_apis/test_util.h"

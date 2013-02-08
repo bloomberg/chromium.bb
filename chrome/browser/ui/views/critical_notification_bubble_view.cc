@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/critical_notification_bubble_view.h"
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"

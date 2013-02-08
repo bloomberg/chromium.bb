@@ -55,7 +55,7 @@ class Automation {
 
     // The user data directory to be copied and used. If empty, a temporary
     // directory will be used.
-    FilePath user_data_dir;
+    base::FilePath user_data_dir;
 
     // The channel ID of an already running browser to connect to. If empty,
     // the browser will be launched with an anonymous channel.
@@ -104,16 +104,17 @@ class Automation {
                          Error** error);
 
   // Drag and drop the file paths to the given location.
-  void DragAndDropFilePaths(const WebViewId& view_id,
-                            const Point& location,
-                            const std::vector<FilePath::StringType>& paths,
-                            Error** error);
+  void DragAndDropFilePaths(
+      const WebViewId& view_id,
+      const Point& location,
+      const std::vector<base::FilePath::StringType>& paths,
+      Error** error);
 
   // Captures a snapshot of the tab to the specified path.  The  PNG will
   // contain the entire page, including what is not in the current view
   // on the  screen.
   void CaptureEntirePageAsPNG(
-      const WebViewId& view_id, const FilePath& path, Error** error);
+      const WebViewId& view_id, const base::FilePath& path, Error** error);
 
 #if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
   // Dumps a heap profile of the process of the tab.
@@ -204,7 +205,7 @@ class Automation {
 
   // Install a packed or unpacked extension. If the path ends with '.crx',
   // the extension is assumed to be packed.
-  void InstallExtension(const FilePath& path, std::string* extension_id,
+  void InstallExtension(const base::FilePath& path, std::string* extension_id,
                         Error** error);
 
   // Gets a list of dictionary information about all installed extensions.

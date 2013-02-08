@@ -16,7 +16,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_service.h"
@@ -240,9 +240,9 @@ int main(int argc, char* argv[]) {
 
   int url_count = 0;
   base::StringToInt(args[0], &url_count);
-  FilePath dst_dir(args[1]);
+  base::FilePath dst_dir(args[1]);
   if (!dst_dir.IsAbsolute()) {
-    FilePath current_dir;
+    base::FilePath current_dir;
     file_util::GetCurrentDirectory(&current_dir);
     dst_dir = current_dir.Append(dst_dir);
   }
@@ -292,9 +292,9 @@ int main(int argc, char* argv[]) {
 
   file_util::FileEnumerator file_iterator(profile.GetPath(), false,
       file_util::FileEnumerator::FILES);
-  FilePath path = file_iterator.Next();
+  base::FilePath path = file_iterator.Next();
   while (!path.empty()) {
-    FilePath dst_file = dst_dir.Append(path.BaseName());
+    base::FilePath dst_file = dst_dir.Append(path.BaseName());
     file_util::Delete(dst_file, false);
     printf("Copying file %" PRFilePath " to "
            "%" PRFilePath "\n", path.value().c_str(),

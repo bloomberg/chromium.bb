@@ -9,7 +9,7 @@
 #include <openssl/x509v3.h>
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/base/x509_util_openssl.h"
 
 namespace x509_util = net::x509_util;

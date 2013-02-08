@@ -95,9 +95,10 @@ int main(int argc, char* argv[]) {
   base::AtExitManager exit_manager;
   icu_util::Initialize();
 
-  FilePath file_base = FilePath(argv[1]);
+  base::FilePath file_base = base::FilePath(argv[1]);
 
-  FilePath aff_path = file_base.ReplaceExtension(FILE_PATH_LITERAL(".aff"));
+  base::FilePath aff_path =
+      file_base.ReplaceExtension(FILE_PATH_LITERAL(".aff"));
   printf("Reading %" PRFilePath " ...\n", aff_path.value().c_str());
   convert_dict::AffReader aff_reader(aff_path);
   if (!aff_reader.Read()) {
@@ -105,7 +106,8 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  FilePath dic_path = file_base.ReplaceExtension(FILE_PATH_LITERAL(".dic"));
+  base::FilePath dic_path =
+      file_base.ReplaceExtension(FILE_PATH_LITERAL(".dic"));
   printf("Reading %" PRFilePath " ...\n", dic_path.value().c_str());
   // DicReader will also read the .dic_delta file.
   convert_dict::DicReader dic_reader(dic_path);
@@ -131,7 +133,8 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  FilePath out_path = file_base.ReplaceExtension(FILE_PATH_LITERAL(".bdic"));
+  base::FilePath out_path =
+      file_base.ReplaceExtension(FILE_PATH_LITERAL(".bdic"));
   printf("Writing %" PRFilePath " ...\n", out_path.value().c_str());
   FILE* out_file = file_util::OpenFile(out_path, "wb");
   if (!out_file) {

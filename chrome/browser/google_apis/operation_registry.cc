@@ -4,7 +4,7 @@
 
 #include "chrome/browser/google_apis/operation_registry.h"
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

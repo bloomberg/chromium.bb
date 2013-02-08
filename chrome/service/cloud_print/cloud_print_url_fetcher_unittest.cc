@@ -23,7 +23,8 @@ using base::TimeDelta;
 
 namespace cloud_print {
 
-const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
+const base::FilePath::CharType kDocRoot[] =
+    FILE_PATH_LITERAL("chrome/test/data");
 
 int g_request_context_getter_instances = 0;
 class TrackingTestURLRequestContextGetter
@@ -329,7 +330,7 @@ void CloudPrintURLFetcherRetryBackoffTest::OnRequestGiveUp() {
 TEST_F(CloudPrintURLFetcherBasicTest, HandleRawResponse) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+                              base::FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
   SetHandleRawResponse(true);
 
@@ -340,7 +341,7 @@ TEST_F(CloudPrintURLFetcherBasicTest, HandleRawResponse) {
 TEST_F(CloudPrintURLFetcherBasicTest, HandleRawData) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+                              base::FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   SetHandleRawData(true);
@@ -351,7 +352,7 @@ TEST_F(CloudPrintURLFetcherBasicTest, HandleRawData) {
 TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+                              base::FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   GURL url(test_server.GetURL("defaultresponse"));
@@ -363,7 +364,7 @@ TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
 TEST_F(CloudPrintURLFetcherRetryBackoffTest, GiveUp) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+                              base::FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   GURL url(test_server.GetURL("defaultresponse"));

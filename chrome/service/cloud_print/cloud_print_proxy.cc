@@ -25,7 +25,7 @@ namespace {
 void LaunchBrowserProcessWithSwitch(const std::string& switch_string) {
   DCHECK(g_service_process->io_thread()->message_loop_proxy()->
       BelongsToCurrentThread());
-  FilePath exe_path;
+  base::FilePath exe_path;
   PathService::Get(base::FILE_EXE, &exe_path);
   if (exe_path.empty()) {
     NOTREACHED() << "Unable to get browser process binary name.";
@@ -33,7 +33,7 @@ void LaunchBrowserProcessWithSwitch(const std::string& switch_string) {
   CommandLine cmd_line(exe_path);
 
   const CommandLine& process_command_line = *CommandLine::ForCurrentProcess();
-  FilePath user_data_dir =
+  base::FilePath user_data_dir =
       process_command_line.GetSwitchValuePath(switches::kUserDataDir);
   if (!user_data_dir.empty())
     cmd_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);

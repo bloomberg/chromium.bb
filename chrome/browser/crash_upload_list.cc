@@ -11,8 +11,8 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/string_number_conversions.h"
 #include "base/string_split.h"
+#include "base/strings/string_number_conversions.h"
 #if defined(OS_WIN)
 #include "chrome/browser/crash_upload_list_win.h"
 #endif

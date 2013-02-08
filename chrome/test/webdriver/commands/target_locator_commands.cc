@@ -4,7 +4,7 @@
 
 #include "chrome/test/webdriver/commands/target_locator_commands.h"
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/webdriver_element_id.h"

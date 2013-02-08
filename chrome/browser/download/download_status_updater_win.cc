@@ -4,13 +4,13 @@
 
 #include "chrome/browser/download/download_status_updater.h"
 
-#include <string>
 #include <shobjidl.h>
+#include <string>
 
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/win/metro.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"

@@ -12,8 +12,8 @@
 
 namespace {
 
-bool PathIn(const std::vector<FilePath>& list,
-            const FilePath& path) {
+bool PathIn(const std::vector<base::FilePath>& list,
+            const base::FilePath& path) {
   for (size_t i = 0; i < list.size(); ++i) {
     if (list[i] == path)
       return true;
@@ -21,11 +21,11 @@ bool PathIn(const std::vector<FilePath>& list,
   return false;
 }
 
-void AssertFound(const FilePath& found,
-                 const std::vector<FilePath>& existing_paths,
-                 const std::vector<FilePath>& rel_paths,
-                 const std::vector<FilePath>& locations) {
-  FilePath exe;
+void AssertFound(const base::FilePath& found,
+                 const std::vector<base::FilePath>& existing_paths,
+                 const std::vector<base::FilePath>& rel_paths,
+                 const std::vector<base::FilePath>& locations) {
+  base::FilePath exe;
   ASSERT_TRUE(internal::FindExe(
       base::Bind(&PathIn, existing_paths),
       rel_paths,
@@ -37,45 +37,46 @@ void AssertFound(const FilePath& found,
 }  // namespace
 
 TEST(ChromeFinderTest, FindExeFound) {
-  FilePath found = FilePath().AppendASCII("exists").AppendASCII("exists");
-  std::vector<FilePath> existing_paths;
+  base::FilePath found =
+      base::FilePath().AppendASCII("exists").AppendASCII("exists");
+  std::vector<base::FilePath> existing_paths;
   existing_paths.push_back(found);
-  std::vector<FilePath> rel_paths;
+  std::vector<base::FilePath> rel_paths;
   rel_paths.push_back(found.BaseName());
-  std::vector<FilePath> locations;
+  std::vector<base::FilePath> locations;
   locations.push_back(found.DirName());
   ASSERT_NO_FATAL_FAILURE(
       AssertFound(found, existing_paths, rel_paths, locations));
 }
 
 TEST(ChromeFinderTest, FindExeShouldGoInOrder) {
-  FilePath dir(FILE_PATH_LITERAL("dir"));
-  FilePath first = dir.AppendASCII("first");
-  FilePath second = dir.AppendASCII("second");
-  std::vector<FilePath> existing_paths;
+  base::FilePath dir(FILE_PATH_LITERAL("dir"));
+  base::FilePath first = dir.AppendASCII("first");
+  base::FilePath second = dir.AppendASCII("second");
+  std::vector<base::FilePath> existing_paths;
   existing_paths.push_back(first);
   existing_paths.push_back(second);
-  std::vector<FilePath> rel_paths;
+  std::vector<base::FilePath> rel_paths;
   rel_paths.push_back(first.BaseName());
   rel_paths.push_back(second.BaseName());
-  std::vector<FilePath> locations;
+  std::vector<base::FilePath> locations;
   locations.push_back(dir);
   ASSERT_NO_FATAL_FAILURE(
       AssertFound(first, existing_paths, rel_paths, locations));
 }
 
 TEST(ChromeFinderTest, FindExeShouldPreferExeNameOverDir) {
-  FilePath dir1(FILE_PATH_LITERAL("dir1"));
-  FilePath dir2(FILE_PATH_LITERAL("dir2"));
-  FilePath preferred(FILE_PATH_LITERAL("preferred"));
-  FilePath nonpreferred(FILE_PATH_LITERAL("nonpreferred"));
-  std::vector<FilePath> existing_paths;
+  base::FilePath dir1(FILE_PATH_LITERAL("dir1"));
+  base::FilePath dir2(FILE_PATH_LITERAL("dir2"));
+  base::FilePath preferred(FILE_PATH_LITERAL("preferred"));
+  base::FilePath nonpreferred(FILE_PATH_LITERAL("nonpreferred"));
+  std::vector<base::FilePath> existing_paths;
   existing_paths.push_back(dir2.Append(preferred));
   existing_paths.push_back(dir1.Append(nonpreferred));
-  std::vector<FilePath> rel_paths;
+  std::vector<base::FilePath> rel_paths;
   rel_paths.push_back(preferred);
   rel_paths.push_back(nonpreferred);
-  std::vector<FilePath> locations;
+  std::vector<base::FilePath> locations;
   locations.push_back(dir1);
   locations.push_back(dir2);
   ASSERT_NO_FATAL_FAILURE(AssertFound(
@@ -83,13 +84,14 @@ TEST(ChromeFinderTest, FindExeShouldPreferExeNameOverDir) {
 }
 
 TEST(ChromeFinderTest, FindExeNotFound) {
-  FilePath found = FilePath().AppendASCII("exists").AppendASCII("exists");
-  std::vector<FilePath> existing_paths;
-  std::vector<FilePath> rel_paths;
+  base::FilePath found =
+      base::FilePath().AppendASCII("exists").AppendASCII("exists");
+  std::vector<base::FilePath> existing_paths;
+  std::vector<base::FilePath> rel_paths;
   rel_paths.push_back(found.BaseName());
-  std::vector<FilePath> locations;
+  std::vector<base::FilePath> locations;
   locations.push_back(found.DirName());
-  FilePath exe;
+  base::FilePath exe;
   ASSERT_FALSE(internal::FindExe(
       base::Bind(&PathIn, existing_paths),
       rel_paths,
@@ -100,6 +102,6 @@ TEST(ChromeFinderTest, FindExeNotFound) {
 TEST(ChromeFinderTest, NoCrash) {
   // It's not worthwhile to check the validity of the path, so just check
   // for crashes.
-  FilePath exe;
+  base::FilePath exe;
   FindChrome(&exe);
 }

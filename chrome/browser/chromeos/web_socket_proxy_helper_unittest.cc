@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <vector>
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/web_socket_proxy_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

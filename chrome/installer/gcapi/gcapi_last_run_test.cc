@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/guid.h"
-#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"

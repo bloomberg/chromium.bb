@@ -60,7 +60,7 @@ ui::DataPack* LoadResourceDataPack(const char* dir_path,
   NSString* resource_path = [NSString stringWithFormat:@"%s/%s_%s.pak",
                              dir_path, branding_strings_name, locale_name];
   if (resource_path) {
-    FilePath resources_pak_path([resource_path fileSystemRepresentation]);
+    base::FilePath resources_pak_path([resource_path fileSystemRepresentation]);
     file_util::AbsolutePath(&resources_pak_path);
     resource_pack = new ui::DataPack(ui::SCALE_FACTOR_100P);
     bool success = resource_pack->LoadFromPath(resources_pak_path);

@@ -5,11 +5,14 @@
 #include "chrome/browser/sync/test/integration/themes_helper.h"
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
+#include "base/strings/string_number_conversions.h"
+#include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
+#include "chrome/browser/sync/test/integration/sync_extension_helper.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest.h"
 
 using sync_datatype_helper::test;

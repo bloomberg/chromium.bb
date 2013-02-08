@@ -24,9 +24,9 @@ ChromeDesktopImpl::~ChromeDesktopImpl() {
   base::CloseProcessHandle(process_);
 }
 
-Status ChromeDesktopImpl::Launch(const FilePath& chrome_exe,
+Status ChromeDesktopImpl::Launch(const base::FilePath& chrome_exe,
                                  const std::string& landing_url) {
-  FilePath program = chrome_exe;
+  base::FilePath program = chrome_exe;
   if (program.empty()) {
     if (!FindChrome(&program))
       return Status(kUnknownError, "cannot find Chrome binary");

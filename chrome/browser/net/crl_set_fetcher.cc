@@ -8,7 +8,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/profiles/profile.h"

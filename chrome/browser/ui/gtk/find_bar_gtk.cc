@@ -12,8 +12,8 @@
 
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

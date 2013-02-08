@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"

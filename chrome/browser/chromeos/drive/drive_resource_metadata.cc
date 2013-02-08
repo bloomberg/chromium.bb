@@ -9,7 +9,7 @@
 
 #include "base/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"

@@ -112,7 +112,7 @@ class CrashService {
   google_breakpad::CrashReportSender* sender_;
 
   // the path to dumps and logs directory.
-  FilePath report_path_;
+  base::FilePath report_path_;
   // the extra tag sent to the server with each dump.
   std::wstring reporter_tag_;
 

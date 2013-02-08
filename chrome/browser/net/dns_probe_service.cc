@@ -6,7 +6,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/net/dns_probe_job.h"
 #include "chrome/common/net/net_error_info.h"
 #include "net/base/ip_endpoint.h"

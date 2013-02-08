@@ -14,7 +14,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"

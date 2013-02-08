@@ -132,7 +132,7 @@ PluginPlaceholder* PluginPlaceholder::CreateMissingPlugin(
 
 PluginPlaceholder* PluginPlaceholder::CreateErrorPlugin(
     RenderView* render_view,
-    const FilePath& file_path) {
+    const base::FilePath& file_path) {
   DictionaryValue values;
   values.SetString("message",
                    l10n_util::GetStringUTF8(IDS_PLUGIN_INITIALIZATION_ERROR));

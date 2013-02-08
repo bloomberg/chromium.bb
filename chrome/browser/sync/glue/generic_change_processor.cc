@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/glue/generic_change_processor.h"
 
 #include "base/location.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_change.h"

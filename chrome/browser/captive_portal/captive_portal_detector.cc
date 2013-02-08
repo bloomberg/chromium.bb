@@ -5,7 +5,7 @@
 #include "chrome/browser/captive_portal/captive_portal_detector.h"
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"

@@ -128,10 +128,10 @@ bool PopulateWordSet(WordSet* word_set, FILE* file, AffReader* aff_reader,
 
 }  // namespace
 
-DicReader::DicReader(const FilePath& path) {
+DicReader::DicReader(const base::FilePath& path) {
   file_ = file_util::OpenFile(path, "r");
 
-  FilePath additional_path =
+  base::FilePath additional_path =
       path.ReplaceExtension(FILE_PATH_LITERAL("dic_delta"));
   additional_words_file_ = file_util::OpenFile(additional_path, "r");
 

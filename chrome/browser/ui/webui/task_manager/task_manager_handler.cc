@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -21,8 +21,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/gfx/image/image_skia.h"
-#include "webkit/glue/webpreferences.h"
 #include "ui/webui/web_ui_util.h"
+#include "webkit/glue/webpreferences.h"
 
 namespace {
 

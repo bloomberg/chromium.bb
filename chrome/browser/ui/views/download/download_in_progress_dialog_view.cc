@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

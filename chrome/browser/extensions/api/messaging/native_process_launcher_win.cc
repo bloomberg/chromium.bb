@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 
 namespace extensions {
 

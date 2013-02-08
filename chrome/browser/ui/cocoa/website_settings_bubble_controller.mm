@@ -8,7 +8,7 @@
 
 #import <AppKit/AppKit.h>
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #import "chrome/browser/certificate_viewer.h"

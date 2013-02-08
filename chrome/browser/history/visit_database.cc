@@ -10,7 +10,7 @@
 #include <set>
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/history/visit_filter.h"
 #include "chrome/common/url_constants.h"

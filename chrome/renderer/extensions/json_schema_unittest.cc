@@ -38,7 +38,7 @@ class JsonSchemaTest : public V8UnitTest {
     ExecuteScriptInContext(code, kJsonSchema);
 
     // Add the test functions to the context.
-    FilePath test_js_file_path;
+    base::FilePath test_js_file_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_js_file_path));
     test_js_file_path = test_js_file_path.AppendASCII("extensions");
     test_js_file_path = test_js_file_path.AppendASCII(kJsonSchemaTest);

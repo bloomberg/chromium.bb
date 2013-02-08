@@ -418,11 +418,11 @@ TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
     if (baseline) {
       // Save the source data and the bitmap data into temporary files to
       // create base-line results.
-      FilePath source_path;
+      base::FilePath source_path;
       file_util::CreateTemporaryFile(&source_path);
       chrome_render_thread_->printer()->SaveSource(0, source_path);
 
-      FilePath bitmap_path;
+      base::FilePath bitmap_path;
       file_util::CreateTemporaryFile(&bitmap_path);
       chrome_render_thread_->printer()->SaveBitmap(0, bitmap_path);
     }

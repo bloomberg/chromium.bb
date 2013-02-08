@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/win/metro.h"
 #include "base/win/windows_version.h"
 #include "third_party/skia/include/core/SkBitmap.h"

@@ -24,7 +24,7 @@ Status ChromeAndroidImpl::Launch(const std::string& package_name,
                                  const std::string& landing_url) {
   // TODO(frankf): Figure out how this should be installed to
   // make this work for all platforms.
-  FilePath adb_commands(FILE_PATH_LITERAL("adb_commands.py"));
+  base::FilePath adb_commands(FILE_PATH_LITERAL("adb_commands.py"));
   CommandLine command(adb_commands);
   command.AppendSwitchASCII("package", package_name);
   command.AppendSwitch("launch");

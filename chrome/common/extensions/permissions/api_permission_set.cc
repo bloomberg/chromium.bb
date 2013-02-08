@@ -5,7 +5,7 @@
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"

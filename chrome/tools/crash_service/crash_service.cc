@@ -6,15 +6,15 @@
 
 #include <windows.h>
 
+#include <sddl.h>
 #include <fstream>
 #include <map>
-#include <sddl.h>
 
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/win/windows_version.h"
 #include "breakpad/src/client/windows/crash_generation/client_info.h"
 #include "breakpad/src/client/windows/crash_generation/crash_generation_server.h"
@@ -183,12 +183,12 @@ bool CrashService::Initialize(const std::wstring& command_line) {
 
   // The checkpoint file allows CrashReportSender to enforce the the maximum
   // reports per day quota. Does not seem to serve any other purpose.
-  FilePath checkpoint_path = report_path_.Append(kCheckPointFile);
+  base::FilePath checkpoint_path = report_path_.Append(kCheckPointFile);
 
   // The dumps path is typically : '<user profile>\Local settings\
   // Application data\Goggle\Chrome\Crash Reports' and the report path is
   // Application data\Google\Chrome\Reported Crashes.txt
-  FilePath user_data_dir;
+  base::FilePath user_data_dir;
   if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
     LOG(ERROR) << "could not get DIR_USER_DATA";
     return false;
@@ -197,9 +197,9 @@ bool CrashService::Initialize(const std::wstring& command_line) {
 
   CommandLine cmd_line = CommandLine::FromString(command_line);
 
-  FilePath dumps_path;
+  base::FilePath dumps_path;
   if (cmd_line.HasSwitch(kDumpsDir)) {
-    dumps_path = FilePath(cmd_line.GetSwitchValueNative(kDumpsDir));
+    dumps_path = base::FilePath(cmd_line.GetSwitchValueNative(kDumpsDir));
   } else {
     if (!PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path)) {
       LOG(ERROR) << "could not get DIR_CRASH_DUMPS";
@@ -379,9 +379,9 @@ void CrashService::OnClientDumpRequest(void* context,
   }
 
   // Move dump file to the directory under client pid.
-  FilePath dump_path = FilePath(*file_path);
+  base::FilePath dump_path = base::FilePath(*file_path);
   if (archive_dumps_by_pid_) {
-    FilePath dump_path_with_pid(dump_path.DirName());
+    base::FilePath dump_path_with_pid(dump_path.DirName());
     dump_path_with_pid = dump_path_with_pid.Append(base::Int64ToString16(pid));
     file_util::CreateDirectoryW(dump_path_with_pid);
     dump_path_with_pid = dump_path_with_pid.Append(dump_path.BaseName());

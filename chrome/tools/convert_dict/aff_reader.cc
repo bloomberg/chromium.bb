@@ -47,7 +47,7 @@ void CollapseDuplicateSpaces(std::string* str) {
 
 }  // namespace
 
-AffReader::AffReader(const FilePath& path)
+AffReader::AffReader(const base::FilePath& path)
     : has_indexed_affixes_(false) {
   file_ = file_util::OpenFile(path, "r");
 

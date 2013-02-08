@@ -79,7 +79,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
     friend class ServiceUtilityProcessHost;
 
     // Invoked when a metafile file is ready.
-    void MetafileAvailable(const FilePath& metafile_path,
+    void MetafileAvailable(const base::FilePath& metafile_path,
                            int highest_rendered_page_number,
                            double scale_factor);
 
@@ -94,7 +94,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   // a metafile. Currently only implemented for Windows. If the PDF has fewer
   // pages than the specified page ranges, it will render as many as available.
   bool StartRenderPDFPagesToMetafile(
-      const FilePath& pdf_path,
+      const base::FilePath& pdf_path,
       const printing::PdfRenderSettings& render_settings,
       const std::vector<printing::PageRange>& page_ranges);
 
@@ -106,7 +106,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
 
  protected:
   // Allows this method to be overridden for tests.
-  virtual FilePath GetUtilityProcessCmd();
+  virtual base::FilePath GetUtilityProcessCmd();
 
   // ChildProcessHostDelegate implementation:
   virtual void OnChildDisconnected() OVERRIDE;
@@ -116,7 +116,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   // Starts a process.  Returns true iff it succeeded. |exposed_dir| is the
   // path to the exposed to the sandbox. This is ignored if |no_sandbox| is
   // true.
-  bool StartProcess(bool no_sandbox, const FilePath& exposed_dir);
+  bool StartProcess(bool no_sandbox, const base::FilePath& exposed_dir);
 
   // Launch the child process synchronously.
   // TODO(sanjeevr): Determine whether we need to make the launch asynchronous.
@@ -124,7 +124,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   // if |no_sandbox| is true.
   bool Launch(CommandLine* cmd_line,
               bool no_sandbox,
-              const FilePath& exposed_dir);
+              const base::FilePath& exposed_dir);
 
   base::ProcessHandle handle() const { return handle_; }
 
@@ -144,7 +144,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   scoped_refptr<base::MessageLoopProxy> client_message_loop_proxy_;
   bool waiting_for_reply_;
   // The path to the temp file where the metafile will be written to.
-  FilePath metafile_path_;
+  base::FilePath metafile_path_;
   // The temporary folder created for the metafile.
   scoped_ptr<base::ScopedTempDir> scratch_metafile_dir_;
 

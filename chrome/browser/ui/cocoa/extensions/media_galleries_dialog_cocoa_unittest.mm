@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/string_number_conversions.h"
-#include "chrome/browser/system_monitor/media_storage_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/media_gallery/media_galleries_dialog_controller_mock.h"
+#include "chrome/browser/system_monitor/media_storage_util.h"
 #include "chrome/browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

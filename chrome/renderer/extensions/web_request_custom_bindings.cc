@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "grit/renderer_resources.h"
 #include "v8/include/v8.h"
 

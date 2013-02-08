@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/api/alarms/alarms_api.h"
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/extension_system.h"

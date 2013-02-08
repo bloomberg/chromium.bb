@@ -397,7 +397,7 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
 
 WebPlugin* ChromeContentRendererClient::CreatePluginReplacement(
     content::RenderView* render_view,
-    const FilePath& plugin_path) {
+    const base::FilePath& plugin_path) {
   PluginPlaceholder* placeholder =
       PluginPlaceholder::CreateErrorPlugin(render_view, plugin_path);
   return placeholder->plugin();

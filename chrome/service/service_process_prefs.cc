@@ -8,7 +8,7 @@
 #include "base/values.h"
 
 ServiceProcessPrefs::ServiceProcessPrefs(
-    const FilePath& pref_filename,
+    const base::FilePath& pref_filename,
     base::SequencedTaskRunner* task_runner)
     : prefs_(new JsonPrefStore(pref_filename, task_runner)) {
 }

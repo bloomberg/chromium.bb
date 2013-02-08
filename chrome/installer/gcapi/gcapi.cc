@@ -12,9 +12,9 @@
 
 #include <sddl.h>
 #define STRSAFE_NO_DEPRECATE
+#include <windows.h>
 #include <strsafe.h>
 #include <tlhelp32.h>
-#include <windows.h>
 
 #include <cstdlib>
 #include <iterator>
@@ -28,8 +28,8 @@
 #include "base/file_util.h"
 #include "base/process_util.h"
 #include "base/string16.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"

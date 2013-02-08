@@ -176,7 +176,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
     std::string job_id_;
     std::string job_title_;
     std::string print_ticket_;
-    FilePath print_data_file_path_;
+    base::FilePath print_data_file_path_;
     std::string print_data_mime_type_;
     std::vector<std::string> tags_;
   };

@@ -157,9 +157,10 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
 
   request_context_getter_ = new ServiceURLRequestContextGetter();
 
-  FilePath user_data_dir;
+  base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  FilePath pref_path = user_data_dir.Append(chrome::kServiceStateFileName);
+  base::FilePath pref_path =
+      user_data_dir.Append(chrome::kServiceStateFileName);
   service_prefs_.reset(
       new ServiceProcessPrefs(
           pref_path,
