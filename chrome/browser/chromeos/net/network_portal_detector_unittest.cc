@@ -422,4 +422,40 @@ TEST_F(NetworkPortalDetectorTest, ProxyAuthRequired) {
       wifi1_network());
 }
 
+TEST_F(NetworkPortalDetectorTest, NoResponseButBehindPortal) {
+  ASSERT_TRUE(is_state_idle());
+  set_min_time_between_attempts(base::TimeDelta());
+
+  SetBehindPortal(wifi1_network());
+  ASSERT_TRUE(is_state_checking_for_portal());
+
+  CompleteURLFetch(net::ERR_CONNECTION_CLOSED,
+                   net::URLFetcher::RESPONSE_CODE_INVALID,
+                   NULL);
+  ASSERT_EQ(1, attempt_count());
+  ASSERT_TRUE(is_state_portal_detection_pending());
+
+  // To run CaptivePortalDetector::DetectCaptivePortal().
+  MessageLoop::current()->RunUntilIdle();
+
+  CompleteURLFetch(net::ERR_CONNECTION_CLOSED,
+                   net::URLFetcher::RESPONSE_CODE_INVALID,
+                   NULL);
+  ASSERT_EQ(2, attempt_count());
+  ASSERT_TRUE(is_state_portal_detection_pending());
+
+  // To run CaptivePortalDetector::DetectCaptivePortal().
+  MessageLoop::current()->RunUntilIdle();
+
+  CompleteURLFetch(net::ERR_CONNECTION_CLOSED,
+                   net::URLFetcher::RESPONSE_CODE_INVALID,
+                   NULL);
+  ASSERT_EQ(3, attempt_count());
+  ASSERT_TRUE(is_state_idle());
+
+  CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL,
+                   net::URLFetcher::RESPONSE_CODE_INVALID,
+                   wifi1_network());
+}
+
 }  // namespace chromeos

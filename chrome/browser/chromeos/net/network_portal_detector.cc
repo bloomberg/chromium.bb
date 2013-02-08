@@ -310,7 +310,17 @@ void NetworkPortalDetector::OnPortalDetectionCompleted(
         state.status = CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED;
         SetCaptivePortalState(active_network, state);
       } else if (attempt_count_ >= kMaxRequestAttempts) {
-        state.status = CAPTIVE_PORTAL_STATUS_OFFLINE;
+        // Take into account shill's detection results.
+        if (active_network->restricted_pool()) {
+          state.status = CAPTIVE_PORTAL_STATUS_PORTAL;
+          LOG(WARNING) << "Network " << active_network->unique_id() << " "
+                       << "is marked as "
+                       << CaptivePortalStatusString(state.status) << " "
+                       << "despite the fact that CaptivePortalDetector "
+                       << "received no response";
+        } else {
+          state.status = CAPTIVE_PORTAL_STATUS_OFFLINE;
+        }
         SetCaptivePortalState(active_network, state);
       } else {
         DetectCaptivePortal(results.retry_after_delta);
