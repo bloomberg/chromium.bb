@@ -24,6 +24,8 @@
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/policy/user_cloud_policy_manager.h"
+#include "chrome/browser/policy/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
@@ -1078,6 +1080,16 @@ scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
     // because there is no SigninManager.
     return sync_status.Pass();
   }
+
+  // Signout is not allowed if the user has policy (crbug.com/172204).
+  bool signout_allowed = true;
+#if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+  policy::UserCloudPolicyManager* policy_manager =
+      policy::UserCloudPolicyManagerFactory::GetForProfile(profile);
+  if (policy_manager)
+    signout_allowed = !policy_manager->IsClientRegistered();
+#endif
+  sync_status->SetBoolean("signoutAllowed", signout_allowed);
   ProfileSyncService* service(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile));
   sync_status->SetBoolean("syncSystemEnabled", !!service);

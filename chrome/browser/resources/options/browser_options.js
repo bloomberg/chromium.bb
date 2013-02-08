@@ -678,7 +678,12 @@ cr.define('options', function() {
           syncData.managed || !syncData.syncSystemEnabled;
 
       var startStopButton = $('start-stop-sync');
-      startStopButton.disabled = syncData.setupInProgress;
+      // Disable the "start/stop syncing" if we're currently signing in, or
+      // if we're already signed in and signout is not allowed.
+      startStopButton.disabled = syncData.setupInProgress ||
+          !syncData.signoutAllowed;
+      if (!syncData.signoutAllowed)
+        $('start-stop-sync-indicator').setAttribute('controlled-by', 'policy');
       startStopButton.hidden =
           syncData.setupCompleted && cr.isChromeOS;
       startStopButton.textContent =
