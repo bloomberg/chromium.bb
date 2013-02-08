@@ -226,13 +226,13 @@ public class AwContents {
         }
     }
 
-    // TODO(kristianm): Delete this when privateBrowsing parameter is removed in Android
+    // TODO(kristianm): Delete this when nativeWindow parameter is removed in Android
     public AwContents(ViewGroup containerView,
             InternalAccessDelegate internalAccessAdapter,
             AwContentsClient contentsClient,
-            NativeWindow nativeWindow, boolean privateBrowsing,
+            NativeWindow nativeWindow,
             boolean isAccessFromFileURLsGrantedByDefault) {
-        this(containerView, internalAccessAdapter, contentsClient, nativeWindow,
+        this(containerView, internalAccessAdapter, contentsClient,
                 isAccessFromFileURLsGrantedByDefault);
     }
 
@@ -241,13 +241,9 @@ public class AwContents {
      * @param internalAccessAdapter to access private methods on containerView.
      * @param contentsClient will receive API callbacks from this WebView Contents
      * @param isAccessFromFileURLsGrantedByDefault passed to ContentViewCore.initialize.
-     * TODO(benm): Remove the nativeWindow parameter.
      */
-    public AwContents(ViewGroup containerView,
-            InternalAccessDelegate internalAccessAdapter,
-            AwContentsClient contentsClient,
-            NativeWindow nativeWindow,
-            boolean isAccessFromFileURLsGrantedByDefault) {
+    public AwContents(ViewGroup containerView, InternalAccessDelegate internalAccessAdapter,
+            AwContentsClient contentsClient, boolean isAccessFromFileURLsGrantedByDefault) {
         mContainerView = containerView;
         mInternalAccessAdapter = internalAccessAdapter;
         // Note that ContentViewCore must be set up before AwContents, as ContentViewCore
