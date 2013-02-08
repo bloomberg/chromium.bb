@@ -227,7 +227,8 @@ static void ParseOpusHeader(const uint8* data, int data_size,
   }
 
   CHECK_GE(data_size, kOpusHeaderStreamMapOffset + header->channels)
-      << "Invalid stream map.";
+      << "Invalid stream map; insufficient data for current channel count: "
+      << header->channels;
 
   header->num_streams = *(data + kOpusHeaderNumStreamsOffset);
   header->num_coupled = *(data + kOpusHeaderNumCoupledOffset);
@@ -235,7 +236,7 @@ static void ParseOpusHeader(const uint8* data, int data_size,
   if (header->num_streams + header->num_coupled != header->channels)
     LOG(WARNING) << "Inconsistent channel mapping.";
 
-  for (int i = 0; i < kMaxVorbisChannels; ++i)
+  for (int i = 0; i < header->channels; ++i)
     header->stream_map[i] = *(data + kOpusHeaderStreamMapOffset + i);
 }
 
