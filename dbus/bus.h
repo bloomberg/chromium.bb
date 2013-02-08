@@ -300,6 +300,9 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // - Releases the service names
   // - Closes the connection to dbus-daemon.
   //
+  // This function can be called multiple times and it is no-op for the 2nd time
+  // calling.
+  //
   // BLOCKING CALL.
   virtual void ShutdownAndBlock();
 
@@ -534,6 +537,9 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   void OnDispatchStatusChanged(DBusConnection* connection,
                                DBusDispatchStatus status);
 
+  // Called when the connection is diconnected.
+  void OnConnectionDisconnected(DBusConnection* connection);
+
   // Callback helper functions. Redirects to the corresponding member function.
   static dbus_bool_t OnAddWatchThunk(DBusWatch* raw_watch, void* data);
   static void OnRemoveWatchThunk(DBusWatch* raw_watch, void* data);
@@ -544,6 +550,13 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   static void OnDispatchStatusChangedThunk(DBusConnection* connection,
                                            DBusDispatchStatus status,
                                            void* data);
+
+  // Calls OnConnectionDisconnected if the Diconnected signal is received.
+  static DBusHandlerResult OnConnectionDisconnectedFilter(
+      DBusConnection *connection,
+      DBusMessage *message,
+      void *user_data);
+
   const BusType bus_type_;
   const ConnectionType connection_type_;
   scoped_refptr<base::MessageLoopProxy> dbus_thread_message_loop_proxy_;

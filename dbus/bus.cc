@@ -1,9 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// TODO(satorux):
-// - Handle "disconnected" signal.
 
 #include "dbus/bus.h"
 
@@ -23,6 +20,11 @@
 namespace dbus {
 
 namespace {
+
+const char kDisconnectedSignal[] = "Disconnected";
+const char kDisconnectedMatchRule[] =
+    "type='signal', path='/org/freedesktop/DBus/Local',"
+    "interface='org.freedesktop.DBus.Local', member='Disconnected'";
 
 // The class is used for watching the file descriptor used for D-Bus
 // communication.
@@ -364,11 +366,18 @@ bool Bus::Connect() {
   // We shouldn't exit on the disconnected signal.
   dbus_connection_set_exit_on_disconnect(connection_, false);
 
+  // Watch Disconnected signal.
+  AddFilterFunction(Bus::OnConnectionDisconnectedFilter, this);
+  AddMatch(kDisconnectedMatchRule, error.get());
+
   return true;
 }
 
 void Bus::ShutdownAndBlock() {
   AssertOnDBusThread();
+
+  if (shutdown_completed_)
+    return;  // Already shutdowned, just return.
 
   // Unregister the exported objects.
   for (ExportedObjectTable::iterator iter = exported_object_table_.begin();
@@ -403,6 +412,11 @@ void Bus::ShutdownAndBlock() {
 
   // Private connection should be closed.
   if (connection_) {
+    // Remove Disconnected watcher.
+    ScopedDBusError error;
+    RemoveFilterFunction(Bus::OnConnectionDisconnectedFilter, this);
+    RemoveMatch(kDisconnectedMatchRule, error.get());
+
     if (connection_type_ == PRIVATE)
       dbus_connection_close(connection_);
     // dbus_connection_close() won't unref.
@@ -704,9 +718,12 @@ void Bus::ProcessAllIncomingDataIfAny() {
   AssertOnDBusThread();
 
   // As mentioned at the class comment in .h file, connection_ can be NULL.
-  if (!connection_ || !dbus_connection_get_is_connected(connection_))
+  if (!connection_)
     return;
 
+  // It is safe and necessary to call dbus_connection_get_dispatch_status even
+  // if the connection is lost. Otherwise we will miss "Disconnected" signal.
+  // (crbug.com/174431)
   if (dbus_connection_get_dispatch_status(connection_) ==
       DBUS_DISPATCH_DATA_REMAINS) {
     while (dbus_connection_dispatch(connection_) ==
@@ -842,9 +859,6 @@ void Bus::OnDispatchStatusChanged(DBusConnection* connection,
   DCHECK_EQ(connection, connection_);
   AssertOnDBusThread();
 
-  if (!dbus_connection_get_is_connected(connection))
-    return;
-
   // We cannot call ProcessAllIncomingDataIfAny() here, as calling
   // dbus_connection_dispatch() inside DBusDispatchStatusFunction is
   // prohibited by the D-Bus library. Hence, we post a task here instead.
@@ -852,6 +866,21 @@ void Bus::OnDispatchStatusChanged(DBusConnection* connection,
   PostTaskToDBusThread(FROM_HERE,
                        base::Bind(&Bus::ProcessAllIncomingDataIfAny,
                                   this));
+}
+
+void Bus::OnConnectionDisconnected(DBusConnection* connection) {
+  AssertOnDBusThread();
+
+  if (!connection)
+    return;
+  DCHECK(!dbus_connection_get_is_connected(connection));
+
+  if (shutdown_completed_)
+    return;  // Do nothing if the shutdown is already completed.
+
+  // Unexpected disconnection, maybe the peer closes the connection.
+  DCHECK_EQ(connection, connection_);
+  ShutdownAndBlock();
 }
 
 dbus_bool_t Bus::OnAddWatchThunk(DBusWatch* raw_watch, void* data) {
@@ -889,6 +918,21 @@ void Bus::OnDispatchStatusChangedThunk(DBusConnection* connection,
                                        void* data) {
   Bus* self = static_cast<Bus*>(data);
   self->OnDispatchStatusChanged(connection, status);
+}
+
+DBusHandlerResult Bus::OnConnectionDisconnectedFilter(
+    DBusConnection *connection,
+    DBusMessage *message,
+    void *data) {
+  if (dbus_message_is_signal(message,
+                             DBUS_INTERFACE_LOCAL,
+                             kDisconnectedSignal)) {
+    Bus* self = static_cast<Bus*>(data);
+    self->AssertOnDBusThread();
+    self->OnConnectionDisconnected(connection);
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
+  return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
 }  // namespace dbus
