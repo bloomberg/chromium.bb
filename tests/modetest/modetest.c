@@ -835,8 +835,6 @@ set_mode(struct connector *c, int count, struct plane *p, int plane_count,
 	kms_destroy(&kms);
 }
 
-static char optstr[] = "ecpmfs:P:v";
-
 #define min(a, b)	((a) < (b) ? (a) : (b))
 
 static int parse_connector(struct connector *c, const char *arg)
@@ -896,15 +894,20 @@ static int parse_plane(struct plane *p, const char *arg)
 
 static void usage(char *name)
 {
-	fprintf(stderr, "usage: %s [-ecpmf]\n", name);
-	fprintf(stderr, "\t-e\tlist encoders\n");
+	fprintf(stderr, "usage: %s [-cefmPpsv]\n", name);
+
+	fprintf(stderr, "\n Query options:\n\n");
 	fprintf(stderr, "\t-c\tlist connectors\n");
-	fprintf(stderr, "\t-p\tlist CRTCs and planes (pipes)\n");
-	fprintf(stderr, "\t-m\tlist modes\n");
+	fprintf(stderr, "\t-e\tlist encoders\n");
 	fprintf(stderr, "\t-f\tlist framebuffers\n");
-	fprintf(stderr, "\t-v\ttest vsynced page flipping\n");
-	fprintf(stderr, "\t-s <connector_id>[@<crtc_id>]:<mode>[@<format>]\tset a mode\n");
+	fprintf(stderr, "\t-m\tlist modes\n");
+	fprintf(stderr, "\t-p\tlist CRTCs and planes (pipes)\n");
+
+	fprintf(stderr, "\n Test options:\n\n");
 	fprintf(stderr, "\t-P <connector_id>:<w>x<h>[@<format>]\tset a plane\n");
+	fprintf(stderr, "\t-s <connector_id>[@<crtc_id>]:<mode>[@<format>]\tset a mode\n");
+	fprintf(stderr, "\t-v\ttest vsynced page flipping\n");
+
 	fprintf(stderr, "\n\tDefault is to dump all info.\n");
 	exit(0);
 }
@@ -932,6 +935,8 @@ static int page_flipping_supported(void)
 #endif
 }
 
+static char optstr[] = "cefmP:ps:v";
+
 int main(int argc, char **argv)
 {
 	int c;
@@ -946,34 +951,34 @@ int main(int argc, char **argv)
 	opterr = 0;
 	while ((c = getopt(argc, argv, optstr)) != -1) {
 		switch (c) {
-		case 'e':
-			encoders = 1;
-			break;
 		case 'c':
 			connectors = 1;
 			break;
-		case 'p':
-			crtcs = 1;
-			planes = 1;
-			break;
-		case 'm':
-			modes = 1;
+		case 'e':
+			encoders = 1;
 			break;
 		case 'f':
 			framebuffers = 1;
 			break;
-		case 'v':
-			test_vsync = 1;
+		case 'm':
+			modes = 1;
+			break;
+		case 'P':
+			if (parse_plane(&plane_args[plane_count], optarg) < 0)
+				usage(argv[0]);
+			plane_count++;
+			break;
+		case 'p':
+			crtcs = 1;
+			planes = 1;
 			break;
 		case 's':
 			if (parse_connector(&con_args[count], optarg) < 0)
 				usage(argv[0]);
 			count++;				      
 			break;
-		case 'P':
-			if (parse_plane(&plane_args[plane_count], optarg) < 0)
-				usage(argv[0]);
-			plane_count++;
+		case 'v':
+			test_vsync = 1;
 			break;
 		default:
 			usage(argv[0]);
