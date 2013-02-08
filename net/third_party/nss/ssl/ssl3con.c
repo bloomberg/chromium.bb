@@ -2034,10 +2034,10 @@ ssl3_ComputeRecordMAC(
 #define CKM_NSS_SSL3_MAC_CONSTANT_TIME (CKM_NSS + 20)
 
 typedef struct CK_NSS_MAC_CONSTANT_TIME_PARAMS {
-    CK_MECHANISM_TYPE hashAlg;  /* in */
+    CK_MECHANISM_TYPE macAlg;   /* in */
     CK_ULONG ulBodyTotalLen;    /* in */
     CK_BYTE * pHeader;          /* in */
-    CK_ULONG ulHeaderLen;    /* in */
+    CK_ULONG ulHeaderLen;       /* in */
 } CK_NSS_MAC_CONSTANT_TIME_PARAMS;
 #endif
 
@@ -2117,7 +2117,7 @@ ssl3_ComputeRecordMACConstantTime(
 	params.ulHeaderLen = 13;
     }
 
-    params.hashAlg = spec->mac_def->mmech;
+    params.macAlg = spec->mac_def->mmech;
     params.ulBodyTotalLen = originalLen;
     params.pHeader = header;
 
