@@ -12,6 +12,10 @@
 #include "ui/app_list/cocoa/app_list_view.h"
 #include "ui/app_list/cocoa/app_list_view_window.h"
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace {
 
 // The AppListController class manages global resources needed for the app
@@ -76,9 +80,11 @@ void ShowAppList(Profile* profile) {
   g_app_list_controller.Get().ShowAppList();
 }
 
-void NotifyAppListOfBeginExtensionInstall(Profile* profile,
-                                          const std::string& extension_id,
-                                          const std::string& extension_name) {
+void NotifyAppListOfBeginExtensionInstall(
+    Profile* profile,
+    const std::string& extension_id,
+    const std::string& extension_name,
+    const gfx::ImageSkia& installing_icon) {
 }
 
 }  // namespace chrome

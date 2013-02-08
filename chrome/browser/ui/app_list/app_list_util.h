@@ -10,6 +10,10 @@
 class PrefRegistrySimple;
 class Profile;
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace chrome {
 
 // TODO(koz/benwells): These functions should be put on an AppList class that
@@ -40,9 +44,11 @@ Profile* GetCurrentAppListProfile();
 bool IsAppListVisible();
 
 // Notify the app list that an extension has started downloading.
-void NotifyAppListOfBeginExtensionInstall(Profile* profile,
-                                          const std::string& extension_id,
-                                          const std::string& extension_name);
+void NotifyAppListOfBeginExtensionInstall(
+    Profile* profile,
+    const std::string& extension_id,
+    const std::string& extension_name,
+    const gfx::ImageSkia& installing_icon);
 
 }  // namespace chrome
 

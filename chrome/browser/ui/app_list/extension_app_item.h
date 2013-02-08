@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "sync/api/string_ordinal.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/image/image_skia.h"
 
 class AppListControllerDelegate;
 class ExtensionEnableFlow;
@@ -32,7 +33,8 @@ class ExtensionAppItem : public ChromeAppListItem,
   ExtensionAppItem(Profile* profile,
                    const std::string& extension_id,
                    AppListControllerDelegate* controller,
-                   const std::string& extension_name);
+                   const std::string& extension_name,
+                   const gfx::ImageSkia& installing_icon);
   virtual ~ExtensionAppItem();
 
   // Reload the title and icon from the underlying extension.
@@ -108,6 +110,9 @@ class ExtensionAppItem : public ChromeAppListItem,
 
   // Name to use for the extension if we can't access it.
   std::string extension_name_;
+
+  // Icon for the extension if we can't access the installed extension.
+  gfx::ImageSkia installing_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppItem);
 };

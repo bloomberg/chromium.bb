@@ -181,12 +181,14 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
 ExtensionAppItem::ExtensionAppItem(Profile* profile,
                                    const std::string& extension_id,
                                    AppListControllerDelegate* controller,
-                                   const std::string& extension_name)
+                                   const std::string& extension_name,
+                                   const gfx::ImageSkia& installing_icon)
     : ChromeAppListItem(TYPE_APP),
       profile_(profile),
       extension_id_(extension_id),
       controller_(controller),
-      extension_name_(extension_name) {
+      extension_name_(extension_name),
+      installing_icon_(installing_icon) {
   Reload();
   GetExtensionSorting(profile_)->EnsureValidOrdinals(extension_id_,
                                                      syncer::StringOrdinal());
@@ -209,6 +211,7 @@ void ExtensionAppItem::Reload() {
   // If the extension isn't there, show the 'extension is installing' UI.
   if (!extension) {
     SetTitle(extension_name_);
+    UpdateIcon();
     return;
   }
   SetTitle(extension->name());
@@ -265,6 +268,10 @@ void ExtensionAppItem::Move(const ExtensionAppItem* prev,
 }
 
 void ExtensionAppItem::UpdateIcon() {
+  if (!GetExtension()) {
+    SetIcon(installing_icon_);
+    return;
+  }
   gfx::ImageSkia icon = icon_->image_skia();
 
   const ExtensionService* service =

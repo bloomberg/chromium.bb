@@ -17,6 +17,10 @@ class AppsModelBuilder;
 class Profile;
 class SearchBuilder;
 
+namespace gfx {
+class ImageSkia;
+}
+
 #if defined(USE_ASH)
 class AppSyncUIStateWatcher;
 #endif
@@ -29,7 +33,8 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
 
   // Called when an extension with the given id starts being installed.
   void OnBeginExtensionInstall(const std::string& extension_id,
-                               const std::string& extension_name);
+                               const std::string& extension_name,
+                               const gfx::ImageSkia& installing_icon);
 
  private:
   // Overridden from app_list::AppListViewDelegate:

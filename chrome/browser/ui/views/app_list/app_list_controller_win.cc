@@ -189,7 +189,8 @@ class AppListController : public ProfileInfoCacheObserver {
 
   void OnBeginExtensionInstall(Profile* profile,
                                const std::string& extension_id,
-                               const std::string& extension_name);
+                               const std::string& extension_name,
+                               const gfx::ImageSkia& installing_icon);
 
  private:
   // Loads a profile asynchronously and calls OnProfileLoaded() when done.
@@ -539,9 +540,11 @@ void AppListController::AppListActivationChanged(bool active) {
 void AppListController::OnBeginExtensionInstall(
     Profile* profile,
     const std::string& extension_id,
-    const std::string& extension_name) {
+    const std::string& extension_name,
+    const gfx::ImageSkia& installing_icon) {
   ShowAppList(profile);
-  view_delegate_->OnBeginExtensionInstall(extension_id, extension_name);
+  view_delegate_->OnBeginExtensionInstall(extension_id, extension_name,
+                                          installing_icon);
 }
 
 // Attempts to find the bounds of the Windows taskbar. Returns true on success.
@@ -847,11 +850,15 @@ bool IsAppListVisible() {
   return g_app_list_controller.Get().app_list_is_showing();
 }
 
-void NotifyAppListOfBeginExtensionInstall(Profile* profile,
-                                          const std::string& extension_id,
-                                          const std::string& extension_name) {
-  g_app_list_controller.Get().OnBeginExtensionInstall(profile, extension_id,
-                                                      extension_name);
+void NotifyAppListOfBeginExtensionInstall(
+    Profile* profile,
+    const std::string& extension_id,
+    const std::string& extension_name,
+    const gfx::ImageSkia& installing_icon) {
+  g_app_list_controller.Get().OnBeginExtensionInstall(profile,
+                                                      extension_id,
+                                                      extension_name,
+                                                      installing_icon);
 }
 #endif  // !defined(USE_ASH)
 

@@ -375,6 +375,7 @@ void BeginInstallWithManifestFunction::InstallUIProceed() {
   approval->use_app_installed_bubble = use_app_installed_bubble_;
   approval->enable_launcher = enable_launcher_;
   approval->record_oauth2_grant = install_prompt_->record_oauth2_grant();
+  approval->installing_icon = gfx::ImageSkia::CreateFrom1xBitmap(icon_);
   g_pending_approvals.Get().PushApproval(approval.Pass());
 
   SetResultCode(ERROR_NONE);
@@ -471,7 +472,8 @@ void CompleteInstallFunction::OnGetAppLauncherEnabled(
                                                 &name));
 #if defined(ENABLE_APP_LIST)
     // Tell the app list about the install that we just started.
-    chrome::NotifyAppListOfBeginExtensionInstall(profile(), id, name);
+    chrome::NotifyAppListOfBeginExtensionInstall(
+        profile(), id, name, approval_->installing_icon);
 #endif
   }
 

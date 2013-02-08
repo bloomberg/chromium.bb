@@ -20,6 +20,10 @@ class ExtensionAppItem;
 class ExtensionSet;
 class Profile;
 
+namespace gfx {
+class ImageSkia;
+}
+
 class AppsModelBuilder : public content::NotificationObserver,
                          public ui::ListModelObserver {
  public:
@@ -33,7 +37,8 @@ class AppsModelBuilder : public content::NotificationObserver,
 
   // Called when an extension starts installing.
   void OnBeginExtensionInstall(const std::string& extension_id,
-                               const std::string& extension_name);
+                               const std::string& extension_name,
+                               const gfx::ImageSkia& installing_icon);
 
  private:
   typedef std::vector<ExtensionAppItem*> Apps;

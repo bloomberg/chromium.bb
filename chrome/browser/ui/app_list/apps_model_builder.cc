@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
+#include "ui/gfx/image/image_skia.h"
 
 using extensions::Extension;
 
@@ -76,11 +77,13 @@ void AppsModelBuilder::Build() {
 
 void AppsModelBuilder::OnBeginExtensionInstall(
     const std::string& extension_id,
-    const std::string& extension_name) {
+    const std::string& extension_name,
+    const gfx::ImageSkia& installing_icon) {
   InsertApp(new ExtensionAppItem(profile_,
                                  extension_id,
                                  controller_,
-                                 extension_name));
+                                 extension_name,
+                                 installing_icon));
   highlight_app_id_ = extension_id;
   HighlightApp();
 }
@@ -92,7 +95,8 @@ void AppsModelBuilder::AddApps(const ExtensionSet* extensions, Apps* apps) {
       apps->push_back(new ExtensionAppItem(profile_,
                                            (*app)->id(),
                                            controller_,
-                                           ""));
+                                           "",
+                                           gfx::ImageSkia()));
   }
 }
 
@@ -210,7 +214,8 @@ void AppsModelBuilder::Observe(int type,
       InsertApp(new ExtensionAppItem(profile_,
                                      extension->id(),
                                      controller_,
-                                     ""));
+                                     "",
+                                     gfx::ImageSkia()));
       HighlightApp();
       break;
     }

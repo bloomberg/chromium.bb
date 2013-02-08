@@ -84,9 +84,11 @@ void DismissAppList() {
 void SetAppListProfile(const FilePath& profile_file_path) {
 }
 
-void NotifyAppListOfBeginExtensionInstall(Profile* profile,
-                                          const std::string& extension_id,
-                                          const std::string& extension_name) {
+void NotifyAppListOfBeginExtensionInstall(
+    Profile* profile,
+    const std::string& extension_id,
+    const std::string& extension_name,
+    const gfx::ImageSkia& installing_icon) {
 }
 
 }  // namespace chrome

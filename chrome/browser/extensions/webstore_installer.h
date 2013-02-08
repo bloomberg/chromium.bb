@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
+#include "ui/gfx/image/image_skia.h"
 
 class Profile;
 
@@ -110,6 +111,9 @@ class WebstoreInstaller :public content::NotificationObserver,
 
     // Used to show the install dialog.
     ExtensionInstallPrompt::ShowDialogCallback show_dialog_callback;
+
+    // The icon to use to display the extension while it is installing.
+    gfx::ImageSkia installing_icon;
 
    private:
     Approval();
