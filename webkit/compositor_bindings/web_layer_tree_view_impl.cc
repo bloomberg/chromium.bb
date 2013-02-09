@@ -10,7 +10,6 @@
 #include "cc/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_host.h"
-#include "cc/switches.h"
 #include "cc/thread.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebInputHandler.h"
@@ -42,7 +41,6 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
     settings.acceleratePainting = webSettings.acceleratePainting;
     settings.renderVSyncEnabled = webSettings.renderVSyncEnabled;
     settings.perTilePaintingEnabled = webSettings.perTilePaintingEnabled;
-    settings.rightAlignedSchedulingEnabled = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnableRightAlignedScheduling);
     settings.acceleratedAnimationEnabled = webSettings.acceleratedAnimationEnabled;
     settings.pageScalePinchZoomEnabled = webSettings.pageScalePinchZoomEnabled;
     settings.refreshRate = webSettings.refreshRate;
@@ -52,22 +50,7 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
     settings.initialDebugState.showPaintRects = webSettings.showPaintRects;
     settings.initialDebugState.showPlatformLayerTree = webSettings.showPlatformLayerTree;
     settings.initialDebugState.showDebugBorders = webSettings.showDebugBorders;
-    settings.implSidePainting = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnableImplSidePainting);
     settings.initialDebugState.setRecordRenderingStats(webSettings.recordRenderingStats);
-    settings.useCheapnessEstimator = CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCheapnessEstimator);
-
-    settings.calculateTopControlsPosition = CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableTopControlsPositionCalculation);
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopControlsHeight)) {
-        std::string controls_height_str =
-            CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kTopControlsHeight);
-        double controls_height;
-        if (base::StringToDouble(controls_height_str, &controls_height) && controls_height > 0)
-            settings.topControlsHeight = controls_height;
-    }
-    if (settings.calculateTopControlsPosition && (settings.topControlsHeight <= 0 || !settings.compositorFrameMessage)) {
-        DCHECK(false) << "Top controls repositioning enabled without valid height or compositorFrameMessage set.";
-        settings.calculateTopControlsPosition = false;
-    }
 
     m_layerTreeHost = LayerTreeHost::create(this, settings, implThread.Pass());
     if (!m_layerTreeHost.get())

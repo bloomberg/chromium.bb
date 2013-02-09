@@ -39,52 +39,105 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   scoped_ptr<RenderWidgetCompositor> comp(
       new RenderWidgetCompositor(widget, client));
 
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+
   cc::LayerTreeSettings settings;
   settings.acceleratePainting = web_settings.acceleratePainting;
   settings.renderVSyncEnabled = web_settings.renderVSyncEnabled;
   settings.perTilePaintingEnabled = web_settings.perTilePaintingEnabled;
-  settings.rightAlignedSchedulingEnabled =
-    CommandLine::ForCurrentProcess()->HasSwitch(
-        cc::switches::kEnableRightAlignedScheduling);
   settings.acceleratedAnimationEnabled =
-    web_settings.acceleratedAnimationEnabled;
+      web_settings.acceleratedAnimationEnabled;
   settings.pageScalePinchZoomEnabled = web_settings.pageScalePinchZoomEnabled;
   settings.refreshRate = web_settings.refreshRate;
   settings.defaultTileSize = web_settings.defaultTileSize;
   settings.maxUntiledLayerSize = web_settings.maxUntiledLayerSize;
-  settings.initialDebugState.showFPSCounter = web_settings.showFPSCounter;
-  settings.initialDebugState.showPaintRects = web_settings.showPaintRects;
-  settings.initialDebugState.showPlatformLayerTree =
-    web_settings.showPlatformLayerTree;
-  settings.initialDebugState.showDebugBorders = web_settings.showDebugBorders;
+
+  settings.rightAlignedSchedulingEnabled =
+      cmd->HasSwitch(cc::switches::kEnableRightAlignedScheduling);
   settings.implSidePainting =
-    CommandLine::ForCurrentProcess()->HasSwitch(
-        cc::switches::kEnableImplSidePainting);
-  settings.initialDebugState.setRecordRenderingStats(
-      web_settings.recordRenderingStats);
+      cmd->HasSwitch(cc::switches::kEnableImplSidePainting);
   settings.useCheapnessEstimator =
-    CommandLine::ForCurrentProcess()->HasSwitch(
-        cc::switches::kUseCheapnessEstimator);
+      cmd->HasSwitch(cc::switches::kUseCheapnessEstimator);
 
   settings.calculateTopControlsPosition =
-    CommandLine::ForCurrentProcess()->HasSwitch(
-        cc::switches::kEnableTopControlsPositionCalculation);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-        cc::switches::kTopControlsHeight)) {
-      std::string controls_height_str =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            cc::switches::kTopControlsHeight);
-      double controls_height;
-      if (base::StringToDouble(controls_height_str, &controls_height) &&
-          controls_height > 0)
-        settings.topControlsHeight = controls_height;
+      cmd->HasSwitch(cc::switches::kEnableTopControlsPositionCalculation);
+  if (cmd->HasSwitch(cc::switches::kTopControlsHeight)) {
+    std::string controls_height_str =
+        cmd->GetSwitchValueASCII(cc::switches::kTopControlsHeight);
+    double controls_height;
+    if (base::StringToDouble(controls_height_str, &controls_height) &&
+        controls_height > 0)
+      settings.topControlsHeight = controls_height;
   }
+
   if (settings.calculateTopControlsPosition &&
       (settings.topControlsHeight <= 0 || !settings.compositorFrameMessage)) {
     DCHECK(false) << "Top controls repositioning enabled without valid height "
                      "or compositorFrameMessage set.";
     settings.calculateTopControlsPosition = false;
   }
+
+  settings.compositorFrameMessage =
+      cmd->HasSwitch(cc::switches::kEnableCompositorFrameMessage);
+  settings.partialSwapEnabled =
+      cmd->HasSwitch(cc::switches::kEnablePartialSwap);
+  settings.backgroundColorInsteadOfCheckerboard =
+      cmd->HasSwitch(cc::switches::kBackgroundColorInsteadOfCheckerboard);
+  settings.showOverdrawInTracing =
+      cmd->HasSwitch(cc::switches::kTraceOverdraw);
+
+  settings.initialDebugState.showFPSCounter = web_settings.showFPSCounter;
+  settings.initialDebugState.showPaintRects = web_settings.showPaintRects;
+  settings.initialDebugState.showPlatformLayerTree =
+      web_settings.showPlatformLayerTree;
+  settings.initialDebugState.showDebugBorders = web_settings.showDebugBorders;
+  settings.initialDebugState.showPropertyChangedRects =
+      cmd->HasSwitch(cc::switches::kShowPropertyChangedRects);
+  settings.initialDebugState.showSurfaceDamageRects =
+      cmd->HasSwitch(cc::switches::kShowSurfaceDamageRects);
+  settings.initialDebugState.showScreenSpaceRects =
+      cmd->HasSwitch(cc::switches::kShowScreenSpaceRects);
+  settings.initialDebugState.showReplicaScreenSpaceRects =
+      cmd->HasSwitch(cc::switches::kShowReplicaScreenSpaceRects);
+  settings.initialDebugState.showOccludingRects =
+      cmd->HasSwitch(cc::switches::kShowOccludingRects);
+  settings.initialDebugState.showNonOccludingRects =
+      cmd->HasSwitch(cc::switches::kShowNonOccludingRects);
+  settings.initialDebugState.setRecordRenderingStats(
+      web_settings.recordRenderingStats);
+
+  if (cmd->HasSwitch(cc::switches::kSlowDownRasterScaleFactor)) {
+    std::string slow_down_scale_str =
+        cmd->GetSwitchValueASCII(cc::switches::kSlowDownRasterScaleFactor);
+    int slow_down_scale;
+    if (base::StringToInt(slow_down_scale_str, &slow_down_scale)) {
+      settings.initialDebugState.slowDownRasterScaleFactor = slow_down_scale;
+    } else {
+      LOG(WARNING) << "Failed to parse the slow down raster scale factor:" <<
+          slow_down_scale_str;
+    }
+  }
+
+  if (cmd->HasSwitch(cc::switches::kNumRasterThreads)) {
+    const int kMaxRasterThreads = 64;
+    std::string num_raster_threads_str =
+        cmd->GetSwitchValueASCII(cc::switches::kNumRasterThreads);
+    int num_raster_threads;
+    if (base::StringToInt(num_raster_threads_str, &num_raster_threads) &&
+        num_raster_threads > 0 && num_raster_threads <= kMaxRasterThreads) {
+      settings.numRasterThreads = num_raster_threads;
+    } else {
+      LOG(WARNING) << "Bad number of raster threads: " <<
+          num_raster_threads;
+    }
+  }
+
+#if defined(OS_ANDROID)
+  // TODO(danakj): Move these to the android code.
+  settings.canUseLCDText = false;
+  settings.maxPartialTextureUpdates = 0;
+  settings.useLinearFadeScrollbarAnimator = true;
+#endif
 
   if (!comp->initialize(settings))
     return scoped_ptr<RenderWidgetCompositor>();
