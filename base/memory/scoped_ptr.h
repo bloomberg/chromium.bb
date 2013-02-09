@@ -239,6 +239,9 @@ class scoped_ptr_impl {
         static_cast<D&>(data_)(data_.ptr);
       }
       data_.ptr = p;
+    } else {
+      // If p is non-NULL, this is a deprecated self-reset.
+      assert(p == NULL);
     }
   }
 
