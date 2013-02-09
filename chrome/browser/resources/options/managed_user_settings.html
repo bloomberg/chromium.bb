@@ -17,7 +17,7 @@
         <label>
           <input type="radio" name="contentpacks" value="0"
               id="contentpacks-allow"
-              pref="profile.managed.default_filtering_behavior">
+              pref="profile.managed.default_filtering_behavior" dialog-pref>
           <span for="contentpacks-allow"
               i18n-content="outsideContentPacksAllow"></span>
         </label>
@@ -26,7 +26,7 @@
         <label>
           <input type="radio" name="contentpacks" value="1"
               id="contentpacks-warn"
-              pref="profile.managed.default_filtering_behavior">
+              pref="profile.managed.default_filtering_behavior" dialog-pref>
           <span for="contentpacks-warn"
               i18n-content="outsideContentPacksWarn"></span>
         </label>
@@ -35,7 +35,7 @@
         <label>
           <input type="radio" name="contentpacks" value="2"
               id="contentpacks-block"
-              pref="profile.managed.default_filtering_behavior">
+              pref="profile.managed.default_filtering_behavior" dialog-pref>
           <span for="contentpacks-block"
               i18n-content="outsideContentPacksBlock"></span>
         </label>
@@ -47,21 +47,22 @@
       <div class="checkbox">
         <label>
           <input type="checkbox" id="safe-search-checkbox"
-              pref="settings.force_safesearch">
+              pref="settings.force_safesearch" dialog-pref>
           <span for="safe-search-checkbox"
               i18n-content="enableSafeSearch"></span>
         </label>
       </div>
       <div class="checkbox">
         <label>
-          <input id="disable-signin-checkbox" type="checkbox">
+          <input id="disable-signin-checkbox" type="checkbox" disabled>
           <span for="disable-signin-checkbox"
               i18n-content="disableProfileSignIn"></span>
         </label>
       </div>
       <div class="checkbox">
         <label>
-          <input id="disable-history-deletion-checkbox" type="checkbox">
+          <input id="disable-history-deletion-checkbox" type="checkbox"
+              disabled>
           <span for="disable-history-deletion-checkbox"
               i18n-content="disableHistoryDeletion"></span>
         </label>
@@ -79,6 +80,8 @@
   </div>
   <div class="action-area">
     <div class="button-strip">
+      <button id="managed-user-settings-cancel" type="submit"
+          i18n-content="cancel">
       <button id="managed-user-settings-confirm" type="submit"
           i18n-content="ok">
     </div>

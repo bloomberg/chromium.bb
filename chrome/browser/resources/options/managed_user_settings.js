@@ -5,7 +5,7 @@
 if (loadTimeData.getBoolean('managedUsersEnabled')) {
 
 cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var SettingsDialog = options.SettingsDialog;
 
   //////////////////////////////////////////////////////////////////////////////
   // ManagedUserSettings class:
@@ -16,18 +16,20 @@ cr.define('options', function() {
    * @class
    */
   function ManagedUserSettings() {
-    OptionsPage.call(
+    SettingsDialog.call(
         this,
         'manageduser',
         loadTimeData.getString('managedUserSettingsPageTabTitle'),
-        'managed-user-settings-page');
+        'managed-user-settings-page',
+        $('managed-user-settings-confirm'),
+        $('managed-user-settings-cancel'));
   }
 
   cr.addSingletonGetter(ManagedUserSettings);
 
   ManagedUserSettings.prototype = {
-    // Inherit from OptionsPage.
-    __proto__: OptionsPage.prototype,
+    // Inherit from SettingsDialog.
+    __proto__: SettingsDialog.prototype,
 
     /**
      * Initialize the page.
@@ -35,20 +37,21 @@ cr.define('options', function() {
      */
     initializePage: function() {
       // Call base class implementation to start preference initialization.
-      OptionsPage.prototype.initializePage.call(this);
+      SettingsDialog.prototype.initializePage.call(this);
 
       $('get-content-packs-button').onclick = function(event) {
         window.open(loadTimeData.getString('getContentPacksURL'));
       };
 
-      $('managed-user-settings-confirm').onclick = function() {
-        chrome.send('confirmManagedUserSettings');
-        OptionsPage.closeOverlay();
-      };
-
       $('set-passphrase').onclick = function() {
         // TODO(bauerb): Set passphrase
       };
+
+    },
+    /** @override */
+    handleConfirm: function() {
+      chrome.send('confirmManagedUserSettings');
+      SettingsDialog.prototype.handleConfirm.call(this);
     },
   };
 
