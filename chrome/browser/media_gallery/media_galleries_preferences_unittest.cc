@@ -345,11 +345,23 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryType) {
   expected_galleries_for_all.erase(auto_id);
   Verify();
 
-  // Add the gallery again.
+  // Add the gallery again as a user action.
   id = gallery_prefs()->AddGalleryByPath(path);
   EXPECT_EQ(auto_id, id);
   AddGalleryExpectation(id, device_name, device_id, relative_path,
                         MediaGalleryPrefInfo::kAutoDetected);
+  Verify();
+
+  // Remove an auto added gallery (i.e. make it blacklisted).
+  gallery_prefs()->ForgetGalleryById(auto_id);
+  expected_galleries_[auto_id].type = MediaGalleryPrefInfo::kBlackListed;
+  expected_galleries_for_all.erase(auto_id);
+  Verify();
+
+  // Try adding the gallery again automatically and it should be a no-op.
+  id = gallery_prefs()->AddGallery(device_id, device_name, relative_path,
+                                   false /*auto*/);
+  EXPECT_EQ(auto_id, id);
   Verify();
 }
 

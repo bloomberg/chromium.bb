@@ -282,6 +282,7 @@ class ProfileState {
 
   extensions::Extension* all_permission_extension();
   extensions::Extension* regular_permission_extension();
+  Profile* profile();
 
  private:
   void CompareResults(const std::string& test,
@@ -370,6 +371,10 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
 
   void ProcessDetach(const std::string& id) {
     RemovableStorageNotifications::GetInstance()->receiver()->ProcessDetach(id);
+  }
+
+  MediaFileSystemRegistry* GetMediaFileSystemRegistry() {
+    return test_file_system_context_->GetMediaFileSystemRegistry();
   }
 
  protected:
@@ -580,6 +585,10 @@ extensions::Extension* ProfileState::all_permission_extension() {
 
 extensions::Extension* ProfileState::regular_permission_extension() {
   return regular_permission_extension_.get();
+}
+
+Profile* ProfileState::profile() {
+  return profile_.get();
 }
 
 void ProfileState::CompareResults(
@@ -865,6 +874,44 @@ TEST_F(MediaFileSystemRegistryTest, EraseGalleries) {
        it != galleries.end(); ++it) {
     prefs->ForgetGalleryById(it->first);
   }
+}
+
+// Regression test to make sure calling GetPreferences() does not re-insert
+// galleries on auto-detected removable devices that were blacklisted.
+TEST_F(MediaFileSystemRegistryTest,
+       GetPreferencesDoesNotReinsertBlacklistedGalleries) {
+  CreateProfileState(1);
+  AssertAllAutoAddedGalleries();
+
+  ProfileState* profile_state = GetProfileState(0);
+  const size_t gallery_count = GetAutoAddedGalleries(profile_state).size();
+
+  // Attach a device.
+  const std::string device_id = AttachDevice(
+      MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM,
+      "removable_dcim_fake_id",
+      dcim_dir());
+  EXPECT_EQ(gallery_count + 1, GetAutoAddedGalleries(profile_state).size());
+
+  // Forget the device.
+  bool forget_gallery = false;
+  MediaGalleriesPreferences* prefs =
+      GetMediaFileSystemRegistry()->GetPreferences(profile_state->profile());
+  const MediaGalleriesPrefInfoMap& galleries = prefs->known_galleries();
+  for (MediaGalleriesPrefInfoMap::const_iterator it = galleries.begin();
+       it != galleries.end(); ++it) {
+    if (it->second.device_id == device_id) {
+      prefs->ForgetGalleryById(it->first);
+      forget_gallery = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(forget_gallery);
+  EXPECT_EQ(gallery_count, GetAutoAddedGalleries(profile_state).size());
+
+  // Call GetPreferences() and the gallery count should not change.
+  GetMediaFileSystemRegistry()->GetPreferences(profile_state->profile());
+  EXPECT_EQ(gallery_count, GetAutoAddedGalleries(profile_state).size());
 }
 
 TEST_F(MediaFileSystemRegistryTest, GalleryNameDefault) {
