@@ -22,8 +22,6 @@ ExtensionViewViews::ExtensionViewViews(extensions::ExtensionHost* host,
       initialized_(false),
       container_(NULL),
       is_clipped_(false) {
-  host_->set_view(this);
-
   // This view needs to be focusable so it can act as the focused view for the
   // focus manager. This is required to have SkipDefaultKeyEventProcessing
   // called so the tab key events are forwarded to the renderer.
