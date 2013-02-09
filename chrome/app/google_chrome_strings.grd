@@ -579,6 +579,11 @@ Google Chrome is unable to recover your settings.
         Google Chrome is configured to automatically launch when you start your computer.
       </message>
 
+      <!-- Managed user settings page -->
+      <message name="IDS_SIGNIN_SYNC_ALLOWED" desc="A checkbox in the Managed User Settings dialog for enabling sign in and sync.">
+        Allow signing into Chrome.
+      </message>
+
       <!-- about:flags -->
       <if expr="not pp_ifdef('chromeos')">
         <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to relaunch Chrome. Shown next to a button that says 'Relaunch Now'.">
