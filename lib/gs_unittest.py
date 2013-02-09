@@ -12,7 +12,6 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 
-from chromite.lib import cache
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
@@ -33,9 +32,9 @@ def PatchGS(*args, **kwargs):
 class GSContextMock(partial_mock.PartialCmdMock):
   """Used to mock out the GSContext class."""
   TARGET = 'chromite.lib.gs.GSContext'
-  ATTRS = ('_DoCommand', '__init__', 'DEFAULT_SLEEP_TIME', 'DEFAULT_RETRIES',
-           'DEFAULT_BOTO_FILE', 'DEFAULT_GSUTIL_BIN',
-           'DEFAULT_GSUTIL_BUILDER_BIN')
+  ATTRS = ('__init__', '_DoCommand', 'DEFAULT_SLEEP_TIME',
+           'DEFAULT_RETRIES', 'DEFAULT_BOTO_FILE', 'DEFAULT_GSUTIL_BIN',
+           'DEFAULT_GSUTIL_BUILDER_BIN', 'GSUTIL_URL')
   DEFAULT_ATTR = '_DoCommand'
 
   GSResponsePreconditionFailed = """
@@ -49,9 +48,24 @@ class GSContextMock(partial_mock.PartialCmdMock):
   DEFAULT_BOTO_FILE = '%s/boto_file' % TMP_ROOT
   DEFAULT_GSUTIL_BIN = '%s/gsutil_bin' % TMP_ROOT
   DEFAULT_GSUTIL_BUILDER_BIN = DEFAULT_GSUTIL_BIN
+  GSUTIL_URL = None
+
+  def __init__(self):
+    partial_mock.PartialCmdMock.__init__(self, create_tempdir=True)
+
+  def _SetGSUtilUrl(self):
+    tempfile = os.path.join(self.tempdir, 'tempfile')
+    osutils.WriteFile(tempfile, 'some content')
+    gsutil_path = os.path.join(self.tempdir, gs.GSContext.GSUTIL_TAR)
+    cros_build_lib.CreateTarball(gsutil_path, self.tempdir, inputs=[tempfile])
+    self.GSUTIL_URL = 'file://%s' % gsutil_path
 
   def PreStart(self):
     os.environ.pop("BOTO_CONFIG", None)
+    # Set it here for now, instead of mocking out Cached() directly because
+    # python-mock has a bug with mocking out class methods with autospec=True.
+    # TODO(rcui): Change this when this is fixed in PartialMock.
+    self._SetGSUtilUrl()
 
   def _target__init__(self, *args, **kwargs):
     with PatchGS('_CheckFile', return_value=True):
@@ -68,40 +82,6 @@ class GSContextMock(partial_mock.PartialCmdMock):
 
     with rc_mock:
       return self.backup['_DoCommand'](inst, gsutil_cmd, **kwargs)
-
-
-class FetchGSUtilMock(partial_mock.PartialMock):
-  """Mocks out FetchGSUtil functionality."""
-  TARGET = 'chromite.lib.gs'
-  ATTRS = ('GSUTIL_URL',)
-
-  GSUTIL_URL = None
-
-  def __init__(self):
-    partial_mock.PartialMock.__init__(self, create_tempdir=True)
-
-  def PreStart(self):
-    gsutil_path = os.path.join(self.tempdir, gs.GSUTIL_TAR)
-    osutils.WriteFile(gsutil_path, 'some content')
-    self.GSUTIL_URL = 'file://%s' % gsutil_path
-
-
-class FetchGSUtilTest(cros_test_lib.MockTempDirTestCase):
-  """Test the fetching of 'gsutil' tarball"""
-  def setUp(self):
-    self.mock = self.StartPatcher(FetchGSUtilMock())
-    self.cache = cache.TarballCache(os.path.join(self.tempdir, 'cache'))
-    self.PatchObject(cache, 'Untar')
-
-  def testFetch(self):
-    """Test that the function runs through."""
-    gs.FetchGSUtil(self.cache)
-
-  def testReuse(self):
-    """Test that second fetch is a cache hit."""
-    gs.FetchGSUtil(self.cache)
-    gs.GSUTIL_URL = None
-    gs.FetchGSUtil(self.cache)
 
 
 class AbstractGSContextTest(cros_test_lib.MockTempDirTestCase):
@@ -275,6 +255,17 @@ class GSContextTest(AbstractGSContextTest):
     ctx.SetACL('gs://abc/1')
     self.gs_mock.assertCommandContains(['setacl', '/my/file/acl',
                                         'gs://abc/1'])
+
+
+  def testCreateCached(self):
+    """Test that the function runs through."""
+    gs.GSContext.Cached(self.tempdir)
+
+  def testReuseCached(self):
+    """Test that second fetch is a cache hit."""
+    gs.GSContext.Cached(self.tempdir)
+    gs.GSUTIL_URL = None
+    gs.GSContext.Cached(self.tempdir)
 
 
 class InitBotoTest(AbstractGSContextTest):

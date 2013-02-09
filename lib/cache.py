@@ -23,10 +23,6 @@ def EntryLock(f):
       raise AssertionError(
           'Cannot call %s while holding a read lock.' % f.__name__)
 
-    if not self.acquired:
-      raise AssertionError(
-          '%s called without first calling Acquire().' % f.__name__)
-
     with self._entry_lock:
       self._entry_lock.write_lock()
       return f(self, *args, **kwargs)
@@ -169,6 +165,10 @@ class CacheReference(object):
       self._Assign(default_path)
     if lock:
       self._ReadLock()
+
+  def Unlock(self):
+    """Release read lock on the reference."""
+    self._lock.unlock()
 
 
 class DiskCache(object):

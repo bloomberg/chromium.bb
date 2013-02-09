@@ -306,32 +306,30 @@ def _FetchChromePackage(cache_dir, tempdir, gs_path):
 
   Returns: Path to the fetched chrome tarball.
   """
-  common_path = os.path.join(cache_dir, constants.COMMON_CACHE)
-  with gs.FetchGSUtil(common_path) as gs_bin:
-    ctx = gs.GSContext(gsutil_bin=gs_bin, init_boto=True)
-    files = ctx.LS(gs_path).output.splitlines()
-    files = [found for found in files if
-             _UrlBaseName(found).startswith('%s-' % constants.CHROME_PN)]
-    if not files:
-      raise Exception('No chrome package found at %s' % gs_path)
-    elif len(files) > 1:
-      # - Users should provide us with a direct link to either a stripped or
-      #   unstripped chrome package.
-      # - In the case of being provided with an archive directory, where both
-      #   stripped and unstripped chrome available, use the stripped chrome
-      #   package.
-      # - Stripped chrome pkg is chromeos-chrome-<version>.tar.gz
-      # - Unstripped chrome pkg is chromeos-chrome-<version>-unstripped.tar.gz.
-      files = [f for f in files if not 'unstripped' in f]
-      assert len(files) == 1
-      logging.warning('Multiple chrome packages found.  Using %s', files[0])
+  gs_ctx = gs.GSContext.Cached(cache_dir, init_boto=True)
+  files = gs_ctx.LS(gs_path).output.splitlines()
+  files = [found for found in files if
+           _UrlBaseName(found).startswith('%s-' % constants.CHROME_PN)]
+  if not files:
+    raise Exception('No chrome package found at %s' % gs_path)
+  elif len(files) > 1:
+    # - Users should provide us with a direct link to either a stripped or
+    #   unstripped chrome package.
+    # - In the case of being provided with an archive directory, where both
+    #   stripped and unstripped chrome available, use the stripped chrome
+    #   package.
+    # - Stripped chrome pkg is chromeos-chrome-<version>.tar.gz
+    # - Unstripped chrome pkg is chromeos-chrome-<version>-unstripped.tar.gz.
+    files = [f for f in files if not 'unstripped' in f]
+    assert len(files) == 1
+    logging.warning('Multiple chrome packages found.  Using %s', files[0])
 
-    filename = _UrlBaseName(files[0])
-    logging.info('Fetching %s.', filename)
-    ctx.Copy(files[0], tempdir, print_cmd=False)
-    chrome_path = os.path.join(tempdir, filename)
-    assert os.path.exists(chrome_path)
-    return chrome_path
+  filename = _UrlBaseName(files[0])
+  logging.info('Fetching %s.', filename)
+  gs_ctx.Copy(files[0], tempdir, print_cmd=False)
+  chrome_path = os.path.join(tempdir, filename)
+  assert os.path.exists(chrome_path)
+  return chrome_path
 
 
 def _PrepareStagingDir(options, tempdir, staging_dir):

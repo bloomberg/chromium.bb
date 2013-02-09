@@ -96,9 +96,6 @@ class RunThroughTest(ChromeSDKTest):
         partial_mock.ListRegex('cat .*/%s' % constants.METADATA_JSON),
         output=self.FAKE_METADATA)
 
-    self.fetch_gs_mock = gs_unittest.FetchGSUtilMock()
-    self.StartPatcher(self.fetch_gs_mock)
-
     self.cmd_mock = MockChromeSDKCommand(
         ['--board', self.BOARD, 'true'],
         base_args=['--cache-dir', self.tempdir])
@@ -123,9 +120,7 @@ class RunThroughTest(ChromeSDKTest):
 
   def testSpecificComponent(self):
     """Tests that ChromeSDK.Prepare() handles |components| param properly."""
-    gs_ctx = gs.GSContext()
-    sdk = cros_chrome_sdk.ChromeSDK(
-        gs_ctx, os.path.join(self.tempdir), self.BOARD)
+    sdk = cros_chrome_sdk.ChromeSDK(os.path.join(self.tempdir), self.BOARD)
     components = [constants.BASE_IMAGE_TAR, constants.CHROME_SYSROOT_TAR]
     with sdk.Prepare(version=self.VERSION,
                      components=components) as ctx:
@@ -151,9 +146,8 @@ class VersionTest(ChromeSDKTest):
 
   def setUp(self):
     os.environ.pop(cros_chrome_sdk.SDK_VERSION_ENV, None)
-    gs_ctx = gs.GSContext()
     self.sdk = cros_chrome_sdk.ChromeSDK(
-        gs_ctx, os.path.join(self.tempdir, 'cache'), self.BOARD)
+        os.path.join(self.tempdir, 'cache'), self.BOARD)
 
   def testChromeVersion(self):
     """We pick up the right LKGM version from the Chrome tree."""

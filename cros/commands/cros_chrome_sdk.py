@@ -44,15 +44,14 @@ class ChromeSDK(object):
   CONTENTS = (constants.BASE_IMAGE_TAR, constants.CHROME_SYSROOT_TAR,
               constants.IMAGE_SCRIPTS_TAR, constants.CHROME_ENV_TAR)
 
-  def __init__(self, gs_ctx, cache_dir, board):
+  def __init__(self, cache_dir, board):
     """Initialize the class.
 
     Arguments:
-      gs_ctx: An initialized GSContext() object.
       cache_dir: The toplevel cache dir to use.
       board: The board to manage the SDK for.
     """
-    self.gs_ctx = gs_ctx
+    self.gs_ctx = gs.GSContext.Cached(cache_dir, init_boto=True)
     self.cache_base = os.path.join(cache_dir, COMMAND_NAME)
     self.tarball_cache = cache.TarballCache(
         os.path.join(self.cache_base, self.TARBALL_CACHE))
@@ -347,27 +346,26 @@ class ChromeSDKCommand(cros.CrosCommand):
     if os.environ.get(SDK_VERSION_ENV) is not None:
       cros_build_lib.Die('Already in an SDK shell.')
 
-    common_path = os.path.join(self.options.cache_dir, constants.COMMON_CACHE)
-    with gs.FetchGSUtil(common_path) as gsutil_bin:
-      gs_ctx = gs.GSContext(init_boto=True, gsutil_bin=gsutil_bin)
-      self.sdk = ChromeSDK(gs_ctx, self.options.cache_dir, self.options.board)
+    # Lazy initialize because ChromeSDK creates a GSContext() object in its
+    # constructor, which may block on user input.
+    self.sdk = ChromeSDK(self.options.cache_dir, self.options.board)
 
-      prepare_version = self.options.version
-      if self.options.update:
-        prepare_version = self.sdk.UpdateDefaultVersion()
+    prepare_version = self.options.version
+    if self.options.update:
+      prepare_version = self.sdk.UpdateDefaultVersion()
 
-      with self.sdk.Prepare(version=prepare_version) as ctx:
-        env = self._SetupEnvironment(ctx.version, ctx.key_map)
-        with self._GetRCFile(env, self.options.bashrc) as rcfile:
-          bash_header = ['/bin/bash', '--noprofile', '--rcfile', rcfile]
+    with self.sdk.Prepare(version=prepare_version) as ctx:
+      env = self._SetupEnvironment(ctx.version, ctx.key_map)
+      with self._GetRCFile(env, self.options.bashrc) as rcfile:
+        bash_header = ['/bin/bash', '--noprofile', '--rcfile', rcfile]
 
-          if not self.options.cmd:
-            cmd = ['-i']
-          else:
-            # The '"$@"' expands out to the properly quoted positional args
-            # coming after the '--'.
-            cmd = ['-c', '"$@"', '--'] + self.options.cmd
+        if not self.options.cmd:
+          cmd = ['-i']
+        else:
+          # The '"$@"' expands out to the properly quoted positional args
+          # coming after the '--'.
+          cmd = ['-c', '"$@"', '--'] + self.options.cmd
 
-          cros_build_lib.RunCommand(
-              bash_header + cmd, print_cmd=False, debug_level=logging.CRITICAL,
-              error_code_ok=True)
+        cros_build_lib.RunCommand(
+            bash_header + cmd, print_cmd=False, debug_level=logging.CRITICAL,
+            error_code_ok=True)

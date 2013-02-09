@@ -5,10 +5,10 @@
 """Library to make common google storage operations more reliable.
 """
 
-import contextlib
 import logging
 import os
 
+from chromite.buildbot import constants
 from chromite.lib import cache
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
@@ -23,8 +23,6 @@ GSUTIL_BIN = None
 PUBLIC_BASE_HTTPS_URL = 'https://commondatastorage.googleapis.com/'
 PRIVATE_BASE_HTTPS_URL = 'https://sandbox.google.com/storage/'
 BASE_GS_URL = 'gs://'
-GSUTIL_TAR = 'gsutil-3.10.tar.gz'
-GSUTIL_URL = PUBLIC_BASE_HTTPS_URL + 'chromeos-public/%s' % GSUTIL_TAR
 
 
 def CanonicalizeURL(url, strict=False):
@@ -62,32 +60,6 @@ def GetGsURL(bucket, for_gsutil=False, public=True, suburl=''):
   return '%s%s/%s' % (urlbase, bucket, suburl)
 
 
-@contextlib.contextmanager
-def FetchGSUtil(tarball_cache_dir):
-  """Reuses previously fetched GSUtil, performing the fetch if necessary.
-
-  Arguments:
-    tarball_cache_dir: The path of the cache that stores previously fetched
-      gsutil tarballs.
-  """
-  tar_cache = cache.TarballCache(tarball_cache_dir)
-  key = (GSUTIL_TAR,)
-
-  with tar_cache.Lookup(key) as ref:
-    if ref.Exists(lock=True):
-      logging.info('Reusing cached gsutil.')
-    else:
-      logging.info('Fetching gsutil.')
-      with osutils.TempDirContextManager(
-          base_dir=tar_cache.staging_dir) as tempdir:
-        gsutil_tar = os.path.join(tempdir, GSUTIL_TAR)
-        cros_build_lib.RunCurl([GSUTIL_URL, '-o', gsutil_tar],
-                               debug_level=logging.DEBUG)
-        ref.SetDefault(gsutil_tar, lock=True)
-
-    yield os.path.join(ref.path, 'gsutil', 'gsutil')
-
-
 class GSContextException(Exception):
   """Thrown when expected google storage preconditions are not met."""
 
@@ -110,6 +82,9 @@ class GSContext(object):
   # (1*sleep) the first time, then (2*sleep), continuing via attempt * sleep.
   DEFAULT_SLEEP_TIME = 60
 
+  GSUTIL_TAR = 'gsutil-3.10.tar.gz'
+  GSUTIL_URL = PUBLIC_BASE_HTTPS_URL + 'chromeos-public/%s' % GSUTIL_TAR
+
   @classmethod
   def GetDefaultGSUtilBin(cls):
     if cls.DEFAULT_GSUTIL_BIN is None:
@@ -118,6 +93,39 @@ class GSContext(object):
         gsutil_bin = osutils.Which('gsutil')
       cls.DEFAULT_GSUTIL_BIN = gsutil_bin
     return cls.DEFAULT_GSUTIL_BIN
+
+  @classmethod
+  def Cached(cls, cache_dir, *args, **kwargs):
+    """Reuses previously fetched GSUtil, performing the fetch if necessary.
+
+    Arguments:
+      cache_dir: The toplevel cache dir.
+      *args, **kwargs:  Arguments that are passed through to the GSContext()
+        constructor.
+
+    Returns:
+      An initialized GSContext() object.
+    """
+    common_path = os.path.join(cache_dir, constants.COMMON_CACHE)
+    tar_cache = cache.TarballCache(common_path)
+    key = (cls.GSUTIL_TAR,)
+
+    # The common cache will not be LRU, removing the need to hold a read
+    # lock on the cached gsutil.
+    ref = tar_cache.Lookup(key)
+    if ref.Exists():
+      logging.info('Reusing cached gsutil.')
+    else:
+      logging.info('Fetching gsutil.')
+      with osutils.TempDirContextManager(
+          base_dir=tar_cache.staging_dir) as tempdir:
+        gsutil_tar = os.path.join(tempdir, cls.GSUTIL_TAR)
+        cros_build_lib.RunCurl([cls.GSUTIL_URL, '-o', gsutil_tar],
+                               debug_level=logging.DEBUG)
+        ref.SetDefault(gsutil_tar)
+
+    gsutil_bin = os.path.join(ref.path, 'gsutil', 'gsutil')
+    return cls(*args, gsutil_bin=gsutil_bin, **kwargs)
 
   def __init__(self, boto_file=None, acl_file=None, dry_run=False,
                gsutil_bin=None, init_boto=False, retries=None, sleep=None):
