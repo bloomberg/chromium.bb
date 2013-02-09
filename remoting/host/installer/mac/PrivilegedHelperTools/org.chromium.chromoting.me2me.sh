@@ -101,7 +101,7 @@ run_host() {
               "$EXIT_CODE" -eq "$PERMISSION_DENIED_PARENTAL_CONTROL" ||
               ("$EXIT_CODE" -ge "$MIN_PERMANENT_ERROR_EXIT_CODE" && \
               "$EXIT_CODE" -le "$MAX_PERMANENT_ERROR_EXIT_CODE") ]]; then
-        echo "Host returned permanent exit code $EXIT_CODE"
+        echo "Host returned permanent exit code $EXIT_CODE at ""$(date)"""
         if [[ "$EXIT_CODE" -eq 101 ]]; then
           # Exit code 101 is "hostID deleted", which indicates that the host
           # was taken off-line remotely. To prevent the host being restarted
@@ -118,7 +118,7 @@ run_host() {
         # signals temporarily in case the script has to sleep to throttle host
         # relaunches. While throttling, there is no host process to which to
         # forward the signal, so the default behaviour should be restored.
-        echo "Host returned non-permanent exit code $EXIT_CODE"
+        echo "Host returned non-permanent exit code $EXIT_CODE at ""$(date)"""
         trap - $SIGNAL_LIST
         HOST_PID=0
         break
@@ -153,6 +153,7 @@ elif [[ "$1" = "--relaunch-prefpane" ]]; then
   cat 2>/dev/null || true
   open "$PREF_PANE_BUNDLE"
 elif [[ "$1" = "--run-from-launchd" ]]; then
+  echo Host started for user $USER at $"$(date)"
   run_host
 else
   echo $$

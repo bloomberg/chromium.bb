@@ -210,6 +210,7 @@
       'host/installer/mac/ChromotingHostUninstaller.pkgproj',
       'host/installer/mac/LaunchAgents/org.chromium.chromoting.plist',
       'host/installer/mac/PrivilegedHelperTools/org.chromium.chromoting.me2me.sh',
+      'host/installer/mac/Config/org.chromium.chromoting.conf',
       'host/installer/mac/Scripts/keystone_install.sh',
       'host/installer/mac/Scripts/remoting_postflight.sh',
       'host/installer/mac/Scripts/remoting_preflight.sh',

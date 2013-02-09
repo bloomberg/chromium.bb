@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>Disabled</key>
+	<false/>
 	<key>Label</key>
 	<string>org.chromium.chromoting</string>
 	<key>LimitLoadToSessionType</key>
@@ -9,14 +11,16 @@
 		<string>Aqua</string>
 		<string>LoginWindow</string>
 	</array>
-	<key>RunAtLoad</key>
-	<true/>
-	<key>Disabled</key>
-	<false/>
 	<key>ProgramArguments</key>
 	<array>
 		<string>/Library/PrivilegedHelperTools/org.chromium.chromoting.me2me.sh</string>
 		<string>--run-from-launchd</string>
 	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/var/log/org.chromium.chromoting.log</string>
+	<key>StandardOutPath</key>
+	<string>/var/log/org.chromium.chromoting.log</string>
 </dict>
 </plist>

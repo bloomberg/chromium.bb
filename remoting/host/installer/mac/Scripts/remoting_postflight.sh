@@ -13,6 +13,7 @@ PLIST=/Library/LaunchAgents/org.chromium.chromoting.plist
 PAM_CONFIG=/etc/pam.d/chrome-remote-desktop
 ENABLED_FILE="$HELPERTOOLS/$NAME.me2me_enabled"
 ENABLED_FILE_BACKUP="$ENABLED_FILE.backup"
+LOG_FILE=/var/log/org.chromium.chromoting.log
 
 KSADMIN=/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/Contents/MacOS/ksadmin
 KSUPDATE=https://tools.google.com/service/update2
@@ -62,6 +63,14 @@ EOF
 else
   logger PAM config has local edits. Not updating.
 fi
+
+# Create the log file (if this isn't created ahead of time
+# then directing output from the service there won't work).
+# Make sure admins have write privileges (CRD users are
+# typically admins)
+touch "$LOG_FILE"
+chown :admin "$LOG_FILE"
+chmod 660 "$LOG_FILE"
 
 # Load the service.
 # The launchctl command we'd like to run:

@@ -12,6 +12,8 @@ namespace remoting {
 #define HELPER_TOOLS_DIR "/Library/PrivilegedHelperTools/"
 #define LAUNCH_AGENTS_DIR "/Library/LaunchAgents/"
 #define PREFERENCE_PANES_DIR "/Library/PreferencePanes/"
+#define LOG_DIR "/var/log/"
+#define LOG_CONFIG_DIR "/etc/newsyslog.d/"
 
 const char kServiceName[] = SERVICE_NAME;
 
@@ -30,6 +32,9 @@ const char kHostBinaryPath[] = HELPER_TOOLS_DIR SERVICE_NAME ".me2me_host.app";
 const char kHostEnabledPath[] = HELPER_TOOLS_DIR SERVICE_NAME ".me2me_enabled";
 
 const char kServicePlistPath[] = LAUNCH_AGENTS_DIR SERVICE_NAME ".plist";
+
+const char kLogFilePath[] = LOG_DIR SERVICE_NAME ".log";
+const char kLogFileConfigPath[] = LOG_CONFIG_DIR SERVICE_NAME ".conf";
 
 const char kBrandedUninstallerPath[] = APPLICATIONS_DIR
     "Chrome Remote Desktop Host Uninstaller.app";
