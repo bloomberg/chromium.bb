@@ -23,6 +23,17 @@ class ATL_NO_VTABLE __declspec(uuid(DAEMON_CONTROLLER_CLSID)) ElevatedController
       public ATL::IDispatchImpl<IDaemonControl2, &IID_IDaemonControl2,
                                 &LIBID_ChromotingElevatedControllerLib, 1, 1> {
  public:
+  // Declare the class factory that does not lock the ATL module. This is the
+  // same DECLARE_CLASSFACTORY() with the exception that ATL::CComObjectNoLock
+  // is used unconditionally.
+  //
+  // By default ATL generates locking class factories (by wrapping them in
+  // ATL::CComObjectCached) for classes hosted in a DLL. This class is compiled
+  // into a DLL but it is registered as an out-of-process class, so its class
+  // factory should not use locking.
+  typedef ATL::CComCreator<ATL::CComObjectNoLock<ATL::CComClassFactory> >
+      _ClassFactoryCreatorClass;
+
   ElevatedController();
 
   HRESULT FinalConstruct();
