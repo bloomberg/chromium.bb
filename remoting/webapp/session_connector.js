@@ -166,6 +166,15 @@ remoting.SessionConnector.prototype.cancel = function() {
 };
 
 /**
+ * Get the connection mode (Me2Me or IT2Me)
+ *
+ * @return {remoting.ClientSession.Mode}
+ */
+remoting.SessionConnector.prototype.getConnectionMode = function() {
+  return this.connectionMode_;
+};
+
+/**
  * Continue an IT2Me connection once an access token has been obtained.
  *
  * @param {string} token An OAuth2 access token.

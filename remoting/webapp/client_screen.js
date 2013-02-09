@@ -31,7 +31,7 @@ remoting.connectIT2Me = function() {
   remoting.connector = new remoting.SessionConnector(
       document.getElementById('session-mode'),
       remoting.onConnected,
-      remoting.showErrorMessage);
+      showConnectError_);
   var accessCode = document.getElementById('access-code-entry').value;
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
   remoting.connector.connectIT2Me(accessCode);
@@ -152,7 +152,9 @@ function showConnectError_(errorTag) {
   var errorDiv = document.getElementById('connect-error-message');
   l10n.localizeElementFromTag(errorDiv, /** @type {string} */ (errorTag));
   remoting.accessCode = '';
-  if (remoting.clientSession.mode == remoting.ClientSession.Mode.IT2ME) {
+  var mode = remoting.clientSession ? remoting.clientSession.mode
+                                    : remoting.connector.getConnectionMode();
+  if (mode == remoting.ClientSession.Mode.IT2ME) {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
   } else {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_ME2ME);
@@ -209,7 +211,7 @@ remoting.connectMe2Me = function(hostId) {
   remoting.connector = new remoting.SessionConnector(
       document.getElementById('session-mode'),
       remoting.onConnected,
-      remoting.showErrorMessage);
+      showConnectError_);
   /** @type {Element} */
   var pinForm = document.getElementById('pin-form');
   /** @param {Event} event */
