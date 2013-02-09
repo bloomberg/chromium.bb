@@ -5,6 +5,8 @@
 #ifndef ASH_SYSTEM_TRAY_TRAY_EVENT_FILTER_H_
 #define ASH_SYSTEM_TRAY_TRAY_EVENT_FILTER_H_
 
+#include <set>
+
 #include "base/basictypes.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_handler.h"
@@ -22,8 +24,11 @@ class TrayBubbleWrapper;
 
 class TrayEventFilter : public ui::EventHandler {
  public:
-  explicit TrayEventFilter(TrayBubbleWrapper* wrapper);
+  explicit TrayEventFilter();
   virtual ~TrayEventFilter();
+
+  void AddWrapper(TrayBubbleWrapper* wrapper);
+  void RemoveWrapper(TrayBubbleWrapper* wrapper);
 
   // Overridden from ui::EventHandler.
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
@@ -33,7 +38,7 @@ class TrayEventFilter : public ui::EventHandler {
   // Returns true if the event is handled.
   bool ProcessLocatedEvent(ui::LocatedEvent* event);
 
-  TrayBubbleWrapper* wrapper_;
+  std::set<TrayBubbleWrapper*> wrappers_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayEventFilter);
 };

@@ -12,6 +12,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_event_filter.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_animations.h"
@@ -181,6 +182,7 @@ TrayBackgroundView::TrayBackgroundView(
 
   tray_container_ = new TrayContainer(shelf_alignment_);
   SetContents(tray_container_);
+  tray_event_filter_.reset(new TrayEventFilter);
 }
 
 TrayBackgroundView::~TrayBackgroundView() {

@@ -74,9 +74,6 @@ class WebNotificationBubbleWrapper {
 
   // Convenience accessors.
   views::TrayBubbleView* bubble_view() const { return bubble_->bubble_view(); }
-  views::Widget* bubble_widget() const {
-    return bubble_wrapper_->bubble_widget();
-  }
 
  private:
   scoped_ptr<message_center::MessageBubbleBase> bubble_;

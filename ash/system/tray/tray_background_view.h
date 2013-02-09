@@ -16,6 +16,7 @@ namespace internal {
 
 class ShelfLayoutManager;
 class StatusAreaWidget;
+class TrayEventFilter;
 class TrayBackground;
 // Base class for children of StatusAreaWidget: SystemTray, WebNotificationTray.
 // This class handles setting and animating the background when the Launcher
@@ -128,6 +129,7 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   }
   TrayContainer* tray_container() const { return tray_container_; }
   ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
+  TrayEventFilter* tray_event_filter() { return tray_event_filter_.get(); }
 
   ShelfLayoutManager* GetShelfLayoutManager();
 
@@ -156,6 +158,7 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   internal::BackgroundAnimator hide_background_animator_;
   internal::BackgroundAnimator hover_background_animator_;
   scoped_ptr<TrayWidgetObserver> widget_observer_;
+  scoped_ptr<TrayEventFilter> tray_event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBackgroundView);
 };

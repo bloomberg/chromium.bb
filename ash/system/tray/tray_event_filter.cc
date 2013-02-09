@@ -21,13 +21,24 @@
 namespace ash {
 namespace internal {
 
-TrayEventFilter::TrayEventFilter(TrayBubbleWrapper* wrapper)
-    : wrapper_(wrapper) {
-  ash::Shell::GetInstance()->AddPreTargetHandler(this);
+TrayEventFilter::TrayEventFilter() {
 }
 
 TrayEventFilter::~TrayEventFilter() {
-  ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+  DCHECK(wrappers_.empty());
+}
+
+void TrayEventFilter::AddWrapper(TrayBubbleWrapper* wrapper) {
+  bool was_empty = wrappers_.empty();
+  wrappers_.insert(wrapper);
+  if (was_empty && !wrappers_.empty())
+    ash::Shell::GetInstance()->AddPreTargetHandler(this);
+}
+
+void TrayEventFilter::RemoveWrapper(TrayBubbleWrapper* wrapper) {
+  wrappers_.erase(wrapper);
+  if (wrappers_.empty())
+    ash::Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
 void TrayEventFilter::OnMouseEvent(ui::MouseEvent* event) {
@@ -53,30 +64,50 @@ bool TrayEventFilter::ProcessLocatedEvent(ui::LocatedEvent* event) {
       return false;
     }
   }
-  views::Widget* bubble_widget = wrapper_->bubble_widget();
-  if (!bubble_widget)
-    return false;
 
-  gfx::Rect bounds = bubble_widget->GetWindowBoundsInScreen();
-  bounds.Inset(wrapper_->bubble_view()->GetBorderInsets());
-  aura::RootWindow* root = bubble_widget->GetNativeView()->GetRootWindow();
-  aura::client::ScreenPositionClient* screen_position_client =
-      aura::client::GetScreenPositionClient(root);
-  gfx::Point screen_point(event->root_location());
-  screen_position_client->ConvertPointToScreen(root, &screen_point);
+  // Check the boundary for all wrappers, and do not handle the event if it
+  // happens inside of any of those wrappers.
+  for (std::set<TrayBubbleWrapper*>::const_iterator iter = wrappers_.begin();
+       iter != wrappers_.end(); ++iter) {
+    const TrayBubbleWrapper* wrapper = *iter;
+    const views::Widget* bubble_widget = wrapper->bubble_widget();
+    if (!bubble_widget)
+      continue;
 
-  if (bounds.Contains(screen_point))
-    return false;
-  if (wrapper_->tray()) {
-    // If the user clicks on the parent tray, don't process the event here,
-    // let the tray logic handle the event and determine show/hide behavior.
-    bounds = wrapper_->tray()->GetBoundsInScreen();
+    gfx::Rect bounds = bubble_widget->GetWindowBoundsInScreen();
+    bounds.Inset(wrapper->bubble_view()->GetBorderInsets());
+    aura::RootWindow* root = bubble_widget->GetNativeView()->GetRootWindow();
+    aura::client::ScreenPositionClient* screen_position_client =
+        aura::client::GetScreenPositionClient(root);
+    gfx::Point screen_point(event->root_location());
+    screen_position_client->ConvertPointToScreen(root, &screen_point);
+
     if (bounds.Contains(screen_point))
       return false;
+    if (wrapper->tray()) {
+      // If the user clicks on the parent tray, don't process the event here,
+      // let the tray logic handle the event and determine show/hide behavior.
+      bounds = wrapper->tray()->GetBoundsInScreen();
+      if (bounds.Contains(screen_point))
+        return false;
+    }
   }
+
   // Handle clicking outside the bubble and tray and return true if the
   // event was handled.
-  return wrapper_->tray()->ClickedOutsideBubble();
+  // Cannot iterate |wrappers_| directly, because clicking outside will remove
+  // the wrapper, which shrinks |wrappers_| unsafely.
+  std::set<TrayBackgroundView*> trays;
+  for (std::set<TrayBubbleWrapper*>::iterator iter = wrappers_.begin();
+       iter != wrappers_.end(); ++iter) {
+    trays.insert((*iter)->tray());
+  }
+  bool handled = false;
+  for (std::set<TrayBackgroundView*>::iterator iter = trays.begin();
+       iter != trays.end(); ++iter) {
+    handled |= (*iter)->ClickedOutsideBubble();
+  }
+  return handled;
 }
 
 }  // namespace internal

@@ -26,11 +26,11 @@ TrayBubbleWrapper::TrayBubbleWrapper(TrayBackgroundView* tray,
   tray_->UpdateBubbleViewArrow(bubble_view_);
   bubble_view_->InitializeAndShowBubble();
 
-  tray_event_filter_.reset(new TrayEventFilter(this));
+  tray->tray_event_filter()->AddWrapper(this);
 }
 
 TrayBubbleWrapper::~TrayBubbleWrapper() {
-  tray_event_filter_.reset();
+  tray_->tray_event_filter()->RemoveWrapper(this);
   if (bubble_widget_) {
     bubble_widget_->RemoveObserver(this);
     bubble_widget_->Close();
