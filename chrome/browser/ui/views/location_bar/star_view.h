@@ -10,10 +10,6 @@
 
 class CommandUpdater;
 
-namespace views {
-class MouseEvent;
-}
-
 class StarView : public views::ImageView,
                  public TouchableLocationBarView {
  public:

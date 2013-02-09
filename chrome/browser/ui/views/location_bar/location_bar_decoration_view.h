@@ -22,15 +22,13 @@ namespace content {
 class WebContents;
 }
 
-namespace views {
-class GestureEvent;
-class ImageView;
-class Label;
-class MouseEvent;
-}
-
 namespace ui {
 class SlideAnimation;
+}
+
+namespace views {
+class ImageView;
+class Label;
 }
 
 // A base class for location bar decorations showing icons and label animations.

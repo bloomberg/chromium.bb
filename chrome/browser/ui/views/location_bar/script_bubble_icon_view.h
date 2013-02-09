@@ -11,10 +11,6 @@
 
 class CommandUpdater;
 
-namespace views {
-class MouseEvent;
-}
-
 // The ScriptBubbleIconView is the code behind the script bubble icon
 // that we show in the Omnibox badged with a number to represent how many
 // extensions are running content_scripts in the current page.

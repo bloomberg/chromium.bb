@@ -17,20 +17,15 @@
 using ui::OSExchangeData;
 
 namespace gfx {
-
 class Font;
-
-}  // namespace gfx
+}
 
 namespace ui {
-
 class Accelerator;
-
-}  // namespace ui
+}
 
 namespace views {
 
-class DropTargetEvent;
 class MenuButton;
 
 // MenuDelegate --------------------------------------------------------------

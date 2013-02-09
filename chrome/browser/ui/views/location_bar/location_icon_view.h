@@ -10,16 +10,12 @@
 #include "ui/views/controls/image_view.h"
 
 class LocationBarView;
-namespace views {
-class MouseEvent;
-}
 
 // LocationIconView is used to display an icon to the left of the edit field.
 // This shows the user's current action while editing, the page security
 // status on https pages, or a globe for other URLs.
-class LocationIconView
-    : public views::ImageView,
-      public TouchableLocationBarView {
+class LocationIconView : public views::ImageView,
+                         public TouchableLocationBarView {
  public:
   explicit LocationIconView(LocationBarView* location_bar);
   virtual ~LocationIconView();

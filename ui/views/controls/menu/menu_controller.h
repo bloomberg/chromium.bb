@@ -29,7 +29,6 @@ class Screen;
 }
 namespace views {
 
-class DropTargetEvent;
 class MenuButton;
 class MenuHostRootView;
 class MouseEvent;
@@ -46,9 +45,8 @@ class MenuRunnerImpl;
 // MenuController is used internally by the various menu classes to manage
 // showing, selecting and drag/drop for menus. All relevant events are
 // forwarded to the MenuController from SubmenuView and MenuHost.
-class VIEWS_EXPORT MenuController
-    : public MessageLoop::Dispatcher,
-      public WidgetObserver {
+class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher,
+                                    public WidgetObserver {
  public:
   // Enumeration of how the menu should exit.
   enum ExitType {

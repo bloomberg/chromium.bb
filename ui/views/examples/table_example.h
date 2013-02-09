@@ -23,17 +23,15 @@ class ImageSkia;
 
 namespace views {
 class Checkbox;
-class Event;
 class TableView;
 
 namespace examples {
 
-class TableExample
-    : public ExampleBase,
-      public ui::TableModel,
-      public TableGrouper,
-      public TableViewObserver,
-      public ButtonListener {
+class TableExample : public ExampleBase,
+                     public ui::TableModel,
+                     public TableGrouper,
+                     public TableViewObserver,
+                     public ButtonListener {
  public:
   TableExample();
   virtual ~TableExample();
