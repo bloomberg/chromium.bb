@@ -164,35 +164,33 @@ void AutofillDialogControllerImpl::Show() {
     return;
   }
 
-  int row_id = 0;
-
   const DetailInput kEmailInputs[] = {
-    { ++row_id, EMAIL_ADDRESS, "Email address" },
+    { 1, EMAIL_ADDRESS, "Email address" },
   };
 
   const DetailInput kCCInputs[] = {
-    { ++row_id, CREDIT_CARD_NUMBER, "Card number" },
-    { ++row_id, CREDIT_CARD_EXP_MONTH },
-    {   row_id, CREDIT_CARD_EXP_4_DIGIT_YEAR },
-    {   row_id, CREDIT_CARD_VERIFICATION_CODE, "CVC" },
-    { ++row_id, CREDIT_CARD_NAME, "Cardholder name" },
+    { 2, CREDIT_CARD_NUMBER, "Card number" },
+    { 3, CREDIT_CARD_EXP_MONTH },
+    { 3, CREDIT_CARD_EXP_4_DIGIT_YEAR },
+    { 3, CREDIT_CARD_VERIFICATION_CODE, "CVC" },
+    { 4, CREDIT_CARD_NAME, "Cardholder name" },
   };
 
   const DetailInput kBillingInputs[] = {
-    { ++row_id, ADDRESS_HOME_LINE1, "Street address", "billing" },
-    { ++row_id, ADDRESS_HOME_LINE2, "Street address (optional)", "billing" },
-    { ++row_id, ADDRESS_HOME_CITY, "City", "billing" },
-    { ++row_id, ADDRESS_HOME_STATE, "State", "billing" },
-    {   row_id, ADDRESS_HOME_ZIP, "ZIP code", "billing", 0.5 },
+    { 5, ADDRESS_HOME_LINE1, "Street address", "billing" },
+    { 6, ADDRESS_HOME_LINE2, "Street address (optional)", "billing" },
+    { 7, ADDRESS_HOME_CITY, "City", "billing" },
+    { 8, ADDRESS_HOME_STATE, "State", "billing" },
+    { 8, ADDRESS_HOME_ZIP, "ZIP code", "billing", 0.5 },
   };
 
   const DetailInput kShippingInputs[] = {
-    { ++row_id, NAME_FULL, "Full name", "shipping" },
-    { ++row_id, ADDRESS_HOME_LINE1, "Street address", "shipping" },
-    { ++row_id, ADDRESS_HOME_LINE2, "Street address (optional)", "shipping" },
-    { ++row_id, ADDRESS_HOME_CITY, "City", "shipping" },
-    { ++row_id, ADDRESS_HOME_STATE, "State", "shipping" },
-    {   row_id, ADDRESS_HOME_ZIP, "ZIP code", "shipping", 0.5 },
+    { 9, NAME_FULL, "Full name", "shipping" },
+    { 10, ADDRESS_HOME_LINE1, "Street address", "shipping" },
+    { 11, ADDRESS_HOME_LINE2, "Street address (optional)", "shipping" },
+    { 12, ADDRESS_HOME_CITY, "City", "shipping" },
+    { 13, ADDRESS_HOME_STATE, "State", "shipping" },
+    { 13, ADDRESS_HOME_ZIP, "ZIP code", "shipping", 0.5 },
   };
 
   FilterInputs(form_structure_,
