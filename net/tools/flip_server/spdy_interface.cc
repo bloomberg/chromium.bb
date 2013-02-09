@@ -255,7 +255,7 @@ void SpdySM::OnHeaders(SpdyStreamId stream_id,
 }
 
 void SpdySM::OnRstStream(SpdyStreamId stream_id,
-                         SpdyStatusCodes status) {
+                         SpdyRstStreamStatus status) {
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnRstStream("
           << stream_id << ")";
   client_output_ordering_.RemoveStreamId(stream_id);

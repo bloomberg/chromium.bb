@@ -78,7 +78,7 @@ SpdyFrame* ConstructSpdyWebSocketHandshakeRequestFrame(
     kDefaultCredentialSlot,
     CONTROL_FLAG_NONE,
     kDefaultCompressed,
-    INVALID,
+    RST_STREAM_INVALID,
     kDefaultDataPointer,
     kDefaultDataLength,
     DATA_FLAG_NONE
@@ -108,7 +108,7 @@ SpdyFrame* ConstructSpdyWebSocketHandshakeResponseFrame(
     kDefaultCredentialSlot,
     CONTROL_FLAG_NONE,
     kDefaultCompressed,
-    INVALID,
+    RST_STREAM_INVALID,
     kDefaultDataPointer,
     kDefaultDataLength,
     DATA_FLAG_NONE

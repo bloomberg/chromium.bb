@@ -411,24 +411,24 @@ enum SpdySettingsIds {
   SETTINGS_INITIAL_WINDOW_SIZE = 0x7
 };
 
-// Status codes, as used in control frames (primarily RST_STREAM).
-// TODO(hkhalil): Rename to SpdyRstStreamStatus
-enum SpdyStatusCodes {
-  INVALID = 0,
-  PROTOCOL_ERROR = 1,
-  INVALID_STREAM = 2,
-  REFUSED_STREAM = 3,
-  UNSUPPORTED_VERSION = 4,
-  CANCEL = 5,
-  INTERNAL_ERROR = 6,
-  FLOW_CONTROL_ERROR = 7,
-  STREAM_IN_USE = 8,
-  STREAM_ALREADY_CLOSED = 9,
-  INVALID_CREDENTIALS = 10,
-  FRAME_TOO_LARGE = 11,
-  NUM_STATUS_CODES = 12
+// Status codes for RST_STREAM frames.
+enum SpdyRstStreamStatus {
+  RST_STREAM_INVALID = 0,
+  RST_STREAM_PROTOCOL_ERROR = 1,
+  RST_STREAM_INVALID_STREAM = 2,
+  RST_STREAM_REFUSED_STREAM = 3,
+  RST_STREAM_UNSUPPORTED_VERSION = 4,
+  RST_STREAM_CANCEL = 5,
+  RST_STREAM_INTERNAL_ERROR = 6,
+  RST_STREAM_FLOW_CONTROL_ERROR = 7,
+  RST_STREAM_STREAM_IN_USE = 8,
+  RST_STREAM_STREAM_ALREADY_CLOSED = 9,
+  RST_STREAM_INVALID_CREDENTIALS = 10,
+  RST_STREAM_FRAME_TOO_LARGE = 11,
+  RST_STREAM_NUM_STATUS_CODES = 12
 };
 
+// Status codes for GOAWAY frames.
 enum SpdyGoAwayStatus {
   GOAWAY_INVALID = -1,
   GOAWAY_OK = 0,
@@ -812,15 +812,15 @@ class SpdyRstStreamControlFrame : public SpdyControlFrame {
     return ntohl(block()->stream_id_) & kStreamIdMask;
   }
 
-  SpdyStatusCodes status() const {
-    SpdyStatusCodes status =
-        static_cast<SpdyStatusCodes>(ntohl(block()->status_));
-    if (status < INVALID || status >= NUM_STATUS_CODES) {
-      status = INVALID;
+  SpdyRstStreamStatus status() const {
+    SpdyRstStreamStatus status =
+        static_cast<SpdyRstStreamStatus>(ntohl(block()->status_));
+    if (status < RST_STREAM_INVALID || status >= RST_STREAM_NUM_STATUS_CODES) {
+      status = RST_STREAM_INVALID;
     }
     return status;
   }
-  void set_status(SpdyStatusCodes status) {
+  void set_status(SpdyRstStreamStatus status) {
     mutable_block()->status_ = htonl(static_cast<uint32>(status));
   }
 

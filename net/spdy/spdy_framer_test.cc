@@ -50,7 +50,7 @@ class MockVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD3(OnSetting, void(SpdySettingsIds id, uint8 flags, uint32 value));
   MOCK_METHOD1(OnPing, void(uint32 unique_id));
   MOCK_METHOD2(OnRstStream, void(SpdyStreamId stream_id,
-                                 SpdyStatusCodes status));
+                                 SpdyRstStreamStatus status));
   MOCK_METHOD2(OnGoAway, void(SpdyStreamId last_accepted_stream_id,
                               SpdyGoAwayStatus status));
   MOCK_METHOD2(OnWindowUpdate, void(SpdyStreamId stream_id,
@@ -204,7 +204,7 @@ class SpdyFramerTestUtil {
       LOG(FATAL);
     }
     virtual void OnRstStream(SpdyStreamId stream_id,
-                             SpdyStatusCodes status) OVERRIDE {
+                             SpdyRstStreamStatus status) OVERRIDE {
       LOG(FATAL);
     }
     virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
@@ -417,7 +417,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   }
 
   virtual void OnRstStream(SpdyStreamId stream_id,
-                           SpdyStatusCodes status) OVERRIDE {
+                           SpdyRstStreamStatus status) OVERRIDE {
     fin_frame_count_++;
   }
 
@@ -2010,7 +2010,7 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
       0x00, 0x00, 0x00, 0x01,
     };
     scoped_ptr<SpdyRstStreamControlFrame> frame(
-        framer.CreateRstStream(1, PROTOCOL_ERROR));
+        framer.CreateRstStream(1, RST_STREAM_PROTOCOL_ERROR));
     CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
     EXPECT_EQ(1u, SpdyFramer::GetControlFrameStreamId(frame.get()));
   }
@@ -2023,8 +2023,8 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
       0x7f, 0xff, 0xff, 0xff,
       0x00, 0x00, 0x00, 0x01,
     };
-    scoped_ptr<SpdyFrame> frame(framer.CreateRstStream(0x7FFFFFFF,
-                                                       PROTOCOL_ERROR));
+    scoped_ptr<SpdyFrame> frame(framer.CreateRstStream(
+        0x7FFFFFFF, RST_STREAM_PROTOCOL_ERROR));
     CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
   }
 
@@ -2036,8 +2036,8 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
       0x7f, 0xff, 0xff, 0xff,
       0x00, 0x00, 0x00, 0x06,
     };
-    scoped_ptr<SpdyFrame> frame(framer.CreateRstStream(0x7FFFFFFF,
-                                                       INTERNAL_ERROR));
+    scoped_ptr<SpdyFrame> frame(framer.CreateRstStream(
+        0x7FFFFFFF, RST_STREAM_INTERNAL_ERROR));
     CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
   }
 }
@@ -3093,23 +3093,23 @@ TEST_P(SpdyFramerTest, ErrorCodeToStringTest) {
 
 TEST_P(SpdyFramerTest, StatusCodeToStringTest) {
   EXPECT_STREQ("INVALID",
-               SpdyFramer::StatusCodeToString(INVALID));
+               SpdyFramer::StatusCodeToString(RST_STREAM_INVALID));
   EXPECT_STREQ("PROTOCOL_ERROR",
-               SpdyFramer::StatusCodeToString(PROTOCOL_ERROR));
+               SpdyFramer::StatusCodeToString(RST_STREAM_PROTOCOL_ERROR));
   EXPECT_STREQ("INVALID_STREAM",
-               SpdyFramer::StatusCodeToString(INVALID_STREAM));
+               SpdyFramer::StatusCodeToString(RST_STREAM_INVALID_STREAM));
   EXPECT_STREQ("REFUSED_STREAM",
-               SpdyFramer::StatusCodeToString(REFUSED_STREAM));
+               SpdyFramer::StatusCodeToString(RST_STREAM_REFUSED_STREAM));
   EXPECT_STREQ("UNSUPPORTED_VERSION",
-               SpdyFramer::StatusCodeToString(UNSUPPORTED_VERSION));
+               SpdyFramer::StatusCodeToString(RST_STREAM_UNSUPPORTED_VERSION));
   EXPECT_STREQ("CANCEL",
-               SpdyFramer::StatusCodeToString(CANCEL));
+               SpdyFramer::StatusCodeToString(RST_STREAM_CANCEL));
   EXPECT_STREQ("INTERNAL_ERROR",
-               SpdyFramer::StatusCodeToString(INTERNAL_ERROR));
+               SpdyFramer::StatusCodeToString(RST_STREAM_INTERNAL_ERROR));
   EXPECT_STREQ("FLOW_CONTROL_ERROR",
-               SpdyFramer::StatusCodeToString(FLOW_CONTROL_ERROR));
+               SpdyFramer::StatusCodeToString(RST_STREAM_FLOW_CONTROL_ERROR));
   EXPECT_STREQ("UNKNOWN_STATUS",
-               SpdyFramer::StatusCodeToString(NUM_STATUS_CODES));
+               SpdyFramer::StatusCodeToString(RST_STREAM_NUM_STATUS_CODES));
 }
 
 TEST_P(SpdyFramerTest, ControlTypeToStringTest) {

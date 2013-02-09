@@ -101,7 +101,7 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
 
   // Called when a RST_STREAM frame has been parsed.
   virtual void OnRstStream(SpdyStreamId stream_id,
-                           SpdyStatusCodes status) OVERRIDE;
+                           SpdyRstStreamStatus status) OVERRIDE;
 
   // Called when a GOAWAY frame has been parsed.
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,

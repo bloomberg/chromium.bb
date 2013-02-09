@@ -213,29 +213,29 @@ const char* SpdyFramer::ErrorCodeToString(int error_code) {
 
 const char* SpdyFramer::StatusCodeToString(int status_code) {
   switch (status_code) {
-    case INVALID:
+    case RST_STREAM_INVALID:
       return "INVALID";
-    case PROTOCOL_ERROR:
+    case RST_STREAM_PROTOCOL_ERROR:
       return "PROTOCOL_ERROR";
-    case INVALID_STREAM:
+    case RST_STREAM_INVALID_STREAM:
       return "INVALID_STREAM";
-    case REFUSED_STREAM:
+    case RST_STREAM_REFUSED_STREAM:
       return "REFUSED_STREAM";
-    case UNSUPPORTED_VERSION:
+    case RST_STREAM_UNSUPPORTED_VERSION:
       return "UNSUPPORTED_VERSION";
-    case CANCEL:
+    case RST_STREAM_CANCEL:
       return "CANCEL";
-    case INTERNAL_ERROR:
+    case RST_STREAM_INTERNAL_ERROR:
       return "INTERNAL_ERROR";
-    case FLOW_CONTROL_ERROR:
+    case RST_STREAM_FLOW_CONTROL_ERROR:
       return "FLOW_CONTROL_ERROR";
-    case STREAM_IN_USE:
+    case RST_STREAM_STREAM_IN_USE:
       return "STREAM_IN_USE";
-    case STREAM_ALREADY_CLOSED:
+    case RST_STREAM_STREAM_ALREADY_CLOSED:
       return "STREAM_ALREADY_CLOSED";
-    case INVALID_CREDENTIALS:
+    case RST_STREAM_INVALID_CREDENTIALS:
       return "INVALID_CREDENTIALS";
-    case FRAME_TOO_LARGE:
+    case RST_STREAM_FRAME_TOO_LARGE:
       return "FRAME_TOO_LARGE";
   }
   return "UNKNOWN_STATUS";
@@ -395,17 +395,13 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     remaining_data_ = current_frame.length();
 
     // This is just a sanity check for help debugging early frame errors.
-    if (remaining_data_ > 1000000u) {
       // The strncmp for 5 is safe because we only hit this point if we
       // have SpdyFrame::kHeaderSize (8) bytes
-      if (!syn_frame_processed_ &&
+    if (remaining_data_ > 1000000u &&
+        !syn_frame_processed_ &&
           strncmp(current_frame_buffer_.get(), "HTTP/", 5) == 0) {
         LOG(WARNING) << "Unexpected HTTP response to spdy request";
         probable_http_response_ = true;
-      } else {
-        LOG(WARNING) << "Unexpectedly large frame.  " << display_protocol_
-                     << " session is likely corrupt.";
-      }
     }
 
     // if we're here, then we have the common header all received.
@@ -1326,11 +1322,11 @@ SpdySynReplyControlFrame* SpdyFramer::CreateSynReply(
 
 SpdyRstStreamControlFrame* SpdyFramer::CreateRstStream(
     SpdyStreamId stream_id,
-    SpdyStatusCodes status) const {
+    SpdyRstStreamStatus status) const {
   DCHECK_GT(stream_id, 0u);
   DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
-  DCHECK_NE(status, INVALID);
-  DCHECK_LT(status, NUM_STATUS_CODES);
+  DCHECK_NE(status, RST_STREAM_INVALID);
+  DCHECK_LT(status, RST_STREAM_NUM_STATUS_CODES);
 
   size_t frame_size = SpdyRstStreamControlFrame::size();
   SpdyFrameBuilder frame(RST_STREAM, CONTROL_FLAG_NONE, spdy_version_,

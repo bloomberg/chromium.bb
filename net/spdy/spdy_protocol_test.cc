@@ -116,14 +116,14 @@ TEST_P(SpdyProtocolTest, ControlFrameStructs) {
   EXPECT_EQ(0, syn_reply->flags());
 
   scoped_ptr<SpdyRstStreamControlFrame> rst_frame(
-      framer.CreateRstStream(123, PROTOCOL_ERROR));
+      framer.CreateRstStream(123, RST_STREAM_PROTOCOL_ERROR));
   EXPECT_EQ(framer.protocol_version(), rst_frame->version());
   EXPECT_TRUE(rst_frame->is_control_frame());
   EXPECT_EQ(RST_STREAM, rst_frame->type());
   EXPECT_EQ(123u, rst_frame->stream_id());
-  EXPECT_EQ(PROTOCOL_ERROR, rst_frame->status());
-  rst_frame->set_status(INVALID_STREAM);
-  EXPECT_EQ(INVALID_STREAM, rst_frame->status());
+  EXPECT_EQ(RST_STREAM_PROTOCOL_ERROR, rst_frame->status());
+  rst_frame->set_status(RST_STREAM_INVALID_STREAM);
+  EXPECT_EQ(RST_STREAM_INVALID_STREAM, rst_frame->status());
   EXPECT_EQ(0, rst_frame->flags());
 
   const uint32 kUniqueId = 1234567u;
@@ -372,18 +372,19 @@ TEST_P(SpdyProtocolDeathTest, TestRstStreamStatusBounds) {
   SpdyFramer framer(spdy_version_);
   scoped_ptr<SpdyRstStreamControlFrame> rst_frame;
 
-  rst_frame.reset(framer.CreateRstStream(123, PROTOCOL_ERROR));
-  EXPECT_EQ(PROTOCOL_ERROR, rst_frame->status());
+  rst_frame.reset(framer.CreateRstStream(
+      123, RST_STREAM_PROTOCOL_ERROR));
+  EXPECT_EQ(RST_STREAM_PROTOCOL_ERROR, rst_frame->status());
 
-  rst_frame->set_status(INVALID);
-  EXPECT_EQ(INVALID, rst_frame->status());
+  rst_frame->set_status(RST_STREAM_INVALID);
+  EXPECT_EQ(RST_STREAM_INVALID, rst_frame->status());
 
-  rst_frame->set_status(
-      static_cast<SpdyStatusCodes>(INVALID - 1));
-  EXPECT_EQ(INVALID, rst_frame->status());
+  rst_frame->set_status(static_cast<SpdyRstStreamStatus>(
+      RST_STREAM_INVALID - 1));
+  EXPECT_EQ(RST_STREAM_INVALID, rst_frame->status());
 
-  rst_frame->set_status(NUM_STATUS_CODES);
-  EXPECT_EQ(INVALID, rst_frame->status());
+  rst_frame->set_status(RST_STREAM_NUM_STATUS_CODES);
+  EXPECT_EQ(RST_STREAM_INVALID, rst_frame->status());
 }
 
 }  // namespace net

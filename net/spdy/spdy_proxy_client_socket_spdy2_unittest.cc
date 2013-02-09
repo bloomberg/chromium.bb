@@ -325,7 +325,7 @@ SpdyProxyClientSocketSpdy2Test::ConstructConnectRequestFrame() {
     net::ConvertRequestPriorityToSpdyPriority(LOWEST, 2),
     CONTROL_FLAG_NONE,
     false,
-    INVALID,
+    RST_STREAM_INVALID,
     NULL,
     0,
     DATA_FLAG_NONE
@@ -352,7 +352,7 @@ SpdyProxyClientSocketSpdy2Test::ConstructConnectAuthRequestFrame() {
     net::ConvertRequestPriorityToSpdyPriority(LOWEST, 2),
     CONTROL_FLAG_NONE,
     false,
-    INVALID,
+    RST_STREAM_INVALID,
     NULL,
     0,
     DATA_FLAG_NONE
@@ -1262,7 +1262,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, RstWithReadAndWritePending) {
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructConnectReplyFrame());
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, CANCEL));
+  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockRead reads[] = {
     CreateMockRead(*resp, 1, ASYNC),
     CreateMockRead(*rst, 3, ASYNC),
@@ -1384,7 +1384,7 @@ TEST_F(SpdyProxyClientSocketSpdy2Test, RstWithReadAndWritePendingDelete) {
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructConnectReplyFrame());
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, CANCEL));
+  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockRead reads[] = {
     CreateMockRead(*resp, 1, ASYNC),
     CreateMockRead(*rst, 3, ASYNC),

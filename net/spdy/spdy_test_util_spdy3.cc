@@ -296,7 +296,7 @@ SpdyFrame* ConstructSpdyWindowUpdate(
 // Construct a SPDY RST_STREAM frame.
 // Returns the constructed frame.  The caller takes ownership of the frame.
 SpdyFrame* ConstructSpdyRstStream(SpdyStreamId stream_id,
-                                  SpdyStatusCodes status) {
+                                  SpdyRstStreamStatus status) {
   BufferedSpdyFramer framer(3, false);
   return framer.CreateRstStream(stream_id, status);
 }
@@ -381,7 +381,7 @@ SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
     0,                            // Credential Slot
     flags,                        // Control Flags
     compressed,                   // Compressed
-    INVALID,                      // Status
+    RST_STREAM_INVALID,           // Status
     NULL,                         // Data
     0,                            // Length
     DATA_FLAG_NONE                // Data Flags
@@ -411,7 +411,7 @@ SpdyFrame* ConstructSpdyGet(const char* const url,
     0,                            // Credential Slot
     CONTROL_FLAG_FIN,             // Control Flags
     compressed,                   // Compressed
-    INVALID,                      // Status
+    RST_STREAM_INVALID,           // Status
     NULL,                         // Data
     0,                            // Length
     DATA_FLAG_NONE                // Data Flags
@@ -1024,7 +1024,7 @@ const SpdyHeaderInfo MakeSpdyHeader(SpdyControlType type) {
     0,                            // Credential Slot
     CONTROL_FLAG_FIN,       // Control Flags
     false,                        // Compressed
-    INVALID,                // Status
+    RST_STREAM_INVALID,           // Status
     NULL,                         // Data
     0,                            // Length
     DATA_FLAG_NONE          // Data Flags

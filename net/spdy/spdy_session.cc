@@ -739,7 +739,7 @@ void SpdySession::CloseCreatedStream(SpdyStream* stream, int status) {
 }
 
 void SpdySession::ResetStream(SpdyStreamId stream_id,
-                              SpdyStatusCodes status,
+                              SpdyRstStreamStatus status,
                               const std::string& description) {
   net_log().AddEvent(
       NetLog::TYPE_SPDY_SESSION_SEND_RST_STREAM,
@@ -1301,7 +1301,7 @@ void SpdySession::OnError(SpdyFramer::SpdyError error_code) {
 void SpdySession::OnStreamError(SpdyStreamId stream_id,
                                 const std::string& description) {
   if (IsStreamActive(stream_id))
-    ResetStream(stream_id, PROTOCOL_ERROR, description);
+    ResetStream(stream_id, RST_STREAM_PROTOCOL_ERROR, description);
 }
 
 void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
@@ -1398,7 +1398,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
     std::string description = base::StringPrintf(
         "Received invalid OnSyn associated stream id %d for stream %d",
         associated_stream_id, stream_id);
-    ResetStream(stream_id, REFUSED_STREAM, description);
+    ResetStream(stream_id, RST_STREAM_REFUSED_STREAM, description);
     return;
   }
 
@@ -1409,7 +1409,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   // Verify that the response had a URL for us.
   GURL gurl = GetUrlFromHeaderBlock(headers, GetProtocolVersion(), true);
   if (!gurl.is_valid()) {
-    ResetStream(stream_id, PROTOCOL_ERROR,
+    ResetStream(stream_id, RST_STREAM_PROTOCOL_ERROR,
                 "Pushed stream url was invalid: " + gurl.spec());
     return;
   }
@@ -1417,7 +1417,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
 
   // Verify we have a valid stream association.
   if (!IsStreamActive(associated_stream_id)) {
-    ResetStream(stream_id, INVALID_STREAM,
+    ResetStream(stream_id, RST_STREAM_INVALID_STREAM,
                 base::StringPrintf(
                     "Received OnSyn with inactive associated stream %d",
                     associated_stream_id));
@@ -1430,7 +1430,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   if (trusted_spdy_proxy_.Equals(host_port_pair())) {
     // Disallow pushing of HTTPS content.
     if (gurl.SchemeIs("https")) {
-      ResetStream(stream_id, REFUSED_STREAM,
+      ResetStream(stream_id, RST_STREAM_REFUSED_STREAM,
                   base::StringPrintf(
                       "Rejected push of Cross Origin HTTPS content %d",
                       associated_stream_id));
@@ -1440,7 +1440,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
         active_streams_[associated_stream_id];
     GURL associated_url(associated_stream->GetUrl());
     if (associated_url.GetOrigin() != gurl.GetOrigin()) {
-      ResetStream(stream_id, REFUSED_STREAM,
+      ResetStream(stream_id, RST_STREAM_REFUSED_STREAM,
                   base::StringPrintf(
                       "Rejected Cross Origin Push Stream %d",
                       associated_stream_id));
@@ -1451,7 +1451,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   // There should not be an existing pushed stream with the same path.
   PushedStreamMap::iterator it = unclaimed_pushed_streams_.find(url);
   if (it != unclaimed_pushed_streams_.end()) {
-    ResetStream(stream_id, PROTOCOL_ERROR,
+    ResetStream(stream_id, RST_STREAM_PROTOCOL_ERROR,
                 "Received duplicate pushed stream with url: " + url);
     return;
   }
@@ -1573,7 +1573,8 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
   }
 }
 
-void SpdySession::OnRstStream(SpdyStreamId stream_id, SpdyStatusCodes status) {
+void SpdySession::OnRstStream(SpdyStreamId stream_id,
+                              SpdyRstStreamStatus status) {
   std::string description;
   net_log().AddEvent(
       NetLog::TYPE_SPDY_SESSION_RST_STREAM,
@@ -1591,7 +1592,7 @@ void SpdySession::OnRstStream(SpdyStreamId stream_id, SpdyStatusCodes status) {
 
   if (status == 0) {
     stream->OnDataReceived(NULL, 0);
-  } else if (status == REFUSED_STREAM) {
+  } else if (status == RST_STREAM_REFUSED_STREAM) {
     DeleteStream(stream_id, ERR_SPDY_SERVER_REFUSED_STREAM);
   } else {
     RecordProtocolErrorHistogram(
@@ -1665,7 +1666,7 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
   }
 
   if (delta_window_size < 1) {
-    ResetStream(stream_id, FLOW_CONTROL_ERROR,
+    ResetStream(stream_id, RST_STREAM_FLOW_CONTROL_ERROR,
                 base::StringPrintf(
                     "Received WINDOW_UPDATE with an invalid "
                     "delta_window_size %d", delta_window_size));

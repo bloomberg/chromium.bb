@@ -64,7 +64,7 @@ TEST_F(SpdyStreamSpdy2Test, SendDataAfterOpen) {
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),
     CONTROL_FLAG_NONE,
     false,
-    INVALID,
+    RST_STREAM_INVALID,
     NULL,
     0,
     DATA_FLAG_NONE
@@ -335,7 +335,7 @@ TEST_F(SpdyStreamSpdy2Test, StreamError) {
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),
     CONTROL_FLAG_NONE,
     false,
-    INVALID,
+    RST_STREAM_INVALID,
     NULL,
     0,
     DATA_FLAG_NONE

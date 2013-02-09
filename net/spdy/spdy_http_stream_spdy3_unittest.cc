@@ -692,7 +692,7 @@ SpdyFrame* ConstructCredentialRequestFrame(size_t slot, const GURL& url,
     slot,
     CONTROL_FLAG_FIN,
     false,
-    INVALID,
+    RST_STREAM_INVALID,
     NULL,
     0,
     DATA_FLAG_NONE

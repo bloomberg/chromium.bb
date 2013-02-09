@@ -233,7 +233,7 @@ TEST_P(HttpProxyClientSocketPoolSpdy3Test, NeedAuth) {
     MockRead(ASYNC, 4, "0123456789"),
   };
   scoped_ptr<SpdyFrame> req(ConstructSpdyConnect(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, CANCEL));
+  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite spdy_writes[] = {
     CreateMockWrite(*req, 0, ASYNC),
     CreateMockWrite(*rst, 2, ASYNC),
@@ -480,7 +480,7 @@ TEST_P(HttpProxyClientSocketPoolSpdy3Test, TunnelSetupError) {
   };
   scoped_ptr<SpdyFrame> req(ConstructSpdyConnect(kAuthHeaders,
                                                        kAuthHeadersSize, 1));
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, CANCEL));
+  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite spdy_writes[] = {
     CreateMockWrite(*req, 0, ASYNC),
     CreateMockWrite(*rst, 2, ASYNC),
@@ -530,7 +530,7 @@ TEST_P(HttpProxyClientSocketPoolSpdy3Test, TunnelSetupRedirect) {
   };
   scoped_ptr<SpdyFrame> req(
       ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1));
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, CANCEL));
+  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
 
   MockWrite spdy_writes[] = {
     CreateMockWrite(*req, 0, ASYNC),

@@ -197,7 +197,8 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   virtual void OnPing(uint32 unique_id) = 0;
 
   // Called when a RST_STREAM frame has been parsed.
-  virtual void OnRstStream(SpdyStreamId stream_id, SpdyStatusCodes status) = 0;
+  virtual void OnRstStream(SpdyStreamId stream_id,
+                           SpdyRstStreamStatus status) = 0;
 
   // Called when a GOAWAY frame has been parsed.
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
@@ -369,7 +370,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                            const SpdyHeaderBlock* headers);
 
   SpdyRstStreamControlFrame* CreateRstStream(SpdyStreamId stream_id,
-                                             SpdyStatusCodes status) const;
+                                             SpdyRstStreamStatus status) const;
 
   // Creates an instance of SpdySettingsControlFrame. The SETTINGS frame is
   // used to communicate name/value pairs relevant to the communication channel.

@@ -65,7 +65,7 @@ TEST_F(SpdyStreamSpdy3Test, SendDataAfterOpen) {
     0,
     CONTROL_FLAG_NONE,
     false,
-    INVALID,
+    RST_STREAM_INVALID,
     NULL,
     0,
     DATA_FLAG_NONE
@@ -340,7 +340,7 @@ TEST_F(SpdyStreamSpdy3Test, StreamError) {
     0,
     CONTROL_FLAG_NONE,
     false,
-    INVALID,
+    RST_STREAM_INVALID,
     NULL,
     0,
     DATA_FLAG_NONE

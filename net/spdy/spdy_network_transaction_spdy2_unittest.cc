@@ -1481,7 +1481,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, Put) {
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
     CONTROL_FLAG_FIN,       // Control Flags
     false,                  // Compressed
-    INVALID,                // Status
+    RST_STREAM_INVALID,     // Status
     NULL,                   // Data
     0,                      // Length
     DATA_FLAG_NONE          // Data Flags
@@ -1508,7 +1508,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, Put) {
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
     CONTROL_FLAG_NONE,      // Control Flags
     false,                  // Compressed
-    INVALID,                // Status
+    RST_STREAM_INVALID,     // Status
     NULL,                   // Data
     0,                      // Length
     DATA_FLAG_NONE          // Data Flags
@@ -1551,7 +1551,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, Head) {
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
     CONTROL_FLAG_FIN,       // Control Flags
     false,                  // Compressed
-    INVALID,                // Status
+    RST_STREAM_INVALID,     // Status
     NULL,                   // Data
     0,                      // Length
     DATA_FLAG_NONE          // Data Flags
@@ -1578,7 +1578,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, Head) {
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
     CONTROL_FLAG_NONE,      // Control Flags
     false,                  // Compressed
-    INVALID,                // Status
+    RST_STREAM_INVALID,     // Status
     NULL,                   // Data
     0,                      // Length
     DATA_FLAG_NONE          // Data Flags
@@ -1850,7 +1850,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, PostWithEarlySynReply) {
 TEST_P(SpdyNetworkTransactionSpdy2Test, SocketWriteReturnsZero) {
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame> rst(
-      ConstructSpdyRstStream(1, CANCEL));
+      ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 0, SYNCHRONOUS),
     MockWrite(SYNCHRONOUS, 0, 0, 2),
@@ -1947,7 +1947,8 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, ResponseWithTwoSynReplies) {
 TEST_P(SpdyNetworkTransactionSpdy2Test, ResetReplyWithTransferEncoding) {
   // Construct the request.
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, PROTOCOL_ERROR));
+  scoped_ptr<SpdyFrame> rst(
+      ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*req),
     CreateMockWrite(*rst),
@@ -1979,7 +1980,8 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, ResetReplyWithTransferEncoding) {
 TEST_P(SpdyNetworkTransactionSpdy2Test, ResetPushWithTransferEncoding) {
   // Construct the request.
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(2, PROTOCOL_ERROR));
+  scoped_ptr<SpdyFrame> rst(
+      ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*req),
     CreateMockWrite(*rst),
@@ -2054,7 +2056,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, CancelledTransaction) {
 TEST_P(SpdyNetworkTransactionSpdy2Test, CancelledTransactionSendRst) {
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame> rst(
-      ConstructSpdyRstStream(1, CANCEL));
+      ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
     CreateMockWrite(*req, 0, SYNCHRONOUS),
     CreateMockWrite(*rst, 2, SYNCHRONOUS),
@@ -2308,7 +2310,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, UpperCaseHeaders) {
   scoped_ptr<SpdyFrame>
       syn(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame>
-      rst(ConstructSpdyRstStream(1, PROTOCOL_ERROR));
+      rst(ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*syn, 0),
     CreateMockWrite(*rst, 2),
@@ -2339,7 +2341,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, UpperCaseHeadersInHeadersFrame) {
   scoped_ptr<SpdyFrame>
       syn(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame>
-      rst(ConstructSpdyRstStream(1, PROTOCOL_ERROR));
+      rst(ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*syn, 0),
     CreateMockWrite(*rst, 2),
@@ -2396,7 +2398,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, UpperCaseHeadersOnPush) {
   scoped_ptr<SpdyFrame>
       syn(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame>
-      rst(ConstructSpdyRstStream(2, PROTOCOL_ERROR));
+      rst(ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*syn, 0),
     CreateMockWrite(*rst, 2),
@@ -2467,7 +2469,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, RedirectServerPush) {
                         "301 Moved Permanently",
                         "http://www.foo.com/index.php"));
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(2, CANCEL));
+  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(2, RST_STREAM_CANCEL));
   MockWrite writes[] = {
     CreateMockWrite(*req, 1),
     CreateMockWrite(*rst, 6),
@@ -2729,7 +2731,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, ServerPushServerAborted) {
                                     1,
                                     "http://www.google.com/foo.dat"));
   scoped_ptr<SpdyFrame>
-    stream2_rst(ConstructSpdyRstStream(2, PROTOCOL_ERROR));
+    stream2_rst(ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
   MockRead reads[] = {
     CreateMockRead(*stream1_reply, 2),
     CreateMockRead(*stream2_syn, 3),
@@ -2786,7 +2788,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, ServerPushDuplicate) {
   scoped_ptr<SpdyFrame>
       stream1_body(ConstructSpdyBodyFrame(1, true));
   scoped_ptr<SpdyFrame>
-      stream3_rst(ConstructSpdyRstStream(4, PROTOCOL_ERROR));
+      stream3_rst(ConstructSpdyRstStream(4, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*stream1_syn, 1),
     CreateMockWrite(*stream3_rst, 5),
@@ -2963,7 +2965,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, ServerPushInvalidAssociatedStreamID0) {
   scoped_ptr<SpdyFrame>
       stream1_body(ConstructSpdyBodyFrame(1, true));
   scoped_ptr<SpdyFrame>
-      stream2_rst(ConstructSpdyRstStream(2, REFUSED_STREAM));
+      stream2_rst(ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
   MockWrite writes[] = {
     CreateMockWrite(*stream1_syn, 1),
     CreateMockWrite(*stream2_rst, 4),
@@ -3024,7 +3026,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, ServerPushInvalidAssociatedStreamID9) {
   scoped_ptr<SpdyFrame>
       stream1_body(ConstructSpdyBodyFrame(1, true));
   scoped_ptr<SpdyFrame>
-      stream2_rst(ConstructSpdyRstStream(2, INVALID_STREAM));
+      stream2_rst(ConstructSpdyRstStream(2, RST_STREAM_INVALID_STREAM));
   MockWrite writes[] = {
     CreateMockWrite(*stream1_syn, 1),
     CreateMockWrite(*stream2_rst, 4),
@@ -3085,7 +3087,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, ServerPushNoURL) {
   scoped_ptr<SpdyFrame>
       stream1_body(ConstructSpdyBodyFrame(1, true));
   scoped_ptr<SpdyFrame>
-      stream2_rst(ConstructSpdyRstStream(2, PROTOCOL_ERROR));
+      stream2_rst(ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*stream1_syn, 1),
     CreateMockWrite(*stream2_rst, 4),
@@ -3225,7 +3227,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, SynReplyHeadersVary) {
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
     CONTROL_FLAG_NONE,                      // Control Flags
     false,                                  // Compressed
-    INVALID,                                // Status
+    RST_STREAM_INVALID,                     // Status
     NULL,                                   // Data
     0,                                      // Data Length
     DATA_FLAG_NONE                          // Data Flags
@@ -3392,7 +3394,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, InvalidSynReply) {
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
     CONTROL_FLAG_NONE,      // Control Flags
     false,                  // Compressed
-    INVALID,                // Status
+    RST_STREAM_INVALID,     // Status
     NULL,                   // Data
     0,                      // Length
     DATA_FLAG_NONE          // Data Flags
@@ -3541,7 +3543,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, DecompressFailureOnSynReply) {
   scoped_ptr<SpdyFrame> compressed(
       ConstructSpdyGet(NULL, 0, true, 1, LOWEST));
   scoped_ptr<SpdyFrame> rst(
-      ConstructSpdyRstStream(1, PROTOCOL_ERROR));
+      ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*compressed),
   };
@@ -4099,7 +4101,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, SettingsSaved) {
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
     CONTROL_FLAG_NONE,                      // Control Flags
     false,                                  // Compressed
-    INVALID,                                // Status
+    RST_STREAM_INVALID,                     // Status
     NULL,                                   // Data
     0,                                      // Data Length
     DATA_FLAG_NONE                          // Data Flags
@@ -4205,7 +4207,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, SettingsPlayback) {
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
     CONTROL_FLAG_NONE,                      // Control Flags
     false,                                  // Compressed
-    INVALID,                                // Status
+    RST_STREAM_INVALID,                     // Status
     NULL,                                   // Data
     0,                                      // Data Length
     DATA_FLAG_NONE                          // Data Flags
@@ -5564,7 +5566,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, ServerPushCrossOriginCorrectness) {
     scoped_ptr<SpdyFrame>
         stream1_body(ConstructSpdyBodyFrame(1, true));
     scoped_ptr<SpdyFrame> push_rst(
-        ConstructSpdyRstStream(2, REFUSED_STREAM));
+        ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
     MockWrite writes[] = {
       CreateMockWrite(*stream1_syn, 1),
       CreateMockWrite(*push_rst, 4),
@@ -5579,7 +5581,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, ServerPushCrossOriginCorrectness) {
                                       1,
                                       url_to_push));
     scoped_ptr<SpdyFrame> rst(
-        ConstructSpdyRstStream(2, CANCEL));
+        ConstructSpdyRstStream(2, RST_STREAM_CANCEL));
 
     MockRead reads[] = {
       CreateMockRead(*stream1_reply, 2),
@@ -5649,7 +5651,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, RetryAfterRefused) {
   };
 
   scoped_ptr<SpdyFrame> refused(
-      ConstructSpdyRstStream(1, REFUSED_STREAM));
+      ConstructSpdyRstStream(1, RST_STREAM_REFUSED_STREAM));
   scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 3));
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(3, true));
   MockRead reads[] = {

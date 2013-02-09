@@ -2906,7 +2906,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpsProxySpdyConnectFailure) {
 
   // CONNECT to www.google.com:443 via SPDY
   scoped_ptr<SpdyFrame> connect(ConstructSpdyConnect(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> get(ConstructSpdyRstStream(1, CANCEL));
+  scoped_ptr<SpdyFrame> get(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
 
   MockWrite spdy_writes[] = {
       CreateMockWrite(*connect, 1),
@@ -5577,7 +5577,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, RedirectOfHttpsConnectViaSpdyProxy) {
   request.load_flags = 0;
 
   scoped_ptr<SpdyFrame> conn(ConstructSpdyConnect(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> goaway(ConstructSpdyRstStream(1, CANCEL));
+  scoped_ptr<SpdyFrame> goaway(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite data_writes[] = {
     CreateMockWrite(*conn.get(), 0, SYNCHRONOUS),
   };
@@ -5681,7 +5681,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
   request.load_flags = 0;
 
   scoped_ptr<SpdyFrame> conn(ConstructSpdyConnect(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, CANCEL));
+  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite data_writes[] = {
     CreateMockWrite(*conn.get(), 0, SYNCHRONOUS),
     CreateMockWrite(*rst.get(), 3, SYNCHRONOUS),
@@ -5744,7 +5744,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthSpdyProxy) {
 
   // Since we have proxy, should try to establish tunnel.
   scoped_ptr<SpdyFrame> req(ConstructSpdyConnect(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, CANCEL));
+  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
 
   // After calling trans->RestartWithAuth(), this is the request we should
   // be issuing -- the final header line contains the credentials.
@@ -6012,7 +6012,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, CrossOriginProxyPushCorrectness) {
       stream1_syn(ConstructSpdyGet(NULL, 0, false, 1, LOWEST, false));
 
   scoped_ptr<SpdyFrame> push_rst(
-      ConstructSpdyRstStream(2, REFUSED_STREAM));
+      ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
 
   MockWrite spdy_writes[] = {
     CreateMockWrite(*stream1_syn, 1, ASYNC),

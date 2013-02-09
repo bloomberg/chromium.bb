@@ -167,7 +167,7 @@ void BufferedSpdyFramer::OnPing(uint32 unique_id) {
 }
 
 void BufferedSpdyFramer::OnRstStream(SpdyStreamId stream_id,
-                                     SpdyStatusCodes status) {
+                                     SpdyRstStreamStatus status) {
   visitor_->OnRstStream(stream_id, status);
 }
 void BufferedSpdyFramer::OnGoAway(SpdyStreamId last_accepted_stream_id,
@@ -239,7 +239,7 @@ SpdySynReplyControlFrame* BufferedSpdyFramer::CreateSynReply(
 
 SpdyRstStreamControlFrame* BufferedSpdyFramer::CreateRstStream(
     SpdyStreamId stream_id,
-    SpdyStatusCodes status) const {
+    SpdyRstStreamStatus status) const {
   return spdy_framer_.CreateRstStream(stream_id, status);
 }
 

@@ -326,7 +326,7 @@ SpdyProxyClientSocketSpdy3Test::ConstructConnectRequestFrame() {
     0,
     CONTROL_FLAG_NONE,
     false,
-    INVALID,
+    RST_STREAM_INVALID,
     NULL,
     0,
     DATA_FLAG_NONE
@@ -354,7 +354,7 @@ SpdyProxyClientSocketSpdy3Test::ConstructConnectAuthRequestFrame() {
     0,
     CONTROL_FLAG_NONE,
     false,
-    INVALID,
+    RST_STREAM_INVALID,
     NULL,
     0,
     DATA_FLAG_NONE
@@ -1265,7 +1265,7 @@ TEST_F(SpdyProxyClientSocketSpdy3Test, RstWithReadAndWritePending) {
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructConnectReplyFrame());
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, CANCEL));
+  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockRead reads[] = {
     CreateMockRead(*resp, 1, ASYNC),
     CreateMockRead(*rst, 3, ASYNC),
@@ -1387,7 +1387,7 @@ TEST_F(SpdyProxyClientSocketSpdy3Test, RstWithReadAndWritePendingDelete) {
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructConnectReplyFrame());
-  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, CANCEL));
+  scoped_ptr<SpdyFrame> rst(ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockRead reads[] = {
     CreateMockRead(*resp, 1, ASYNC),
     CreateMockRead(*rst, 3, ASYNC),

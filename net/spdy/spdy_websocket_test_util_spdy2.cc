@@ -76,7 +76,7 @@ SpdyFrame* ConstructSpdyWebSocketHandshakeRequestFrame(
     ConvertRequestPriorityToSpdyPriority(request_priority, 2),
     CONTROL_FLAG_NONE,
     kDefaultCompressed,
-    INVALID,
+    RST_STREAM_INVALID,
     kDefaultDataPointer,
     kDefaultDataLength,
     DATA_FLAG_NONE
@@ -105,7 +105,7 @@ SpdyFrame* ConstructSpdyWebSocketHandshakeResponseFrame(
     ConvertRequestPriorityToSpdyPriority(request_priority, 2),
     CONTROL_FLAG_NONE,
     kDefaultCompressed,
-    INVALID,
+    RST_STREAM_INVALID,
     kDefaultDataPointer,
     kDefaultDataLength,
     DATA_FLAG_NONE

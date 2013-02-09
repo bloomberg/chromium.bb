@@ -42,7 +42,7 @@ struct SpdyHeaderInfo {
   SpdyPriority priority;
   SpdyControlFlags control_flags;
   bool compressed;
-  SpdyStatusCodes status;
+  SpdyRstStreamStatus status;
   const char* data;
   uint32 data_length;
   SpdyDataFlags data_flags;
@@ -179,7 +179,7 @@ SpdyFrame* ConstructSpdyWindowUpdate(SpdyStreamId, uint32 delta_window_size);
 // Construct a SPDY RST_STREAM frame.
 // Returns the constructed frame.  The caller takes ownership of the frame.
 SpdyFrame* ConstructSpdyRstStream(SpdyStreamId stream_id,
-                                  SpdyStatusCodes status);
+                                  SpdyRstStreamStatus status);
 
 // Construct a single SPDY header entry, for validation.
 // |extra_headers| are the extra header-value pairs.

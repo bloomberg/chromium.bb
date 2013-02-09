@@ -64,7 +64,7 @@ enum SpdyProtocolErrorDetails {
   SPDY_ERROR_CREDENTIAL_FRAME_CORRUPT,
   SPDY_ERROR_INVALID_DATA_FRAME_FLAGS,
 
-  // SpdyStatusCodes
+  // SpdyRstStreamStatus
   STATUS_CODE_INVALID,
   STATUS_CODE_PROTOCOL_ERROR,
   STATUS_CODE_INVALID_STREAM,
@@ -92,8 +92,8 @@ COMPILE_ASSERT(STATUS_CODE_INVALID ==
                SpdyProtocolErrorDetails_SpdyErrors_mismatch);
 
 COMPILE_ASSERT(PROTOCOL_ERROR_UNEXPECTED_PING ==
-               static_cast<SpdyProtocolErrorDetails>(NUM_STATUS_CODES +
-                                                     STATUS_CODE_INVALID),
+               static_cast<SpdyProtocolErrorDetails>(
+                   RST_STREAM_NUM_STATUS_CODES + STATUS_CODE_INVALID),
                SpdyProtocolErrorDetails_SpdyErrors_mismatch);
 
 class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
@@ -241,7 +241,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // Also closes the stream.  Was not piggybacked to CloseStream since not
   // all of the calls to CloseStream necessitate sending a RST_STREAM.
   void ResetStream(SpdyStreamId stream_id,
-                   SpdyStatusCodes status,
+                   SpdyRstStreamStatus status,
                    const std::string& description);
 
   // Check if a stream is active.
@@ -543,7 +543,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
                              const std::string& description) OVERRIDE;
   virtual void OnPing(uint32 unique_id) OVERRIDE;
   virtual void OnRstStream(SpdyStreamId stream_id,
-                           SpdyStatusCodes status) OVERRIDE;
+                           SpdyRstStreamStatus status) OVERRIDE;
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
                         SpdyGoAwayStatus status) OVERRIDE;
   virtual void OnStreamFrameData(SpdyStreamId stream_id,
