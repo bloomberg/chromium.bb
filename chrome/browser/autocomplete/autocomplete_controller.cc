@@ -449,6 +449,29 @@ void AutocompleteController::UpdateAssistedQueryStats(
   }
 }
 
+GURL AutocompleteController::GetDestinationURL(
+    const AutocompleteMatch& match,
+    base::TimeDelta query_formulation_time) const {
+  GURL destination_url(match.destination_url);
+  TemplateURL* template_url = match.GetTemplateURL(profile_, false);
+
+  // Append the query formulation time (time from when the user first typed a
+  // character into the omnibox to when the user selected a query) and whether
+  // a field trial has triggered to the AQS parameter, if other AQS parameters
+  // were already populated.
+  if (template_url && match.search_terms_args.get() &&
+      !match.search_terms_args->assisted_query_stats.empty()) {
+    TemplateURLRef::SearchTermsArgs search_terms_args(*match.search_terms_args);
+    search_terms_args.assisted_query_stats += base::StringPrintf(
+        ".%" PRId64 "j%d",
+        query_formulation_time.InMilliseconds(),
+        search_provider_->field_trial_triggered_in_session());
+    destination_url = GURL(template_url->url_ref().
+                           ReplaceSearchTerms(search_terms_args));
+  }
+  return destination_url;
+}
+
 void AutocompleteController::UpdateKeywordDescriptions(
     AutocompleteResult* result) {
   string16 last_keyword;

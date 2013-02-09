@@ -254,7 +254,9 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
   providers.push_back(provider2);
 
   // Reset the controller to contain our new providers.
-  controller_.reset(new AutocompleteController(&profile_, NULL, 0));
+  controller_.reset(
+      new AutocompleteController(&profile_, NULL,
+                                 AutocompleteProvider::TYPE_SEARCH));
   controller_->providers_.swap(providers);
   provider1->set_listener(controller_.get());
   provider2->set_listener(controller_.get());
@@ -554,4 +556,48 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
     SCOPED_TRACE("Multiple matches");
     RunAssistedQueryStatsTest(test_data, ARRAYSIZE_UNSAFE(test_data));
   }
+}
+
+TEST_F(AutocompleteProviderTest, GetDestinationURL) {
+  ResetControllerWithTestProviders(false, NULL, NULL);
+
+  // For the destination URL to have aqs parameters for query formulation time
+  // and the field trial triggered bit, many conditions need to be satisfied.
+  AutocompleteMatch match(NULL, 1100, false,
+                          AutocompleteMatch::SEARCH_SUGGEST);
+  GURL url = controller_->
+      GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
+  EXPECT_TRUE(url.path().empty());
+
+  // The protocol needs to be https.
+  RegisterTemplateURL(ASCIIToUTF16(kTestTemplateURLKeyword),
+                      "https://aqs/{searchTerms}/{google:assistedQueryStats}");
+  url = controller_->GetDestinationURL(match,
+                                       base::TimeDelta::FromMilliseconds(2456));
+  EXPECT_TRUE(url.path().empty());
+
+  // There needs to be a keyword provider.
+  match.keyword = ASCIIToUTF16(kTestTemplateURLKeyword);
+  url = controller_->GetDestinationURL(match,
+                                       base::TimeDelta::FromMilliseconds(2456));
+  EXPECT_TRUE(url.path().empty());
+
+  // search_terms_args needs to be set.
+  match.search_terms_args.reset(
+      new TemplateURLRef::SearchTermsArgs(string16()));
+  url = controller_->GetDestinationURL(match,
+                                       base::TimeDelta::FromMilliseconds(2456));
+  EXPECT_TRUE(url.path().empty());
+
+  // assisted_query_stats needs to have been previously set.
+  match.search_terms_args->assisted_query_stats = "chrome.0.57j58j5l2j0l3j59";
+  url = controller_->GetDestinationURL(match,
+                                       base::TimeDelta::FromMilliseconds(2456));
+  EXPECT_EQ("//aqs=chrome.0.57j58j5l2j0l3j59.2456j0&", url.path());
+
+  // Test field trial triggered bit set.
+  controller_->search_provider_->field_trial_triggered_in_session_ = true;
+  url = controller_->GetDestinationURL(match,
+                                       base::TimeDelta::FromMilliseconds(2456));
+  EXPECT_EQ("//aqs=chrome.0.57j58j5l2j0l3j59.2456j1&", url.path());
 }

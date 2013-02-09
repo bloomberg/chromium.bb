@@ -111,6 +111,13 @@ class AutocompleteController : public AutocompleteProviderListener {
   // content; see |OmniboxEditModel::user_input_in_progress_|.
   void ResetSession();
 
+  // Constructs the final destination URL for a given match using additional
+  // parameters otherwise not available at initial construction time.  This
+  // method should be called from OmniboxEditModel::OpenMatch() before the user
+  // navigates to the selected match.
+  GURL GetDestinationURL(const AutocompleteMatch& match,
+                         base::TimeDelta query_formulation_time) const;
+
   SearchProvider* search_provider() const { return search_provider_; }
   KeywordProvider* keyword_provider() const { return keyword_provider_; }
 
@@ -128,6 +135,7 @@ class AutocompleteController : public AutocompleteProviderListener {
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest,
                            RedundantKeywordsIgnoredInResult);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, UpdateAssistedQueryStats);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, GetDestinationURL);
 
   // Updates |result_| to reflect the current provider state and fires
   // notifications.  If |regenerate_result| then we clear the result
