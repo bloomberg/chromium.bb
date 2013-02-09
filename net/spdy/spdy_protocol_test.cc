@@ -224,10 +224,10 @@ TEST_P(SpdyProtocolTest, TestSpdySettingsFrame) {
   // that they encode and decode properly.
   SettingsFlagsAndId ids[] = {
     SettingsFlagsAndId::FromWireFormat(spdy_version_, 0x00000000),
-    SettingsFlagsAndId::FromWireFormat(spdy_version_, 0xffffffff),
-    SettingsFlagsAndId::FromWireFormat(spdy_version_, 0xff000001),
-    SettingsFlagsAndId::FromWireFormat(spdy_version_, 0x01000002),
-    SettingsFlagsAndId(6, 9)
+    SettingsFlagsAndId::FromWireFormat(spdy_version_, 0x00010203),
+    SettingsFlagsAndId::FromWireFormat(spdy_version_, 0x01030402),
+    SettingsFlagsAndId::FromWireFormat(spdy_version_, 0x02030401),
+    SettingsFlagsAndId(3, 9)
   };
 
   for (uint32 index = 0; index < arraysize(ids); ++index) {
