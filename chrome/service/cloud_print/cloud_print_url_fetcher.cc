@@ -174,7 +174,7 @@ void CloudPrintURLFetcher::StartRequestHelper(
   DCHECK(delegate);
   // Persist the additional headers in case we need to retry the request.
   additional_headers_ = additional_headers;
-  request_.reset(net::URLFetcher::Create(url, request_type, this));
+  request_.reset(net::URLFetcher::Create(0, url, request_type, this));
   request_->SetRequestContext(GetRequestContextGetter());
   // Since we implement our own retry logic, disable the retry in URLFetcher.
   request_->SetAutomaticallyRetryOn5xx(false);
