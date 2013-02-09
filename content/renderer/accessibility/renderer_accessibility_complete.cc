@@ -244,11 +244,6 @@ void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
       pending_notifications_;
   pending_notifications_.clear();
 
-  // Allow WebKit to cache intermediate results since we're doing a bunch
-  // of read-only queries at once.
-  WebAccessibilityObject rootObject = document.accessibilityObject();
-  rootObject.startCachingComputedObjectAttributesUntilTreeMutates();
-
   // Generate a notification message from each WebKit notification.
   std::vector<AccessibilityHostMsg_NotificationParams> notification_msgs;
 
@@ -258,6 +253,7 @@ void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
         src_notifications[i];
 
     // TODO(dtseng): Come up with a cleaner way of deciding to include children.
+    WebAccessibilityObject rootObject = document.accessibilityObject();
     int root_id = rootObject.axID();
     bool includes_children = ShouldIncludeChildren(notification) ||
         root_id == notification.id;
@@ -321,6 +317,10 @@ void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
         includes_children = true;
       }
     }
+
+    // Allow WebKit to cache intermediate results since we're doing a bunch
+    // of read-only queries at once.
+    rootObject.startCachingComputedObjectAttributesUntilTreeMutates();
 
     AccessibilityHostMsg_NotificationParams notification_msg;
     notification_msg.notification_type = notification.notification_type;
