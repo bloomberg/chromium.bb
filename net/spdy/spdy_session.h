@@ -625,7 +625,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
 
   // The read buffer used to read data from the socket.
   scoped_refptr<IOBuffer> read_buffer_;
-  bool read_pending_;
 
   int stream_hi_water_mark_;  // The next stream id to use.
 
