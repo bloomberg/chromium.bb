@@ -123,6 +123,13 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearAviMp3Mpeg4) {
   PlayVideo("bear_mpeg4_mp3.avi", GetParam());
 }
 
+// TODO(scherkus): MPEG-4 ASP contains B-frames and out-of-order decoding, which
+// makes FFmpeg spit out video frames with no timestamp. As a result we DCHECK()
+// all over the place http://crbug.com/169570
+IN_PROC_BROWSER_TEST_P(MediaTest, DISABLED_VideoBearAviMp3Mpeg4Asp) {
+  PlayVideo("bear_mpeg4asp_mp3.avi", GetParam());
+}
+
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearAviMp3Divx) {
   PlayVideo("bear_divx_mp3.avi", GetParam());
 }
