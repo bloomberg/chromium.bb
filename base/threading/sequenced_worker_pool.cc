@@ -709,12 +709,15 @@ void SequencedWorkerPool::Inner::ThreadLoop(Worker* this_worker) {
           tracked_objects::ThreadData::TallyRunOnNamedThreadIfTracking(task,
               start_time, tracked_objects::ThreadData::NowForEndOfRun());
 
+          // Make sure our task is erased outside the lock for the
+          // same reason we do this with delete_these_oustide_lock.
+          // Also, do it before calling set_running_task_info() so
+          // that sequence-checking from within the task's destructor
+          // still works.
+          task.task = Closure();
+
           this_worker->set_running_task_info(
               SequenceToken(), CONTINUE_ON_SHUTDOWN);
-
-          // Make sure our task is erased outside the lock for the same reason
-          // we do this with delete_these_oustide_lock.
-          task.task = Closure();
         }
         DidRunWorkerTask(task);  // Must be done inside the lock.
       } else {
