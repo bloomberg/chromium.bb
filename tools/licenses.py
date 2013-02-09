@@ -427,12 +427,9 @@ def GenerateCredits():
         try:
             metadata = ParseDir(path, root)
         except LicenseError:
-            print >>sys.stderr, ("WARNING: licensing info for " + path +
-                                 " is incomplete, skipping.")
+            # TODO(phajdan.jr): Convert to fatal error (http://crbug.com/39240).
             continue
         if metadata['License File'] == NOT_SHIPPED:
-            print >>sys.stderr, ("Path " + path + " marked as " + NOT_SHIPPED +
-                                 ", skipping.")
             continue
         env = {
             'name': metadata['Name'],
