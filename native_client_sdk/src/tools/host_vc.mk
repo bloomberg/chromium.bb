@@ -92,7 +92,7 @@ endef
 #
 define LINKER_RULE
 all: $(1)
-$(1) : $(2) $(4)
+$(1) : $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(HOST_LINK) /DLL /OUT:$(1) /PDB:$(1).pdb $(2) /DEBUG $(foreach path,$(5),/LIBPATH:$(path)/$(OSNAME)_x86_32_host/$(CONFIG)) $(foreach lib,$(3),$(lib).lib) $(6)
 endef
 
