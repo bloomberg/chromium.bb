@@ -49,11 +49,15 @@ string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
                                    StatusLabelStyle style) {
   string16 user_name = UTF8ToUTF16(signin.GetAuthenticatedUsername());
 
-  if (!user_name.empty() &&
-      (!service || service->IsManaged())) {
-    // User is signed in, but sync is disabled.
-    return l10n_util::GetStringFUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED,
-                                      user_name);
+  if (!user_name.empty()) {
+    if (!service || service->IsManaged()) {
+      // User is signed in, but sync is disabled.
+      return l10n_util::GetStringFUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED,
+                                        user_name);
+    } else if (service->IsStartSuppressed()) {
+      return l10n_util::GetStringFUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED,
+                                        user_name);
+    }
   }
 
   if (!service || !service->sync_initialized()) {

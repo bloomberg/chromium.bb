@@ -382,6 +382,10 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Returns a user-friendly string form of last synced time (in minutes).
   virtual string16 GetLastSyncedTimeString() const;
 
+  // Returns true if startup is suppressed (i.e. user has stopped syncing via
+  // the google dashboard).
+  virtual bool IsStartSuppressed() const;
+
   ProfileSyncComponentsFactory* factory() { return factory_.get(); }
 
   // The profile we are syncing for.

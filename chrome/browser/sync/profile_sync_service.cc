@@ -1893,6 +1893,10 @@ void ProfileSyncService::StopAndSuppress() {
   ShutdownImpl(false);
 }
 
+bool ProfileSyncService::IsStartSuppressed() const {
+  return sync_prefs_.IsStartSuppressed();
+}
+
 void ProfileSyncService::UnsuppressAndStart() {
   DCHECK(profile_);
   sync_prefs_.SetStartSuppressed(false);
