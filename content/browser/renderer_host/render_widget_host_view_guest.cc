@@ -26,6 +26,7 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
     : host_(RenderWidgetHostImpl::From(widget_host)),
       guest_(guest),
       enable_compositing_(enable_compositing),
+      is_hidden_(false),
       platform_view_(static_cast<RenderWidgetHostViewPort*>(platform_view)) {
   host_->SetView(this);
 }
@@ -38,11 +39,17 @@ RenderWidgetHost* RenderWidgetHostViewGuest::GetRenderWidgetHost() const {
 }
 
 void RenderWidgetHostViewGuest::WasShown() {
-  platform_view_->WasShown();
+  if (!is_hidden_)
+    return;
+  is_hidden_ = false;
+  host_->WasShown();
 }
 
 void RenderWidgetHostViewGuest::WasHidden() {
-  platform_view_->WasHidden();
+  if (is_hidden_)
+    return;
+  is_hidden_ = true;
+  host_->WasHidden();
 }
 
 void RenderWidgetHostViewGuest::SetSize(const gfx::Size& size) {
@@ -58,15 +65,15 @@ gfx::GLSurfaceHandle RenderWidgetHostViewGuest::GetCompositingSurface() {
 }
 
 void RenderWidgetHostViewGuest::Show() {
-  platform_view_->Show();
+  WasShown();
 }
 
 void RenderWidgetHostViewGuest::Hide() {
-  platform_view_->Hide();
+  WasHidden();
 }
 
 bool RenderWidgetHostViewGuest::IsShowing() {
-  return platform_view_->IsShowing();
+  return !is_hidden_;
 }
 
 gfx::Rect RenderWidgetHostViewGuest::GetViewBounds() const {
