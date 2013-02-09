@@ -112,3 +112,7 @@ void AppListViewDelegate::ViewClosing() {
 void AppListViewDelegate::ViewActivationChanged(bool active) {
   controller_->ViewActivationChanged(active);
 }
+
+gfx::ImageSkia AppListViewDelegate::GetWindowIcon() {
+  return controller_->GetWindowIcon();
+}

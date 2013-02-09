@@ -42,7 +42,10 @@
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_JAVASCRIPT" file="allowed_script.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_DEFAULT_ICON" file="app_default_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_DROPARROW" file="app_droparrow.png" />
-      <if expr="pp_ifdef('enable_settings_app')">
+      <if expr="pp_ifdef('enable_app_list') and is_win">
+        <structure type="chrome_scaled_image" name="IDR_APP_LIST" file="win/app_list.png" />
+      </if>
+      <if expr="pp_ifdef('enable_app_list') and not pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_TAB_OVERLAY" file="app_list_tab_overlay.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_APP_NOTIFICATION_NUB" file="nub.png" />

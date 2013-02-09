@@ -14,6 +14,7 @@
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/signin_view.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
@@ -138,6 +139,13 @@ gfx::Size AppListView::GetPreferredSize() {
 
 views::View* AppListView::GetInitiallyFocusedView() {
   return app_list_main_view_->search_box_view()->search_box();
+}
+
+gfx::ImageSkia AppListView::GetWindowIcon() {
+  if (delegate_.get())
+    return delegate_->GetWindowIcon();
+
+  return gfx::ImageSkia();
 }
 
 bool AppListView::WidgetHasHitTestMask() const {

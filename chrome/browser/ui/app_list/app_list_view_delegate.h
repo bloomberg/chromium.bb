@@ -56,6 +56,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
   virtual void Dismiss() OVERRIDE;
   virtual void ViewClosing() OVERRIDE;
   virtual void ViewActivationChanged(bool active) OVERRIDE;
+  virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
 
   scoped_ptr<app_list::SigninDelegate> signin_delegate_;
   scoped_ptr<AppsModelBuilder> apps_builder_;

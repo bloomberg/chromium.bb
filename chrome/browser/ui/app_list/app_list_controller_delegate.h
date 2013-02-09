@@ -15,6 +15,10 @@ namespace extensions {
 class Extension;
 }
 
+namespace gfx {
+class ImageSkia;
+}
+
 // Interface to allow the view delegate to call out to whatever is controlling
 // the app list. This will have different implementations for different
 // platforms.
@@ -33,6 +37,9 @@ class AppListControllerDelegate {
 
   // Get app list window.
   virtual gfx::NativeWindow GetAppListWindow() = 0;
+
+  // Get the application icon to be used, if any, for the app list.
+  virtual gfx::ImageSkia GetWindowIcon();
 
   // Control of pinning apps.
   virtual bool IsAppPinned(const std::string& extension_id);

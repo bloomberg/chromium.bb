@@ -20,6 +20,7 @@
 #include "ui/app_list/search_result.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/examples/examples_window_with_content.h"
 
@@ -286,6 +287,10 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
   virtual void ViewActivationChanged(bool active) OVERRIDE {
     // Nothing needs to be done.
+  }
+
+  virtual gfx::ImageSkia GetWindowIcon() OVERRIDE {
+    return gfx::ImageSkia();
   }
 
   app_list::AppListModel* model_;

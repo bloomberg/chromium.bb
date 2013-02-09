@@ -5,12 +5,17 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 
 #include "base/logging.h"
+#include "ui/gfx/image/image_skia.h"
 
 AppListControllerDelegate::~AppListControllerDelegate() {}
 
 void AppListControllerDelegate::ViewClosing() {}
 
 void AppListControllerDelegate::ViewActivationChanged(bool active) {}
+
+gfx::ImageSkia AppListControllerDelegate::GetWindowIcon() {
+  return gfx::ImageSkia();
+}
 
 bool AppListControllerDelegate::IsAppPinned(const std::string& extension_id) {
   return false;

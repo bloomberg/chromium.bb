@@ -37,11 +37,14 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
+#include "grit/theme_resources.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/widget/widget.h"
@@ -130,6 +133,7 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
   virtual void ViewClosing() OVERRIDE;
   virtual void ViewActivationChanged(bool active) OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
+  virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
   virtual bool CanPin() OVERRIDE;
   virtual void OnShowExtensionPrompt() OVERRIDE;
   virtual void OnCloseExtensionPrompt() OVERRIDE;
@@ -287,6 +291,12 @@ void AppListControllerDelegateWin::ViewClosing() {
 gfx::NativeWindow AppListControllerDelegateWin::GetAppListWindow() {
   app_list::AppListView* view = g_app_list_controller.Get().GetView();
   return view ? view->GetWidget()->GetNativeWindow() : NULL;
+}
+
+gfx::ImageSkia AppListControllerDelegateWin::GetWindowIcon() {
+  gfx::ImageSkia* resource = ResourceBundle::GetSharedInstance().
+      GetImageSkiaNamed(IDR_APP_LIST);
+  return *resource;
 }
 
 bool AppListControllerDelegateWin::CanPin() {
@@ -473,6 +483,7 @@ void AppListController::ShowAppList(Profile* profile) {
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
   UpdateArrowPositionAndAnchorPoint(cursor);
   current_view_->Show();
+  current_view_->GetWidget()->GetTopLevelWidget()->UpdateWindowIcon();
   current_view_->GetWidget()->Activate();
   current_view_->GetWidget()->SetAlwaysOnTop(true);
 }
