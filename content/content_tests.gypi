@@ -843,6 +843,7 @@
               'dependencies': [
                 'content_shell_jni_headers',
                 'content_shell_lib',
+                '../testing/android/native_test.gyp:native_test_util',
               ],
             }],
             ['OS=="mac"', {

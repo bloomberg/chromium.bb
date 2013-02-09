@@ -22,60 +22,23 @@
 #include "content/public/app/android_library_loader_hooks.h"
 #include "content/shell/android/shell_jni_registrar.h"
 #include "jni/ContentBrowserTestsActivity_jni.h"
+#include "testing/android/native_test_util.h"
+
+using testing::native_test_util::ArgsToArgv;
+using testing::native_test_util::CreateFIFO;
+using testing::native_test_util::ParseArgsFromCommandLineFile;
+using testing::native_test_util::RedirectStream;
+using testing::native_test_util::ScopedMainEntryLogger;
 
 // The main function of the program to be wrapped as an apk.
 extern int main(int argc, char** argv);
 
 namespace {
 
-void ParseArgsFromString(const std::string& command_line,
-                         std::vector<std::string>* args) {
-  base::StringTokenizer tokenizer(command_line, kWhitespaceASCII);
-  tokenizer.set_quote_chars("\"");
-  while (tokenizer.GetNext()) {
-    std::string token;
-    RemoveChars(tokenizer.token(), "\"", &token);
-    args->push_back(token);
-  }
-}
-
-void ParseArgsFromCommandLineFile(std::vector<std::string>* args) {
-  // The test runner script writes the command line file in
-  // "/data/local/tmp".
-  static const char kCommandLineFilePath[] =
-      "/data/local/tmp/content-browser-tests-command-line";
-  base::FilePath command_line(kCommandLineFilePath);
-  std::string command_line_string;
-  if (file_util::ReadFileToString(command_line, &command_line_string)) {
-    ParseArgsFromString(command_line_string, args);
-  }
-}
-
-int ArgsToArgv(const std::vector<std::string>& args,
-                std::vector<char*>* argv) {
-  // We need to pass in a non-const char**.
-  int argc = args.size();
-
-  argv->resize(argc + 1);
-  for (int i = 0; i < argc; ++i)
-    (*argv)[i] = const_cast<char*>(args[i].c_str());
-  (*argv)[argc] = NULL;  // argv must be NULL terminated.
-
-  return argc;
-}
-
-class ScopedMainEntryLogger {
- public:
-  ScopedMainEntryLogger() {
-    printf(">>ScopedMainEntryLogger\n");
-  }
-
-  ~ScopedMainEntryLogger() {
-    printf("<<ScopedMainEntryLogger\n");
-    fflush(stdout);
-    fflush(stderr);
-  }
-};
+// The test runner script writes the command line file in
+// "/data/local/tmp".
+static const char kCommandLineFilePath[] =
+    "/data/local/tmp/content-browser-tests-command-line";
 
 }  // namespace
 
@@ -95,15 +58,21 @@ static void RunTests(JNIEnv* env,
   base::android::RegisterJni(env);
 
   std::vector<std::string> args;
-  ParseArgsFromCommandLineFile(&args);
+  ParseArgsFromCommandLineFile(kCommandLineFilePath, &args);
 
-  // We need to pass in a non-const char**.
   std::vector<char*> argv;
   int argc = ArgsToArgv(args, &argv);
 
   // Fully initialize command line with arguments.
   CommandLine::ForCurrentProcess()->AppendArguments(
       CommandLine(argc, &argv[0]), false);
+
+  // Create fifo and redirect stdout and stderr to it.
+  FilePath files_dir(base::android::ConvertJavaStringToUTF8(env, jfiles_dir));
+  FilePath fifo_path(files_dir.Append(FilePath("test.fifo")));
+  CreateFIFO(fifo_path.value().c_str());
+  RedirectStream(stdout, fifo_path.value().c_str(), "w");
+  dup2(STDOUT_FILENO, STDERR_FILENO);
 
   ScopedMainEntryLogger scoped_main_entry_logger;
   main(argc, &argv[0]);

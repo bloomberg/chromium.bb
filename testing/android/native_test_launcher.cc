@@ -11,26 +11,26 @@
 
 #include <android/log.h>
 #include <signal.h>
-#include <stdarg.h>
-#include <stdio.h>
 
 #include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/android/locale_utils.h"
-#include "base/android/path_utils.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/at_exit.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/logging.h"
-#include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/strings/string_tokenizer.h"
 #include "gtest/gtest.h"
+#include "testing/android/native_test_util.h"
 #include "testing/jni/ChromeNativeTestActivity_jni.h"
+
+using testing::native_test_util::ArgsToArgv;
+using testing::native_test_util::CreateFIFO;
+using testing::native_test_util::ParseArgsFromCommandLineFile;
+using testing::native_test_util::RedirectStream;
+using testing::native_test_util::ScopedMainEntryLogger;
 
 // The main function of the program to be wrapped as a test apk.
 extern int main(int argc, char** argv);
@@ -42,15 +42,13 @@ namespace {
 const char kSeparateStderrFifo[] = "separate-stderr-fifo";
 const char kCreateStdinFifo[] = "create-stdin-fifo";
 
+// The test runner script writes the command line file in
+// "/data/local/tmp".
+static const char kCommandLineFilePath[] =
+    "/data/local/tmp/chrome-native-tests-command-line";
+
 const char kLogTag[] = "chromium";
 const char kCrashedMarker[] = "[ CRASHED      ]\n";
-
-void AndroidLogError(const char* format, ...) {
-  va_list args;
-  va_start(args, format);
-  __android_log_vprint(ANDROID_LOG_ERROR, kLogTag, format, args);
-  va_end(args);
-}
 
 // The list of signals which are considered to be crashes.
 const int kExceptionSignals[] = {
@@ -80,73 +78,6 @@ void InstallHandlers() {
   }
 }
 
-void ParseArgsFromString(const std::string& command_line,
-                         std::vector<std::string>* args) {
-  base::StringTokenizer tokenizer(command_line, kWhitespaceASCII);
-  tokenizer.set_quote_chars("\"");
-  while (tokenizer.GetNext()) {
-    std::string token;
-    RemoveChars(tokenizer.token(), "\"", &token);
-    args->push_back(token);
-  }
-}
-
-void ParseArgsFromCommandLineFile(std::vector<std::string>* args) {
-  // The test runner script writes the command line file in
-  // "/data/local/tmp".
-  static const char kCommandLineFilePath[] =
-      "/data/local/tmp/chrome-native-tests-command-line";
-  FilePath command_line(kCommandLineFilePath);
-  std::string command_line_string;
-  if (file_util::ReadFileToString(command_line, &command_line_string)) {
-    ParseArgsFromString(command_line_string, args);
-  }
-}
-
-int ArgsToArgv(const std::vector<std::string>& args,
-                std::vector<char*>* argv) {
-  // We need to pass in a non-const char**.
-  int argc = args.size();
-
-  argv->resize(argc + 1);
-  for (int i = 0; i < argc; ++i)
-    (*argv)[i] = const_cast<char*>(args[i].c_str());
-  (*argv)[argc] = NULL;  // argv must be NULL terminated.
-
-  return argc;
-}
-
-void CreateFIFO(const char* fifo_path) {
-  unlink(fifo_path);
-  // Default permissions for mkfifo is ignored, chmod is required.
-  if (mkfifo(fifo_path, 0666) || chmod(fifo_path, 0666)) {
-    AndroidLogError("Failed to create fifo %s: %s\n",
-                    fifo_path, strerror(errno));
-    exit(EXIT_FAILURE);
-  }
-}
-
-void Redirect(FILE* stream, const char* path, const char* mode) {
-  if (!freopen(path, mode, stream)) {
-    AndroidLogError("Failed to redirect stream to file: %s: %s\n",
-                    path, strerror(errno));
-    exit(EXIT_FAILURE);
-  }
-}
-
-class ScopedMainEntryLogger {
- public:
-  ScopedMainEntryLogger() {
-    printf(">>ScopedMainEntryLogger\n");
-  }
-
-  ~ScopedMainEntryLogger() {
-    printf("<<ScopedMainEntryLogger\n");
-    fflush(stdout);
-    fflush(stderr);
-  }
-};
-
 }  // namespace
 
 // This method is called on a separate java thread so that we won't trigger
@@ -168,9 +99,8 @@ static void RunTests(JNIEnv* env,
   base::android::RegisterJni(env);
 
   std::vector<std::string> args;
-  ParseArgsFromCommandLineFile(&args);
+  ParseArgsFromCommandLineFile(kCommandLineFilePath, &args);
 
-  // We need to pass in a non-const char**.
   std::vector<char*> argv;
   int argc = ArgsToArgv(args, &argv);
 
@@ -202,11 +132,11 @@ static void RunTests(JNIEnv* env,
   }
 
   // Only redirect the streams after all fifos have been created.
-  Redirect(stdout, fifo_path.value().c_str(), "w");
+  RedirectStream(stdout, fifo_path.value().c_str(), "w");
   if (!stdin_fifo_path.empty())
-    Redirect(stdin, stdin_fifo_path.value().c_str(), "r");
+    RedirectStream(stdin, stdin_fifo_path.value().c_str(), "r");
   if (!stderr_fifo_path.empty())
-    Redirect(stderr, stderr_fifo_path.value().c_str(), "w");
+    RedirectStream(stderr, stderr_fifo_path.value().c_str(), "w");
   else
     dup2(STDOUT_FILENO, STDERR_FILENO);
 
