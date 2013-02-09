@@ -16,7 +16,7 @@ class OneClickSigninInfoBar : public ConfirmInfoBar {
  public:
   OneClickSigninInfoBar(InfoBarService* owner,
                         OneClickSigninInfoBarDelegate* delegate);
-  ~OneClickSigninInfoBar();
+  virtual ~OneClickSigninInfoBar();
 
  private:
   // ConfirmInfoBar overrides.
