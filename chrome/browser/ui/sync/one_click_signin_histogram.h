@@ -40,6 +40,9 @@ enum {
   // The sync was started through auto-accept with advanced settings.
   HISTOGRAM_AUTO_WITH_ADVANCED,
 
+  // The sync was aborted with an undo button.
+  HISTOGRAM_UNDO,
+
   HISTOGRAM_MAX
 };
 

@@ -25,7 +25,10 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer {
     // Starts the process of signing the user in with the SigninManager, and
     // once completed redirects the user to the settings page to allow them
     // to configure which data types to sync before sync is enabled.
-    CONFIGURE_SYNC_FIRST
+    CONFIGURE_SYNC_FIRST,
+
+    // The process should be aborted because the undo button has been pressed.
+    UNDO_SYNC
   };
 
   // |profile| must not be NULL, however |browser| can be. When using the

@@ -118,6 +118,12 @@ struct StartSyncArgs {
 // Start syncing with the given user information.
 void StartSync(const StartSyncArgs& args,
                OneClickSigninSyncStarter::StartSyncMode start_mode) {
+  if (start_mode == OneClickSigninSyncStarter::UNDO_SYNC) {
+    UMA_HISTOGRAM_ENUMERATION("AutoLogin.Reverse",
+                              one_click_signin::HISTOGRAM_UNDO,
+                              one_click_signin::HISTOGRAM_MAX);
+    return;
+  }
   // The starter deletes itself once its done.
   new OneClickSigninSyncStarter(args.profile, args.browser, args.session_index,
                                 args.email, args.password, start_mode);

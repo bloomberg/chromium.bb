@@ -50,10 +50,11 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, ShowAndOK) {
   MakeBubble()->OnClickOK(NULL);
 }
 
-// Test that the dialog doesn't call the callback if the Undo button is
-// clicked.
+// Test that the dialog calls the callback if the Undo button is
+// clicked. Callback should be called to abort the sync process.
 IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, ShowAndUndo) {
-  EXPECT_CALL(*this, OnStartSync(testing::_)).Times(0);
+  EXPECT_CALL(*this, OnStartSync(
+      OneClickSigninSyncStarter::UNDO_SYNC)).Times(1);
 
   MakeBubble()->OnClickUndo(NULL);
 }

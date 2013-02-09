@@ -54,11 +54,12 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninDialogControllerTest, OK) {
   EXPECT_EQ(1, callback_count_);
 }
 
-// Test that the dialog doesn't call the callback if the Undo button
-// is clicked.
+// Test that the dialog does call the callback if the Undo button
+// is clicked. Callback should be called to abort the sync.
 IN_PROC_BROWSER_TEST_F(OneClickSigninDialogControllerTest, Undo) {
   [controller_->view_controller() onClickUndo:nil];
-  EXPECT_EQ(0, callback_count_);
+  EXPECT_EQ(OneClickSigninSyncStarter::UNDO_SYNC, sync_mode_);
+  EXPECT_EQ(1, callback_count_);
 }
 
 // Test that the advanced callback is run if its corresponding button

@@ -66,10 +66,11 @@ TEST_F(OneClickSigninBubbleControllerTest, OK) {
   [[controller_ viewController] ok:nil];
 }
 
-// Test that the bubble doesn't call the callback if the Undo button
-// is clicked.
+// Test that the dialog calls the callback if the Undo button
+// is clicked. Callback should be called to abort the sync.
 TEST_F(OneClickSigninBubbleControllerTest, Undo) {
-  EXPECT_CALL(*this, OnStartSync(_)).Times(0);
+  EXPECT_CALL(*this, OnStartSync(
+      OneClickSigninSyncStarter::UNDO_SYNC)).Times(1);
   [[controller_ viewController] onClickUndo:nil];
 }
 

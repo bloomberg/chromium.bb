@@ -63,7 +63,8 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 }
 
 - (IBAction)onClickUndo:(id)sender {
-  startSyncCallback_.Reset();
+  base::ResetAndReturn(&startSyncCallback_).Run(
+      OneClickSigninSyncStarter::UNDO_SYNC);
   [self close];
 }
 

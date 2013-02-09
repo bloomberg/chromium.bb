@@ -98,7 +98,8 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
   // View should no longer be showing.  The message loop will exit once the
   // fade animation of the bubble is done.
   content::RunMessageLoop();
-  EXPECT_FALSE(on_start_sync_called_);
+  EXPECT_TRUE(on_start_sync_called_);
+  EXPECT_EQ(OneClickSigninSyncStarter::UNDO_SYNC, mode_);
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }
 

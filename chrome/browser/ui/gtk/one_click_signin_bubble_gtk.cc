@@ -71,7 +71,8 @@ void OneClickSigninBubbleGtk::OnClickOK(GtkWidget* link) {
 }
 
 void OneClickSigninBubbleGtk::OnClickUndo(GtkWidget* link) {
-  start_sync_callback_.Reset();
+  base::ResetAndReturn(&start_sync_callback_).Run(
+      OneClickSigninSyncStarter::UNDO_SYNC);
   bubble_->Close();
 }
 
