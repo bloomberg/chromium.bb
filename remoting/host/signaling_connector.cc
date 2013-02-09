@@ -94,7 +94,8 @@ bool SignalingConnector::OnSignalStrategyIncomingStanza(
 void SignalingConnector::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(CalledOnValidThread());
-  if (type != net::NetworkChangeNotifier::CONNECTION_NONE) {
+  if (type != net::NetworkChangeNotifier::CONNECTION_NONE &&
+      signal_strategy_->GetState() == SignalStrategy::DISCONNECTED) {
     LOG(INFO) << "Network state changed to online.";
     ResetAndTryReconnect();
   }
@@ -102,8 +103,10 @@ void SignalingConnector::OnConnectionTypeChanged(
 
 void SignalingConnector::OnIPAddressChanged() {
   DCHECK(CalledOnValidThread());
-  LOG(INFO) << "IP address has changed.";
-  ResetAndTryReconnect();
+  if (signal_strategy_->GetState() == SignalStrategy::DISCONNECTED) {
+    LOG(INFO) << "IP address has changed.";
+    ResetAndTryReconnect();
+  }
 }
 
 void SignalingConnector::OnGetTokensResponse(const std::string& user_email,
