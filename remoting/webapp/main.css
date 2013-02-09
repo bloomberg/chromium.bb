@@ -369,6 +369,7 @@ section {
   padding: 8px 16px;
   text-align: center;
   font-size: 12px;
+  margin-top: 30px;
 }
 
 .message {
@@ -540,10 +541,6 @@ button {
 #host-plugin-container {
   width: 0;
   height: 0;
-}
-
-#nat-box {
-  margin-top: 30px;
 }
 
 /* The NAT traversal state is independent of the app mode, and both need

@@ -31,6 +31,17 @@ function consentRequired_(authContinue) {
 }
 
 /**
+ * @enum {string} The start-up mode of the web-app
+ */
+remoting.TabType = {
+  REGULAR: 'REGULAR',
+  PINNED: 'PINNED',
+  WINDOWED: 'WINDOWED',
+  FULLSCREEN: 'FULLSCREEN',
+  UNKNOWN: 'UNKNOWN'
+};
+
+/**
  * Entry point for app initialization.
  */
 remoting.init = function() {
@@ -96,6 +107,16 @@ remoting.init = function() {
     remoting.initDaemonUi();
   }
   remoting.hostList.load(onLoad);
+
+  // Show the tab-type warnings if necessary.
+  /** @param {remoting.TabType} tabType */
+  var onTabTypeKnown = function(tabType) {
+    if (tabType != remoting.TabType.WINDOWED) {
+      document.getElementById('startup-mode-box-me2me').hidden = false;
+      document.getElementById('startup-mode-box-it2me').hidden = false;
+    }
+  };
+  getTabType_(onTabTypeKnown);
 };
 
 /**
@@ -111,9 +132,9 @@ remoting.onEmail = function(email) {
   document.getElementById('get-started-me2me').disabled = false;
 };
 
-// initDaemonUi is called if the app is not starting up in session mode, and
-// also if the user cancels pin entry or the connection in session mode.
-remoting.initDaemonUi = function () {
+/** initDaemonUi is called if the app is not starting up in session mode, and
+ * also if the user cancels pin entry or the connection in session mode. */
+remoting.initDaemonUi = function() {
   remoting.hostController = new remoting.HostController();
   document.getElementById('share-button').disabled =
       !remoting.hostController.isPluginSupported();
@@ -279,7 +300,7 @@ function jsonParseSafe(jsonString) {
  * Return the current time as a formatted string suitable for logging.
  *
  * @return {string} The current time, formatted as [mmdd/hhmmss.xyz]
-*/
+ */
 remoting.timestamp = function() {
   /**
    * @param {number} num A number.
@@ -317,3 +338,40 @@ remoting.showErrorMessage = function(error) {
   document.getElementById('token-refresh-other-error').hidden = auth_failed;
   remoting.setMode(remoting.AppMode.TOKEN_REFRESH_FAILED);
 };
+
+/**
+ * Get the start-up mode of the application.
+ * @param {function(remoting.TabType):void} callback Callback to receive the
+ *     type start-up mode of the application (the type of the current tab).
+ */
+function getTabType_(callback) {
+  /** @param {chrome.Window} win The current window. */
+  var windowCallback = function(win) {
+    switch (win.state) {
+      case 'fullscreen':
+        callback(remoting.TabType.FULLSCREEN);
+        return;
+      case 'normal':
+        switch (win.type) {
+          case 'normal':
+            callback(remoting.TabType.REGULAR);
+            return;
+          case 'popup':
+          case 'app':
+            callback(remoting.TabType.WINDOWED);
+            return;
+        }
+    }
+    // TODO(jamiewalch): Decide what to do about "panel".
+    callback(remoting.TabType.UNKNOWN);
+  };
+  /** @param {chrome.Tab} tab The current tab. */
+  var tabCallback = function(tab) {
+    if (tab.pinned) {
+      callback(remoting.TabType.PINNED);
+    } else {
+      chrome.windows.get(tab.windowId, null, windowCallback);
+    }
+  };
+  chrome.tabs.getCurrent(tabCallback);
+}

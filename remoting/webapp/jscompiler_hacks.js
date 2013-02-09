@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // This file contains various hacks needed to inform JSCompiler of various
-// WebKit-specific properties and methods. It is used only with JSCompiler
-// to verify the type-correctness of our code.
+// WebKit- and Chrome-specific properties and methods. It is used only with
+// JSCompiler to verify the type-correctness of our code.
 
 /** @type {HTMLElement} */
 Document.prototype.activeElement;
@@ -111,4 +111,34 @@ chrome.runtime = {
     /** @type {string} */
     message: ''
   }
+};
+
+/** @type {Object} */
+chrome.tabs;
+
+/** @param {function(chrome.Tab):void} callback */
+chrome.tabs.getCurrent = function(callback) {}
+
+/** @constructor */
+chrome.Tab = function() {
+  /** @type {boolean} */
+  this.pinned = false;
+  /** @type {number} */
+  this.windowId = 0;
+};
+
+/** @type {Object} */
+chrome.windows;
+
+/** @param {number} id
+ *  @param {Object?} getInfo
+ *  @param {function(chrome.Window):void} callback */
+chrome.windows.get = function(id, getInfo, callback) {}
+
+/** @constructor */
+chrome.Window = function() {
+  /** @type {string} */
+  this.state = '';
+  /** @type {string} */
+  this.type = '';
 };

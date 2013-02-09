@@ -510,6 +510,12 @@
       <message desc="Message displayed at the bottom of the host screen if local policy dictates that NAT traversal is disabled, meaning that connections outside the local network will not work." name="IDR_WARNING_NAT_DISABLED">
         NOTE: Policy settings permit connections only between computers within your network.
       </message>
+      <message desc="Message displayed at the bottom of the client connect dialog if Chromoting is running in the wrong start-up mode." name="IDR_WARNING_NOT_WINDOWED">
+	NOTE: To ensure that all keyboard shortcuts are available, you can configure Chromoting to ‘Open as window’.
+      </message>
+      <message desc="Link to learn more detailed information on a topic." name="IDR_LEARN_HOW">
+	Learn how.
+      </message>
       <message desc="Help link displayed when the user enables the host on this computer. Clicking this link opens a page that explains why this operation is safe. This string appears in a UI with limited horizontal space. Please try to keep translations no more than about 30 characters." name="IDR_WHY_IS_THIS_SAFE">
         Why is this safe?
       </message>
