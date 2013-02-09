@@ -89,11 +89,11 @@ class JingleSession : public Session,
                                     scoped_ptr<Authenticator> authenticator);
   void AcceptIncomingConnection(const JingleMessage& initiate_message);
 
-  // Helper to send IqRequests to the peer. It sets up the response
-  // callback to OnMessageResponse() which simply terminates the
-  // session whenever a request fails or times out. This method should
-  // not be used for messages that need to be handled differently.
-  void SendMessage(const JingleMessage& message);
+  // Sends |message| to the peer. The session is closed if the send fails or no
+  // response is received within a reasonable time. All other responses are
+  // ignored. No timeout is set if |timeout| is zero.
+  void SendMessage(const JingleMessage& message, base::TimeDelta timeout);
+
   void OnMessageResponse(JingleMessage::ActionType request_type,
                          IqRequest* request,
                          const buzz::XmlElement* response);
@@ -142,11 +142,6 @@ class JingleSession : public Session,
   bool config_is_set_;
 
   scoped_ptr<Authenticator> authenticator_;
-
-  // Container for pending Iq requests. Requests are removed in
-  // CleanupPendingRequests() which is called when a response is
-  // received or one of the requests times out.
-  std::list<IqRequest*> pending_requests_;
 
   ChannelsMap channels_;
   scoped_ptr<ChannelMultiplexer> channel_multiplexer_;

@@ -34,10 +34,9 @@ namespace {
 // process.
 const int kTransportInfoSendDelayMs = 2;
 
-// How long we should wait for a response from the other end. This
-// value is used for all requests include |session-initiate| and
-// |transport-info|.
-const int kMessageResponseTimeoutSeconds = 10;
+// How long we should wait for a response from the other end. This value is used
+// for all requests except |transport-info|.
+const int kDefaultMessageTimeout = 10;
 
 // Name of the multiplexed channel.
 const char kMuxChannelName[] = "mux";
@@ -66,8 +65,6 @@ JingleSession::JingleSession(JingleSessionManager* session_manager)
 
 JingleSession::~JingleSession() {
   channel_multiplexer_.reset();
-  STLDeleteContainerPointers(pending_requests_.begin(),
-                             pending_requests_.end());
   STLDeleteContainerPairSecondPointers(channels_.begin(), channels_.end());
   session_manager_->SessionDestroyed(this);
 }
@@ -108,7 +105,7 @@ void JingleSession::StartConnection(
   message.description.reset(
       new ContentDescription(candidate_config_->Clone(),
                              authenticator_->GetNextMessage()));
-  SendMessage(message);
+  SendMessage(message, base::TimeDelta::FromSeconds(kDefaultMessageTimeout));
 
   SetState(CONNECTING);
 }
@@ -161,7 +158,7 @@ void JingleSession::AcceptIncomingConnection(
   message.description.reset(
       new ContentDescription(CandidateSessionConfig::CreateFrom(config_),
                              auth_message.Pass()));
-  SendMessage(message);
+  SendMessage(message, base::TimeDelta::FromSeconds(kDefaultMessageTimeout));
 
   // Update state.
   SetState(CONNECTED);
@@ -282,15 +279,15 @@ void JingleSession::OnTransportDeleted(Transport* transport) {
   channels_.erase(it);
 }
 
-void JingleSession::SendMessage(const JingleMessage& message) {
+void JingleSession::SendMessage(const JingleMessage& message,
+                                base::TimeDelta timeout) {
   scoped_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
       message.ToXml(),
       base::Bind(&JingleSession::OnMessageResponse,
                  base::Unretained(this), message.action));
   if (request.get()) {
-    request->SetTimeout(
-        base::TimeDelta::FromSeconds(kMessageResponseTimeoutSeconds));
-    pending_requests_.push_back(request.release());
+    if (timeout > base::TimeDelta())
+      request->SetTimeout(timeout);
   } else {
     LOG(ERROR) << "Failed to send a "
                << JingleMessage::GetActionName(message.action) << " message";
@@ -302,8 +299,8 @@ void JingleSession::OnMessageResponse(
     IqRequest* request,
     const buzz::XmlElement* response) {
   std::string type_str = JingleMessage::GetActionName(request_type);
-  CleanupPendingRequests(request);
 
+  // |response| will be NULL if the request timed out.
   if (!response) {
     LOG(ERROR) << type_str << " request timed out.";
     CloseInternal(SIGNALING_TIMEOUT);
@@ -328,31 +325,6 @@ void JingleSession::OnMessageResponse(
       }
     }
   }
-}
-
-void JingleSession::CleanupPendingRequests(IqRequest* request) {
-  DCHECK(!pending_requests_.empty());
-  DCHECK(request);
-
-  // This method is called whenever a response to |request| is
-  // received. Here we delete that request and all requests that were
-  // sent before it. The idea here is that if we send messages A, B
-  // and C and then suddenly receive response to C then it means that
-  // either A and B messages or the corresponding response messages
-  // were somehow lost. E.g. that may happen when the client switches
-  // from one network to another. The best way to handle that case is
-  // to ignore errors and timeouts for A and B by deleting the
-  // corresponding IqRequest objects.
-  while (!pending_requests_.empty() && pending_requests_.front() != request) {
-    delete pending_requests_.front();
-    pending_requests_.pop_front();
-  }
-
-  // Delete the |request| itself.
-  DCHECK_EQ(request, pending_requests_.front());
-  delete request;
-  if (!pending_requests_.empty())
-    pending_requests_.pop_front();
 }
 
 void JingleSession::OnIncomingMessage(const JingleMessage& message,
@@ -527,7 +499,7 @@ void JingleSession::ProcessAuthenticationStep() {
     JingleMessage message(peer_jid_, JingleMessage::SESSION_INFO, session_id_);
     message.info = authenticator_->GetNextMessage();
     DCHECK(message.info.get());
-    SendMessage(message);
+    SendMessage(message, base::TimeDelta::FromSeconds(kDefaultMessageTimeout));
   }
   DCHECK_NE(authenticator_->state(), Authenticator::MESSAGE_READY);
 
@@ -542,7 +514,7 @@ void JingleSession::ProcessAuthenticationStep() {
 void JingleSession::SendTransportInfo() {
   JingleMessage message(peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_);
   message.candidates.swap(pending_candidates_);
-  SendMessage(message);
+  SendMessage(message, base::TimeDelta());
 }
 
 void JingleSession::CloseInternal(ErrorCode error) {
@@ -572,7 +544,7 @@ void JingleSession::CloseInternal(ErrorCode error) {
     JingleMessage message(peer_jid_, JingleMessage::SESSION_TERMINATE,
                           session_id_);
     message.reason = reason;
-    SendMessage(message);
+    SendMessage(message, base::TimeDelta::FromSeconds(kDefaultMessageTimeout));
   }
 
   error_ = error;
