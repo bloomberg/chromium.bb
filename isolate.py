@@ -1099,7 +1099,7 @@ def convert_old_to_new_format(value):
   which allows any set of variables, has no hardcoded values, and only allows
   explicit positive tests of variable values.
   """
-  conditions = value.setdefault('conditions', [])
+  conditions = value.get('conditions', [])
   if 'variables' not in value and all(len(cond) == 2 for cond in conditions):
     return value  # Nothing to change
 
@@ -1114,14 +1114,19 @@ def convert_old_to_new_format(value):
     expr = ' or '.join('OS=="%s"' % os for os in oses if os != not_os)
     return [expr, then]
 
-  conditions += [
-    if_not_os(parse_condition(cond), cond.pop())
+  conditions = [
+    cond[:2] for cond in conditions if cond[1]
+  ] + [
+    if_not_os(parse_condition(cond), cond[2])
     for cond in conditions if len(cond) == 3
   ]
+
   if 'variables' in value:
     conditions.append(if_not_os(None, {'variables': value.pop('variables')}))
   conditions.sort()
 
+  value = value.copy()
+  value['conditions'] = conditions
   return value
 
 

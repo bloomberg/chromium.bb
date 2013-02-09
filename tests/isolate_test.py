@@ -833,6 +833,71 @@ class IsolateTest(IsolateBase):
         "}\n")
     self._test_pretty_print_impl(value, expected)
 
+  def test_convert_old_to_new_bypass(self):
+    isolate_not_needing_conversion = {
+      'conditions': [
+        ['OS=="mac"', {'variables': {'foo': 'bar'}}],
+        ['condition shouldn\'t matter', {'variables': {'x': 'y'}}],
+      ],
+    }
+    self.assertEqual(
+        isolate_not_needing_conversion,
+        isolate.convert_old_to_new_format(isolate_not_needing_conversion))
+
+  def test_convert_old_to_new_else(self):
+    isolate_with_else_clauses = {
+      'conditions': [
+        ['OS=="mac"', {
+          'variables': {'foo': 'bar'},
+        }, {
+          'variables': {'x': 'y'},
+        }],
+        ['OS=="foo"', {
+        }, {
+          'variables': {'p': 'q'},
+        }],
+      ],
+    }
+    expected_output = {
+      'conditions': [
+        ['OS=="foo" or OS=="linux" or OS=="win"', {
+          'variables': {'x': 'y'},
+        }],
+        ['OS=="linux" or OS=="mac" or OS=="win"', {
+          'variables': {'p': 'q'},
+        }],
+        ['OS=="mac"', {
+          'variables': {'foo': 'bar'},
+        }],
+      ],
+    }
+    self.assertEqual(
+        expected_output,
+        isolate.convert_old_to_new_format(isolate_with_else_clauses))
+
+  def test_convert_old_to_new_default_variables(self):
+    isolate_with_default_variables = {
+      'conditions': [
+        ['OS=="abc"', {
+          'variables': {'foo': 'bar'},
+        }],
+      ],
+      'variables': {'p': 'q'},
+    }
+    expected_output = {
+      'conditions': [
+        ['OS=="abc"', {
+          'variables': {'foo': 'bar'},
+        }],
+        ['OS=="abc" or OS=="linux" or OS=="mac" or OS=="win"', {
+          'variables': {'p': 'q'},
+        }],
+      ],
+    }
+    self.assertEqual(
+        expected_output,
+        isolate.convert_old_to_new_format(isolate_with_default_variables))
+
 
 class IsolateLoad(IsolateBase):
   def setUp(self):
