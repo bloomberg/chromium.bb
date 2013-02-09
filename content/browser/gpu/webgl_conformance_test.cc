@@ -29,6 +29,7 @@ class WebGLConformanceTest : public ContentBrowserTest {
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {
+#if !defined(OS_WIN)
     base::FilePath webgl_conformance_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &webgl_conformance_path);
     webgl_conformance_path = webgl_conformance_path.Append(
@@ -37,6 +38,7 @@ class WebGLConformanceTest : public ContentBrowserTest {
         FILE_PATH_LITERAL("webgl_conformance"));
     ASSERT_TRUE(file_util::DirectoryExists(webgl_conformance_path))
         << "Missing conformance tests: " << webgl_conformance_path.value();
+#endif
 
     PathService::Get(DIR_TEST_DATA, &test_path_);
     test_path_ = test_path_.Append(FILE_PATH_LITERAL("gpu"));
