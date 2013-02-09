@@ -42,24 +42,26 @@ ARM_LIB?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-ar r
 # $2 = Compile Flags
 #
 define C_COMPILER_RULE
-$(OUTDIR)/$(basename $(1))_x86_32.o : $(1) $(TOP_MAKE) | $(OUTDIR)
+-include $(OUTDIR)/$(basename $(1))_*.d
+$(OUTDIR)/$(basename $(1))_x86_32.o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
 	$(X86_CC) -o $$@ -c $$< -m32 $(POSIX_FLAGS) $(2) $(NACL_CFLAGS)
 
-$(OUTDIR)/$(basename $(1))_x86_64.o : $(1) $(TOP_MAKE) | $(OUTDIR)
+$(OUTDIR)/$(basename $(1))_x86_64.o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
 	$(X86_CC) -o $$@ -c $$< -m64 $(POSIX_FLAGS) $(2) $(NACL_CFLAGS)
 
-$(OUTDIR)/$(basename $(1))_arm.o : $(1) $(TOP_MAKE) | $(OUTDIR)
+$(OUTDIR)/$(basename $(1))_arm.o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
 	$(ARM_CC) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS)
 endef
 
 define CXX_COMPILER_RULE
-$(OUTDIR)/$(basename $(1))_x86_32.o : $(1) $(TOP_MAKE) | $(OUTDIR)
+-include $(OUTDIR)/$(basename $(1))_*.d
+$(OUTDIR)/$(basename $(1))_x86_32.o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
 	$(X86_CXX) -o $$@ -c $$< -m32 $(POSIX_FLAGS) $(2) $(NACL_CXXFLAGS)
 
-$(OUTDIR)/$(basename $(1))_x86_64.o : $(1) $(TOP_MAKE) | $(OUTDIR)
+$(OUTDIR)/$(basename $(1))_x86_64.o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
 	$(X86_CXX) -o $$@ -c $$< -m64 $(POSIX_FLAGS) $(2) $(NACL_CXXFLAGS)
 
-$(OUTDIR)/$(basename $(1))_arm.o : $(1) $(TOP_MAKE) | $(OUTDIR)
+$(OUTDIR)/$(basename $(1))_arm.o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
 	$(ARM_CXX) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CXXFLAGS)
 endef
 
@@ -111,6 +113,15 @@ endef
 # $4 = VC Link Flags (unused)
 #
 define LIB_RULE
+$(STAMPDIR)/$(1).stamp : $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a
+$(STAMPDIR)/$(1).stamp : $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a
+ifneq ('glibc','$(TOOLCHAIN)')
+$(STAMPDIR)/$(1).stamp : $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a
+endif
+
+$(STAMPDIR)/$(1).stamp :
+	@echo "TOUCHED $$@" > $(STAMPDIR)/$(1).stamp
+
 all: $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a
 $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(OUTDIR)/$(basename $(src))_x86_32.o)
 	$(MKDIR) -p $$(dir $$@)
@@ -129,7 +140,8 @@ $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$
 	$(ARM_LIB) $$@ $$^
 endef
 
-
+infos:
+	echo $(STAMPDIR)
 #
 # Specific Link Macro
 #
@@ -141,14 +153,14 @@ endef
 # $6 = Library Paths
 #
 define LINKER_RULE
-$(OUTDIR)/$(1)_x86_32.nexe : $(foreach src,$(2),$(OUTDIR)/$(basename $(src))_x86_32.o) $(4)
-	$(X86_LINK) -o $$@ $$(filter-out $(4),$$^) -m32 $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_x86_32/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5)
+$(OUTDIR)/$(1)_x86_32.nexe : $(foreach src,$(2),$(OUTDIR)/$(basename $(src))_x86_32.o) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+	$(X86_LINK) -o $$@ $$(filter %.o,$$^) -m32 $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_x86_32/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5)
 
-$(OUTDIR)/$(1)_x86_64.nexe : $(foreach src,$(2),$$(OUTDIR)/$(basename $(src))_x86_64.o) $(4)
-	$(X86_LINK) -o $$@ $$(filter-out $(4),$$^) -m64 $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_x86_64/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5)
+$(OUTDIR)/$(1)_x86_64.nexe : $(foreach src,$(2),$$(OUTDIR)/$(basename $(src))_x86_64.o) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+	$(X86_LINK) -o $$@ $$(filter %.o,$$^) -m64 $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_x86_64/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5)
 
-$(OUTDIR)/$(1)_arm.nexe : $(foreach src,$(2),$(OUTDIR)/$(basename $(src))_arm.o) $(4)
-	$(ARM_LINK) -o $$@ $$(filter-out $(4),$$^) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5)
+$(OUTDIR)/$(1)_arm.nexe : $(foreach src,$(2),$(OUTDIR)/$(basename $(src))_arm.o) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+	$(ARM_LINK) -o $$@ $$(filter %.o,$$^) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5)
 endef
 
 

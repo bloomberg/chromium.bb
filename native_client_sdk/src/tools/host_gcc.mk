@@ -32,12 +32,14 @@ LINUX_CCFLAGS=-fPIC -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(NA
 # $2 = Compile Flags
 #
 define C_COMPILER_RULE
-$(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) | $(OUTDIR)
+-include $(OUTDIR)/$(basename $(1)).d
+$(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
 	$(HOST_CC) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS)
 endef
 
 define CXX_COMPILER_RULE
-$(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) | $(OUTDIR)
+-include $(OUTDIR)/$(basename $(1)).d
+$(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) |$(dir $(OUTDIR)/$(basename $(1)))dir.stamp
 	$(HOST_CXX) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS)
 endef
 
@@ -75,6 +77,9 @@ endef
 #
 #
 define LIB_RULE
+$(STAMPDIR)/$(1).stamp : $(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/lib$(1).a
+	@echo "TOUCHED $$@" > $(STAMPDIR)/$(1).stamp
+
 all:$(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/lib$(1).a
 $(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(OUTDIR)/$(basename $(src)).o)
 	$(MKDIR) -p $$(dir $$@)
@@ -94,7 +99,7 @@ endef
 #
 define LINKER_RULE
 all: $(1)
-$(1) : $(2) $(4)
+$(1) : $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(HOST_LINK) -shared -o $(1) $(2) $(foreach path,$(5),-L$(path)/$(OSNAME)_host)/$(CONFIG) $(foreach lib,$(3),-l$(lib)) $(6)
 endef
 

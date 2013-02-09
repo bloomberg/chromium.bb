@@ -37,12 +37,14 @@ WIN_FLAGS?=-D WIN32 -D _WIN32 -D PTW32_STATIC_LIB
 # $2 = Compile Flags
 #
 define C_COMPILER_RULE
-$(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) | $(OUTDIR)
+-include $(OUTDIR)/$(basename $(1)).d
+$(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
 	$(HOST_CC) /Fo$$@ /c $$< $(WIN_OPT_FLAGS) $(2) $(WIN_FLAGS)
 endef
 
 define CXX_COMPILER_RULE
-$(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) | $(OUTDIR)
+-include $(OUTDIR)/$(basename $(1)).d
+$(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
 	$(HOST_CXX) /Fo$$@ -c $$< $(WIN_OPT_FLAGS) $(2) $(WIN_FLAGS)
 endef
 
@@ -68,6 +70,9 @@ endef
 #
 #
 define LIB_RULE
+$(STAMPDIR)/$(1).stamp : $(NACL_SDK_ROOT)/lib/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib
+	@echo "TOUCHED $$@" > $(STAMPDIR)/$(1).stamp
+
 all:$(NACL_SDK_ROOT)/lib/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib
 $(NACL_SDK_ROOT)/lib/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib : $(foreach src,$(2),$(OUTDIR)/$(basename $(src)).o)
 	$(MKDIR) -p $$(dir $$@)

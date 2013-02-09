@@ -26,12 +26,14 @@ PNACL_LIB?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-ar r
 # $3 = Include Directories
 #
 define C_COMPILER_RULE
-$(OUTDIR)/$(basename $(1))_pnacl.o : $(1) $(TOP_MAKE) | $(OUTDIR)
+-include $(OUTDIR)/$(basename $(1))_pnacl.d
+$(OUTDIR)/$(basename $(1))_pnacl.o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
 	$(PNACL_CC) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS)
 endef
 
 define CXX_COMPILER_RULE
-$(OUTDIR)/$(basename $(1))_pnacl.o : $(1) $(TOP_MAKE) | $(OUTDIR)
+-include $(OUTDIR)/$(basename $(1))_pnacl.d
+$(OUTDIR)/$(basename $(1))_pnacl.o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
 	$(PNACL_CXX) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS)
 endef
 
@@ -69,6 +71,9 @@ endef
 # $3 = POSIX Link Flags
 # $4 = VC Link Flags (unused)
 define LIB_RULE
+$(STAMPDIR)/$(1).stamp : $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
+	@echo "TOUCHED $$@" > $(STAMPDIR)/$(1).stamp
+
 all: $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
 $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(OUTDIR)/$(basename $(src))_pnacl.o)
 	$(MKDIR) -p $$(dir $$@)
@@ -88,7 +93,7 @@ endef
 #
 define LINKER_RULE
 all: $(1)
-$(1) : $(2) $(4)
+$(1) : $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(PNACL_LINK) -o $(1) $(2) $(foreach path,$(5),-L$(path)/pnacl/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(6)
 endef
 

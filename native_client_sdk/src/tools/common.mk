@@ -127,32 +127,42 @@ clean:
 # proivde a cross platform solution. The use of '|' checks for existance instead
 # of timestamp, since the directory can update when files change.
 #
-$(TOOLCHAIN):
-	$(MKDIR) $(TOOLCHAIN)
-
-$(TOOLCHAIN)/$(CONFIG): | $(TOOLCHAIN)
-	$(MKDIR) $(TOOLCHAIN)/$(CONFIG)
+%dir.stamp :
+	$(MKDIR) -p $(dir $@)
+	echo "Directory Stamp" > $@
 
 OUTDIR:=$(TOOLCHAIN)/$(CONFIG)
--include $(OUTDIR)/*.d
-
+STAMPDIR?=$(OUTDIR)
 
 #
 # Dependency Macro
 #
-# $1 = Name of dependency
+# $1 = Name of stamp
+# $2 = Directory for the sub-make
+# $3 = Extra Settings
 #
 define DEPEND_RULE
-.PHONY: $(1)
-$(1):
 ifeq (,$(IGNORE_DEPS))
-	@echo "Checking library: $(1)"
-	+$(MAKE) -C $(NACL_SDK_ROOT)/src/$(1)
-DEPS_LIST+=$(1)
+.PHONY : rebuild_$(1)
+
+rebuild_$(1) :| $(STAMPDIR)/dir.stamp
+ifeq (,$(2))
+	+$(MAKE) -C $(NACL_SDK_ROOT)/src/$(1) STAMPDIR=$(abspath $(STAMPDIR)) $(abspath $(STAMPDIR)/$(1).stamp) $(3)
 else
-	@echo "Ignore DEPS: $(1)"
+	+$(MAKE) -C $(2) STAMPDIR=$(abspath $(STAMPDIR)) $(abspath $(STAMPDIR)/$(1).stamp) $(3)
+endif
+
+all: rebuild_$(1)
+$(STAMPDIR)/$(1).stamp : rebuild_$(1)
+
+else
+
+.PHONY : $(STAMPDIR)/$(1).stamp
+$(STAMPDIR)/$(1).stamp :
+	@echo "Ignore $(1)"
 endif
 endef
+
 
 
 ifeq ('win','$(TOOLCHAIN)')
