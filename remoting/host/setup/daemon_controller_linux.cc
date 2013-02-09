@@ -37,8 +37,8 @@ const char kDaemonScript[] =
 // Timeout for running daemon script.
 const int64 kDaemonTimeoutMs = 5000;
 
-// Timeout for commands that require password prompt- 1 minute;
-const int64 kSudoTimeoutMs = 60000;
+// Timeout for commands that require password prompt - 5 minutes.
+const int64 kSudoTimeoutSeconds = 5 * 60;
 
 std::string GetMd5(const std::string& value) {
   base::MD5Context ctx;
@@ -101,6 +101,8 @@ static bool RunHostScriptWithTimeout(
     const std::vector<std::string>& args,
     base::TimeDelta timeout,
     int* exit_code) {
+  DCHECK(exit_code);
+
   // As long as we're relying on running an external binary from the
   // PATH, don't do it as root.
   if (getuid() == 0) {
@@ -115,17 +117,17 @@ static bool RunHostScriptWithTimeout(
     command_line.AppendArg(args[i]);
   }
   base::ProcessHandle process_handle;
-  bool result = base::LaunchProcess(command_line,
-                                    base::LaunchOptions(),
-                                    &process_handle);
-  if (result) {
-    if (exit_code) {
-      result = base::WaitForExitCodeWithTimeout(
-          process_handle, exit_code, timeout);
-    }
-    base::CloseProcessHandle(process_handle);
+  if (!base::LaunchProcess(command_line, base::LaunchOptions(),
+                           &process_handle)) {
+    return false;
   }
-  return result;
+
+  if (!base::WaitForExitCodeWithTimeout(process_handle, exit_code, timeout)) {
+    base::KillProcess(process_handle, 0, false);
+    return false;
+  }
+
+  return true;
 }
 
 static bool RunHostScript(const std::vector<std::string>& args,
@@ -236,7 +238,7 @@ void DaemonControllerLinux::DoSetConfigAndStart(
   args.push_back("--add-user");
   int exit_code;
   if (!RunHostScriptWithTimeout(
-          args, base::TimeDelta::FromMilliseconds(kSudoTimeoutMs),
+          args, base::TimeDelta::FromSeconds(kSudoTimeoutSeconds),
           &exit_code) ||
       exit_code != 0) {
     LOG(ERROR) << "Failed to add user to chrome-remote-desktop group.";
