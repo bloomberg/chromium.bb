@@ -48,6 +48,7 @@ public final class R {
         public static int actionbar_web_search;
         public static int date_picker_dialog_clear;
         public static int date_picker_dialog_set;
+        public static int date_picker_dialog_title;
         public static int date_time_picker_dialog_title;
         public static int media_player_error_button;
         public static int media_player_error_text_invalid_progressive_playback;
