@@ -154,7 +154,7 @@ TEST_F(KernelObjectTest, Referencing) {
   EXPECT_EQ(0, mount_count);
 }
 
-TEST_F(KernelObjectTest, AssignFD) {
+TEST_F(KernelObjectTest, FreeAndReassignFD) {
   EXPECT_EQ(0, handle_count);
 
   KernelHandle* handle = new KernelHandleRefMock(mnt, NULL, 0);
@@ -162,7 +162,8 @@ TEST_F(KernelObjectTest, AssignFD) {
   EXPECT_EQ(1, handle_count);
   EXPECT_EQ(1, handle->RefCount());
 
-  proxy->AssignFD(2, handle);
+  // Assign to a non-existant FD
+  proxy->FreeAndReassignFD(2, handle);
   EXPECT_EQ((KernelHandle*)NULL, proxy->AcquireHandle(0));
   EXPECT_EQ((KernelHandle*)NULL, proxy->AcquireHandle(1));
   EXPECT_EQ(handle, proxy->AcquireHandle(2));
@@ -171,7 +172,7 @@ TEST_F(KernelObjectTest, AssignFD) {
   EXPECT_EQ(1, handle_count);
   EXPECT_EQ(2, handle->RefCount());
 
-  proxy->AssignFD(0, handle);
+  proxy->FreeAndReassignFD(0, handle);
   EXPECT_EQ(handle, proxy->AcquireHandle(0));
   EXPECT_EQ((KernelHandle*)NULL, proxy->AcquireHandle(1));
   EXPECT_EQ(handle, proxy->AcquireHandle(2));

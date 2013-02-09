@@ -129,19 +129,30 @@ int KernelObject::AllocateFD(KernelHandle* handle) {
   return id;
 }
 
-void KernelObject::AssignFD(int fd, KernelHandle* handle) {
-  AutoLock lock(&process_lock_);
+void KernelObject::FreeAndReassignFD(int fd, KernelHandle* handle) {
+  if (NULL == handle) {
+    FreeFD(fd);
+  } else {
+    AutoLock lock(&process_lock_);
 
-  // Acquire the handle and its mount since we are about to track it with
-  // this FD.
-  handle->Acquire();
-  handle->mount_->Acquire();
+    // Acquire the new handle first incase they are the same.
+    if (handle) {
+      handle->Acquire();
+      handle->mount_->Acquire();
+    }
 
-  if (fd >= handle_map_.size())
-    handle_map_.resize(fd + 1);
-
-  assert(handle_map_[fd] == NULL);
-  handle_map_[fd] = handle;
+    // If the required FD is larger than the current set, grow the set
+    if (fd >= handle_map_.size()) {
+      handle_map_.resize(fd + 1);
+    } else {
+      KernelHandle* old_handle = handle_map_[fd];
+      if (NULL != old_handle) {
+        old_handle->mount_->Release();
+        old_handle->Release();
+      }
+    }
+    handle_map_[fd] = handle;
+  }
 }
 
 void KernelObject::FreeFD(int fd) {

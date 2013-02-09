@@ -124,19 +124,7 @@ int KernelProxy::dup2(int oldfd, int newfd) {
   KernelHandle* old_handle = AcquireHandle(oldfd);
   if (NULL == old_handle) return -1;
 
-  KernelHandle* new_handle = AcquireHandle(newfd);
-  if (NULL != new_handle) {
-    if (old_handle != new_handle) {
-      // Release the copy held by the descriptopr
-      ReleaseHandle(new_handle);
-      // Reassign the descriptor to the old handle
-      AssignFD(newfd, old_handle);
-    }
-
-    // Release this acquired copy
-    ReleaseHandle(new_handle);
-  }
-
+  FreeAndReassignFD(newfd, old_handle);
   ReleaseHandle(old_handle);
   return newfd;
 }
