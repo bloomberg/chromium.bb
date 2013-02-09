@@ -42,12 +42,12 @@ class WebGLConformanceTest : public ContentBrowserTest {
     test_path_ = test_path_.Append(FILE_PATH_LITERAL("gpu"));
     test_path_ = test_path_.Append(FILE_PATH_LITERAL("webgl_conformance.html"));
 
+#if !defined(OS_WIN)
     ASSERT_TRUE(bot_config_.LoadCurrentConfig(NULL))
         << "Fail to load bot configuration";
     ASSERT_TRUE(bot_config_.IsValid())
         << "Invalid bot configuration";
 
-#if !defined(OS_WIN)
     ASSERT_TRUE(test_expectations_.LoadTestExpectations(
         GPUTestExpectationsParser::kWebGLConformanceTest));
 #endif
