@@ -887,28 +887,17 @@ willPositionSheet:(NSWindow*)sheet
 
   // Search suggestions might be shown directly in the web contents in some
   // cases.
-  return browser_->search_model()->mode().origin ==
-      chrome::search::Mode::ORIGIN_SEARCH;
+  return !browser_->search_model()->mode().is_origin_default();
 }
 
 - (void)updateContentOffsets {
-  // Normally the preview contents is used to show instant results which must
-  // obscure the bookmark bar. This is achieved by setting the offset to 0
-  // so that it overlaps the bookmark bar. The only exception is when the
-  // preview contents is showing the NTP which must sit below the bookmark bar.
-  CGFloat previewOffset = 0;
-  if (browser_->search_model()->mode().is_ntp())
-    previewOffset = toolbarToWebContentsOffset_;
-  [previewableContentsController_ setPreviewOffset:previewOffset];
-
   // Normally the tab contents sits below the bookmark bar. This is achieved by
   // setting the offset to the height of the bookmark bar. The only exception
   // is on the search results page where the instant results are shown inside
   // the page and not in the preview contents as usual.
   CGFloat tabContentsOffset = toolbarToWebContentsOffset_;
   if (browser_->search_model()->mode().is_search_suggestions() &&
-      browser_->search_model()->mode().origin ==
-          chrome::search::Mode::ORIGIN_SEARCH) {
+      !browser_->search_model()->mode().is_origin_default()) {
     tabContentsOffset = 0;
   }
   [previewableContentsController_ setActiveContainerOffset:tabContentsOffset];
@@ -918,7 +907,7 @@ willPositionSheet:(NSWindow*)sheet
 
   // Prevent the dev tools splitter from overlapping the bookmark bar.
   if ([self isShowingInstantResults])
-    [devToolsController_ setTopContentOffset:previewOffset];
+    [devToolsController_ setTopContentOffset:0];
   else
     [devToolsController_ setTopContentOffset:toolbarToWebContentsOffset_];
 }

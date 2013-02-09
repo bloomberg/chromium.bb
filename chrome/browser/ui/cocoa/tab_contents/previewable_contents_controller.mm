@@ -20,7 +20,6 @@
 @implementation PreviewableContentsController
 
 @synthesize drawDropShadow = drawDropShadow_;
-@synthesize previewOffset = previewOffset_;
 @synthesize activeContainerOffset = activeContainerOffset_;
 
 - (id)initWithBrowser:(Browser*)browser
@@ -139,14 +138,6 @@
   return dropShadowView_.get();
 }
 
-- (void)setPreviewOffset:(CGFloat)previewOffset {
-  if (previewOffset_ == previewOffset)
-    return;
-
-  previewOffset_ = previewOffset;
-  [self layoutViews];
-}
-
 - (void)setActiveContainerOffset:(CGFloat)activeContainerOffset {
   if (activeContainerOffset_ == activeContainerOffset)
     return;
@@ -165,8 +156,7 @@
   if (previewContents_) {
     NSRect previewFrame = bounds;
     previewFrame.size.height = [self previewHeightInPixels];
-    previewFrame.origin.y =
-        NSMaxY(bounds) - NSHeight(previewFrame) - previewOffset_;
+    previewFrame.origin.y = NSMaxY(bounds) - NSHeight(previewFrame);
     [previewContents_->GetNativeView() setFrame:previewFrame];
 
     if (dropShadowView_) {
@@ -184,7 +174,7 @@
 }
 
 - (CGFloat)previewHeightInPixels {
-  CGFloat height = NSHeight([[self view] bounds]) - previewOffset_;
+  CGFloat height = NSHeight([[self view] bounds]);
   switch (previewHeightUnits_) {
     case INSTANT_SIZE_PERCENT:
       return std::min(height, (height * previewHeight_) / 100);

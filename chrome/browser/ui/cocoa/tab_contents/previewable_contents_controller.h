@@ -54,11 +54,6 @@ class WebContents;
 
   BrowserWindowController* windowController_;
 
-  // The vertical offset between the top of the view and the preview contents.
-  // This is used to push the preview contents below the bookmark bar. Normally
-  // this is 0 so that the preview contents obscures the bookmark bar.
-  CGFloat previewOffset_;
-
   // The vertical offset between the top of the view and the active container.
   // This is used to push the active container below the bookmark bar. Normally
   // this is set to the height of the bookmark bar so that the bookmark bar is
@@ -69,7 +64,6 @@ class WebContents;
 @property(readonly, nonatomic) NSView* activeContainer;
 @property(readonly, nonatomic) NSView* dropShadowView;
 @property(readonly, nonatomic) BOOL drawDropShadow;
-@property(assign, nonatomic) CGFloat previewOffset;
 @property(assign, nonatomic) CGFloat activeContainerOffset;
 
 // Initialization.

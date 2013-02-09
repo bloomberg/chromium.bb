@@ -328,25 +328,21 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffset) {
       [controller() previewableContentsController];
 
   // Just toolbar.
-  EXPECT_EQ(0, [preview previewOffset]);
   EXPECT_EQ(0, [preview activeContainerOffset]);
 
   // Plus bookmark bar.
   browser()->window()->ToggleBookmarkBar();
-  EXPECT_EQ(0, [preview previewOffset]);
   EXPECT_EQ(GetViewHeight(VIEW_ID_BOOKMARK_BAR),
             [preview activeContainerOffset]);
 
   // Plus info bar.
   ShowInfoBar();
-  EXPECT_EQ(0, [preview previewOffset]);
   EXPECT_EQ(GetViewHeight(VIEW_ID_BOOKMARK_BAR) +
                 GetViewHeight(VIEW_ID_INFO_BAR),
             [preview activeContainerOffset]);
 
   // Minus bookmark bar.
   browser()->window()->ToggleBookmarkBar();
-  EXPECT_EQ(0, [preview previewOffset]);
   EXPECT_EQ(GetViewHeight(VIEW_ID_INFO_BAR), [preview activeContainerOffset]);
 }
 
@@ -359,22 +355,18 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
       [controller() previewableContentsController];
 
   // Just toolbar.
-  EXPECT_EQ(0, [preview previewOffset]);
   EXPECT_EQ(0, [preview activeContainerOffset]);
 
   // Plus bookmark bar.
   browser()->window()->ToggleBookmarkBar();
-  EXPECT_EQ(0, [preview previewOffset]);
   EXPECT_EQ(0, [preview activeContainerOffset]);
 
   // Plus info bar.
   ShowInfoBar();
-  EXPECT_EQ(0, [preview previewOffset]);
   EXPECT_EQ(0, [preview activeContainerOffset]);
 
   // Minus bookmark bar.
   browser()->window()->ToggleBookmarkBar();
-  EXPECT_EQ(0, [preview previewOffset]);
   EXPECT_EQ(0, [preview activeContainerOffset]);
 }
 
@@ -386,22 +378,18 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffsetInstant) {
       [controller() previewableContentsController];
 
   // Just toolbar.
-  EXPECT_EQ(0, [preview previewOffset]);
   EXPECT_EQ(0, [preview activeContainerOffset]);
 
   // Plus bookmark bar.
   browser()->window()->ToggleBookmarkBar();
-  EXPECT_EQ(0, [preview previewOffset]);
   EXPECT_EQ(0, [preview activeContainerOffset]);
 
   // Plus info bar.
   ShowInfoBar();
-  EXPECT_EQ(0, [preview previewOffset]);
   EXPECT_EQ(0, [preview activeContainerOffset]);
 
   // Minus bookmark bar.
   browser()->window()->ToggleBookmarkBar();
-  EXPECT_EQ(0, [preview previewOffset]);
   EXPECT_EQ(0, [preview activeContainerOffset]);
 }
 
@@ -413,13 +401,10 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffsetInstantNPT) {
       [controller() previewableContentsController];
 
   // Just toolbar.
-  EXPECT_EQ(0, [preview previewOffset]);
   EXPECT_EQ(0, [preview activeContainerOffset]);
 
   // Plus bookmark bar.
   browser()->window()->ToggleBookmarkBar();
-  EXPECT_EQ(GetViewHeight(VIEW_ID_BOOKMARK_BAR),
-            [preview previewOffset]);
   EXPECT_EQ(GetViewHeight(VIEW_ID_BOOKMARK_BAR),
             [preview activeContainerOffset]);
 
@@ -427,14 +412,10 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffsetInstantNPT) {
   ShowInfoBar();
   EXPECT_EQ(GetViewHeight(VIEW_ID_BOOKMARK_BAR) +
                 GetViewHeight(VIEW_ID_INFO_BAR),
-            [preview previewOffset]);
-  EXPECT_EQ(GetViewHeight(VIEW_ID_BOOKMARK_BAR) +
-                GetViewHeight(VIEW_ID_INFO_BAR),
             [preview activeContainerOffset]);
 
   // Minus bookmark bar.
   browser()->window()->ToggleBookmarkBar();
-  EXPECT_EQ(GetViewHeight(VIEW_ID_INFO_BAR), [preview previewOffset]);
   EXPECT_EQ(GetViewHeight(VIEW_ID_INFO_BAR), [preview activeContainerOffset]);
 }
 
