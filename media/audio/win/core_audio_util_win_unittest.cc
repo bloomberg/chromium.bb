@@ -288,7 +288,7 @@ TEST_F(CoreAudioUtilWinTest, SharedModeInitialize) {
                                                               &format)));
 
   // Perform a shared-mode initialization without event-driven buffer handling.
-  size_t endpoint_buffer_size = 0;
+  uint32 endpoint_buffer_size = 0;
   HRESULT hr = CoreAudioUtil::SharedModeInitialize(client, &format, NULL,
                                                    &endpoint_buffer_size);
   EXPECT_TRUE(SUCCEEDED(hr));
@@ -345,7 +345,7 @@ TEST_F(CoreAudioUtilWinTest, CreateRenderAndCaptureClients) {
   EDataFlow data[] = {eRender, eCapture};
 
   WAVEFORMATPCMEX format;
-  size_t endpoint_buffer_size = 0;
+  uint32 endpoint_buffer_size = 0;
 
   for (int i = 0; i < arraysize(data); ++i) {
     ScopedComPtr<IAudioClient> client;
@@ -394,7 +394,7 @@ TEST_F(CoreAudioUtilWinTest, FillRenderEndpointBufferWithSilence) {
   EXPECT_TRUE(client);
 
   WAVEFORMATPCMEX format;
-  size_t endpoint_buffer_size = 0;
+  uint32 endpoint_buffer_size = 0;
   EXPECT_TRUE(SUCCEEDED(CoreAudioUtil::GetSharedModeMixFormat(client,
                                                               &format)));
   CoreAudioUtil::SharedModeInitialize(client, &format, NULL,
