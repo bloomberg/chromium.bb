@@ -317,7 +317,7 @@ class MockMediaSource {
   }
 
  private:
-  FilePath file_path_;
+  base::FilePath file_path_;
   scoped_refptr<DecoderBuffer> file_data_;
   int current_position_;
   int initial_append_size_;

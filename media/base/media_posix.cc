@@ -37,11 +37,11 @@ namespace media {
 #if defined(OS_MACOSX)
 // TODO(evan): should be using .so like ffmepgsumo here.
 #define DSO_NAME(MODULE, VERSION) ("lib" MODULE "." VERSION ".dylib")
-static const FilePath::CharType kSumoLib[] =
+static const base::FilePath::CharType kSumoLib[] =
     FILE_PATH_LITERAL("ffmpegsumo.so");
 #elif defined(OS_POSIX)
 #define DSO_NAME(MODULE, VERSION) ("lib" MODULE ".so." VERSION)
-static const FilePath::CharType kSumoLib[] =
+static const base::FilePath::CharType kSumoLib[] =
     FILE_PATH_LITERAL("libffmpegsumo.so");
 #else
 #error "Do not know how to construct DSO name for this OS."
@@ -52,7 +52,7 @@ static const FilePath::CharType kSumoLib[] =
 // guarantee this is only set once in a thread safe manner.
 static bool g_media_library_is_initialized = false;
 
-static bool InitializeMediaLibraryInternal(const FilePath& module_dir) {
+static bool InitializeMediaLibraryInternal(const base::FilePath& module_dir) {
   DCHECK(!g_media_library_is_initialized);
 
 #if defined(USE_SYSTEM_FFMPEG)
@@ -79,7 +79,7 @@ static bool InitializeMediaLibraryInternal(const FilePath& module_dir) {
   return g_media_library_is_initialized;
 }
 
-bool InitializeMediaLibrary(const FilePath& base_path) {
+bool InitializeMediaLibrary(const base::FilePath& base_path) {
   static const bool kMediaLibraryInitialized =
       InitializeMediaLibraryInternal(base_path);
   DCHECK_EQ(kMediaLibraryInitialized, g_media_library_is_initialized);
@@ -87,7 +87,7 @@ bool InitializeMediaLibrary(const FilePath& base_path) {
 }
 
 void InitializeMediaLibraryForTesting() {
-  FilePath file_path;
+  base::FilePath file_path;
   CHECK(PathService::Get(base::DIR_EXE, &file_path));
   CHECK(InitializeMediaLibrary(file_path));
 }

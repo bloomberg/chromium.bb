@@ -173,14 +173,14 @@ Emf::~Emf() {
     DeleteEnhMetaFile(emf_);
 }
 
-bool Emf::InitToFile(const FilePath& metafile_path) {
+bool Emf::InitToFile(const base::FilePath& metafile_path) {
   DCHECK(!emf_ && !hdc_);
   hdc_ = CreateEnhMetaFile(NULL, metafile_path.value().c_str(), NULL, NULL);
   DCHECK(hdc_);
   return hdc_ != NULL;
 }
 
-bool Emf::InitFromFile(const FilePath& metafile_path) {
+bool Emf::InitFromFile(const base::FilePath& metafile_path) {
   DCHECK(!emf_ && !hdc_);
   emf_ = GetEnhMetaFile(metafile_path.value().c_str());
   DCHECK(emf_);
@@ -277,7 +277,7 @@ bool Emf::GetDataAsVector(std::vector<uint8>* buffer) const {
   return true;
 }
 
-bool Emf::SaveTo(const FilePath& file_path) const {
+bool Emf::SaveTo(const base::FilePath& file_path) const {
   HANDLE file = CreateFile(file_path.value().c_str(), GENERIC_WRITE,
                            FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                            CREATE_ALWAYS, 0, NULL);

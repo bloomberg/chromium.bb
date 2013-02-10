@@ -20,7 +20,8 @@ typedef HRESULT (WINAPI *Direct3DCreate9ExFunc)(UINT sdk_version,
 namespace ui_surface_d3d9_utils {
 
 bool LoadD3D9(base::ScopedNativeLibrary* storage) {
-  storage->Reset(base::LoadNativeLibrary(FilePath(kD3D9ModuleName), NULL));
+  storage->Reset(
+      base::LoadNativeLibrary(base::FilePath(kD3D9ModuleName), NULL));
   return storage->is_valid();
 }
 

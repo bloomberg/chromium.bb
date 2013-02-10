@@ -40,10 +40,10 @@ FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
 
   if (!resource_path) {
     // Return just the name of the pack file.
-    return FilePath(base::SysNSStringToUTF8(name) + ".pak");
+    return base::FilePath(base::SysNSStringToUTF8(name) + ".pak");
   }
 
-  return FilePath([resource_path fileSystemRepresentation]);
+  return base::FilePath([resource_path fileSystemRepresentation]);
 }
 
 }  // namespace
@@ -78,7 +78,8 @@ FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
   if ([mac_locale isEqual:@"en_US"])
     mac_locale = @"en";
 
-  FilePath locale_file_path = GetResourcesPakFilePath(@"locale", mac_locale);
+  base::FilePath locale_file_path =
+      GetResourcesPakFilePath(@"locale", mac_locale);
 
   if (delegate_) {
     locale_file_path =
@@ -87,10 +88,10 @@ FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
 
   // Don't try to load empty values or values that are not absolute paths.
   if (locale_file_path.empty() || !locale_file_path.IsAbsolute())
-    return FilePath();
+    return base::FilePath();
 
   if (test_file_exists && !file_util::PathExists(locale_file_path))
-    return FilePath();
+    return base::FilePath();
 
   return locale_file_path;
 }

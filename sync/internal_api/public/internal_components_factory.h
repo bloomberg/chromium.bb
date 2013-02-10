@@ -81,7 +81,7 @@ class SYNC_EXPORT InternalComponentsFactory {
   virtual scoped_ptr<syncable::DirectoryBackingStore>
   BuildDirectoryBackingStore(
       const std::string& dir_name,
-      const FilePath& backing_filepath) = 0;
+      const base::FilePath& backing_filepath) = 0;
 
   // Returns the Switches struct that this object is using as configuration, if
   // the implementation is making use of one.

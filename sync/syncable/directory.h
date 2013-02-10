@@ -141,7 +141,7 @@ class SYNC_EXPORT Directory {
                            TakeSnapshotGetsMetahandlesToPurge);
 
  public:
-  static const FilePath::CharType kSyncDatabaseFilename[];
+  static const base::FilePath::CharType kSyncDatabaseFilename[];
 
   // Various data that the Directory::Kernel we are backing (persisting data
   // for) needs saved across runs of the application.

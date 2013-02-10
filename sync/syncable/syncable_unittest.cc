@@ -103,7 +103,7 @@ class SyncableGeneralTest : public testing::Test {
   NullDirectoryChangeDelegate delegate_;
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;
-  FilePath db_path_;
+  base::FilePath db_path_;
 };
 
 const char SyncableGeneralTest::kIndexTestName[] = "IndexTest";
@@ -1533,7 +1533,7 @@ TEST_F(SyncableDirectoryTest, OrdinalWithNullSurvivesSaveAndReload) {
 class TestBackingStore : public OnDiskDirectoryBackingStore {
  public:
   TestBackingStore(const std::string& dir_name,
-                   const FilePath& backing_filepath);
+                   const base::FilePath& backing_filepath);
 
   virtual ~TestBackingStore();
 
@@ -1549,7 +1549,7 @@ class TestBackingStore : public OnDiskDirectoryBackingStore {
 };
 
 TestBackingStore::TestBackingStore(const std::string& dir_name,
-                                   const FilePath& backing_filepath)
+                                   const base::FilePath& backing_filepath)
   : OnDiskDirectoryBackingStore(dir_name, backing_filepath),
     fail_save_changes_(false) {
 }
@@ -1573,7 +1573,7 @@ class TestDirectory : public Directory {
       Encryptor *encryptor,
       UnrecoverableErrorHandler *handler,
       const std::string& dir_name,
-      const FilePath& backing_filepath);
+      const base::FilePath& backing_filepath);
 
   virtual ~TestDirectory();
 
@@ -1593,7 +1593,7 @@ TestDirectory* TestDirectory::Create(
     Encryptor *encryptor,
     UnrecoverableErrorHandler *handler,
     const std::string& dir_name,
-    const FilePath& backing_filepath) {
+    const base::FilePath& backing_filepath) {
   TestBackingStore* backing_store =
       new TestBackingStore(dir_name, backing_filepath);
   return new TestDirectory(encryptor, handler, backing_store);
@@ -1613,7 +1613,7 @@ TEST(OnDiskSyncableDirectory, FailInitialWrite) {
   TestUnrecoverableErrorHandler handler;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath file_path = temp_dir.path().Append(
+  base::FilePath file_path = temp_dir.path().Append(
       FILE_PATH_LITERAL("Test.sqlite3"));
   std::string name = "user@x.com";
   NullDirectoryChangeDelegate delegate;
@@ -1668,7 +1668,7 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
 
   TestDirectory *test_directory_;  // mirrors scoped_ptr<Directory> dir_
   base::ScopedTempDir temp_dir_;
-  FilePath file_path_;
+  base::FilePath file_path_;
 };
 
 TEST_F(OnDiskSyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
@@ -2077,7 +2077,7 @@ class SyncableDirectoryManagement : public testing::Test {
 };
 
 TEST_F(SyncableDirectoryManagement, TestFileRelease) {
-  FilePath path = temp_dir_.path().Append(
+  base::FilePath path = temp_dir_.path().Append(
       Directory::kSyncDatabaseFilename);
 
   syncable::Directory dir(new OnDiskDirectoryBackingStore("ScopeTest", path),

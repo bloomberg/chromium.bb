@@ -70,7 +70,7 @@ class FakeSyncManager : public SyncManager {
   // Note: we treat whatever message loop this is called from as the sync
   // loop for purposes of callbacks.
   virtual void Init(
-      const FilePath& database_location,
+      const base::FilePath& database_location,
       const WeakHandle<JsEventHandler>& event_handler,
       const std::string& sync_server_and_path,
       int sync_server_port,

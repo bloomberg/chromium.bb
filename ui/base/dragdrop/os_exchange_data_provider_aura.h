@@ -27,14 +27,14 @@ class UI_EXPORT OSExchangeDataProviderAura : public OSExchangeData::Provider {
   // Overridden from OSExchangeData::Provider:
   virtual void SetString(const string16& data) OVERRIDE;
   virtual void SetURL(const GURL& url, const string16& title) OVERRIDE;
-  virtual void SetFilename(const FilePath& path) OVERRIDE;
+  virtual void SetFilename(const base::FilePath& path) OVERRIDE;
   virtual void SetFilenames(
       const std::vector<OSExchangeData::FileInfo>& filenames) OVERRIDE;
   virtual void SetPickledData(OSExchangeData::CustomFormat format,
                               const Pickle& data) OVERRIDE;
   virtual bool GetString(string16* data) const OVERRIDE;
   virtual bool GetURLAndTitle(GURL* url, string16* title) const OVERRIDE;
-  virtual bool GetFilename(FilePath* path) const OVERRIDE;
+  virtual bool GetFilename(base::FilePath* path) const OVERRIDE;
   virtual bool GetFilenames(
       std::vector<OSExchangeData::FileInfo>* filenames) const OVERRIDE;
   virtual bool GetPickledData(OSExchangeData::CustomFormat format,
@@ -45,9 +45,9 @@ class UI_EXPORT OSExchangeDataProviderAura : public OSExchangeData::Provider {
   virtual bool HasCustomFormat(
       OSExchangeData::CustomFormat format) const OVERRIDE;
 #if defined(OS_WIN)
-  virtual void SetFileContents(const FilePath& filename,
+  virtual void SetFileContents(const base::FilePath& filename,
                                const std::string& file_contents) OVERRIDE;
-  virtual bool GetFileContents(FilePath* filename,
+  virtual bool GetFileContents(base::FilePath* filename,
                                std::string* file_contents) const OVERRIDE;
   virtual bool HasFileContents() const OVERRIDE;
   virtual void SetDownloadFileInfo(

@@ -140,13 +140,15 @@ class LayerWithRealCompositorTest : public testing::Test {
         gfx::Rect(0, 0, layer->bounds().width(), layer->bounds().height()));
   }
 
-  const FilePath& test_data_directory() const { return test_data_directory_; }
+  const base::FilePath& test_data_directory() const {
+    return test_data_directory_;
+  }
 
  private:
   scoped_ptr<TestCompositorHost> window_;
 
   // The root directory for test files.
-  FilePath test_data_directory_;
+  base::FilePath test_data_directory_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerWithRealCompositorTest);
 };
@@ -892,8 +894,10 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ModifyHierarchy) {
   scoped_ptr<Layer> l12(CreateColorLayer(SK_ColorBLUE,
                                          gfx::Rect(10, 10, 25, 25)));
 
-  FilePath ref_img1 = test_data_directory().AppendASCII("ModifyHierarchy1.png");
-  FilePath ref_img2 = test_data_directory().AppendASCII("ModifyHierarchy2.png");
+  base::FilePath ref_img1 =
+      test_data_directory().AppendASCII("ModifyHierarchy1.png");
+  base::FilePath ref_img2 =
+      test_data_directory().AppendASCII("ModifyHierarchy2.png");
   SkBitmap bitmap;
 
   l0->Add(l11.get());
@@ -946,7 +950,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_Opacity) {
   scoped_ptr<Layer> l11(CreateColorLayer(SK_ColorGREEN,
                                          gfx::Rect(0, 0, 25, 25)));
 
-  FilePath ref_img = test_data_directory().AppendASCII("Opacity.png");
+  base::FilePath ref_img = test_data_directory().AppendASCII("Opacity.png");
 
   l11->SetOpacity(0.75);
   l0->Add(l11.get());

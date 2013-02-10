@@ -15,7 +15,7 @@ FileDataSource::FileDataSource()
       force_streaming_(false) {
 }
 
-bool FileDataSource::Initialize(const FilePath& file_path) {
+bool FileDataSource::Initialize(const base::FilePath& file_path) {
   DCHECK(!file_.IsValid());
 
   if (!file_.Initialize(file_path))

@@ -57,7 +57,7 @@ bool InitializeVdaApis() {
   static bool should_initialize = true;
   if (should_initialize) {
     should_initialize = false;
-    FilePath path;
+    base::FilePath path;
     if (!base::mac::GetSearchPathDirectory(
             NSLibraryDirectory, NSSystemDomainMask, &path)) {
       return false;

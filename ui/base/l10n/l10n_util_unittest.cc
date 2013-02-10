@@ -90,7 +90,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   // Use a temporary locale dir so we don't have to actually build the locale
   // pak files for this test.
   base::ScopedPathOverride locale_dir_override(ui::DIR_LOCALES);
-  FilePath new_locale_dir;
+  base::FilePath new_locale_dir;
   ASSERT_TRUE(PathService::Get(ui::DIR_LOCALES, &new_locale_dir));
   // Make fake locale files.
   std::string filenames[] = {
@@ -110,7 +110,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   };
 
   for (size_t i = 0; i < arraysize(filenames); ++i) {
-    FilePath filename = new_locale_dir.AppendASCII(
+    base::FilePath filename = new_locale_dir.AppendASCII(
         filenames[i] + ".pak");
     file_util::WriteFile(filename, "", 0);
   }

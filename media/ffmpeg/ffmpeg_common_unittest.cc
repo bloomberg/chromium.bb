@@ -43,7 +43,7 @@ static bool InitFFmpeg() {
   if (initialized) {
     return true;
   }
-  FilePath path;
+  base::FilePath path;
   PathService::Get(base::DIR_MODULE, &path);
   return media::InitializeMediaLibrary(path);
 }

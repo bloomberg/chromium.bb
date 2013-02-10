@@ -331,7 +331,7 @@ void SyncManagerImpl::ConfigureSyncer(
 }
 
 void SyncManagerImpl::Init(
-    const FilePath& database_location,
+    const base::FilePath& database_location,
     const WeakHandle<JsEventHandler>& event_handler,
     const std::string& sync_server_and_path,
     int port,
@@ -384,7 +384,7 @@ void SyncManagerImpl::Init(
   sync_encryption_handler_->AddObserver(&debug_info_event_listener_);
   sync_encryption_handler_->AddObserver(&js_sync_encryption_handler_observer_);
 
-  FilePath absolute_db_path(database_path_);
+  base::FilePath absolute_db_path(database_path_);
   file_util::AbsolutePath(&absolute_db_path);
   scoped_ptr<syncable::DirectoryBackingStore> backing_store =
       internal_components_factory->BuildDirectoryBackingStore(

@@ -58,10 +58,10 @@ class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
   virtual ~MockResourceBundleDelegate() {
   }
 
-  MOCK_METHOD2(GetPathForResourcePack, FilePath(const FilePath& pack_path,
-                                                ui::ScaleFactor scale_factor));
-  MOCK_METHOD2(GetPathForLocalePack, FilePath(const FilePath& pack_path,
-                                              const std::string& locale));
+  MOCK_METHOD2(GetPathForResourcePack, base::FilePath(
+      const base::FilePath& pack_path, ui::ScaleFactor scale_factor));
+  MOCK_METHOD2(GetPathForLocalePack, base::FilePath(
+      const base::FilePath& pack_path, const std::string& locale));
   MOCK_METHOD1(GetImageNamed, gfx::Image(int resource_id));
   MOCK_METHOD2(GetNativeImageNamed,
       gfx::Image(int resource_id,
@@ -119,7 +119,7 @@ void AddCustomChunk(const base::StringPiece& custom_chunk,
 // which is |edge_size|x|edge_size| pixels.
 // If |custom_chunk| is non empty, adds it after the IHDR chunk
 // in the encoded bitmap data.
-void CreateDataPackWithSingleBitmap(const FilePath& path,
+void CreateDataPackWithSingleBitmap(const base::FilePath& path,
                                     int edge_size,
                                     const base::StringPiece& custom_chunk) {
   SkBitmap bitmap;
@@ -174,12 +174,12 @@ TEST_F(ResourceBundleTest, DelegateGetPathForResourcePack) {
   MockResourceBundleDelegate delegate;
   ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
 
-  FilePath pack_path(FILE_PATH_LITERAL("/path/to/test_path.pak"));
+  base::FilePath pack_path(FILE_PATH_LITERAL("/path/to/test_path.pak"));
   ui::ScaleFactor pack_scale_factor = ui::SCALE_FACTOR_200P;
 
   EXPECT_CALL(delegate,
       GetPathForResourcePack(
-          Property(&FilePath::value, pack_path.value()),
+          Property(&base::FilePath::value, pack_path.value()),
           pack_scale_factor))
       .Times(1)
       .WillOnce(Return(pack_path));
@@ -202,7 +202,7 @@ TEST_F(ResourceBundleTest, MAYBE_DelegateGetPathForLocalePack) {
   // Cancel the load.
   EXPECT_CALL(delegate, GetPathForLocalePack(_, locale))
       .Times(2)
-      .WillRepeatedly(Return(FilePath()))
+      .WillRepeatedly(Return(base::FilePath()))
       .RetiresOnSaturation();
 
   EXPECT_FALSE(resource_bundle->LocaleDataPakExists(locale));
@@ -348,7 +348,7 @@ class ResourceBundleImageTest : public ResourceBundleTest {
   // Returns resource bundle which uses an empty data pak for locale data.
   ui::ResourceBundle* CreateResourceBundleWithEmptyLocalePak() {
     // Write an empty data pak for locale data.
-    const FilePath& locale_path = dir_path().Append(
+    const base::FilePath& locale_path = dir_path().Append(
         FILE_PATH_LITERAL("locale.pak"));
     EXPECT_EQ(file_util::WriteFile(locale_path, kEmptyPakContents,
                                    kEmptyPakSize),
@@ -357,12 +357,12 @@ class ResourceBundleImageTest : public ResourceBundleTest {
     ui::ResourceBundle* resource_bundle = CreateResourceBundle(NULL);
 
     // Load the empty locale data pak.
-    resource_bundle->LoadTestResources(FilePath(), locale_path);
+    resource_bundle->LoadTestResources(base::FilePath(), locale_path);
     return resource_bundle;
   }
 
   // Returns the path of temporary directory to write test data packs into.
-  const FilePath& dir_path() { return dir_.path(); }
+  const base::FilePath& dir_path() { return dir_.path(); }
 
  private:
   scoped_ptr<DataPack> locale_pack_;
@@ -374,7 +374,7 @@ class ResourceBundleImageTest : public ResourceBundleTest {
 // Verify that we don't crash when trying to load a resource that is not found.
 // In some cases, we fail to mmap resources.pak, but try to keep going anyway.
 TEST_F(ResourceBundleImageTest, LoadDataResourceBytes) {
-  FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
+  base::FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak files.
   ASSERT_EQ(file_util::WriteFile(data_path, kEmptyPakContents,
@@ -390,15 +390,16 @@ TEST_F(ResourceBundleImageTest, LoadDataResourceBytes) {
 
   // Give a .pak file that doesn't exist so we will fail to load it.
   resource_bundle->AddDataPackFromPath(
-      FilePath(FILE_PATH_LITERAL("non-existant-file.pak")),
+      base::FilePath(FILE_PATH_LITERAL("non-existant-file.pak")),
       ui::SCALE_FACTOR_NONE);
   EXPECT_EQ(NULL, resource_bundle->LoadDataResourceBytes(
       kUnfoundResourceId));
 }
 
 TEST_F(ResourceBundleImageTest, GetRawDataResource) {
-  FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
-  FilePath data_2x_path = dir_path().Append(FILE_PATH_LITERAL("sample_2x.pak"));
+  base::FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
+  base::FilePath data_2x_path =
+      dir_path().Append(FILE_PATH_LITERAL("sample_2x.pak"));
 
   // Dump contents into the pak files.
   ASSERT_EQ(file_util::WriteFile(data_path, kSamplePakContents,
@@ -429,8 +430,8 @@ TEST_F(ResourceBundleImageTest, GetRawDataResource) {
 // Test requesting image reps at various scale factors from the image returned
 // via ResourceBundle::GetImageNamed().
 TEST_F(ResourceBundleImageTest, GetImageNamed) {
-  FilePath data_1x_path = dir_path().AppendASCII("sample_1x.pak");
-  FilePath data_2x_path = dir_path().AppendASCII("sample_2x.pak");
+  base::FilePath data_1x_path = dir_path().AppendASCII("sample_1x.pak");
+  base::FilePath data_2x_path = dir_path().AppendASCII("sample_2x.pak");
 
   // Create the pak files.
   CreateDataPackWithSingleBitmap(data_1x_path, 10, base::StringPiece());
@@ -470,8 +471,8 @@ TEST_F(ResourceBundleImageTest, GetImageNamed) {
 // Test that GetImageNamed() behaves properly for images which GRIT has
 // annotated as having fallen back to 1x.
 TEST_F(ResourceBundleImageTest, GetImageNamedFallback1x) {
-  FilePath data_path = dir_path().AppendASCII("sample.pak");
-  FilePath data_2x_path = dir_path().AppendASCII("sample_2x.pak");
+  base::FilePath data_path = dir_path().AppendASCII("sample.pak");
+  base::FilePath data_2x_path = dir_path().AppendASCII("sample_2x.pak");
 
   // Create the pak files.
   CreateDataPackWithSingleBitmap(data_path, 10, base::StringPiece());
@@ -498,7 +499,7 @@ TEST_F(ResourceBundleImageTest, GetImageNamedFallback1x) {
 }
 
 TEST_F(ResourceBundleImageTest, FallbackToNone) {
-  FilePath data_default_path = dir_path().AppendASCII("sample.pak");
+  base::FilePath data_default_path = dir_path().AppendASCII("sample.pak");
 
   // Create the pak files.
   CreateDataPackWithSingleBitmap(data_default_path, 10, base::StringPiece());

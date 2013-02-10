@@ -871,13 +871,13 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_AcceptDrop) {
 
   // Ensure that textfields do not accept non-OSExchangeData::STRING types.
   ui::OSExchangeData bad_data;
-  bad_data.SetFilename(FilePath(FILE_PATH_LITERAL("x")));
+  bad_data.SetFilename(base::FilePath(FILE_PATH_LITERAL("x")));
 #if defined(OS_WIN)
   ui::OSExchangeData::CustomFormat fmt = CF_BITMAP;
   bad_data.SetPickledData(fmt, Pickle());
-  bad_data.SetFileContents(FilePath(L"x"), "x");
+  bad_data.SetFileContents(base::FilePath(L"x"), "x");
   bad_data.SetHtml(string16(ASCIIToUTF16("x")), GURL("x.org"));
-  ui::OSExchangeData::DownloadFileInfo download(FilePath(), NULL);
+  ui::OSExchangeData::DownloadFileInfo download(base::FilePath(), NULL);
   bad_data.SetDownloadFileInfo(download);
 #endif
   EXPECT_FALSE(textfield_view_->CanDrop(bad_data));

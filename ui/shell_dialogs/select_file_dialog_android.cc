@@ -28,7 +28,7 @@ void SelectFileDialogImpl::OnFileSelected(JNIEnv* env,
                                           jstring filepath) {
   if (listener_) {
     std::string path = base::android::ConvertJavaStringToUTF8(env, filepath);
-    listener_->FileSelected(FilePath(path), 0, NULL);
+    listener_->FileSelected(base::FilePath(path), 0, NULL);
   }
 
   is_running_ = false;
@@ -54,7 +54,7 @@ void SelectFileDialogImpl::ListenerDestroyed() {
 void SelectFileDialogImpl::SelectFileImpl(
     ui::SelectFileDialog::Type type,
     const string16& title,
-    const FilePath& default_path,
+    const base::FilePath& default_path,
     const SelectFileDialog::FileTypeInfo* file_types,
     int file_type_index,
     const std::string& default_extension,

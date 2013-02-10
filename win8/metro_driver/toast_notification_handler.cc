@@ -196,7 +196,7 @@ void ToastNotificationHandler::DisplayNotification(
       toast_xml.Get(), &notification_);
   CheckHR(hr);
 
-  FilePath chrome_path;
+  base::FilePath chrome_path;
   if (!PathService::Get(base::FILE_EXE, &chrome_path)) {
     NOTREACHED() << "Failed to get chrome exe path";
     return;

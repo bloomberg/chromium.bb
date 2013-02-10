@@ -55,7 +55,7 @@ namespace media {
 
 namespace chromeos {
 
-WebmEncoder::WebmEncoder(const FilePath& output_path,
+WebmEncoder::WebmEncoder(const base::FilePath& output_path,
                          int bitrate,
                          bool realtime)
     : bitrate_(bitrate),

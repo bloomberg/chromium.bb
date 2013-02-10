@@ -75,7 +75,7 @@ void RlzLibTestNoMachineState::TearDown() {
 #if defined(OS_WIN)
   UndoOverrideRegistryHives();
 #elif defined(OS_POSIX)
-  rlz_lib::testing::SetRlzStoreDirectory(FilePath());
+  rlz_lib::testing::SetRlzStoreDirectory(base::FilePath());
 #endif  // defined(OS_WIN)
 }
 

@@ -42,7 +42,7 @@ void UITestSuite::Initialize() {
   // TODO(port): make a resource bundle for non-app exes.  What's done here
   // isn't really right because this code needs to depend on chrome_dll
   // being built.  This is inappropriate in app.
-  FilePath path;
+  base::FilePath path;
   PathService::Get(base::DIR_EXE, &path);
 #if defined(GOOGLE_CHROME_BUILD)
   path = path.AppendASCII("Google Chrome Framework.framework");
@@ -53,7 +53,7 @@ void UITestSuite::Initialize() {
 #endif
   base::mac::SetOverrideFrameworkBundlePath(path);
 #elif defined(OS_POSIX)
-  FilePath pak_dir;
+  base::FilePath pak_dir;
 #if defined(OS_ANDROID)
   PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_dir);
 #else

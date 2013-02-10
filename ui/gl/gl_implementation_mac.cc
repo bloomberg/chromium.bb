@@ -43,18 +43,18 @@ bool InitializeGLBindings(GLImplementation implementation) {
     case kGLImplementationOSMesaGL: {
       // osmesa.so is located in the build directory. This code path is only
       // valid in a developer build environment.
-      FilePath exe_path;
+      base::FilePath exe_path;
       if (!PathService::Get(base::FILE_EXE, &exe_path)) {
         LOG(ERROR) << "PathService::Get failed.";
         return false;
       }
-      FilePath bundle_path = base::mac::GetAppBundlePath(exe_path);
+      base::FilePath bundle_path = base::mac::GetAppBundlePath(exe_path);
       // Some unit test targets depend on osmesa but aren't built as app
       // bundles. In that case, the .so is next to the executable.
       if (bundle_path.empty())
         bundle_path = exe_path;
-      FilePath build_dir_path = bundle_path.DirName();
-      FilePath osmesa_path = build_dir_path.Append("osmesa.so");
+      base::FilePath build_dir_path = bundle_path.DirName();
+      base::FilePath osmesa_path = build_dir_path.Append("osmesa.so");
 
       // When using OSMesa, just use OSMesaGetProcAddress to find entry points.
       base::NativeLibrary library = base::LoadNativeLibrary(osmesa_path, NULL);
@@ -84,7 +84,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
     case kGLImplementationDesktopGL:
     case kGLImplementationAppleGL: {
       base::NativeLibrary library = base::LoadNativeLibrary(
-          FilePath(kOpenGLFrameworkPath), NULL);
+          base::FilePath(kOpenGLFrameworkPath), NULL);
       if (!library) {
         LOG(ERROR) << "OpenGL framework not found";
         return false;

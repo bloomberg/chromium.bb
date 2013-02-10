@@ -51,11 +51,12 @@ std::set<std::string> MakeFileSet(const char** files) {
   const std::string svn_dir_component = FILE_PATH_LITERAL("/.svn/");
   std::set<std::string> file_set;
   for (const char** file = files; *file; ++file) {
-    FilePath file_path(*file);
+    base::FilePath file_path(*file);
     if (file_util::DirectoryExists(file_path)) {
       file_util::FileEnumerator file_enumerator(
           file_path, true /* recurse */, file_util::FileEnumerator::FILES);
-      for (FilePath child, empty; (child = file_enumerator.Next()) != empty; ) {
+      for (base::FilePath child, empty;
+           (child = file_enumerator.Next()) != empty; ) {
         // If the path contains /.svn/, ignore it.
         if (child.value().find(svn_dir_component) == std::string::npos) {
           file_util::AbsolutePath(&child);
@@ -83,7 +84,7 @@ int main(int argc, const char* argv[]) {
        it != files.end(); ++it) {
     if (!MD5Sum(it->c_str(), &digest))
       failed = true;
-    FilePath file_path(*it);
+    base::FilePath file_path(*it);
     file_util::AbsolutePath(&file_path);
     std::cout << digest << "  " << file_path.value() << std::endl;
   }

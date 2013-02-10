@@ -8,8 +8,8 @@ namespace ui {
 
 SelectedFileInfo::SelectedFileInfo() {}
 
-SelectedFileInfo::SelectedFileInfo(const FilePath& in_file_path,
-                                   const FilePath& in_local_path)
+SelectedFileInfo::SelectedFileInfo(const base::FilePath& in_file_path,
+                                   const base::FilePath& in_local_path)
     : file_path(in_file_path),
       local_path(in_local_path) {
   if (local_path.empty())

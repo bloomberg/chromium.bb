@@ -92,14 +92,14 @@ void AudioManagerLinux::ShowAudioInputSettings() {
   CommandLine command_line(CommandLine::NO_PROGRAM);
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
-      command_line.SetProgram(FilePath("gnome-volume-control"));
+      command_line.SetProgram(base::FilePath("gnome-volume-control"));
       break;
     case base::nix::DESKTOP_ENVIRONMENT_KDE3:
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
-      command_line.SetProgram(FilePath("kmix"));
+      command_line.SetProgram(base::FilePath("kmix"));
       break;
     case base::nix::DESKTOP_ENVIRONMENT_UNITY:
-      command_line.SetProgram(FilePath("gnome-control-center"));
+      command_line.SetProgram(base::FilePath("gnome-control-center"));
       command_line.AppendArg("sound");
       command_line.AppendArg("input");
       break;

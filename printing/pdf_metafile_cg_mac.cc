@@ -286,7 +286,7 @@ bool PdfMetafileCg::GetData(void* dst_buffer, uint32 dst_buffer_size) const {
   return true;
 }
 
-bool PdfMetafileCg::SaveTo(const FilePath& file_path) const {
+bool PdfMetafileCg::SaveTo(const base::FilePath& file_path) const {
   DCHECK(pdf_data_.get());
   DCHECK(!context_.get());
 

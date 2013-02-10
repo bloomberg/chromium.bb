@@ -68,7 +68,7 @@ bool ParentIdAndHandleIndexer::ShouldInclude(const EntryKernel* a) {
 }
 
 // static
-const FilePath::CharType Directory::kSyncDatabaseFilename[] =
+const base::FilePath::CharType Directory::kSyncDatabaseFilename[] =
     FILE_PATH_LITERAL("SyncData.sqlite3");
 
 void Directory::InitKernelForTest(

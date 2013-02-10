@@ -69,7 +69,7 @@ class UnifiedSourceCallback : public AudioOutputStream::AudioSourceCallback {
   }
 
   virtual ~UnifiedSourceCallback() {
-    FilePath file_name;
+    base::FilePath file_name;
     EXPECT_TRUE(PathService::Get(base::DIR_EXE, &file_name));
     file_name = file_name.AppendASCII(kDeltaTimeMsFileName);
 

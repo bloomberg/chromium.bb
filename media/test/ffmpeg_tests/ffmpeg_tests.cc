@@ -83,7 +83,7 @@ int main(int argc, const char** argv) {
   }
 
   // Initialize our media library (try loading DLLs, etc.) before continuing.
-  FilePath media_path;
+  base::FilePath media_path;
   PathService::Get(base::DIR_MODULE, &media_path);
   if (!media::InitializeMediaLibrary(media_path)) {
     std::cerr << "Unable to initialize the media library.";
@@ -91,10 +91,10 @@ int main(int argc, const char** argv) {
   }
 
   // Retrieve command line options.
-  FilePath in_path(filenames[0]);
-  FilePath out_path;
+  base::FilePath in_path(filenames[0]);
+  base::FilePath out_path;
   if (filenames.size() > 1)
-    out_path = FilePath(filenames[1]);
+    out_path = base::FilePath(filenames[1]);
 
   // Default flags that match Chrome defaults.
   int video_threads = 2;

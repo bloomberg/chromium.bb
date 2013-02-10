@@ -82,7 +82,8 @@ void MemoryWatcher::CloseLogFile() {
     file_ = NULL;
     std::wstring tmp_name = ASCIIToWide(file_name_);
     tmp_name += L".tmp";
-    file_util::Move(FilePath(tmp_name), FilePath(ASCIIToWide(file_name_)));
+    file_util::Move(base::FilePath(tmp_name),
+                    base::FilePath(ASCIIToWide(file_name_)));
   }
 }
 

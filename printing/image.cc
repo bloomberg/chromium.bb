@@ -17,7 +17,7 @@
 
 namespace printing {
 
-Image::Image(const FilePath& path)
+Image::Image(const base::FilePath& path)
     : row_length_(0),
       ignore_alpha_(true) {
   std::string data;
@@ -58,7 +58,7 @@ std::string Image::checksum() const {
   return base::HexEncode(&digest, sizeof(digest));
 }
 
-bool Image::SaveToPng(const FilePath& filepath) const {
+bool Image::SaveToPng(const base::FilePath& filepath) const {
   DCHECK(!data_.empty());
   std::vector<unsigned char> compressed;
   bool success = gfx::PNGCodec::Encode(&*data_.begin(),

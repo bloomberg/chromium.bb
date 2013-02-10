@@ -29,7 +29,8 @@ static const SkColor kFileDragImageTextColor = SK_ColorBLACK;
 
 class FileDragImageSource : public gfx::CanvasImageSource {
  public:
-  FileDragImageSource(const FilePath& file_name, const gfx::ImageSkia& icon)
+  FileDragImageSource(const base::FilePath& file_name,
+                      const gfx::ImageSkia& icon)
       : CanvasImageSource(CalculateSize(icon), false),
         file_name_(file_name),
         icon_(icon) {
@@ -75,7 +76,7 @@ class FileDragImageSource : public gfx::CanvasImageSource {
     return gfx::Size(width, height);
   }
 
-  const FilePath file_name_;
+  const base::FilePath file_name_;
   const gfx::ImageSkia icon_;
 
   DISALLOW_COPY_AND_ASSIGN(FileDragImageSource);
@@ -83,7 +84,7 @@ class FileDragImageSource : public gfx::CanvasImageSource {
 
 }  // namespace
 
-void CreateDragImageForFile(const FilePath& file_name,
+void CreateDragImageForFile(const base::FilePath& file_name,
                             const gfx::ImageSkia* icon,
                             ui::OSExchangeData* data_object) {
   DCHECK(icon);

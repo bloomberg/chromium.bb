@@ -25,7 +25,7 @@ struct Testcase {
 };
 
 struct FileTestcase {
-  const FilePath::StringType input;
+  const base::FilePath::StringType input;
   const std::string output;
 };
 
@@ -263,8 +263,8 @@ TEST(TextEliderTest, TestFileURLEliding) {
 #endif
 TEST(TextEliderTest, MAYBE_TestFilenameEliding) {
   const std::string kEllipsisStr(kEllipsis);
-  const FilePath::StringType kPathSeparator =
-      FilePath::StringType().append(1, FilePath::kSeparators[0]);
+  const base::FilePath::StringType kPathSeparator =
+      base::FilePath::StringType().append(1, base::FilePath::kSeparators[0]);
 
   FileTestcase testcases[] = {
     {FILE_PATH_LITERAL(""), ""},
@@ -302,7 +302,7 @@ TEST(TextEliderTest, MAYBE_TestFilenameEliding) {
 
   static const gfx::Font font;
   for (size_t i = 0; i < arraysize(testcases); ++i) {
-    FilePath filepath(testcases[i].input);
+    base::FilePath filepath(testcases[i].input);
     string16 expected = UTF8ToUTF16(testcases[i].output);
     expected = base::i18n::GetDisplayStringInLTRDirectionality(expected);
     EXPECT_EQ(expected, ElideFilename(filepath,

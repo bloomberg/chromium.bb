@@ -106,7 +106,7 @@ class FFmpegTest : public testing::TestWithParam<const char*> {
   }
 
   void OpenFile(const std::string& name) {
-    FilePath path;
+    base::FilePath path;
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.AppendASCII("media")
         .AppendASCII("test")
@@ -369,7 +369,7 @@ class FFmpegTest : public testing::TestWithParam<const char*> {
       return;
     }
 
-    FilePath path;
+    base::FilePath path;
     PathService::Get(base::DIR_MODULE, &path);
     EXPECT_TRUE(InitializeMediaLibrary(path))
         << "Could not initialize media library.";

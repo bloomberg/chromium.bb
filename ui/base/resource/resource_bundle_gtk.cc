@@ -54,12 +54,12 @@ GdkPixbuf* LoadPixbuf(base::RefCountedStaticMemory* data, bool rtl_enabled) {
 }
 
 FilePath GetResourcesPakFilePath(const std::string& pak_name) {
-  FilePath path;
+  base::FilePath path;
   if (PathService::Get(base::DIR_MODULE, &path))
     return path.AppendASCII(pak_name.c_str());
 
   // Return just the name of the pack file.
-  return FilePath(pak_name.c_str());
+  return base::FilePath(pak_name.c_str());
 }
 
 }  // namespace

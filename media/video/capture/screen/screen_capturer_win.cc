@@ -267,7 +267,8 @@ void ScreenCapturerWin::Start(Delegate* delegate) {
 
   // Load dwmapi.dll dynamically since it is not available on XP.
   if (!dwmapi_library_.is_valid()) {
-    FilePath path(base::GetNativeLibraryName(UTF8ToUTF16(kDwmapiLibraryName)));
+    base::FilePath path(base::GetNativeLibraryName(
+        UTF8ToUTF16(kDwmapiLibraryName)));
     dwmapi_library_.Reset(base::LoadNativeLibrary(path, NULL));
   }
 

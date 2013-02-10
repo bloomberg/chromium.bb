@@ -201,7 +201,7 @@ void SaveBitmapToPNG(const SkBitmap& bmp, const char* path) {
     FAIL() << "Failed to encode image";
   }
 
-  const FilePath fpath(path);
+  const base::FilePath fpath(path);
   const int num_written =
       file_util::WriteFile(fpath, reinterpret_cast<const char*>(&png[0]),
                            png.size());

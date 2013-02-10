@@ -10,7 +10,7 @@
 namespace ui {
 
 OSExchangeData::DownloadFileInfo::DownloadFileInfo(
-    const FilePath& filename,
+    const base::FilePath& filename,
     DownloadFileProvider* downloader)
     : filename(filename),
       downloader(downloader) {
@@ -19,8 +19,8 @@ OSExchangeData::DownloadFileInfo::DownloadFileInfo(
 OSExchangeData::DownloadFileInfo::~DownloadFileInfo() {}
 
 OSExchangeData::FileInfo::FileInfo(
-    const FilePath& path,
-    const FilePath& display_name)
+    const base::FilePath& path,
+    const base::FilePath& display_name)
     : path(path),
       display_name(display_name) {
 }
@@ -44,7 +44,7 @@ void OSExchangeData::SetURL(const GURL& url, const string16& title) {
   provider_->SetURL(url, title);
 }
 
-void OSExchangeData::SetFilename(const FilePath& path) {
+void OSExchangeData::SetFilename(const base::FilePath& path) {
   provider_->SetFilename(path);
 }
 
@@ -65,7 +65,7 @@ bool OSExchangeData::GetURLAndTitle(GURL* url, string16* title) const {
   return provider_->GetURLAndTitle(url, title);
 }
 
-bool OSExchangeData::GetFilename(FilePath* path) const {
+bool OSExchangeData::GetFilename(base::FilePath* path) const {
   return provider_->GetFilename(path);
 }
 
@@ -145,12 +145,12 @@ bool OSExchangeData::HasAnyFormat(
 }
 
 #if defined(OS_WIN)
-void OSExchangeData::SetFileContents(const FilePath& filename,
+void OSExchangeData::SetFileContents(const base::FilePath& filename,
                                      const std::string& file_contents) {
   provider_->SetFileContents(filename, file_contents);
 }
 
-bool OSExchangeData::GetFileContents(FilePath* filename,
+bool OSExchangeData::GetFileContents(base::FilePath* filename,
                                      std::string* file_contents) const {
   return provider_->GetFileContents(filename, file_contents);
 }

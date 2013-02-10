@@ -21,7 +21,7 @@ void ReadColorProfile(std::vector<char>* profile) {
   if (!res)
     return;
   std::string profileData;
-  if (!file_util::ReadFileToString(FilePath(path), &profileData))
+  if (!file_util::ReadFileToString(base::FilePath(path), &profileData))
     return;
   size_t length = profileData.size();
   if (length > gfx::kMaxProfileLength)

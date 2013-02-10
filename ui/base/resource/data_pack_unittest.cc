@@ -24,7 +24,7 @@ extern const size_t kSamplePakSize;
 TEST(DataPackTest, LoadFromPath) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
+  base::FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak file.
   ASSERT_EQ(file_util::WriteFile(data_path, kSamplePakContents, kSamplePakSize),
@@ -56,7 +56,7 @@ TEST(DataPackTest, LoadFromPath) {
 TEST(DataPackTest, LoadFromFile) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
+  base::FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak file.
   ASSERT_EQ(file_util::WriteFile(data_path, kSamplePakContents, kSamplePakSize),
@@ -101,7 +101,7 @@ INSTANTIATE_TEST_CASE_P(WriteUTF16, DataPackTest, ::testing::Values(
     DataPack::UTF16));
 
 TEST(DataPackTest, LoadFileWithTruncatedHeader) {
-  FilePath data_path;
+  base::FilePath data_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &data_path);
   data_path = data_path.Append(FILE_PATH_LITERAL(
       "ui/base/test/data/data_pack_unittest/truncated-header.pak"));
@@ -113,7 +113,7 @@ TEST(DataPackTest, LoadFileWithTruncatedHeader) {
 TEST_P(DataPackTest, Write) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  FilePath file = dir.path().Append(FILE_PATH_LITERAL("data.pak"));
+  base::FilePath file = dir.path().Append(FILE_PATH_LITERAL("data.pak"));
 
   std::string one("one");
   std::string two("two");

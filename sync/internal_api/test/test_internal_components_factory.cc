@@ -50,7 +50,7 @@ TestInternalComponentsFactory::BuildContext(
 
 scoped_ptr<syncable::DirectoryBackingStore>
 TestInternalComponentsFactory::BuildDirectoryBackingStore(
-      const std::string& dir_name, const FilePath& backing_filepath) {
+      const std::string& dir_name, const base::FilePath& backing_filepath) {
   switch (storage_option_) {
     case STORAGE_IN_MEMORY:
       return scoped_ptr<syncable::DirectoryBackingStore>(

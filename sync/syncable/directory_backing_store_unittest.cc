@@ -41,7 +41,7 @@ class MigrationTest : public testing::TestWithParam<int> {
     return "nick@chromium.org";
   }
 
-  FilePath GetDatabasePath() {
+  base::FilePath GetDatabasePath() {
     return temp_dir_.path().Append(Directory::kSyncDatabaseFilename);
   }
 
@@ -3188,7 +3188,7 @@ namespace {
 class OnDiskDirectoryBackingStoreForTest : public OnDiskDirectoryBackingStore {
  public:
   OnDiskDirectoryBackingStoreForTest(const std::string& dir_name,
-                                     const FilePath& backing_filepath);
+                                     const base::FilePath& backing_filepath);
   virtual ~OnDiskDirectoryBackingStoreForTest();
   bool DidFailFirstOpenAttempt();
 
@@ -3201,7 +3201,7 @@ class OnDiskDirectoryBackingStoreForTest : public OnDiskDirectoryBackingStore {
 
 OnDiskDirectoryBackingStoreForTest::OnDiskDirectoryBackingStoreForTest(
     const std::string& dir_name,
-    const FilePath& backing_filepath) :
+    const base::FilePath& backing_filepath) :
   OnDiskDirectoryBackingStore(dir_name, backing_filepath),
   first_open_failed_(false) { }
 

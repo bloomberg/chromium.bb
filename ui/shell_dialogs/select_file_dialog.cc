@@ -55,7 +55,7 @@ void SelectFileDialog::Listener::FileSelectedWithExtraInfo(
 void SelectFileDialog::Listener::MultiFilesSelectedWithExtraInfo(
     const std::vector<ui::SelectedFileInfo>& files,
     void* params) {
-  std::vector<FilePath> file_paths;
+  std::vector<base::FilePath> file_paths;
   for (size_t i = 0; i < files.size(); ++i)
     file_paths.push_back(files[i].local_path);
 
@@ -99,14 +99,15 @@ SelectFileDialog* SelectFileDialog::Create(Listener* listener,
   return NULL;
 }
 
-void SelectFileDialog::SelectFile(Type type,
-                                  const string16& title,
-                                  const FilePath& default_path,
-                                  const FileTypeInfo* file_types,
-                                  int file_type_index,
-                                  const FilePath::StringType& default_extension,
-                                  gfx::NativeWindow owning_window,
-                                  void* params) {
+void SelectFileDialog::SelectFile(
+    Type type,
+    const string16& title,
+    const base::FilePath& default_path,
+    const FileTypeInfo* file_types,
+    int file_type_index,
+    const base::FilePath::StringType& default_extension,
+    gfx::NativeWindow owning_window,
+    void* params) {
   DCHECK(listener_);
 
   if (select_file_policy_.get() &&

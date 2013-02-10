@@ -71,7 +71,7 @@ DataPack::DataPack(ui::ScaleFactor scale_factor)
 DataPack::~DataPack() {
 }
 
-bool DataPack::LoadFromPath(const FilePath& path) {
+bool DataPack::LoadFromPath(const base::FilePath& path) {
   mmap_.reset(new file_util::MemoryMappedFile);
   if (!mmap_->Initialize(path)) {
     DLOG(ERROR) << "Failed to mmap datapack";
@@ -212,7 +212,7 @@ ui::ScaleFactor DataPack::GetScaleFactor() const {
 }
 
 // static
-bool DataPack::WritePack(const FilePath& path,
+bool DataPack::WritePack(const base::FilePath& path,
                          const std::map<uint16, base::StringPiece>& resources,
                          TextEncodingType textEncodingType) {
   FILE* file = file_util::OpenFile(path, "wb");

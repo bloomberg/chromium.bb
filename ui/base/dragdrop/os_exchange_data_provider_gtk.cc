@@ -102,8 +102,8 @@ void OSExchangeDataProviderGtk::WriteFormatToSelection(
 
   if ((format & OSExchangeData::FILE_NAME) != 0) {
     gchar* uri_array[2];
-    uri_array[0] =
-        strdup(net::FilePathToFileURL(FilePath(filename_)).spec().c_str());
+    uri_array[0] = strdup(net::FilePathToFileURL(
+        base::FilePath(filename_)).spec().c_str());
     uri_array[1] = NULL;
     gtk_selection_data_set_uris(selection, uri_array);
     free(uri_array[0]);
@@ -134,7 +134,7 @@ void OSExchangeDataProviderGtk::SetURL(const GURL& url, const string16& title) {
   formats_ |= OSExchangeData::URL;
 }
 
-void OSExchangeDataProviderGtk::SetFilename(const FilePath& path) {
+void OSExchangeDataProviderGtk::SetFilename(const base::FilePath& path) {
   filename_ = path;
   formats_ |= OSExchangeData::FILE_NAME;
 }
@@ -167,7 +167,7 @@ bool OSExchangeDataProviderGtk::GetURLAndTitle(GURL* url,
   return true;
 }
 
-bool OSExchangeDataProviderGtk::GetFilename(FilePath* path) const {
+bool OSExchangeDataProviderGtk::GetFilename(base::FilePath* path) const {
   if ((formats_ & OSExchangeData::FILE_NAME) == 0)
     return false;
   *path = filename_;

@@ -18,7 +18,7 @@ class SYNC_EXPORT_PRIVATE OnDiskDirectoryBackingStore
     : public DirectoryBackingStore {
  public:
   OnDiskDirectoryBackingStore(const std::string& dir_name,
-                              const FilePath& backing_filepath);
+                              const base::FilePath& backing_filepath);
   virtual ~OnDiskDirectoryBackingStore();
   virtual DirOpenResult Load(
       MetahandlesIndex* entry_bucket,
@@ -40,7 +40,7 @@ class SYNC_EXPORT_PRIVATE OnDiskDirectoryBackingStore
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MinorCorruption);
 
   bool allow_failure_for_test_;
-  FilePath backing_filepath_;
+  base::FilePath backing_filepath_;
 
   DISALLOW_COPY_AND_ASSIGN(OnDiskDirectoryBackingStore);
 };

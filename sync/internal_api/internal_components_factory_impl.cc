@@ -52,7 +52,7 @@ InternalComponentsFactoryImpl::BuildContext(
 
 scoped_ptr<syncable::DirectoryBackingStore>
 InternalComponentsFactoryImpl::BuildDirectoryBackingStore(
-      const std::string& dir_name, const FilePath& backing_filepath) {
+      const std::string& dir_name, const base::FilePath& backing_filepath) {
   return scoped_ptr<syncable::DirectoryBackingStore>(
       new syncable::OnDiskDirectoryBackingStore(dir_name, backing_filepath));
 }

@@ -13,7 +13,7 @@ namespace test {
 
 TestAuraInitializer::TestAuraInitializer() {
 #if defined(OS_LINUX)
-  FilePath pak_file;
+  base::FilePath pak_file;
   PathService::Get(base::DIR_MODULE, &pak_file);
   pak_file = pak_file.Append(FILE_PATH_LITERAL(
       "aura_test_support_resources.pak"));

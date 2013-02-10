@@ -12,7 +12,7 @@
 namespace media {
 
 FilePath GetTestDataFilePath(const std::string& name) {
-  FilePath file_path;
+  base::FilePath file_path;
   CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &file_path));
 
   file_path = file_path.Append(FILE_PATH_LITERAL("media"))
@@ -23,7 +23,7 @@ FilePath GetTestDataFilePath(const std::string& name) {
 }
 
 scoped_refptr<DecoderBuffer> ReadTestDataFile(const std::string& name) {
-  FilePath file_path;
+  base::FilePath file_path;
   CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &file_path));
 
   file_path = file_path.Append(FILE_PATH_LITERAL("media"))

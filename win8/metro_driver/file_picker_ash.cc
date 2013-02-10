@@ -177,10 +177,10 @@ HRESULT OpenFilePickerSession::MultiPickerDone(MultiFileAsyncOp* async,
         // TODO(ananta)
         // Consolidate this into a common place.
         const wchar_t* selection = result.c_str();
-        std::vector<FilePath> files;
+        std::vector<base::FilePath> files;
 
         while (*selection) {  // Empty string indicates end of list.
-          files.push_back(FilePath(selection));
+          files.push_back(base::FilePath(selection));
           // Skip over filename and null-terminator.
           selection += files.back().value().length() + 1;
         }
@@ -192,8 +192,8 @@ HRESULT OpenFilePickerSession::MultiPickerDone(MultiFileAsyncOp* async,
         } else if (files.size() > 1) {
           // Otherwise, the first string is the path, and the remainder are
           // filenames.
-          std::vector<FilePath>::iterator path = files.begin();
-          for (std::vector<FilePath>::iterator file = path + 1;
+          std::vector<base::FilePath>::iterator path = files.begin();
+          for (std::vector<base::FilePath>::iterator file = path + 1;
                file != files.end(); ++file) {
             filenames_.push_back(path->Append(*file));
           }
@@ -257,7 +257,7 @@ HRESULT OpenFilePickerSession::StartFilePicker() {
           hr = extension.Set(L"*");
         } else {
           // Metro wants suffixes only, not patterns.
-          string16 ext = FilePath(extensions_win32_style[i]).Extension();
+          string16 ext = base::FilePath(extensions_win32_style[i]).Extension();
           if ((ext.size() < 2) ||
               (ext.find_first_of(L"*?") != string16::npos)) {
             continue;
@@ -329,7 +329,7 @@ HRESULT OpenFilePickerSession::ComposeMultiFileResult(
   }
 
   // This stores the base path that should be the parent of all the files.
-  FilePath base_path;
+  base::FilePath base_path;
 
   // Iterate through the collection and append the file paths to the result.
   for (unsigned int i = 0; i < num_files; ++i) {
@@ -348,7 +348,7 @@ HRESULT OpenFilePickerSession::ComposeMultiFileResult(
     if (FAILED(hr))
       return hr;
 
-    FilePath file_path(MakeStdWString(file_path_str.Get()));
+    base::FilePath file_path(MakeStdWString(file_path_str.Get()));
     if (base_path.empty()) {
       DCHECK(result->empty());
       base_path = file_path.DirName();
@@ -362,7 +362,7 @@ HRESULT OpenFilePickerSession::ComposeMultiFileResult(
     DCHECK(base_path == file_path.DirName());
 
     // Append the base name, including the terminating zero.
-    FilePath base_name = file_path.BaseName();
+    base::FilePath base_name = file_path.BaseName();
     result->append(base_name.value().c_str(), base_name.value().size() + 1);
   }
 
@@ -433,7 +433,7 @@ HRESULT SaveFilePickerSession::StartFilePicker() {
       // the all files ("*") pattern in the save picker.
       std::vector<string16> extensions;
       for (size_t i = 0; i < extensions_win32_style.size(); ++i) {
-        string16 ext = FilePath(extensions_win32_style[i]).Extension();
+        string16 ext = base::FilePath(extensions_win32_style[i]).Extension();
         if ((ext.size() < 2) ||
             (ext.find_first_of(L"*?") != string16::npos))
           continue;

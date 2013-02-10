@@ -30,7 +30,7 @@ namespace drag_utils {
 // Chrome (via the download manager, for example). The drag image is set into
 // the supplied data_object. 'file_name' can be a full path, but the directory
 // portion will be truncated in the drag image.
-UI_EXPORT void CreateDragImageForFile(const FilePath& file_name,
+UI_EXPORT void CreateDragImageForFile(const base::FilePath& file_name,
                                       const gfx::ImageSkia* icon,
                                       ui::OSExchangeData* data_object);
 

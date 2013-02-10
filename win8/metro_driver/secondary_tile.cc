@@ -123,7 +123,7 @@ void DeleteTileFromStartScreen(const string16& tile_id,
 void CreateTileOnStartScreen(const string16& tile_id,
                              const string16& title_str,
                              const string16& url_str,
-                             const FilePath& logo_path,
+                             const base::FilePath& logo_path,
                              const MetroPinUmaResultCallback& callback) {
   VLOG(1) << __FUNCTION__;
 
@@ -215,7 +215,7 @@ void MetroUnPinFromStartScreen(const string16& tile_id,
 void MetroPinToStartScreen(const string16& tile_id,
                            const string16& title,
                            const string16& url,
-                           const FilePath& logo_path,
+                           const base::FilePath& logo_path,
                            const MetroPinUmaResultCallback& callback) {
   globals.appview_msg_loop->PostTask(
     FROM_HERE, base::Bind(&CreateTileOnStartScreen,

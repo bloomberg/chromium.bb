@@ -71,15 +71,17 @@ class UI_EXPORT ResourceBundle {
     // the pack file to continue loading or an empty value to cancel loading.
     // |pack_path| will contain the complete default path for the pack file if
     // known or just the pack file name otherwise.
-    virtual FilePath GetPathForResourcePack(const FilePath& pack_path,
-                                            ScaleFactor scale_factor) = 0;
+    virtual base::FilePath GetPathForResourcePack(
+        const base::FilePath& pack_path,
+        ScaleFactor scale_factor) = 0;
 
     // Called before a locale pack file is loaded. Return the full path for
     // the pack file to continue loading or an empty value to cancel loading.
     // |pack_path| will contain the complete default path for the pack file if
     // known or just the pack file name otherwise.
-    virtual FilePath GetPathForLocalePack(const FilePath& pack_path,
-                                          const std::string& locale) = 0;
+    virtual base::FilePath GetPathForLocalePack(
+        const base::FilePath& pack_path,
+        const std::string& locale) = 0;
 
     // Return an image resource or an empty value to attempt retrieval of the
     // default resource.
@@ -138,7 +140,7 @@ class UI_EXPORT ResourceBundle {
       base::PlatformFile file, bool should_load_common_resources);
 
   // Initialize the ResourceBundle using given data pack path for testing.
-  static void InitSharedInstanceWithPakPath(const FilePath& path);
+  static void InitSharedInstanceWithPakPath(const base::FilePath& path);
 
   // Delete the ResourceBundle for this process if it exists.
   static void CleanupSharedInstance();
@@ -159,14 +161,15 @@ class UI_EXPORT ResourceBundle {
   // this value). |scale_factor| is the scale of images in this resource pak
   // relative to the images in the 1x resource pak. This method is not thread
   // safe! You should call it immediately after calling InitSharedInstance.
-  void AddDataPackFromPath(const FilePath& path, ScaleFactor scale_factor);
+  void AddDataPackFromPath(const base::FilePath& path,
+                           ScaleFactor scale_factor);
 
   // Same as above but using an already open file.
   void AddDataPackFromFile(base::PlatformFile file, ScaleFactor scale_factor);
 
   // Same as AddDataPackFromPath but does not log an error if the pack fails to
   // load.
-  void AddOptionalDataPackFromPath(const FilePath& path,
+  void AddOptionalDataPackFromPath(const base::FilePath& path,
                                    ScaleFactor scale_factor);
 
   // Changes the locale for an already-initialized ResourceBundle, returning the
@@ -239,13 +242,13 @@ class UI_EXPORT ResourceBundle {
 
   // Overrides the path to the pak file from which the locale resources will be
   // loaded. Pass an empty path to undo.
-  void OverrideLocalePakForTest(const FilePath& pak_path);
+  void OverrideLocalePakForTest(const base::FilePath& pak_path);
 
   // Returns the full pathname of the locale file to load.  May return an empty
   // string if no locale data files are found and |test_file_exists| is true.
   // Used on Android to load the local file in the browser process and pass it
   // to the sandboxed renderer process.
-  FilePath GetLocaleFilePath(const std::string& app_locale,
+  base::FilePath GetLocaleFilePath(const std::string& app_locale,
                              bool test_file_exists);
 
   // Returns the maximum scale factor currently loaded.
@@ -277,7 +280,7 @@ class UI_EXPORT ResourceBundle {
 
   // Implementation for AddDataPackFromPath and AddOptionalDataPackFromPath, if
   // the pack is not |optional| logs an error on failure to load.
-  void AddDataPackFromPathInternal(const FilePath& path,
+  void AddDataPackFromPathInternal(const base::FilePath& path,
                                    ScaleFactor scale_factor,
                                    bool optional);
 
@@ -291,7 +294,8 @@ class UI_EXPORT ResourceBundle {
 
   // Load test resources in given paths. If either path is empty an empty
   // resource pack is loaded.
-  void LoadTestResources(const FilePath& path, const FilePath& locale_path);
+  void LoadTestResources(const base::FilePath& path,
+                         const base::FilePath& locale_path);
 
   // Unload the locale specific strings and prepares to load new ones. See
   // comments for ReloadLocaleResources().
@@ -340,7 +344,7 @@ class UI_EXPORT ResourceBundle {
   // bright red bitmap.
   gfx::Image& GetEmptyImage();
 
-  const FilePath& GetOverriddenPakPath();
+  const base::FilePath& GetOverriddenPakPath();
 
   // This pointer is guaranteed to outlive the ResourceBundle instance and may
   // be NULL.
@@ -377,7 +381,7 @@ class UI_EXPORT ResourceBundle {
   scoped_ptr<gfx::Font> large_bold_font_;
   scoped_ptr<gfx::Font> web_font_;
 
-  FilePath overridden_pak_path_;
+  base::FilePath overridden_pak_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceBundle);
 };

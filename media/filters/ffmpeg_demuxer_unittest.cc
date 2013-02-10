@@ -161,7 +161,7 @@ class FFmpegDemuxerTest : public testing::Test {
   void CreateDataSource(const std::string& name) {
     CHECK(!data_source_);
 
-    FilePath file_path;
+    base::FilePath file_path;
     EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &file_path));
 
     file_path = file_path.Append(FILE_PATH_LITERAL("media"))

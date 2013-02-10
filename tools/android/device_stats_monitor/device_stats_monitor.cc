@@ -39,8 +39,8 @@ class DeviceStatsMonitor {
   // would affect the results.
   void Start(int hz) {
     const int sample_interval = 1000000 / hz;
-    const FilePath io_stats_path(kIOStatsPath);
-    const FilePath cpu_stats_path(kCPUStatsPath);
+    const base::FilePath io_stats_path(kIOStatsPath);
+    const base::FilePath cpu_stats_path(kCPUStatsPath);
     std::string out;
     while (record_) {
       out.clear();
@@ -65,7 +65,7 @@ class DeviceStatsMonitor {
   }
 
  private:
-  const FilePath out_path_;
+  const base::FilePath out_path_;
   std::vector<std::string> samples_;
   bool record_;
 

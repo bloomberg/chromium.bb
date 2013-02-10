@@ -16,12 +16,12 @@
 
 namespace ui {
 
-bool PathProvider(int key, FilePath* result) {
+bool PathProvider(int key, base::FilePath* result) {
   // Assume that we will not need to create the directory if it does not exist.
   // This flag can be set to true for the cases where we want to create it.
   bool create_dir = false;
 
-  FilePath cur;
+  base::FilePath cur;
   switch (key) {
     case ui::DIR_LOCALES:
       if (!PathService::Get(base::DIR_MODULE, &cur))

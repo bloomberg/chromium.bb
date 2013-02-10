@@ -105,7 +105,7 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
   // Empty the name list.
   device_names->clear();
 
-  FilePath path("/dev/");
+  base::FilePath path("/dev/");
   file_util::FileEnumerator enumerator(
       path, false, file_util::FileEnumerator::FILES, "video*");
 

@@ -86,7 +86,7 @@ TEST_F(EmfPrintingTest, Enumerate) {
   scoped_ptr<PrintingContext> context(PrintingContext::Create(std::string()));
   EXPECT_EQ(context->InitWithSettings(settings), PrintingContext::OK);
 
-  FilePath emf_file;
+  base::FilePath emf_file;
   EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &emf_file));
   emf_file = emf_file.Append(FILE_PATH_LITERAL("printing"))
                      .Append(FILE_PATH_LITERAL("test"))
@@ -171,7 +171,7 @@ TEST(EmfTest, FileBackedEmf) {
   // Simplest use case.
   base::ScopedTempDir scratch_metafile_dir;
   ASSERT_TRUE(scratch_metafile_dir.CreateUniqueTempDir());
-  FilePath metafile_path;
+  base::FilePath metafile_path;
   EXPECT_TRUE(file_util::CreateTemporaryFileInDir(scratch_metafile_dir.path(),
                                                   &metafile_path));
   uint32 size;

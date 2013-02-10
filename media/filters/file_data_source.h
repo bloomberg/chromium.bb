@@ -19,7 +19,7 @@ class MEDIA_EXPORT FileDataSource : public DataSource {
  public:
   FileDataSource();
 
-  bool Initialize(const FilePath& file_path);
+  bool Initialize(const base::FilePath& file_path);
 
   // Implementation of DataSource.
   virtual void set_host(DataSourceHost* host) OVERRIDE;

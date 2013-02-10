@@ -56,7 +56,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
   explicit WriteToFileAudioSink(const char* file_name)
       : buffer_(0, kMaxBufferSize),
         bytes_to_write_(0) {
-    FilePath file_path;
+    base::FilePath file_path;
     EXPECT_TRUE(PathService::Get(base::DIR_EXE, &file_path));
     file_path = file_path.AppendASCII(file_name);
     binary_file_ = file_util::OpenFile(file_path, "wb");

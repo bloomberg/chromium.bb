@@ -32,7 +32,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
   virtual void SelectFileImpl(
       ui::SelectFileDialog::Type type,
       const string16& title,
-      const FilePath& default_path,
+      const base::FilePath& default_path,
       const ui::SelectFileDialog::FileTypeInfo* file_types,
       int file_type_index,
       const std::string& default_extension,

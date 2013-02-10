@@ -47,11 +47,11 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
     // file/folder path is in |path|. |params| is contextual passed to
     // SelectFile. |index| specifies the index of the filter passed to the
     // the initial call to SelectFile.
-    virtual void FileSelected(const FilePath& path,
+    virtual void FileSelected(const base::FilePath& path,
                               int index, void* params) = 0;
 
     // Similar to FileSelected() but takes SelectedFileInfo instead of
-    // FilePath. Used for passing extra information (ex. display name).
+    // base::FilePath. Used for passing extra information (ex. display name).
     //
     // If not overridden, calls FileSelected() with path from |file|.
     virtual void FileSelectedWithExtraInfo(
@@ -62,10 +62,10 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
     // Notifies the Listener that many files have been selected. The
     // files are in |files|. |params| is contextual passed to SelectFile.
     virtual void MultiFilesSelected(
-        const std::vector<FilePath>& files, void* params) {}
+        const std::vector<base::FilePath>& files, void* params) {}
 
     // Similar to MultiFilesSelected() but takes SelectedFileInfo instead of
-    // FilePath. Used for passing extra information (ex. display name).
+    // base::FilePath. Used for passing extra information (ex. display name).
     //
     // If not overridden, calls MultiFilesSelected() with paths from |files|.
     virtual void MultiFilesSelectedWithExtraInfo(
@@ -106,7 +106,7 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
     //
     // Only pass more than one extension in the inner vector if the extensions
     // are equivalent. Do NOT include leading periods.
-    std::vector<std::vector<FilePath::StringType> > extensions;
+    std::vector<std::vector<base::FilePath::StringType> > extensions;
 
     // Overrides the system descriptions of the specified extensions. Entries
     // correspond to |extensions|; if left blank the system descriptions will
@@ -149,10 +149,10 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
   //       at a time (for obvious reasons).
   void SelectFile(Type type,
                   const string16& title,
-                  const FilePath& default_path,
+                  const base::FilePath& default_path,
                   const FileTypeInfo* file_types,
                   int file_type_index,
-                  const FilePath::StringType& default_extension,
+                  const base::FilePath::StringType& default_extension,
                   gfx::NativeWindow owning_window,
                   void* params);
   bool HasMultipleFileTypeChoices();
@@ -170,14 +170,15 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
   // This is overridden in the platform-specific descendants of FileSelectDialog
   // and gets called from SelectFile after testing the
   // AllowFileSelectionDialogs-Policy.
-  virtual void SelectFileImpl(Type type,
-                              const string16& title,
-                              const FilePath& default_path,
-                              const FileTypeInfo* file_types,
-                              int file_type_index,
-                              const FilePath::StringType& default_extension,
-                              gfx::NativeWindow owning_window,
-                              void* params) = 0;
+  virtual void SelectFileImpl(
+      Type type,
+      const string16& title,
+      const base::FilePath& default_path,
+      const FileTypeInfo* file_types,
+      int file_type_index,
+      const base::FilePath::StringType& default_extension,
+      gfx::NativeWindow owning_window,
+      void* params) = 0;
 
   // Returns the global ShellDialogsDelegate instance if any.
   ShellDialogsDelegate* GetShellDialogsDelegate();

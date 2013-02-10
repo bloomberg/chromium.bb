@@ -28,7 +28,7 @@ namespace {
 
 const int kFileTypePopupTag = 1234;
 
-CFStringRef CreateUTIFromExtension(const FilePath::StringType& ext) {
+CFStringRef CreateUTIFromExtension(const base::FilePath::StringType& ext) {
   base::mac::ScopedCFTypeRef<CFStringRef> ext_cf(
       base::SysUTF8ToCFStringRef(ext));
   return UTTypeCreatePreferredIdentifierForTag(
@@ -73,7 +73,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
                        NSWindow* parent_window,
                        bool was_cancelled,
                        bool is_multi,
-                       const std::vector<FilePath>& files,
+                       const std::vector<base::FilePath>& files,
                        int index);
 
   bool ShouldEnableFilename(NSSavePanel* dialog, NSString* filename);
@@ -81,14 +81,15 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
  protected:
   // SelectFileDialog implementation.
   // |params| is user data we pass back via the Listener interface.
-  virtual void SelectFileImpl(Type type,
-                              const string16& title,
-                              const FilePath& default_path,
-                              const FileTypeInfo* file_types,
-                              int file_type_index,
-                              const FilePath::StringType& default_extension,
-                              gfx::NativeWindow owning_window,
-                              void* params) OVERRIDE;
+  virtual void SelectFileImpl(
+      Type type,
+      const string16& title,
+      const base::FilePath& default_path,
+      const FileTypeInfo* file_types,
+      int file_type_index,
+      const base::FilePath::StringType& default_extension,
+      gfx::NativeWindow owning_window,
+      void* params) OVERRIDE;
 
  private:
   virtual ~SelectFileDialogImpl();
@@ -131,12 +132,13 @@ void SelectFileDialogImpl::ListenerDestroyed() {
   listener_ = NULL;
 }
 
-void SelectFileDialogImpl::FileWasSelected(NSSavePanel* dialog,
-                                           NSWindow* parent_window,
-                                           bool was_cancelled,
-                                           bool is_multi,
-                                           const std::vector<FilePath>& files,
-                                           int index) {
+void SelectFileDialogImpl::FileWasSelected(
+    NSSavePanel* dialog,
+    NSWindow* parent_window,
+    bool was_cancelled,
+    bool is_multi,
+    const std::vector<base::FilePath>& files,
+    int index) {
   void* params = params_map_[dialog];
   params_map_.erase(dialog);
   parents_.erase(parent_window);
@@ -170,10 +172,10 @@ bool SelectFileDialogImpl::ShouldEnableFilename(NSSavePanel* dialog,
 void SelectFileDialogImpl::SelectFileImpl(
     Type type,
     const string16& title,
-    const FilePath& default_path,
+    const base::FilePath& default_path,
     const FileTypeInfo* file_types,
     int file_type_index,
-    const FilePath::StringType& default_extension,
+    const base::FilePath::StringType& default_extension,
     gfx::NativeWindow owning_window,
     void* params) {
   DCHECK(type == SELECT_FOLDER ||
@@ -221,7 +223,7 @@ void SelectFileDialogImpl::SelectFileImpl(
       // specified extensions.
       NSMutableSet* file_type_set = [NSMutableSet set];
       for (size_t i = 0; i < file_types->extensions.size(); ++i) {
-        const std::vector<FilePath::StringType>& ext_list =
+        const std::vector<base::FilePath::StringType>& ext_list =
             file_types->extensions[i];
         for (size_t j = 0; j < ext_list.size(); ++j) {
           base::mac::ScopedCFTypeRef<CFStringRef> uti(
@@ -335,7 +337,7 @@ NSView* SelectFileDialogImpl::GetAccessoryView(const FileTypeInfo* file_types,
     } else {
       // No description given for a list of extensions; pick the first one from
       // the list (arbitrarily) and use its description.
-      const std::vector<FilePath::StringType>& ext_list =
+      const std::vector<base::FilePath::StringType>& ext_list =
           file_types->extensions[type];
       DCHECK(!ext_list.empty());
       base::mac::ScopedCFTypeRef<CFStringRef> uti(
@@ -372,11 +374,13 @@ bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
               type:(ui::SelectFileDialog::Type)type
       parentWindow:(NSWindow*)parentWindow {
   int index = 0;
-  std::vector<FilePath> paths;
+  std::vector<base::FilePath> paths;
   if (!did_cancel) {
     if (type == ui::SelectFileDialog::SELECT_SAVEAS_FILE) {
-      if ([[panel URL] isFileURL])
-        paths.push_back(FilePath(base::SysNSStringToUTF8([[panel URL] path])));
+      if ([[panel URL] isFileURL]) {
+        paths.push_back(base::FilePath(
+            base::SysNSStringToUTF8([[panel URL] path])));
+      }
 
       NSView* accessoryView = [panel accessoryView];
       if (accessoryView) {
@@ -393,7 +397,7 @@ bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
       NSArray* urls = [static_cast<NSOpenPanel*>(panel) URLs];
       for (NSURL* url in urls)
         if ([url isFileURL])
-          paths.push_back(FilePath(base::SysNSStringToUTF8([url path])));
+          paths.push_back(base::FilePath(base::SysNSStringToUTF8([url path])));
     }
   }
 

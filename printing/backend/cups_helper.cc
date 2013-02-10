@@ -31,7 +31,8 @@ const char kDuplex[] = "Duplex";
 const char kDuplexNone[] = "None";
 
 #if !defined(OS_MACOSX)
-void ParseLpOptions(const FilePath& filepath, const std::string& printer_name,
+void ParseLpOptions(const base::FilePath& filepath,
+                    const std::string& printer_name,
                     int* num_options, cups_option_t** options) {
   std::string content;
   if (!file_util::ReadFileToString(filepath, &content))
@@ -93,12 +94,12 @@ void MarkLpOptions(const std::string& printer_name, ppd_file_t** ppd) {
   const char kSystemLpOptionPath[] = "/etc/cups/lpoptions";
   const char kUserLpOptionPath[] = ".cups/lpoptions";
 
-  std::vector<FilePath> file_locations;
-  file_locations.push_back(FilePath(kSystemLpOptionPath));
-  file_locations.push_back(FilePath(
+  std::vector<base::FilePath> file_locations;
+  file_locations.push_back(base::FilePath(kSystemLpOptionPath));
+  file_locations.push_back(base::FilePath(
       file_util::GetHomeDir().Append(kUserLpOptionPath)));
 
-  for (std::vector<FilePath>::const_iterator it = file_locations.begin();
+  for (std::vector<base::FilePath>::const_iterator it = file_locations.begin();
        it != file_locations.end(); ++it) {
     num_options = 0;
     options = NULL;
@@ -340,7 +341,7 @@ bool parsePpdCapabilities(
     const std::string& printer_name,
     const std::string& printer_capabilities,
     PrinterSemanticCapsAndDefaults* printer_info) {
-  FilePath ppd_file_path;
+  base::FilePath ppd_file_path;
   if (!file_util::CreateTemporaryFile(&ppd_file_path))
     return false;
 

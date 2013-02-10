@@ -37,12 +37,12 @@ static const int kRGB24Size = kSourceYSize * 3;
 static const int kRGBSizeConverted = kSourceYSize * kBpp;
 
 // Helper for reading test data into a scoped_array<uint8>.
-static void ReadData(const FilePath::CharType* filename,
+static void ReadData(const base::FilePath::CharType* filename,
                      int expected_size,
                      scoped_array<uint8>* data) {
   data->reset(new uint8[expected_size]);
 
-  FilePath path;
+  base::FilePath path;
   CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &path));
   path = path.Append(FILE_PATH_LITERAL("media"))
              .Append(FILE_PATH_LITERAL("test"))
@@ -337,7 +337,7 @@ TEST(YUVConvertTest, RGB32ToYUV) {
   scoped_array<uint8> rgb_converted_bytes(new uint8[kRGBSize]);
 
   // Read YUV reference data from file.
-  FilePath yuv_url;
+  base::FilePath yuv_url;
   EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &yuv_url));
   yuv_url = yuv_url.Append(FILE_PATH_LITERAL("media"))
                    .Append(FILE_PATH_LITERAL("test"))
@@ -415,7 +415,7 @@ TEST(YUVConvertTest, YUY2ToYUV) {
 
 TEST(YUVConvertTest, DownScaleYUVToRGB32WithRect) {
   // Read YUV reference data from file.
-  FilePath yuv_url;
+  base::FilePath yuv_url;
   EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &yuv_url));
   yuv_url = yuv_url.Append(FILE_PATH_LITERAL("media"))
                    .Append(FILE_PATH_LITERAL("test"))

@@ -460,7 +460,7 @@ PrintingContext::Result PrintingContextWin::NewDocument(
   di.lpszDocName = document_name_wide.c_str();
 
   // Is there a debug dump directory specified? If so, force to print to a file.
-  FilePath debug_dump_path = PrintedDocument::debug_dump_path();
+  base::FilePath debug_dump_path = PrintedDocument::debug_dump_path();
   if (!debug_dump_path.empty()) {
     // Create a filename.
     std::wstring filename;

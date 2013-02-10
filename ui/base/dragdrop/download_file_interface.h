@@ -28,7 +28,7 @@ namespace ui {
 class UI_EXPORT DownloadFileObserver
     : public base::RefCountedThreadSafe<DownloadFileObserver> {
  public:
-  virtual void OnDownloadCompleted(const FilePath& file_path) = 0;
+  virtual void OnDownloadCompleted(const base::FilePath& file_path) = 0;
   virtual void OnDownloadAborted() = 0;
 
  protected:

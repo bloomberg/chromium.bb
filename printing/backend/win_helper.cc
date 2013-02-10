@@ -324,7 +324,7 @@ std::string GetDriverInfo(HANDLE printer) {
   if (info_6.get()->pDriverPath) {
     scoped_ptr<FileVersionInfo> version_info(
         FileVersionInfo::CreateFileVersionInfo(
-            FilePath(info_6.get()->pDriverPath)));
+            base::FilePath(info_6.get()->pDriverPath)));
     if (version_info.get()) {
       info[1] = WideToUTF8(version_info->file_version());
       info[2] = WideToUTF8(version_info->product_name());

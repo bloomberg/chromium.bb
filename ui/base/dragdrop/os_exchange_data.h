@@ -82,23 +82,23 @@ class UI_EXPORT OSExchangeData {
 
   // Encapsulates the info about a file to be downloaded.
   struct UI_EXPORT DownloadFileInfo {
-    DownloadFileInfo(const FilePath& filename,
+    DownloadFileInfo(const base::FilePath& filename,
                      DownloadFileProvider* downloader);
     ~DownloadFileInfo();
 
-    FilePath filename;
+    base::FilePath filename;
     scoped_refptr<DownloadFileProvider> downloader;
   };
 
   // Encapsulates the info about a file.
   struct UI_EXPORT FileInfo {
-    FileInfo(const FilePath& path, const FilePath& display_name);
+    FileInfo(const base::FilePath& path, const base::FilePath& display_name);
     ~FileInfo();
 
     // The path of the file.
-    FilePath path;
+    base::FilePath path;
     // The display name of the file. This field is optional.
-    FilePath display_name;
+    base::FilePath display_name;
   };
 
   // Provider defines the platform specific part of OSExchangeData that
@@ -110,14 +110,14 @@ class UI_EXPORT OSExchangeData {
 
     virtual void SetString(const string16& data) = 0;
     virtual void SetURL(const GURL& url, const string16& title) = 0;
-    virtual void SetFilename(const FilePath& path) = 0;
+    virtual void SetFilename(const base::FilePath& path) = 0;
     virtual void SetFilenames(
         const std::vector<FileInfo>& file_names) = 0;
     virtual void SetPickledData(CustomFormat format, const Pickle& data) = 0;
 
     virtual bool GetString(string16* data) const = 0;
     virtual bool GetURLAndTitle(GURL* url, string16* title) const = 0;
-    virtual bool GetFilename(FilePath* path) const = 0;
+    virtual bool GetFilename(base::FilePath* path) const = 0;
     virtual bool GetFilenames(
         std::vector<FileInfo>* file_names) const = 0;
     virtual bool GetPickledData(CustomFormat format, Pickle* data) const = 0;
@@ -129,9 +129,9 @@ class UI_EXPORT OSExchangeData {
         OSExchangeData::CustomFormat format) const = 0;
 
 #if defined(OS_WIN)
-    virtual void SetFileContents(const FilePath& filename,
+    virtual void SetFileContents(const base::FilePath& filename,
                                  const std::string& file_contents) = 0;
-    virtual bool GetFileContents(FilePath* filename,
+    virtual bool GetFileContents(base::FilePath* filename,
                                  std::string* file_contents) const = 0;
     virtual bool HasFileContents() const = 0;
     virtual void SetDownloadFileInfo(const DownloadFileInfo& download) = 0;
@@ -182,7 +182,7 @@ class UI_EXPORT OSExchangeData {
   // A URL can have an optional title in some exchange formats.
   void SetURL(const GURL& url, const string16& title);
   // A full path to a file.
-  void SetFilename(const FilePath& path);
+  void SetFilename(const base::FilePath& path);
   // Full path to one or more files. See also SetFilenames() in Provider.
   void SetFilenames(
       const std::vector<FileInfo>& file_names);
@@ -196,7 +196,7 @@ class UI_EXPORT OSExchangeData {
   bool GetString(string16* data) const;
   bool GetURLAndTitle(GURL* url, string16* title) const;
   // Return the path of a file, if available.
-  bool GetFilename(FilePath* path) const;
+  bool GetFilename(base::FilePath* path) const;
   bool GetFilenames(
       std::vector<FileInfo>* file_names) const;
   bool GetPickledData(CustomFormat format, Pickle* data) const;
@@ -220,9 +220,9 @@ class UI_EXPORT OSExchangeData {
 
 #if defined(OS_WIN)
   // Adds the bytes of a file (CFSTR_FILECONTENTS and CFSTR_FILEDESCRIPTOR).
-  void SetFileContents(const FilePath& filename,
+  void SetFileContents(const base::FilePath& filename,
                        const std::string& file_contents);
-  bool GetFileContents(FilePath* filename,
+  bool GetFileContents(base::FilePath* filename,
                        std::string* file_contents) const;
 
   // Adds a download file with full path (CF_HDROP).

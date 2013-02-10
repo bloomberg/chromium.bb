@@ -344,7 +344,7 @@ SkBitmap IconUtil::CreateSkBitmapFromHICONHelper(HICON icon,
 
 bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
                                           const SkBitmap& large_bitmap,
-                                          const FilePath& icon_path) {
+                                          const base::FilePath& icon_path) {
   // Only 32 bit ARGB bitmaps are supported. We also make sure the bitmap has
   // been properly initialized.
   SkAutoLockPixels bitmap_lock(bitmap);

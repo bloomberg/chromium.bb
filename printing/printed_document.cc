@@ -34,7 +34,7 @@ struct PrintDebugDumpPath {
   }
 
   bool enabled;
-  FilePath debug_dump_path;
+  base::FilePath debug_dump_path;
 };
 
 base::LazyInstance<PrintDebugDumpPath> g_debug_dump_info =
@@ -191,12 +191,13 @@ void PrintedDocument::DebugDump(const PrintedPage& page) {
 #endif  // OS_WIN
 }
 
-void PrintedDocument::set_debug_dump_path(const FilePath& debug_dump_path) {
+void PrintedDocument::set_debug_dump_path(
+    const base::FilePath& debug_dump_path) {
   g_debug_dump_info.Get().enabled = !debug_dump_path.empty();
   g_debug_dump_info.Get().debug_dump_path = debug_dump_path;
 }
 
-const FilePath& PrintedDocument::debug_dump_path() {
+const base::FilePath& PrintedDocument::debug_dump_path() {
   return g_debug_dump_info.Get().debug_dump_path;
 }
 

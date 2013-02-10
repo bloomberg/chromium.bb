@@ -48,7 +48,7 @@ scoped_refptr<media::FileDataSource> CreateFileDataSource(
     const std::string& file_path) {
   scoped_refptr<media::FileDataSource> file_data_source(
       new media::FileDataSource());
-  CHECK(file_data_source->Initialize(FilePath(file_path)));
+  CHECK(file_data_source->Initialize(base::FilePath(file_path)));
   return file_data_source;
 }
 

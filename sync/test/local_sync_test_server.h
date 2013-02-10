@@ -29,12 +29,13 @@ class LocalSyncTestServer : public net::LocalTestServer {
   virtual bool AddCommandLineArguments(
       CommandLine* command_line) const OVERRIDE;
   virtual bool SetPythonPath() const OVERRIDE;
-  virtual bool GetTestServerPath(FilePath* testserver_path) const OVERRIDE;
+  virtual bool GetTestServerPath(
+      base::FilePath* testserver_path) const OVERRIDE;
 
   // Returns true if the path to |test_script_name| is successfully stored  in
   // |*test_script_path|. Used by the run_sync_testserver executable.
-  bool GetTestScriptPath(const FilePath::StringType& test_script_name,
-                         FilePath* test_script_path) const;
+  bool GetTestScriptPath(const base::FilePath::StringType& test_script_name,
+                         base::FilePath* test_script_path) const;
 
  private:
   // Port on which the Sync XMPP server listens.

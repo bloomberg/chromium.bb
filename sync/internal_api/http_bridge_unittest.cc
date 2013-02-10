@@ -16,7 +16,8 @@ namespace syncer {
 
 namespace {
 // TODO(timsteele): Should use PathService here. See Chromium Issue 3113.
-const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
+const base::FilePath::CharType kDocRoot[] =
+    FILE_PATH_LITERAL("chrome/test/data");
 }
 
 class SyncHttpBridgeTest : public testing::Test {
@@ -24,7 +25,7 @@ class SyncHttpBridgeTest : public testing::Test {
   SyncHttpBridgeTest()
       : test_server_(net::TestServer::TYPE_HTTP,
                      net::TestServer::kLocalhost,
-                     FilePath(kDocRoot)),
+                     base::FilePath(kDocRoot)),
         fake_default_request_context_getter_(NULL),
         bridge_for_race_test_(NULL),
         io_thread_("IO thread") {

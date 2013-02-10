@@ -84,7 +84,7 @@ class Bitmap {
 class Image {
  public:
   // Creates the image from the given filename on disk.
-  explicit Image(const FilePath& filename) : ignore_alpha_(true) {
+  explicit Image(const base::FilePath& filename) : ignore_alpha_(true) {
     std::string compressed;
     file_util::ReadFileToString(filename, &compressed);
     EXPECT_TRUE(compressed.size());
@@ -125,7 +125,7 @@ class Image {
   int row_length() const { return row_length_; }
 
   // Save the image to a png file. Used to create the initial test files.
-  void SaveToFile(const FilePath& filename) {
+  void SaveToFile(const base::FilePath& filename) {
     std::vector<unsigned char> compressed;
     ASSERT_TRUE(gfx::PNGCodec::Encode(&*data_.begin(),
                                       gfx::PNGCodec::FORMAT_BGRA,
@@ -238,10 +238,10 @@ class ImageTest : public testing::Test {
                           AppendASCII(test_info.name());
 
     // Hack for a quick lowercase. We assume all the tests names are ASCII.
-    FilePath::StringType tmp(test_dir_.value());
+    base::FilePath::StringType tmp(test_dir_.value());
     for (size_t i = 0; i < tmp.size(); ++i)
       tmp[i] = base::ToLowerASCII(tmp[i]);
-    test_dir_ = FilePath(tmp);
+    test_dir_ = base::FilePath(tmp);
 
     if (action_ == GENERATE) {
       // Make sure the directory exist.
@@ -250,7 +250,7 @@ class ImageTest : public testing::Test {
   }
 
   // Returns the fully qualified path of a data file.
-  FilePath test_file(const FilePath::StringType& filename) const {
+  base::FilePath test_file(const base::FilePath::StringType& filename) const {
     // Hack for a quick lowercase. We assume all the test data file names are
     // ASCII.
 #if defined(OS_WIN)
@@ -269,7 +269,7 @@ class ImageTest : public testing::Test {
   // 100] on failure. The return value is the percentage of difference between
   // the image in the file and the image in the canvas.
   double ProcessCanvas(skia::PlatformCanvas& canvas,
-                       FilePath::StringType filename) const {
+                       base::FilePath::StringType filename) const {
     filename = filename + FILE_PATH_LITERAL(".png");
     switch (action_) {
       case GENERATE:
@@ -288,7 +288,7 @@ class ImageTest : public testing::Test {
   // Compares the bitmap currently loaded in the context with the file. Returns
   // the percentage of pixel difference between both images, between 0 and 100.
   double CompareImage(skia::PlatformCanvas& canvas,
-                      const FilePath::StringType& filename) const {
+                      const base::FilePath::StringType& filename) const {
     Image image1(canvas);
     Image image2(test_file(filename));
     double diff = image1.PercentageDifferent(image2);
@@ -297,14 +297,14 @@ class ImageTest : public testing::Test {
 
   // Saves the bitmap currently loaded in the context into the file.
   void SaveImage(skia::PlatformCanvas& canvas,
-                 const FilePath::StringType& filename) const {
+                 const base::FilePath::StringType& filename) const {
     Image(canvas).SaveToFile(test_file(filename));
   }
 
   ProcessAction action_;
 
   // Path to directory used to contain the test data.
-  FilePath test_dir_;
+  base::FilePath test_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageTest);
 };
@@ -331,10 +331,10 @@ void Premultiply(SkBitmap bitmap) {
   }
 }
 
-void LoadPngFileToSkBitmap(const FilePath& filename,
+void LoadPngFileToSkBitmap(const base::FilePath& filename,
                            SkBitmap* bitmap,
                            bool is_opaque) {
-  FilePath absolute_path(filename);
+  base::FilePath absolute_path(filename);
   file_util::AbsolutePath(&absolute_path);
   std::string compressed;
   file_util::ReadFileToString(absolute_path, &compressed);
@@ -404,7 +404,7 @@ class VectorCanvasTest : public ImageTest {
 
   // Compares both canvas and returns the pixel difference in percentage between
   // both images. 0 on success and ]0, 100] on failure.
-  double ProcessImage(const FilePath::StringType& filename) {
+  double ProcessImage(const base::FilePath::StringType& filename) {
     std::wstring number(base::StringPrintf(L"%02d_", number_++));
     double diff1 = parent::ProcessCanvas(*vcanvas_, number + L"vc_" + filename);
     double diff2 = parent::ProcessCanvas(*pcanvas_, number + L"pc_" + filename);

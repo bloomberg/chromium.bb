@@ -86,7 +86,7 @@ void FakeSyncManager::WaitForSyncThread() {
 }
 
 void FakeSyncManager::Init(
-    const FilePath& database_location,
+    const base::FilePath& database_location,
     const WeakHandle<JsEventHandler>& event_handler,
     const std::string& sync_server_and_path,
     int sync_server_port,

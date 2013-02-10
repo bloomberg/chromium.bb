@@ -230,7 +230,7 @@ void AudioManagerWin::ShowAudioInputSettings() {
     argument = "mmsys.cpl,,1";
   }
 
-  FilePath path;
+  base::FilePath path;
   PathService::Get(base::DIR_SYSTEM, &path);
   path = path.Append(program);
   CommandLine command_line(path);

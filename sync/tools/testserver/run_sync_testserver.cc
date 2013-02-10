@@ -21,7 +21,8 @@ static void PrintUsage() {
 
 // Launches the chromiumsync_test.py or xmppserver_test.py scripts, which test
 // the sync HTTP and XMPP sever functionality respectively.
-static bool RunSyncTest(const FilePath::StringType& sync_test_script_name) {
+static bool RunSyncTest(
+    const base::FilePath::StringType& sync_test_script_name) {
   scoped_ptr<syncer::LocalSyncTestServer> test_server(
       new syncer::LocalSyncTestServer());
  if (!test_server->SetPythonPath()) {
@@ -29,7 +30,7 @@ static bool RunSyncTest(const FilePath::StringType& sync_test_script_name) {
     return false;
   }
 
-  FilePath sync_test_script_path;
+  base::FilePath sync_test_script_path;
   if (!test_server->GetTestScriptPath(sync_test_script_name,
                                       &sync_test_script_path)) {
     LOG(ERROR) << "Error trying to get path for test script "

@@ -17,7 +17,7 @@
 namespace rlz_lib {
 
 bool RecursiveCrossProcessLock::TryGetCrossProcessLock(
-    const FilePath& lock_filename) {
+    const base::FilePath& lock_filename) {
   bool just_got_lock = false;
 
   // Emulate a recursive mutex with a non-recursive one.

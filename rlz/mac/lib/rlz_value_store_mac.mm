@@ -275,7 +275,7 @@ NSString* RlzLockFilename() {
 
 ScopedRlzValueStoreLock::ScopedRlzValueStoreLock() {
   bool got_distributed_lock = g_recursive_lock.TryGetCrossProcessLock(
-      FilePath([RlzLockFilename() fileSystemRepresentation]));
+      base::FilePath([RlzLockFilename() fileSystemRepresentation]));
   // At this point, we hold the in-process lock, no matter the value of
   // |got_distributed_lock|.
 
@@ -349,7 +349,7 @@ RlzValueStore* ScopedRlzValueStoreLock::GetStore() {
 
 namespace testing {
 
-void SetRlzStoreDirectory(const FilePath& directory) {
+void SetRlzStoreDirectory(const base::FilePath& directory) {
   base::mac::ScopedNSAutoreleasePool pool;
 
   [g_test_folder release];

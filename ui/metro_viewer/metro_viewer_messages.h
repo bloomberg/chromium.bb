@@ -80,7 +80,7 @@ IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_FileOpenDone,
 
 IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_MultiFileOpenDone,
                      bool,                    /* success */
-                     std::vector<FilePath>)   /* filenames */
+                     std::vector<base::FilePath>)   /* filenames */
 
 
 // Messages sent from the browser to the viewer:

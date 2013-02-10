@@ -44,9 +44,10 @@ void GL_BINDING_CALL MarshalDepthRangeToDepthRangef(GLclampd z_near,
   glDepthRangef(static_cast<GLclampf>(z_near), static_cast<GLclampf>(z_far));
 }
 
-bool LoadD3DXLibrary(const FilePath& module_path,
-                     const FilePath::StringType& name) {
-  base::NativeLibrary library = base::LoadNativeLibrary(FilePath(name), NULL);
+bool LoadD3DXLibrary(const base::FilePath& module_path,
+                     const base::FilePath::StringType& name) {
+  base::NativeLibrary library =
+      base::LoadNativeLibrary(base::FilePath(name), NULL);
   if (!library) {
     library = base::LoadNativeLibrary(module_path.Append(name), NULL);
     if (!library) {
@@ -80,7 +81,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
 
   switch (implementation) {
     case kGLImplementationOSMesaGL: {
-      FilePath module_path;
+      base::FilePath module_path;
       if (!PathService::Get(base::DIR_MODULE, &module_path)) {
         LOG(ERROR) << "PathService::Get failed.";
         return false;
@@ -112,7 +113,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       break;
     }
     case kGLImplementationEGLGLES2: {
-      FilePath module_path;
+      base::FilePath module_path;
       if (!PathService::Get(base::DIR_MODULE, &module_path))
         return false;
 
@@ -125,7 +126,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
         LoadD3DXLibrary(module_path, kPreVistaD3DCompiler);
       }
 
-      FilePath gles_path;
+      base::FilePath gles_path;
       const CommandLine* command_line = CommandLine::ForCurrentProcess();
       bool using_swift_shader =
           command_line->GetSwitchValueASCII(switches::kUseGL) == "swiftshader";
@@ -195,7 +196,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       // When using Windows OpenGL, first try wglGetProcAddress and then
       // Windows GetProcAddress.
       base::NativeLibrary library = base::LoadNativeLibrary(
-          FilePath(L"opengl32.dll"), NULL);
+          base::FilePath(L"opengl32.dll"), NULL);
       if (!library) {
         DVLOG(1) << "opengl32.dll not found";
         return false;

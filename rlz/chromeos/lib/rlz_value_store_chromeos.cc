@@ -34,10 +34,11 @@ const char kStatefulEventKey[] = "stateful_events";
 const char kNoSupplementaryBrand[] = "_";
 
 // RLZ store filename.
-const FilePath::CharType kRLZDataFileName[] = FILE_PATH_LITERAL("RLZ Data");
+const base::FilePath::CharType kRLZDataFileName[] =
+    FILE_PATH_LITERAL("RLZ Data");
 
 // RLZ store lock filename
-const FilePath::CharType kRLZLockFileName[] =
+const base::FilePath::CharType kRLZLockFileName[] =
     FILE_PATH_LITERAL("RLZ Data.lock");
 
 // RLZ store path for testing.
@@ -75,7 +76,7 @@ std::string GetKeyName(std::string key, Product product) {
 
 }  // namespace
 
-RlzValueStoreChromeOS::RlzValueStoreChromeOS(const FilePath& store_path)
+RlzValueStoreChromeOS::RlzValueStoreChromeOS(const base::FilePath& store_path)
     : rlz_store_(new base::DictionaryValue),
       store_path_(store_path),
       read_only_(true) {
@@ -325,7 +326,7 @@ RlzValueStore* ScopedRlzValueStoreLock::GetStore() {
 
 namespace testing {
 
-void SetRlzStoreDirectory(const FilePath& directory) {
+void SetRlzStoreDirectory(const base::FilePath& directory) {
   g_testing_rlz_store_path_ = directory;
 }
 

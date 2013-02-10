@@ -199,7 +199,7 @@ TEST(BrokerProcess, DISABLE_ON_ANDROID(OpenFileRW)) {
   const char basename[] = "BrokerProcessXXXXXX";
   char template_name[2048];
 #if defined(OS_ANDROID)
-  FilePath cache_directory;
+  base::FilePath cache_directory;
   ASSERT_TRUE(base::android::GetCacheDirectory(&cache_directory));
   ssize_t length = snprintf(template_name, sizeof(template_name),
                             "%s%s",

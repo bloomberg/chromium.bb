@@ -87,7 +87,7 @@ void PipelineIntegrationTestBase::OnError(PipelineStatus status) {
   message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
-bool PipelineIntegrationTestBase::Start(const FilePath& file_path,
+bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
                                         PipelineStatus expected_status) {
   EXPECT_CALL(*this, OnBufferingState(Pipeline::kHaveMetadata))
       .Times(AtMost(1));
@@ -104,14 +104,14 @@ bool PipelineIntegrationTestBase::Start(const FilePath& file_path,
   return (pipeline_status_ == PIPELINE_OK);
 }
 
-bool PipelineIntegrationTestBase::Start(const FilePath& file_path,
+bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
                                         PipelineStatus expected_status,
                                         bool hashing_enabled) {
   hashing_enabled_ = hashing_enabled;
   return Start(file_path, expected_status);
 }
 
-bool PipelineIntegrationTestBase::Start(const FilePath& file_path) {
+bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path) {
   EXPECT_CALL(*this, OnBufferingState(Pipeline::kHaveMetadata))
       .Times(AtMost(1));
   EXPECT_CALL(*this, OnBufferingState(Pipeline::kPrerollCompleted))
@@ -183,7 +183,8 @@ bool PipelineIntegrationTestBase::WaitUntilCurrentTimeIsAfter(
 }
 
 scoped_ptr<FilterCollection>
-PipelineIntegrationTestBase::CreateFilterCollection(const FilePath& file_path) {
+PipelineIntegrationTestBase::CreateFilterCollection(
+    const base::FilePath& file_path) {
   scoped_refptr<FileDataSource> data_source = new FileDataSource();
   CHECK(data_source->Initialize(file_path));
   return CreateFilterCollection(

@@ -27,7 +27,7 @@ void GL_BINDING_CALL MarshalDepthRangeToDepthRangef(GLclampd z_near,
   glDepthRangef(static_cast<GLclampf>(z_near), static_cast<GLclampf>(z_far));
 }
 
-base::NativeLibrary LoadLibrary(const FilePath& filename) {
+base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
   std::string error;
   base::NativeLibrary library = base::LoadNativeLibrary(filename, &error);
   if (!library) {
@@ -38,7 +38,7 @@ base::NativeLibrary LoadLibrary(const FilePath& filename) {
 }
 
 base::NativeLibrary LoadLibrary(const char* filename) {
-  return LoadLibrary(FilePath(filename));
+  return LoadLibrary(base::FilePath(filename));
 }
 
 }  // namespace

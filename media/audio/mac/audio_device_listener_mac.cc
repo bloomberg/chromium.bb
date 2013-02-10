@@ -215,7 +215,7 @@ bool AudioDeviceListenerMac::LoadAudioObjectPropertyListenerBlockFunctions() {
   // Dynamically load required block functions.
   // TODO(dalecurtis): Remove once the deployment target is > 10.6.
   std::string error;
-  base::NativeLibrary core_audio = base::LoadNativeLibrary(FilePath(
+  base::NativeLibrary core_audio = base::LoadNativeLibrary(base::FilePath(
       "/System/Library/Frameworks/CoreAudio.framework/Versions/Current/"
       "CoreAudio"), &error);
   if (!error.empty()) {

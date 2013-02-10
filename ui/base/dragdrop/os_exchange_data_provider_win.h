@@ -46,7 +46,7 @@ class DataObjectImpl : public DownloadFileObserver,
   size_t size() const { return contents_.size(); }
 
   // DownloadFileObserver implementation:
-  virtual void OnDownloadCompleted(const FilePath& file_path);
+  virtual void OnDownloadCompleted(const base::FilePath& file_path);
   virtual void OnDownloadAborted();
 
   // IDataObject implementation:
@@ -161,23 +161,23 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
   // OSExchangeData::Provider methods.
   virtual void SetString(const string16& data);
   virtual void SetURL(const GURL& url, const string16& title);
-  virtual void SetFilename(const FilePath& path);
+  virtual void SetFilename(const base::FilePath& path);
   virtual void SetFilenames(
       const std::vector<OSExchangeData::FileInfo>& filenames);
   virtual void SetPickledData(OSExchangeData::CustomFormat format,
                               const Pickle& data);
-  virtual void SetFileContents(const FilePath& filename,
+  virtual void SetFileContents(const base::FilePath& filename,
                                const std::string& file_contents);
   virtual void SetHtml(const string16& html, const GURL& base_url);
 
   virtual bool GetString(string16* data) const;
   virtual bool GetURLAndTitle(GURL* url, string16* title) const;
-  virtual bool GetFilename(FilePath* path) const;
+  virtual bool GetFilename(base::FilePath* path) const;
   virtual bool GetFilenames(
       std::vector<OSExchangeData::FileInfo>* filenames) const;
   virtual bool GetPickledData(OSExchangeData::CustomFormat format,
                               Pickle* data) const;
-  virtual bool GetFileContents(FilePath* filename,
+  virtual bool GetFileContents(base::FilePath* filename,
                                std::string* file_contents) const;
   virtual bool GetHtml(string16* html, GURL* base_url) const;
   virtual bool HasString() const;

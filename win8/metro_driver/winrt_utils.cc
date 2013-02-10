@@ -180,7 +180,7 @@ HRESULT CompareProperties(winfoundtn::IPropertyValue* lhs,
   return hr;
 }
 
-bool GetArgumentsFromShortcut(const FilePath& shortcut,
+bool GetArgumentsFromShortcut(const base::FilePath& shortcut,
                               string16* arguments) {
   HRESULT result;
   base::win::ScopedComPtr<IShellLink> i_shell_link;
@@ -216,7 +216,7 @@ string16 ReadArgumentsFromPinnedTaskbarShortcut() {
 
   if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL,
                                 SHGFP_TYPE_CURRENT, path_buffer))) {
-    FilePath shortcut(path_buffer);
+    base::FilePath shortcut(path_buffer);
     shortcut = shortcut.Append(
         L"Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar");
 

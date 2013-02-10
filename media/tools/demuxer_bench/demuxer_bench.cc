@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
 
   MessageLoop message_loop;
   DemuxerHostImpl demuxer_host;
-  FilePath file_path(cmd_line->GetArgs()[0]);
+  base::FilePath file_path(cmd_line->GetArgs()[0]);
 
   // Setup.
   scoped_refptr<media::FileDataSource> data_source =

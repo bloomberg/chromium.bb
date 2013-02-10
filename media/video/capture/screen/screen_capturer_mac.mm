@@ -700,13 +700,13 @@ void ScreenCapturerMac::ScreenConfigurationChanged() {
 
   // Dynamically link to the deprecated pre-Lion capture APIs.
   std::string app_services_library_error;
-  FilePath app_services_path(kApplicationServicesLibraryName);
+  base::FilePath app_services_path(kApplicationServicesLibraryName);
   app_services_library_.Reset(
       base::LoadNativeLibrary(app_services_path, &app_services_library_error));
   CHECK(app_services_library_.is_valid()) << app_services_library_error;
 
   std::string opengl_library_error;
-  FilePath opengl_path(kOpenGlLibraryName);
+  base::FilePath opengl_path(kOpenGlLibraryName);
   opengl_library_.Reset(
       base::LoadNativeLibrary(opengl_path, &opengl_library_error));
   CHECK(opengl_library_.is_valid()) << opengl_library_error;

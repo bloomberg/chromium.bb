@@ -60,7 +60,7 @@ class UI_EXPORT OSExchangeDataProviderGtk : public OSExchangeData::Provider {
   // Provider methods.
   virtual void SetString(const string16& data) OVERRIDE;
   virtual void SetURL(const GURL& url, const string16& title) OVERRIDE;
-  virtual void SetFilename(const FilePath& path) OVERRIDE;
+  virtual void SetFilename(const base::FilePath& path) OVERRIDE;
   virtual void SetFilenames(
       const std::vector<OSExchangeData::FileInfo>& filenames) OVERRIDE {
     NOTREACHED();
@@ -69,7 +69,7 @@ class UI_EXPORT OSExchangeDataProviderGtk : public OSExchangeData::Provider {
                               const Pickle& data) OVERRIDE;
   virtual bool GetString(string16* data) const OVERRIDE;
   virtual bool GetURLAndTitle(GURL* url, string16* title) const OVERRIDE;
-  virtual bool GetFilename(FilePath* path) const OVERRIDE;
+  virtual bool GetFilename(base::FilePath* path) const OVERRIDE;
   virtual bool GetFilenames(
       std::vector<OSExchangeData::FileInfo>* filenames) const OVERRIDE {
     NOTREACHED();
@@ -114,7 +114,7 @@ class UI_EXPORT OSExchangeDataProviderGtk : public OSExchangeData::Provider {
   string16 title_;
 
   // File name.
-  FilePath filename_;
+  base::FilePath filename_;
 
   // PICKLED_DATA contents.
   PickleData pickle_data_;

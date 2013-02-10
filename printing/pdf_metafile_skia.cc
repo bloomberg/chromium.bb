@@ -124,7 +124,7 @@ bool PdfMetafileSkia::GetData(void* dst_buffer,
   return true;
 }
 
-bool PdfMetafileSkia::SaveTo(const FilePath& file_path) const {
+bool PdfMetafileSkia::SaveTo(const base::FilePath& file_path) const {
   DCHECK_GT(data_->pdf_stream_.getOffset(), 0U);
   SkAutoDataUnref data(data_->pdf_stream_.copyToData());
   if (file_util::WriteFile(file_path,
