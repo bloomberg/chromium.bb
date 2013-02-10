@@ -794,6 +794,13 @@ void SpdySession::StartRead() {
 
 int SpdySession::DoLoop(int result) {
   bytes_read_ = 0;
+
+  // The SpdyFramer will use callbacks onto |this| as it parses frames.
+  // When errors occur, those callbacks can lead to teardown of all references
+  // to |this|, so maintain a reference to self during this call for safe
+  // cleanup.
+  scoped_refptr<SpdySession> self(this);
+
   do {
     if (read_pending_)
       return OK;
@@ -861,12 +868,6 @@ int SpdySession::DoReadComplete(int result) {
   bytes_read_ += result;
 
   last_activity_time_ = base::TimeTicks::Now();
-
-  // The SpdyFramer will use callbacks onto |this| as it parses frames.
-  // When errors occur, those callbacks can lead to teardown of all references
-  // to |this|, so maintain a reference to self during this call for safe
-  // cleanup.
-  scoped_refptr<SpdySession> self(this);
 
   DCHECK(buffered_spdy_framer_.get());
   char *data = read_buffer_->data();
