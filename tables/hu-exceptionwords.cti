@@ -251,6 +251,7 @@ partword oroszlánnyo 135-1235-135-156-123-4-1345-1246-135	For example oroszlán
 partword önnyom 12345-1345-1246-135-134	For example önnyomása, önnyomatú words
 partword nnyilat 1345-1246-24-123-1-2345	For example sablonnyilatkozat word
 partword nnyelv 1345-1246-15-123-1236	For example ingyennyelvoktatás, mandarinnyelv, börtönnyelv, dizájnnyelven words need this exception
+partword szezonny 156-15-126-135-1345-1246	For example szezonnyitó word need this exception
 
 #ly related exceptions
 #This exception parts need marking ly letters with two single l and y letter combination
@@ -740,6 +741,11 @@ begword rákossz 1235-4-13-135-234-156	For example Rákosszentmihály town part 
 partword kezdéssz 13-15-126-145-16-234-156	For example bekezdésszintű word need this exception
 partword mászás 134-4-156-4-234	For example hangyamászásszerű word need this exception
 partword hivatkozássz 125-24-1236-1-2345-13-135-126-4-234-156	For example hivatkozásszerű, hivatkozásszűrés word
+partword taxissz 2345-1-1346-24-234-156	For example taxisszakszervezet, taxisszurkálás words need this exception
+partword pszichológussz 1234-156-24-14-125-135-123-246-1245-136-234-156	For example pszichológusszövetség word need this exception
+partword vízeséssz 1236-34-126-15-234-16-234-156	For example vízesésszerűen word need this exception
+partword közlekedéssz 13-12345-126-123-15-13-15-145-16-234-156	For example közlekedésszervezők word need this exception
+partword üstökössz 12356-234-2345-12345-13-12345-234-156	For example üstökösszerű word
 
 #ty, lly tty related exceptions
 #This exception part containing english words with need presenting original english braille rules
@@ -758,6 +764,9 @@ always curiosity =
 always unity =
 always fifty =
 begword stylis =
+always reality =	For example realityműsora word need this exception
+always style =
+always zloty 126-123-135-2345-13456	Old polish money name
 
 #zs, zzs related exceptions
 partword ínházsi 34-1345-125-4-345-24

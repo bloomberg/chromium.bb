@@ -1066,6 +1066,9 @@ testmode: hyphenate
 kötelességgyakorlás
 
 testmode: hyphenate
+közlekedésszervezők
+
+testmode: hyphenate
 kőművesszem
 
 testmode: hyphenate
@@ -1717,6 +1720,9 @@ testmode: hyphenate
 proggyak
 
 testmode: hyphenate
+pszichológusszövetség
+
+testmode: hyphenate
 pulzusszám
 
 testmode: hyphenate
@@ -1915,6 +1921,9 @@ testmode: hyphenate
 szénásszekér
 
 testmode: hyphenate
+szezonnyitó
+
+testmode: hyphenate
 szentségesszűzmáriám
 
 testmode: hyphenate
@@ -1985,6 +1994,9 @@ születésszabályozás
 
 testmode: hyphenate
 szűzsült
+
+testmode: hyphenate
+taxisszurkálás
 
 testmode: hyphenate
 tágulásszabály
@@ -2159,6 +2171,9 @@ testmode: hyphenate
 
 testmode: hyphenate
 ülésszak
+
+testmode: hyphenate
+üstökösszerű
 
 testmode: hyphenate
 ütésszerű
@@ -2341,6 +2356,9 @@ testmode: hyphenate
 vízsivatag
 
 testmode: hyphenate
+vízesésszerűen
+
+testmode: hyphenate
 vízsodor
 
 testmode: hyphenate
@@ -2378,6 +2396,9 @@ záloggyűrűmet
 
 testmode: hyphenate
 zavarosszürke
+
+testmode: hyphenate
+zlotyról
 
 testmode: hyphenate
 zökkenésszerű

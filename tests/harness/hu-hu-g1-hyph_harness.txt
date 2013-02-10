@@ -1428,6 +1428,10 @@
           "output": "kö-te-les-ség-gya-kor-lás"
         }, 
         {
+          "input": "közlekedésszervezők", 
+          "output": "köz-le-ke-dés-szer-ve-zők"
+        }, 
+        {
           "input": "kőművesszem", 
           "output": "kő-mű-ves-szem"
         }, 
@@ -2296,6 +2300,10 @@
           "output": "prog-gyak"
         }, 
         {
+          "input": "pszichológusszövetség", 
+          "output": "pszi-cho-ló-gus-szö-vet-ség"
+        }, 
+        {
           "input": "pulzusszám", 
           "output": "pul-zus-szám"
         }, 
@@ -2560,6 +2568,10 @@
           "output": "szé-nás-sze-kér"
         }, 
         {
+          "input": "szezonnyitó", 
+          "output": "sze-zon-nyi-tó"
+        }, 
+        {
           "input": "szentségesszűzmáriám", 
           "output": "szent-ség-esszűz-má-ri-ám"
         }, 
@@ -2654,6 +2666,10 @@
         {
           "input": "szűzsült", 
           "output": "szűz-sült"
+        }, 
+        {
+          "input": "taxisszurkálás", 
+          "output": "ta-xis-szur-ká-lás"
         }, 
         {
           "input": "tágulásszabály", 
@@ -2886,6 +2902,10 @@
         {
           "input": "ülésszak", 
           "output": "ülés-szak"
+        }, 
+        {
+          "input": "üstökösszerű", 
+          "output": "üs-tö-kös-sze-rű"
         }, 
         {
           "input": "ütésszerű", 
@@ -3128,6 +3148,10 @@
           "output": "víz-si-va-tag"
         }, 
         {
+          "input": "vízesésszerűen", 
+          "output": "víz-esés-sze-rű-en"
+        }, 
+        {
           "input": "vízsodor", 
           "output": "víz-so-dor"
         }, 
@@ -3178,6 +3202,10 @@
         {
           "input": "zavarosszürke", 
           "output": "za-va-ros-szür-ke"
+        }, 
+        {
+          "input": "zlotyról", 
+          "output": "zlo-ty-ról"
         }, 
         {
           "input": "zökkenésszerű", 

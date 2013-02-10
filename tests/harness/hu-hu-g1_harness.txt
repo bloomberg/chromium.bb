@@ -1399,6 +1399,10 @@
           "output": "köhögésszerű"
         }, 
         {
+          "input": "⠅⠟⠣⠇⠑⠅⠑⠙⠡⠎⠱⠑⠗⠧⠑⠣⠻⠅", 
+          "output": "közlekedésszervezők"
+        }, 
+        {
           "input": "⠅⠻⠍⠾⠧⠑⠎⠱⠑⠍", 
           "output": "kőművesszem"
         }, 
@@ -2283,6 +2287,10 @@
           "output": "proggyak"
         }, 
         {
+          "input": "⠏⠱⠊⠉⠓⠕⠇⠪⠛⠥⠎⠱⠟⠧⠑⠞⠎⠡⠛", 
+          "output": "pszichológusszövetség"
+        }, 
+        {
           "input": "⠏⠥⠇⠣⠥⠎⠱⠈⠍", 
           "output": "pulzusszám"
         }, 
@@ -2329,6 +2337,10 @@
         {
           "input": "⠗⠈⠝⠞⠈⠎⠱⠑⠗⠾ ", 
           "output": "rántásszerű "
+        }, 
+        {
+          "input": "⠗⠑⠁⠇⠊⠞⠽⠍⠾⠎⠕⠗⠁", 
+          "output": "realityműsora"
         }, 
         {
           "input": "⠗⠑⠉⠡⠎⠱⠈⠗⠬", 
@@ -2539,6 +2551,10 @@
           "output": "szarvaszsír"
         }, 
         {
+          "input": "⠱⠑⠣⠕⠝⠫⠊⠞⠪", 
+          "output": "szezonnyitó"
+        }, 
+        {
           "input": "⠱⠡⠝⠈⠎⠱⠑⠅⠡⠗", 
           "output": "szénásszekér"
         }, 
@@ -2641,6 +2657,10 @@
         {
           "input": "⠱⠾⠣⠎⠷⠇⠞", 
           "output": "szűzsült"
+        }, 
+        {
+          "input": "⠞⠁⠭⠊⠎⠱⠥⠗⠅⠈⠇⠈⠎", 
+          "output": "taxisszurkálás"
         }, 
         {
           "input": "⠞⠈⠛⠥⠇⠈⠎⠱⠁⠃⠈⠸", 
@@ -2873,6 +2893,10 @@
         {
           "input": "⠷⠇⠡⠎⠱⠁⠅", 
           "output": "ülésszak"
+        }, 
+        {
+          "input": "⠷⠎⠞⠟⠅⠟⠎⠱⠑⠗⠾", 
+          "output": "üstökösszerű"
         }, 
         {
           "input": "⠷⠞⠡⠎⠱⠑⠗⠾", 
@@ -3119,6 +3143,10 @@
           "output": "vízsivatag "
         }, 
         {
+          "input": "⠧⠌⠣⠑⠎⠡⠎⠱⠑⠗⠾⠑⠝", 
+          "output": "vízesésszerűen"
+        }, 
+        {
           "input": "⠧⠌⠣⠎⠕⠙⠕⠗", 
           "output": "vízsodor"
         }, 
@@ -3169,6 +3197,10 @@
         {
           "input": "⠣⠁⠧⠁⠗⠕⠎⠱⠷⠗⠅⠑", 
           "output": "zavarosszürke"
+        }, 
+        {
+          "input": "⠣⠇⠕⠞⠽⠗⠪⠇", 
+          "output": "zlotyról"
         }, 
         {
           "input": "⠣⠟⠅⠅⠑⠝⠡⠎⠱⠑⠗⠾", 
@@ -4647,6 +4679,10 @@
           "output": "⠅⠟⠓⠟⠛⠡⠎⠱⠑⠗⠾"
         }, 
         {
+          "input": "közlekedésszervezők", 
+          "output": "⠅⠟⠣⠇⠑⠅⠑⠙⠡⠎⠱⠑⠗⠧⠑⠣⠻⠅"
+        }, 
+        {
           "input": "kőművesszem", 
           "output": "⠅⠻⠍⠾⠧⠑⠎⠱⠑⠍"
         }, 
@@ -5531,6 +5567,10 @@
           "output": "⠏⠗⠕⠛⠹⠁⠅"
         }, 
         {
+          "input": "pszichológusszövetség", 
+          "output": "⠏⠱⠊⠉⠓⠕⠇⠪⠛⠥⠎⠱⠟⠧⠑⠞⠎⠡⠛"
+        }, 
+        {
           "input": "pulzusszám", 
           "output": "⠏⠥⠇⠣⠥⠎⠱⠈⠍"
         }, 
@@ -5577,6 +5617,10 @@
         {
           "input": "rántásszerű ", 
           "output": "⠗⠈⠝⠞⠈⠎⠱⠑⠗⠾ "
+        }, 
+        {
+          "input": "realityműsora", 
+          "output": "⠗⠑⠁⠇⠊⠞⠽⠍⠾⠎⠕⠗⠁"
         }, 
         {
           "input": "recésszárú", 
@@ -5787,6 +5831,10 @@
           "output": "⠱⠁⠗⠧⠁⠎⠜⠌⠗"
         }, 
         {
+          "input": "szezonnyitó", 
+          "output": "⠱⠑⠣⠕⠝⠫⠊⠞⠪"
+        }, 
+        {
           "input": "szénásszekér", 
           "output": "⠱⠡⠝⠈⠎⠱⠑⠅⠡⠗"
         }, 
@@ -5889,6 +5937,10 @@
         {
           "input": "szűzsült", 
           "output": "⠱⠾⠣⠎⠷⠇⠞"
+        }, 
+        {
+          "input": "taxisszurkálás", 
+          "output": "⠞⠁⠭⠊⠎⠱⠥⠗⠅⠈⠇⠈⠎"
         }, 
         {
           "input": "tágulásszabály", 
@@ -6121,6 +6173,10 @@
         {
           "input": "ülésszak", 
           "output": "⠷⠇⠡⠎⠱⠁⠅"
+        }, 
+        {
+          "input": "üstökösszerű", 
+          "output": "⠷⠎⠞⠟⠅⠟⠎⠱⠑⠗⠾"
         }, 
         {
           "input": "ütésszerű", 
@@ -6367,6 +6423,10 @@
           "output": "⠧⠌⠣⠎⠊⠧⠁⠞⠁⠛ "
         }, 
         {
+          "input": "vízesésszerűen", 
+          "output": "⠧⠌⠣⠑⠎⠡⠎⠱⠑⠗⠾⠑⠝"
+        }, 
+        {
           "input": "vízsodor", 
           "output": "⠧⠌⠣⠎⠕⠙⠕⠗"
         }, 
@@ -6417,6 +6477,10 @@
         {
           "input": "zavarosszürke", 
           "output": "⠣⠁⠧⠁⠗⠕⠎⠱⠷⠗⠅⠑"
+        }, 
+        {
+          "input": "zlotyról", 
+          "output": "⠣⠇⠕⠞⠽⠗⠪⠇"
         }, 
         {
           "input": "zökkenésszerű", 

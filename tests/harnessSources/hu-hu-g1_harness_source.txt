@@ -1740,6 +1740,11 @@ köhögésszerű
 testmode: backtranslate
 köhögésszerű
 
+közlekedésszervezők
+
+testmode: backtranslate
+közlekedésszervezők
+
 kőművesszem
 
 testmode: backtranslate
@@ -2845,6 +2850,11 @@ proggyak
 testmode: backtranslate
 proggyak
 
+pszichológusszövetség
+
+testmode: backtranslate
+pszichológusszövetség
+
 pulzusszám
 
 testmode: backtranslate
@@ -2904,6 +2914,11 @@ rántásszerű
 
 testmode: backtranslate
 rántásszerű 
+
+realityműsora
+
+testmode: backtranslate
+realityműsora
 
 recésszárú
 
@@ -3165,6 +3180,11 @@ szarvaszsír
 testmode: backtranslate
 szarvaszsír
 
+szezonnyitó
+
+testmode: backtranslate
+szezonnyitó
+
 szénásszekér
 
 testmode: backtranslate
@@ -3294,6 +3314,11 @@ szűzsült
 
 testmode: backtranslate
 szűzsült
+
+taxisszurkálás
+
+testmode: backtranslate
+taxisszurkálás
 
 tágulásszabály
 
@@ -3584,6 +3609,11 @@ testmode: backtranslate
 
 testmode: backtranslate
 ülésszak
+
+üstökösszerű
+
+testmode: backtranslate
+üstökösszerű
 
 ütésszerű
 
@@ -3890,6 +3920,11 @@ vízsivatag
 testmode: backtranslate
 vízsivatag 
 
+vízesésszerűen
+
+testmode: backtranslate
+vízesésszerűen
+
 vízsodor
 
 testmode: backtranslate
@@ -3954,6 +3989,11 @@ zavarosszürke
 
 testmode: backtranslate
 zavarosszürke
+
+zlotyról
+
+testmode: backtranslate
+zlotyról
 
 zökkenésszerű
 
