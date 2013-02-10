@@ -544,3 +544,40 @@ WebKit::WebGestureCurve* TestWebKitPlatformSupport::createFlingAnimationCurve(
   // Caller will retain and release.
   return new WebGestureCurveMock(velocity, cumulative_scroll);
 }
+
+#if HAVE_WEBUNITTESTSUPPORT
+WebKit::WebUnitTestSupport* TestWebKitPlatformSupport::unitTestSupport() {
+  return this;
+}
+#endif
+
+void TestWebKitPlatformSupport::registerMockedURL(
+    const WebKit::WebURL& url,
+    const WebKit::WebURLResponse& response,
+    const WebKit::WebString& file_path) {
+  url_loader_factory_.RegisterURL(url, response, file_path);
+}
+
+void TestWebKitPlatformSupport::registerMockedErrorURL(
+    const WebKit::WebURL& url,
+    const WebKit::WebURLResponse& response,
+    const WebKit::WebURLError& error) {
+  url_loader_factory_.RegisterErrorURL(url, response, error);
+}
+
+void TestWebKitPlatformSupport::unregisterMockedURL(const WebKit::WebURL& url) {
+  url_loader_factory_.UnregisterURL(url);
+}
+
+void TestWebKitPlatformSupport::unregisterAllMockedURLs() {
+  url_loader_factory_.UnregisterAllURLs();
+}
+
+void TestWebKitPlatformSupport::serveAsynchronousMockedRequests() {
+  url_loader_factory_.ServeAsynchronousRequests();
+}
+
+WebKit::WebString TestWebKitPlatformSupport::webKitRootDir() {
+  return webkit_support::GetWebKitRootDir();
+}
+
