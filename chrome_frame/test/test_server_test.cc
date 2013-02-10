@@ -32,12 +32,12 @@ class TestServerTest: public testing::Test {
   }
 
  public:
-  const FilePath& source_path() const {
+  const base::FilePath& source_path() const {
     return source_path_;
   }
 
  protected:
-  FilePath source_path_;
+  base::FilePath source_path_;
 };
 
 namespace {

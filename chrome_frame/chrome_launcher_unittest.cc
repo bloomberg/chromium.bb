@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(ChromeLauncher, IsValidCommandLine) {
-  CommandLine bad(FilePath(L"dummy.exe"));
+  CommandLine bad(base::FilePath(L"dummy.exe"));
   bad.AppendSwitch(switches::kNoFirstRun);  // in whitelist
   bad.AppendSwitch("no-such-switch");  // does not exist
   bad.AppendSwitch(switches::kHomePage);  // exists but not in whitelist
@@ -17,7 +17,7 @@ TEST(ChromeLauncher, IsValidCommandLine) {
   EXPECT_FALSE(chrome_launcher::IsValidCommandLine(
       bad.GetCommandLineString().c_str()));
 
-  CommandLine good(FilePath(L"dummy.exe"));
+  CommandLine good(base::FilePath(L"dummy.exe"));
   good.AppendSwitch(switches::kNoFirstRun);  // in whitelist
   good.AppendSwitch(switches::kDisableBackgroundMode);  // in whitelist
   good.AppendSwitchASCII(switches::kUserDataDir, "foo");  // in whitelist
@@ -25,11 +25,11 @@ TEST(ChromeLauncher, IsValidCommandLine) {
   EXPECT_TRUE(chrome_launcher::IsValidCommandLine(
       good.GetCommandLineString().c_str()));
 
-  CommandLine no_params(FilePath(L"dummy.exe"));
+  CommandLine no_params(base::FilePath(L"dummy.exe"));
   EXPECT_TRUE(chrome_launcher::IsValidCommandLine(
       no_params.GetCommandLineString().c_str()));
 
-  CommandLine empty(FilePath(L""));
+  CommandLine empty(base::FilePath(L""));
   EXPECT_TRUE(chrome_launcher::IsValidCommandLine(
       empty.GetCommandLineString().c_str()));
 }

@@ -11,7 +11,7 @@
 
 namespace cc {
 
-bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
+bool WritePNGFile(const SkBitmap& bitmap, const base::FilePath& file_path) {
   std::vector<unsigned char> png_data;
   const bool discard_transparency = true;
   if (gfx::PNGCodec::EncodeBGRASkBitmap(bitmap,
@@ -25,7 +25,7 @@ bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
   return false;
 }
 
-bool ReadPNGFile(const FilePath& file_path, SkBitmap* bitmap) {
+bool ReadPNGFile(const base::FilePath& file_path, SkBitmap* bitmap) {
   DCHECK(bitmap);
   std::string png_data;
   return file_util::ReadFileToString(file_path, &png_data) &&
@@ -34,7 +34,7 @@ bool ReadPNGFile(const FilePath& file_path, SkBitmap* bitmap) {
                                bitmap);
 }
 
-bool IsSameAsPNGFile(const SkBitmap& gen_bmp, FilePath ref_img_path) {
+bool IsSameAsPNGFile(const SkBitmap& gen_bmp, base::FilePath ref_img_path) {
   SkBitmap ref_bmp;
   if (!ReadPNGFile(ref_img_path, &ref_bmp)) {
     LOG(ERROR) << "Cannot read reference image: " << ref_img_path.value();

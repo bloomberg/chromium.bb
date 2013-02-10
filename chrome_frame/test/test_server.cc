@@ -251,7 +251,7 @@ void SimpleWebServer::DidClose(net::StreamListenSocket* sock) {
 }
 
 HTTPTestServer::HTTPTestServer(int port, const std::wstring& address,
-                               FilePath root_dir)
+                               base::FilePath root_dir)
     : port_(port), address_(address), root_dir_(root_dir) {
   net::EnsureWinsockInit();
   server_ =

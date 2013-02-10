@@ -70,7 +70,7 @@ struct ASH_EXPORT DriveOperationStatus {
   ~DriveOperationStatus();
 
   // File path.
-  FilePath file_path;
+  base::FilePath file_path;
   // Current operation completion progress [0.0 - 1.0].
   double progress;
   OperationType type;
@@ -220,7 +220,7 @@ class SystemTrayDelegate {
   virtual void ActivateIMEProperty(const std::string& key) = 0;
 
   // Cancels ongoing drive operation.
-  virtual void CancelDriveOperation(const FilePath& file_path) = 0;
+  virtual void CancelDriveOperation(const base::FilePath& file_path) = 0;
 
   // Returns information about the ongoing drive operations.
   virtual void GetDriveOperationStatusList(

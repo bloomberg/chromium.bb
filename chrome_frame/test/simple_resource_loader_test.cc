@@ -11,8 +11,8 @@
 
 TEST(SimpleResourceLoaderTest, LoadLocaleDll) {
   std::vector<std::wstring> language_tags;
-  FilePath locales_path;
-  FilePath file_path;
+  base::FilePath locales_path;
+  base::FilePath file_path;
   HMODULE dll_handle = NULL;
 
   SimpleResourceLoader::DetermineLocalesDirectory(&locales_path);

@@ -451,7 +451,7 @@ RenderNode* InterpretNode(DictionaryValue* node) {
   return NULL;
 }
 
-RenderNode* BuildRenderTreeFromFile(const FilePath& path) {
+RenderNode* BuildRenderTreeFromFile(const base::FilePath& path) {
   LOG(INFO) << "Reading " << path.LossyDisplayName();
   string contents;
   if (!ReadFileToString(path, &contents))

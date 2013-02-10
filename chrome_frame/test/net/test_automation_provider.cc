@@ -113,7 +113,7 @@ std::string TestAutomationProvider::GetProtocolVersion() {
   // updated in one module but does in another, so better to use the
   // exact same version to avoid hard-to-debug problems in development
   // builds.
-  FilePath path;
+  base::FilePath path;
   PathService::Get(base::DIR_MODULE, &path);
   path = path.AppendASCII("npchrome_frame.dll");
 

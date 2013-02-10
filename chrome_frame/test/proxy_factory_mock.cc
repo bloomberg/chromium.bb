@@ -34,7 +34,7 @@ void ProxyFactoryTest::SetUp() {
 ChromeFrameLaunchParams* ProxyFactoryTest::MakeLaunchParams(
     const wchar_t* profile_name) {
   GURL empty;
-  FilePath profile_path;
+  base::FilePath profile_path;
   GetChromeFrameProfilePath(profile_name, &profile_path);
   chrome_frame_test::OverrideDataDirectoryForThisTest(profile_path.value());
   ChromeFrameLaunchParams* params =

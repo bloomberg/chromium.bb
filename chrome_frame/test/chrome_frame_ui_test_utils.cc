@@ -739,8 +739,8 @@ bool IsDesktopUnlocked() {
   return desk;
 }
 
-FilePath GetIAccessible2ProxyStubPath() {
-  FilePath path;
+base::FilePath GetIAccessible2ProxyStubPath() {
+  base::FilePath path;
   PathService::Get(chrome::DIR_APP, &path);
   return path.AppendASCII("IAccessible2Proxy.dll");
 }

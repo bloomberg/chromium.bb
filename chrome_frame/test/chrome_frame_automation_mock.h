@@ -41,7 +41,7 @@ class AutomationMockDelegate
 
     mock_server_.ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
 
-    FilePath profile_path;
+    base::FilePath profile_path;
     GetChromeFrameProfilePath(profile_name, &profile_path);
     chrome_frame_test::OverrideDataDirectoryForThisTest(profile_path.value());
 
@@ -76,7 +76,7 @@ class AutomationMockDelegate
 
   // Navigate the external to a 'file://' url for unit test files
   bool NavigateRelativeFile(const std::wstring& file) {
-    FilePath cf_source_path;
+    base::FilePath cf_source_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &cf_source_path);
     std::wstring file_url(L"file://");
     file_url.append(cf_source_path.Append(

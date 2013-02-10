@@ -176,7 +176,7 @@ base::ProcessHandle LaunchExecutable(const std::wstring& executable,
       }
     }
   } else {
-    CommandLine cmdline((FilePath(path)));
+    CommandLine cmdline((base::FilePath(path)));
     cmdline.AppendArgNative(argument);
     if (!base::LaunchProcess(cmdline, base::LaunchOptions(), &process)) {
       LOG(ERROR) << "LaunchProcess failed: " << ::GetLastError();
@@ -186,8 +186,8 @@ base::ProcessHandle LaunchExecutable(const std::wstring& executable,
 }
 
 base::ProcessHandle LaunchChrome(const std::wstring& url,
-                                 const FilePath& user_data_dir) {
-  FilePath path;
+                                 const base::FilePath& user_data_dir) {
+  base::FilePath path;
   PathService::Get(base::DIR_MODULE, &path);
   path = path.AppendASCII(kChromeImageName);
 
@@ -417,7 +417,7 @@ HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser) {
 
 std::wstring GetExeVersion(const std::wstring& exe_path) {
   scoped_ptr<FileVersionInfo> ie_version_info(
-      FileVersionInfo::CreateFileVersionInfo(FilePath(exe_path)));
+      FileVersionInfo::CreateFileVersionInfo(base::FilePath(exe_path)));
   return ie_version_info->product_version();
 }
 
@@ -451,8 +451,8 @@ IEVersion GetInstalledIEVersion() {
   return IE_UNSUPPORTED;
 }
 
-FilePath GetProfilePathForIE() {
-  FilePath profile_path;
+base::FilePath GetProfilePathForIE() {
+  base::FilePath profile_path;
   // Browsers without IDeleteBrowsingHistory in non-priv mode
   // have their profiles moved into "Temporary Internet Files".
   // The code below basically retrieves the version of IE and computes
@@ -466,8 +466,8 @@ FilePath GetProfilePathForIE() {
   return profile_path;
 }
 
-FilePath GetTestDataFolder() {
-  FilePath test_dir;
+base::FilePath GetTestDataFolder() {
+  base::FilePath test_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &test_dir);
   test_dir = test_dir.Append(FILE_PATH_LITERAL("chrome_frame"))
       .Append(FILE_PATH_LITERAL("test"))
@@ -475,8 +475,8 @@ FilePath GetTestDataFolder() {
   return test_dir;
 }
 
-FilePath GetSeleniumTestFolder() {
-  FilePath test_dir;
+base::FilePath GetSeleniumTestFolder() {
+  base::FilePath test_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &test_dir);
   test_dir = test_dir.Append(FILE_PATH_LITERAL("data"))
       .Append(FILE_PATH_LITERAL("selenium_core"));
@@ -602,7 +602,7 @@ base::ProcessHandle StartCrashService() {
     return NULL;
   }
 
-  FilePath exe_dir;
+  base::FilePath exe_dir;
   if (!PathService::Get(base::DIR_EXE, &exe_dir)) {
     DCHECK(false);
     return NULL;
@@ -612,7 +612,7 @@ base::ProcessHandle StartCrashService() {
 
   VLOG(1) << "Starting crash_service.exe so you know if a test crashes!";
 
-  FilePath crash_service_path = exe_dir.AppendASCII("crash_service.exe");
+  base::FilePath crash_service_path = exe_dir.AppendASCII("crash_service.exe");
   if (!base::LaunchProcess(crash_service_path.value(), base::LaunchOptions(),
                            &crash_service)) {
     LOG(ERROR) << "Couldn't start crash_service.exe";
@@ -670,7 +670,7 @@ ScopedChromeFrameRegistrar::RegistrationType GetTestBedType() {
 }
 
 void ClearIESessionHistory() {
-  FilePath session_history_path;
+  base::FilePath session_history_path;
   if (!PathService::Get(base::DIR_LOCAL_APP_DATA, &session_history_path))
     return;
 

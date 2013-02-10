@@ -10,8 +10,8 @@
 
 namespace cc {
 
-bool PathProvider(int key, FilePath* result) {
-  FilePath cur;
+bool PathProvider(int key, base::FilePath* result) {
+  base::FilePath cur;
   switch (key) {
     // The following are only valid in the development environment, and
     // will fail if executed from an installed executable (because the

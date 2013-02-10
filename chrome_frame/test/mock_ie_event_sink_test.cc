@@ -187,7 +187,7 @@ MockIEEventSinkTest::MockIEEventSinkTest()
 }
 
 MockIEEventSinkTest::MockIEEventSinkTest(int port, const std::wstring& address,
-                                         const FilePath& root_dir)
+                                         const base::FilePath& root_dir)
     : server_mock_(port, address, root_dir) {
   loop_.set_snapshot_on_timeout(true);
   EXPECT_CALL(server_mock_, Get(_, StrCaseEq(L"/favicon.ico"), _))
@@ -224,7 +224,7 @@ void MockIEEventSinkTest::LaunchIENavigateAndLoop(const std::wstring& url,
   }
 }
 
-FilePath MockIEEventSinkTest::GetTestFilePath(
+base::FilePath MockIEEventSinkTest::GetTestFilePath(
     const std::wstring& relative_path) {
   return server_mock_.root_dir().Append(relative_path);
 }

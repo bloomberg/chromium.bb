@@ -40,7 +40,7 @@ class AwBrowserContext : public content::BrowserContext,
  public:
 
   AwBrowserContext(
-      const FilePath path,
+      const base::FilePath path,
       GeolocationPermissionFactoryFn* geolocation_permission_factory);
   virtual ~AwBrowserContext();
 
@@ -70,7 +70,7 @@ class AwBrowserContext : public content::BrowserContext,
       scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
           chrome_devtools_protocol_handler);
   net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
-      const FilePath& partition_path,
+      const base::FilePath& partition_path,
       bool in_memory,
       scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
           blob_protocol_handler,
@@ -84,7 +84,7 @@ class AwBrowserContext : public content::BrowserContext,
           chrome_devtools_protocol_handler);
 
   // content::BrowserContext implementation.
-  virtual FilePath GetPath() OVERRIDE;
+  virtual base::FilePath GetPath() OVERRIDE;
   virtual bool IsOffTheRecord() const OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
@@ -94,7 +94,7 @@ class AwBrowserContext : public content::BrowserContext,
       int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetMediaRequestContextForStoragePartition(
-          const FilePath& partition_path, bool in_memory) OVERRIDE;
+          const base::FilePath& partition_path, bool in_memory) OVERRIDE;
   virtual content::ResourceContext* GetResourceContext() OVERRIDE;
   virtual content::DownloadManagerDelegate*
       GetDownloadManagerDelegate() OVERRIDE;
@@ -110,7 +110,7 @@ class AwBrowserContext : public content::BrowserContext,
 
  private:
   // The file path where data for this context is persisted.
-  FilePath context_storage_path_;
+  base::FilePath context_storage_path_;
 
   scoped_refptr<AwURLRequestContextGetter> url_request_context_getter_;
   GeolocationPermissionFactoryFn* geolocation_permission_factory_;

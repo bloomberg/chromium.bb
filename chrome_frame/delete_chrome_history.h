@@ -53,7 +53,7 @@ END_MSG_MAP()
       AutomationLaunchResult reason, const std::string& server_version);
 
   virtual void GetProfilePath(const std::wstring& profile_name,
-                              FilePath* profile_path);
+                              base::FilePath* profile_path);
 
  private:
   unsigned long remove_mask_;

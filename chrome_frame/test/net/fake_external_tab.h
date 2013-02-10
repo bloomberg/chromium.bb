@@ -49,7 +49,7 @@ class FakeExternalTab {
   virtual void InitializePostThreadsCreated();
   virtual void Shutdown();
 
-  const FilePath& user_data() const {
+  const base::FilePath& user_data() const {
     return user_data_dir_;
   }
 
@@ -57,8 +57,8 @@ class FakeExternalTab {
 
  private:
   scoped_ptr<FakeBrowserProcessImpl> browser_process_;
-  FilePath overridden_user_dir_;
-  FilePath user_data_dir_;
+  base::FilePath overridden_user_dir_;
+  base::FilePath user_data_dir_;
   scoped_ptr<content::NotificationService> notificaton_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeExternalTab);
@@ -147,8 +147,9 @@ class CFUrlRequestUnittestRunner
   void StartInitializationTimeout();
   void OnInitializationTimeout();
 
-  bool ProcessSingletonNotificationCallback(const CommandLine& command_line,
-                                            const FilePath& current_directory);
+  bool ProcessSingletonNotificationCallback(
+      const CommandLine& command_line,
+      const base::FilePath& current_directory);
 
   bool launch_browser_;
   bool prompt_after_setup_;
@@ -156,7 +157,7 @@ class CFUrlRequestUnittestRunner
   scoped_ptr<ProcessSingleton> process_singleton_;
   base::CancelableClosure timeout_closure_;
   scoped_ptr<logging_win::FileLogger> file_logger_;
-  FilePath log_file_;
+  base::FilePath log_file_;
   scoped_ptr<chrome_frame_test::IEConfigurator> ie_configurator_;
 
   DISALLOW_COPY_AND_ASSIGN(CFUrlRequestUnittestRunner);

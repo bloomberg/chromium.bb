@@ -487,7 +487,7 @@ void FakeExternalTab::Initialize() {
   TestTimeouts::Initialize();
 
   // Load Chrome.dll as our resource dll.
-  FilePath dll;
+  base::FilePath dll;
   PathService::Get(base::DIR_MODULE, &dll);
   dll = dll.Append(chrome::kBrowserResourcesDll);
   HMODULE res_mod = ::LoadLibraryExW(dll.value().c_str(),
@@ -504,7 +504,7 @@ void FakeExternalTab::Initialize() {
   cmd->AppendSwitch(switches::kDisableWebResources);
   cmd->AppendSwitch(switches::kSingleProcess);
 
-  FilePath local_state_path;
+  base::FilePath local_state_path;
   CHECK(PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path));
   scoped_refptr<base::SequencedTaskRunner> local_state_task_runner =
       JsonPrefStore::GetTaskRunnerForFile(local_state_path,
@@ -527,7 +527,8 @@ void FakeExternalTab::Initialize() {
 }
 
 void FakeExternalTab::InitializePostThreadsCreated() {
-  FilePath profile_path(ProfileManager::GetDefaultProfileDir(user_data()));
+  base::FilePath profile_path(
+      ProfileManager::GetDefaultProfileDir(user_data()));
   Profile* profile =
       g_browser_process->profile_manager()->GetProfile(profile_path);
 }
@@ -713,9 +714,9 @@ void CFUrlRequestUnittestRunner::TakeDownBrowser() {
 }
 
 void CFUrlRequestUnittestRunner::InitializeLogging() {
-  FilePath exe;
+  base::FilePath exe;
   PathService::Get(base::FILE_EXE, &exe);
-  FilePath log_filename = exe.ReplaceExtension(FILE_PATH_LITERAL("log"));
+  base::FilePath log_filename = exe.ReplaceExtension(FILE_PATH_LITERAL("log"));
   logging::InitLogging(
       log_filename.value().c_str(),
       logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
@@ -744,7 +745,7 @@ void CFUrlRequestUnittestRunner::StartInitializationTimeout() {
 void CFUrlRequestUnittestRunner::OnInitializationTimeout() {
   LOG(ERROR) << "Failed to start Chrome Frame in the host browser.";
 
-  FilePath snapshot;
+  base::FilePath snapshot;
   if (ui_test_utils::SaveScreenSnapshotToDesktop(&snapshot))
     LOG(ERROR) << "Screen snapshot saved to " << snapshot.value();
 
@@ -784,7 +785,7 @@ int CFUrlRequestUnittestRunner::PreCreateThreads() {
 }
 
 bool CFUrlRequestUnittestRunner::ProcessSingletonNotificationCallback(
-    const CommandLine& command_line, const FilePath& current_directory) {
+    const CommandLine& command_line, const base::FilePath& current_directory) {
   std::string channel_id = command_line.GetSwitchValueASCII(
       switches::kAutomationClientChannelID);
   EXPECT_FALSE(channel_id.empty());

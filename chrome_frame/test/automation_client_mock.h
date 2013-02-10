@@ -149,7 +149,7 @@ class CFACMockTest : public testing::Test {
   // the victim of all tests
   scoped_refptr<ChromeFrameAutomationClient> client_;
 
-  FilePath profile_path_;
+  base::FilePath profile_path_;
   int timeout_;
   void* id_;  // Automation server id we are going to return
   int tab_handle_;   // Tab handle. Any non-zero value is Ok.

@@ -78,7 +78,7 @@ class WebServerListener {
 //     "<body>Rendered in CF.</body></html>", 4, 1000));
 class MockWebServer : public test_server::HTTPTestServer {
  public:
-  MockWebServer(int port, const std::wstring& address, FilePath root_dir)
+  MockWebServer(int port, const std::wstring& address, base::FilePath root_dir)
       : test_server::HTTPTestServer(port, address, root_dir), listener_(NULL) {}
 
   // Overriden from test_server::HTTPTestServer.
@@ -206,7 +206,7 @@ class ChromeFrameTestWithWebServer : public testing::Test {
   // Ensures (well, at least tries to ensure) that the browser window has focus.
   bool BringBrowserToTop();
 
-  const FilePath& GetCFTestFilePath() {
+  const base::FilePath& GetCFTestFilePath() {
     return test_file_path_;
   }
 
@@ -225,17 +225,17 @@ class ChromeFrameTestWithWebServer : public testing::Test {
   static void SetUpTestCase();
   static void TearDownTestCase();
 
-  static const FilePath& GetChromeUserDataDirectory();
+  static const base::FilePath& GetChromeUserDataDirectory();
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
   // The on-disk path to our html test files.
-  static FilePath test_file_path_;
-  static FilePath results_dir_;
-  static FilePath CFInstall_path_;
-  static FilePath CFInstance_path_;
-  static FilePath chrome_user_data_dir_;
+  static base::FilePath test_file_path_;
+  static base::FilePath results_dir_;
+  static base::FilePath CFInstall_path_;
+  static base::FilePath CFInstance_path_;
+  static base::FilePath chrome_user_data_dir_;
 
   // The user data directory used for Chrome instances.
   static base::ScopedTempDir temp_dir_;
@@ -264,7 +264,7 @@ class SimpleWebServerTest {
 
   template <class ResponseClass>
   void PopulateStaticFileListT(const wchar_t* pages[], int count,
-                               const FilePath& directory) {
+                               const base::FilePath& directory) {
     for (int i = 0; i < count; ++i) {
       server_.AddResponse(new ResponseClass(
           base::StringPrintf("/%ls", pages[i]).c_str(),

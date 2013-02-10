@@ -111,7 +111,7 @@ class CFACWithChrome : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  static FilePath profile_path_;
+  static base::FilePath profile_path_;
   MockCFDelegate cfd_;
   scoped_refptr<ChromeFrameAutomationClient> client_;
   scoped_refptr<ChromeFrameLaunchParams> launch_params_;
@@ -119,7 +119,7 @@ class CFACWithChrome : public testing::Test {
 };
 
 // static
-FilePath CFACWithChrome::profile_path_;
+base::FilePath CFACWithChrome::profile_path_;
 
 // static
 void CFACWithChrome::SetUpTestCase() {

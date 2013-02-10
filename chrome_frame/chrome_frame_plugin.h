@@ -74,12 +74,12 @@ END_MSG_MAP()
     // We don't want to do incognito when privileged, since we're
     // running in browser chrome or some other privileged context.
     bool incognito_mode = !is_privileged() && incognito;
-    FilePath profile_path;
+    base::FilePath profile_path;
     GetProfilePath(profile_name, &profile_path);
     // The profile name could change based on the browser version. For e.g. for
     // IE6/7 the profile is created in a different folder whose last component
     // is Google Chrome Frame.
-    FilePath actual_profile_name = profile_path.BaseName();
+    base::FilePath actual_profile_name = profile_path.BaseName();
     launch_params_ = new ChromeFrameLaunchParams(url, referrer, profile_path,
         actual_profile_name.value(), SimpleResourceLoader::GetLanguage(),
         incognito_mode, is_widget_mode, route_all_top_level_navigations,
@@ -239,7 +239,7 @@ END_MSG_MAP()
   }
 
   virtual void GetProfilePath(const std::wstring& profile_name,
-                              FilePath* profile_path) {
+                              base::FilePath* profile_path) {
     return GetChromeFrameProfilePath(profile_name, profile_path);
   }
 

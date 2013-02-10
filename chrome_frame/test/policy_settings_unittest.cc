@@ -236,7 +236,7 @@ TEST_F(PolicySettingsTest, AdditionalLaunchParameters) {
         PolicySettings::GetInstance()->AdditionalLaunchParameters();
     EXPECT_TRUE(additional_params.HasSwitch(switches::kDisableMediaSource));
 
-    FilePath program_path(FILE_PATH_LITERAL("my_chrome.exe"));
+    base::FilePath program_path(FILE_PATH_LITERAL("my_chrome.exe"));
     CommandLine new_cmd_line(program_path);
     new_cmd_line.AppendArguments(additional_params, false);
     EXPECT_NE(new_cmd_line.GetProgram(), additional_params.GetProgram());

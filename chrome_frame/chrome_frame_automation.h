@@ -107,7 +107,7 @@ class ChromeFrameLaunchParams :  // NOLINT
     public base::RefCountedThreadSafe<ChromeFrameLaunchParams> {
  public:
   ChromeFrameLaunchParams(const GURL& url, const GURL& referrer,
-                          const FilePath& profile_path,
+                          const base::FilePath& profile_path,
                           const std::wstring& profile_name,
                           const std::wstring& language,
                           bool incognito, bool widget_mode,
@@ -149,7 +149,7 @@ class ChromeFrameLaunchParams :  // NOLINT
     referrer_ = referrer;
   }
 
-  const FilePath& profile_path() const {
+  const base::FilePath& profile_path() const {
     return profile_path_;
   }
 
@@ -194,7 +194,7 @@ class ChromeFrameLaunchParams :  // NOLINT
   int launch_timeout_;
   GURL url_;
   GURL referrer_;
-  FilePath profile_path_;
+  base::FilePath profile_path_;
   std::wstring profile_name_;
   std::wstring language_;
   bool version_check_;

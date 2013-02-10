@@ -278,12 +278,12 @@ HMODULE DllRedirector::LoadVersionedModule(Version* version) {
   system_buffer[0] = 0;
   if (GetModuleFileName(this_module, system_buffer,
                         arraysize(system_buffer)) != 0) {
-    FilePath module_path(system_buffer);
+    base::FilePath module_path(system_buffer);
 
     // For a module located in
     // Foo\XXXXXXXXX\<module>.dll, load
     // Foo\<version>\<module>.dll:
-    FilePath module_name = module_path.BaseName();
+    base::FilePath module_name = module_path.BaseName();
     module_path = module_path.DirName()
                              .DirName()
                              .Append(ASCIIToWide(version->GetString()))

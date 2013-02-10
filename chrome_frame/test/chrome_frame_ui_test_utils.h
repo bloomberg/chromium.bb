@@ -286,7 +286,7 @@ void DumpAccessibilityTreeForWindow(HWND hwnd);
 bool IsDesktopUnlocked();
 
 // Returns the location of the IAccessible2 COM proxy stub DLL.
-FilePath GetIAccessible2ProxyStubPath();
+base::FilePath GetIAccessible2ProxyStubPath();
 
 }  // namespace chrome_frame_test
 

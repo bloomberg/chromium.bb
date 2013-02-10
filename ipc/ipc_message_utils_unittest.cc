@@ -55,19 +55,19 @@ TEST(IPCMessageUtilsTest, NestedMessages) {
 
 // Tests that detection of various bad parameters is working correctly.
 TEST(IPCMessageUtilsTest, ParameterValidation) {
-  FilePath::StringType ok_string(FILE_PATH_LITERAL("hello"), 5);
-  FilePath::StringType bad_string(FILE_PATH_LITERAL("hel\0o"), 5);
+  base::FilePath::StringType ok_string(FILE_PATH_LITERAL("hello"), 5);
+  base::FilePath::StringType bad_string(FILE_PATH_LITERAL("hel\0o"), 5);
 
   // Change this if ParamTraits<FilePath>::Write() changes.
   IPC::Message message;
-  ParamTraits<FilePath::StringType>::Write(&message, ok_string);
-  ParamTraits<FilePath::StringType>::Write(&message, bad_string);
+  ParamTraits<base::FilePath::StringType>::Write(&message, ok_string);
+  ParamTraits<base::FilePath::StringType>::Write(&message, bad_string);
 
   PickleIterator iter(message);
-  FilePath ok_path;
-  FilePath bad_path;
-  ASSERT_TRUE(ParamTraits<FilePath>::Read(&message, &iter, &ok_path));
-  ASSERT_FALSE(ParamTraits<FilePath>::Read(&message, &iter, &bad_path));
+  base::FilePath ok_path;
+  base::FilePath bad_path;
+  ASSERT_TRUE(ParamTraits<base::FilePath>::Read(&message, &iter, &ok_path));
+  ASSERT_FALSE(ParamTraits<base::FilePath>::Read(&message, &iter, &bad_path));
 }
 
 }  // namespace

@@ -21,8 +21,8 @@ const wchar_t kChromePipeName[] = L"\\\\.\\pipe\\ChromeCrashServices";
 google_breakpad::CustomClientInfo* GetCustomInfo(const wchar_t* dll_path) {
   std::wstring product;
   std::wstring version;
-  scoped_ptr<FileVersionInfo>
-      version_info(FileVersionInfo::CreateFileVersionInfo(FilePath(dll_path)));
+  scoped_ptr<FileVersionInfo> version_info(
+      FileVersionInfo::CreateFileVersionInfo(base::FilePath(dll_path)));
   if (version_info.get()) {
     version = version_info->product_version();
     product = version_info->product_short_name();
@@ -60,7 +60,7 @@ bool InitializeCrashReporting() {
   ExceptionBarrierConfig::set_enabled(true);
 
   // Get the alternate dump directory. We use the temp path.
-  FilePath temp_directory;
+  base::FilePath temp_directory;
   if (!file_util::GetTempDir(&temp_directory) || temp_directory.empty()) {
     return false;
   }

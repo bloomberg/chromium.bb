@@ -41,7 +41,7 @@ class AwResourceContext : public content::ResourceContext {
 }  // namespace
 
 AwBrowserContext::AwBrowserContext(
-    const FilePath path,
+    const base::FilePath path,
     GeolocationPermissionFactoryFn* geolocation_permission_factory)
     : context_storage_path_(path),
       geolocation_permission_factory_(geolocation_permission_factory) {
@@ -94,7 +94,7 @@ net::URLRequestContextGetter* AwBrowserContext::CreateRequestContext(
 
 net::URLRequestContextGetter*
 AwBrowserContext::CreateRequestContextForStoragePartition(
-    const FilePath& partition_path,
+    const base::FilePath& partition_path,
     bool in_memory,
     scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
         blob_protocol_handler,
@@ -110,7 +110,7 @@ AwBrowserContext::CreateRequestContextForStoragePartition(
   return url_request_context_getter_.get();
 }
 
-FilePath AwBrowserContext::GetPath() {
+base::FilePath AwBrowserContext::GetPath() {
   return context_storage_path_;
 }
 
@@ -141,7 +141,7 @@ AwBrowserContext::GetMediaRequestContextForRenderProcess(
 
 net::URLRequestContextGetter*
 AwBrowserContext::GetMediaRequestContextForStoragePartition(
-    const FilePath& partition_path,
+    const base::FilePath& partition_path,
     bool in_memory) {
   return GetRequestContext();
 }

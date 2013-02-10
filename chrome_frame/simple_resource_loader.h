@@ -43,7 +43,7 @@ class SimpleResourceLoader {
   static void GetPreferredLanguages(std::vector<std::wstring>* language_tags);
 
   // Populates |locales_path| with the path to the "Locales" directory.
-  static void DetermineLocalesDirectory(FilePath* locales_path);
+  static void DetermineLocalesDirectory(base::FilePath* locales_path);
 
   // Returns false if |language_tag| is malformed.
   static bool IsValidLanguageTag(const std::wstring& language_tag);
@@ -60,7 +60,7 @@ class SimpleResourceLoader {
   // |dll_handle|, the data pack in |data_pack| and the locale language in
   // the |language| parameter.
   static bool LoadLocalePack(const std::vector<std::wstring>& language_tags,
-                             const FilePath& locales_path,
+                             const base::FilePath& locales_path,
                              HMODULE* dll_handle,
                              ui::DataPack** data_pack,
                              std::wstring* language);

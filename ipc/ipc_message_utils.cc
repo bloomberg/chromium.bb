@@ -488,18 +488,18 @@ void ParamTraits<base::FileDescriptor>::Log(const param_type& p,
 }
 #endif  // defined(OS_POSIX)
 
-void ParamTraits<FilePath>::Write(Message* m, const param_type& p) {
+void ParamTraits<base::FilePath>::Write(Message* m, const param_type& p) {
   p.WriteToPickle(m);
 }
 
-bool ParamTraits<FilePath>::Read(const Message* m,
-                                 PickleIterator* iter,
-                                 param_type* r) {
+bool ParamTraits<base::FilePath>::Read(const Message* m,
+                                       PickleIterator* iter,
+                                       param_type* r) {
   return r->ReadFromPickle(iter);
 }
 
-void ParamTraits<FilePath>::Log(const param_type& p, std::string* l) {
-  ParamTraits<FilePath::StringType>::Log(p.value(), l);
+void ParamTraits<base::FilePath>::Log(const param_type& p, std::string* l) {
+  ParamTraits<base::FilePath::StringType>::Log(p.value(), l);
 }
 
 void ParamTraits<ListValue>::Write(Message* m, const param_type& p) {

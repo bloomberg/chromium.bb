@@ -53,7 +53,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
           chrome_devtools_protocol_handler) OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
       content::BrowserContext* browser_context,
-      const FilePath& partition_path,
+      const base::FilePath& partition_path,
       bool in_memory,
       scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
           blob_protocol_handler,
@@ -150,7 +150,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   virtual void ClearInspectorSettings(content::RenderViewHost* rvh) OVERRIDE;
   virtual void ClearCache(content::RenderViewHost* rvh) OVERRIDE;
   virtual void ClearCookies(content::RenderViewHost* rvh) OVERRIDE;
-  virtual FilePath GetDefaultDownloadDirectory() OVERRIDE;
+  virtual base::FilePath GetDefaultDownloadDirectory() OVERRIDE;
   virtual std::string GetDefaultDownloadName() OVERRIDE;
   virtual void DidCreatePpapiPlugin(
       content::BrowserPpapiHost* browser_host) OVERRIDE;

@@ -31,7 +31,7 @@ class MonikerPatchTest : public testing::Test {
 
   bool ReadFileAsString(const wchar_t* file_name, std::string* file_contents) {
     EXPECT_TRUE(file_name);
-    FilePath file_path = test_file_path_.Append(file_name);
+    base::FilePath file_path = test_file_path_.Append(file_name);
     return file_util::ReadFileToString(file_path, file_contents);
   }
 
@@ -60,7 +60,7 @@ class MonikerPatchTest : public testing::Test {
     return result;
   }
 
-  FilePath test_file_path_;
+  base::FilePath test_file_path_;
   ScopedVirtualizeHklmAndHkcu virtualized_registry_;
 };
 

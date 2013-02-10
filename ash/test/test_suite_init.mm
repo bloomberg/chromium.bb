@@ -16,7 +16,7 @@ namespace test {
 
 void OverrideFrameworkBundle() {
   // Look in the AuraShell.app directory for resources.
-  FilePath path;
+  base::FilePath path;
   PathService::Get(base::DIR_EXE, &path);
   path = path.Append(FILE_PATH_LITERAL("AuraShell.app"));
   base::mac::SetOverrideFrameworkBundlePath(path);

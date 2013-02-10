@@ -584,7 +584,7 @@ void AwContents::DocumentHasImages(JNIEnv* env, jobject obj, jobject message) {
 
 namespace {
 void GenerateMHTMLCallback(ScopedJavaGlobalRef<jobject>* callback,
-                           const FilePath& path, int64 size) {
+                           const base::FilePath& path, int64 size) {
   JNIEnv* env = AttachCurrentThread();
   // Android files are UTF8, so the path conversion below is safe.
   Java_AwContents_generateMHTMLCallback(
@@ -599,7 +599,7 @@ void AwContents::GenerateMHTML(JNIEnv* env, jobject obj,
   ScopedJavaGlobalRef<jobject>* j_callback = new ScopedJavaGlobalRef<jobject>();
   j_callback->Reset(env, callback);
   web_contents_->GenerateMHTML(
-      FilePath(ConvertJavaStringToUTF8(env, jpath)),
+      base::FilePath(ConvertJavaStringToUTF8(env, jpath)),
       base::Bind(&GenerateMHTMLCallback, base::Owned(j_callback)));
 }
 

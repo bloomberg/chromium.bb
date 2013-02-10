@@ -24,7 +24,7 @@ const wchar_t kSuffix[] = L"-fix";
 // Registry override in the UtilsTest will cause shell APIs to fail
 // So separate this test from the rest
 TEST(SimpleUtilTests, GetTempInternetFiles) {
-  FilePath path = GetIETemporaryFilesFolder();
+  base::FilePath path = GetIETemporaryFilesFolder();
   EXPECT_FALSE(path.empty());
 }
 
@@ -51,7 +51,7 @@ TEST_F(UtilTests, GetModuleVersionTest) {
 
   // Use the method that goes to disk
   scoped_ptr<FileVersionInfo> base_info(
-      FileVersionInfo::CreateFileVersionInfo(FilePath(path)));
+      FileVersionInfo::CreateFileVersionInfo(base::FilePath(path)));
   EXPECT_TRUE(base_info.get() != NULL);
 
   // Use the method that doesn't go to disk

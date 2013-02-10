@@ -29,10 +29,10 @@ bool CreateChromeLauncherCommandLine(scoped_ptr<CommandLine>* command_line) {
   bool success = false;
   // The launcher EXE will be in the same directory as the Chrome Frame DLL,
   // so create a full path to it based on this assumption.
-  FilePath module_path;
+  base::FilePath module_path;
   if (PathService::Get(base::FILE_MODULE, &module_path)) {
-    FilePath current_dir = module_path.DirName();
-    FilePath chrome_launcher = current_dir.Append(
+    base::FilePath current_dir = module_path.DirName();
+    base::FilePath chrome_launcher = current_dir.Append(
         chrome_launcher::kLauncherExeBaseName);
     if (file_util::PathExists(chrome_launcher)) {
       command_line->reset(new CommandLine(chrome_launcher));
@@ -89,8 +89,8 @@ bool CreateLaunchCommandLine(scoped_ptr<CommandLine>* command_line) {
   return CreateChromeLauncherCommandLine(command_line);
 }
 
-FilePath GetChromeExecutablePath() {
-  FilePath cur_path;
+base::FilePath GetChromeExecutablePath() {
+  base::FilePath cur_path;
   PathService::Get(base::DIR_MODULE, &cur_path);
   cur_path = cur_path.Append(chrome::kBrowserProcessExecutableName);
 

@@ -121,7 +121,7 @@ class ChromeTabModule : public CAtlDllModuleT<ChromeTabModule> {
     }
 
     if (SUCCEEDED(hr)) {
-      FilePath app_path =
+      base::FilePath app_path =
           chrome_launcher::GetChromeExecutablePath().DirName();
       hr = registrar->AddReplacement(L"CHROME_APPPATH",
                                      app_path.value().c_str());
@@ -146,7 +146,7 @@ class ChromeTabModule : public CAtlDllModuleT<ChromeTabModule> {
       // Add the directory of chrome_launcher.exe.  This will be the same
       // as the directory for the current DLL.
       std::wstring module_dir;
-      FilePath module_path;
+      base::FilePath module_path;
       if (PathService::Get(base::FILE_MODULE, &module_path)) {
         module_dir = module_path.DirName().value();
       } else {
@@ -305,8 +305,8 @@ HRESULT SetupUserLevelHelper() {
   base::win::RemoveCommandFromAutoRun(HKEY_CURRENT_USER, kRunKeyName);
 
   // Build the chrome_frame_helper command line.
-  FilePath module_path;
-  FilePath helper_path;
+  base::FilePath module_path;
+  base::FilePath helper_path;
   if (PathService::Get(base::FILE_MODULE, &module_path)) {
     module_path = module_path.DirName();
     helper_path = module_path.Append(kChromeFrameHelperExe);

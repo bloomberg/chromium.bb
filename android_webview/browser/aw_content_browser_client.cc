@@ -48,7 +48,7 @@ AwContentBrowserClient::AwContentBrowserClient(
     ViewDelegateFactoryFn* view_delegate_factory,
     GeolocationPermissionFactoryFn* geolocation_permission_factory)
     : view_delegate_factory_(view_delegate_factory) {
-  FilePath user_data_dir;
+  base::FilePath user_data_dir;
   if (!PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir)) {
     NOTREACHED() << "Failed to get app data directory for Android WebView";
   }
@@ -124,7 +124,7 @@ AwContentBrowserClient::CreateRequestContext(
 net::URLRequestContextGetter*
 AwContentBrowserClient::CreateRequestContextForStoragePartition(
     content::BrowserContext* browser_context,
-    const FilePath& partition_path,
+    const base::FilePath& partition_path,
     bool in_memory,
     scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
         blob_protocol_handler,
@@ -360,13 +360,13 @@ void AwContentBrowserClient::ClearCookies(content::RenderViewHost* rvh) {
   NOTIMPLEMENTED();
 }
 
-FilePath AwContentBrowserClient::GetDefaultDownloadDirectory() {
+base::FilePath AwContentBrowserClient::GetDefaultDownloadDirectory() {
   // Android WebView does not currently use the Chromium downloads system.
   // Download requests are cancelled immedately when recognized; see
   // AwResourceDispatcherHost::CreateResourceHandlerForDownload. However the
   // download system still tries to start up and calls this before recognizing
   // the request has been cancelled.
-  return FilePath();
+  return base::FilePath();
 }
 
 std::string AwContentBrowserClient::GetDefaultDownloadName() {

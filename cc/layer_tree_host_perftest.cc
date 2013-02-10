@@ -77,9 +77,9 @@ class LayerTreeHostPerfTestJsonReader : public LayerTreeHostPerfTest {
 
   void readTestFile(std::string name) {
     test_name_ = name;
-    FilePath test_data_dir;
+    base::FilePath test_data_dir;
     ASSERT_TRUE(PathService::Get(cc::DIR_TEST_DATA, &test_data_dir));
-    FilePath json_file = test_data_dir.AppendASCII(name + ".json");
+    base::FilePath json_file = test_data_dir.AppendASCII(name + ".json");
     ASSERT_TRUE(file_util::ReadFileToString(json_file, &json_));
   }
 

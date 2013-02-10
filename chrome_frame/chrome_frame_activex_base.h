@@ -390,7 +390,7 @@ END_MSG_MAP()
 
  protected:
   virtual void GetProfilePath(const std::wstring& profile_name,
-                              FilePath* profile_path) {
+                              base::FilePath* profile_path) {
     bool is_IE = (lstrcmpi(profile_name.c_str(), kIexploreProfileName) == 0) ||
                  (lstrcmpi(profile_name.c_str(), kRundllProfileName) == 0);
     // Browsers without IDeleteBrowsingHistory in non-priv mode

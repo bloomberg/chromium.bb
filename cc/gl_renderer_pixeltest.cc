@@ -60,7 +60,7 @@ class GLRendererPixelTest : public testing::Test {
                                    resource_provider_.get());
   }
 
-  bool PixelsMatchReference(FilePath ref_file, gfx::Rect viewport_rect) {
+  bool PixelsMatchReference(base::FilePath ref_file, gfx::Rect viewport_rect) {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                      viewport_rect.width(), viewport_rect.height());
@@ -68,7 +68,7 @@ class GLRendererPixelTest : public testing::Test {
     unsigned char* pixels = static_cast<unsigned char*>(bitmap.getPixels());
     renderer_->getFramebufferPixels(pixels, viewport_rect);
 
-    FilePath test_data_dir;
+    base::FilePath test_data_dir;
     if (!PathService::Get(cc::DIR_TEST_DATA, &test_data_dir))
       return false;
 
@@ -144,8 +144,9 @@ TEST_F(GLRendererPixelTest, simpleGreenRect) {
 
   renderer_->drawFrame(pass_list);
 
-  EXPECT_TRUE(PixelsMatchReference(FilePath(FILE_PATH_LITERAL("green.png")),
-                                   rect));
+  EXPECT_TRUE(PixelsMatchReference(
+      base::FilePath(FILE_PATH_LITERAL("green.png")),
+      rect));
 }
 
 TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
@@ -188,7 +189,7 @@ TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
   renderer_->drawFrame(pass_list);
 
   EXPECT_TRUE(PixelsMatchReference(
-      FilePath(FILE_PATH_LITERAL("blue_yellow.png")), viewport_rect));
+      base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")), viewport_rect));
 }
 #endif
 

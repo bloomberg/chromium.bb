@@ -47,7 +47,7 @@ using std::string;
 
 struct SimulationSpecification {
   string simulation_name;
-  FilePath input_path;
+  base::FilePath input_path;
   RenderModel model_under_test;
   TimeTicks simulation_start_time;
   int frames_rendered;
@@ -60,7 +60,7 @@ void _update_loop(Simulator* sim);
 
 class Simulator {
  public:
-  Simulator(int seconds_per_test, const FilePath& output_path)
+  Simulator(int seconds_per_test, const base::FilePath& output_path)
      : current_sim_(NULL),
        output_path_(output_path),
        seconds_per_test_(seconds_per_test),
@@ -82,7 +82,7 @@ class Simulator {
     XCloseDisplay(display_);
   }
 
-  void QueueTest(const FilePath& path) {
+  void QueueTest(const base::FilePath& path) {
     SimulationSpecification spec;
 
     // To get a std::string, we'll try to get an ASCII simulation name.
@@ -225,7 +225,7 @@ class Simulator {
     SimulationSpecification& spec = sims_remaining_.front();
     LOG(INFO) << "Initializing test for " << spec.simulation_name <<
         "(" << ModelToString(spec.model_under_test) << ")";
-    const FilePath& path = spec.input_path;
+    const base::FilePath& path = spec.input_path;
 
     RenderNode* root = NULL;
     if (!(root = BuildRenderTreeFromFile(path))) {
@@ -343,7 +343,7 @@ class Simulator {
   RenderModelSimulator* current_sim_;
   queue<SimulationSpecification> sims_remaining_;
   queue<SimulationSpecification> sims_completed_;
-  FilePath output_path_;
+  base::FilePath output_path_;
   // Amount of time to run each simulation
   int seconds_per_test_;
   // GUI data
@@ -380,7 +380,7 @@ int main(int argc, char* argv[]) {
   }
 
   Simulator sim(seconds_per_test, cl->GetSwitchValuePath("out"));
-  FilePath inPath = cl->GetSwitchValuePath("in");
+  base::FilePath inPath = cl->GetSwitchValuePath("in");
 
   if (!PathExists(inPath)) {
     LOG(FATAL) << "Path does not exist: " << inPath.LossyDisplayName();
@@ -390,7 +390,7 @@ int main(int argc, char* argv[]) {
   if (DirectoryExists(inPath)) {
     LOG(INFO) << "(input path is a directory)";
     FileEnumerator dirItr(inPath, true, FileEnumerator::FILES);
-    for (FilePath f = dirItr.Next(); !f.empty(); f = dirItr.Next()) {
+    for (base::FilePath f = dirItr.Next(); !f.empty(); f = dirItr.Next()) {
       sim.QueueTest(f);
     }
   } else {

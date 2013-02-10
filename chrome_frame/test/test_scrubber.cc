@@ -107,7 +107,7 @@ void TestScrubber::CleanUpFromTestRun() {
       ASCIIToWide(switches::kChromeFrame));
 
   // Delete the user data directory.
-  FilePath data_directory(data_directory_override_.empty() ?
+  base::FilePath data_directory(data_directory_override_.empty() ?
                           default_data_directory_ :
                           data_directory_override_);
 

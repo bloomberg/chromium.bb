@@ -32,11 +32,11 @@ const wchar_t kChromeLauncherExeName[] = L"chrome_launcher.exe";
 // the registrar.
 const int64 kDllRegistrationTimeoutMs = 30 * 1000;
 
-FilePath GetChromeFrameBuildPath() {
-  FilePath build_path;
+base::FilePath GetChromeFrameBuildPath() {
+  base::FilePath build_path;
   PathService::Get(chrome::DIR_APP, &build_path);
 
-  FilePath dll_path = build_path.Append(kChromeFrameDllName);
+  base::FilePath dll_path = build_path.Append(kChromeFrameDllName);
 
   if (!file_util::PathExists(dll_path)) {
     // Well, dang.. try looking in the current directory.
@@ -45,7 +45,7 @@ FilePath GetChromeFrameBuildPath() {
 
   if (!file_util::PathExists(dll_path)) {
     // No luck, return something empty.
-    dll_path = FilePath();
+    dll_path = base::FilePath();
   }
 
   return dll_path;
@@ -149,8 +149,8 @@ void ScopedChromeFrameRegistrar::UnregisterAtPath(
   DoRegistration(path, registration_type, UNREGISTER);
 }
 
-FilePath ScopedChromeFrameRegistrar::GetReferenceChromeFrameDllPath() {
-  FilePath reference_build_dir;
+base::FilePath ScopedChromeFrameRegistrar::GetReferenceChromeFrameDllPath() {
+  base::FilePath reference_build_dir;
   PathService::Get(chrome::DIR_APP, &reference_build_dir);
 
   reference_build_dir = reference_build_dir.DirName();
@@ -240,7 +240,8 @@ ScopedChromeFrameRegistrar::ScopedChromeFrameRegistrar(
 }
 
 ScopedChromeFrameRegistrar::~ScopedChromeFrameRegistrar() {
-  if (FilePath(original_dll_path_) != FilePath(new_chrome_frame_dll_path_)) {
+  if (base::FilePath(original_dll_path_) !=
+      base::FilePath(new_chrome_frame_dll_path_)) {
     RegisterChromeFrameAtPath(original_dll_path_);
   } else if (registration_type_ == PER_USER) {
     UnregisterAtPath(new_chrome_frame_dll_path_, registration_type_);

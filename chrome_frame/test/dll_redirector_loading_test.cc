@@ -38,7 +38,7 @@ class DllRedirectorLoadingTest : public testing::Test {
   // install to test upgrades.
   static void SetUpTestCase() {
     // First ensure that we can find the built Chrome Frame DLL.
-    FilePath build_chrome_frame_dll = GetChromeFrameBuildPath();
+    base::FilePath build_chrome_frame_dll = GetChromeFrameBuildPath();
     ASSERT_TRUE(file_util::PathExists(build_chrome_frame_dll));
 
     // Then grab its version.
@@ -53,7 +53,7 @@ class DllRedirectorLoadingTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // Make a versioned dir for the original chrome frame dll to run under.
-    FilePath original_version_dir(
+    base::FilePath original_version_dir(
         temp_dir_.path().AppendASCII(original_version_->GetString()));
     ASSERT_TRUE(file_util::CreateDirectory(original_version_dir));
 
@@ -66,7 +66,7 @@ class DllRedirectorLoadingTest : public testing::Test {
     ASSERT_TRUE(file_util::PathExists(original_chrome_frame_dll_));
 
     // Temporary location for the new Chrome Frame DLL.
-    FilePath temporary_new_chrome_frame_dll(
+    base::FilePath temporary_new_chrome_frame_dll(
         temp_dir_.path().Append(build_chrome_frame_dll.BaseName()));
 
     // Generate the version-bumped Chrome Frame DLL to a temporary path.
@@ -88,7 +88,7 @@ class DllRedirectorLoadingTest : public testing::Test {
     ASSERT_EQ(new_version_->CompareTo(*original_version_.get()), 1);
 
     // Now move the new Chrome Frame dll to its final resting place:
-    FilePath new_version_dir(
+    base::FilePath new_version_dir(
         temp_dir_.path().AppendASCII(new_version_->GetString()));
     ASSERT_TRUE(file_util::CreateDirectory(new_version_dir));
     new_chrome_frame_dll_ =
@@ -108,16 +108,16 @@ class DllRedirectorLoadingTest : public testing::Test {
   }
 
  protected:
-  static FilePath original_chrome_frame_dll_;
-  static FilePath new_chrome_frame_dll_;
+  static base::FilePath original_chrome_frame_dll_;
+  static base::FilePath new_chrome_frame_dll_;
   static scoped_ptr<Version> original_version_;
   static scoped_ptr<Version> new_version_;
 
   static base::ScopedTempDir temp_dir_;
 };  // class DllRedirectorLoadingTest
 
-FilePath DllRedirectorLoadingTest::original_chrome_frame_dll_;
-FilePath DllRedirectorLoadingTest::new_chrome_frame_dll_;
+base::FilePath DllRedirectorLoadingTest::original_chrome_frame_dll_;
+base::FilePath DllRedirectorLoadingTest::new_chrome_frame_dll_;
 scoped_ptr<Version> DllRedirectorLoadingTest::original_version_;
 scoped_ptr<Version> DllRedirectorLoadingTest::new_version_;
 base::ScopedTempDir DllRedirectorLoadingTest::temp_dir_;
@@ -133,8 +133,8 @@ base::ScopedTempDir DllRedirectorLoadingTest::temp_dir_;
 
 TEST_F(DllRedirectorLoadingTest, MAYBE_TestDllRedirection) {
   struct TestData {
-    FilePath first_dll;
-    FilePath second_dll;
+    base::FilePath first_dll;
+    base::FilePath second_dll;
     Version* expected_beacon_version;
   } test_data[] = {
       {

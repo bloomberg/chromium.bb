@@ -278,7 +278,7 @@ class MockIEEventSinkTest {
  public:
   MockIEEventSinkTest();
   MockIEEventSinkTest(int port, const std::wstring& address,
-                      const FilePath& root_dir);
+                      const base::FilePath& root_dir);
 
   ~MockIEEventSinkTest() {
     // Detach manually here so that it occurs before |last_resort_close_ie_|
@@ -301,7 +301,7 @@ class MockIEEventSinkTest {
 
   // Returns the absolute FilePath for the test file given. |relative_path|
   // should be relative to the test data directory.
-  FilePath GetTestFilePath(const std::wstring& relative_path);
+  base::FilePath GetTestFilePath(const std::wstring& relative_path);
 
   // Returns the url for an html page just containing some text. Iff |use_cf|
   // is true, the chrome_frame meta tag will be included too.

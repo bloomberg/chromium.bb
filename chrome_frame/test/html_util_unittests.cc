@@ -34,13 +34,13 @@ class HtmlUtilUnittest : public testing::Test {
   HtmlUtilUnittest() {}
 
   // Returns the test path given a test case.
-  virtual bool GetTestPath(const std::string& test_case, FilePath* path) {
+  virtual bool GetTestPath(const std::string& test_case, base::FilePath* path) {
     if (!path) {
       NOTREACHED();
       return false;
     }
 
-    FilePath test_path;
+    base::FilePath test_path;
     if (!PathService::Get(base::DIR_SOURCE_ROOT, &test_path)) {
       NOTREACHED();
       return false;
@@ -61,7 +61,7 @@ class HtmlUtilUnittest : public testing::Test {
       return false;
     }
 
-    FilePath path;
+    base::FilePath path;
     if (!GetTestPath(test_case, &path)) {
       NOTREACHED();
       return false;

@@ -43,7 +43,7 @@ void DeleteChromeHistory::OnAutomationServerLaunchFailed(
 }
 
 void DeleteChromeHistory::GetProfilePath(const std::wstring& profile_name,
-                                         FilePath* profile_path) {
+                                         base::FilePath* profile_path) {
   ChromeFramePlugin::GetProfilePath(kIexploreProfileName, profile_path);
 }
 

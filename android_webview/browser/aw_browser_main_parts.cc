@@ -61,7 +61,7 @@ int AwBrowserMainParts::PreCreateThreads() {
   // that, seed the ResourceBundle instance with a non-string, locale
   // independant pak. Until we no longer rely on paks for strings,
   // load an extra data pack separately that has the strings in it.
-  FilePath pak_path;
+  base::FilePath pak_path;
   PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_path);
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       pak_path.AppendASCII("webviewchromium_strings.pak"),

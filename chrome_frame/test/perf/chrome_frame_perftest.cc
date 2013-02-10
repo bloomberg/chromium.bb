@@ -303,7 +303,8 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
   // startup tests. Refactor into a common implementation.
   void RunStartupTest(const char* graph, const char* trace,
                       const char* startup_url, bool test_cold,
-                      int total_binaries, const FilePath binaries_to_evict[],
+                      int total_binaries,
+                      const base::FilePath binaries_to_evict[],
                       bool important, bool ignore_cache_error) {
     const int kNumCycles = 20;
 
@@ -348,12 +349,12 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
     perf_test::PrintResultList(graph, "", trace, times, "ms", important);
   }
 
-  FilePath dir_app_;
-  FilePath chrome_dll_;
-  FilePath chrome_exe_;
-  FilePath chrome_frame_dll_;
-  FilePath icu_dll_;
-  FilePath ffmpegsumo_dll_;
+  base::FilePath dir_app_;
+  base::FilePath chrome_dll_;
+  base::FilePath chrome_exe_;
+  base::FilePath chrome_frame_dll_;
+  base::FilePath icu_dll_;
+  base::FilePath ffmpegsumo_dll_;
 
  protected:
   // Individual startup tests should implement this function.
@@ -473,7 +474,7 @@ class ChromeFrameStartupTestActiveXReference
 
     ChromeFrameStartupTest::SetUp();
 
-    chrome_frame_dll_ = FilePath(
+    chrome_frame_dll_ = base::FilePath(
         chrome_frame_registrar_->GetReferenceChromeFrameDllPath());
     DVLOG(1) << __FUNCTION__ << ": " << chrome_frame_dll_.value();
   }
@@ -947,7 +948,7 @@ class SilverlightCreationTest : public ChromeFrameStartupTest {
 //     handling of invalid pe files and paths as input.
 
 TEST(ImagePreReader, PreReadImage) {
-  FilePath current_exe;
+  base::FilePath current_exe;
   ASSERT_TRUE(PathService::Get(base::FILE_EXE, &current_exe));
 
   int64 file_size_64 = 0;
@@ -971,7 +972,7 @@ TEST(ImagePreReader, PreReadImage) {
 }
 
 TEST(ImagePreReader, PartialPreReadImage) {
-  FilePath current_exe;
+  base::FilePath current_exe;
   ASSERT_TRUE(PathService::Get(base::FILE_EXE, &current_exe));
 
   const wchar_t* module_path = current_exe.value().c_str();
@@ -990,7 +991,7 @@ TEST(ImagePreReader, PartialPreReadImage) {
 }
 
 TEST(ImagePreReader, PartialPreReadImageOnDisk) {
-  FilePath current_exe;
+  base::FilePath current_exe;
   ASSERT_TRUE(PathService::Get(base::FILE_EXE, &current_exe));
 
   const wchar_t* module_path = current_exe.value().c_str();
@@ -1009,7 +1010,7 @@ TEST(ImagePreReader, PartialPreReadImageOnDisk) {
 }
 
 TEST(ImagePreReader, PartialPreReadImageInMemory) {
-  FilePath current_exe;
+  base::FilePath current_exe;
   ASSERT_TRUE(PathService::Get(base::FILE_EXE, &current_exe));
   const wchar_t* module_path = current_exe.value().c_str();
 
@@ -1057,7 +1058,7 @@ TEST_F(ChromeFrameBinariesLoadTest, PerfWarm) {
 
 TEST_F(ChromeFrameStartupTestActiveX, PerfCold) {
   SetConfigInt(L"PreRead", 0);
-  FilePath binaries_to_evict[] = {
+  base::FilePath binaries_to_evict[] = {
     ffmpegsumo_dll_, chrome_exe_, chrome_dll_, chrome_frame_dll_
   };
   RunStartupTest("cold", "t", "about:blank", true /* cold */,
@@ -1068,7 +1069,7 @@ TEST_F(ChromeFrameStartupTestActiveX, PerfCold) {
 
 TEST_F(ChromeFrameStartupTestActiveX, PerfColdPreRead) {
   SetConfigInt(L"PreRead", 1);
-  FilePath binaries_to_evict[] = {
+  base::FilePath binaries_to_evict[] = {
     ffmpegsumo_dll_, chrome_exe_, chrome_dll_, chrome_frame_dll_
   };
   RunStartupTest("cold_preread", "t", "about:blank", true /* cold */,
@@ -1078,14 +1079,14 @@ TEST_F(ChromeFrameStartupTestActiveX, PerfColdPreRead) {
 }
 
 TEST_F(ChromeFrameBinariesLoadTest, PerfCold) {
-  FilePath binaries_to_evict[] = {chrome_exe_, chrome_dll_};
+  base::FilePath binaries_to_evict[] = {chrome_exe_, chrome_dll_};
   RunStartupTest("binary_load_cold", "t", "", true /* cold */,
                  arraysize(binaries_to_evict), binaries_to_evict,
                  false /* not important */, false);
 }
 
 TEST_F(ChromeFrameBinariesLoadTest, PerfColdPreRead) {
-  FilePath binaries_to_evict[] = {chrome_exe_, chrome_dll_};
+  base::FilePath binaries_to_evict[] = {chrome_exe_, chrome_dll_};
   pre_read_type_ = kPreReadFull;
   RunStartupTest("binary_load_cold_preread", "t", "", true /* cold */,
                  arraysize(binaries_to_evict), binaries_to_evict,
@@ -1093,7 +1094,7 @@ TEST_F(ChromeFrameBinariesLoadTest, PerfColdPreRead) {
 }
 
 TEST_F(ChromeFrameBinariesLoadTest, PerfColdPartialPreRead15) {
-  FilePath binaries_to_evict[] = {chrome_exe_, chrome_dll_};
+  base::FilePath binaries_to_evict[] = {chrome_exe_, chrome_dll_};
   pre_read_type_ = kPreReadPartial;
   percentage_to_preread_ = 15;
   RunStartupTest("binary_load_cold_partial_preread", "t", "", true /* cold */,
@@ -1103,7 +1104,7 @@ TEST_F(ChromeFrameBinariesLoadTest, PerfColdPartialPreRead15) {
 
 
 TEST_F(ChromeFrameBinariesLoadTest, PerfColdPartialPreRead25) {
-  FilePath binaries_to_evict[] = {chrome_exe_, chrome_dll_};
+  base::FilePath binaries_to_evict[] = {chrome_exe_, chrome_dll_};
   pre_read_type_ = kPreReadPartial;
   percentage_to_preread_ = 25;
   RunStartupTest("binary_load_cold_partial_preread", "t", "", true /* cold */,
@@ -1112,7 +1113,7 @@ TEST_F(ChromeFrameBinariesLoadTest, PerfColdPartialPreRead25) {
 }
 
 TEST_F(ChromeFrameBinariesLoadTest, PerfColdPartialPreRead40) {
-  FilePath binaries_to_evict[] = {chrome_exe_, chrome_dll_};
+  base::FilePath binaries_to_evict[] = {chrome_exe_, chrome_dll_};
   pre_read_type_ = kPreReadPartial;
   percentage_to_preread_ = 40;
   RunStartupTest("binary_load_cold_partial_preread", "t", "", true /* cold */,
@@ -1131,7 +1132,7 @@ TEST_F(ChromeFrameStartupTestActiveX, PerfChromeFrameInitializationWarm) {
 }
 
 TEST_F(ChromeFrameStartupTestActiveX, PerfChromeFrameInitializationCold) {
-  FilePath binaries_to_evict[] = {chrome_frame_dll_};
+  base::FilePath binaries_to_evict[] = {chrome_frame_dll_};
   RunStartupTest("ChromeFrame_init_cold", "t", "", true /* cold */,
                  arraysize(binaries_to_evict), binaries_to_evict,
                  false /* not important */, false);
@@ -1213,7 +1214,7 @@ TEST_F(SilverlightCreationTest, DISABLED_PerfWarm) {
 }
 
 TEST_F(ChromeFrameCreationTest, PerfCold) {
-  FilePath binaries_to_evict[] = {chrome_frame_dll_};
+  base::FilePath binaries_to_evict[] = {chrome_frame_dll_};
 
   RunStartupTest("creation_cold", "t", "", true /* cold */,
                  arraysize(binaries_to_evict), binaries_to_evict,
@@ -1231,8 +1232,8 @@ TEST_F(FlashCreationTest, PerfCold) {
   ASSERT_EQ(ERROR_SUCCESS, flash_key.ReadValue(L"", &plugin_path));
   ASSERT_FALSE(plugin_path.empty());
 
-  FilePath flash_path = FilePath(plugin_path);
-  FilePath binaries_to_evict[] = {flash_path};
+  base::FilePath flash_path = base::FilePath(plugin_path);
+  base::FilePath binaries_to_evict[] = {flash_path};
 
   RunStartupTest("creation_cold", "t_flash", "", true /* cold */,
                  arraysize(binaries_to_evict), binaries_to_evict,
@@ -1252,8 +1253,8 @@ TEST_F(SilverlightCreationTest, DISABLED_PerfCold) {
   ASSERT_EQ(ERROR_SUCCESS, silverlight_key.ReadValue(L"", &plugin_path));
   ASSERT_FALSE(plugin_path.empty());
 
-  FilePath silverlight_path = FilePath(plugin_path);
-  FilePath binaries_to_evict[] = {silverlight_path};
+  base::FilePath silverlight_path = base::FilePath(plugin_path);
+  base::FilePath binaries_to_evict[] = {silverlight_path};
 
   RunStartupTest("creation_cold", "t_silverlight", "", true /* cold */,
                  arraysize(binaries_to_evict), binaries_to_evict,
@@ -1353,7 +1354,7 @@ class EtwPerfSession {
     consumer.Close();
   }
 
-  FilePath etl_log_file_;
+  base::FilePath etl_log_file_;
   base::win::EtwTraceController controller_;
 };
 
@@ -1477,7 +1478,7 @@ void PrintResultList(const std::string& measurement,
 }
 
 bool RunSingleTestOutOfProc(const std::string& test_name) {
-  FilePath path;
+  base::FilePath path;
   if (!PathService::Get(base::DIR_EXE, &path))
     return false;
   path = path.Append(L"chrome_frame_tests.exe");

@@ -282,7 +282,7 @@ class MinidumpTest: public testing::Test {
   base::win::ScopedHandle dump_file_mapping_;
   void* dump_file_view_;
 
-  FilePath dump_file_;
+  base::FilePath dump_file_;
 };
 
 TEST_F(MinidumpTest, Version) {
@@ -299,7 +299,7 @@ TEST_F(MinidumpTest, Version) {
                                   dbg_help_file,
                                   arraysize(dbg_help_file)));
   scoped_ptr<FileVersionInfo> file_info(
-      FileVersionInfo::CreateFileVersionInfo(FilePath(dbg_help_file)));
+      FileVersionInfo::CreateFileVersionInfo(base::FilePath(dbg_help_file)));
   ASSERT_TRUE(file_info != NULL);
 
   VLOG(1) << "DbgHelp.dll version: " << file_info->file_version();

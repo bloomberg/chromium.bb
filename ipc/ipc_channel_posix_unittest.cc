@@ -110,7 +110,7 @@ private:
 
 const std::string IPCChannelPosixTest::GetChannelDirName() {
 #if defined(OS_ANDROID)
-  FilePath tmp_dir;
+  base::FilePath tmp_dir;
   PathService::Get(base::DIR_CACHE, &tmp_dir);
   return tmp_dir.value();
 #else
@@ -155,8 +155,8 @@ void IPCChannelPosixTest::SetUpSocket(IPC::ChannelHandle *handle,
     // Only one server at a time. Cleanup garbage if it exists.
     unlink(name.c_str());
     // Make sure the path we need exists.
-    FilePath path(name);
-    FilePath dir_path = path.DirName();
+    base::FilePath path(name);
+    base::FilePath dir_path = path.DirName();
     ASSERT_TRUE(file_util::CreateDirectory(dir_path));
     ASSERT_GE(bind(socket_fd,
                    reinterpret_cast<struct sockaddr *>(&server_address),
@@ -377,7 +377,7 @@ TEST_F(IPCChannelPosixTest, IsNamedServerInitialized) {
   const std::string& connection_socket_name = GetConnectionSocketName();
   IPCChannelPosixTestListener listener(false);
   IPC::ChannelHandle chan_handle(connection_socket_name);
-  ASSERT_TRUE(file_util::Delete(FilePath(connection_socket_name), false));
+  ASSERT_TRUE(file_util::Delete(base::FilePath(connection_socket_name), false));
   ASSERT_FALSE(IPC::Channel::IsNamedServerInitialized(
       connection_socket_name));
   IPC::Channel channel(chan_handle, IPC::Channel::MODE_NAMED_SERVER, &listener);

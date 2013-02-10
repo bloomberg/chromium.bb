@@ -100,7 +100,7 @@ SimpleResourceLoader::SimpleResourceLoader()
   // but that's okay since we'll exit with success when the first is tried).
   language_tags.push_back(L"en-US");
 
-  FilePath locales_path;
+  base::FilePath locales_path;
 
   DetermineLocalesDirectory(&locales_path);
   if (!LoadLocalePack(language_tags, locales_path, &locale_dll_handle_,
@@ -137,10 +137,11 @@ void SimpleResourceLoader::GetPreferredLanguages(
 }
 
 // static
-void SimpleResourceLoader::DetermineLocalesDirectory(FilePath* locales_path) {
+void SimpleResourceLoader::DetermineLocalesDirectory(
+    base::FilePath* locales_path) {
   DCHECK(locales_path);
 
-  FilePath module_path;
+  base::FilePath module_path;
   PathService::Get(base::DIR_MODULE, &module_path);
   *locales_path = module_path.Append(kLocalesDirName);
 
@@ -171,7 +172,7 @@ bool SimpleResourceLoader::IsValidLanguageTag(
 // static
 bool SimpleResourceLoader::LoadLocalePack(
     const std::vector<std::wstring>& language_tags,
-    const FilePath& locales_path,
+    const base::FilePath& locales_path,
     HMODULE* dll_handle,
     ui::DataPack** data_pack,
     std::wstring* language) {
@@ -200,8 +201,9 @@ bool SimpleResourceLoader::LoadLocalePack(
 
     // Attempt to load both the resource pack and the dll. We return success
     // only we load both.
-    FilePath resource_pack_path = locales_path.Append(*scan + pack_suffix);
-    FilePath dll_path = locales_path.Append(*scan + dll_suffix);
+    base::FilePath resource_pack_path =
+        locales_path.Append(*scan + pack_suffix);
+    base::FilePath dll_path = locales_path.Append(*scan + dll_suffix);
 
     if (file_util::PathExists(resource_pack_path) &&
         file_util::PathExists(dll_path)) {
