@@ -12,6 +12,7 @@
 
 class HostContentSettingsMap;
 class InfoBarService;
+class TabSpecificContentSettings;
 
 namespace content {
 class WebContents;
@@ -48,6 +49,7 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
       const base::FilePath& plugin_path,
       const std::string& languages,
       HostContentSettingsMap* content_settings,
+      TabSpecificContentSettings* tab_content_settings,
       const base::Callback<void(bool)>& callback);
   virtual ~PepperBrokerInfoBarDelegate();
 
@@ -57,6 +59,7 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
   const base::FilePath plugin_path_;
   const std::string languages_;
   HostContentSettingsMap* content_settings_;
+  TabSpecificContentSettings* tab_content_settings_;
   base::Callback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperBrokerInfoBarDelegate);

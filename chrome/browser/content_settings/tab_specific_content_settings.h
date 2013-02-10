@@ -229,6 +229,10 @@ class TabSpecificContentSettings
     load_plugins_link_enabled_ = enabled;
   }
 
+  // Called to indicate whether access to the Pepper broker was allowed or
+  // blocked.
+  void SetPepperBrokerAllowed(bool allowed);
+
   // content::WebContentsObserver overrides.
   virtual void RenderViewForInterstitialPageCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
@@ -250,6 +254,7 @@ class TabSpecificContentSettings
   // Message handlers. Public for testing.
   void OnContentBlocked(ContentSettingsType type,
                         const std::string& resource_identifier);
+  void OnContentAccessed(ContentSettingsType type);
 
   // These methods are invoked on the UI thread by the static functions above.
   // Public for testing.
@@ -293,8 +298,6 @@ class TabSpecificContentSettings
 
   void AddBlockedResource(ContentSettingsType content_type,
                           const std::string& resource_identifier);
-
-  void OnContentAccessed(ContentSettingsType type);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

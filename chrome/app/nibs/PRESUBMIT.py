@@ -33,6 +33,9 @@ def _CheckXIBSystemAndXcodeVersions(input_api, output_api, error_type):
   incorrect_ib_versions = []
 
   for xib in affected_xibs:
+    if len(xib.NewContents()) == 0:
+      continue
+
     system_version = None
     ib_version = None
 

@@ -89,6 +89,7 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
     {CONTENT_SETTINGS_TYPE_PLUGINS, IDR_BLOCKED_PLUGINS},
     {CONTENT_SETTINGS_TYPE_POPUPS, IDR_BLOCKED_POPUPS},
     {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, IDR_BLOCKED_MIXED_CONTENT},
+    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDR_BLOCKED_PPAPI_BROKER},
   };
   static const ContentSettingsTypeIdEntry kBlockedTooltipIDs[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_TITLE},
@@ -98,6 +99,7 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
     {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_TOOLTIP},
     {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
         IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT},
+    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_TITLE},
   };
   static const ContentSettingsTypeIdEntry kBlockedExplanatoryTextIDs[] = {
     {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT},
@@ -120,16 +122,24 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (!content_settings->IsContentBlocked(get_content_settings_type())) {
-    if (!content_settings->IsContentAccessed(get_content_settings_type()) ||
+    if (!content_settings->IsContentAccessed(get_content_settings_type()))
+      return;
+
+    // For cookies, only show the accessed bubble if cookies are blocked by
+    // default.
+    if (get_content_settings_type() == CONTENT_SETTINGS_TYPE_COOKIES &&
         (profile->GetHostContentSettingsMap()->
-            GetDefaultContentSetting(get_content_settings_type(), NULL) !=
+            GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES, NULL) !=
                 CONTENT_SETTING_BLOCK))
       return;
+
     static const ContentSettingsTypeIdEntry kAccessedIconIDs[] = {
       {CONTENT_SETTINGS_TYPE_COOKIES, IDR_ACCESSED_COOKIES},
+      {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDR_BLOCKED_PPAPI_BROKER},
     };
     static const ContentSettingsTypeIdEntry kAccessedTooltipIDs[] = {
       {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ACCESSED_COOKIES_TITLE},
+      {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_TITLE},
     };
     icon_id = GetIdForContentType(
         kAccessedIconIDs, arraysize(kAccessedIconIDs), type);
@@ -138,8 +148,10 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
     explanation_id = 0;
   }
   set_visible(true);
+  DCHECK(icon_id);
   set_icon(icon_id);
   set_explanatory_string_id(explanation_id);
+  DCHECK(tooltip_id);
   set_tooltip(l10n_util::GetStringUTF8(tooltip_id));
 }
 

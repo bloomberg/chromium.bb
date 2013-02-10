@@ -93,7 +93,9 @@ void ContentSettingTitleAndLinkModel::SetTitle() {
     {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_MESSAGE},
     {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_TITLE},
     {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
-      IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT},
+        IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT},
+    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
+        IDS_BLOCKED_PPAPI_BROKER_TITLE},
   };
   // Fields as for kBlockedTitleIDs, above.
   static const ContentSettingsTypeIdEntry
@@ -102,6 +104,7 @@ void ContentSettingTitleAndLinkModel::SetTitle() {
       };
   static const ContentSettingsTypeIdEntry kAccessedTitleIDs[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ACCESSED_COOKIES_TITLE},
+    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_TITLE},
   };
   const ContentSettingsTypeIdEntry *title_ids = kBlockedTitleIDs;
   size_t num_title_ids = arraysize(kBlockedTitleIDs);
@@ -132,7 +135,8 @@ void ContentSettingTitleAndLinkModel::SetManageLink() {
     {CONTENT_SETTINGS_TYPE_GEOLOCATION, IDS_GEOLOCATION_BUBBLE_MANAGE_LINK},
     {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, IDS_LEARN_MORE},
     {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, IDS_HANDLERS_BUBBLE_MANAGE_LINK},
-    {CONTENT_SETTINGS_TYPE_MEDIASTREAM, IDS_MEDIASTREAM_BUBBLE_MANAGE_LINK}
+    {CONTENT_SETTINGS_TYPE_MEDIASTREAM, IDS_MEDIASTREAM_BUBBLE_MANAGE_LINK},
+    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_PPAPI_BROKER_BUBBLE_MANAGE_LINK},
   };
   set_manage_link(l10n_util::GetStringUTF8(
       GetIdForContentType(kLinkIDs, arraysize(kLinkIDs), content_type())));
@@ -238,52 +242,85 @@ bool ContentSettingSingleRadioGroup::settings_changed() const {
 // content type and setting the default value based on the content setting.
 void ContentSettingSingleRadioGroup::SetRadioGroup() {
   GURL url = web_contents()->GetURL();
-  string16 display_host_utf16;
+  string16 display_host;
   net::AppendFormattedHost(
       url,
       profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
-      &display_host_utf16);
-  std::string display_host(UTF16ToUTF8(display_host_utf16));
+      &display_host);
 
   if (display_host.empty())
-    display_host = url.spec();
+    display_host = ASCIIToUTF16(url.spec());
 
   const std::set<std::string>& resources =
       bubble_content().resource_identifiers;
 
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  bool allowed =
+      !content_settings->IsContentBlocked(content_type());
+  DCHECK(!allowed ||
+         content_settings->IsContentAccessed(content_type()));
+
   RadioGroup radio_group;
   radio_group.url = url;
 
-  static const ContentSettingsTypeIdEntry kAllowIDs[] = {
+  static const ContentSettingsTypeIdEntry kBlockedAllowIDs[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_UNBLOCK},
     {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_UNBLOCK},
     {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_UNBLOCK},
     {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_UNBLOCK_ALL},
     {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_UNBLOCK},
+    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_UNBLOCK},
   };
-  // Fields as for kAllowIDs, above.
-  static const ContentSettingsTypeIdEntry kResourceSpecificAllowIDs[] = {
+  // Fields as for kBlockedAllowIDs, above.
+  static const ContentSettingsTypeIdEntry kResourceSpecificBlockedAllowIDs[] = {
     {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_UNBLOCK},
   };
-  std::string radio_allow_label;
-  const ContentSettingsTypeIdEntry* allow_ids = resources.empty() ?
-      kAllowIDs : kResourceSpecificAllowIDs;
-  size_t num_allow_ids = resources.empty() ?
-      arraysize(kAllowIDs) : arraysize(kResourceSpecificAllowIDs);
-  radio_allow_label = l10n_util::GetStringFUTF8(
-      GetIdForContentType(allow_ids, num_allow_ids, content_type()),
-      UTF8ToUTF16(display_host));
+  static const ContentSettingsTypeIdEntry kAllowedAllowIDs[] = {
+    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_NO_ACTION},
+  };
 
-  static const ContentSettingsTypeIdEntry kBlockIDs[] = {
+  std::string radio_allow_label;
+  if (allowed) {
+    radio_allow_label = l10n_util::GetStringUTF8(
+        GetIdForContentType(kAllowedAllowIDs, arraysize(kAllowedAllowIDs),
+                            content_type()));
+  } else if (resources.empty()) {
+    radio_allow_label = l10n_util::GetStringFUTF8(
+        GetIdForContentType(kBlockedAllowIDs, arraysize(kBlockedAllowIDs),
+                            content_type()),
+        display_host);
+  } else {
+    radio_allow_label = l10n_util::GetStringFUTF8(
+        GetIdForContentType(kResourceSpecificBlockedAllowIDs,
+                            arraysize(kResourceSpecificBlockedAllowIDs),
+                            content_type()),
+        display_host);
+  }
+
+  static const ContentSettingsTypeIdEntry kBlockedBlockIDs[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_NO_ACTION},
     {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_NO_ACTION},
     {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_NO_ACTION},
     {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_NO_ACTION},
     {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_NO_ACTION},
+    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_NO_ACTION},
   };
+  static const ContentSettingsTypeIdEntry kAllowedBlockIDs[] = {
+    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_BLOCK},
+  };
+
   std::string radio_block_label;
-  radio_block_label = l10n_util::GetStringUTF8(
-      GetIdForContentType(kBlockIDs, arraysize(kBlockIDs), content_type()));
+  if (allowed) {
+    radio_block_label = l10n_util::GetStringFUTF8(
+        GetIdForContentType(kAllowedBlockIDs, arraysize(kAllowedBlockIDs),
+                            content_type()),
+        display_host);
+  } else {
+    radio_block_label = l10n_util::GetStringUTF8(
+        GetIdForContentType(kBlockedBlockIDs, arraysize(kBlockedBlockIDs),
+                            content_type()));
+  }
 
   radio_group.radio_items.push_back(radio_allow_label);
   radio_group.radio_items.push_back(radio_block_label);

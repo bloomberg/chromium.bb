@@ -6,6 +6,7 @@
 
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -45,6 +46,8 @@ void PepperBrokerInfoBarDelegate::Create(
     return;
   }
 
+  TabSpecificContentSettings* tab_content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
   HostContentSettingsMap* content_settings =
       profile->GetHostContentSettingsMap();
   ContentSetting setting =
@@ -55,12 +58,14 @@ void PepperBrokerInfoBarDelegate::Create(
     case CONTENT_SETTING_ALLOW: {
       content::RecordAction(
           content::UserMetricsAction("PPAPI.BrokerSettingAllow"));
+      tab_content_settings->SetPepperBrokerAllowed(true);
       callback.Run(true);
       break;
     }
     case CONTENT_SETTING_BLOCK: {
       content::RecordAction(
           content::UserMetricsAction("PPAPI.BrokerSettingDeny"));
+      tab_content_settings->SetPepperBrokerAllowed(false);
       callback.Run(false);
       break;
     }
@@ -75,7 +80,7 @@ void PepperBrokerInfoBarDelegate::Create(
       infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
           new PepperBrokerInfoBarDelegate(
               infobar_service, url, plugin_path, languages, content_settings,
-              callback)));
+              tab_content_settings, callback)));
       break;
     }
     default:
@@ -150,12 +155,14 @@ PepperBrokerInfoBarDelegate::PepperBrokerInfoBarDelegate(
     const base::FilePath& plugin_path,
     const std::string& languages,
     HostContentSettingsMap* content_settings,
+    TabSpecificContentSettings* tab_content_settings,
     const base::Callback<void(bool)>& callback)
     : ConfirmInfoBarDelegate(infobar_service),
       url_(url),
       plugin_path_(plugin_path),
       languages_(languages),
       content_settings_(content_settings),
+      tab_content_settings_(tab_content_settings),
       callback_(callback) {
 }
 
@@ -175,4 +182,5 @@ void PepperBrokerInfoBarDelegate::DispatchCallback(bool result) {
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
       std::string(), result ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+  tab_content_settings_->SetPepperBrokerAllowed(result);
 }

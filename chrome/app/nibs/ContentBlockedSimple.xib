@@ -2,10 +2,10 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">12B19</string>
+		<string key="IBDocument.SystemVersion">12C60</string>
 		<string key="IBDocument.InterfaceBuilderVersion">2549</string>
-		<string key="IBDocument.AppKitVersion">1187</string>
-		<string key="IBDocument.HIToolboxVersion">624.00</string>
+		<string key="IBDocument.AppKitVersion">1187.34</string>
+		<string key="IBDocument.HIToolboxVersion">625.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
 			<string key="NS.object.0">2549</string>
@@ -67,11 +67,12 @@
 									<string key="NSFrame">{{17, 100}, {282, 14}}</string>
 									<reference key="NSSuperview" ref="301729179"/>
 									<reference key="NSWindow"/>
+									<reference key="NSNextKeyView" ref="126329017"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSTextFieldCell" key="NSCell" id="157361777">
 										<int key="NSCellFlags">67108864</int>
 										<int key="NSCellFlags2">272760832</int>
-										<string key="NSContents">^IDS_BLOCKED_IMAGES_TITLE</string>
+										<string key="NSContents">&lt;do not localize&gt;</string>
 										<object class="NSFont" key="NSSupport" id="26">
 											<string key="NSName">LucidaGrande</string>
 											<double key="NSSize">11</double>
@@ -105,6 +106,7 @@
 									<string key="NSFrame">{{20, 54}, {276, 38}}</string>
 									<reference key="NSSuperview" ref="301729179"/>
 									<reference key="NSWindow"/>
+									<reference key="NSNextKeyView" ref="913795455"/>
 									<bool key="NSEnabled">YES</bool>
 									<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 									<int key="NSNumRows">2</int>
@@ -114,7 +116,7 @@
 										<object class="NSButtonCell" id="193088222">
 											<int key="NSCellFlags">67108864</int>
 											<int key="NSCellFlags2">131072</int>
-											<string key="NSContents">^IDS_BLOCKED_IMAGES_UNBLOCK</string>
+											<string key="NSContents">&lt;do not localize&gt;</string>
 											<reference key="NSSupport" ref="26"/>
 											<reference key="NSControlView" ref="126329017"/>
 											<int key="NSTag">1</int>
@@ -131,7 +133,7 @@
 										<object class="NSButtonCell" id="619648789">
 											<int key="NSCellFlags">-2080374784</int>
 											<int key="NSCellFlags2">131072</int>
-											<string key="NSContents">^IDS_BLOCKED_IMAGES_NO_ACTION</string>
+											<string key="NSContents">&lt;do not localize&gt;</string>
 											<reference key="NSSupport" ref="26"/>
 											<reference key="NSControlView" ref="126329017"/>
 											<int key="NSTag">2</int>
@@ -313,6 +315,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 									<string key="NSFrame">{{20, 43}, {276, 5}}</string>
 									<reference key="NSSuperview" ref="301729179"/>
 									<reference key="NSWindow"/>
+									<reference key="NSNextKeyView" ref="730386640"/>
 									<string key="NSOffsets">{0, 0}</string>
 									<object class="NSTextFieldCell" key="NSTitleCell">
 										<int key="NSCellFlags">67108864</int>
@@ -343,14 +346,15 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 										<object class="NSButton" id="91589614">
 											<reference key="NSNextResponder" ref="730386640"/>
 											<int key="NSvFlags">292</int>
-											<string key="NSFrame">{{15, 13}, {115, 28}}</string>
+											<string key="NSFrame">{{15, 13}, {59, 28}}</string>
 											<reference key="NSSuperview" ref="730386640"/>
 											<reference key="NSWindow"/>
+											<reference key="NSNextKeyView" ref="395762087"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSButtonCell" key="NSCell" id="319182835">
 												<int key="NSCellFlags">67108864</int>
 												<int key="NSCellFlags2">134348800</int>
-												<string key="NSContents">^IDS_BLOCKED_IMAGES_LINK</string>
+												<string key="NSContents">&lt;do not localize&gt;</string>
 												<reference key="NSSupport" ref="26"/>
 												<reference key="NSControlView" ref="91589614"/>
 												<int key="NSButtonFlags">-2038284288</int>
@@ -366,6 +370,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 									<string key="NSFrameSize">{192, 37}</string>
 									<reference key="NSSuperview" ref="301729179"/>
 									<reference key="NSWindow"/>
+									<reference key="NSNextKeyView" ref="91589614"/>
 									<string key="NSClassName">GTMWidthBasedTweaker</string>
 								</object>
 								<object class="NSCustomView" id="395762087">
@@ -379,6 +384,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 											<string key="NSFrame">{{40, 13}, {68, 28}}</string>
 											<reference key="NSSuperview" ref="395762087"/>
 											<reference key="NSWindow"/>
+											<reference key="NSNextKeyView"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSButtonCell" key="NSCell" id="255173005">
 												<int key="NSCellFlags">67108864</int>
@@ -399,18 +405,21 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 									<string key="NSFrame">{{193, 0}, {123, 37}}</string>
 									<reference key="NSSuperview" ref="301729179"/>
 									<reference key="NSWindow"/>
+									<reference key="NSNextKeyView" ref="433059244"/>
 									<string key="NSClassName">GTMWidthBasedTweaker</string>
 								</object>
 							</object>
 							<string key="NSFrameSize">{316, 134}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<reference key="NSWindow"/>
+							<reference key="NSNextKeyView" ref="266815090"/>
 							<string key="NSClassName">InfoBubbleView</string>
 						</object>
 					</object>
 					<string key="NSFrameSize">{316, 134}</string>
 					<reference key="NSSuperview"/>
 					<reference key="NSWindow"/>
+					<reference key="NSNextKeyView" ref="301729179"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
@@ -753,7 +762,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">32</int>
+			<int key="maxID">38</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1121,10 +1130,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencies">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
 			<integer value="1050" key="NS.object.0"/>
-		</object>
-		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencyDefaults">
-			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
-			<real value="1070" key="NS.object.0"/>
 		</object>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDevelopmentDependencies">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.InterfaceBuilder3</string>

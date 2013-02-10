@@ -301,6 +301,45 @@ TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
                                    barPlugin));
 }
 
+TEST_F(ContentSettingBubbleModelTest, PepperBroker) {
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
+                                     std::string());
+
+  scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+         NULL, web_contents(), profile(),
+         CONTENT_SETTINGS_TYPE_PPAPI_BROKER));
+  const ContentSettingBubbleModel::BubbleContent& bubble_content =
+      content_setting_bubble_model->bubble_content();
+
+  std::string title = bubble_content.title;
+  EXPECT_FALSE(title.empty());
+  ASSERT_EQ(2U, bubble_content.radio_group.radio_items.size());
+  std::string radio1 = bubble_content.radio_group.radio_items[0];
+  std::string radio2 = bubble_content.radio_group.radio_items[1];
+  EXPECT_FALSE(bubble_content.custom_link_enabled);
+  EXPECT_FALSE(bubble_content.manage_link.empty());
+
+  content_settings->ClearBlockedContentSettingsExceptForCookies();
+  content_settings->OnContentAccessed(CONTENT_SETTINGS_TYPE_PPAPI_BROKER);
+  content_setting_bubble_model.reset(
+      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+          NULL, web_contents(), profile(),
+          CONTENT_SETTINGS_TYPE_PPAPI_BROKER));
+  const ContentSettingBubbleModel::BubbleContent& bubble_content_2 =
+      content_setting_bubble_model->bubble_content();
+
+  EXPECT_FALSE(bubble_content_2.title.empty());
+  EXPECT_NE(title, bubble_content_2.title);
+  ASSERT_EQ(2U, bubble_content_2.radio_group.radio_items.size());
+  EXPECT_NE(radio1, bubble_content_2.radio_group.radio_items[0]);
+  EXPECT_NE(radio2, bubble_content_2.radio_group.radio_items[1]);
+  EXPECT_FALSE(bubble_content_2.custom_link_enabled);
+  EXPECT_FALSE(bubble_content_2.manage_link.empty());
+}
+
 TEST_F(ContentSettingBubbleModelTest, Geolocation) {
   const GURL page_url("http://toplevel.example/");
   const GURL frame1_url("http://host1.example/");
@@ -343,6 +382,8 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
 TEST_F(ContentSettingBubbleModelTest, FileURL) {
   std::string file_url("file:///tmp/test.html");
   NavigateAndCommit(GURL(file_url));
+  TabSpecificContentSettings::FromWebContents(web_contents())->OnContentBlocked(
+      CONTENT_SETTINGS_TYPE_IMAGES, std::string());
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           NULL, web_contents(), profile(),
